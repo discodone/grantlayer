@@ -12,6 +12,7 @@ from .models import Grant
 from .grants import list_grants, create_grant, revoke_grant, get_grant
 from .audit_log import list_events
 from .demo_action import handle_demo_action
+from .challenges import create_challenge, list_challenges
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -90,6 +91,9 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             events = list_events(limit=limit)
             self._send_json(200, [e.to_dict() for e in events])
 
+        elif path == "/challenges":
+            self._send_json(200, [c.to_dict() for c in list_challenges()])
+
         else:
             self._send_json(404, {"error": "Not found"})
 
@@ -142,6 +146,25 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             else:
                 self._send_json(409, {"error": "Grant already revoked or not found"})
 
+        elif path == "/challenges":
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+            missing = self._missing(data, ["subjectId", "action", "resource"])
+            if missing:
+                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                return
+            challenge = create_challenge(data["subjectId"], data["action"], data["resource"])
+            self._send_json(201, {
+                "challengeId": challenge.id,
+                "subjectId": challenge.subject_id,
+                "action": challenge.action,
+                "resource": challenge.resource,
+                "expiresAt": challenge.expires_at,
+            })
+
         elif path == "/demo-action":
             try:
                 data = self._read_json()
@@ -157,6 +180,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 role=data["role"],
                 action=data["action"],
                 resource=data["resource"],
+                challenge_id=data.get("challengeId"),
             )
             self._send_json(200 if result["approved"] else 403, result)
 

@@ -16,7 +16,8 @@ def get_conn() -> sqlite3.Connection:
 
 def init_db() -> None:
     os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
-    with get_conn() as conn:
+    conn = get_conn()
+    try:
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS grants (
                 id          TEXT PRIMARY KEY,
@@ -46,4 +47,30 @@ def init_db() -> None:
                 reason           TEXT NOT NULL,
                 matched_grant_id TEXT
             );
+
+            CREATE TABLE IF NOT EXISTS challenges (
+                id         TEXT PRIMARY KEY,
+                subject_id TEXT NOT NULL,
+                action     TEXT NOT NULL,
+                resource   TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                used_at    TEXT,
+                status     TEXT NOT NULL DEFAULT 'active'
+            );
         """)
+        # Migrate: add challenge columns to audit_events if they don't exist yet
+        for col, ddl in [
+            ("challenge_id", "TEXT DEFAULT NULL"),
+            ("challenge_present", "INTEGER DEFAULT 0"),
+            ("challenge_result", "TEXT DEFAULT 'legacy_mode'"),
+        ]:
+            try:
+                conn.execute(
+                    f"ALTER TABLE audit_events ADD COLUMN {col} {ddl}"
+                )
+                conn.commit()
+            except Exception:
+                pass  # column already exists
+    finally:
+        conn.close()

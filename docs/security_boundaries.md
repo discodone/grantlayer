@@ -14,6 +14,14 @@ This document explicitly states what this MVP is and is not.
 - **Local only.** The server binds to `127.0.0.1` by default. Do not expose it to a network or the internet.
 - **No external services.** The MVP has zero external dependencies at runtime. Everything runs locally.
 
+## Sprint 2A — Challenge/Proof Flow is NOT real authentication
+
+- **The challenge UUID is not a cryptographic proof.** It is a randomly generated UUID stored in SQLite — not signed, not encrypted, not verified by any secret.
+- **No signatures.** Ed25519 signatures come in Sprint 2B.
+- **The challenge flow demonstrates the concept** of one-time-use tokens and replay protection only.
+- A valid challenge merely proves the caller recently called `POST /challenges` with the matching subject/action/resource. Anyone with network access to the API can create a challenge.
+- **Not a production auth mechanism.** Do not use to gate real system access.
+
 ## What the MVP demonstrates
 
 | Concept | Demonstrated how |
@@ -22,8 +30,11 @@ This document explicitly states what this MVP is and is not.
 | Policy evaluation | evaluateAccess() checks role, action, resource, time window, revocation |
 | Fail-closed behavior | Any missing or non-matching grant results in denial |
 | Grant revocation | POST /grants/:id/revoke sets revoked=true; subsequent checks are denied |
-| Audit logging | Every access attempt (approved or denied) is written to audit_events |
-| Dashboard visibility | GET /grants and GET /audit-events exposed; served via dashboard |
+| Challenge/proof flow | POST /challenges creates a one-time UUID with TTL |
+| Replay protection | Used challenges are permanently blocked (fail-closed on already_used) |
+| Challenge expiry | Challenges expire after 5 minutes (fail-closed on expired) |
+| Audit logging | Every access attempt (approved or denied) is written to audit_events with challenge metadata |
+| Dashboard visibility | All endpoints exposed; served via dashboard |
 
 ## Future sprint additions (not in this MVP)
 

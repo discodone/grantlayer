@@ -11,12 +11,14 @@ def append_event(event: AuditEvent) -> None:
         conn.execute(
             """INSERT INTO audit_events
                (id, timestamp, subject_id, role, action, resource,
-                approved, reason, matched_grant_id)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                approved, reason, matched_grant_id,
+                challenge_id, challenge_present, challenge_result)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 event.id, event.timestamp, event.subject_id, event.role,
                 event.action, event.resource, int(event.approved),
                 event.reason, event.matched_grant_id,
+                event.challenge_id, int(event.challenge_present), event.challenge_result,
             ),
         )
         conn.commit()
@@ -43,6 +45,9 @@ def list_events(limit: int = 200) -> List[AuditEvent]:
             approved=bool(r["approved"]),
             reason=r["reason"],
             matched_grant_id=r["matched_grant_id"],
+            challenge_id=r["challenge_id"],
+            challenge_present=int(r["challenge_present"] or 0) != 0,
+            challenge_result=r["challenge_result"] or "legacy_mode",
         )
         for r in rows
     ]

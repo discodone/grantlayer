@@ -25,6 +25,7 @@
   .btn-primary { background: #3182ce; color: white; }
   .btn-danger  { background: #c53030; color: white; }
   .btn-test    { background: #276749; color: white; }
+  .btn-challenge { background: #553c9a; color: white; }
   .result { margin-top: 0.75rem; border-radius: 4px; padding: 0.6rem 0.75rem; font-size: 0.82rem; font-family: monospace; display: none; white-space: pre-wrap; word-break: break-all; }
   .result.ok   { background: #1c4532; border: 1px solid #276749; color: #9ae6b4; }
   .result.fail { background: #3b1515; border: 1px solid #822727; color: #feb2b2; }
@@ -38,17 +39,19 @@
   .tag-active  { background: #1a365d; color: #63b3ed; }
   .tag-revoked { background: #3b1515; color: #fc8181; }
   .tag-expired { background: #2d1f00; color: #f6ad55; }
+  .tag-used    { background: #2d1f5e; color: #b794f4; }
   .empty { color: #4a5568; font-size: 0.82rem; padding: 1rem 0; text-align: center; }
   .revoke-btn { background: none; border: 1px solid #822727; color: #fc8181; padding: 2px 8px; font-size: 0.72rem; margin-top: 0; border-radius: 3px; }
+  .hint { font-size: 0.75rem; color: #718096; margin-top: 0.4rem; font-style: italic; }
 </style>
 </head>
 <body>
 <header>
   <h1>GrantLayer MVP</h1>
-  <span class="badge">LOCAL DEMO</span>
+  <span class="badge">LOCAL DEMO — Sprint 2A</span>
 </header>
 <div class="disclaimer">
-  ⚠️ Demo only — no real privileges, no real system changes, no production use.
+  &#9888; Demo only — no real privileges, no real system changes, no production use. Sprint 2A adds challenge/replay protection (no cryptography yet).
 </div>
 <main>
 
@@ -69,11 +72,11 @@
       <div class="row2">
         <div>
           <label>Action</label>
-          <input id="g_action" value="restart-service" required>
+          <input id="g_action" value="modify-config" required>
         </div>
         <div>
           <label>Resource</label>
-          <input id="g_resource" value="customer-env-a" required>
+          <input id="g_resource" value="customer-a/server-1" required>
         </div>
       </div>
       <div class="row2">
@@ -95,39 +98,76 @@
     <div id="grantResult" class="result"></div>
   </div>
 
-  <!-- Test Demo Action -->
+  <!-- Create Challenge -->
   <div class="card">
-    <h2>Test Demo Action</h2>
-    <form id="actionForm">
+    <h2>Create Challenge</h2>
+    <p class="hint">Step 1: Create a one-time challenge (5 min TTL). Copy the Challenge ID for use in Demo Action.</p>
+    <form id="challengeForm">
       <label>Subject ID</label>
-      <input id="a_subjectId" value="tech-01" required>
-      <label>Role</label>
-      <input id="a_role" value="technician" required>
+      <input id="c_subjectId" value="tech-01" required>
       <div class="row2">
         <div>
           <label>Action</label>
-          <input id="a_action" value="restart-service" required>
+          <input id="c_action" value="modify-config" required>
         </div>
         <div>
           <label>Resource</label>
-          <input id="a_resource" value="customer-env-a" required>
+          <input id="c_resource" value="customer-a/server-1" required>
         </div>
       </div>
-      <button type="submit" class="btn-test">Run Demo Action</button>
+      <button type="submit" class="btn-challenge">Create Challenge</button>
     </form>
-    <div id="actionResult" class="result"></div>
+    <div id="challengeResult" class="result"></div>
+  </div>
+
+  <!-- Test Demo Action -->
+  <div class="card full-width">
+    <h2>Test Demo Action</h2>
+    <p class="hint">Step 2: Run a demo action. Add a Challenge ID to use the Sprint 2A proof flow. Without a Challenge ID, the action uses legacy mode (backward-compatible).</p>
+    <form id="actionForm" style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1rem">
+      <div>
+        <label>Subject ID</label>
+        <input id="a_subjectId" value="tech-01" required>
+      </div>
+      <div>
+        <label>Role</label>
+        <input id="a_role" value="technician" required>
+      </div>
+      <div>
+        <label>Action</label>
+        <input id="a_action" value="modify-config" required>
+      </div>
+      <div>
+        <label>Resource</label>
+        <input id="a_resource" value="customer-a/server-1" required>
+      </div>
+      <div style="grid-column:1/-1">
+        <label>Challenge ID <span style="color:#718096">(optional — paste from Create Challenge above)</span></label>
+        <input id="a_challengeId" placeholder="Leave blank for legacy mode">
+      </div>
+      <div style="grid-column:1/-1">
+        <button type="submit" class="btn-test">Run Demo Action</button>
+      </div>
+    </form>
+    <div id="actionResult" class="result" style="margin-top:0.75rem"></div>
   </div>
 
   <!-- Grants table -->
   <div class="card full-width">
-    <h2>Active Grants <button onclick="loadGrants()" style="margin-top:0;background:#2d3748;color:#a0aec0;padding:2px 8px;font-size:0.7rem;border-radius:3px;border:none;cursor:pointer;">↻ Refresh</button></h2>
-    <div id="grantsTable"><p class="empty">Loading…</p></div>
+    <h2>Active Grants <button onclick="loadGrants()" style="margin-top:0;background:#2d3748;color:#a0aec0;padding:2px 8px;font-size:0.7rem;border-radius:3px;border:none;cursor:pointer;">&#8635; Refresh</button></h2>
+    <div id="grantsTable"><p class="empty">Loading&#8230;</p></div>
+  </div>
+
+  <!-- Challenges table -->
+  <div class="card full-width">
+    <h2>Challenges <button onclick="loadChallenges()" style="margin-top:0;background:#2d3748;color:#a0aec0;padding:2px 8px;font-size:0.7rem;border-radius:3px;border:none;cursor:pointer;">&#8635; Refresh</button></h2>
+    <div id="challengesTable"><p class="empty">Loading&#8230;</p></div>
   </div>
 
   <!-- Audit log -->
   <div class="card full-width">
-    <h2>Audit Events <button onclick="loadAudit()" style="margin-top:0;background:#2d3748;color:#a0aec0;padding:2px 8px;font-size:0.7rem;border-radius:3px;border:none;cursor:pointer;">↻ Refresh</button></h2>
-    <div id="auditTable"><p class="empty">Loading…</p></div>
+    <h2>Audit Events <button onclick="loadAudit()" style="margin-top:0;background:#2d3748;color:#a0aec0;padding:2px 8px;font-size:0.7rem;border-radius:3px;border:none;cursor:pointer;">&#8635; Refresh</button></h2>
+    <div id="auditTable"><p class="empty">Loading&#8230;</p></div>
   </div>
 
 </main>
@@ -135,13 +175,17 @@
 <script>
 const API = '';  // same origin
 
-function now() { return new Date(); }
 function isoShort(s) { return s ? s.replace('T',' ').replace('Z','').slice(0,19) : '—'; }
 function grantStatus(g) {
   if (g.revoked) return '<span class="tag tag-revoked">REVOKED</span>';
   const now = new Date();
   if (new Date(g.valid_until) < now) return '<span class="tag tag-expired">EXPIRED</span>';
   if (new Date(g.valid_from) > now) return '<span class="tag tag-active" style="background:#2d1f5e;color:#b794f4">FUTURE</span>';
+  return '<span class="tag tag-active">ACTIVE</span>';
+}
+function challengeStatusTag(c) {
+  if (c.status === 'used')    return '<span class="tag tag-used">USED</span>';
+  if (c.status === 'expired' || new Date(c.expires_at) < new Date()) return '<span class="tag tag-expired">EXPIRED</span>';
   return '<span class="tag tag-active">ACTIVE</span>';
 }
 
@@ -165,7 +209,7 @@ async function loadGrants() {
   el.innerHTML = `<table>
     <tr><th>ID</th><th>Subject</th><th>Role</th><th>Action</th><th>Resource</th><th>Valid From</th><th>Valid Until</th><th>Status</th><th>Reason</th><th></th></tr>
     ${data.map(g => `<tr>
-      <td title="${g.id}">${g.id.slice(0,8)}…</td>
+      <td title="${g.id}">${g.id.slice(0,8)}&hellip;</td>
       <td>${g.subject_id}</td><td>${g.role}</td><td>${g.action}</td><td>${g.resource}</td>
       <td>${isoShort(g.valid_from)}</td><td>${isoShort(g.valid_until)}</td>
       <td>${grantStatus(g)}</td>
@@ -175,19 +219,40 @@ async function loadGrants() {
   </table>`;
 }
 
+async function loadChallenges() {
+  const { data } = await api('GET', '/challenges');
+  const el = document.getElementById('challengesTable');
+  if (!data.length) { el.innerHTML = '<p class="empty">No challenges yet.</p>'; return; }
+  el.innerHTML = `<table>
+    <tr><th>ID</th><th>Subject</th><th>Action</th><th>Resource</th><th>Created</th><th>Expires</th><th>Status</th><th>Used At</th></tr>
+    ${data.map(c => `<tr>
+      <td title="${c.id}" style="cursor:pointer" onclick="navigator.clipboard&&navigator.clipboard.writeText('${c.id}')" title="Click to copy: ${c.id}">${c.id.slice(0,8)}&hellip;</td>
+      <td>${c.subject_id}</td><td>${c.action}</td><td>${c.resource}</td>
+      <td>${isoShort(c.created_at)}</td>
+      <td>${isoShort(c.expires_at)}</td>
+      <td>${challengeStatusTag(c)}</td>
+      <td>${c.used_at ? isoShort(c.used_at) : '—'}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
 async function loadAudit() {
   const { data } = await api('GET', '/audit-events');
   const el = document.getElementById('auditTable');
   if (!data.length) { el.innerHTML = '<p class="empty">No audit events yet.</p>'; return; }
   el.innerHTML = `<table>
-    <tr><th>Timestamp</th><th>Subject</th><th>Role</th><th>Action</th><th>Resource</th><th>Result</th><th>Reason</th></tr>
+    <tr><th>Timestamp</th><th>Subject</th><th>Role</th><th>Action</th><th>Resource</th><th>Result</th><th>Challenge</th><th>Ch. Result</th><th>Reason</th></tr>
     ${data.map(e => `<tr>
       <td>${isoShort(e.timestamp)}</td>
       <td>${e.subject_id}</td><td>${e.role}</td><td>${e.action}</td><td>${e.resource}</td>
       <td>${e.approved
         ? '<span class="tag tag-ok">APPROVED</span>'
         : '<span class="tag tag-denied">DENIED</span>'}</td>
-      <td title="${e.reason}">${e.reason.slice(0,60)}</td>
+      <td title="${e.challenge_id||''}">${e.challenge_present
+        ? (e.challenge_id ? e.challenge_id.slice(0,8)+'&hellip;' : '?')
+        : '<span style="color:#4a5568">—</span>'}</td>
+      <td><code style="font-size:0.72rem;color:#b794f4">${e.challenge_result||'—'}</code></td>
+      <td title="${e.reason}">${e.reason.slice(0,50)}</td>
     </tr>`).join('')}
   </table>`;
 }
@@ -218,17 +283,37 @@ document.getElementById('grantForm').addEventListener('submit', async e => {
   if (ok) loadGrants();
 });
 
+// Create challenge form
+document.getElementById('challengeForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const { ok, data } = await api('POST', '/challenges', {
+    subjectId: document.getElementById('c_subjectId').value,
+    action:    document.getElementById('c_action').value,
+    resource:  document.getElementById('c_resource').value,
+  });
+  showResult(document.getElementById('challengeResult'), ok, data);
+  if (ok) {
+    // Auto-fill the challengeId field in the demo action form
+    document.getElementById('a_challengeId').value = data.challengeId || '';
+    loadChallenges();
+  }
+});
+
 // Demo action form
 document.getElementById('actionForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const { ok, status, data } = await api('POST', '/demo-action', {
+  const challengeId = document.getElementById('a_challengeId').value.trim();
+  const body = {
     subjectId: document.getElementById('a_subjectId').value,
     role:      document.getElementById('a_role').value,
     action:    document.getElementById('a_action').value,
     resource:  document.getElementById('a_resource').value,
-  });
+  };
+  if (challengeId) body.challengeId = challengeId;
+  const { ok, status, data } = await api('POST', '/demo-action', body);
   showResult(document.getElementById('actionResult'), data.approved, data);
   loadAudit();
+  loadChallenges();
 });
 
 // Pre-fill datetime fields with sensible defaults
@@ -242,10 +327,11 @@ document.getElementById('actionForm').addEventListener('submit', async e => {
 
 // Initial load
 loadGrants();
+loadChallenges();
 loadAudit();
 
 // Auto-refresh every 10s
-setInterval(() => { loadGrants(); loadAudit(); }, 10000);
+setInterval(() => { loadGrants(); loadChallenges(); loadAudit(); }, 10000);
 </script>
 </body>
 </html>

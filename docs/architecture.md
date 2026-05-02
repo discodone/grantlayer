@@ -20,6 +20,7 @@ The task specified Node.js + TypeScript + Express as the preferred stack. Node.j
 │   ├─ src/policy_engine.py  evaluateAccess()             │
 │   ├─ src/grants.py       Grant CRUD (SQLite)            │
 │   ├─ src/audit_log.py    Audit events (SQLite)          │
+│   ├─ src/challenges.py   Challenge store + validation   │
 │   ├─ src/demo_action.py  Protected action handler       │
 │   ├─ src/models.py       Dataclasses                    │
 │   └─ src/db.py           SQLite init + connection       │
@@ -32,26 +33,51 @@ The task specified Node.js + TypeScript + Express as the preferred stack. Node.j
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Request flow — Demo Action
+## Request flow — Demo Action (Sprint 2A)
 
 ```
 Browser / curl
   │
-  POST /demo-action  {subjectId, role, action, resource}
+  POST /demo-action  {subjectId, role, action, resource, challengeId?}
   │
   ▼
 server.py  →  demo_action.handle_demo_action()
                 │
-                ├─ grants.list_grants()         reads SQLite
+                ├─ grants.list_grants()           reads SQLite
                 ├─ policy_engine.evaluate_access()
                 │     checks: subject / role / action / resource /
                 │             time window / revocation
                 │     returns: PolicyResult {approved, reason, matchedGrantId}
                 │
-                └─ audit_log.append_event()     writes SQLite
+                ├─ (if challengeId present)
+                │   challenges.validate_challenge()
+                │     checks: exists / subject match / action match /
+                │             resource match / not expired / not used
+                │     on success: marks challenge as used (replay blocked)
+                │     fail-closed: invalid challenge → deny even with valid grant
+                │
+                └─ audit_log.append_event()       writes SQLite
+                       includes: challenge_id, challenge_present, challenge_result
                 │
                 ▼
-          JSON response  {approved, message|reason, auditEventId}
+          JSON response  {approved, message|reason, challengeId, challengeResult, auditEventId}
+```
+
+## Challenge flow — Sprint 2A
+
+```
+POST /challenges  {subjectId, action, resource}
+  → Challenge stored with 5-min TTL, status=active
+  ← {challengeId, expiresAt}
+
+POST /demo-action  + challengeId
+  → validate_challenge():
+      not_found       → deny (fail-closed)
+      expired         → deny
+      already_used    → deny (replay blocked)
+      mismatch        → deny (wrong subject/action/resource)
+      valid           → mark used, allow grant check to proceed
+  → audit event always written with challenge_result
 ```
 
 ## Policy Engine — fail-closed logic
@@ -79,7 +105,9 @@ evaluate_access(request, grants, now):
 | GET | /grants | List all grants |
 | POST | /grants | Create a grant |
 | POST | /grants/:id/revoke | Revoke a grant |
-| POST | /demo-action | Run a protected demo action |
+| POST | /challenges | Create a challenge (5-min TTL) |
+| GET | /challenges | List all challenges |
+| POST | /demo-action | Run a protected demo action (optional challengeId) |
 | GET | /audit-events | List audit events |
 | GET | / | Dashboard |
 
@@ -93,8 +121,18 @@ revoked (bool), revoked_by, revoked_reason, revoked_at,
 created_at
 ```
 
+**Challenge** (Sprint 2A)
+```
+id, subject_id, action, resource,
+created_at, expires_at, used_at,
+status: active | used | expired
+```
+
 **AuditEvent**
 ```
 id, timestamp, subject_id, role, action, resource,
-approved (bool), reason, matched_grant_id
+approved (bool), reason, matched_grant_id,
+challenge_id, challenge_present (bool), challenge_result
 ```
+
+challenge_result values: valid | missing | not_found | expired | already_used | mismatch | legacy_mode

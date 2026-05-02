@@ -167,5 +167,155 @@ class TestAuditEvents(unittest.TestCase):
         self.assertFalse(events[0].approved)
 
 
+class TestChallengeFlow(unittest.TestCase):
+    """Sprint 2A — Challenge/proof flow tests (8 new tests)."""
+
+    def setUp(self):
+        import tempfile
+        self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        os.environ["GRANTLAYER_DB"] = self.tmp_db.name
+        import importlib
+        import src.db as db_mod
+        importlib.reload(db_mod)
+        db_mod.init_db()
+        import src.grants as grants_mod
+        importlib.reload(grants_mod)
+        import src.audit_log as audit_mod
+        importlib.reload(audit_mod)
+        import src.challenges as ch_mod
+        importlib.reload(ch_mod)
+        import src.demo_action as demo_mod
+        importlib.reload(demo_mod)
+        self.db_mod = db_mod
+        self.demo_mod = demo_mod
+        self.grants_mod = grants_mod
+        self.audit_mod = audit_mod
+        self.ch_mod = ch_mod
+
+    def tearDown(self):
+        os.unlink(self.tmp_db.name)
+        if "GRANTLAYER_DB" in os.environ:
+            del os.environ["GRANTLAYER_DB"]
+
+    def _add_valid_grant(self):
+        g = _make_grant()
+        self.grants_mod.create_grant(g)
+        return g
+
+    def _make_challenge(self, action="restart-service", resource="customer-env-a"):
+        return self.ch_mod.create_challenge("tech-01", action, resource)
+
+    # 1. Challenge can be created
+    def test_challenge_can_be_created(self):
+        c = self._make_challenge()
+        self.assertIsNotNone(c.id)
+        self.assertEqual(c.subject_id, "tech-01")
+        self.assertEqual(c.action, "restart-service")
+        self.assertEqual(c.resource, "customer-env-a")
+        self.assertEqual(c.status, "active")
+        self.assertGreater(c.expires_at, c.created_at)
+
+    # 2. Valid challenge allows demo action when grant exists
+    def test_valid_challenge_allows_demo_action(self):
+        self._add_valid_grant()
+        c = self._make_challenge()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            challenge_id=c.id,
+        )
+        self.assertTrue(result["approved"])
+        self.assertEqual(result.get("challengeId"), c.id)
+
+    # 3. Reusing same challenge is blocked (replay protection)
+    def test_replay_challenge_is_blocked(self):
+        self._add_valid_grant()
+        c = self._make_challenge()
+        # First use: approved
+        r1 = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            challenge_id=c.id,
+        )
+        self.assertTrue(r1["approved"])
+        # Second use: blocked
+        r2 = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            challenge_id=c.id,
+        )
+        self.assertFalse(r2["approved"])
+        self.assertEqual(r2.get("challengeResult"), "already_used")
+
+    # 4. Expired challenge is blocked
+    def test_expired_challenge_is_blocked(self):
+        self._add_valid_grant()
+        c = self._make_challenge()
+        # Manually expire the challenge
+        conn = self.db_mod.get_conn()
+        try:
+            conn.execute(
+                "UPDATE challenges SET expires_at = ? WHERE id = ?",
+                ("2020-01-01T00:00:00Z", c.id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            challenge_id=c.id,
+        )
+        self.assertFalse(result["approved"])
+        self.assertEqual(result.get("challengeResult"), "expired")
+
+    # 5. Challenge with wrong action is blocked
+    def test_challenge_wrong_action_is_blocked(self):
+        self._add_valid_grant()
+        c = self._make_challenge(action="read-logs")  # challenge for different action
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            challenge_id=c.id,
+        )
+        self.assertFalse(result["approved"])
+        self.assertEqual(result.get("challengeResult"), "mismatch")
+
+    # 6. Challenge with wrong resource is blocked
+    def test_challenge_wrong_resource_is_blocked(self):
+        self._add_valid_grant()
+        c = self._make_challenge(resource="customer-env-b")  # challenge for different resource
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            challenge_id=c.id,
+        )
+        self.assertFalse(result["approved"])
+        self.assertEqual(result.get("challengeResult"), "mismatch")
+
+    # 7. Successful challenge attempt creates audit event with challenge info
+    def test_challenge_creates_audit_event_with_challenge_info(self):
+        self._add_valid_grant()
+        c = self._make_challenge()
+        self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            challenge_id=c.id,
+        )
+        events = self.audit_mod.list_events()
+        self.assertEqual(len(events), 1)
+        ev = events[0]
+        self.assertTrue(ev.challenge_present)
+        self.assertEqual(ev.challenge_id, c.id)
+        self.assertEqual(ev.challenge_result, "valid")
+
+    # 8. Legacy demo-action without challengeId marks challenge as legacy_mode
+    def test_legacy_action_without_challenge_marks_legacy_mode(self):
+        self._add_valid_grant()
+        self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a",
+        )
+        events = self.audit_mod.list_events()
+        self.assertEqual(len(events), 1)
+        ev = events[0]
+        self.assertFalse(ev.challenge_present)
+        self.assertIsNone(ev.challenge_id)
+        self.assertEqual(ev.challenge_result, "legacy_mode")
+        self.assertTrue(ev.approved)  # backward-compat: still approved without challenge
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

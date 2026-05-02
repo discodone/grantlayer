@@ -1,7 +1,7 @@
 """GrantLayer MVP — Data models."""
 
 from dataclasses import dataclass, field, asdict
-from typing import Optional
+from typing import Optional, Literal
 import uuid
 import datetime
 
@@ -35,6 +35,28 @@ class Grant:
         return asdict(self)
 
 
+ChallengeStatus = Literal["active", "used", "expired"]
+ChallengeResult = Literal[
+    "valid", "missing", "not_found", "expired",
+    "already_used", "mismatch", "legacy_mode",
+]
+
+
+@dataclass
+class Challenge:
+    subject_id: str
+    action: str
+    resource: str
+    id: str = field(default_factory=_new_id)
+    created_at: str = field(default_factory=_now_iso)
+    expires_at: str = ""          # set by challenges.create_challenge
+    used_at: Optional[str] = None
+    status: ChallengeStatus = "active"
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
 @dataclass
 class AuditEvent:
     subject_id: str
@@ -44,6 +66,9 @@ class AuditEvent:
     approved: bool
     reason: str
     matched_grant_id: Optional[str] = None
+    challenge_id: Optional[str] = None
+    challenge_present: bool = False
+    challenge_result: ChallengeResult = "legacy_mode"
     id: str = field(default_factory=_new_id)
     timestamp: str = field(default_factory=_now_iso)
 

@@ -1,6 +1,6 @@
-# GrantLayer MVP — Sprint 1
+# GrantLayer MVP — Sprint 2A
 
-A local demonstrator for action-level temporary access control with policy evaluation and audit logging.
+A local demonstrator for action-level temporary access control with policy evaluation, challenge/replay protection, and audit logging.
 
 ## What is this MVP?
 
@@ -14,9 +14,19 @@ This MVP demonstrates the core concept: a protected action can only execute if a
 - Creating time-limited grants (subject, role, action, resource, time window)
 - Policy evaluation: fail-closed (any ambiguity → denied)
 - Grant revocation
-- Protected demo action (approved or blocked by policy)
-- Audit log for every attempt — approved and denied
+- **Challenge/proof flow (Sprint 2A):** one-time-use challenge UUIDs with 5-minute TTL
+- **Replay protection:** a used challenge is permanently blocked (fail-closed)
+- Protected demo action (approved or blocked by policy + challenge)
+- Audit log for every attempt — approved and denied, with challenge metadata
 - Live dashboard in the browser
+
+### Sprint 2A — what the challenge flow is NOT
+
+- Not a real cryptographic proof
+- Not a digital signature (Ed25519 comes in Sprint 2B)
+- Not a production auth mechanism
+- Not a real security guarantee
+- The challenge UUID is a demo concept only — no secrets are involved
 
 ## What it explicitly does NOT show
 
@@ -82,7 +92,7 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **12 tests, 0 failures.**
+Expected output: **20 tests, 0 failures.**
 
 ## Example walkthrough
 
@@ -133,6 +143,30 @@ Expected: `"approved": false`, reason: `"Grant ... has been revoked"`
 curl -s http://127.0.0.1:8765/audit-events | python3 -m json.tool
 ```
 
+## Sprint 2A — Challenge/Proof Flow
+
+```bash
+# 1. Create a challenge (5-minute TTL)
+curl -s -X POST http://127.0.0.1:8765/challenges \
+  -H "Content-Type: application/json" \
+  -d '{"subjectId":"tech-1","action":"modify-config","resource":"customer-a/server-1"}' \
+  | python3 -m json.tool
+# → {"challengeId": "...", "expiresAt": "..."}
+
+# 2. Use the challenge in a demo action
+curl -s -X POST http://127.0.0.1:8765/demo-action \
+  -H "Content-Type: application/json" \
+  -d '{"subjectId":"tech-1","role":"technician","action":"modify-config","resource":"customer-a/server-1","challengeId":"..."}' \
+  | python3 -m json.tool
+# → {"approved": true, "challengeId": "..."}
+
+# 3. Try to reuse the same challenge → blocked
+# → {"approved": false, "challengeResult": "already_used"}
+
+# 4. List challenges (with status)
+curl -s http://127.0.0.1:8765/challenges | python3 -m json.tool
+```
+
 ## API reference
 
 | Method | Path | Description |
@@ -141,7 +175,9 @@ curl -s http://127.0.0.1:8765/audit-events | python3 -m json.tool
 | GET | /grants | List all grants |
 | POST | /grants | Create a grant |
 | POST | /grants/:id/revoke | Revoke a grant |
-| POST | /demo-action | Run protected demo action |
+| POST | /challenges | Create a challenge (5-min TTL) |
+| GET | /challenges | List all challenges |
+| POST | /demo-action | Run protected demo action (optional challengeId) |
 | GET | /audit-events | List audit events |
 | GET | / | Dashboard |
 
@@ -153,7 +189,6 @@ curl -s http://127.0.0.1:8765/audit-events | python3 -m json.tool
 
 ## Next sprint
 
-- Ed25519 grant signatures (cryptographic proof)
-- JWT-based authentication
-- Blockchain-anchored audit log (optional proof layer)
-- Docker packaging
+- **Sprint 2B:** Ed25519 grant signatures (real cryptographic proof, `cryptography` v43 already installed)
+- Sprint 2C: Demo admin token (static Bearer token via env var)
+- Sprint 2D: Docker packaging
