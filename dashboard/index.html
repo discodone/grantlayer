@@ -40,6 +40,9 @@
   .tag-revoked { background: #3b1515; color: #fc8181; }
   .tag-expired { background: #2d1f00; color: #f6ad55; }
   .tag-used    { background: #2d1f5e; color: #b794f4; }
+  .tag-signed   { background: #1c4532; color: #9ae6b4; }
+  .tag-unsigned { background: #2d1f00; color: #f6ad55; }
+  .tag-sig-fail { background: #3b1515; color: #fc8181; }
   .empty { color: #4a5568; font-size: 0.82rem; padding: 1rem 0; text-align: center; }
   .revoke-btn { background: none; border: 1px solid #822727; color: #fc8181; padding: 2px 8px; font-size: 0.72rem; margin-top: 0; border-radius: 3px; }
   .hint { font-size: 0.75rem; color: #718096; margin-top: 0.4rem; font-style: italic; }
@@ -48,10 +51,10 @@
 <body>
 <header>
   <h1>GrantLayer MVP</h1>
-  <span class="badge">LOCAL DEMO — Sprint 2A</span>
+  <span class="badge">LOCAL DEMO — Sprint 2B</span>
 </header>
 <div class="disclaimer">
-  &#9888; Demo only — no real privileges, no real system changes, no production use. Sprint 2A adds challenge/replay protection (no cryptography yet).
+  &#9888; Demo only — no real privileges, no real system changes, no production use. Sprint 2B adds Ed25519 grant signatures (local demo key, not for production).
 </div>
 <main>
 
@@ -183,6 +186,11 @@ function grantStatus(g) {
   if (new Date(g.valid_from) > now) return '<span class="tag tag-active" style="background:#2d1f5e;color:#b794f4">FUTURE</span>';
   return '<span class="tag tag-active">ACTIVE</span>';
 }
+function sigTag(g) {
+  if (!g.signaturePresent) return '<span class="tag tag-unsigned" title="Legacy unsigned grant">UNSIGNED</span>';
+  if (g.signatureValid)    return '<span class="tag tag-signed">&#10003; SIGNED</span>';
+  return '<span class="tag tag-sig-fail">&#10007; SIG FAIL</span>';
+}
 function challengeStatusTag(c) {
   if (c.status === 'used')    return '<span class="tag tag-used">USED</span>';
   if (c.status === 'expired' || new Date(c.expires_at) < new Date()) return '<span class="tag tag-expired">EXPIRED</span>';
@@ -207,12 +215,15 @@ async function loadGrants() {
   const el = document.getElementById('grantsTable');
   if (!data.length) { el.innerHTML = '<p class="empty">No grants yet.</p>'; return; }
   el.innerHTML = `<table>
-    <tr><th>ID</th><th>Subject</th><th>Role</th><th>Action</th><th>Resource</th><th>Valid From</th><th>Valid Until</th><th>Status</th><th>Reason</th><th></th></tr>
+    <tr><th>ID</th><th>Subject</th><th>Role</th><th>Action</th><th>Resource</th><th>Valid From</th><th>Valid Until</th><th>Status</th><th>Sig</th><th>Key</th><th>Hash</th><th>Reason</th><th></th></tr>
     ${data.map(g => `<tr>
       <td title="${g.id}">${g.id.slice(0,8)}&hellip;</td>
       <td>${g.subject_id}</td><td>${g.role}</td><td>${g.action}</td><td>${g.resource}</td>
       <td>${isoShort(g.valid_from)}</td><td>${isoShort(g.valid_until)}</td>
       <td>${grantStatus(g)}</td>
+      <td>${sigTag(g)}</td>
+      <td style="font-size:0.72rem;color:#718096">${g.signingKeyId || '—'}</td>
+      <td title="${g.payloadHash||''}" style="font-size:0.72rem;font-family:monospace">${g.payloadHash ? g.payloadHash.slice(0,12)+'&hellip;' : '—'}</td>
       <td title="${g.reason}">${g.reason.slice(0,30)}</td>
       <td>${g.revoked ? '' : `<button class="revoke-btn" onclick="revokeGrant('${g.id}')">Revoke</button>`}</td>
     </tr>`).join('')}
@@ -241,7 +252,7 @@ async function loadAudit() {
   const el = document.getElementById('auditTable');
   if (!data.length) { el.innerHTML = '<p class="empty">No audit events yet.</p>'; return; }
   el.innerHTML = `<table>
-    <tr><th>Timestamp</th><th>Subject</th><th>Role</th><th>Action</th><th>Resource</th><th>Result</th><th>Challenge</th><th>Ch. Result</th><th>Reason</th></tr>
+    <tr><th>Timestamp</th><th>Subject</th><th>Role</th><th>Action</th><th>Resource</th><th>Result</th><th>Challenge</th><th>Ch. Result</th><th>Grant Sig</th><th>Reason</th></tr>
     ${data.map(e => `<tr>
       <td>${isoShort(e.timestamp)}</td>
       <td>${e.subject_id}</td><td>${e.role}</td><td>${e.action}</td><td>${e.resource}</td>
@@ -252,6 +263,7 @@ async function loadAudit() {
         ? (e.challenge_id ? e.challenge_id.slice(0,8)+'&hellip;' : '?')
         : '<span style="color:#4a5568">—</span>'}</td>
       <td><code style="font-size:0.72rem;color:#b794f4">${e.challenge_result||'—'}</code></td>
+      <td><code style="font-size:0.72rem;color:#76e4f7">${e.grant_signature_result||'—'}</code></td>
       <td title="${e.reason}">${e.reason.slice(0,50)}</td>
     </tr>`).join('')}
   </table>`;

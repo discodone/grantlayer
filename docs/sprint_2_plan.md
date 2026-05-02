@@ -68,7 +68,24 @@ CREATE TABLE challenges (
 
 ---
 
-## Sprint 2B — Ed25519 Grant-Signaturen
+## Sprint 2B — Ed25519 Grant-Signaturen *(abgeschlossen 2026-05-02)*
+
+**Status:** Abgeschlossen. Commit: `Sprint 2B: add Ed25519 grant signatures`
+
+Was implementiert wurde:
+- `backend/src/crypto_signing.py` — neu: ensure_demo_keypair, sign_grant, verify_grant_signature, canonical_grant_payload
+- `backend/src/models.py` — Grant: +signature, +signing_key_id, +payload_hash; AuditEvent: +grant_signature_result
+- `backend/src/db.py` — idempotente Migration für neue Spalten
+- `backend/src/grants.py` — create_grant() signiert automatisch
+- `backend/src/demo_action.py` — Signaturprüfung vor Policy-Entscheidung
+- `backend/src/audit_log.py` — grant_signature_result in Audit-Events
+- `backend/src/server.py` — signaturePresent, signingKeyId, payloadHash in API-Responses
+- `dashboard/index.html` — Signatur-Spalten im Grant- und Audit-Log-Bereich
+- 10 neue Tests (30 total, alle grün)
+
+---
+
+## Sprint 2B (Original-Planung — zu Referenz)
 
 **Ziel:** Grants werden vom Admin kryptographisch signiert. Backend verifiziert die Signatur vor jeder Policy-Prüfung.
 

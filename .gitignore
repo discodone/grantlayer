@@ -20,6 +20,9 @@ data/*.db
 data/*.db-wal
 data/*.db-shm
 
+# Demo keys — never commit private keys
+data/*.pem
+
 # OS
 .DS_Store
 Thumbs.db

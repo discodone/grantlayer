@@ -13,6 +13,7 @@ from .grants import list_grants, create_grant, revoke_grant, get_grant
 from .audit_log import list_events
 from .demo_action import handle_demo_action
 from .challenges import create_challenge, list_challenges
+from .crypto_signing import ensure_demo_keypair, verify_grant_signature
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -83,7 +84,16 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
         elif path == "/grants":
             grants = list_grants()
-            self._send_json(200, [g.to_dict() for g in grants])
+            result = []
+            for g in grants:
+                d = g.to_dict()
+                sig_result = verify_grant_signature(g)
+                d["signaturePresent"] = g.signature is not None
+                d["signingKeyId"] = g.signing_key_id
+                d["payloadHash"] = g.payload_hash
+                d["signatureValid"] = sig_result == "valid"
+                result.append(d)
+            self._send_json(200, result)
 
         elif path == "/audit-events":
             qs = parse_qs(urlparse(self.path).query)
@@ -124,7 +134,12 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 reason=data["reason"],
             )
             create_grant(grant)
-            self._send_json(201, grant.to_dict())
+            self._send_json(201, {
+                **grant.to_dict(),
+                "signaturePresent": grant.signature is not None,
+                "signingKeyId": grant.signing_key_id,
+                "payloadHash": grant.payload_hash,
+            })
 
         elif m := re.fullmatch(r"/grants/([^/]+)/revoke", path):
             grant_id = m.group(1)
@@ -189,6 +204,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
 
 def run(host: str = "127.0.0.1", port: int = 8765) -> None:
+    ensure_demo_keypair()
     init_db()
     server = HTTPServer((host, port), GrantLayerHandler)
     print(f"GrantLayer MVP running on http://{host}:{port}", flush=True)

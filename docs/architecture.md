@@ -15,25 +15,28 @@ The task specified Node.js + TypeScript + Express as the preferred stack. Node.j
 │  Dashboard (browser)                                    │
 │   └─ dashboard/index.html  (vanilla JS, served by API)  │
 │                                                         │
-│  Backend (Python 3, stdlib only)                        │
-│   ├─ src/server.py       HTTP server + routing          │
+│  Backend (Python 3, stdlib + cryptography v43)          │
+│   ├─ src/server.py         HTTP server + routing        │
 │   ├─ src/policy_engine.py  evaluateAccess()             │
-│   ├─ src/grants.py       Grant CRUD (SQLite)            │
-│   ├─ src/audit_log.py    Audit events (SQLite)          │
-│   ├─ src/challenges.py   Challenge store + validation   │
-│   ├─ src/demo_action.py  Protected action handler       │
-│   ├─ src/models.py       Dataclasses                    │
-│   └─ src/db.py           SQLite init + connection       │
+│   ├─ src/grants.py         Grant CRUD (SQLite)          │
+│   ├─ src/audit_log.py      Audit events (SQLite)        │
+│   ├─ src/challenges.py     Challenge store + validation  │
+│   ├─ src/demo_action.py    Protected action handler     │
+│   ├─ src/crypto_signing.py Ed25519 sign + verify        │
+│   ├─ src/models.py         Dataclasses                  │
+│   └─ src/db.py             SQLite init + connection     │
 │                                                         │
 │  Data                                                   │
-│   └─ data/grantlayer.db  SQLite (WAL mode)              │
+│   ├─ data/grantlayer.db            SQLite (WAL mode)    │
+│   ├─ data/demo_ed25519_private_key.pem  (gitignored)    │
+│   └─ data/demo_ed25519_public_key.pem  (gitignored)     │
 │                                                         │
 │  Tests                                                  │
-│   └─ tests/test_policy_engine.py  unittest              │
+│   └─ tests/test_policy_engine.py  unittest (30 tests)   │
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Request flow — Demo Action (Sprint 2A)
+## Request flow — Demo Action (Sprint 2B)
 
 ```
 Browser / curl
@@ -43,11 +46,21 @@ Browser / curl
   ▼
 server.py  →  demo_action.handle_demo_action()
                 │
-                ├─ grants.list_grants()           reads SQLite
+                ├─ grants.list_grants()             reads SQLite
                 ├─ policy_engine.evaluate_access()
                 │     checks: subject / role / action / resource /
                 │             time window / revocation
                 │     returns: PolicyResult {approved, reason, matchedGrantId}
+                │
+                ├─ (if matchedGrantId present)
+                │   crypto_signing.verify_grant_signature(matchedGrant)
+                │     1. checks signature fields present → else "missing"
+                │     2. recomputes canonical payload hash, compares stored hash
+                │        → mismatch = "hash_mismatch" (fail-closed)
+                │     3. verifies Ed25519 signature against public key
+                │        → invalid = "invalid" (fail-closed)
+                │     returns: valid | missing | invalid | hash_mismatch
+                │     if not "valid" → deny (grant_signature_* reason)
                 │
                 ├─ (if challengeId present)
                 │   challenges.validate_challenge()
@@ -56,11 +69,12 @@ server.py  →  demo_action.handle_demo_action()
                 │     on success: marks challenge as used (replay blocked)
                 │     fail-closed: invalid challenge → deny even with valid grant
                 │
-                └─ audit_log.append_event()       writes SQLite
-                       includes: challenge_id, challenge_present, challenge_result
+                └─ audit_log.append_event()         writes SQLite
+                       includes: challenge_*, grant_signature_result
                 │
                 ▼
-          JSON response  {approved, message|reason, challengeId, challengeResult, auditEventId}
+          JSON response  {approved, message|reason, challengeId, challengeResult,
+                          grantSignatureResult, auditEventId}
 ```
 
 ## Challenge flow — Sprint 2A
@@ -111,14 +125,46 @@ evaluate_access(request, grants, now):
 | GET | /audit-events | List audit events |
 | GET | / | Dashboard |
 
+## Ed25519 Crypto Flow (Sprint 2B)
+
+```
+Grant creation (POST /grants):
+  1. Grant stored in DB (id, subject_id, role, action, resource, ...)
+  2. canonical_grant_payload(grant) → sorted key=value lines, UTF-8
+     Fields included: action, createdBy, id, reason, resource, role,
+                       subjectId, validFrom, validUntil
+     Fields excluded: revocation fields, signature, payloadHash, signingKeyId
+     (Revocation excluded so a grant can be revoked without re-signing)
+  3. Ed25519PrivateKey.sign(payload) → signature_bytes
+  4. SHA-256(payload) → payload_hash
+  5. DB UPDATE: signature=hex(sig), signing_key_id="demo-ed25519-v1",
+                payload_hash=hash_hex
+
+Verification (POST /demo-action):
+  1. Load matched grant from DB (includes signature, signing_key_id, payload_hash)
+  2. If any of the three fields is missing → "missing" (legacy unsigned grant)
+  3. Recompute SHA-256(canonical_grant_payload(grant)) → expected_hash
+  4. If stored payload_hash != expected_hash → "hash_mismatch" (field tampered)
+  5. Ed25519PublicKey.verify(sig_bytes, payload)
+     → InvalidSignature → "invalid"
+     → success → "valid"
+
+Key management (DEMO ONLY):
+  data/demo_ed25519_private_key.pem  — unencrypted, gitignored
+  data/demo_ed25519_public_key.pem   — gitignored
+  ensure_demo_keypair() — generates on first run, idempotent
+  signing_key_id = "demo-ed25519-v1" (single key, no rotation)
+```
+
 ## Data model
 
-**Grant**
+**Grant** (Sprint 2B adds signature fields)
 ```
 id, subject_id, role, action, resource,
 valid_from, valid_until, created_by, reason,
 revoked (bool), revoked_by, revoked_reason, revoked_at,
-created_at
+created_at,
+signature (TEXT), signing_key_id (TEXT), payload_hash (TEXT)
 ```
 
 **Challenge** (Sprint 2A)
@@ -128,11 +174,14 @@ created_at, expires_at, used_at,
 status: active | used | expired
 ```
 
-**AuditEvent**
+**AuditEvent** (Sprint 2B adds grant_signature_result)
 ```
 id, timestamp, subject_id, role, action, resource,
 approved (bool), reason, matched_grant_id,
-challenge_id, challenge_present (bool), challenge_result
+challenge_id, challenge_present (bool), challenge_result,
+grant_signature_result
 ```
 
 challenge_result values: valid | missing | not_found | expired | already_used | mismatch | legacy_mode
+
+grant_signature_result values: valid | missing | invalid | hash_mismatch | not_checked

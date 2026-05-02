@@ -1,4 +1,4 @@
-# GrantLayer MVP — Sprint 2A
+# GrantLayer MVP — Sprint 2B
 
 A local demonstrator for action-level temporary access control with policy evaluation, challenge/replay protection, and audit logging.
 
@@ -16,31 +16,34 @@ This MVP demonstrates the core concept: a protected action can only execute if a
 - Grant revocation
 - **Challenge/proof flow (Sprint 2A):** one-time-use challenge UUIDs with 5-minute TTL
 - **Replay protection:** a used challenge is permanently blocked (fail-closed)
-- Protected demo action (approved or blocked by policy + challenge)
-- Audit log for every attempt — approved and denied, with challenge metadata
+- **Ed25519 grant signatures (Sprint 2B):** every grant is signed on creation; signature is verified before each demo action
+- **Tamper detection:** modifying any grant field invalidates the signature → action is blocked
+- Protected demo action (approved or blocked by policy + signature + challenge)
+- Audit log for every attempt — approved and denied, with challenge and signature metadata
 - Live dashboard in the browser
 
-### Sprint 2A — what the challenge flow is NOT
+### Sprint 2B — Ed25519 grant signatures (DEMO ONLY)
 
-- Not a real cryptographic proof
-- Not a digital signature (Ed25519 comes in Sprint 2B)
-- Not a production auth mechanism
-- Not a real security guarantee
-- The challenge UUID is a demo concept only — no secrets are involved
+- Private key is stored unencrypted at `data/demo_ed25519_private_key.pem`
+- **Do not use this key in production**
+- Key files are gitignored (`data/*.pem`)
+- Single key ("demo-ed25519-v1"), no key rotation, no HSM, no PKI
+- The canonical payload (the signed content) covers 9 immutable fields: id, subjectId, role, action, resource, validFrom, validUntil, createdBy, reason
+- Revocation fields are NOT in the canonical payload — revocation is possible without invalidating the original signature
 
 ## What it explicitly does NOT show
 
 - No real privileged actions (no filesystem, OS, or network changes)
 - No real admin rights
-- No cryptographic grant signatures
 - No blockchain / smart contracts / testnet
-- No authentication
+- No authentication / JWT / TLS
 - No production use
+- No HSM, no key management, no PKI
 - See [docs/security_boundaries.md](docs/security_boundaries.md) for full list
 
 ## Stack
 
-- **Backend:** Python 3.13, stdlib only (`http.server`, `sqlite3`, `json`, `dataclasses`)
+- **Backend:** Python 3.13, stdlib + `cryptography` v43.0.0 (Ed25519)
 - **Frontend:** Vanilla HTML/JS, served by the backend — no build step
 - **Database:** SQLite (WAL mode), stored in `data/grantlayer.db`
 - **Tests:** Python `unittest` (stdlib)
@@ -92,7 +95,7 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **20 tests, 0 failures.**
+Expected output: **30 tests, 0 failures.**
 
 ## Example walkthrough
 
@@ -187,8 +190,39 @@ curl -s http://127.0.0.1:8765/challenges | python3 -m json.tool
 - [docs/mvp_scope.md](docs/mvp_scope.md) — Sprint 1 scope, acceptance criteria, next sprints
 - [docs/security_boundaries.md](docs/security_boundaries.md) — What this MVP is NOT
 
+## Sprint 2B — Grant Signature Response Fields
+
+`POST /grants` response now includes:
+```json
+{
+  "signaturePresent": true,
+  "signingKeyId": "demo-ed25519-v1",
+  "payloadHash": "<sha256-hex>"
+}
+```
+
+`GET /grants` response now includes per grant:
+```json
+{
+  "signaturePresent": true,
+  "signingKeyId": "demo-ed25519-v1",
+  "payloadHash": "<sha256-hex>",
+  "signatureValid": true
+}
+```
+
+`POST /demo-action` response now includes:
+```json
+{
+  "grantSignatureResult": "valid"
+}
+```
+
+Possible `grantSignatureResult` values: `valid` | `missing` | `invalid` | `hash_mismatch` | `not_checked`
+
+New deny reasons: `grant_signature_missing` | `grant_signature_invalid` | `grant_payload_hash_mismatch`
+
 ## Next sprint
 
-- **Sprint 2B:** Ed25519 grant signatures (real cryptographic proof, `cryptography` v43 already installed)
 - Sprint 2C: Demo admin token (static Bearer token via env var)
 - Sprint 2D: Docker packaging

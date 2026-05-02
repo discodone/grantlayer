@@ -30,10 +30,15 @@ class Grant:
     revoked_reason: Optional[str] = None
     revoked_at: Optional[str] = None
     created_at: str = field(default_factory=_now_iso)
+    signature: Optional[str] = None
+    signing_key_id: Optional[str] = None
+    payload_hash: Optional[str] = None
 
     def to_dict(self) -> dict:
         return asdict(self)
 
+
+GrantSignatureResult = Literal["valid", "missing", "invalid", "hash_mismatch", "not_checked"]
 
 ChallengeStatus = Literal["active", "used", "expired"]
 ChallengeResult = Literal[
@@ -69,6 +74,7 @@ class AuditEvent:
     challenge_id: Optional[str] = None
     challenge_present: bool = False
     challenge_result: ChallengeResult = "legacy_mode"
+    grant_signature_result: str = "not_checked"
     id: str = field(default_factory=_new_id)
     timestamp: str = field(default_factory=_now_iso)
 

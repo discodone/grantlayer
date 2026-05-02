@@ -317,5 +317,175 @@ class TestChallengeFlow(unittest.TestCase):
         self.assertTrue(ev.approved)  # backward-compat: still approved without challenge
 
 
+class TestGrantSignatures(unittest.TestCase):
+    """Sprint 2B — Ed25519 grant signature tests."""
+
+    def setUp(self):
+        import tempfile
+        self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        os.environ["GRANTLAYER_DB"] = self.tmp_db.name
+        import importlib
+        import src.db as db_mod
+        importlib.reload(db_mod)
+        db_mod.init_db()
+        import src.grants as grants_mod
+        importlib.reload(grants_mod)
+        import src.audit_log as audit_mod
+        importlib.reload(audit_mod)
+        import src.demo_action as demo_mod
+        importlib.reload(demo_mod)
+        import src.crypto_signing as crypto_mod
+        importlib.reload(crypto_mod)
+        crypto_mod.ensure_demo_keypair()
+        self.db_mod = db_mod
+        self.demo_mod = demo_mod
+        self.grants_mod = grants_mod
+        self.audit_mod = audit_mod
+        self.crypto_mod = crypto_mod
+
+    def tearDown(self):
+        os.unlink(self.tmp_db.name)
+        if "GRANTLAYER_DB" in os.environ:
+            del os.environ["GRANTLAYER_DB"]
+
+    def _make_signed_grant(self, **kwargs):
+        g = _make_grant(**kwargs)
+        return self.grants_mod.create_grant(g)
+
+    def _make_unsigned_grant(self, **kwargs):
+        """Insert grant directly without signing (simulates legacy data)."""
+        g = _make_grant(**kwargs)
+        conn = self.db_mod.get_conn()
+        try:
+            conn.execute(
+                """INSERT INTO grants
+                   (id, subject_id, role, action, resource, valid_from, valid_until,
+                    created_by, reason, revoked, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)""",
+                (g.id, g.subject_id, g.role, g.action, g.resource,
+                 g.valid_from, g.valid_until, g.created_by, g.reason, g.created_at),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        return g
+
+    # 1. New grant is signed on creation
+    def test_new_grant_is_signed_on_creation(self):
+        g = self._make_signed_grant()
+        self.assertIsNotNone(g.signature)
+        self.assertIsNotNone(g.signing_key_id)
+        self.assertIsNotNone(g.payload_hash)
+        self.assertEqual(g.signing_key_id, "demo-ed25519-v1")
+
+    # 2. Valid signed grant allows action
+    def test_valid_signed_grant_allows_action(self):
+        self._make_signed_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        self.assertTrue(result["approved"])
+        self.assertEqual(result.get("grantSignatureResult"), "valid")
+
+    # 3. Unsigned legacy grant is blocked by default
+    def test_unsigned_legacy_grant_is_blocked(self):
+        self._make_unsigned_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        self.assertFalse(result["approved"])
+        self.assertEqual(result.get("grantSignatureResult"), "missing")
+        self.assertEqual(result.get("reason"), "grant_signature_missing")
+
+    # 4. Tampered role invalidates signature/hash
+    def test_tampered_role_invalidates_signature(self):
+        g = self._make_signed_grant()
+        conn = self.db_mod.get_conn()
+        try:
+            conn.execute("UPDATE grants SET role = 'admin' WHERE id = ?", (g.id,))
+            conn.commit()
+        finally:
+            conn.close()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "admin", "restart-service", "customer-env-a"
+        )
+        self.assertFalse(result["approved"])
+        self.assertIn(result.get("grantSignatureResult"), ("invalid", "hash_mismatch"))
+
+    # 5. Tampered action invalidates signature/hash
+    def test_tampered_action_invalidates_signature(self):
+        g = self._make_signed_grant()
+        conn = self.db_mod.get_conn()
+        try:
+            conn.execute("UPDATE grants SET action = 'delete-all' WHERE id = ?", (g.id,))
+            conn.commit()
+        finally:
+            conn.close()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "delete-all", "customer-env-a"
+        )
+        self.assertFalse(result["approved"])
+        self.assertIn(result.get("grantSignatureResult"), ("invalid", "hash_mismatch"))
+
+    # 6. Tampered resource invalidates signature/hash
+    def test_tampered_resource_invalidates_signature(self):
+        g = self._make_signed_grant()
+        conn = self.db_mod.get_conn()
+        try:
+            conn.execute("UPDATE grants SET resource = 'customer-env-z' WHERE id = ?", (g.id,))
+            conn.commit()
+        finally:
+            conn.close()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-z"
+        )
+        self.assertFalse(result["approved"])
+        self.assertIn(result.get("grantSignatureResult"), ("invalid", "hash_mismatch"))
+
+    # 7. Revoked signed grant is still blocked (policy engine blocks)
+    def test_revoked_signed_grant_is_blocked(self):
+        g = self._make_signed_grant()
+        self.grants_mod.revoke_grant(g.id, "admin", "Test revoke")
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        self.assertFalse(result["approved"])
+        self.assertIn("revoked", result.get("reason", "").lower())
+
+    # 8. Expired signed grant is still blocked (policy engine blocks)
+    def test_expired_signed_grant_is_blocked(self):
+        self._make_signed_grant(valid_until="2020-01-01T00:00:00Z")
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        self.assertFalse(result["approved"])
+        self.assertIn("expired", result.get("reason", "").lower())
+
+    # 9. Audit event records grantSignatureResult
+    def test_audit_event_records_grant_signature_result(self):
+        self._make_signed_grant()
+        self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        events = self.audit_mod.list_events()
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].grant_signature_result, "valid")
+
+    # 10. Demo key files exist and are not tracked by git
+    def test_demo_keys_exist_and_not_committed(self):
+        import subprocess
+        c = self.crypto_mod
+        self.assertTrue(os.path.exists(c._PRIVATE_KEY_PATH))
+        self.assertTrue(os.path.exists(c._PUBLIC_KEY_PATH))
+        for path in (c._PRIVATE_KEY_PATH, c._PUBLIC_KEY_PATH):
+            out = subprocess.run(
+                ["git", "ls-files", "--error-unmatch", path],
+                cwd=os.path.join(os.path.dirname(__file__), "../.."),
+                capture_output=True,
+            )
+            self.assertNotEqual(out.returncode, 0,
+                msg=f"{path} must NOT be tracked by git")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

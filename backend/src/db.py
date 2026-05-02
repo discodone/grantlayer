@@ -72,5 +72,27 @@ def init_db() -> None:
                 conn.commit()
             except Exception:
                 pass  # column already exists
+
+        # Migrate: add signature columns to grants (Sprint 2B)
+        for col, ddl in [
+            ("signature", "TEXT"),
+            ("signing_key_id", "TEXT"),
+            ("payload_hash", "TEXT"),
+        ]:
+            try:
+                conn.execute(f"ALTER TABLE grants ADD COLUMN {col} {ddl}")
+                conn.commit()
+            except Exception:
+                pass  # column already exists
+
+        # Migrate: add grant_signature_result to audit_events (Sprint 2B)
+        try:
+            conn.execute(
+                "ALTER TABLE audit_events ADD COLUMN grant_signature_result "
+                "TEXT DEFAULT 'not_checked'"
+            )
+            conn.commit()
+        except Exception:
+            pass  # column already exists
     finally:
         conn.close()

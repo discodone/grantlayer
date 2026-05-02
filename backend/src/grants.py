@@ -4,6 +4,7 @@ import datetime
 from typing import List, Optional
 from .db import get_conn
 from .models import Grant
+from .crypto_signing import sign_grant as _sign_grant
 
 
 def _row_to_grant(row) -> Grant:
@@ -22,6 +23,9 @@ def _row_to_grant(row) -> Grant:
         revoked_reason=row["revoked_reason"],
         revoked_at=row["revoked_at"],
         created_at=row["created_at"],
+        signature=row["signature"],
+        signing_key_id=row["signing_key_id"],
+        payload_hash=row["payload_hash"],
     )
 
 
@@ -56,6 +60,21 @@ def create_grant(grant: Grant) -> Grant:
                 grant.resource, grant.valid_from, grant.valid_until,
                 grant.created_by, grant.reason, grant.created_at,
             ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    sig_hex, hash_hex, key_id = _sign_grant(grant)
+    grant.signature = sig_hex
+    grant.payload_hash = hash_hex
+    grant.signing_key_id = key_id
+
+    conn = get_conn()
+    try:
+        conn.execute(
+            "UPDATE grants SET signature = ?, signing_key_id = ?, payload_hash = ? WHERE id = ?",
+            (sig_hex, key_id, hash_hex, grant.id),
         )
         conn.commit()
     finally:
