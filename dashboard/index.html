@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GrantLayer MVP — Demo Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+  header { background: #1a1f2e; border-bottom: 1px solid #2d3748; padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; }
+  header h1 { font-size: 1.25rem; font-weight: 700; color: #63b3ed; }
+  header .badge { background: #2d3748; color: #68d391; font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; border: 1px solid #48bb78; }
+  .disclaimer { background: #2d1f00; border: 1px solid #744210; color: #fbd38d; font-size: 0.78rem; padding: 0.5rem 2rem; }
+  main { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding: 1.5rem 2rem; max-width: 1400px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 8px; padding: 1.25rem; }
+  .card h2 { font-size: 0.9rem; font-weight: 600; color: #90cdf4; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .full-width { grid-column: 1 / -1; }
+  label { display: block; font-size: 0.8rem; color: #a0aec0; margin-bottom: 3px; margin-top: 0.6rem; }
+  input, select { width: 100%; background: #0f1117; border: 1px solid #4a5568; border-radius: 4px; color: #e2e8f0; padding: 0.4rem 0.6rem; font-size: 0.85rem; }
+  input:focus, select:focus { outline: 2px solid #63b3ed; border-color: transparent; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  button { margin-top: 0.75rem; padding: 0.5rem 1rem; border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+  button:hover { opacity: 0.85; }
+  .btn-primary { background: #3182ce; color: white; }
+  .btn-danger  { background: #c53030; color: white; }
+  .btn-test    { background: #276749; color: white; }
+  .result { margin-top: 0.75rem; border-radius: 4px; padding: 0.6rem 0.75rem; font-size: 0.82rem; font-family: monospace; display: none; white-space: pre-wrap; word-break: break-all; }
+  .result.ok   { background: #1c4532; border: 1px solid #276749; color: #9ae6b4; }
+  .result.fail { background: #3b1515; border: 1px solid #822727; color: #feb2b2; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th { text-align: left; color: #718096; padding: 0.4rem 0.5rem; border-bottom: 1px solid #2d3748; font-weight: 500; }
+  td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #1e2535; vertical-align: top; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  .tag { display: inline-block; font-size: 0.7rem; padding: 1px 6px; border-radius: 999px; font-weight: 600; }
+  .tag-ok      { background: #1c4532; color: #68d391; }
+  .tag-denied  { background: #3b1515; color: #fc8181; }
+  .tag-active  { background: #1a365d; color: #63b3ed; }
+  .tag-revoked { background: #3b1515; color: #fc8181; }
+  .tag-expired { background: #2d1f00; color: #f6ad55; }
+  .empty { color: #4a5568; font-size: 0.82rem; padding: 1rem 0; text-align: center; }
+  .revoke-btn { background: none; border: 1px solid #822727; color: #fc8181; padding: 2px 8px; font-size: 0.72rem; margin-top: 0; border-radius: 3px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>GrantLayer MVP</h1>
+  <span class="badge">LOCAL DEMO</span>
+</header>
+<div class="disclaimer">
+  ⚠️ Demo only — no real privileges, no real system changes, no production use.
+</div>
+<main>
+
+  <!-- Create Grant -->
+  <div class="card">
+    <h2>Create Grant</h2>
+    <form id="grantForm">
+      <div class="row2">
+        <div>
+          <label>Subject ID</label>
+          <input id="g_subjectId" value="tech-01" required>
+        </div>
+        <div>
+          <label>Role</label>
+          <input id="g_role" value="technician" required>
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label>Action</label>
+          <input id="g_action" value="restart-service" required>
+        </div>
+        <div>
+          <label>Resource</label>
+          <input id="g_resource" value="customer-env-a" required>
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label>Valid From</label>
+          <input id="g_validFrom" type="datetime-local" required>
+        </div>
+        <div>
+          <label>Valid Until</label>
+          <input id="g_validUntil" type="datetime-local" required>
+        </div>
+      </div>
+      <label>Created By</label>
+      <input id="g_createdBy" value="admin" required>
+      <label>Reason</label>
+      <input id="g_reason" value="Scheduled maintenance" required>
+      <button type="submit" class="btn-primary">Create Grant</button>
+    </form>
+    <div id="grantResult" class="result"></div>
+  </div>
+
+  <!-- Test Demo Action -->
+  <div class="card">
+    <h2>Test Demo Action</h2>
+    <form id="actionForm">
+      <label>Subject ID</label>
+      <input id="a_subjectId" value="tech-01" required>
+      <label>Role</label>
+      <input id="a_role" value="technician" required>
+      <div class="row2">
+        <div>
+          <label>Action</label>
+          <input id="a_action" value="restart-service" required>
+        </div>
+        <div>
+          <label>Resource</label>
+          <input id="a_resource" value="customer-env-a" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-test">Run Demo Action</button>
+    </form>
+    <div id="actionResult" class="result"></div>
+  </div>
+
+  <!-- Grants table -->
+  <div class="card full-width">
+    <h2>Active Grants <button onclick="loadGrants()" style="margin-top:0;background:#2d3748;color:#a0aec0;padding:2px 8px;font-size:0.7rem;border-radius:3px;border:none;cursor:pointer;">↻ Refresh</button></h2>
+    <div id="grantsTable"><p class="empty">Loading…</p></div>
+  </div>
+
+  <!-- Audit log -->
+  <div class="card full-width">
+    <h2>Audit Events <button onclick="loadAudit()" style="margin-top:0;background:#2d3748;color:#a0aec0;padding:2px 8px;font-size:0.7rem;border-radius:3px;border:none;cursor:pointer;">↻ Refresh</button></h2>
+    <div id="auditTable"><p class="empty">Loading…</p></div>
+  </div>
+
+</main>
+
+<script>
+const API = '';  // same origin
+
+function now() { return new Date(); }
+function isoShort(s) { return s ? s.replace('T',' ').replace('Z','').slice(0,19) : '—'; }
+function grantStatus(g) {
+  if (g.revoked) return '<span class="tag tag-revoked">REVOKED</span>';
+  const now = new Date();
+  if (new Date(g.valid_until) < now) return '<span class="tag tag-expired">EXPIRED</span>';
+  if (new Date(g.valid_from) > now) return '<span class="tag tag-active" style="background:#2d1f5e;color:#b794f4">FUTURE</span>';
+  return '<span class="tag tag-active">ACTIVE</span>';
+}
+
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  return { ok: r.ok, status: r.status, data: await r.json() };
+}
+
+function showResult(el, ok, data) {
+  el.style.display = 'block';
+  el.className = 'result ' + (ok ? 'ok' : 'fail');
+  el.textContent = JSON.stringify(data, null, 2);
+}
+
+async function loadGrants() {
+  const { data } = await api('GET', '/grants');
+  const el = document.getElementById('grantsTable');
+  if (!data.length) { el.innerHTML = '<p class="empty">No grants yet.</p>'; return; }
+  el.innerHTML = `<table>
+    <tr><th>ID</th><th>Subject</th><th>Role</th><th>Action</th><th>Resource</th><th>Valid From</th><th>Valid Until</th><th>Status</th><th>Reason</th><th></th></tr>
+    ${data.map(g => `<tr>
+      <td title="${g.id}">${g.id.slice(0,8)}…</td>
+      <td>${g.subject_id}</td><td>${g.role}</td><td>${g.action}</td><td>${g.resource}</td>
+      <td>${isoShort(g.valid_from)}</td><td>${isoShort(g.valid_until)}</td>
+      <td>${grantStatus(g)}</td>
+      <td title="${g.reason}">${g.reason.slice(0,30)}</td>
+      <td>${g.revoked ? '' : `<button class="revoke-btn" onclick="revokeGrant('${g.id}')">Revoke</button>`}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+async function loadAudit() {
+  const { data } = await api('GET', '/audit-events');
+  const el = document.getElementById('auditTable');
+  if (!data.length) { el.innerHTML = '<p class="empty">No audit events yet.</p>'; return; }
+  el.innerHTML = `<table>
+    <tr><th>Timestamp</th><th>Subject</th><th>Role</th><th>Action</th><th>Resource</th><th>Result</th><th>Reason</th></tr>
+    ${data.map(e => `<tr>
+      <td>${isoShort(e.timestamp)}</td>
+      <td>${e.subject_id}</td><td>${e.role}</td><td>${e.action}</td><td>${e.resource}</td>
+      <td>${e.approved
+        ? '<span class="tag tag-ok">APPROVED</span>'
+        : '<span class="tag tag-denied">DENIED</span>'}</td>
+      <td title="${e.reason}">${e.reason.slice(0,60)}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+async function revokeGrant(id) {
+  const reason = prompt('Revoke reason:');
+  if (!reason) return;
+  const { ok, data } = await api('POST', `/grants/${id}/revoke`, { revokedBy: 'admin', reason });
+  if (ok) { loadGrants(); loadAudit(); }
+  else alert('Error: ' + (data.error || 'unknown'));
+}
+
+// Create grant form
+document.getElementById('grantForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const toISO = v => v ? new Date(v).toISOString() : '';
+  const { ok, data } = await api('POST', '/grants', {
+    subjectId:  document.getElementById('g_subjectId').value,
+    role:       document.getElementById('g_role').value,
+    action:     document.getElementById('g_action').value,
+    resource:   document.getElementById('g_resource').value,
+    validFrom:  toISO(document.getElementById('g_validFrom').value),
+    validUntil: toISO(document.getElementById('g_validUntil').value),
+    createdBy:  document.getElementById('g_createdBy').value,
+    reason:     document.getElementById('g_reason').value,
+  });
+  showResult(document.getElementById('grantResult'), ok, data);
+  if (ok) loadGrants();
+});
+
+// Demo action form
+document.getElementById('actionForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const { ok, status, data } = await api('POST', '/demo-action', {
+    subjectId: document.getElementById('a_subjectId').value,
+    role:      document.getElementById('a_role').value,
+    action:    document.getElementById('a_action').value,
+    resource:  document.getElementById('a_resource').value,
+  });
+  showResult(document.getElementById('actionResult'), data.approved, data);
+  loadAudit();
+});
+
+// Pre-fill datetime fields with sensible defaults
+(function() {
+  const from = new Date();
+  const until = new Date(from.getTime() + 2 * 3600 * 1000);
+  const fmt = d => d.toISOString().slice(0,16);
+  document.getElementById('g_validFrom').value = fmt(from);
+  document.getElementById('g_validUntil').value = fmt(until);
+})();
+
+// Initial load
+loadGrants();
+loadAudit();
+
+// Auto-refresh every 10s
+setInterval(() => { loadGrants(); loadAudit(); }, 10000);
+</script>
+</body>
+</html>
