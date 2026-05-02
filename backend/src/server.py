@@ -13,6 +13,7 @@ from .grants import list_grants, create_grant, revoke_grant, get_grant, tamper_g
 from .audit_log import list_events
 from .demo_action import handle_demo_action
 from .challenges import create_challenge, list_challenges
+from .auth import check_admin_token, admin_token_warning
 from .crypto_signing import ensure_demo_keypair, verify_grant_signature
 
 DASHBOARD_PATH = os.path.join(
@@ -65,6 +66,15 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self.send_header(k, v)
         self.end_headers()
 
+
+    def _require_admin(self) -> bool:
+        ok, status, payload = check_admin_token(self.headers.get("Authorization"))
+        if not ok:
+            self._send_json(status, payload)
+            return False
+        return True
+
+
     def do_GET(self):  # noqa: N802
         path = urlparse(self.path).path
 
@@ -111,6 +121,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
 
         if path == "/grants":
+            if not self._require_admin():
+                return
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
@@ -142,6 +154,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             })
 
         elif m := re.fullmatch(r"/grants/([^/]+)/revoke", path):
+            if not self._require_admin():
+                return
             grant_id = m.group(1)
             try:
                 data = self._read_json()
@@ -181,6 +195,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             })
 
         elif m := re.fullmatch(r"/demo/tamper-grant/([^/]+)", path):
+            if not self._require_admin():
+                return
             grant_id = m.group(1)
             result = tamper_grant(grant_id)
             if result is None:
@@ -214,6 +230,9 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 def run(host: str = "127.0.0.1", port: int = 8765) -> None:
     ensure_demo_keypair()
     init_db()
+    warning = admin_token_warning()
+    if warning:
+        print(warning, flush=True)
     server = HTTPServer((host, port), GrantLayerHandler)
     print(f"GrantLayer MVP running on http://{host}:{port}", flush=True)
     print(f"Dashboard:   http://{host}:{port}/", flush=True)
