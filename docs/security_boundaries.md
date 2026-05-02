@@ -36,6 +36,18 @@ This document explicitly states what this MVP is and is not.
 | Audit logging | Every access attempt (approved or denied) is written to audit_events with challenge metadata |
 | Dashboard visibility | All endpoints exposed; served via dashboard |
 
+## Demo-UX Sprint — `POST /demo/tamper-grant/:id` is DEMO ONLY
+
+This endpoint intentionally corrupts a grant's `role` field in the database **without re-signing**. Its sole purpose is to let a live audience see the Ed25519 signature check catch a tampered grant.
+
+**This endpoint must never exist in a production system.** Specifically:
+- It writes directly to the grant record, bypassing all access controls
+- It simulates a database-level attack (direct row modification)
+- It is documented as demo-only in README, architecture, and this file
+- It has no authentication or authorization check
+
+In a real deployment, database access would be protected at the infrastructure level. This endpoint exists only because the demo has no auth layer (Sprint 2C adds a token).
+
 ## Sprint 2B — Ed25519 Grant Signatures: DEMO ONLY limitations
 
 Sprint 2B adds Ed25519 signatures to grants. These are **demo-only** and have the following limitations:

@@ -95,7 +95,7 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **30 tests, 0 failures.**
+Expected output: **35 tests, 0 failures.**
 
 ## Example walkthrough
 
@@ -183,12 +183,43 @@ curl -s http://127.0.0.1:8765/challenges | python3 -m json.tool
 | POST | /demo-action | Run protected demo action (optional challengeId) |
 | GET | /audit-events | List audit events |
 | GET | / | Dashboard |
+| POST | /demo/tamper-grant/:id | **Demo only** — corrupt a grant field without re-signing |
 
 ## Docs
 
 - [docs/architecture.md](docs/architecture.md) — Component overview, request flow, stack decision
 - [docs/mvp_scope.md](docs/mvp_scope.md) — Sprint 1 scope, acceptance criteria, next sprints
 - [docs/security_boundaries.md](docs/security_boundaries.md) — What this MVP is NOT
+
+## Tamper & Verify Demo
+
+The dashboard includes a "Tamper & Verify Demo" section that shows the signature check in action:
+
+1. Select a signed grant from the dropdown
+2. Click "Tamper Selected Grant" — calls `POST /demo/tamper-grant/:id`
+3. The grant's `role` is changed in the database **without re-signing**
+4. Click "Run Protected Action" — the action is **blocked** with `grantSignatureResult: hash_mismatch`
+5. The audit log records the signature failure
+
+### `POST /demo/tamper-grant/:id` — demo only
+
+Intentionally corrupts a grant to demonstrate tamper detection.
+
+```json
+{
+  "ok": true,
+  "grantId": "...",
+  "tamperedField": "role",
+  "oldValue": "technician",
+  "newValue": "tampered-role",
+  "subjectId": "tech-01",
+  "action": "restart-service",
+  "resource": "customer-env-a",
+  "message": "Grant tampered without re-signing. Signature should now fail."
+}
+```
+
+**This endpoint is demo-only.** It must not exist in any production system. See [docs/security_boundaries.md](docs/security_boundaries.md).
 
 ## Sprint 2B — Grant Signature Response Fields
 

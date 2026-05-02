@@ -9,7 +9,7 @@ from urllib.parse import urlparse, parse_qs
 
 from .db import init_db
 from .models import Grant
-from .grants import list_grants, create_grant, revoke_grant, get_grant
+from .grants import list_grants, create_grant, revoke_grant, get_grant, tamper_grant
 from .audit_log import list_events
 from .demo_action import handle_demo_action
 from .challenges import create_challenge, list_challenges
@@ -179,6 +179,14 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 "resource": challenge.resource,
                 "expiresAt": challenge.expires_at,
             })
+
+        elif m := re.fullmatch(r"/demo/tamper-grant/([^/]+)", path):
+            grant_id = m.group(1)
+            result = tamper_grant(grant_id)
+            if result is None:
+                self._send_json(404, {"error": "Grant not found"})
+            else:
+                self._send_json(200, result)
 
         elif path == "/demo-action":
             try:

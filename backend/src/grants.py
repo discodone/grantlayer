@@ -82,6 +82,32 @@ def create_grant(grant: Grant) -> Grant:
     return grant
 
 
+def tamper_grant(grant_id: str) -> Optional[dict]:
+    """Demo-only: change a grant field without re-signing to demonstrate tamper detection."""
+    grant = get_grant(grant_id)
+    if grant is None:
+        return None
+    old_value = grant.role
+    new_value = "tampered-role"
+    conn = get_conn()
+    try:
+        conn.execute("UPDATE grants SET role = ? WHERE id = ?", (new_value, grant_id))
+        conn.commit()
+    finally:
+        conn.close()
+    return {
+        "ok": True,
+        "grantId": grant_id,
+        "tamperedField": "role",
+        "oldValue": old_value,
+        "newValue": new_value,
+        "subjectId": grant.subject_id,
+        "action": grant.action,
+        "resource": grant.resource,
+        "message": "Grant tampered without re-signing. Signature should now fail.",
+    }
+
+
 def revoke_grant(grant_id: str, revoked_by: str, reason: str) -> bool:
     revoked_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     conn = get_conn()

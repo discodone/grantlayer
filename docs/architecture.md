@@ -124,6 +124,28 @@ evaluate_access(request, grants, now):
 | POST | /demo-action | Run a protected demo action (optional challengeId) |
 | GET | /audit-events | List audit events |
 | GET | / | Dashboard |
+| POST | /demo/tamper-grant/:id | **Demo only** — corrupt a grant without re-signing (tamper detection demo) |
+
+## Tamper & Verify Flow (Demo-UX Sprint)
+
+```
+Dashboard "Tamper & Verify Demo" section:
+
+  Step 1 — Tamper:
+    POST /demo/tamper-grant/:id
+      → DB UPDATE grants SET role = 'tampered-role'  (no re-sign)
+      ← {ok, tamperedField, oldValue, newValue, subjectId, action, resource}
+
+  Step 2 — Verify (blocked):
+    POST /demo-action  {subjectId, role='tampered-role', action, resource}
+      → policy_engine finds grant  (role now matches 'tampered-role')
+      → verify_grant_signature():
+          stored payloadHash was computed with role='technician'
+          current canonical has role='tampered-role'
+          → sha256(current) ≠ stored hash → "hash_mismatch"
+      → approved: false, reason: grant_payload_hash_mismatch
+      → audit event: grant_signature_result = hash_mismatch
+```
 
 ## Ed25519 Crypto Flow (Sprint 2B)
 

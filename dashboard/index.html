@@ -44,6 +44,19 @@
   .tag-unsigned { background: #2d1f00; color: #f6ad55; }
   .tag-sig-fail { background: #3b1515; color: #fc8181; }
   .empty { color: #4a5568; font-size: 0.82rem; padding: 1rem 0; text-align: center; }
+  .demo-warning { background: #2d1f00; border: 1px solid #744210; color: #fbd38d; font-size: 0.75rem; padding: 0.4rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; }
+  .step { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .step-num { background: #2d3748; color: #90cdf4; border-radius: 50%; width: 1.4rem; height: 1.4rem; min-width: 1.4rem; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; margin-top: 0.15rem; }
+  .step-body { flex: 1; }
+  .step-body label { margin-top: 0; }
+  .why-card { background: #0f1117; border: 1px solid #2d3748; border-radius: 6px; padding: 0.75rem 1rem; margin-top: 0.75rem; font-size: 0.8rem; color: #a0aec0; }
+  .why-card strong { color: #90cdf4; display: block; margin-bottom: 0.25rem; }
+  .btn-tamper { background: #744210; color: #fbd38d; border: 1px solid #975a16; }
+  .btn-tamper:hover { opacity: 0.85; }
+  .flow-arrow { text-align: center; color: #4a5568; font-size: 1.2rem; margin: 0.25rem 0; }
+  .sig-badge { display: inline-block; font-size: 0.7rem; padding: 1px 6px; border-radius: 999px; font-weight: 700; }
+  .sig-ok   { background: #1c4532; color: #9ae6b4; }
+  .sig-fail { background: #3b1515; color: #fc8181; }
   .revoke-btn { background: none; border: 1px solid #822727; color: #fc8181; padding: 2px 8px; font-size: 0.72rem; margin-top: 0; border-radius: 3px; }
   .hint { font-size: 0.75rem; color: #718096; margin-top: 0.4rem; font-style: italic; }
 </style>
@@ -155,6 +168,62 @@
     <div id="actionResult" class="result" style="margin-top:0.75rem"></div>
   </div>
 
+  <!-- Tamper & Verify Demo -->
+  <div class="card full-width">
+    <h2>Tamper &amp; Verify Demo <span style="font-size:0.7rem;color:#f6ad55;font-weight:400;margin-left:0.5rem;">&#9888; Demo only — shows tamper detection</span></h2>
+    <div class="demo-warning">&#9888; This section intentionally corrupts a grant to demonstrate signature verification. No real data is affected beyond this local demo database.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+
+      <!-- Left: steps -->
+      <div>
+        <!-- Step 1: pick & tamper -->
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <label style="color:#90cdf4;font-weight:600">Select a signed grant to tamper</label>
+            <select id="tamperGrantSelect" style="margin-top:0.25rem">
+              <option value="">— load grants first —</option>
+            </select>
+            <button class="btn-tamper" onclick="doTamper()" style="margin-top:0.5rem;width:100%">&#9888; Tamper Selected Grant</button>
+            <div id="tamperResult" class="result" style="margin-top:0.5rem"></div>
+          </div>
+        </div>
+
+        <!-- Step 2: run action -->
+        <div class="step" id="step2" style="opacity:0.35;pointer-events:none">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <label style="color:#90cdf4;font-weight:600">Run protected action with tampered grant</label>
+            <p style="font-size:0.78rem;color:#a0aec0;margin:0.25rem 0 0.4rem">The action will use the tampered role so the policy engine finds the grant — then the signature check catches the manipulation.</p>
+            <button class="btn-test" onclick="doTamperAction()" style="width:100%">&#10230; Run Protected Action</button>
+            <div id="tamperActionResult" class="result" style="margin-top:0.5rem"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: explanation -->
+      <div>
+        <div class="why-card">
+          <strong>Why this matters</strong>
+          A signed grant cannot be silently modified. Every grant is signed with Ed25519 over 9 immutable fields (id, subjectId, role, action, resource, validFrom, validUntil, createdBy, reason).
+          <br><br>
+          When this demo changes <code>role</code> directly in the database without re-signing, the stored <code>payloadHash</code> no longer matches the current fields. The backend catches this before approving any action.
+          <br><br>
+          <strong>Expected result</strong>
+          <span class="sig-badge sig-ok">approved: true</span> before tamper<br>
+          <span class="sig-badge sig-fail">approved: false</span> after tamper<br>
+          <code style="font-size:0.7rem;color:#f6ad55">grantSignatureResult: hash_mismatch</code>
+        </div>
+        <div id="tamperFlowLog" style="margin-top:0.75rem;font-size:0.78rem;color:#718096;display:none">
+          <strong style="color:#a0aec0;display:block;margin-bottom:0.35rem">Flow log</strong>
+          <div id="tamperFlowEntries"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Grants table -->
   <div class="card full-width">
     <h2>Active Grants <button onclick="loadGrants()" style="margin-top:0;background:#2d3748;color:#a0aec0;padding:2px 8px;font-size:0.7rem;border-radius:3px;border:none;cursor:pointer;">&#8635; Refresh</button></h2>
@@ -210,8 +279,70 @@ function showResult(el, ok, data) {
   el.textContent = JSON.stringify(data, null, 2);
 }
 
+// --- Tamper & Verify ---
+let _tamperState = null;  // stores tamper response for step 2
+
+function updateTamperSelect(grants) {
+  const sel = document.getElementById('tamperGrantSelect');
+  const prev = sel.value;
+  sel.innerHTML = grants.length
+    ? grants.filter(g => !g.revoked && g.signaturePresent).map(g =>
+        `<option value="${g.id}">${g.id.slice(0,8)}&hellip; | ${g.subject_id} | ${g.role} | ${g.action}</option>`
+      ).join('')
+    : '<option value="">— no signed active grants —</option>';
+  if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+}
+
+async function doTamper() {
+  const grantId = document.getElementById('tamperGrantSelect').value;
+  if (!grantId) { alert('Select a grant first.'); return; }
+  const el = document.getElementById('tamperResult');
+  const { ok, data } = await api('POST', `/demo/tamper-grant/${grantId}`);
+  showResult(el, ok, data);
+  if (ok) {
+    _tamperState = data;
+    // unlock step 2
+    const step2 = document.getElementById('step2');
+    step2.style.opacity = '1';
+    step2.style.pointerEvents = 'auto';
+    // add flow log entry
+    addFlowEntry(`&#9888; Grant <code>${grantId.slice(0,8)}&hellip;</code> tampered: <code>${data.tamperedField}</code> changed from <code>${data.oldValue}</code> to <code>${data.newValue}</code> (no re-sign)`);
+    loadGrants();
+  }
+}
+
+async function doTamperAction() {
+  if (!_tamperState) return;
+  const el = document.getElementById('tamperActionResult');
+  const body = {
+    subjectId: _tamperState.subjectId,
+    role:      _tamperState.newValue,
+    action:    _tamperState.action,
+    resource:  _tamperState.resource,
+  };
+  const { ok, status, data } = await api('POST', '/demo-action', body);
+  showResult(el, data.approved, data);
+  const sigResult = data.grantSignatureResult || '—';
+  addFlowEntry(
+    data.approved
+      ? `&#10003; Action approved — grantSignatureResult: <code>${sigResult}</code>`
+      : `&#10007; Action BLOCKED — reason: <code>${data.reason}</code> — grantSignatureResult: <code>${sigResult}</code>`
+  );
+  loadAudit();
+}
+
+function addFlowEntry(html) {
+  const log = document.getElementById('tamperFlowLog');
+  const entries = document.getElementById('tamperFlowEntries');
+  log.style.display = 'block';
+  const ts = new Date().toISOString().slice(11,19);
+  entries.innerHTML += `<div style="margin-bottom:0.2rem"><span style="color:#4a5568">${ts}</span> ${html}</div>`;
+}
+
+// --- Grants table ---
 async function loadGrants() {
   const { data } = await api('GET', '/grants');
+  updateTamperSelect(data);
   const el = document.getElementById('grantsTable');
   if (!data.length) { el.innerHTML = '<p class="empty">No grants yet.</p>'; return; }
   el.innerHTML = `<table>

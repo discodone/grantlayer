@@ -487,5 +487,104 @@ class TestGrantSignatures(unittest.TestCase):
                 msg=f"{path} must NOT be tracked by git")
 
 
+class TestTamperAndVerify(unittest.TestCase):
+    """Demo-UX Sprint — Tamper & Verify tests."""
+
+    def setUp(self):
+        import tempfile
+        self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        os.environ["GRANTLAYER_DB"] = self.tmp_db.name
+        import importlib
+        import src.db as db_mod
+        importlib.reload(db_mod)
+        db_mod.init_db()
+        import src.grants as grants_mod
+        importlib.reload(grants_mod)
+        import src.audit_log as audit_mod
+        importlib.reload(audit_mod)
+        import src.demo_action as demo_mod
+        importlib.reload(demo_mod)
+        import src.crypto_signing as crypto_mod
+        importlib.reload(crypto_mod)
+        crypto_mod.ensure_demo_keypair()
+        self.db_mod = db_mod
+        self.demo_mod = demo_mod
+        self.grants_mod = grants_mod
+        self.audit_mod = audit_mod
+
+    def tearDown(self):
+        os.unlink(self.tmp_db.name)
+        if "GRANTLAYER_DB" in os.environ:
+            del os.environ["GRANTLAYER_DB"]
+
+    def _add_valid_grant(self):
+        g = _make_grant()
+        return self.grants_mod.create_grant(g)
+
+    # 1. Tamper endpoint changes a grant field without re-signing
+    def test_tamper_changes_grant_without_resigning(self):
+        g = self._add_valid_grant()
+        result = self.grants_mod.tamper_grant(g.id)
+        self.assertIsNotNone(result)
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["tamperedField"], "role")
+        self.assertEqual(result["oldValue"], "technician")
+        self.assertEqual(result["newValue"], "tampered-role")
+        # Signature and payload_hash are unchanged in DB
+        tampered = self.grants_mod.get_grant(g.id)
+        self.assertEqual(tampered.role, "tampered-role")
+        self.assertIsNotNone(tampered.signature)      # signature still present
+        self.assertIsNotNone(tampered.payload_hash)   # hash still present (stale)
+
+    # 2. Tampered grant is blocked by demo-action (signature check fails)
+    def test_tampered_grant_is_blocked_by_demo_action(self):
+        g = self._add_valid_grant()
+        # Confirm action works before tamper
+        r1 = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        self.assertTrue(r1["approved"])
+        self.assertEqual(r1.get("grantSignatureResult"), "valid")
+        # Tamper the grant
+        self.grants_mod.tamper_grant(g.id)
+        # Must use tampered role to match the grant in the policy engine
+        r2 = self.demo_mod.handle_demo_action(
+            "tech-01", "tampered-role", "restart-service", "customer-env-a"
+        )
+        self.assertFalse(r2["approved"])
+        self.assertIn(r2.get("grantSignatureResult"), ("hash_mismatch", "invalid"))
+        self.assertIn(r2.get("reason"), ("grant_signature_invalid", "grant_payload_hash_mismatch"))
+
+    # 3. Audit event records signature failure after tamper
+    def test_audit_event_records_signature_failure_after_tamper(self):
+        g = self._add_valid_grant()
+        self.grants_mod.tamper_grant(g.id)
+        self.demo_mod.handle_demo_action(
+            "tech-01", "tampered-role", "restart-service", "customer-env-a"
+        )
+        events = self.audit_mod.list_events()
+        self.assertEqual(len(events), 1)
+        ev = events[0]
+        self.assertFalse(ev.approved)
+        self.assertIn(ev.grant_signature_result, ("hash_mismatch", "invalid"))
+
+    # 4. Tamper endpoint returns None for missing grant
+    def test_tamper_returns_none_for_missing_grant(self):
+        result = self.grants_mod.tamper_grant("nonexistent-id")
+        self.assertIsNone(result)
+
+    # 5. Original role request no longer matches tampered grant
+    def test_original_role_no_longer_matches_tampered_grant(self):
+        g = self._add_valid_grant()
+        self.grants_mod.tamper_grant(g.id)
+        # Request with original role=technician — grant has role=tampered-role now
+        r = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        self.assertFalse(r["approved"])
+        # No matching grant → signature check not triggered
+        self.assertEqual(r.get("grantSignatureResult"), "not_checked")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
