@@ -114,6 +114,20 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif path == "/challenges":
             self._send_json(200, [c.to_dict() for c in list_challenges()])
 
+        elif m := re.fullmatch(r"/grants/([^/]+)", path):
+            grant_id = m.group(1)
+            g = get_grant(grant_id)
+            if g is None:
+                self._send_json(404, {"error": "Grant not found"})
+            else:
+                d = g.to_dict()
+                sig_result = verify_grant_signature(g)
+                d["signaturePresent"] = g.signature is not None
+                d["signingKeyId"] = g.signing_key_id
+                d["payloadHash"] = g.payload_hash
+                d["signatureValid"] = sig_result == "valid"
+                self._send_json(200, d)
+
         else:
             self._send_json(404, {"error": "Not found"})
 
