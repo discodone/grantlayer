@@ -97,6 +97,22 @@ Or via script:
 
 Expected output: **35 tests, 0 failures.**
 
+## Run the 3-minute demo
+
+One command starts the server and walks through the full GrantLayer flow:
+
+```bash
+chmod +x scripts/demo.sh
+./scripts/demo.sh
+```
+
+This demonstrates:
+- Health check, grant creation, Ed25519 signatures
+- Challenge/replay protection, grant revocation
+- Permission checks, tamper detection, audit logging
+
+For details see [docs/demo_script.md](docs/demo_script.md).
+
 ## Example walkthrough
 
 ### 1. Create a grant (curl)
@@ -176,6 +192,7 @@ curl -s http://127.0.0.1:8765/challenges | python3 -m json.tool
 |--------|------|-------------|
 | GET | /health | Health check |
 | GET | /grants | List all grants |
+| GET | /grants/:id | Get a single grant (includes signatureValid) |
 | POST | /grants | Create a grant |
 | POST | /grants/:id/revoke | Revoke a grant |
 | POST | /challenges | Create a challenge (5-min TTL) |
