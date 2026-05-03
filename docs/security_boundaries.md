@@ -48,6 +48,30 @@ This endpoint intentionally corrupts a grant's `role` field in the database **wi
 
 In a real deployment, database access would be protected at the infrastructure level. This endpoint exists only because the demo has no auth layer (Sprint 2C adds a token).
 
+## Sprint 2C — Demo Admin Token: DEMO ONLY
+
+Sprint 2C adds an optional static Bearer token (`GRANTLAYER_ADMIN_TOKEN`) for protecting state-changing endpoints (`POST /grants`, `POST /grants/:id/revoke`, `POST /demo/tamper-grant/:id`).
+
+- **This is not real authentication.** It is a single static token shared by all callers.
+- **No user identity, no session management, no RBAC.** Anyone who knows the token can perform protected actions.
+- **Token is passed via environment variable at runtime.** If not set, protected endpoints fall back to open demo mode with a warning.
+- **Not suitable for production.** Do not use to gate access to real systems.
+
+## Sprint 2D — Docker Packaging: DEMO ONLY
+
+Sprint 2D adds `Dockerfile` and `docker-compose.yml` for local Docker-based startup.
+
+- **No production deployment.** This Docker setup is explicitly for local demonstration only.
+- **No TLS / HTTPS.** The container exposes plain HTTP on port `8765`.
+- **No registry push.** Images are built and run locally only.
+- **No secrets baked into the image.** The `GRANTLAYER_ADMIN_TOKEN` is passed at runtime via environment variable.
+- **No database baked into the image.** SQLite data lives in a named Docker volume (`grantlayer-data`).
+- **No reverse proxy, no Cloudflare, no CDN.** Direct host-port mapping (`127.0.0.1:8765:8765`).
+- **No Docker host configuration changes.** Compose uses standard bridge networking.
+- **Container runs as non-root user** (`appuser`, UID 1000).
+
+**Do not run this Docker setup on a public network or production host.**
+
 ## Sprint 2B — Ed25519 Grant Signatures: DEMO ONLY limitations
 
 Sprint 2B adds Ed25519 signatures to grants. These are **demo-only** and have the following limitations:
