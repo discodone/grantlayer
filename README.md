@@ -256,4 +256,43 @@ New deny reasons: `grant_signature_missing` | `grant_signature_invalid` | `grant
 ## Next sprint
 
 - Sprint 2C: Demo admin token (static Bearer token via env var)
-- Sprint 2D: Docker packaging
+- ~~Sprint 2D: Docker packaging~~ ✅ Done
+
+---
+
+## Sprint 2D — Docker packaging
+
+This MVP can be started with Docker Compose.
+
+### Start with Docker
+
+```bash
+cd /paperclip/grantlayer-mvp
+GRANTLAYER_ADMIN_TOKEN=demo-token docker compose up
+```
+
+Or in detached mode:
+```bash
+GRANTLAYER_ADMIN_TOKEN=demo-token docker compose up -d
+```
+
+The API is available at `http://127.0.0.1:8765`.
+
+To stop:
+```bash
+docker compose down
+```
+
+### Docker specifics
+
+- **Base image:** `python:3.13-slim-bookworm`
+- **Port:** `8765` (host mapping: `127.0.0.1:8765:8765`)
+- **Runtime dependency:** `cryptography==43.0.0`
+- **Data persistence:** `data/grantlayer.db` is stored in a named Docker volume (`grantlayer-data`)
+- **No secrets baked into the image.** `GRANTLAYER_ADMIN_TOKEN` is passed via environment variable at runtime.
+- **No database baked into the image.** The SQLite database is created on first startup.
+- **Health check:** Container health is checked via `GET /health` every 30 seconds.
+- **Container runs as non-root user** (`appuser`, UID 1000).
+
+> **Demo only.** Do not deploy this Docker setup to production. See [docs/security_boundaries.md](docs/security_boundaries.md) for details.
+
