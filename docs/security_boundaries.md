@@ -48,52 +48,28 @@ This endpoint intentionally corrupts a grant's `role` field in the database **wi
 
 In a real deployment, database access would be protected at the infrastructure level. This endpoint exists only because the demo has no auth layer (Sprint 2C adds a token).
 
-## Sprint 2C — Demo Admin Token: DEMO ONLY
+## Sprint 2C — Demo Admin Token: Product-Mode in GL-020
 
-Sprint 2C adds an optional static Bearer token (`GRANTLAYER_ADMIN_TOKEN`) for protecting state-changing endpoints (`POST /grants`, `POST /grants/:id/revoke`, `POST /demo/tamper-grant/:id`).
+Sprint 2C adds an optional static Bearer token (`GRANTLAYER_ADMIN_TOKEN`) for protecting state-changing endpoints (`POST /grants`, `POST /grants/:id/revoke`, `POST /demo/tamper-grant/:id` if demo endpoints are enabled).
 
 - **This is not real authentication.** It is a single static token shared by all callers.
 - **No user identity, no session management, no RBAC.** Anyone who knows the token can perform protected actions.
-- **Token is passed via environment variable at runtime.** If not set, protected endpoints fall back to open demo mode with a warning.
+- **Token is passed via environment variable at runtime.** If not set, protected endpoints fall back to open demo mode with a warning — unless `GRANTLAYER_REQUIRE_ADMIN_TOKEN=true` is set, in which case they **fail closed**.
 - **Not suitable for production.** Do not use to gate access to real systems.
 
-## Sprint 2D — Docker Packaging: DEMO ONLY
+### GL-020 Product-Mode Flags
 
-Sprint 2D adds `Dockerfile` and `docker-compose.yml` for local Docker-based startup.
+| Flag | Default | When true |
+|------|---------|-----------|
+| `GRANTLAYER_REQUIRE_ADMIN_TOKEN` | `false` | Protected endpoints fail closed without valid Bearer token. |
+| `GRANTLAYER_REQUIRE_CHALLENGE` | `false` | `POST /demo-action` without challengeId fails with `challenge_required`. |
+| `GRANTLAYER_ENABLE_DEMO_ENDPOINTS` | `false` | Demo-only tamper endpoint is available. **Default is disabled.** |
 
-- **No production deployment.** This Docker setup is explicitly for local demonstration only.
-- **No TLS / HTTPS.** The container exposes plain HTTP on port `8765`.
-- **No registry push.** Images are built and run locally only.
-- **No secrets baked into the image.** The `GRANTLAYER_ADMIN_TOKEN` is passed at runtime via environment variable.
-- **No database baked into the image.** SQLite data lives in a named Docker volume (`grantlayer-data`).
-- **No reverse proxy, no Cloudflare, no CDN.** Direct host-port mapping (`127.0.0.1:8765:8765`).
-- **No Docker host configuration changes.** Compose uses standard bridge networking.
-- **Container runs as non-root user** (`appuser`, UID 1000).
+- Startup warnings are printed for any unsafe default.
+- Token values are never logged, returned in responses, or written to disk.
+- `/health` reports presence booleans (`adminTokenConfigured`, `requireAdminToken`, etc.) but never the token value.
 
-**Do not run this Docker setup on a public network or production host.**
-
-## Sprint 2B — Ed25519 Grant Signatures: DEMO ONLY limitations
-
-Sprint 2B adds Ed25519 signatures to grants. These are **demo-only** and have the following limitations:
-
-- **Private key is stored unencrypted on disk** (`data/demo_ed25519_private_key.pem`) — no HSM, no passphrase, no secure enclave
-- **Single signing key** ("demo-ed25519-v1") — no key rotation, no key revocation, no PKI
-- **Public key is loaded from disk** at verification time — no certificate chain, no trust anchor, no key distribution protocol
-- **No key escrow or backup** — if the `data/` directory is deleted, all previous grant signatures become unverifiable
-- **Any process with filesystem access** can read the private key and forge grant signatures
-- The `cryptography` library is used correctly (Ed25519 is a sound algorithm), but the key management is not suitable for production
-
-**Do not use the demo key or this signing mechanism to gate access to real systems.**
-
-| Concept | Sprint 2B Demo | Production requirement |
-|---------|---------------|----------------------|
-| Key storage | Unencrypted PEM on disk | HSM or KMS |
-| Key rotation | None | Regular rotation policy |
-| Multiple signers | None | Multi-party signing |
-| Public key distribution | Local file | PKI / certificate |
-| Key backup | None | Secure key escrow |
-
-## What the MVP demonstrates
+## What the MVP demonstrates (GL-020 extended)
 
 | Concept | Demonstrated how |
 |---------|-----------------|

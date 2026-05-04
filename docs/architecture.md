@@ -16,6 +16,7 @@ The task specified Node.js + TypeScript + Express as the preferred stack. Node.j
 │   └─ dashboard/index.html  (vanilla JS, served by API)  │
 │                                                         │
 │  Backend (Python 3, stdlib + cryptography v43)          │
+│   ├─ src/config.py         Centralized config (GL-020)  │
 │   ├─ src/server.py         HTTP server + routing        │
 │   ├─ src/policy_engine.py  evaluateAccess()             │
 │   ├─ src/grants.py         Grant CRUD (SQLite)          │
@@ -24,7 +25,7 @@ The task specified Node.js + TypeScript + Express as the preferred stack. Node.j
 │   ├─ src/demo_action.py    Protected action handler     │
 │   ├─ src/crypto_signing.py Ed25519 sign + verify        │
 │   ├─ src/models.py         Dataclasses                  │
-│   └─ src/db.py             SQLite init + connection     │
+│   └─ src/db.py             SQLite init + connection       │
 │                                                         │
 │  Data                                                   │
 │   ├─ data/grantlayer.db            SQLite (WAL mode)    │
@@ -32,7 +33,38 @@ The task specified Node.js + TypeScript + Express as the preferred stack. Node.j
 │   └─ data/demo_ed25519_public_key.pem  (gitignored)     │
 │                                                         │
 │  Tests                                                  │
-│   └─ tests/test_policy_engine.py  unittest (30 tests)   │
+│   ├─ tests/test_policy_engine.py  unittest (36 tests)   │
+│   ├─ tests/test_admin_token.py     unittest (8 tests)   │
+│   └─ tests/test_product_core.py    unittest (8 tests)   │
+└─────────────────────────────────────────────────────────┘
+```
+┌─────────────────────────────────────────────────────────┐
+│                  GrantLayer MVP                         │
+│                                                         │
+│  Dashboard (browser)                                    │
+│   └─ dashboard/index.html  (vanilla JS, served by API)  │
+│                                                         │
+│  Backend (Python 3, stdlib + cryptography v43)          │
+│   ├─ src/config.py         Centralized config (GL-020)  │
+│   ├─ src/server.py         HTTP server + routing        │
+│   ├─ src/policy_engine.py  evaluateAccess()             │
+│   ├─ src/grants.py         Grant CRUD (SQLite)          │
+│   ├─ src/audit_log.py      Audit events (SQLite)        │
+│   ├─ src/challenges.py     Challenge store + validation  │
+│   ├─ src/demo_action.py    Protected action handler     │
+│   ├─ src/crypto_signing.py Ed25519 sign + verify        │
+│   ├─ src/models.py         Dataclasses                  │
+│   └─ src/db.py             SQLite init + connection       │
+│                                                         │
+│  Data                                                   │
+│   ├─ data/grantlayer.db            SQLite (WAL mode)    │
+│   ├─ data/demo_ed25519_private_key.pem  (gitignored)    │
+│   └─ data/demo_ed25519_public_key.pem  (gitignored)     │
+│                                                         │
+│  Tests                                                  │
+│   ├─ tests/test_policy_engine.py  unittest (36 tests)   │
+│   ├─ tests/test_admin_token.py     unittest (8 tests)   │
+│   └─ tests/test_product_core.py    unittest (8 tests)   │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -124,7 +156,31 @@ evaluate_access(request, grants, now):
 | POST | /demo-action | Run a protected demo action (optional challengeId) |
 | GET | /audit-events | List audit events |
 | GET | / | Dashboard |
-| POST | /demo/tamper-grant/:id | **Demo only** — corrupt a grant without re-signing (tamper detection demo) |
+| POST | /demo/tamper-grant/:id | **Demo only** — corrupt a grant without re-signing. **Disabled by default** (`ENABLE_DEMO_ENDPOINTS=false`). Must be explicitly enabled. |
+
+## Product-Mode Configuration (GL-020)
+
+The MVP now supports opt-in product-mode hardening via environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GRANTLAYER_REQUIRE_ADMIN_TOKEN` | `false` | When `true`, protected endpoints fail closed without a valid Bearer token. |
+| `GRANTLAYER_ADMIN_TOKEN` | *(empty)* | The static Bearer token for admin endpoints. Token value is never logged or returned. |
+| `GRANTLAYER_REQUIRE_CHALLENGE` | `false` | When `true`, `POST /demo-action` without `challengeId` denies with `challenge_required`. |
+| `GRANTLAYER_ENABLE_DEMO_ENDPOINTS` | `false` | When `false` (default), `POST /demo/tamper-grant/:id` returns `403 demo_endpoints_disabled`. |
+| `GRANTLAYER_HOST` | `127.0.0.1` | Bind address. |
+| `GRANTLAYER_PORT` | `8765` | HTTP port. |
+| `GRANTLAYER_DB` | *(empty)* | SQLite database path. If empty, a default path is used. |
+
+### Startup warnings
+
+If any unsafe default is active, the server prints explicit warnings at startup:
+- `ENABLE_DEMO_ENDPOINTS=true` — warns about exposed demo-only tamper endpoint.
+- `REQUIRE_ADMIN_TOKEN=false` — warns that protected endpoints are not mandatory.
+- `REQUIRE_CHALLENGE=false` — warns that demo-action accepts requests without challenge.
+- `ADMIN_TOKEN` missing — warns that admin endpoints are unprotected.
+
+These warnings are printed to stdout and never contain token values.
 
 ## Tamper & Verify Flow (Demo-UX Sprint)
 

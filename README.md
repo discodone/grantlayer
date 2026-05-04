@@ -95,7 +95,27 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **35 tests, 0 failures.**
+Expected output: **52 tests, 0 failures.**
+
+## Configuration (GL-020 Product Hardening)
+
+The MVP supports opt-in product-mode hardening via environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GRANTLAYER_REQUIRE_ADMIN_TOKEN` | `false` | Require valid Bearer token on protected endpoints. |
+| `GRANTLAYER_ADMIN_TOKEN` | *(empty)* | Static admin Bearer token. Never logged or returned. |
+| `GRANTLAYER_REQUIRE_CHALLENGE` | `false` | Require `challengeId` on `POST /demo-action`. |
+| `GRANTLAYER_ENABLE_DEMO_ENDPOINTS` | `false` | Enable the demo tamper endpoint. Default is **disabled**. |
+| `GRANTLAYER_HOST` | `127.0.0.1` | Bind address. |
+| `GRANTLAYER_PORT` | `8765` | HTTP port. |
+
+### Product-mode vs demo-mode
+
+**Demo-mode (default):** All unsafe defaults are allowed. The server explicitly prints warnings at startup.
+**Product-mode:** Set `REQUIRE_ADMIN_TOKEN=true`, `REQUIRE_CHALLENGE=true`, and `ENABLE_DEMO_ENDPOINTS=false` for enforced hardening.
+
+Note: this is still NOT production-ready. See [docs/security_boundaries.md](docs/security_boundaries.md) for what is missing (TLS, HSM/KMS, real IAM, etc.).
 
 ## Run the 3-minute demo
 

@@ -43,7 +43,7 @@ GrantSignatureResult = Literal["valid", "missing", "invalid", "hash_mismatch", "
 ChallengeStatus = Literal["active", "used", "expired"]
 ChallengeResult = Literal[
     "valid", "missing", "not_found", "expired",
-    "already_used", "mismatch", "legacy_mode",
+    "already_used", "mismatch", "legacy_mode", "required_missing",
 ]
 
 

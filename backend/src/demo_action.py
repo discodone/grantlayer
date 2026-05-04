@@ -1,5 +1,6 @@
 """GrantLayer MVP — Protected demo action handler."""
 
+import os
 import datetime
 from typing import Optional
 from .models import AccessRequest, AuditEvent, PolicyResult
@@ -10,6 +11,11 @@ from .challenges import validate_challenge
 from .crypto_signing import verify_grant_signature
 
 
+def _get_env_bool(name: str) -> bool:
+    value = os.environ.get(name, "").strip().lower()
+    return value in ("1", "true", "yes", "on")
+
+
 def handle_demo_action(
     subject_id: str,
     role: str,
@@ -17,6 +23,30 @@ def handle_demo_action(
     resource: str,
     challenge_id: Optional[str] = None,
 ) -> dict:
+    require_challenge = _get_env_bool("GRANTLAYER_REQUIRE_CHALLENGE")
+
+    # If challenge is required but missing, fail closed immediately.
+    if require_challenge and not challenge_id:
+        event = AuditEvent(
+            subject_id=subject_id,
+            role=role,
+            action=action,
+            resource=resource,
+            approved=False,
+            reason="challenge_required",
+            challenge_present=False,
+            challenge_result="required_missing",
+            grant_signature_result="not_checked",
+        )
+        append_event(event)
+        return {
+            "approved": False,
+            "reason": "challenge_required",
+            "challengeResult": "required_missing",
+            "auditEventId": event.id,
+            "grantSignatureResult": "not_checked",
+        }
+
     request = AccessRequest(
         subject_id=subject_id,
         role=role,
