@@ -1,7 +1,9 @@
-"""Demo-only admin token guard for GrantLayer.
+"""Product-hardened admin token guard for GrantLayer.
 
 This is NOT production authentication.
-It only protects local demo mutating endpoints when GRANTLAYER_ADMIN_TOKEN is set.
+It protects local/demo mutating endpoints.
+When GRANTLAYER_REQUIRE_ADMIN_TOKEN is true, protected endpoints fail closed
+if the token is missing, blank, or incorrect.
 """
 
 from __future__ import annotations
@@ -9,32 +11,52 @@ from __future__ import annotations
 import hmac
 import os
 from typing import Any
+from . import config
 
 
 def admin_token_is_configured() -> bool:
-    return bool(os.environ.get("GRANTLAYER_ADMIN_TOKEN"))
+    return bool(os.environ.get("GRANTLAYER_ADMIN_TOKEN", "").strip())
 
 
-def check_admin_token(authorization_header: str | None) -> tuple[bool, int, dict[str, Any]]:
-    """Validate Authorization: Bearer <token> for demo admin endpoints.
+def _get_env_bool(name: str) -> bool:
+    value = os.environ.get(name, "").strip().lower()
+    return value in ("1", "true", "yes", "on")
 
-    If GRANTLAYER_ADMIN_TOKEN is not set, allow legacy local demo behavior.
-    Never logs or returns the configured token.
+
+def check_admin_token(auth_header: str | None) -> tuple[bool, int, dict]:
+    """Validate the Authorization header against GRANTLAYER_ADMIN_TOKEN.
+
+    Returns (ok, http_status, payload).  On success payload is {}.
+    Token value is never leaked in payload.
     """
-    expected = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
+    token_env = os.environ.get("GRANTLAYER_ADMIN_TOKEN", "").strip()
+    require_token = _get_env_bool("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
 
-    if not expected:
+    # Case: no token configured
+    if not token_env:
+        if require_token:
+            # Fail closed
+            return False, 403, {"error": "admin_token_required"}
+        # Legacy/demo mode: optional token
         return True, 200, {}
 
-    if not authorization_header or not authorization_header.startswith("Bearer "):
+    # Case: token configured but missing header
+    if not auth_header:
         return False, 401, {"error": "admin_token_required"}
 
-    provided = authorization_header.removeprefix("Bearer ").strip()
-
-    if not hmac.compare_digest(provided, expected):
+    # Case: token present — validate scheme + value
+    scheme, _, token = auth_header.partition(" ")
+    if scheme.lower() != "bearer":
         return False, 403, {"error": "admin_token_invalid"}
 
-    return True, 200, {}
+    token = token.strip()
+    if not token:
+        return False, 403, {"error": "admin_token_invalid"}
+
+    if hmac.compare_digest(token, token_env):
+        return True, 200, {}
+
+    return False, 403, {"error": "admin_token_invalid"}
 
 
 def admin_token_warning() -> str | None:

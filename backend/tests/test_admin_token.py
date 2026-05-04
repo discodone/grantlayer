@@ -7,6 +7,7 @@ from backend.src.auth import check_admin_token, admin_token_is_configured
 class TestDemoAdminToken(unittest.TestCase):
     def setUp(self):
         self.old_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
+        self.old_require = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
 
     def tearDown(self):
         if self.old_token is None:
@@ -14,8 +15,14 @@ class TestDemoAdminToken(unittest.TestCase):
         else:
             os.environ["GRANTLAYER_ADMIN_TOKEN"] = self.old_token
 
+        if self.old_require is None:
+            os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
+        else:
+            os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = self.old_require
+
     def test_no_env_token_allows_legacy_demo_mode(self):
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
+        os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
         ok, status, payload = check_admin_token(None)
         self.assertTrue(ok)
         self.assertEqual(status, 200)
@@ -23,6 +30,7 @@ class TestDemoAdminToken(unittest.TestCase):
 
     def test_missing_token_is_401_when_env_set(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "demo-token"
+        os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
         ok, status, payload = check_admin_token(None)
         self.assertFalse(ok)
         self.assertEqual(status, 401)
@@ -53,6 +61,23 @@ class TestDemoAdminToken(unittest.TestCase):
         self.assertTrue(admin_token_is_configured())
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         self.assertFalse(admin_token_is_configured())
+
+    # New tests for REQUIRE_ADMIN_TOKEN
+    def test_require_admin_true_without_token_fails(self):
+        """When REQUIRE_ADMIN_TOKEN is true and no token configured, fail closed."""
+        os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        ok, status, payload = check_admin_token(None)
+        self.assertFalse(ok)
+        self.assertEqual(status, 403)
+        self.assertEqual(payload["error"], "admin_token_required")
+
+    def test_require_admin_true_with_valid_token_allows(self):
+        """When REQUIRE_ADMIN_TOKEN is true and valid token, allow."""
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "prod-token"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        ok, status, payload = check_admin_token("Bearer prod-token")
+        self.assertTrue(ok)
 
 
 if __name__ == "__main__":
