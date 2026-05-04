@@ -13,9 +13,10 @@ from .grants import list_grants, create_grant, revoke_grant, get_grant, tamper_g
 from .audit_log import list_events
 from .demo_action import handle_demo_action
 from .challenges import create_challenge, list_challenges
-from .auth import check_admin_token, admin_token_warning, admin_token_is_configured
+from .auth import check_auth, check_admin_token, admin_token_warning, admin_token_is_configured
 from .crypto_signing import ensure_demo_keypair, verify_grant_signature
 from . import config
+from . import operators as ops
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -74,6 +75,20 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             return False
         return True
 
+    def _require_operator(self, roles: list[str]) -> tuple[bool, dict]:
+        ok, status, payload = check_auth(self.headers.get("Authorization"), required_roles=roles)
+        if not ok:
+            self._send_json(status, payload)
+            return False, {}
+        return True, payload
+
+    def _require_operator(self, roles: list[str]) -> tuple[bool, dict]:
+        ok, status, payload = check_auth(self.headers.get("Authorization"), required_roles=roles)
+        if not ok:
+            self._send_json(status, payload)
+            return False, {}
+        return True, payload
+
     def do_GET(self):  # noqa: N802
         path = urlparse(self.path).path
 
@@ -94,6 +109,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 "requireAdminToken": config.REQUIRE_ADMIN_TOKEN,
                 "requireChallenge": config.REQUIRE_CHALLENGE,
                 "demoEndpointsEnabled": config.ENABLE_DEMO_ENDPOINTS,
+                "operatorModelEnabled": config.ENABLE_OPERATOR_MODEL,
+                "operatorsConfigured": False,
             })
 
         elif path == "/grants":
@@ -132,6 +149,16 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 d["signatureValid"] = sig_result == "valid"
                 self._send_json(200, d)
 
+        elif path == "/operators/me":
+            if not config.ENABLE_OPERATOR_MODEL:
+                self._send_json(404, {"error": "operator_model_disabled"})
+                return
+            op = ops.authenticate_operator(self.headers.get("Authorization"))
+            if op is None:
+                self._send_json(401, {"error": "operator_auth_required"})
+                return
+            self._send_json(200, op.to_dict())
+
         else:
             self._send_json(404, {"error": "Not found"})
 
@@ -139,8 +166,15 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
 
         if path == "/grants":
-            if not self._require_admin():
-                return
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, payload = self._require_operator(["owner", "grant_admin"])
+                if not ok:
+                    return
+                operator_id = payload["operator"]["operatorId"]
+            else:
+                if not self._require_admin():
+                    return
+                operator_id = None
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
@@ -160,7 +194,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 resource=data["resource"],
                 valid_from=data["validFrom"],
                 valid_until=data["validUntil"],
-                created_by=data["createdBy"],
+                created_by=operator_id if operator_id else data["createdBy"],
                 reason=data["reason"],
             )
             create_grant(grant)
@@ -172,8 +206,13 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             })
 
         elif m := re.fullmatch(r"/grants/([^/]+)/revoke", path):
-            if not self._require_admin():
-                return
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
             grant_id = m.group(1)
             try:
                 data = self._read_json()
@@ -216,8 +255,13 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not config.ENABLE_DEMO_ENDPOINTS:
                 self._send_json(403, {"error": "demo_endpoints_disabled"})
                 return
-            if not self._require_admin():
-                return
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "demo_operator"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
             grant_id = m.group(1)
             result = tamper_grant(grant_id)
             if result is None:

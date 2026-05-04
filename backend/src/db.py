@@ -94,5 +94,9 @@ def init_db() -> None:
             conn.commit()
         except Exception:
             pass  # column already exists
+
+        # GL-021: Initialize operators table + bootstrap
+        from . import operators
+        operators.ensure_operators_table()
     finally:
         conn.close()

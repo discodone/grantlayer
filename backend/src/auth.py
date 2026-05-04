@@ -12,6 +12,7 @@ import hmac
 import os
 from typing import Any
 from . import config
+from . import operators as ops
 
 
 def admin_token_is_configured() -> bool:
@@ -21,6 +22,37 @@ def admin_token_is_configured() -> bool:
 def _get_env_bool(name: str) -> bool:
     value = os.environ.get(name, "").strip().lower()
     return value in ("1", "true", "yes", "on")
+
+
+def check_admin_token(auth_header: str | None) -> tuple[bool, int, dict]:
+    ...
+
+
+# ──────────────────────────────────────────────
+# New unified auth guard
+# ──────────────────────────────────────────────
+
+def check_auth(
+    auth_header: str | None,
+    required_roles: list[str] | None = None,
+) -> tuple[bool, int, dict]:
+    """Unified authentication/authorization guard.
+
+    If ENABLE_OPERATOR_MODEL is true -> use operator auth.
+    If ENABLE_OPERATOR_MODEL is false -> fall back to legacy admin-token.
+
+    Returns (ok, http_status, payload).
+    """
+    if config.ENABLE_OPERATOR_MODEL:
+        op = ops.authenticate_operator(auth_header)
+        if op is None:
+            return False, 401, {"error": "operator_auth_required"}
+        if required_roles is not None and not ops.check_role(op, required_roles):
+            return False, 403, {"error": "operator_role_forbidden"}
+        return True, 200, {"operator": op.to_dict()}
+
+    # Legacy admin-token mode
+    return check_admin_token(auth_header)
 
 
 def check_admin_token(auth_header: str | None) -> tuple[bool, int, dict]:
