@@ -7,7 +7,8 @@ Not production IAM — still local-only demo-quality.
 from __future__ import annotations
 
 import hashlib
-import os
+import hmac
+import secrets
 import uuid
 import datetime
 from typing import Optional
@@ -16,27 +17,48 @@ from .db import get_conn
 
 
 # ──────────────────────────────────────────────────────────────
-# Token hashing (stdlib only)
+# PBKDF2 token hashing (stdlib only)
 # ──────────────────────────────────────────────────────────────
 
+TOKEN_HASH_ITERATIONS = 600_000
+TOKEN_HASH_ALGORITHM = "sha256"
+TOKEN_HASH_FORMAT = "pbkdf2_sha256"
+
+
 def hash_token(token: str) -> str:
-    """Return a salted SHA-256 hash of token: '<hash_hex>::<salt_hex>'."""
-    salt = os.urandom(16)
-    hashed = hashlib.sha256(salt + token.encode("utf-8")).hexdigest()
-    return f"{hashed}::{salt.hex()}"
+    """Return PBKDF2-HMAC-SHA256 hash of token.
+
+    Format: pbkdf2_sha256$<iterations>$<salt>$<hash>
+    """
+    salt = secrets.token_hex(16)
+    hashed = hashlib.pbkdf2_hmac(
+        TOKEN_HASH_ALGORITHM,
+        token.encode("utf-8"),
+        salt.encode("utf-8"),
+        TOKEN_HASH_ITERATIONS,
+    ).hex()
+    return f"{TOKEN_HASH_FORMAT}${TOKEN_HASH_ITERATIONS}${salt}${hashed}"
 
 
 def verify_token(token: str, stored_hash: str) -> bool:
-    """Verify a token against its stored hash."""
-    if "::" not in stored_hash:
+    """Verify a token against its stored PBKDF2 hash."""
+    parts = stored_hash.split("$")
+    if len(parts) != 4:
         return False
-    hashed, salt_hex = stored_hash.split("::", 1)
+    algo, iterations_str, salt, _hash = parts
+    if algo != TOKEN_HASH_FORMAT:
+        return False
     try:
-        salt = bytes.fromhex(salt_hex)
+        iterations = int(iterations_str)
     except ValueError:
         return False
-    expected = hashlib.sha256(salt + token.encode("utf-8")).hexdigest()
-    return expected == hashed
+    expected = hashlib.pbkdf2_hmac(
+        TOKEN_HASH_ALGORITHM,
+        token.encode("utf-8"),
+        salt.encode("utf-8"),
+        iterations,
+    ).hex()
+    return hmac.compare_digest(expected, _hash)
 
 
 # ──────────────────────────────────────────────────────────────

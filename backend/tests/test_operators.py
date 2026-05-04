@@ -109,7 +109,8 @@ class TestOperatorModel(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_token_hash_contains_salt_separator(self):
         h = self.ops_mod.hash_token("op-token-123")
-        self.assertIn("::", h)
+        self.assertIn("$", h)
+        self.assertTrue(h.startswith("pbkdf2_sha256$600000$"))
 
     def test_verify_valid_token(self):
         token = "test-token-xyz"
@@ -185,7 +186,7 @@ class TestOperatorModel(unittest.TestCase):
         finally:
             conn.close()
         self.assertIsNotNone(row)
-        self.assertIn("::", row["token_hash"])
+        self.assertIn("$", row["token_hash"])
         self.assertNotIn("my-secret-123", row["token_hash"])
 
     # ──────────────────────────────────────────────
