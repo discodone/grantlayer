@@ -95,7 +95,7 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **52 tests, 0 failures.**
+Expected output: **67 tests, 0 failures.**
 
 ## Configuration (GL-020 Product Hardening)
 
@@ -292,8 +292,69 @@ New deny reasons: `grant_signature_missing` | `grant_signature_invalid` | `grant
 
 ## Next sprint
 
-- Sprint 2C: Demo admin token (static Bearer token via env var)
+- ~~Sprint 2C: Demo admin token~~ ✅ Done
 - ~~Sprint 2D: Docker packaging~~ ✅ Done
+- Sprint 2E: Operator model (GL-021)
+
+---
+
+## Sprint 2E — Operator Model (GL-021)
+
+GL-021 replaces the single static admin token with a lightweight operator identity system.
+
+### Operator model flag
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GRANTLAYER_ENABLE_OPERATOR_MODEL` | `false` | When `true`, protected endpoints use operator Bearer token auth with RBAC. When `false`, legacy admin-token mode remains active. |
+
+### Bootstrap operator env vars
+
+When `ENABLE_OPERATOR_MODEL=true` and the operators table is empty, the system creates a bootstrap operator from environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN` | *(empty)* | The plaintext token for the bootstrap operator. **Passed only via env var; never stored plaintext.** |
+| `GRANTLAYER_BOOTSTRAP_OPERATOR_ID` | `bootstrap-admin` | ID of the bootstrap operator. |
+| `GRANTLAYER_BOOTSTRAP_OPERATOR_NAME` | `Bootstrap Admin` | Display name. |
+| `GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE` | `owner` | Role assigned to the bootstrap operator. |
+
+### Bearer token auth
+
+When operator model is enabled, protected endpoints require:
+
+```text
+Authorization: Bearer <operator-token>
+```
+
+### Roles
+
+- `owner` — full access
+- `grant_admin` — can create and revoke grants
+- `auditor` — read-only access
+- `demo_operator` — can use the demo tamper endpoint (if demo endpoints are enabled)
+
+### Legacy admin-token mode
+
+When `GRANTLAYER_ENABLE_OPERATOR_MODEL=false`, the system falls back to the legacy `GRANTLAYER_ADMIN_TOKEN` mode from Sprint 2C.
+
+### Security properties
+
+- **No plaintext token storage.** Tokens are hashed with PBKDF2-HMAC-SHA256 (600,000 iterations) before storage.
+- **No secrets exposed.** Token hashes, salts, bootstrap tokens, and env values are excluded from all API responses.
+- **`GET /operators/me`** returns safe operator metadata only (`operatorId`, `name`, `role`, `active`). No hash or token data.
+- **`GET /health`** reports configuration booleans only (`operatorModelEnabled`, `operatorsConfigured`, etc.). No secrets.
+
+### What is NOT included
+
+- No OAuth / SSO
+- No JWT / session cookies
+- No browser login / frontend UI
+- No full IAM / LDAP / SCIM
+- No token rotation or expiry
+- No multi-factor authentication
+
+See [docs/security_boundaries.md](docs/security_boundaries.md) for the full security boundary list.
 
 ---
 

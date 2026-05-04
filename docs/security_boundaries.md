@@ -86,6 +86,66 @@ Sprint 2C adds an optional static Bearer token (`GRANTLAYER_ADMIN_TOKEN`) for pr
 | Audit logging | Every access attempt written with challenge_result and grant_signature_result |
 | Dashboard visibility | All endpoints exposed; signature info shown per grant and per audit event |
 
+## Sprint 2E — Real Operator / Admin Model (GL-021)
+
+GL-021 adds a lightweight operator identity and role-based authorization system. It is still local-only and demo-quality, but it replaces the single shared admin token with per-operator Bearer tokens and RBAC.
+
+### Operator model flag
+
+| Flag | Default | When true |
+|------|---------|-----------|
+| `GRANTLAYER_ENABLE_OPERATOR_MODEL` | `false` | Protected endpoints require a valid operator Bearer token and a matching role. |
+
+### Bootstrap operator
+
+When `ENABLE_OPERATOR_MODEL=true` and no operators exist, a bootstrap operator is created from environment variables:
+
+- `GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN` — plaintext token, passed via env var only
+- `GRANTLAYER_BOOTSTRAP_OPERATOR_ID` — operator ID (`bootstrap-admin`)
+- `GRANTLAYER_BOOTSTRAP_OPERATOR_NAME` — display name
+- `GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE` — role (`owner`)
+
+If the bootstrap token is not set, no bootstrap operator is created.
+
+### Bearer token auth
+
+Operators authenticate with:
+
+```text
+Authorization: Bearer <operator-token>
+```
+
+### Roles
+
+| Role | Permissions |
+|------|-------------|
+| `owner` | Full access (grants, revoke, demo tamper) |
+| `grant_admin` | Create and revoke grants |
+| `auditor` | Read-only |
+| `demo_operator` | Use demo tamper endpoint (if `ENABLE_DEMO_ENDPOINTS=true`) |
+
+### Legacy admin-token mode
+
+When `ENABLE_OPERATOR_MODEL=false`, the system falls back to Sprint 2C behavior: a single static `GRANTLAYER_ADMIN_TOKEN` with no RBAC.
+
+### Security properties
+
+- **No plaintext token storage.** Operator tokens are hashed with PBKDF2-HMAC-SHA256 (600,000 iterations) and stored as `pbkdf2_sha256$600000$<salt>$<hash>`.
+- **No secrets in responses.** Token hashes, salts, bootstrap tokens, env values, and secrets are never returned by the API.
+- **`GET /operators/me`** returns safe metadata (`operatorId`, `name`, `role`, `active`) only. No `token_hash` field.
+- **`GET /health`** exposes booleans only (`operatorModelEnabled`, `operatorsConfigured`). No token values or hashes.
+- **hmac.compare_digest** is used for constant-time hash comparison to mitigate timing attacks.
+
+### What GL-021 is NOT
+
+- Not OAuth, SSO, or SAML.
+- Not JWT or session cookies.
+- Not a browser login flow or frontend authentication UI.
+- Not a full IAM, LDAP, or SCIM integration.
+- No token rotation, expiry, or revocation.
+- No MFA.
+- No password-based login — only pre-shared Bearer tokens.
+
 ## Future sprint additions (not in this MVP)
 
 - Blockchain-anchored audit log (optional proof layer)

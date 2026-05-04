@@ -157,6 +157,7 @@ evaluate_access(request, grants, now):
 | GET | /audit-events | List audit events |
 | GET | / | Dashboard |
 | POST | /demo/tamper-grant/:id | **Demo only** — corrupt a grant without re-signing. **Disabled by default** (`ENABLE_DEMO_ENDPOINTS=false`). Must be explicitly enabled. |
+| GET | /operators/me | Return the currently authenticated operator's safe metadata (no token hash). Only available when `ENABLE_OPERATOR_MODEL=true`. |
 
 ## Product-Mode Configuration (GL-020)
 
@@ -181,6 +182,37 @@ If any unsafe default is active, the server prints explicit warnings at startup:
 - `ADMIN_TOKEN` missing — warns that admin endpoints are unprotected.
 
 These warnings are printed to stdout and never contain token values.
+
+## Operator Model (GL-021)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GRANTLAYER_ENABLE_OPERATOR_MODEL` | `false` | When `true`, use per-operator Bearer tokens and RBAC. |
+| `GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN` | *(empty)* | Plaintext token for the bootstrap operator. Never stored plaintext. |
+| `GRANTLAYER_BOOTSTRAP_OPERATOR_ID` | `bootstrap-admin` | ID of the bootstrap operator. |
+| `GRANTLAYER_BOOTSTRAP_OPERATOR_NAME` | `Bootstrap Admin` | Display name. |
+| `GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE` | `owner` | Role assigned to the bootstrap operator. |
+
+### Auth behavior
+
+1. **Legacy admin-token mode** (`ENABLE_OPERATOR_MODEL=false`): Uses `GRANTLAYER_ADMIN_TOKEN` with no RBAC.
+2. **Operator mode** (`ENABLE_OPERATOR_MODEL=true`): Requires `Authorization: Bearer <token>` header. The token is verified against PBKDF2-HMAC-SHA256 hashes stored in the `operators` table.
+3. **Role checks**: Endpoints enforce role requirements. For example, `POST /grants` requires `owner` or `grant_admin`. `POST /demo/tamper-grant/:id` requires `owner` or `demo_operator`.
+4. **`GET /operators/me`**: Returns the authenticated operator's metadata (`operatorId`, `name`, `role`, `active`). No token hash or secrets.
+5. **`GET /health`**: Reports booleans (`operatorModelEnabled`, `operatorsConfigured`). No secrets.
+
+### Token hashing
+
+Operator tokens are hashed with PBKDF2-HMAC-SHA256 (600,000 iterations) and stored as:
+
+```
+pbkdf2_sha256$600000$<salt>$<hash>
+```
+
+- `secrets.token_hex(16)` generates the salt.
+- `hashlib.pbkdf2_hmac` computes the hash.
+- `hmac.compare_digest` performs constant-time verification.
+- Token values are never stored plaintext.
 
 ## Tamper & Verify Flow (Demo-UX Sprint)
 
@@ -244,6 +276,16 @@ revoked (bool), revoked_by, revoked_reason, revoked_at,
 created_at,
 signature (TEXT), signing_key_id (TEXT), payload_hash (TEXT)
 ```
+
+**Operator** (Sprint 2E — GL-021)
+```
+id, name, role, token_hash, active, created_at
+```
+
+Token hashes use PBKDF2-HMAC-SHA256 with 600,000 iterations:
+`pbkdf2_sha256$600000$<salt>$<hash>`
+
+Token values are never stored plaintext.
 
 **Challenge** (Sprint 2A)
 ```

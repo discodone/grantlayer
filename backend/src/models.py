@@ -95,3 +95,24 @@ class PolicyResult:
     approved: bool
     reason: str
     matched_grant_id: Optional[str] = None
+
+
+# ──────────────────────────────────────────────
+# GL-021 Operator model
+# ──────────────────────────────────────────────
+
+@dataclass
+class Operator:
+    operator_id: str
+    name: str
+    role: str
+    active: bool = True
+    created_at: str = field(default_factory=_now_iso)
+
+    def to_dict(self) -> dict:
+        return {
+            "operatorId": self.operator_id,
+            "name": self.name,
+            "role": self.role,
+            "active": self.active,
+        }
