@@ -215,6 +215,11 @@ curl -s http://127.0.0.1:8765/challenges | python3 -m json.tool
 | GET | /grants/:id | Get a single grant (includes signatureValid) |
 | POST | /grants | Create a grant |
 | POST | /grants/:id/revoke | Revoke a grant |
+| POST | /grant-requests | Create a grant request (GL-022) |
+| GET | /grant-requests | List grant requests (GL-022) |
+| GET | /grant-requests/:id | Get a single grant request (GL-022) |
+| POST | /grant-requests/:id/approve | Approve a grant request and create the grant (GL-022) |
+| POST | /grant-requests/:id/deny | Deny a grant request (GL-022) |
 | POST | /challenges | Create a challenge (5-min TTL) |
 | GET | /challenges | List all challenges |
 | POST | /demo-action | Run protected demo action (optional challengeId) |
@@ -294,67 +299,90 @@ New deny reasons: `grant_signature_missing` | `grant_signature_invalid` | `grant
 
 - ~~Sprint 2C: Demo admin token~~ ✅ Done
 - ~~Sprint 2D: Docker packaging~~ ✅ Done
-- Sprint 2E: Operator model (GL-021)
+- ~~Sprint 2E: Operator model (GL-021)~~ ✅ Done
+- ~~Sprint 2F: Real approval workflow (GL-022)~~ ✅ Done
 
 ---
 
-## Sprint 2E — Operator Model (GL-021)
+## Sprint 2F — Real Approval Workflow (GL-022)
 
-GL-021 replaces the single static admin token with a lightweight operator identity system.
+GL-022 introduces a real approval workflow using a separate **GrantRequest** lifecycle. Grant requests are created first, then approved or denied by a different operator. Approval creates the actual grant.
 
-### Operator model flag
+### GrantRequest lifecycle
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `GRANTLAYER_ENABLE_OPERATOR_MODEL` | `false` | When `true`, protected endpoints use operator Bearer token auth with RBAC. When `false`, legacy admin-token mode remains active. |
-
-### Bootstrap operator env vars
-
-When `ENABLE_OPERATOR_MODEL=true` and the operators table is empty, the system creates a bootstrap operator from environment variables:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN` | *(empty)* | The plaintext token for the bootstrap operator. **Passed only via env var; never stored plaintext.** |
-| `GRANTLAYER_BOOTSTRAP_OPERATOR_ID` | `bootstrap-admin` | ID of the bootstrap operator. |
-| `GRANTLAYER_BOOTSTRAP_OPERATOR_NAME` | `Bootstrap Admin` | Display name. |
-| `GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE` | `owner` | Role assigned to the bootstrap operator. |
-
-### Bearer token auth
-
-When operator model is enabled, protected endpoints require:
-
-```text
-Authorization: Bearer <operator-token>
+```
+requested → approved → grant created
+        → denied
+        → revoked (approved grants only)
+        → expired (auto after 24h in 'requested' state)
 ```
 
-### Roles
+### Statuses
 
-- `owner` — full access
-- `grant_admin` — can create and revoke grants
-- `auditor` — read-only access
-- `demo_operator` — can use the demo tamper endpoint (if demo endpoints are enabled)
+| Status | Meaning |
+|--------|---------|
+| `requested` | Initial state. Waiting for approval or denial. |
+| `approved` | An operator approved the request. A real grant was created. |
+| `denied` | An operator denied the request. No grant was created. |
+| `revoked` | A previously approved request was revoked. The linked grant is also revoked. |
+| `expired` | The request sat in `requested` for more than 24 hours and was auto-expired. |
 
-### Legacy admin-token mode
+### Authorization rules
 
-When `GRANTLAYER_ENABLE_OPERATOR_MODEL=false`, the system falls back to the legacy `GRANTLAYER_ADMIN_TOKEN` mode from Sprint 2C.
+- **Requester cannot approve or deny their own request.** The API returns `403` with `Cannot approve your own request`.
+- **Owner** and **grant_admin** can approve and deny requests.
+- **Auditor** can read grant requests (`GET /grant-requests`, `GET /grant-requests/:id`) but cannot approve or deny.
+- **demo_operator** cannot approve or deny real grants. This role is only for the demo tamper endpoint.
+- **Legacy admin-token compatibility remains.** When `GRANTLAYER_ENABLE_OPERATOR_MODEL=false`, the system falls back to the legacy `GRANTLAYER_ADMIN_TOKEN` behavior.
 
-### Security properties
+### GL-022 API reference
 
-- **No plaintext token storage.** Tokens are hashed with PBKDF2-HMAC-SHA256 (600,000 iterations) before storage.
-- **No secrets exposed.** Token hashes, salts, bootstrap tokens, and env values are excluded from all API responses.
-- **`GET /operators/me`** returns safe operator metadata only (`operatorId`, `name`, `role`, `active`). No hash or token data.
-- **`GET /health`** reports configuration booleans only (`operatorModelEnabled`, `operatorsConfigured`, etc.). No secrets.
+| Method | Path | Auth required | Description |
+|--------|------|---------------|-------------|
+| POST | `/grant-requests` | `owner` or `grant_admin` | Create a new grant request. |
+| GET | `/grant-requests` | `owner`, `grant_admin`, or `auditor` | List grant requests. Optional `?status=requested` filter. |
+| GET | `/grant-requests/:id` | `owner`, `grant_admin`, or `auditor` | Get a single grant request by ID. |
+| POST | `/grant-requests/:id/approve` | `owner` or `grant_admin` | Approve a request. Creates the actual grant. Returns `{ok, request, grant}`. |
+| POST | `/grant-requests/:id/deny` | `owner` or `grant_admin` | Deny a request. Returns `{ok, request}`. Requires JSON body with `reason`. |
 
-### What is NOT included
+### Example walkthrough
 
-- No OAuth / SSO
-- No JWT / session cookies
-- No browser login / frontend UI
-- No full IAM / LDAP / SCIM
-- No token rotation or expiry
-- No multi-factor authentication
+```bash
+# 1. Create a grant request (as grant_admin)
+curl -s -X POST http://127.0.0.1:8765/grant-requests \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "subjectId": "tech-01",
+    "role": "technician",
+    "action": "restart-service",
+    "resource": "customer-env-a",
+    "validFrom": "2026-05-02T00:00:00Z",
+    "validUntil": "2026-12-31T23:59:59Z",
+    "reason": "Scheduled maintenance"
+  }' | python3 -m json.tool
 
-See [docs/security_boundaries.md](docs/security_boundaries.md) for the full security boundary list.
+# 2. List grant requests (as auditor)
+curl -s http://127.0.0.1:8765/grant-requests \
+  -H "Authorization: Bearer <token>" | python3 -m json.tool
+
+# 3. Get a specific request
+curl -s http://127.0.0.1:8765/grant-requests/<request-id> \
+  -H "Authorization: Bearer <token>" | python3 -m json.tool
+
+# 4. Approve the request (as a different owner/grant_admin)
+curl -s -X POST http://127.0.0.1:8765/grant-requests/<request-id>/approve \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" | python3 -m json.tool
+
+# 5. Deny a request
+curl -s -X POST http://127.0.0.1:8765/grant-requests/<request-id>/deny \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{"reason": "Not authorized for this action"}' | python3 -m json.tool
+```
+
+See [docs/architecture.md](docs/architecture.md) for the state machine and [docs/security_boundaries.md](docs/security_boundaries.md) for what is explicitly not included in this design.
 
 ---
 

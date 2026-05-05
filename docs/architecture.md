@@ -20,6 +20,7 @@ The task specified Node.js + TypeScript + Express as the preferred stack. Node.j
 │   ├─ src/server.py         HTTP server + routing        │
 │   ├─ src/policy_engine.py  evaluateAccess()             │
 │   ├─ src/grants.py         Grant CRUD (SQLite)          │
+│   ├─ src/grant_requests.py Grant Request workflow (GL-022) │
 │   ├─ src/audit_log.py      Audit events (SQLite)        │
 │   ├─ src/challenges.py     Challenge store + validation  │
 │   ├─ src/demo_action.py    Protected action handler     │
@@ -49,6 +50,7 @@ The task specified Node.js + TypeScript + Express as the preferred stack. Node.j
 │   ├─ src/server.py         HTTP server + routing        │
 │   ├─ src/policy_engine.py  evaluateAccess()             │
 │   ├─ src/grants.py         Grant CRUD (SQLite)          │
+│   ├─ src/grant_requests.py Grant Request workflow (GL-022) │
 │   ├─ src/audit_log.py      Audit events (SQLite)        │
 │   ├─ src/challenges.py     Challenge store + validation  │
 │   ├─ src/demo_action.py    Protected action handler     │
@@ -149,8 +151,14 @@ evaluate_access(request, grants, now):
 |--------|------|-------------|
 | GET | /health | Service health |
 | GET | /grants | List all grants |
+| GET | /grants/:id | Get a single grant (includes signatureValid) |
 | POST | /grants | Create a grant |
 | POST | /grants/:id/revoke | Revoke a grant |
+| POST | /grant-requests | Create a grant request (GL-022) |
+| GET | /grant-requests | List grant requests (GL-022) |
+| GET | /grant-requests/:id | Get a single grant request (GL-022) |
+| POST | /grant-requests/:id/approve | Approve a grant request and create the grant (GL-022) |
+| POST | /grant-requests/:id/deny | Deny a grant request (GL-022) |
 | POST | /challenges | Create a challenge (5-min TTL) |
 | GET | /challenges | List all challenges |
 | POST | /demo-action | Run a protected demo action (optional challengeId) |
@@ -198,21 +206,109 @@ These warnings are printed to stdout and never contain token values.
 1. **Legacy admin-token mode** (`ENABLE_OPERATOR_MODEL=false`): Uses `GRANTLAYER_ADMIN_TOKEN` with no RBAC.
 2. **Operator mode** (`ENABLE_OPERATOR_MODEL=true`): Requires `Authorization: Bearer <token>` header. The token is verified against PBKDF2-HMAC-SHA256 hashes stored in the `operators` table.
 3. **Role checks**: Endpoints enforce role requirements. For example, `POST /grants` requires `owner` or `grant_admin`. `POST /demo/tamper-grant/:id` requires `owner` or `demo_operator`.
-4. **`GET /operators/me`**: Returns the authenticated operator's metadata (`operatorId`, `name`, `role`, `active`). No token hash or secrets.
-5. **`GET /health`**: Reports booleans (`operatorModelEnabled`, `operatorsConfigured`). No secrets.
 
-### Token hashing
+### Role authorization matrix (GL-021 + GL-022)
 
-Operator tokens are hashed with PBKDF2-HMAC-SHA256 (600,000 iterations) and stored as:
+| Role | `POST /grants` | `POST /grants/:id/revoke` | `GET /grants` | `GET /audit-events` | `POST /grant-requests` | `GET /grant-requests` | `POST /grant-requests/:id/approve` | `POST /grant-requests/:id/deny` | `POST /demo/tamper-grant/:id` |
+|------|----------------|---------------------------|---------------|---------------------|------------------------|-----------------------|------------------------------------|---------------------------------|-------------------------------|
+| `owner` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `grant_admin` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| `auditor` | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `demo_operator` | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
+
+## Grant Request Approval Workflow (GL-022)
+
+GL-022 introduces a real approval workflow as a separate lifecycle from grants. A grant request is created, reviewed, and either approved (which creates an actual signed grant) or denied.
+
+### Design decision: separate entity
+
+- **GrantRequest lives in its own `grant_requests` table.** It is never mixed into the `grants` table.
+- **No `approval_status` on grants.** The rejected design proposed adding `approval_status` to the `grants` table. GL-022 explicitly does not do this.
+- **Approval creates a real Grant.** The newly created grant is signed with Ed25519 exactly like a grant created via `POST /grants`.
+
+### GrantRequest state machine
 
 ```
-pbkdf2_sha256$600000$<salt>$<hash>
+┌───────────┐    ┌───────────┐    ┌───────────┐
+│ requested │───→│ approved  │───→│ revoked   │
+└───────────┘    └───────────┘    └───────────┘
+      │               │
+      ▼               │
+┌───────────┐         │
+│  denied   │         │
+└───────────┘         │
+                      │
+                 ┌────┴────┐
+                 │  grant  │  ← actual Grant created
+                 └─────────┘
 ```
 
-- `secrets.token_hex(16)` generates the salt.
-- `hashlib.pbkdf2_hmac` computes the hash.
-- `hmac.compare_digest` performs constant-time verification.
-- Token values are never stored plaintext.
+| Transition | Trigger | Result |
+|------------|---------|--------|
+| `requested` → `approved` | `POST /grant-requests/:id/approve` by `owner` or `grant_admin` | Creates signed Grant. Writes `grant_request_created`, `grant_request_approved`, `grant_created_from_request` audit events. |
+| `requested` → `denied` | `POST /grant-requests/:id/deny` by `owner` or `grant_admin` | No grant created. Writes `grant_request_denied` audit event. |
+| `approved` → `revoked` | Internal revocation | Revokes linked grant. Writes `revoke_grant_request` audit event. |
+| `requested` → `expired` | Background job (`expire_old_requests`) after 24h | No grant created. No audit event. |
+
+### Request → Approve → Grant creation flow
+
+```
+POST /grant-requests  {subjectId, role, action, resource, validFrom, validUntil, reason}
+  → validate operator role (owner or grant_admin)
+  → create_grant_request() inserts row into grant_requests with status='requested'
+  → audit_log: grant_request_created
+  ← {id, subject_id, role, action, resource, status: 'requested', ...}
+
+POST /grant-requests/:id/approve  (by a different operator)
+  → validate operator role (owner or grant_admin)
+  → check requested_by != operator_id  (self-approval blocked)
+  → BEGIN TRANSACTION
+     1. grants.create_grant()  → inserts signed row into grants
+     2. UPDATE grant_requests SET status='approved', approved_by=..., grant_id=...
+     3. audit_log: grant_request_approved
+     4. audit_log: grant_created_from_request
+  → COMMIT
+  ← {ok: true, request: {..., status: 'approved'}, grant: {...}}
+
+POST /grant-requests/:id/deny  (by a different operator)
+  → validate operator role (owner or grant_admin)
+  → check requested_by != operator_id  (self-denial blocked)
+  → UPDATE grant_requests SET status='denied', denied_by=..., denial_reason=...
+  → audit_log: grant_request_denied
+  ← {ok: true, request: {..., status: 'denied'}}
+```
+
+### GL-022 audit events
+
+| Event | When | Payload |
+|-------|------|---------|
+| `grant_request_created` | On `POST /grant-requests` | `subject_id=operator_id`, `resource='grant_request/{id}'`, `approved=true` |
+| `grant_request_approved` | On `POST /grant-requests/:id/approve` | `subject_id=operator_id`, `resource='grant_request/{id}'`, `approved=true` |
+| `grant_created_from_request` | On `POST /grant-requests/:id/approve` (same transaction) | `subject_id=operator_id`, `resource='grant_request/{id}'`, `approved=true` |
+| `grant_request_denied` | On `POST /grant-requests/:id/deny` | `subject_id=operator_id`, `resource='grant_request/{id}'`, `approved=true` |
+
+Note: `approved=true` in these audit events means the action itself was permitted, not that a grant was approved.
+
+### Data model additions
+
+**GrantRequest** (GL-022)
+
+```
+id, subject_id, role, action, resource,
+valid_from, valid_until,
+requested_by, reason, status,
+approved_by, approved_at,
+denied_by, denied_at, denial_reason,
+revoked_by, revoked_at, revoked_reason,
+grant_id,
+created_at, updated_at
+```
+
+| Field | Meaning |
+|-------|---------|
+| `status` | `requested` \| `approved` \| `denied` \| `revoked` \| `expired` |
+| `requested_by` | Operator ID who created the request |
+| `grant_id` | FK-like reference to the grant created on approval (nullable) |
 
 ## Tamper & Verify Flow (Demo-UX Sprint)
 
