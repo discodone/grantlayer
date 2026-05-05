@@ -69,6 +69,13 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
                 matched_grant_id=grant.id,
             )
 
+        if grant.max_uses is not None and grant.use_count >= grant.max_uses:
+            return PolicyResult(
+                approved=False,
+                reason="grant_usage_exhausted",
+                matched_grant_id=grant.id,
+            )
+
         return PolicyResult(
             approved=True,
             reason="Access granted",

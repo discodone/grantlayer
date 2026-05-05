@@ -267,6 +267,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 valid_until=data["validUntil"],
                 created_by=operator_id if operator_id else data["createdBy"],
                 reason=data["reason"],
+                max_uses=data.get("maxUses"),
             )
             create_grant(grant)
             self._send_json(201, {
