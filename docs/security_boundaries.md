@@ -155,3 +155,38 @@ When `ENABLE_OPERATOR_MODEL=false`, the system falls back to Sprint 2C behavior:
 - Production database (PostgreSQL)
 - Role-based access control for the API itself
 - HSM/KMS key management for signing keys
+
+## Sprint 2F — Real Approval Workflow (GL-022)
+
+GL-022 adds a real approval workflow with a separate `grant_requests` table and state machine. It is not a multi-approval system and does not modify the `grants` table design.
+
+### What GL-022 is
+
+- A **separate GrantRequest entity** with its own `grant_requests` table.
+- A **state machine**: `requested` → `approved` (creates grant) | `denied` | `revoked` | `expired`
+- **Approval creates the actual grant.** The grant is signed and stored exactly like a grant created via `POST /grants`.
+
+### What GL-022 is NOT
+
+- **GrantRequest is separate from Grant.** There is no `approval_status` column on the `grants` table.
+- **No `/approval-queue` endpoint.** Requests are listed via `GET /grant-requests` with optional `?status=` filter.
+- **No `/grants/:id/approve` or `/grants/:id/reject` as the main API.** The primary API is `POST /grant-requests/:id/approve` and `POST /grant-requests/:id/deny`.
+- **No multi-approval threshold.** A single `owner` or `grant_admin` can approve or deny a request. There is no 4-eyes or quorum requirement.
+
+### Security boundaries for GL-022
+
+- **Requester cannot approve or deny their own request.** The server checks `requested_by == operator_id` and returns `403` if they match.
+- **Invalid or missing Bearer token fails closed.** `POST /grant-requests/:id/approve` and `POST /grant-requests/:id/deny` require a valid operator token.
+- **Disabled operator fails closed.** If `ENABLE_OPERATOR_MODEL=false`, grant-request endpoints return `404 operator_model_disabled`.
+- **Audit logs must not contain tokens, token hashes, salts, env values, or secrets.** Audit events for grant requests record the operator action and request ID only.
+- **Legacy admin-token mode remains compatible.** When `ENABLE_OPERATOR_MODEL=false`, the system falls back to Sprint 2C behavior: a single `GRANTLAYER_ADMIN_TOKEN` with no RBAC.
+
+### Authorization matrix (GL-022)
+
+| Endpoint | `owner` | `grant_admin` | `auditor` | `demo_operator` |
+|----------|---------|---------------|-----------|-----------------|
+| `POST /grant-requests` | ✅ | ✅ | ❌ | ❌ |
+| `GET /grant-requests` | ✅ | ✅ | ✅ | ❌ |
+| `GET /grant-requests/:id` | ✅ | ✅ | ✅ | ❌ |
+| `POST /grant-requests/:id/approve` | ✅ | ✅ | ❌ | ❌ |
+| `POST /grant-requests/:id/deny` | ✅ | ✅ | ❌ | ❌ |
