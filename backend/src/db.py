@@ -125,5 +125,30 @@ def init_db() -> None:
                 updated_at      TEXT NOT NULL
             );
         """)
+
+        # GL-023: Initialize grant_executions table
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS grant_executions (
+                id              TEXT PRIMARY KEY,
+                grant_id        TEXT,
+                grant_request_id TEXT,
+                operator_id     TEXT,
+                action          TEXT NOT NULL,
+                resource        TEXT NOT NULL,
+                challenge_id    TEXT,
+                challenge_result TEXT,
+                policy_result   TEXT NOT NULL,
+                result          TEXT NOT NULL,
+                error_code      TEXT,
+                executed_at     TEXT NOT NULL,
+                audit_event_id  TEXT,
+                metadata_json   TEXT
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_grant_executions_grant_id ON grant_executions (grant_id);
+            CREATE INDEX IF NOT EXISTS idx_grant_executions_grant_request_id ON grant_executions (grant_request_id);
+            CREATE INDEX IF NOT EXISTS idx_grant_executions_operator_id ON grant_executions (operator_id);
+            CREATE INDEX IF NOT EXISTS idx_grant_executions_executed_at ON grant_executions (executed_at DESC);
+        """)
     finally:
         conn.close()
