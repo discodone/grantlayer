@@ -19,6 +19,7 @@ from . import config
 from . import operators as ops
 from . import grant_requests
 from . import grant_executions as execs
+from .evidence_bundle import build_evidence_bundle
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -76,13 +77,6 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(status, payload)
             return False
         return True
-
-    def _require_operator(self, roles: list[str]) -> tuple[bool, dict]:
-        ok, status, payload = check_auth(self.headers.get("Authorization"), required_roles=roles)
-        if not ok:
-            self._send_json(status, payload)
-            return False, {}
-        return True, payload
 
     def _require_operator(self, roles: list[str]) -> tuple[bool, dict]:
         ok, status, payload = check_auth(self.headers.get("Authorization"), required_roles=roles)
@@ -229,6 +223,21 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             limit = int(qs.get("limit", ["200"])[0])
             executions = execs.list_grant_executions_for_grant(grant_id, limit=limit)
             self._send_json(200, [e.to_dict() for e in executions])
+
+        elif m := re.fullmatch(r"/evidence/executions/([^/]+)", path):
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            execution_id = m.group(1)
+            bundle = build_evidence_bundle(execution_id)
+            if bundle is None:
+                self._send_json(404, {"error": "Execution not found"})
+                return
+            self._send_json(200, bundle)
 
         else:
             self._send_json(404, {"error": "Not found"})
