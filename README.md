@@ -95,7 +95,7 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **116 tests, 0 failures.**
+Expected output: **132 tests, 0 failures.**
 
 ## Configuration (GL-020 Product Hardening)
 
@@ -227,6 +227,7 @@ curl -s http://127.0.0.1:8765/challenges | python3 -m json.tool
 | GET | /grant-executions | List grant executions (GL-023) — owner, grant_admin, auditor only |
 | GET | /grant-executions/:id | Get a single grant execution (GL-023) — owner, grant_admin, auditor only |
 | GET | /grants/:id/executions | List executions for a grant (GL-023) — owner, grant_admin, auditor only |
+| GET | /evidence/executions/:id | Read-only evidence bundle for a grant execution (GL-025) — owner, grant_admin, auditor only |
 | GET | / | Dashboard |
 | POST | /demo/tamper-grant/:id | **Demo only** — corrupt a grant field without re-signing |
 
@@ -317,6 +318,134 @@ curl -s -X POST http://127.0.0.1:8765/grants \
 - [docs/architecture.md](docs/architecture.md) — Component overview, request flow, stack decision
 - [docs/mvp_scope.md](docs/mvp_scope.md) — Sprint 1 scope, acceptance criteria, next sprints
 - [docs/security_boundaries.md](docs/security_boundaries.md) — What this MVP is NOT
+
+---
+
+## GL-025 — Execution Evidence Bundle
+
+GL-025 adds a single read-only endpoint that aggregates the full grant lifecycle for a given `GrantExecution` into a minimal, audit-verifiable evidence bundle. No new tables, no migrations, no UI.
+
+### Purpose
+
+The evidence bundle answers, for any execution ID:
+
+- **Who requested the grant** — requester operator ID and reason from the linked `GrantRequest`
+- **Who approved the grant request** — approver operator ID and timestamp
+- **Which grant was created** — grant ID, subject, role, action, resource, time window
+- **Who executed the protected action** — operator ID from the execution record
+- **Which action/resource was attempted** — action and resource fields from the execution
+- **Which challenge/proof was used** — challenge ID and result
+- **Whether the execution succeeded or was denied** — result field (`succeeded` | `denied` | `failed`)
+- **Whether usage limits affected the decision** — `usageLimits.affectedOutcome` flag
+- **Which audit events prove the lifecycle** — `auditTrail` array
+
+### Endpoint
+
+```
+GET /evidence/executions/:id
+```
+
+Returns `200` with the evidence bundle, or `404` if the execution does not exist.
+
+### Authorization
+
+| Mode | Who can read |
+|------|-------------|
+| Operator model enabled | `owner`, `grant_admin`, `auditor` |
+| Operator model disabled | Valid legacy `GRANTLAYER_ADMIN_TOKEN` Bearer token |
+
+`demo_operator` role is **denied**. Missing or invalid Bearer token fails closed.
+
+### Response shape
+
+```json
+{
+  "evidenceId": "<execution-id>",
+  "generatedAt": "<iso-timestamp>",
+  "executionId": "<execution-id>",
+  "grantId": "<grant-id or null>",
+  "grantRequestId": "<grant-request-id or null>",
+  "request": null,
+  "approval": null,
+  "grant": null,
+  "execution": {
+    "action": "restart-service",
+    "resource": "customer-env-a",
+    "operatorId": null,
+    "challengeId": null,
+    "challengeResult": "legacy_mode",
+    "policyResult": "Access granted",
+    "result": "succeeded",
+    "errorCode": null,
+    "executedAt": "<iso-timestamp>",
+    "auditEventId": "<audit-event-id>"
+  },
+  "usageLimits": {
+    "affectedOutcome": false
+  },
+  "auditTrail": []
+}
+```
+
+When a `GrantRequest` was approved, `request` and `approval` blocks are populated:
+
+```json
+"request": {
+  "id": "...",
+  "requestedBy": "req-operator-id",
+  "requestedAt": "...",
+  "reason": "Scheduled maintenance"
+},
+"approval": {
+  "approvedBy": "owner-operator-id",
+  "approvedAt": "..."
+}
+```
+
+When a `GrantRequest` was denied, the `approval` block contains `deniedBy`, `deniedAt`, and `denialReason` instead.
+
+When a `Grant` was matched, the `grant` block is populated:
+
+```json
+"grant": {
+  "id": "...",
+  "subjectId": "tech-01",
+  "role": "technician",
+  "action": "restart-service",
+  "resource": "customer-env-a",
+  "validFrom": "...",
+  "validUntil": "...",
+  "createdBy": "...",
+  "createdAt": "...",
+  "signingKeyId": "demo-ed25519-v1",
+  "payloadHash": "<sha256-hex>",
+  "maxUses": null,
+  "useCount": 1,
+  "grantSignatureResult": "valid"
+}
+```
+
+`grantSignatureResult` is included when available from audit data (`valid` | `missing` | `invalid` | `hash_mismatch` | `not_checked`). No raw signature bytes are emitted.
+
+When usage limits caused a denial, `usageLimits.affectedOutcome` is `true`:
+
+```json
+"usageLimits": {
+  "affectedOutcome": true,
+  "reason": "grant_usage_exhausted",
+  "maxUses": 1,
+  "useCount": 1
+}
+```
+
+### GL-025 explicit non-scope
+
+- No `GET /evidence/grants/:id` or `GET /evidence/grant-requests/:id`
+- No bulk evidence export
+- No downloadable bundles
+- No `bundleHash` or integrity hash
+- No raw grant signature bytes in response
+- No dashboard or frontend changes
 
 ## Tamper & Verify Demo
 
