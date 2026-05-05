@@ -33,6 +33,8 @@ class Grant:
     signature: Optional[str] = None
     signing_key_id: Optional[str] = None
     payload_hash: Optional[str] = None
+    max_uses: Optional[int] = None
+    use_count: int = 0
 
     def to_dict(self) -> dict:
         return asdict(self)

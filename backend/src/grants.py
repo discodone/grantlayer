@@ -26,6 +26,8 @@ def _row_to_grant(row) -> Grant:
         signature=row["signature"],
         signing_key_id=row["signing_key_id"],
         payload_hash=row["payload_hash"],
+        max_uses=row["max_uses"],
+        use_count=row["use_count"] or 0,
     )
 
 
@@ -53,12 +55,13 @@ def create_grant(grant: Grant) -> Grant:
         conn.execute(
             """INSERT INTO grants
                (id, subject_id, role, action, resource, valid_from, valid_until,
-                created_by, reason, revoked, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)""",
+                created_by, reason, revoked, created_at, max_uses, use_count)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)""",
             (
                 grant.id, grant.subject_id, grant.role, grant.action,
                 grant.resource, grant.valid_from, grant.valid_until,
                 grant.created_by, grant.reason, grant.created_at,
+                grant.max_uses, grant.use_count,
             ),
         )
         conn.commit()
@@ -117,6 +120,29 @@ def revoke_grant(grant_id: str, revoked_by: str, reason: str) -> bool:
                SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?
                WHERE id = ? AND revoked = 0""",
             (revoked_by, reason, revoked_at, grant_id),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+    finally:
+        conn.close()
+
+
+def try_consume_grant_use(grant_id: str) -> bool:
+    """Atomically increment use_count if the grant is not exhausted.
+
+    Returns True if the consumption succeeded, False if the grant
+    was already exhausted (use_count >= max_uses).
+    """
+    conn = get_conn()
+    try:
+        cur = conn.execute(
+            """
+            UPDATE grants
+            SET use_count = use_count + 1
+            WHERE id = ?
+              AND (max_uses IS NULL OR use_count < max_uses)
+            """,
+            (grant_id,),
         )
         conn.commit()
         return cur.rowcount > 0

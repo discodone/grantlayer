@@ -118,6 +118,17 @@ def handle_demo_action(
                     matched_grant_id=result.matched_grant_id,
                 )
 
+        # GL-024: Atomic grant usage consumption
+        if result.approved and result.matched_grant_id:
+            from .grants import try_consume_grant_use
+            consumed = try_consume_grant_use(result.matched_grant_id)
+            if not consumed:
+                result = PolicyResult(
+                    approved=False,
+                    reason="grant_usage_exhausted",
+                    matched_grant_id=result.matched_grant_id,
+                )
+
         # Populate execution record
         execution.grant_id = result.matched_grant_id
         execution.grant_request_id = get_grant_request_id_by_grant_id(result.matched_grant_id) if result.matched_grant_id else None

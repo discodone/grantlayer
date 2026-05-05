@@ -85,6 +85,17 @@ def init_db() -> None:
             except Exception:
                 pass  # column already exists
 
+        # GL-024: Migrate usage limit columns to grants
+        for col, ddl in [
+            ("max_uses", "INTEGER"),
+            ("use_count", "INTEGER NOT NULL DEFAULT 0"),
+        ]:
+            try:
+                conn.execute(f"ALTER TABLE grants ADD COLUMN {col} {ddl}")
+                conn.commit()
+            except Exception:
+                pass  # column already exists
+
         # Migrate: add grant_signature_result to audit_events (Sprint 2B)
         try:
             conn.execute(
