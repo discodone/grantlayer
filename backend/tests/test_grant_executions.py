@@ -239,6 +239,22 @@ class TestGrantExecutionModel(unittest.TestCase):
         execs = self.exec_mod.list_grant_executions()
         self.assertEqual(execs[0].operator_id, "op-123")
 
+    # ──────────────────────────────────────────────
+    # 8. audit_event_id is linked to execution record
+    # ──────────────────────────────────────────────
+    def test_execution_audit_event_id_linked(self):
+        self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        self.assertTrue(result["approved"])
+        self.assertIn("auditEventId", result)
+        self.assertIn("executionId", result)
+
+        execution = self.exec_mod.get_grant_execution(result["executionId"])
+        self.assertIsNotNone(execution)
+        self.assertEqual(execution.audit_event_id, result["auditEventId"])
+
 
 class TestGrantExecutionEndpoints(unittest.TestCase):
     """Test HTTP endpoints for grant executions."""
@@ -395,7 +411,46 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self.assertEqual(data[0]["grantId"], g.id)
 
     # ──────────────────────────────────────────────
-    # 11. Unauthorized role cannot access executions
+    # 11. GET /grant-executions filtered by grantId
+    # ──────────────────────────────────────────────
+    def test_grant_executions_filtered_by_grant_id(self):
+        self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
+        g1 = self._make_grant()
+        self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+
+        status_line, data = self._http_get(
+            f"/grant-executions?grantId={g1.id}", auth_token="auditor-token"
+        )
+        self.assertIn(b"200", status_line)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["grantId"], g1.id)
+
+    # ──────────────────────────────────────────────
+    # 12. GET /grant-executions filtered by operatorId
+    # ──────────────────────────────────────────────
+    def test_grant_executions_filtered_by_operator_id(self):
+        self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
+        self._make_grant()
+        self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            operator_id="op-123",
+        )
+        self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            operator_id="op-456",
+        )
+
+        status_line, data = self._http_get(
+            "/grant-executions?operatorId=op-123", auth_token="auditor-token"
+        )
+        self.assertIn(b"200", status_line)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["operatorId"], "op-123")
+
+    # ──────────────────────────────────────────────
+    # 13. Unauthorized role cannot access executions
     # ──────────────────────────────────────────────
     def test_unauthorized_role_cannot_access_executions(self):
         self._insert_operator("viewer-1", "Viewer", "grant_admin", "viewer-token")
