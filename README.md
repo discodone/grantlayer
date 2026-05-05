@@ -95,7 +95,7 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **67 tests, 0 failures.**
+Expected output: **116 tests, 0 failures.**
 
 ## Configuration (GL-020 Product Hardening)
 
@@ -213,7 +213,7 @@ curl -s http://127.0.0.1:8765/challenges | python3 -m json.tool
 | GET | /health | Health check |
 | GET | /grants | List all grants |
 | GET | /grants/:id | Get a single grant (includes signatureValid) |
-| POST | /grants | Create a grant |
+| POST | /grants | Create a grant (optional `maxUses`) |
 | POST | /grants/:id/revoke | Revoke a grant |
 | POST | /grant-requests | Create a grant request (GL-022) |
 | GET | /grant-requests | List grant requests (GL-022) |
@@ -263,10 +263,54 @@ Every protected action attempt creates a `GrantExecution` record. This closes th
 
 ### What GL-023 explicitly does NOT include
 
-- No usage caps or `max_uses` / `use_count`
-- No policy exhaustion logic
 - No write endpoints for executions (append-only ledger)
 - No dashboard or frontend changes
+
+## GL-024 — Grant Usage Limits & Exhaustion Policy
+
+Grants support optional usage limits that control how many times a grant can authorize a protected action.
+
+### Usage limit fields
+
+When grant data is returned (e.g. `GET /grants`, `GET /grants/:id`), the response includes:
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `maxUses` | `integer \| null` | Usage limit. `null` = unlimited. |
+| `useCount` | `integer` | Number of successful executions so far. |
+| `remainingUses` | `integer \| null` | `maxUses - useCount`. `null` when unlimited. |
+
+### Semantics
+
+- **`maxUses` omitted or `null`** — the grant can be used unlimited times.
+- **`maxUses: 1`** — one-time grant. Exactly one successful execution is allowed.
+- **`maxUses: N`** — fixed N-time grant. Exactly N successful executions are allowed.
+
+### Enforcement rules
+
+- Exhausted grants fail closed with reason `grant_usage_exhausted`.
+- Denied attempts (policy mismatch, expired grant, revoked grant, invalid challenge, signature failure) **do not** consume usage.
+- Failed attempts (internal handler error) **do not** consume usage.
+- Usage is consumed atomically **after** all other checks pass and before the action is executed.
+- Exhausted attempts still create a `denied` `GrantExecution` record and an audit event with reason `grant_usage_exhausted`.
+
+### Example: create a one-time grant
+
+```bash
+curl -s -X POST http://127.0.0.1:8765/grants \
+  -H "Content-Type: application/json" \
+  -d '{
+    "subjectId": "tech-01",
+    "role": "technician",
+    "action": "restart-service",
+    "resource": "customer-env-a",
+    "validFrom": "2026-05-02T00:00:00Z",
+    "validUntil": "2026-12-31T23:59:59Z",
+    "createdBy": "admin",
+    "reason": "Scheduled maintenance",
+    "maxUses": 1
+  }' | python3 -m json.tool
+```
 
 ## Docs
 

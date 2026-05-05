@@ -141,9 +141,24 @@ evaluate_access(request, grants, now):
     if now < valid_from    → DENY "not yet valid"
     if now > valid_until   → DENY "expired"
     if grant.revoked       → DENY "revoked"
+    if grant.max_uses is not None and grant.use_count >= grant.max_uses
+                           → DENY "grant_usage_exhausted"
     → APPROVE
   → DENY "No matching grant"
 ```
+
+### Atomic usage consumption (GL-024)
+
+After `evaluate_access()` returns `approved=true`, the protected action handler performs an atomic consumption step:
+
+1. `try_consume_grant_use(grant_id)` runs an `UPDATE` that increments `use_count` only if `max_uses IS NULL OR use_count < max_uses`.
+2. If the update affects zero rows (race condition or pre-check miss), the result is rewritten to `approved=false, reason="grant_usage_exhausted"`.
+3. The action proceeds only if consumption succeeds.
+
+This ensures:
+- **No over-use** even under concurrent requests.
+- **Denied/failed attempts do not increment usage.** Consumption happens only after all other checks pass.
+- **Exhausted attempts are fully logged.** A denied `GrantExecution` and audit event are created with `error_code = "grant_usage_exhausted"`.
 
 ## API Endpoints
 
@@ -364,13 +379,14 @@ Key management (DEMO ONLY):
 
 ## Data model
 
-**Grant** (Sprint 2B adds signature fields)
+**Grant** (Sprint 2B adds signature fields; GL-024 adds usage limit fields)
 ```
 id, subject_id, role, action, resource,
 valid_from, valid_until, created_by, reason,
 revoked (bool), revoked_by, revoked_reason, revoked_at,
 created_at,
-signature (TEXT), signing_key_id (TEXT), payload_hash (TEXT)
+signature (TEXT), signing_key_id (TEXT), payload_hash (TEXT),
+max_uses (INTEGER, nullable), use_count (INTEGER, default 0)
 ```
 
 **Operator** (Sprint 2E — GL-021)
@@ -448,13 +464,65 @@ executed_at, audit_event_id, metadata_json
 
 ### What GL-023 does NOT include
 
-- No usage caps (`max_uses`, `use_count`)
-- No policy exhaustion logic
+- ~~No usage caps (`max_uses`, `use_count`)~~ Addressed by GL-024.
 - No write endpoints for executions (append-only)
 - No dashboard or frontend changes
 - No `approval_status` on grants
 
-### Updated role authorization matrix (GL-021 + GL-022 + GL-023)
+## GL-024 — Grant Usage Limits & Exhaustion Policy
+
+GL-024 adds optional usage limits to the `Grant` entity. It uses the `GrantExecution` ledger (GL-023) to track every exhausted attempt.
+
+### Data model additions
+
+**Grant** fields added by GL-024:
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `max_uses` | `INTEGER` (nullable) | Usage cap. `null` = unlimited. |
+| `use_count` | `INTEGER` (default 0) | Successful executions so far. |
+
+Derived from the two:
+- `remainingUses` = `max_uses - use_count` (when `max_uses` is set).
+
+### Relation to GrantExecution ledger
+
+- Every protected action attempt creates a `GrantExecution` record (GL-023).
+- Successful executions consume one use and record `result = "succeeded"`.
+- Exhausted attempts record `result = "denied"` and `error_code = "grant_usage_exhausted"`.
+- Denied and failed attempts do **not** increment `use_count`, but they still create `GrantExecution` records.
+
+### Policy flow with usage limits
+
+```
+POST /demo-action
+  ├─ Existing checks remain (role, action, resource, time window, revocation)
+  ├─ Exhaustion pre-check: if max_uses is set and use_count >= max_uses → DENY
+  ├─ Signature verification (Sprint 2B)
+  ├─ Challenge validation (Sprint 2A)
+  ├─ Atomic consumption: UPDATE use_count = use_count + 1 WHERE use_count < max_uses
+  │   → if 0 rows updated → DENY "grant_usage_exhausted"
+  └─ Action executed → GrantExecution.result = "succeeded"
+```
+
+### Response fields
+
+Grant responses (`GET /grants`, `GET /grants/:id`) include:
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `maxUses` | `integer \| null` | Usage limit from `max_uses`. |
+| `useCount` | `integer` | Current `use_count`. |
+| `remainingUses` | `integer \| null` | `maxUses - useCount` when limited. |
+
+### `grant_usage_exhausted`
+
+- **Policy engine reason:** `grant_usage_exhausted` — returned when `max_uses` is set and `use_count >= max_uses`.
+- **Audit event:** `approved = false`, `reason = "grant_usage_exhausted"`.
+- **GrantExecution:** `result = "denied"`, `error_code = "grant_usage_exhausted"`.
+- **Response:** `POST /demo-action` returns `"approved": false`, `"reason": "grant_usage_exhausted"`.
+
+### Updated role authorization matrix (GL-021 + GL-022 + GL-023 + GL-024)
 
 | Role | `POST /grants` | `POST /grants/:id/revoke` | `GET /grants` | `GET /audit-events` | `POST /grant-requests` | `GET /grant-requests` | `POST /grant-requests/:id/approve` | `POST /grant-requests/:id/deny` | `POST /demo/tamper-grant/:id` | `GET /grant-executions` |
 |------|----------------|---------------------------|---------------|---------------------|------------------------|-----------------------|------------------------------------|--------------------------------|-------------------------------|-------------------------|

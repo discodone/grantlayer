@@ -216,8 +216,57 @@ GL-023 adds a minimal execution/usage ledger that records every protected action
 
 ### What GL-023 is NOT
 
-- **No usage caps.** There is no `max_uses`, `use_count`, or policy exhaustion logic.
+- ~~**No usage caps.**~~ Addressed by GL-024.
 - **No write endpoints.** Clients cannot create, update, or delete execution records.
 - **No dashboard or frontend changes.** The ledger is exposed via read-only JSON endpoints only.
 - **No approval_status on grants.** GL-023 does not modify the `grants` table design.
 - **No external services.** Execution records are stored in the local SQLite database.
+
+## GL-024 — Grant Usage Limits & Exhaustion Policy
+
+GL-024 adds optional usage limits to approved grants. It is purely backend enforcement; there are no UI, dashboard, or frontend changes.
+
+### `max_uses` semantics
+
+- `max_uses = null` (or omitted on creation) → unlimited uses.
+- `max_uses = 1` → one-time grant.
+- `max_uses = N` → fixed N-time grant.
+
+### `use_count` tracks successful executions only
+
+- `use_count` starts at `0` when the grant is created.
+- It is incremented **only** when a protected action is fully approved and executed.
+- It is **not** incremented for denied or failed attempts.
+
+### Denied/failed attempts do not consume usage
+
+- Policy mismatch, expired grant, revoked grant, invalid challenge, or signature failure → denial, no consumption.
+- Internal handler error after the authorization path began → failure, no consumption.
+
+### Exhausted grants fail closed
+
+- When `use_count >= max_uses`, the grant is exhausted.
+- Any subsequent attempt is denied with reason `grant_usage_exhausted`.
+- This is a hard fail-closed: the action is blocked before execution.
+
+### Exhausted attempts still create denied `GrantExecution` records
+
+- Every exhausted attempt creates a `GrantExecution` with `result = "denied"` and `error_code = "grant_usage_exhausted"`.
+- The record links to the matched grant, operator, challenge, and audit event.
+
+### `grant_usage_exhausted` audit reason / error code
+
+- Audit events for exhausted grants have `approved = false` and `reason = "grant_usage_exhausted"`.
+- `GrantExecution.error_code` is also `"grant_usage_exhausted"`.
+
+### No secrets/tokens stored or exposed
+
+- Usage limit fields (`max_uses`, `use_count`) are plain integers stored in the grants table.
+- No secrets, tokens, credentials, or sensitive values are involved in usage limit enforcement.
+- No env variables are required for GL-024.
+
+### No UI/dashboard/frontend changes
+
+- Usage limits are enforced entirely in the backend policy engine and protected action handler.
+- The dashboard does not display `useCount`, `maxUses`, or `remainingUses`.
+- No new frontend pages, routes, or visual components were added.
