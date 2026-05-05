@@ -3,12 +3,17 @@
 import os
 import datetime
 from typing import Optional
-from .models import AccessRequest, AuditEvent, PolicyResult
+from .models import AccessRequest, AuditEvent, PolicyResult, GrantExecution
 from .policy_engine import evaluate_access
 from .grants import list_grants
 from .audit_log import append_event
 from .challenges import validate_challenge
 from .crypto_signing import verify_grant_signature
+from .grant_executions import (
+    create_grant_execution,
+    update_grant_execution_audit_event_id,
+)
+from .grant_requests import get_grant_request_id_by_grant_id
 
 
 def _get_env_bool(name: str) -> bool:
@@ -22,106 +27,152 @@ def handle_demo_action(
     action: str,
     resource: str,
     challenge_id: Optional[str] = None,
+    operator_id: Optional[str] = None,
 ) -> dict:
     require_challenge = _get_env_bool("GRANTLAYER_REQUIRE_CHALLENGE")
 
-    # If challenge is required but missing, fail closed immediately.
-    if require_challenge and not challenge_id:
+    # Pre-allocate execution record for every attempt
+    execution = GrantExecution(
+        action=action,
+        resource=resource,
+        operator_id=operator_id,
+        challenge_id=challenge_id,
+    )
+
+    try:
+        # If challenge is required but missing, fail closed immediately.
+        if require_challenge and not challenge_id:
+            execution.challenge_result = "required_missing"
+            execution.policy_result = "denied"
+            execution.result = "denied"
+            execution.error_code = "challenge_required"
+            execution = create_grant_execution(execution)
+
+            event = AuditEvent(
+                subject_id=subject_id,
+                role=role,
+                action=action,
+                resource=resource,
+                approved=False,
+                reason="challenge_required",
+                challenge_present=False,
+                challenge_result="required_missing",
+                grant_signature_result="not_checked",
+            )
+            append_event(event)
+            update_grant_execution_audit_event_id(execution.id, event.id)
+            return {
+                "approved": False,
+                "reason": "challenge_required",
+                "challengeResult": "required_missing",
+                "auditEventId": event.id,
+                "grantSignatureResult": "not_checked",
+                "executionId": execution.id,
+        }
+
+        request = AccessRequest(
+            subject_id=subject_id,
+            role=role,
+            action=action,
+            resource=resource,
+        )
+
+        grants = list_grants()
+        now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+        result: PolicyResult = evaluate_access(request, grants, now)
+
+        # Sprint 2B: verify grant signature before proceeding
+        grant_signature_result: str = "not_checked"
+        if result.matched_grant_id:
+            matched_grant = next(
+                (g for g in grants if g.id == result.matched_grant_id), None
+            )
+            if matched_grant is not None:
+                sig_check = verify_grant_signature(matched_grant)
+                grant_signature_result = sig_check
+                if sig_check != "valid":
+                    deny_map = {
+                        "missing":       "grant_signature_missing",
+                        "invalid":       "grant_signature_invalid",
+                        "hash_mismatch": "grant_payload_hash_mismatch",
+                    }
+                    result = PolicyResult(
+                        approved=False,
+                        reason=deny_map.get(sig_check, f"grant_signature_{sig_check}"),
+                        matched_grant_id=result.matched_grant_id,
+                    )
+
+        challenge_present = challenge_id is not None
+        challenge_result = "legacy_mode"
+        resolved_challenge_id: Optional[str] = None
+
+        if challenge_present:
+            c_result, c_id = validate_challenge(challenge_id, subject_id, action, resource)
+            challenge_result = c_result
+            resolved_challenge_id = c_id
+            # Fail-closed: invalid challenge blocks even a valid grant
+            if c_result != "valid":
+                result = PolicyResult(
+                    approved=False,
+                    reason=f"Challenge invalid: {c_result}",
+                    matched_grant_id=result.matched_grant_id,
+                )
+
+        # Populate execution record
+        execution.grant_id = result.matched_grant_id
+        execution.grant_request_id = get_grant_request_id_by_grant_id(result.matched_grant_id) if result.matched_grant_id else None
+        execution.challenge_id = resolved_challenge_id
+        execution.challenge_result = challenge_result
+        execution.policy_result = result.reason
+        execution.result = "succeeded" if result.approved else "denied"
+        execution.error_code = None if result.approved else result.reason
+        execution = create_grant_execution(execution)
+
         event = AuditEvent(
             subject_id=subject_id,
             role=role,
             action=action,
             resource=resource,
-            approved=False,
-            reason="challenge_required",
-            challenge_present=False,
-            challenge_result="required_missing",
-            grant_signature_result="not_checked",
+            approved=result.approved,
+            reason=result.reason,
+            matched_grant_id=result.matched_grant_id,
+            challenge_id=resolved_challenge_id,
+            challenge_present=challenge_present,
+            challenge_result=challenge_result,
+            grant_signature_result=grant_signature_result,
         )
         append_event(event)
+        update_grant_execution_audit_event_id(execution.id, event.id)
+
+        if result.approved:
+            return {
+                "approved": True,
+                "message": f"[DEMO] Action '{action}' on '{resource}' approved for '{subject_id}'.",
+                "matchedGrantId": result.matched_grant_id,
+                "challengeId": resolved_challenge_id,
+                "auditEventId": event.id,
+                "grantSignatureResult": grant_signature_result,
+                "executionId": execution.id,
+            }
+        else:
+            return {
+                "approved": False,
+                "reason": result.reason,
+                "challengeResult": challenge_result,
+                "auditEventId": event.id,
+                "grantSignatureResult": grant_signature_result,
+                "executionId": execution.id,
+            }
+
+    except Exception:
+        # Internal handler error after authorization path began
+        execution.policy_result = "error"
+        execution.result = "failed"
+        execution.error_code = "internal_handler_error"
+        execution = create_grant_execution(execution)
         return {
             "approved": False,
-            "reason": "challenge_required",
-            "challengeResult": "required_missing",
-            "auditEventId": event.id,
+            "reason": "internal_handler_error",
             "grantSignatureResult": "not_checked",
-        }
-
-    request = AccessRequest(
-        subject_id=subject_id,
-        role=role,
-        action=action,
-        resource=resource,
-    )
-
-    grants = list_grants()
-    now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
-    result: PolicyResult = evaluate_access(request, grants, now)
-
-    # Sprint 2B: verify grant signature before proceeding
-    grant_signature_result: str = "not_checked"
-    if result.matched_grant_id:
-        matched_grant = next((g for g in grants if g.id == result.matched_grant_id), None)
-        if matched_grant is not None:
-            sig_check = verify_grant_signature(matched_grant)
-            grant_signature_result = sig_check
-            if sig_check != "valid":
-                deny_map = {
-                    "missing":       "grant_signature_missing",
-                    "invalid":       "grant_signature_invalid",
-                    "hash_mismatch": "grant_payload_hash_mismatch",
-                }
-                result = PolicyResult(
-                    approved=False,
-                    reason=deny_map.get(sig_check, f"grant_signature_{sig_check}"),
-                    matched_grant_id=result.matched_grant_id,
-                )
-
-    challenge_present = challenge_id is not None
-    challenge_result = "legacy_mode"
-    resolved_challenge_id: Optional[str] = None
-
-    if challenge_present:
-        c_result, c_id = validate_challenge(challenge_id, subject_id, action, resource)
-        challenge_result = c_result
-        resolved_challenge_id = c_id
-        # Fail-closed: invalid challenge blocks even a valid grant
-        if c_result != "valid":
-            result = PolicyResult(
-                approved=False,
-                reason=f"Challenge invalid: {c_result}",
-                matched_grant_id=result.matched_grant_id,
-            )
-
-    event = AuditEvent(
-        subject_id=subject_id,
-        role=role,
-        action=action,
-        resource=resource,
-        approved=result.approved,
-        reason=result.reason,
-        matched_grant_id=result.matched_grant_id,
-        challenge_id=resolved_challenge_id,
-        challenge_present=challenge_present,
-        challenge_result=challenge_result,
-        grant_signature_result=grant_signature_result,
-    )
-    append_event(event)
-
-    if result.approved:
-        return {
-            "approved": True,
-            "message": f"[DEMO] Action '{action}' on '{resource}' approved for '{subject_id}'.",
-            "matchedGrantId": result.matched_grant_id,
-            "challengeId": resolved_challenge_id,
-            "auditEventId": event.id,
-            "grantSignatureResult": grant_signature_result,
-        }
-    else:
-        return {
-            "approved": False,
-            "reason": result.reason,
-            "challengeResult": challenge_result,
-            "auditEventId": event.id,
-            "grantSignatureResult": grant_signature_result,
+            "executionId": execution.id,
         }

@@ -190,3 +190,34 @@ GL-022 adds a real approval workflow with a separate `grant_requests` table and 
 | `GET /grant-requests/:id` | ✅ | ✅ | ✅ | ❌ |
 | `POST /grant-requests/:id/approve` | ✅ | ✅ | ❌ | ❌ |
 | `POST /grant-requests/:id/deny` | ✅ | ✅ | ❌ | ❌ |
+
+## Sprint 2G — Grant Execution Audit & Usage Binding (GL-023)
+
+GL-023 adds a minimal execution/usage ledger that records every protected action attempt. It binds the actual execution to the authenticated operator, approved grant, original grant request, challenge result, and audit event.
+
+### What GL-023 is
+
+- **One row per protected action attempt.** Every call to `POST /demo-action` creates a `GrantExecution` record — whether approved, denied, or failed.
+- **Immutable append-only ledger.** Executions are created by the system; there are no write endpoints for clients.
+- **Read-only endpoints** for `owner`, `grant_admin`, and `auditor` roles:
+  - `GET /grant-executions`
+  - `GET /grant-executions/:id`
+  - `GET /grants/:id/executions`
+- **Linkage to related entities:**
+  - `grantId` — the matched grant (if any)
+  - `grantRequestId` — the original request (if the grant was created from an approved request)
+  - `operatorId` — the authenticated operator (when operator model is enabled)
+  - `challengeId` and `challengeResult` — the challenge used (if any)
+  - `auditEventId` — the linked audit event
+- **Three result values:**
+  - `succeeded` — protected action executed
+  - `denied` — policy, challenge, signature, auth, grant, or role condition blocked execution
+  - `failed` — internal handler error after authorization path began
+
+### What GL-023 is NOT
+
+- **No usage caps.** There is no `max_uses`, `use_count`, or policy exhaustion logic.
+- **No write endpoints.** Clients cannot create, update, or delete execution records.
+- **No dashboard or frontend changes.** The ledger is exposed via read-only JSON endpoints only.
+- **No approval_status on grants.** GL-023 does not modify the `grants` table design.
+- **No external services.** Execution records are stored in the local SQLite database.

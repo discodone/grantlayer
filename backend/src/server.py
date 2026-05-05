@@ -18,6 +18,7 @@ from .crypto_signing import ensure_demo_keypair, verify_grant_signature
 from . import config
 from . import operators as ops
 from . import grant_requests
+from . import grant_executions as execs
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -181,6 +182,54 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             else:
                 self._send_json(200, request.to_dict())
 
+        elif path == "/grant-executions":
+            if not config.ENABLE_OPERATOR_MODEL:
+                self._send_json(404, {"error": "operator_model_disabled"})
+                return
+            ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+            if not ok:
+                return
+            qs = parse_qs(urlparse(self.path).query)
+            limit = int(qs.get("limit", ["200"])[0])
+            grant_id = qs.get("grantId", [None])[0]
+            operator_id = qs.get("operatorId", [None])[0]
+            executions = execs.list_grant_executions(
+                grant_id=grant_id,
+                operator_id=operator_id,
+                limit=limit,
+            )
+            self._send_json(200, [e.to_dict() for e in executions])
+
+        elif m := re.fullmatch(r"/grant-executions/([^/]+)", path):
+            if not config.ENABLE_OPERATOR_MODEL:
+                self._send_json(404, {"error": "operator_model_disabled"})
+                return
+            ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+            if not ok:
+                return
+            execution_id = m.group(1)
+            execution = execs.get_grant_execution(execution_id)
+            if execution is None:
+                self._send_json(404, {"error": "Grant execution not found"})
+                return
+            self._send_json(200, execution.to_dict())
+
+        elif m := re.fullmatch(r"/grants/([^/]+)/executions", path):
+            if not config.ENABLE_OPERATOR_MODEL:
+                self._send_json(404, {"error": "operator_model_disabled"})
+                return
+            ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+            if not ok:
+                return
+            grant_id = m.group(1)
+            if get_grant(grant_id) is None:
+                self._send_json(404, {"error": "Grant not found"})
+                return
+            qs = parse_qs(urlparse(self.path).query)
+            limit = int(qs.get("limit", ["200"])[0])
+            executions = execs.list_grant_executions_for_grant(grant_id, limit=limit)
+            self._send_json(200, [e.to_dict() for e in executions])
+
         else:
             self._send_json(404, {"error": "Not found"})
 
@@ -301,12 +350,18 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, {"error": f"Missing fields: {missing}"})
                 return
+            caller_operator_id: str | None = None
+            if config.ENABLE_OPERATOR_MODEL:
+                op = ops.authenticate_operator(self.headers.get("Authorization"))
+                if op is not None:
+                    caller_operator_id = op.operator_id
             result = handle_demo_action(
                 subject_id=data["subjectId"],
                 role=data["role"],
                 action=data["action"],
                 resource=data["resource"],
                 challenge_id=data.get("challengeId"),
+                operator_id=caller_operator_id,
             )
             self._send_json(200 if result["approved"] else 403, result)
             

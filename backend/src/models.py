@@ -49,6 +49,46 @@ ChallengeResult = Literal[
 # GL-022 Grant Request statuses
 GrantRequestStatus = Literal["requested", "approved", "denied", "revoked", "expired"]
 
+# GL-023 Grant Execution result
+GrantExecutionResult = Literal["succeeded", "denied", "failed"]
+
+
+@dataclass
+class GrantExecution:
+    """GL-023 — One row per protected action attempt."""
+    action: str
+    resource: str
+    id: str = field(default_factory=_new_id)
+    grant_id: Optional[str] = None
+    grant_request_id: Optional[str] = None
+    operator_id: Optional[str] = None
+    challenge_id: Optional[str] = None
+    challenge_result: Optional[str] = None
+    policy_result: str = ""
+    result: GrantExecutionResult = "denied"
+    error_code: Optional[str] = None
+    executed_at: str = field(default_factory=_now_iso)
+    audit_event_id: Optional[str] = None
+    metadata_json: Optional[str] = None
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "grantId": self.grant_id,
+            "grantRequestId": self.grant_request_id,
+            "operatorId": self.operator_id,
+            "action": self.action,
+            "resource": self.resource,
+            "challengeId": self.challenge_id,
+            "challengeResult": self.challenge_result,
+            "policyResult": self.policy_result,
+            "result": self.result,
+            "errorCode": self.error_code,
+            "executedAt": self.executed_at,
+            "auditEventId": self.audit_event_id,
+            "metadataJson": self.metadata_json,
+        }
+
 
 @dataclass
 class Challenge:

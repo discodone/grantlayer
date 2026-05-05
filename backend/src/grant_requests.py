@@ -336,3 +336,16 @@ def _row_to_grant_request(row: sqlite3.Row) -> GrantRequest:
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )
+
+
+def get_grant_request_id_by_grant_id(grant_id: str) -> Optional[str]:
+    """Get the most recent grant_request_id associated with a grant_id."""
+    conn = db.get_conn()
+    try:
+        row = conn.execute(
+            "SELECT id FROM grant_requests WHERE grant_id = ? ORDER BY updated_at DESC LIMIT 1",
+            (grant_id,),
+        ).fetchone()
+        return row["id"] if row else None
+    finally:
+        conn.close()

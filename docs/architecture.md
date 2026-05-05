@@ -401,3 +401,64 @@ grant_signature_result
 challenge_result values: valid | missing | not_found | expired | already_used | mismatch | legacy_mode
 
 grant_signature_result values: valid | missing | invalid | hash_mismatch | not_checked
+
+## Grant Execution Ledger (GL-023)
+
+GL-023 adds a minimal execution/usage ledger that records every protected action attempt. It binds execution to operator, grant, grant request, challenge, and audit event.
+
+### Design decision: one row per attempt
+
+- Every call to `POST /demo-action` creates a `GrantExecution` record.
+- The record is created **before** the action result is known, then updated with the outcome.
+- Success, denial, and internal failure paths are all recorded.
+
+### GrantExecution entity
+
+```
+id, grant_id, grant_request_id, operator_id,
+action, resource,
+challenge_id, challenge_result,
+policy_result, result, error_code,
+executed_at, audit_event_id, metadata_json
+```
+
+### Result values
+
+| Value | Meaning |
+|-------|---------|
+| `succeeded` | Protected action executed |
+| `denied` | Policy, challenge, signature, auth, grant, or role condition blocked execution |
+| `failed` | Internal handler error after authorization path began |
+
+### Linkage
+
+- `grant_id` → the matched grant (if any)
+- `grant_request_id` → the original request (reverse lookup via `grant_requests.grant_id`)
+- `operator_id` → the authenticated operator (when operator model is enabled)
+- `challenge_id` / `challenge_result` → the challenge used (if any)
+- `audit_event_id` → the audit event written for this attempt
+
+### Read-only endpoints
+
+| Endpoint | Auth | Description |
+|----------|------|-------------|
+| `GET /grant-executions` | owner, grant_admin, auditor | List executions (filterable by `grantId`, `operatorId`) |
+| `GET /grant-executions/:id` | owner, grant_admin, auditor | Get single execution |
+| `GET /grants/:id/executions` | owner, grant_admin, auditor | List executions for a specific grant |
+
+### What GL-023 does NOT include
+
+- No usage caps (`max_uses`, `use_count`)
+- No policy exhaustion logic
+- No write endpoints for executions (append-only)
+- No dashboard or frontend changes
+- No `approval_status` on grants
+
+### Updated role authorization matrix (GL-021 + GL-022 + GL-023)
+
+| Role | `POST /grants` | `POST /grants/:id/revoke` | `GET /grants` | `GET /audit-events` | `POST /grant-requests` | `GET /grant-requests` | `POST /grant-requests/:id/approve` | `POST /grant-requests/:id/deny` | `POST /demo/tamper-grant/:id` | `GET /grant-executions` |
+|------|----------------|---------------------------|---------------|---------------------|------------------------|-----------------------|------------------------------------|--------------------------------|-------------------------------|-------------------------|
+| `owner` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `grant_admin` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| `auditor` | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
+| `demo_operator` | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |

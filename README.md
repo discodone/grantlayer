@@ -224,8 +224,49 @@ curl -s http://127.0.0.1:8765/challenges | python3 -m json.tool
 | GET | /challenges | List all challenges |
 | POST | /demo-action | Run protected demo action (optional challengeId) |
 | GET | /audit-events | List audit events |
+| GET | /grant-executions | List grant executions (GL-023) — owner, grant_admin, auditor only |
+| GET | /grant-executions/:id | Get a single grant execution (GL-023) — owner, grant_admin, auditor only |
+| GET | /grants/:id/executions | List executions for a grant (GL-023) — owner, grant_admin, auditor only |
 | GET | / | Dashboard |
 | POST | /demo/tamper-grant/:id | **Demo only** — corrupt a grant field without re-signing |
+
+## Grant Execution Ledger (GL-023)
+
+Every protected action attempt creates a `GrantExecution` record. This closes the audit/enforcement gap between an approved grant and the actual action execution.
+
+### What is recorded
+
+- **grantId** — the grant that matched (if any)
+- **grantRequestId** — the original grant request (if the grant was created from an approved request)
+- **operatorId** — the authenticated operator who triggered the action (when operator model is enabled)
+- **action** and **resource** — what was attempted
+- **challengeId** and **challengeResult** — the challenge/proof used (if any)
+- **policyResult** — the policy engine reason (e.g. "Access granted", "No grant found...")
+- **result** — `succeeded` | `denied` | `failed`
+- **errorCode** — the specific failure reason when denied or failed
+- **executedAt** — ISO timestamp
+- **auditEventId** — linked audit event for full traceability
+
+### Result values
+
+- **succeeded** — the protected action was executed
+- **denied** — a policy, challenge, signature, auth, grant, or role condition blocked execution
+- **failed** — an internal handler error occurred after the authorization path began
+
+### Read-only endpoints
+
+- `GET /grant-executions` — list executions (filterable by `grantId`, `operatorId`)
+- `GET /grant-executions/:id` — get a single execution
+- `GET /grants/:id/executions` — list executions for a specific grant
+
+**Authorization:** `owner`, `grant_admin`, or `auditor` role required.
+
+### What GL-023 explicitly does NOT include
+
+- No usage caps or `max_uses` / `use_count`
+- No policy exhaustion logic
+- No write endpoints for executions (append-only ledger)
+- No dashboard or frontend changes
 
 ## Docs
 
