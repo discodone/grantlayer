@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
 
 from .db import init_db
-from .models import Grant
+from .models import Grant, GrantRequest
 from .grants import list_grants, create_grant, revoke_grant, get_grant, tamper_grant
 from .audit_log import list_events
 from .demo_action import handle_demo_action
@@ -17,6 +17,7 @@ from .auth import check_auth, check_admin_token, admin_token_warning, admin_toke
 from .crypto_signing import ensure_demo_keypair, verify_grant_signature
 from . import config
 from . import operators as ops
+from . import grant_requests
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -158,6 +159,27 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(401, {"error": "operator_auth_required"})
                 return
             self._send_json(200, op.to_dict())
+            
+        elif path == "/grant-requests":
+            if not config.ENABLE_OPERATOR_MODEL:
+                self._send_json(404, {"error": "operator_model_disabled"})
+                return
+                
+            qs = parse_qs(urlparse(self.path).query)
+            status_filter = None
+            if "status" in qs and qs["status"]:
+                status_filter = qs["status"][0]
+                
+            requests = grant_requests.list_grant_requests(status_filter=status_filter)
+            self._send_json(200, [r.to_dict() for r in requests])
+            
+        elif m := re.fullmatch(r"/grant-requests/([^/]+)", path):
+            request_id = m.group(1)
+            request = grant_requests.get_grant_request(request_id)
+            if request is None:
+                self._send_json(404, {"error": "Grant request not found"})
+            else:
+                self._send_json(200, request.to_dict())
 
         else:
             self._send_json(404, {"error": "Not found"})
@@ -287,6 +309,119 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 challenge_id=data.get("challengeId"),
             )
             self._send_json(200 if result["approved"] else 403, result)
+            
+        elif path == "/grant-requests":
+            # Create a new grant request
+            if not config.ENABLE_OPERATOR_MODEL:
+                self._send_json(404, {"error": "operator_model_disabled"})
+                return
+                
+            # Only grant_admin or owner roles can create requests
+            ok, payload = self._require_operator(["owner", "grant_admin"])
+            if not ok:
+                return
+            operator_id = payload["operator"]["operatorId"]
+            
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+                
+            missing = self._missing(data, [
+                "subjectId", "role", "action", "resource",
+                "validFrom", "validUntil", "reason",
+            ])
+            if missing:
+                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                return
+                
+            request = GrantRequest(
+                subject_id=data["subjectId"],
+                role=data["role"],
+                action=data["action"],
+                resource=data["resource"],
+                valid_from=data["validFrom"],
+                valid_until=data["validUntil"],
+                requested_by=operator_id,
+                reason=data["reason"],
+            )
+            
+            created_request = grant_requests.create_grant_request(request)
+            self._send_json(201, created_request.to_dict())
+            
+        elif m := re.fullmatch(r"/grant-requests/([^/]+)/approve", path):
+            if not config.ENABLE_OPERATOR_MODEL:
+                self._send_json(404, {"error": "operator_model_disabled"})
+                return
+                
+            # Only grant_admin or owner roles can approve requests
+            ok, payload = self._require_operator(["owner", "grant_admin"])
+            if not ok:
+                return
+            operator_id = payload["operator"]["operatorId"]
+            
+            request_id = m.group(1)
+            request = grant_requests.get_grant_request(request_id)
+            
+            if request is None:
+                self._send_json(404, {"error": "Grant request not found"})
+                return
+                
+            # Don't allow approving your own requests
+            if request.requested_by == operator_id:
+                self._send_json(403, {
+                    "error": "Cannot approve your own request",
+                    "requestedBy": request.requested_by,
+                    "approverId": operator_id
+                })
+                return
+                
+            try:
+                updated_request, new_grant = grant_requests.approve_grant_request(request_id, operator_id)
+                self._send_json(200, {
+                    "ok": True,
+                    "request": updated_request.to_dict(),
+                    "grant": new_grant.to_dict()
+                })
+            except ValueError as e:
+                self._send_json(400, {"error": str(e)})
+                
+        elif m := re.fullmatch(r"/grant-requests/([^/]+)/deny", path):
+            if not config.ENABLE_OPERATOR_MODEL:
+                self._send_json(404, {"error": "operator_model_disabled"})
+                return
+                
+            # Only grant_admin or owner roles can deny requests
+            ok, payload = self._require_operator(["owner", "grant_admin"])
+            if not ok:
+                return
+            operator_id = payload["operator"]["operatorId"]
+            
+            request_id = m.group(1)
+            request = grant_requests.get_grant_request(request_id)
+            
+            if request is None:
+                self._send_json(404, {"error": "Grant request not found"})
+                return
+                
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+                
+            if "reason" not in data or not data["reason"]:
+                self._send_json(400, {"error": "Denial reason is required"})
+                return
+                
+            try:
+                updated_request = grant_requests.deny_grant_request(
+                    request_id, operator_id, data["reason"]
+                )
+                self._send_json(200, {"ok": True, "request": updated_request.to_dict()})
+            except ValueError as e:
+                self._send_json(400, {"error": str(e)})
 
         else:
             self._send_json(404, {"error": "Not found"})

@@ -46,6 +46,9 @@ ChallengeResult = Literal[
     "already_used", "mismatch", "legacy_mode", "required_missing",
 ]
 
+# GL-022 Grant Request statuses
+GrantRequestStatus = Literal["requested", "approved", "denied", "revoked", "expired"]
+
 
 @dataclass
 class Challenge:
@@ -116,3 +119,46 @@ class Operator:
             "role": self.role,
             "active": self.active,
         }
+
+
+# ──────────────────────────────────────────────
+# GL-022 Grant Request model
+# ──────────────────────────────────────────────
+
+@dataclass
+class GrantRequest:
+    """Grant Request entity for approval workflow."""
+    subject_id: str
+    role: str
+    action: str
+    resource: str
+    valid_from: str
+    valid_until: str
+    requested_by: str  # Operator ID who requested
+    reason: str
+    id: str = field(default_factory=_new_id)
+    status: GrantRequestStatus = "requested"
+    
+    # Approval fields
+    approved_by: Optional[str] = None
+    approved_at: Optional[str] = None
+    
+    # Denial fields
+    denied_by: Optional[str] = None
+    denied_at: Optional[str] = None
+    denial_reason: Optional[str] = None
+    
+    # Revocation fields
+    revoked_by: Optional[str] = None
+    revoked_at: Optional[str] = None
+    revoked_reason: Optional[str] = None
+    
+    # Link to created grant (if approved)
+    grant_id: Optional[str] = None
+    
+    # Timestamps
+    created_at: str = field(default_factory=_now_iso)
+    updated_at: str = field(default_factory=_now_iso)
+
+    def to_dict(self) -> dict:
+        return asdict(self)

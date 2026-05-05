@@ -98,5 +98,32 @@ def init_db() -> None:
         # GL-021: Initialize operators table + bootstrap
         from . import operators
         operators.ensure_operators_table()
+        
+        # GL-022: Initialize grant_requests table
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS grant_requests (
+                id              TEXT PRIMARY KEY,
+                subject_id      TEXT NOT NULL,
+                role            TEXT NOT NULL,
+                action          TEXT NOT NULL,
+                resource        TEXT NOT NULL,
+                valid_from      TEXT NOT NULL,
+                valid_until     TEXT NOT NULL,
+                requested_by    TEXT NOT NULL,
+                reason          TEXT NOT NULL,
+                status          TEXT NOT NULL DEFAULT 'requested',
+                approved_by     TEXT,
+                approved_at     TEXT,
+                denied_by       TEXT,
+                denied_at       TEXT,
+                denial_reason   TEXT,
+                revoked_by      TEXT,
+                revoked_at      TEXT,
+                revoked_reason  TEXT,
+                grant_id        TEXT,
+                created_at      TEXT NOT NULL,
+                updated_at      TEXT NOT NULL
+            );
+        """)
     finally:
         conn.close()
