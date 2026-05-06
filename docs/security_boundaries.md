@@ -270,3 +270,107 @@ GL-024 adds optional usage limits to approved grants. It is purely backend enfor
 - Usage limits are enforced entirely in the backend policy engine and protected action handler.
 - The dashboard does not display `useCount`, `maxUses`, or `remainingUses`.
 - No new frontend pages, routes, or visual components were added.
+
+## GL-026 — Evidence Bundle Integrity Hash & Export Readiness
+
+GL-026 adds a deterministic integrity hash (`evidenceHash`) to the evidence bundle returned by `GET /evidence/executions/:id`. This section defines the security boundaries of that hash.
+
+### What the hash is
+
+- **Integrity metadata only.** The hash is computed on-the-fly when the bundle is built. It is not cryptographically signed, not blockchain-anchored, and not externally notarized.
+- ** SHA-256 of canonical JSON.** The input is the evidence bundle with all object keys sorted recursively, serialized with compact separators, after removing volatile/self-referential fields.
+
+### What the hash proves
+
+- That the bundle content (request, approval, grant, execution, usageLimits, auditTrail) has not been altered since the hash was computed.
+- An auditor can recompute the hash offline and compare it with the returned `evidenceHash`.
+
+### What the hash does NOT prove
+
+- **Database integrity.** The hash is computed at read time; it does not prove the underlying SQLite database was not tampered with before the bundle was built.
+- **Cryptographic grant signature.** The Ed25519 grant signature verifies the grant's own integrity. The bundle hash is a separate, higher-level aggregation hash.
+- **Legal validity or compliance.** The hash is a local demonstrator feature, not a legally binding audit proof.
+- **Blockchain anchoring or external notarization.** No third-party service is involved.
+
+### Exclusions from hash input
+
+| Excluded field | Reason |
+|----------------|--------|
+| `generatedAt` | Wall-clock timestamp; changes on every rebuild |
+| `evidenceHash` | Cannot hash itself |
+| `canonicalVersion` | Serialization metadata, not evidence data |
+| `hashAlgorithm` | Hash scheme metadata, not evidence data |
+
+### No secrets in bundle or hash input
+
+The evidence bundle and its canonical JSON representation never contain:
+- Bearer tokens or operator tokens
+- Token hashes or salts
+- Raw Ed25519 signature bytes (only `grantSignatureResult` enum values)
+- Environment variable values
+- Private keys
+
+Only safe, already-public metadata is included.
+
+### GL-026 is NOT
+
+- **Not blockchain.** No smart contracts, no wallet signatures, no testnet, no mainnet.
+- **Not external notarization.** No third-party timestamping or attestation service.
+- **Not a PDF/ZIP/download export.** The bundle remains a JSON API response.
+- **Not a UI/dashboard/frontend change.** Hash fields appear only in JSON responses.
+- **Not a new endpoint.** `GET /evidence/executions/:id` is unchanged except for additional response fields.
+- **Not a schema migration.** The hash is computed at runtime; no database columns are added.
+- **Not a persisted hash.** The hash is not stored in SQLite.
+- **Not a verify endpoint.** There is no `POST /evidence/verify`; auditors recompute offline.
+
+## GL-026 — Evidence Bundle Integrity Hash & Export Readiness
+
+GL-026 adds a deterministic integrity hash (`evidenceHash`) to the evidence bundle returned by `GET /evidence/executions/:id`. This section defines the security boundaries of that hash.
+
+### What the hash is
+
+- **Integrity metadata only.** The hash is computed on-the-fly when the bundle is built. It is not cryptographically signed, not blockchain-anchored, and not externally notarized.
+- ** SHA-256 of canonical JSON.** The input is the evidence bundle with all object keys sorted recursively, serialized with compact separators, after removing volatile/self-referential fields.
+
+### What the hash proves
+
+- That the bundle content (request, approval, grant, execution, usageLimits, auditTrail) has not been altered since the hash was computed.
+- An auditor can recompute the hash offline and compare it with the returned `evidenceHash`.
+
+### What the hash does NOT prove
+
+- **Database integrity.** The hash is computed at read time; it does not prove the underlying SQLite database was not tampered with before the bundle was built.
+- **Cryptographic grant signature.** The Ed25519 grant signature verifies the grant's own integrity. The bundle hash is a separate, higher-level aggregation hash.
+- **Legal validity or compliance.** The hash is a local demonstrator feature, not a legally binding audit proof.
+- **Blockchain anchoring or external notarization.** No third-party service is involved.
+
+### Exclusions from hash input
+
+| Excluded field | Reason |
+|----------------|--------|
+| `generatedAt` | Wall-clock timestamp; changes on every rebuild |
+| `evidenceHash` | Cannot hash itself |
+| `canonicalVersion` | Serialization metadata, not evidence data |
+| `hashAlgorithm` | Hash scheme metadata, not evidence data |
+
+### No secrets in bundle or hash input
+
+The evidence bundle and its canonical JSON representation never contain:
+- Bearer tokens or operator tokens
+- Token hashes or salts
+- Raw Ed25519 signature bytes (only `grantSignatureResult` enum values)
+- Environment variable values
+- Private keys
+
+Only safe, already-public metadata is included.
+
+### GL-026 is NOT
+
+- **Not blockchain.** No smart contracts, no wallet signatures, no testnet, no mainnet.
+- **Not external notarization.** No third-party timestamping or attestation service.
+- **Not a PDF/ZIP/download export.** The bundle remains a JSON API response.
+- **Not a UI/dashboard/frontend change.** Hash fields appear only in JSON responses.
+- **Not a new endpoint.** `GET /evidence/executions/:id` is unchanged except for additional response fields.
+- **Not a schema migration.** The hash is computed at runtime; no database columns are added.
+- **Not a persisted hash.** The hash is not stored in SQLite.
+- **Not a verify endpoint.** There is no `POST /evidence/verify`; auditors recompute offline.

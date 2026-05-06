@@ -530,3 +530,177 @@ Grant responses (`GET /grants`, `GET /grants/:id`) include:
 | `grant_admin` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
 | `auditor` | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
 | `demo_operator` | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+
+## GL-026 — Evidence Bundle Integrity Hash & Export Readiness
+
+GL-026 makes the evidence bundle cryptographically stable by adding a deterministic canonical representation and a SHA-256 integrity hash. No schema migration, no new endpoint, no persisted hash.
+
+### Architecture
+
+```
+GET /evidence/executions/:id
+  │
+  ▼
+evidence_bundle.build_evidence_bundle(execution_id)
+  │
+  ├─ Load GrantExecution from SQLite
+  ├─ Load linked Grant, GrantRequest, AuditEvent
+  ├─ Load related audit events (bounded, safe)
+  │
+  ├─ Assemble bundle dict:
+  │   evidenceId, generatedAt, executionId, grantId, grantRequestId,
+  │   request, approval, grant, execution, usageLimits, auditTrail
+  │
+  ├─ Sort auditTrail by (timestamp, id)          ← deterministic ordering
+  │
+  ├─ canonical_evidence_bundle(bundle):
+  │     scrub generatedAt, evidenceHash, canonicalVersion, hashAlgorithm
+  │     recursively sort all dict keys alphabetically
+  │     json.dumps with separators=(",", ":")
+  │
+  ├─ compute_evidence_hash(bundle):
+  │     hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
+  │     → 64-char lowercase hex string
+  │
+  └─ Attach metadata:
+        bundle["evidenceHash"]      = <64-char hex>
+        bundle["canonicalVersion"]  = "gl-evidence-v1"
+        bundle["hashAlgorithm"]     = "sha256"
+```
+
+### Design decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| **No schema migration** | The hash is computed at build time; no new DB columns. |
+| **No new endpoint** | `GET /evidence/executions/:id` is unchanged except for added response fields. |
+| **No persisted hash** | The hash is not stored in SQLite. Recomputing on read is cheap and guarantees consistency with current data. |
+| **Strip four fields from canonical form** | `generatedAt` (wall-clock volatile), `evidenceHash` (self-reference), `canonicalVersion` and `hashAlgorithm` (metadata, not evidence). |
+| **Recursive key sort** | Guarantees identical JSON output regardless of Python dict insertion order. |
+| **Compact separators** | `json.dumps(..., separators=(",", ":"))` removes whitespace for a stable byte stream. |
+| **64-char lowercase hex** | Standard SHA-256 representation; human-readable, URL-safe, no prefixes. |
+| **No verify endpoint** | Offline auditor recomputation is preferred; no new write-like endpoint needed. |
+
+### Deterministic audit trail ordering
+
+Before hashing, the audit trail is sorted by:
+1. `timestamp` ascending (ISO string)
+2. `id` ascending (UUID string, tie-breaker)
+
+This ensures the same set of events always produces the same canonical JSON, even if SQLite query plans change.
+
+### What is included in the hash
+
+- `evidenceId`, `executionId`, `grantId`, `grantRequestId`
+- `request` block (if present): `id`, `requestedBy`, `requestedAt`, `reason`
+- `approval` block (if present): `approvedBy`/`deniedBy`, `approvedAt`/`deniedAt`, `denialReason`
+- `grant` block (if present): `id`, `subjectId`, `role`, `action`, `resource`, `validFrom`, `validUntil`, `createdBy`, `createdAt`, `signingKeyId`, `payloadHash`, `maxUses`, `useCount`, `grantSignatureResult`
+- `execution` block: `action`, `resource`, `operatorId`, `challengeId`, `challengeResult`, `policyResult`, `result`, `errorCode`, `executedAt`, `auditEventId`
+- `usageLimits` block: `affectedOutcome`, `maxUses`, `useCount`, `reason`
+- `auditTrail` array: each event's safe fields (`id`, `timestamp`, `subject_id`, `role`, `action`, `resource`, `approved`, `reason`, `matched_grant_id`, `challenge_id`, `challenge_present`, `challenge_result`, `grant_signature_result`)
+
+### What is NOT included in the hash
+
+- `generatedAt` — volatile wall-clock timestamp
+- `evidenceHash` — cannot include itself
+- `canonicalVersion` — serialization version metadata
+- `hashAlgorithm` — algorithm metadata
+- Any tokens, token hashes, salts, env values, private keys, or raw signatures
+
+### GL-026 does NOT include
+
+- No blockchain anchoring
+- No external notarization service
+- No PDF/ZIP/download export
+- No UI/dashboard/frontend changes
+- No new endpoint
+- No schema migration
+- No persisted hash in database
+- No `POST /evidence/verify` endpoint
+
+## GL-026 — Evidence Bundle Integrity Hash & Export Readiness
+
+GL-026 makes the evidence bundle cryptographically stable by adding a deterministic canonical representation and a SHA-256 integrity hash. No schema migration, no new endpoint, no persisted hash.
+
+### Architecture
+
+```
+GET /evidence/executions/:id
+  │
+  ▼
+evidence_bundle.build_evidence_bundle(execution_id)
+  │
+  ├─ Load GrantExecution from SQLite
+  ├─ Load linked Grant, GrantRequest, AuditEvent
+  ├─ Load related audit events (bounded, safe)
+  │
+  ├─ Assemble bundle dict:
+  │   evidenceId, generatedAt, executionId, grantId, grantRequestId,
+  │   request, approval, grant, execution, usageLimits, auditTrail
+  │
+  ├─ Sort auditTrail by (timestamp, id)          ← deterministic ordering
+  │
+  ├─ canonical_evidence_bundle(bundle):
+  │     scrub generatedAt, evidenceHash, canonicalVersion, hashAlgorithm
+  │     recursively sort all dict keys alphabetically
+  │     json.dumps with separators=(",", ":")
+  │
+  ├─ compute_evidence_hash(bundle):
+  │     hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
+  │     → 64-char lowercase hex string
+  │
+  └─ Attach metadata:
+        bundle["evidenceHash"]      = <64-char hex>
+        bundle["canonicalVersion"]  = "gl-evidence-v1"
+        bundle["hashAlgorithm"]     = "sha256"
+```
+
+### Design decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| **No schema migration** | The hash is computed at build time; no new DB columns. |
+| **No new endpoint** | `GET /evidence/executions/:id` is unchanged except for added response fields. |
+| **No persisted hash** | The hash is not stored in SQLite. Recomputing on read is cheap and guarantees consistency with current data. |
+| **Strip four fields from canonical form** | `generatedAt` (wall-clock volatile), `evidenceHash` (self-reference), `canonicalVersion` and `hashAlgorithm` (metadata, not evidence). |
+| **Recursive key sort** | Guarantees identical JSON output regardless of Python dict insertion order. |
+| **Compact separators** | `json.dumps(..., separators=(",", ":"))` removes whitespace for a stable byte stream. |
+| **64-char lowercase hex** | Standard SHA-256 representation; human-readable, URL-safe, no prefixes. |
+| **No verify endpoint** | Offline auditor recomputation is preferred; no new write-like endpoint needed. |
+
+### Deterministic audit trail ordering
+
+Before hashing, the audit trail is sorted by:
+1. `timestamp` ascending (ISO string)
+2. `id` ascending (UUID string, tie-breaker)
+
+This ensures the same set of events always produces the same canonical JSON, even if SQLite query plans change.
+
+### What is included in the hash
+
+- `evidenceId`, `executionId`, `grantId`, `grantRequestId`
+- `request` block (if present): `id`, `requestedBy`, `requestedAt`, `reason`
+- `approval` block (if present): `approvedBy`/`deniedBy`, `approvedAt`/`deniedAt`, `denialReason`
+- `grant` block (if present): `id`, `subjectId`, `role`, `action`, `resource`, `validFrom`, `validUntil`, `createdBy`, `createdAt`, `signingKeyId`, `payloadHash`, `maxUses`, `useCount`, `grantSignatureResult`
+- `execution` block: `action`, `resource`, `operatorId`, `challengeId`, `challengeResult`, `policyResult`, `result`, `errorCode`, `executedAt`, `auditEventId`
+- `usageLimits` block: `affectedOutcome`, `maxUses`, `useCount`, `reason`
+- `auditTrail` array: each event's safe fields (`id`, `timestamp`, `subject_id`, `role`, `action`, `resource`, `approved`, `reason`, `matched_grant_id`, `challenge_id`, `challenge_present`, `challenge_result`, `grant_signature_result`)
+
+### What is NOT included in the hash
+
+- `generatedAt` — volatile wall-clock timestamp
+- `evidenceHash` — cannot include itself
+- `canonicalVersion` — serialization version metadata
+- `hashAlgorithm` — algorithm metadata
+- Any tokens, token hashes, salts, env values, private keys, or raw signatures
+
+### GL-026 does NOT include
+
+- No blockchain anchoring
+- No external notarization service
+- No PDF/ZIP/download export
+- No UI/dashboard/frontend changes
+- No new endpoint
+- No schema migration
+- No persisted hash in database
+- No `POST /evidence/verify` endpoint
