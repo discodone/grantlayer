@@ -1,12 +1,15 @@
-"""GrantLayer MVP — GL-025 Evidence bundle builder.
+"""GrantLayer MVP — GL-025 / GL-026 Evidence bundle builder.
 
 Read-only aggregation of the full grant lifecycle for a single
-GrantExecution.  Produces a safe, flat JSON evidence bundle.
+GrantExecution.  Produces a safe, flat JSON evidence bundle
+with a deterministic integrity hash (GL-026).
 No mutation, no new tables, no migrations.
 """
 
 from typing import Optional, Any
 import datetime
+import hashlib
+import json
 
 from . import audit_log
 from . import grant_executions as execs
@@ -47,6 +50,39 @@ def _audit_to_safe_dict(event: AuditEvent) -> dict[str, Any]:
             d[key] = value
     # NEVER include token hashes, env values, or internal secrets.
     return d
+
+
+def _sort_keys_deep(obj: Any) -> Any:
+    """Recursively sort dict keys for deterministic JSON."""
+    if isinstance(obj, dict):
+        return {k: _sort_keys_deep(v) for k, v in sorted(obj.items())}
+    if isinstance(obj, list):
+        return [_sort_keys_deep(v) for v in obj]
+    return obj
+
+
+def canonical_evidence_bundle(bundle: dict[str, Any]) -> str:
+    """Return a deterministic, canonical JSON string for the bundle.
+
+    Excludes mutable/generated fields (generatedAt, evidenceHash,
+    canonicalVersion, hashAlgorithm) so the hash is stable across rebuilds.
+    """
+    scrubbed = dict(bundle)
+    scrubbed.pop("generatedAt", None)
+    scrubbed.pop("evidenceHash", None)
+    scrubbed.pop("canonicalVersion", None)
+    scrubbed.pop("hashAlgorithm", None)
+    canonical = _sort_keys_deep(scrubbed)
+    return json.dumps(canonical, separators=(",", ":"), ensure_ascii=False, default=str)
+
+
+def compute_evidence_hash(bundle: dict[str, Any]) -> str:
+    """Compute the SHA-256 evidence hash for a bundle dict.
+
+    Returns a 64-character lowercase hex string.
+    """
+    canonical = canonical_evidence_bundle(bundle)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def build_evidence_bundle(execution_id: str) -> Optional[dict[str, Any]]:
@@ -182,6 +218,14 @@ def build_evidence_bundle(execution_id: str) -> Optional[dict[str, Any]]:
     for ev_dict in related_events:
         if ev_dict.get("id") != primary_event_id:
             audit_trail.append(ev_dict)
+
+    # GL-026: sort audit trail deterministically by timestamp then id
+    audit_trail.sort(key=lambda ev: (ev.get("timestamp") or "", ev.get("id") or ""))
     bundle["auditTrail"] = audit_trail
+
+    # GL-026: compute deterministic evidence hash (before exposing hash metadata)
+    bundle["evidenceHash"] = compute_evidence_hash(bundle)
+    bundle["canonicalVersion"] = "gl-evidence-v1"
+    bundle["hashAlgorithm"] = "sha256"
 
     return bundle

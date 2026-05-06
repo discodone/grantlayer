@@ -443,9 +443,95 @@ When usage limits caused a denial, `usageLimits.affectedOutcome` is `true`:
 - No `GET /evidence/grants/:id` or `GET /evidence/grant-requests/:id`
 - No bulk evidence export
 - No downloadable bundles
-- No `bundleHash` or integrity hash
+- ~~No `bundleHash` or integrity hash~~ Addressed by GL-026 (`evidenceHash`).
 - No raw grant signature bytes in response
 - No dashboard or frontend changes
+
+## GL-026 — Evidence Bundle Integrity Hash & Export Readiness
+
+GL-026 adds a deterministic integrity hash to every evidence bundle so auditors can later verify whether a bundle has changed. This is **not** blockchain anchoring, external notarization, or a downloadable export. It is a local, self-contained integrity mechanism.
+
+### What GL-026 adds
+
+The `GET /evidence/executions/:id` response now includes three metadata fields:
+
+```json
+{
+  "evidenceId": "<execution-id>",
+  "generatedAt": "<iso-timestamp>",
+  "canonicalVersion": "gl-evidence-v1",
+  "hashAlgorithm": "sha256",
+  "evidenceHash": "<64-char-lowercase-sha256-hex>",
+  ...
+}
+```
+
+| Field | Value | Meaning |
+|-------|-------|---------|
+| `canonicalVersion` | `gl-evidence-v1` | Canonical serialization version. Used for future format evolution. |
+| `hashAlgorithm` | `sha256` | The hash algorithm used to compute `evidenceHash`. |
+| `evidenceHash` | 64-char lowercase hex | SHA-256 digest of the canonical JSON representation of the bundle. |
+
+### How the hash is computed
+
+1. **Build the bundle** — same aggregation as GL-025 (request, approval, grant, execution, usageLimits, auditTrail).
+2. **Sort the audit trail** — audit events are ordered deterministically by `timestamp` then `id`.
+3. **Strip volatile/self-referential fields** — `generatedAt`, `evidenceHash`, `canonicalVersion`, and `hashAlgorithm` are removed from the input before hashing.
+4. **Canonicalize** — all object keys are sorted recursively alphabetically. JSON is emitted with compact separators (`separators=(",", ":")`).
+5. **Hash** — `hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()` produces the 64-character lowercase hex string.
+
+### Why these exclusions?
+
+| Excluded field | Reason |
+|----------------|--------|
+| `generatedAt` | Wall-clock timestamp changes on every rebuild; including it would make the hash unstable. |
+| `evidenceHash` | A hash cannot include itself without recursion. |
+| `canonicalVersion` | Metadata about the serialization scheme, not part of the evidence data. |
+| `hashAlgorithm` | Metadata about the hash scheme, not part of the evidence data. |
+
+### Offline verification (auditor workflow)
+
+An auditor can recompute the hash independently:
+
+1. Obtain the evidence bundle JSON (e.g., via `GET /evidence/executions/:id`).
+2. Remove `generatedAt`, `evidenceHash`, `canonicalVersion`, and `hashAlgorithm` from the JSON.
+3. Recursively sort all object keys alphabetically.
+4. Serialize to compact JSON (`separators=(",", ":")`).
+5. Compute `SHA-256(serialized)`.
+6. Compare the result with `evidenceHash`.
+
+If they match, the bundle content has not been altered since the hash was generated.
+
+### What the hash proves and does not prove
+
+**Proves:** The bundle content (request, approval, grant, execution, usageLimits, auditTrail) has not been modified since the hash was generated.
+
+**Does NOT prove:**
+- That the underlying database was not tampered with (the hash is computed at read time).
+- That the grant or execution itself is cryptographically signed (that is the Ed25519 grant signature, separate from the bundle hash).
+- Blockchain anchoring, external notarization, or legal validity.
+
+### Response contains no secrets
+
+The evidence bundle and its canonical JSON input never contain:
+- Bearer tokens or operator tokens
+- Token hashes or salts
+- Raw Ed25519 signature bytes
+- Environment variable values
+- Private keys
+
+Only safe, already-public metadata is included (grant IDs, operator IDs, timestamps, policy results, audit events).
+
+### GL-026 explicit non-scope
+
+- **No blockchain** — the hash is local-only.
+- **No external notarization** — no third-party timestamping service.
+- **No PDF/ZIP/download export** — the bundle is still a JSON API response only.
+- **No UI/dashboard/frontend changes** — the hash fields appear only in the JSON response.
+- **No new endpoint** — `GET /evidence/executions/:id` is unchanged; only response fields are added.
+- **No schema migration** — the hash is computed on-the-fly at build time.
+- **No persisted hash** — the hash is not stored in the database.
+- **No verify endpoint** — auditors recompute offline; no `POST /evidence/verify` is provided.
 
 ## Tamper & Verify Demo
 
