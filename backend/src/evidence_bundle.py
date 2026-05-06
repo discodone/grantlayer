@@ -102,6 +102,91 @@ def export_bundle_json(bundle: dict[str, Any]) -> str:
     )
 
 
+# ── GL-028: Offline verification helper ──────────────────────────────
+
+VERIFY_ERROR_CODES = {"hash_mismatch", "invalid_artifact", "unsupported_format"}
+
+
+def verify_evidence_export_artifact(bundle: dict[str, Any]) -> dict[str, Any]:
+    """Validate an exported evidence bundle dict offline.
+
+    Recomputes the GL-026 evidenceHash from canonical bundle content and
+    compares it to the embedded hash.  Returns a structured result dict.
+
+    Validation order:
+      1. canonicalVersion exists and == "gl-evidence-v1"
+      2. hashAlgorithm exists and == "sha256"
+      3. evidenceHash exists, is exactly 64-char lowercase hex
+      4. Rebuild canonical input (same rules as GL-026)
+      5. Recompute SHA-256
+      6. Compare to evidenceHash
+    """
+    # 1. canonicalVersion
+    canonical_version = bundle.get("canonicalVersion")
+    if canonical_version is None:
+        return {
+            "ok": False,
+            "error": "invalid_artifact",
+            "reason": "missing canonicalVersion",
+        }
+    if canonical_version != "gl-evidence-v1":
+        return {
+            "ok": False,
+            "error": "unsupported_format",
+            "reason": f"unsupported canonicalVersion: {canonical_version}",
+        }
+
+    # 2. hashAlgorithm
+    hash_algorithm = bundle.get("hashAlgorithm")
+    if hash_algorithm is None:
+        return {
+            "ok": False,
+            "error": "invalid_artifact",
+            "reason": "missing hashAlgorithm",
+        }
+    if hash_algorithm != "sha256":
+        return {
+            "ok": False,
+            "error": "unsupported_format",
+            "reason": f"unsupported hashAlgorithm: {hash_algorithm}",
+        }
+
+    # 3. evidenceHash
+    evidence_hash = bundle.get("evidenceHash")
+    if evidence_hash is None:
+        return {
+            "ok": False,
+            "error": "invalid_artifact",
+            "reason": "missing evidenceHash",
+        }
+    if (
+        not isinstance(evidence_hash, str)
+        or len(evidence_hash) != 64
+        or not all(c in "0123456789abcdef" for c in evidence_hash)
+    ):
+        return {
+            "ok": False,
+            "error": "invalid_artifact",
+            "reason": "evidenceHash must be 64-character lowercase hex",
+        }
+
+    # 4–6. Rebuild canonical input, recompute, compare
+    recomputed = compute_evidence_hash(bundle)
+    if recomputed != evidence_hash:
+        return {
+            "ok": False,
+            "error": "hash_mismatch",
+            "reason": "computed hash does not match evidenceHash",
+        }
+
+    return {
+        "ok": True,
+        "evidenceId": bundle.get("evidenceId"),
+        "canonicalVersion": canonical_version,
+        "hashAlgorithm": hash_algorithm,
+    }
+
+
 def build_evidence_bundle(execution_id: str) -> Optional[dict[str, Any]]:
     """Build a safe evidence bundle for a GrantExecution.
 
