@@ -239,6 +239,34 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 return
             self._send_json(200, bundle)
 
+        elif m := re.fullmatch(r"/evidence/executions/([^/]+)/export", path):
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            execution_id = m.group(1)
+            bundle = build_evidence_bundle(execution_id)
+            if bundle is None:
+                self._send_json(404, {"error": "Execution not found"})
+                return
+            from .evidence_bundle import export_bundle_json
+            body = export_bundle_json(bundle).encode("utf-8")
+            evidence_hash = bundle.get("evidenceHash", "")
+            short_hash = evidence_hash[:8] if evidence_hash else ""
+            filename = f"evidence-{execution_id}-{short_hash}.json"
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+            self.send_header("X-Evidence-Hash", evidence_hash)
+            for k, v in CORS_HEADERS.items():
+                self.send_header(k, v)
+            self.end_headers()
+            self.wfile.write(body)
+
         else:
             self._send_json(404, {"error": "Not found"})
 

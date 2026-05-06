@@ -85,6 +85,23 @@ def compute_evidence_hash(bundle: dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def export_bundle_json(bundle: dict[str, Any]) -> str:
+    """Return a deterministic, pretty-printed JSON string for export.
+
+    Uses sorted keys and 2-space indentation so the artifact is human-readable
+    and diff-friendly.  The pretty-print whitespace does *not* affect the
+    GL-026 evidenceHash because that hash is computed from the compact
+    canonical form (see canonical_evidence_bundle).
+    """
+    return json.dumps(
+        bundle,
+        sort_keys=True,
+        indent=2,
+        ensure_ascii=False,
+        default=str,
+    )
+
+
 def build_evidence_bundle(execution_id: str) -> Optional[dict[str, Any]]:
     """Build a safe evidence bundle for a GrantExecution.
 
