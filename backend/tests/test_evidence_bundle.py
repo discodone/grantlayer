@@ -1834,5 +1834,817 @@ class TestEvidenceBundleVerification(unittest.TestCase):
             os.unlink(path)
 
 
+class TestEvidenceBundleVerificationReport(unittest.TestCase):
+    """GL-029 A: Evidence Verification Report structure."""
+
+    def _base_bundle(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-029-a",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-029-a",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-029-a",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        bundle["evidenceHash"] = eb_mod.compute_evidence_hash(bundle)
+        return bundle
+
+    def test_success_report_form(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["evidenceId"], "ex-029-a")
+        self.assertEqual(result["evidenceHash"], bundle["evidenceHash"])
+        self.assertEqual(result["canonicalVersion"], "gl-evidence-v1")
+        self.assertEqual(result["hashAlgorithm"], "sha256")
+        self.assertIn("verifiedAt", result)
+        self.assertTrue(result["verifiedAt"].startswith("20"))
+
+    def test_error_report_includes_evidence_id(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["evidenceHash"] = "0" * 64
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "hash_mismatch")
+        self.assertIn("reason", result)
+        self.assertEqual(result["evidenceId"], "ex-029-a")
+
+    def test_error_report_missing_fields(self):
+        import backend.src.evidence_bundle as eb_mod
+        for missing_field, expected_error in [
+            ("canonicalVersion", "invalid_artifact"),
+            ("hashAlgorithm", "invalid_artifact"),
+            ("evidenceHash", "invalid_artifact"),
+        ]:
+            bundle = self._base_bundle()
+            del bundle[missing_field]
+            result = eb_mod.verify_evidence_export_artifact(bundle)
+            self.assertFalse(result["ok"], f"{missing_field} should cause failure")
+            self.assertEqual(result["error"], expected_error)
+            self.assertIn("evidenceId", result)
+
+    def test_error_report_unsupported_version(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["canonicalVersion"] = "gl-evidence-v99"
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "unsupported_format")
+        self.assertEqual(result["evidenceId"], "ex-029-a")
+
+    def test_error_report_parse_error_code_added(self):
+        import backend.src.evidence_bundle as eb_mod
+        self.assertIn("parse_error", eb_mod.VERIFY_ERROR_CODES)
+
+    def test_verified_at_not_in_hash(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertNotIn("verifiedAt", eb_mod.canonical_evidence_bundle(bundle))
+
+    def test_success_report_no_secrets(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        raw = json.dumps(result)
+        self.assertNotIn("Bearer", raw)
+        self.assertNotIn("token", raw.lower())
+        self.assertNotIn("secret", raw.lower())
+
+    def test_cli_exit_codes_unchanged(self):
+        import json, tempfile, os, subprocess, sys, backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 0)
+            self.assertIn("OK evidence bundle verified", proc.stdout)
+        finally:
+            os.unlink(path)
+
+
+class TestEvidenceCompleteness(unittest.TestCase):
+    """GL-029 B: Evidence Completeness Checks."""
+
+    def _base_bundle(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-029-b",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-029-b",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-029-b",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [{
+                "id": "ae-029-b",
+                "timestamp": "2026-05-06T10:00:00Z",
+                "subject_id": "tech-01",
+                "role": "technician",
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "approved": False,
+                "reason": "no_grant",
+                "matched_grant_id": None,
+                "challenge_id": None,
+                "challenge_present": False,
+                "challenge_result": "legacy_mode",
+                "grant_signature_result": "not_checked",
+            }],
+            "evidenceHash": "",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        bundle["evidenceHash"] = eb_mod.compute_evidence_hash(bundle)
+        return bundle
+
+    def test_completeness_all_checks_pass(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertTrue(result["complete"])
+        self.assertTrue(result["checks"]["executionPresent"])
+        self.assertTrue(result["checks"]["grantLinkage"])
+        self.assertEqual(result["checks"]["grantRequestLinkage"], "missing_optional")
+        self.assertTrue(result["checks"]["auditEventLinkage"])
+        self.assertTrue(result["checks"]["auditTrailPresent"])
+        self.assertTrue(result["checks"]["usageLimitsConsistent"])
+        self.assertTrue(result["checks"]["outcomeConsistent"])
+        self.assertEqual(result["warnings"], [])
+        self.assertEqual(result["errors"], [])
+
+    def test_missing_execution_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        del bundle["execution"]
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertFalse(result["complete"])
+        self.assertIn("missing execution section", result["errors"])
+
+    def test_grant_linkage_mismatch(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["grantId"] = "g-001"
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertFalse(result["complete"])
+        self.assertIn("grantId set but grant section missing", result["errors"])
+        self.assertFalse(result["checks"]["grantLinkage"])
+
+    def test_grant_request_linkage_required_missing(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["grantRequestId"] = "gr-001"
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertFalse(result["complete"])
+        self.assertIn("grantRequestId set but request or approval section missing", result["errors"])
+        self.assertEqual(result["checks"]["grantRequestLinkage"], "missing_required")
+
+    def test_grant_request_linkage_present(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["grantRequestId"] = "gr-001"
+        bundle["request"] = {"id": "gr-001"}
+        bundle["approval"] = {"approvedBy": "owner-1"}
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertTrue(result["complete"])
+        self.assertEqual(result["checks"]["grantRequestLinkage"], "present")
+        self.assertEqual(result["warnings"], [])
+
+    def test_request_without_grant_request_id_warns(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["request"] = {"id": "gr-001"}
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertTrue(result["complete"])
+        self.assertEqual(result["checks"]["grantRequestLinkage"], "missing_optional")
+        self.assertIn("request or approval present without grantRequestId", result["warnings"])
+
+    def test_empty_audit_trail_warns(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["auditTrail"] = []
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertTrue(result["complete"])  # empty trail is a warning, not an error
+        self.assertIn("auditTrail is empty", result["warnings"])
+        self.assertFalse(result["checks"]["auditTrailPresent"])
+
+    def test_audit_trail_unsorted_warns(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["auditTrail"] = [
+            {"id": "ae-002", "timestamp": "2026-05-06T11:00:00Z"},
+            {"id": "ae-001", "timestamp": "2026-05-06T10:00:00Z"},
+        ]
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertTrue(result["complete"])
+        self.assertIn("auditTrail is not chronologically sorted", result["warnings"])
+
+    def test_audit_trail_duplicates_errors(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["auditTrail"] = [
+            {"id": "ae-001", "timestamp": "2026-05-06T10:00:00Z"},
+            {"id": "ae-001", "timestamp": "2026-05-06T10:00:00Z"},
+        ]
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertFalse(result["complete"])
+        self.assertIn("auditTrail contains duplicate events", result["errors"])
+
+    def test_usage_limits_inconsistent_exhausted_false(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["errorCode"] = "grant_usage_exhausted"
+        bundle["usageLimits"] = {"affectedOutcome": False}
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertFalse(result["complete"])
+        self.assertIn("errorCode is grant_usage_exhausted but usageLimits.affectedOutcome is false", result["errors"])
+        self.assertFalse(result["checks"]["usageLimitsConsistent"])
+
+    def test_usage_limits_inconsistent_affected_no_code(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["errorCode"] = "no_grant"
+        bundle["usageLimits"] = {"affectedOutcome": True}
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertFalse(result["complete"])
+        self.assertIn("usageLimits.affectedOutcome is true but errorCode is not grant_usage_exhausted", result["errors"])
+        self.assertFalse(result["checks"]["usageLimitsConsistent"])
+
+    def test_outcome_consistent_succeeded_with_error(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["result"] = "succeeded"
+        bundle["execution"]["errorCode"] = "no_grant"
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertFalse(result["complete"])
+        self.assertIn("result is succeeded but errorCode is not null", result["errors"])
+
+    def test_outcome_consistent_denied_without_error(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["result"] = "denied"
+        bundle["execution"]["errorCode"] = None
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertFalse(result["complete"])
+        self.assertIn("result is denied but errorCode is null", result["errors"])
+
+    def test_complete_true_when_no_errors(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["result"] = "succeeded"
+        bundle["execution"]["errorCode"] = None
+        bundle["usageLimits"] = {"affectedOutcome": False}
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertTrue(result["complete"])
+        self.assertTrue(result["checks"]["outcomeConsistent"])
+        self.assertEqual(result["errors"], [])
+
+
+class TestDenialCodeConsistency(unittest.TestCase):
+    """GL-029 C: Denial / Error-Code Consistency."""
+
+    def _base_bundle(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-029-c",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-029-c",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-029-c",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "a" * 64,
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        return bundle
+
+    def test_succeeded_requires_null_error_code(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["result"] = "succeeded"
+        bundle["execution"]["errorCode"] = None
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertTrue(result["consistent"])
+        self.assertTrue(result["checks"]["resultMatchesErrorCode"])
+        self.assertEqual(result["errors"], [])
+
+    def test_denied_requires_error_code(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["result"] = "denied"
+        bundle["execution"]["errorCode"] = "no_grant"
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertTrue(result["consistent"])
+        self.assertTrue(result["checks"]["resultMatchesErrorCode"])
+
+    def test_denied_with_unknown_code_warns(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["errorCode"] = "unknown_reason_xyz"
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertFalse(result["checks"]["errorCodeCatalogMembership"])
+        self.assertIn("unknown error code: unknown_reason_xyz", result["warnings"])
+
+    def test_succeeded_with_error_code_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["result"] = "succeeded"
+        bundle["execution"]["errorCode"] = "no_grant"
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertFalse(result["consistent"])
+        self.assertIn("result is succeeded but errorCode is present", result["errors"])
+        self.assertFalse(result["checks"]["resultMatchesErrorCode"])
+
+    def test_denied_missing_error_code_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["result"] = "denied"
+        bundle["execution"]["errorCode"] = None
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertFalse(result["consistent"])
+        self.assertIn("result is denied but errorCode is missing", result["errors"])
+
+    def test_failed_warns(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["result"] = "failed"
+        bundle["execution"]["errorCode"] = "internal_error"
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertTrue(result["consistent"])
+        self.assertIn("result is failed — manual review recommended", result["warnings"])
+
+    def test_denial_reason_populated(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["errorCode"] = "grant_usage_exhausted"
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertEqual(result["denialReason"], "grant usage limit reached")
+
+    def test_outcome_matches_bundle_data_no_grant(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertTrue(result["checks"]["outcomeMatchesBundleData"])
+
+    def test_outcome_matches_bundle_data_grant_missing(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["result"] = "succeeded"
+        bundle["execution"]["errorCode"] = None
+        bundle["grantId"] = "g-001"
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertFalse(result["checks"]["outcomeMatchesBundleData"])
+        self.assertIn("result succeeded but grant missing despite grantId", result["errors"])
+
+    def test_grant_request_denied_with_grant_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["errorCode"] = "grant_request_denied"
+        bundle["grant"] = {"id": "g-001"}
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertFalse(result["checks"]["outcomeMatchesBundleData"])
+        self.assertIn("result denied with grant_request_denied but grant section present", result["errors"])
+
+    def test_no_grant_with_grant_present_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["errorCode"] = "no_grant"
+        bundle["grant"] = {"id": "g-001"}
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertFalse(result["checks"]["outcomeMatchesBundleData"])
+        self.assertIn("result denied with no_grant but grant section present", result["errors"])
+
+    def test_usage_exhausted_without_flag_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["errorCode"] = "grant_usage_exhausted"
+        bundle["usageLimits"] = {"affectedOutcome": False}
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertFalse(result["checks"]["outcomeMatchesBundleData"])
+        self.assertIn("errorCode grant_usage_exhausted but usageLimits.affectedOutcome is false", result["errors"])
+
+    def test_known_catalog_membership(self):
+        import backend.src.evidence_bundle as eb_mod
+        for code in eb_mod.KNOWN_DENIAL_CODES:
+            self.assertIsInstance(code, str)
+            self.assertTrue(len(code) > 0)
+
+    def test_unknown_result_value(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = self._base_bundle()
+        bundle["execution"]["result"] = "weird"
+        result = eb_mod.check_denial_code_consistency(bundle)
+        self.assertFalse(result["consistent"])
+        self.assertIn("unexpected result value: weird", result["errors"])
+
+
+class TestEvidenceBundleSecurityBoundaries(unittest.TestCase):
+    """GL-029 D: Security Boundary Regression Tests."""
+
+    def test_completeness_no_secrets_leak(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "sec-001",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "sec-001",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-sec-001",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "a" * 64,
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        result = eb_mod.check_evidence_completeness(bundle)
+        raw = json.dumps(result)
+        self.assertNotIn("Bearer", raw)
+        self.assertNotIn("GRANTLAYER_", raw)
+        self.assertNotIn("token", raw)
+        self.assertNotIn("secret", raw)
+
+    def test_denial_consistency_no_secrets_leak(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "sec-002",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "sec-002",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-sec-002",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "a" * 64,
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        result = eb_mod.check_denial_code_consistency(bundle)
+        raw = json.dumps(result)
+        self.assertNotIn("Bearer", raw)
+        self.assertNotIn("GRANTLAYER_", raw)
+        self.assertNotIn("token", raw)
+        self.assertNotIn("secret", raw)
+
+    def test_completeness_helper_never_crashes_on_null(self):
+        import backend.src.evidence_bundle as eb_mod
+        for bad_bundle in [
+            {},
+            {"execution": None},
+            {"execution": {}, "usageLimits": None},
+            {"execution": {"errorCode": "grant_usage_exhausted"}, "usageLimits": None},
+        ]:
+            try:
+                result = eb_mod.check_evidence_completeness(bad_bundle)
+                self.assertIsInstance(result, dict)
+                self.assertIn("complete", result)
+            except Exception as exc:
+                self.fail(f"check_evidence_completeness crashed on {bad_bundle}: {exc}")
+
+    def test_denial_consistency_never_crashes_on_null(self):
+        import backend.src.evidence_bundle as eb_mod
+        for bad_bundle in [
+            {},
+            {"execution": None},
+            {"execution": {}},
+            {"execution": {"result": None, "errorCode": None}},
+        ]:
+            try:
+                result = eb_mod.check_denial_code_consistency(bad_bundle)
+                self.assertIsInstance(result, dict)
+                self.assertIn("consistent", result)
+            except Exception as exc:
+                self.fail(f"check_denial_code_consistency crashed on {bad_bundle}: {exc}")
+
+    def test_verify_helper_never_crashes_on_bare_dict(self):
+        import backend.src.evidence_bundle as eb_mod
+        for bad_bundle in [
+            {},
+            {"evidenceHash": "a" * 64},
+            {"canonicalVersion": "gl-evidence-v1"},
+        ]:
+            try:
+                result = eb_mod.verify_evidence_export_artifact(bad_bundle)
+                self.assertIsInstance(result, dict)
+                self.assertIn("ok", result)
+            except Exception as exc:
+                self.fail(f"verify_evidence_export_artifact crashed on {bad_bundle}: {exc}")
+
+    def test_completeness_legacy_null_grant_request_is_warning(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "sec-003",
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "auditEventId": "ae-sec-003",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [{"id": "ae-sec-003", "timestamp": "2026-05-06T10:00:00Z"}],
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+        }
+        result = eb_mod.check_evidence_completeness(bundle)
+        self.assertTrue(result["complete"])
+        self.assertEqual(result["checks"]["grantRequestLinkage"], "missing_optional")
+        self.assertEqual(result["warnings"], [])
+
+    def test_completeness_does_not_mutate_bundle(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "sec-004",
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "auditEventId": "ae-sec-004",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [{"id": "ae-sec-004", "timestamp": "2026-05-06T10:00:00Z"}],
+        }
+        original_keys = set(bundle.keys())
+        eb_mod.check_evidence_completeness(bundle)
+        eb_mod.check_denial_code_consistency(bundle)
+        self.assertEqual(set(bundle.keys()), original_keys)
+
+
+class TestEvidenceBundleCliJson(unittest.TestCase):
+    """GL-029: CLI --json output tests."""
+
+    def _base_bundle(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-cli-json",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-cli-json",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-cli-json",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        bundle["evidenceHash"] = eb_mod.compute_evidence_hash(bundle)
+        return bundle
+
+    def test_cli_json_valid_artifact_returns_parseable_json(self):
+        import json, tempfile, os, subprocess, sys
+        bundle = self._base_bundle()
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path, "--json"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 0)
+            data = json.loads(proc.stdout)
+            self.assertTrue(data["ok"])
+        finally:
+            os.unlink(path)
+
+    def test_cli_json_success_includes_expected_fields(self):
+        import json, tempfile, os, subprocess, sys
+        bundle = self._base_bundle()
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path, "--json"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 0)
+            data = json.loads(proc.stdout)
+            self.assertTrue(data["ok"])
+            self.assertEqual(data["evidenceId"], "ex-cli-json")
+            self.assertIn("evidenceHash", data)
+            self.assertEqual(len(data["evidenceHash"]), 64)
+            self.assertEqual(data["canonicalVersion"], "gl-evidence-v1")
+            self.assertEqual(data["hashAlgorithm"], "sha256")
+            self.assertIn("verifiedAt", data)
+            self.assertTrue(data["verifiedAt"].startswith("20"))
+        finally:
+            os.unlink(path)
+
+    def test_cli_json_hash_mismatch_returns_ok_false(self):
+        import json, tempfile, os, subprocess, sys
+        bundle = self._base_bundle()
+        bundle["evidenceHash"] = "0" * 64
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path, "--json"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 2)
+            data = json.loads(proc.stdout)
+            self.assertFalse(data["ok"])
+            self.assertEqual(data["error"], "hash_mismatch")
+            self.assertIn("reason", data)
+        finally:
+            os.unlink(path)
+
+    def test_cli_json_malformed_json_returns_safe_error(self):
+        import json, tempfile, os, subprocess, sys
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            f.write("not valid json")
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path, "--json"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 5)
+            data = json.loads(proc.stdout)
+            self.assertFalse(data["ok"])
+            self.assertEqual(data["error"], "parse_error")
+            self.assertNotIn("Traceback", proc.stderr)
+        finally:
+            os.unlink(path)
+
+    def test_cli_json_invalid_artifact_returns_safe_error(self):
+        import json, tempfile, os, subprocess, sys
+        bundle = self._base_bundle()
+        del bundle["evidenceHash"]
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path, "--json"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 3)
+            data = json.loads(proc.stdout)
+            self.assertFalse(data["ok"])
+            self.assertEqual(data["error"], "invalid_artifact")
+        finally:
+            os.unlink(path)
+
+    def test_cli_json_output_contains_no_secrets(self):
+        import json, tempfile, os, subprocess, sys
+        bundle = self._base_bundle()
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path, "--json"],
+                capture_output=True,
+                text=True,
+            )
+            raw = json.dumps(proc.stdout.lower())
+            self.assertNotIn("bearer", raw)
+            self.assertNotIn("token", raw)
+            self.assertNotIn("secret", raw)
+            self.assertNotIn("salt", raw)
+            self.assertNotIn("private key", raw)
+            self.assertNotIn("credential", raw)
+            self.assertNotIn("stack trace", proc.stdout.lower())
+            self.assertNotIn("traceback", proc.stderr.lower())
+        finally:
+            os.unlink(path)
+
+    def test_cli_json_compatible_with_human_readable(self):
+        import json, tempfile, os, subprocess, sys
+        bundle = self._base_bundle()
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            # Without --json
+            proc_human = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc_human.returncode, 0)
+            self.assertIn("OK evidence bundle verified", proc_human.stdout)
+            # With --json
+            proc_json = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path, "--json"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc_json.returncode, 0)
+            data = json.loads(proc_json.stdout)
+            self.assertTrue(data["ok"])
+        finally:
+            os.unlink(path)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

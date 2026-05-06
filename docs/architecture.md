@@ -780,3 +780,72 @@ GL-027 exports deterministic pretty-printed JSON (`sort_keys=True, indent=2`). T
 - No PDF/ZIP export
 - No bulk verification
 - No blockchain, no external notarization, no external services
+
+## GL-029 — Evidence & Audit Finalization Sprint
+
+GL-029 hardens the evidence bundle from GL-025 through GL-028 by adding structured verification reports, completeness checks, and denial-code consistency — without new API endpoints, schema migrations, or UI changes.
+
+### Evidence Verification Report flow
+
+```
+exported JSON artifact
+  → verify_evidence_export_artifact(bundle_dict)
+    → validate canonicalVersion == "gl-evidence-v1"
+    → validate hashAlgorithm == "sha256"
+    → validate evidenceHash is 64-char lowercase hex
+    → rebuild canonical input (strip generatedAt, evidenceHash, canonicalVersion, hashAlgorithm)
+    → recursively sort keys, compact JSON separators
+    → recompute SHA-256
+    → compare to embedded evidenceHash
+  → return structured report dict
+      success: {ok: true, evidenceId, evidenceHash, canonicalVersion, hashAlgorithm, verifiedAt}
+      failure: {ok: false, error, reason, evidenceId}
+```
+
+### Evidence Completeness Check flow
+
+```
+evidence bundle dict
+  → check_evidence_completeness(bundle)
+    → executionPresent?
+    → grantLinkage? (grantId set → grant section present)
+    → grantRequestLinkage? (grantRequestId set → request + approval present)
+    → auditTrail present, sorted, deduplicated?
+    → usageLimits consistent with grant_usage_exhausted?
+    → outcomeConsistent? (succeeded → errorCode null; denied → errorCode present)
+  → return {complete, checks, warnings, errors}
+```
+
+### Denial / Error-Code consistency flow
+
+```
+evidence bundle dict
+  → check_denial_code_consistency(bundle)
+    → result matches errorCode? (succeeded → null; denied → present)
+    → errorCode in KNOWN_DENIAL_CODES catalog? (warn on unknown, do not break)
+    → outcome matches bundle data? (no_grant → no grant section; grant_request_denied → no grant)
+    → usageLimits.affectedOutcome matches grant_usage_exhausted?
+  → return {consistent, result, errorCode, denialReason, checks, warnings, errors}
+```
+
+### CLI `--json` output
+
+```bash
+python3 scripts/verify_evidence_bundle.py path/to/evidence.json --json
+```
+
+- With `--json`: prints the structured report dict as JSON to stdout. Exit codes unchanged.
+- Without `--json`: preserves existing human-readable output.
+- No raw bundle content printed.
+- No secrets printed.
+- Exit codes: 0 (valid), 2 (hash_mismatch), 3 (invalid_artifact), 4 (unsupported_format), 5 (I/O or parse error).
+
+### GL-029 explicit non-scope
+
+- **No new API endpoint.** `GET /evidence/executions/:id` is unchanged.
+- **No schema migration.** Helpers are pure functions; no database columns added.
+- **No audit-chain hash.** No `chain_hash`, no `audit_events.chain_hash`, no `/audit-events/verify-chain`.
+- **No UI/dashboard/frontend changes.** The helpers are backend/CLI only.
+- **No PDF/ZIP/download export.** The bundle remains a JSON API response.
+- **No blockchain anchoring or external notarization.** All verification is local-only.
+
