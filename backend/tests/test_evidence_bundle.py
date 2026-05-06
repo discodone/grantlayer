@@ -565,5 +565,211 @@ class TestEvidenceBundle(unittest.TestCase):
             seen.add(ev_id)
 
 
+    # ──────────────────────────────────────────────
+    # 17. GL-026: Bundle contains evidenceHash, canonicalVersion, hashAlgorithm
+    # ──────────────────────────────────────────────
+    def test_bundle_has_evidence_hash_fields(self):
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
+        self.assertIn("evidenceHash", bundle)
+        self.assertIn("canonicalVersion", bundle)
+        self.assertIn("hashAlgorithm", bundle)
+        eh = bundle["evidenceHash"]
+        self.assertEqual(len(eh), 64)
+        self.assertTrue(eh == eh.lower())
+        self.assertEqual(bundle["canonicalVersion"], "gl-evidence-v1")
+        self.assertEqual(bundle["hashAlgorithm"], "sha256")
+
+    # ──────────────────────────────────────────────
+    # 18. GL-026: Rebuild yields same evidenceHash
+    # ──────────────────────────────────────────────
+    def test_bundle_evidence_hash_is_deterministic(self):
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        bundle1 = self.eb_mod.build_evidence_bundle(result["executionId"])
+        bundle2 = self.eb_mod.build_evidence_bundle(result["executionId"])
+        self.assertEqual(bundle1["evidenceHash"], bundle2["evidenceHash"])
+
+    # ──────────────────────────────────────────────
+    # 19. GL-026: evidenceHash changes when data changes
+    # ──────────────────────────────────────────────
+    def test_bundle_evidence_hash_changes_with_data_change(self):
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
+        original_hash = bundle["evidenceHash"]
+        # Modify bundle data and recompute
+        bundle["execution"]["resource"] = "tampered-resource"
+        new_hash = self.eb_mod.compute_evidence_hash(bundle)
+        self.assertNotEqual(original_hash, new_hash)
+
+    # ──────────────────────────────────────────────
+    # 20. GL-026: canonical form excludes generatedAt, evidenceHash, canonicalVersion, hashAlgorithm
+    # ──────────────────────────────────────────────
+    def test_canonical_form_excludes_generated_and_hash_meta(self):
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
+        canonical = self.eb_mod.canonical_evidence_bundle(bundle)
+        self.assertNotIn("generatedAt", canonical)
+        self.assertNotIn("evidenceHash", canonical)
+        self.assertNotIn("canonicalVersion", canonical)
+        self.assertNotIn("hashAlgorithm", canonical)
+        # Deterministic on repeated calls
+        self.assertEqual(canonical, self.eb_mod.canonical_evidence_bundle(bundle))
+
+    # ──────────────────────────────────────────────
+    # 21. GL-026: audit trail is sorted by timestamp then id
+    # ──────────────────────────────────────────────
+    def test_audit_trail_is_sorted(self):
+        g = self._make_grant()
+        # Multiple executions create multiple audit events
+        self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        result2 = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        bundle = self.eb_mod.build_evidence_bundle(result2["executionId"])
+        audit_trail = bundle["auditTrail"]
+        self.assertGreaterEqual(len(audit_trail), 1)
+        keys = [(ev.get("timestamp") or "", ev.get("id") or "") for ev in audit_trail]
+        self.assertEqual(keys, sorted(keys))
+
+    # ──────────────────────────────────────────────
+    # 22. GL-026: export readiness invariants
+    # ──────────────────────────────────────────────
+    def test_bundle_is_export_ready(self):
+        g = self._make_grant(max_uses=5)
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
+
+        required_keys = {
+            "evidenceId", "generatedAt", "executionId", "grantId",
+            "grantRequestId", "request", "approval", "grant",
+            "execution", "usageLimits", "auditTrail",
+            "evidenceHash", "canonicalVersion", "hashAlgorithm",
+        }
+        self.assertTrue(required_keys.issubset(set(bundle.keys())))
+
+        # Self-contained scalars
+        self.assertIsNotNone(bundle["evidenceId"])
+        self.assertIsNotNone(bundle["generatedAt"])
+        self.assertIsNotNone(bundle["evidenceHash"])
+        self.assertIsNotNone(bundle["canonicalVersion"])
+        self.assertIsNotNone(bundle["hashAlgorithm"])
+
+        # Secret-free
+        raw = json.dumps(bundle)
+        self.assertNotIn("Bearer", raw)
+        self.assertNotIn("token_hash", raw)
+        self.assertNotIn("salt", raw)
+        if g.signature:
+            self.assertNotIn(g.signature, raw)
+        self.assertNotIn("GRANTLAYER_", raw)
+
+        # Traceable
+        self.assertEqual(bundle["evidenceId"], bundle["executionId"])
+
+
+    # ──────────────────────────────────────────────
+    # 23. GL-026: null grantRequest produces deterministic hash
+    # ──────────────────────────────────────────────
+    def test_null_grant_request_produces_deterministic_hash(self):
+        # Orphan execution with no grant/request
+        from backend.src.models import GrantExecution
+        ex = GrantExecution(
+            action="restart-service",
+            resource="customer-env-a",
+            result="denied",
+            policy_result="no_grant",
+            error_code="no_grant",
+        )
+        self.execs_mod.create_grant_execution(ex)
+        bundle1 = self.eb_mod.build_evidence_bundle(ex.id)
+        bundle2 = self.eb_mod.build_evidence_bundle(ex.id)
+        self.assertEqual(bundle1["evidenceHash"], bundle2["evidenceHash"])
+        self.assertIsNone(bundle1["grant"])
+        self.assertIsNone(bundle1["request"])
+        self.assertIsNone(bundle1["approval"])
+
+    # ──────────────────────────────────────────────
+    # 24. GL-026: denied execution produces deterministic hash
+    # ──────────────────────────────────────────────
+    def test_denied_execution_produces_deterministic_hash(self):
+        self._setup_operator("owner-1", "Owner", "owner")
+        self._setup_operator("req-1", "Requester", "grant_admin")
+
+        from backend.src.models import GrantRequest
+        req = GrantRequest(
+            subject_id="tech-03",
+            role="technician",
+            action="restart-service",
+            resource="customer-env-c",
+            valid_from="2026-01-01T00:00:00Z",
+            valid_until="2099-12-31T23:59:59Z",
+            requested_by="req-1",
+            reason="Testing denial",
+        )
+        self.greps_mod.create_grant_request(req)
+        denied_req = self.greps_mod.deny_grant_request(req.id, "owner-1", "Not needed")
+
+        from backend.src.models import GrantExecution
+        ex = GrantExecution(
+            action="restart-service",
+            resource="customer-env-c",
+            grant_request_id=denied_req.id,
+            result="denied",
+            policy_result="grant_request_denied",
+            error_code="grant_request_denied",
+        )
+        self.execs_mod.create_grant_execution(ex)
+
+        bundle1 = self.eb_mod.build_evidence_bundle(ex.id)
+        bundle2 = self.eb_mod.build_evidence_bundle(ex.id)
+        self.assertEqual(bundle1["evidenceHash"], bundle2["evidenceHash"])
+        self.assertEqual(bundle1["approval"]["deniedBy"], "owner-1")
+        self.assertEqual(bundle1["grant"], None)
+
+    # ──────────────────────────────────────────────
+    # 25. GL-026: usageLimits affects hash when present
+    # ──────────────────────────────────────────────
+    def test_usage_limits_affects_hash_when_present(self):
+        g = self._make_grant(max_uses=1)
+        # First use allows
+        self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        # Second use denied due to exhaustion
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        self.assertEqual(result["reason"], "grant_usage_exhausted")
+        ex_id = result["executionId"]
+
+        # Build bundle with usageLimits present
+        bundle_with_limits = self.eb_mod.build_evidence_bundle(ex_id)
+        self.assertTrue(bundle_with_limits["usageLimits"]["affectedOutcome"])
+        hash_with_limits = bundle_with_limits["evidenceHash"]
+
+        # Build a modified version with altered usage limits
+        altered = dict(bundle_with_limits)
+        altered["usageLimits"] = {"affectedOutcome": False}
+        # Must exclude metadata before recomputing
+        altered_hash = self.eb_mod.compute_evidence_hash(altered)
+        self.assertNotEqual(hash_with_limits, altered_hash)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
