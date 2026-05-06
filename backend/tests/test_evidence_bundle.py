@@ -770,6 +770,344 @@ class TestEvidenceBundle(unittest.TestCase):
         altered_hash = self.eb_mod.compute_evidence_hash(altered)
         self.assertNotEqual(hash_with_limits, altered_hash)
 
+    # ──────────────────────────────────────────────
+    # Export helper
+    # ──────────────────────────────────────────────
+    def _run_export(self, path, method="GET", auth=None):
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+        from backend.src.server import GrantLayerHandler
+        from io import BytesIO
+        import http.client
+
+        class DummyRequest:
+            def __init__(self):
+                self.headers = {}
+                if auth:
+                    self.headers["Authorization"] = auth
+                self.rfile = BytesIO(b"")
+                self.wfile = BytesIO()
+                self._status = None
+                self._headers = {}
+
+            def send_response(self, code):
+                self._status = code
+
+            def send_header(self, key, value):
+                self._headers[key] = value
+
+            def end_headers(self):
+                pass
+
+        class TestHandler(GrantLayerHandler):
+            def __init__(inner_self, request):
+                inner_self.command = method
+                inner_self.path = path
+                inner_self.request_version = "HTTP/1.1"
+                inner_self.headers = request.headers
+                inner_self.rfile = request.rfile
+                inner_self.wfile = request.wfile
+                inner_self._status = None
+                inner_self._headers = {}
+
+            def send_response(inner_self, code):
+                inner_self._status = code
+
+            def send_header(inner_self, key, value):
+                inner_self._headers[key] = value
+
+            def end_headers(inner_self):
+                pass
+
+            def _send_json(inner_self, status, data):
+                inner_self.send_response(status)
+                inner_self._json = data
+                inner_self._status = status
+
+            def _send_html(inner_self, body):
+                inner_self.send_response(200)
+                inner_self._status = 200
+
+        req = DummyRequest()
+        handler = TestHandler(req)
+        if method == "GET":
+            handler.do_GET()
+        else:
+            handler.do_POST()
+        status = handler._status
+        headers = handler._headers
+        body = req.wfile.getvalue()
+        return status, headers, body
+
+    # ──────────────────────────────────────────────
+    # 26. Export returns 200 for valid execution
+    # ──────────────────────────────────────────────
+    def test_export_returns_200(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        self.assertEqual(status, 200)
+
+    # ──────────────────────────────────────────────
+    # 27. Export Content-Type is application/json; charset=utf-8
+    # ──────────────────────────────────────────────
+    def test_export_content_type(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        self.assertEqual(headers.get("Content-Type"), "application/json; charset=utf-8")
+
+    # ──────────────────────────────────────────────
+    # 28. Export Content-Disposition includes executionId and short hash
+    # ──────────────────────────────────────────────
+    def test_export_content_disposition(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        cd = headers.get("Content-Disposition")
+        self.assertTrue(cd.startswith("attachment"))
+        self.assertIn(f"evidence-{ex_id}", cd)
+        bundle = self.eb_mod.build_evidence_bundle(ex_id)
+        short_hash = bundle["evidenceHash"][:8]
+        self.assertIn(short_hash, cd)
+        self.assertTrue(cd.endswith('.json"'))
+
+    # ──────────────────────────────────────────────
+    # 29. Export X-Evidence-Hash header equals body evidenceHash
+    # ──────────────────────────────────────────────
+    def test_export_x_evidence_hash_header(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        data = json.loads(body)
+        self.assertEqual(headers.get("X-Evidence-Hash"), data["evidenceHash"])
+
+    # ──────────────────────────────────────────────
+    # 30. Export body evidenceHash equals normal endpoint evidenceHash
+    # ──────────────────────────────────────────────
+    def test_export_evidence_hash_matches_normal_endpoint(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+
+        status_normal, body_normal = self._run_handler(f"/evidence/executions/{ex_id}", auth="Bearer admin")
+        self.assertEqual(status_normal, 200)
+
+        status_export, headers, body_export = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        self.assertEqual(status_export, 200)
+
+        data_export = json.loads(body_export)
+        self.assertEqual(data_export["evidenceHash"], body_normal["evidenceHash"])
+
+    # ──────────────────────────────────────────────
+    # 31. Export body contains canonicalVersion and hashAlgorithm
+    # ──────────────────────────────────────────────
+    def test_export_contains_version_and_algorithm(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        data = json.loads(body)
+        self.assertEqual(data["canonicalVersion"], "gl-evidence-v1")
+        self.assertEqual(data["hashAlgorithm"], "sha256")
+
+    # ──────────────────────────────────────────────
+    # 32. Export JSON is parseable and safe
+    # ──────────────────────────────────────────────
+    def test_export_json_is_safe(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        data = json.loads(body)
+        raw = json.dumps(data)
+        self.assertNotIn("Bearer", raw)
+        self.assertNotIn("token_hash", raw)
+        self.assertNotIn("salt", raw)
+        self.assertNotIn("GRANTLAYER_", raw)
+
+    # ──────────────────────────────────────────────
+    # 33. Export pretty JSON is deterministic (sorted keys)
+    # ──────────────────────────────────────────────
+    def test_export_pretty_json_deterministic(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+
+        # Determinism must hold for the same bundle dict
+        bundle = self.eb_mod.build_evidence_bundle(ex_id)
+        export1 = self.eb_mod.export_bundle_json(bundle)
+        export2 = self.eb_mod.export_bundle_json(bundle)
+        self.assertEqual(export1, export2)
+
+        # The HTTP response should also be pretty-printed
+        status, h, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        self.assertEqual(status, 200)
+        text = body.decode("utf-8")
+        self.assertIn("\n  ", text)  # 2-space indent
+
+    # ──────────────────────────────────────────────
+    # 34. Owner can export
+    # ──────────────────────────────────────────────
+    def test_export_owner_can_export(self):
+        tok = self._setup_operator("owner-1", "Owner One", "owner")
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
+        self.assertEqual(status, 200)
+
+    # ──────────────────────────────────────────────
+    # 35. grant_admin can export
+    # ──────────────────────────────────────────────
+    def test_export_grant_admin_can_export(self):
+        tok = self._setup_operator("admin-1", "Admin One", "grant_admin")
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
+        self.assertEqual(status, 200)
+
+    # ──────────────────────────────────────────────
+    # 36. auditor can export
+    # ──────────────────────────────────────────────
+    def test_export_auditor_can_export(self):
+        tok = self._setup_operator("auditor-1", "Auditor One", "auditor")
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
+        self.assertEqual(status, 200)
+
+    # ──────────────────────────────────────────────
+    # 37. demo_operator cannot export
+    # ──────────────────────────────────────────────
+    def test_export_demo_operator_denied(self):
+        tok = self._setup_operator("demo-1", "Demo One", "demo_operator")
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
+        self.assertEqual(status, 403)
+
+    # ──────────────────────────────────────────────
+    # 38. Legacy admin-token mode can export
+    # ──────────────────────────────────────────────
+    def test_export_legacy_admin_token(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "legacy-token"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer legacy-token")
+        self.assertEqual(status, 200)
+
+    # ──────────────────────────────────────────────
+    # 39. Invalid token fails closed in export
+    # ──────────────────────────────────────────────
+    def test_export_invalid_token_fails(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "legacy-token"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        g = self._make_grant()
+        result = self.demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        ex_id = result["executionId"]
+        # Missing auth
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth=None)
+        self.assertEqual(status, 401)
+        # Wrong token
+        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer wrong")
+        self.assertEqual(status, 403)
+
+    # ──────────────────────────────────────────────
+    # 40. Export for missing execution returns 404
+    # ──────────────────────────────────────────────
+    def test_export_missing_execution_returns_404(self):
+        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        importlib.reload(self.config_mod)
+        importlib.reload(self.auth_mod)
+
+        status, headers, body = self._run_export("/evidence/executions/nonexistent-id/export", auth="Bearer admin")
+        self.assertEqual(status, 404)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
