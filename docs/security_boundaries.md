@@ -323,46 +323,44 @@ Only safe, already-public metadata is included.
 - **Not a persisted hash.** The hash is not stored in SQLite.
 - **Not a verify endpoint.** There is no `POST /evidence/verify`; auditors recompute offline.
 
-## GL-026 — Evidence Bundle Integrity Hash & Export Readiness
+## GL-028 — Offline Evidence Bundle Verification
 
-GL-026 adds a deterministic integrity hash (`evidenceHash`) to the evidence bundle returned by `GET /evidence/executions/:id`. This section defines the security boundaries of that hash.
+GL-028 adds a local, offline-only verification utility for exported evidence bundle JSON artifacts.
 
-### What the hash is
+### What GL-028 is
 
-- **Integrity metadata only.** The hash is computed on-the-fly when the bundle is built. It is not cryptographically signed, not blockchain-anchored, and not externally notarized.
-- ** SHA-256 of canonical JSON.** The input is the evidence bundle with all object keys sorted recursively, serialized with compact separators, after removing volatile/self-referential fields.
+- **Local file verification only.** The verifier reads a previously exported JSON artifact from disk. It does not query the API or the database.
+- **Pure stdlib.** No external dependencies, no network calls.
+- **Reuse of GL-026 canonicalization.** The verifier calls the same `canonical_evidence_bundle()` function used when the hash was originally computed, ensuring bit-for-bit consistency.
 
-### What the hash proves
+### What GL-028 proves
 
-- That the bundle content (request, approval, grant, execution, usageLimits, auditTrail) has not been altered since the hash was computed.
-- An auditor can recompute the hash offline and compare it with the returned `evidenceHash`.
+- That the exported JSON artifact has not been modified since the `evidenceHash` was generated.
+- That the artifact conforms to the expected format version (`gl-evidence-v1`) and hash algorithm (`sha256`).
 
-### What the hash does NOT prove
+### What GL-028 does NOT prove
 
-- **Database integrity.** The hash is computed at read time; it does not prove the underlying SQLite database was not tampered with before the bundle was built.
-- **Cryptographic grant signature.** The Ed25519 grant signature verifies the grant's own integrity. The bundle hash is a separate, higher-level aggregation hash.
-- **Legal validity or compliance.** The hash is a local demonstrator feature, not a legally binding audit proof.
+- **Database integrity.** The verifier reads a JSON file, not the database. It does not prove the underlying SQLite database was not tampered with.
+- **Cryptographic grant signature.** The Ed25519 grant signature and the bundle hash are separate mechanisms. A valid bundle hash does not imply a valid grant signature, and vice versa.
+- **Legal validity or compliance.** The offline verifier is a local demonstrator feature, not a legally binding audit proof.
 - **Blockchain anchoring or external notarization.** No third-party service is involved.
+- **Realtime server-side verification.** There is no `/evidence/verify` endpoint and no server-side file storage.
 
-### Exclusions from hash input
+### Security properties
 
-| Excluded field | Reason |
-|----------------|--------|
-| `generatedAt` | Wall-clock timestamp; changes on every rebuild |
-| `evidenceHash` | Cannot hash itself |
-| `canonicalVersion` | Serialization metadata, not evidence data |
-| `hashAlgorithm` | Hash scheme metadata, not evidence data |
+- **No secrets printed.** The CLI does not print bearer tokens, admin tokens, token hashes, salts, env values, private keys, raw signatures, or credentials.
+- **No raw bundle content by default.** On success, only `OK evidence bundle verified` is printed. On failure, only a safe error message is printed.
+- **No stack traces on malformed JSON.** The CLI catches `JSONDecodeError` and returns a clean failure with exit code 5.
 
-### No secrets in bundle or hash input
+### GL-028 does NOT include
 
-The evidence bundle and its canonical JSON representation never contain:
-- Bearer tokens or operator tokens
-- Token hashes or salts
-- Raw Ed25519 signature bytes (only `grantSignatureResult` enum values)
-- Environment variable values
-- Private keys
-
-Only safe, already-public metadata is included.
+- **Not a server endpoint.** There is no `/evidence/verify` endpoint.
+- **Not a UI/dashboard/frontend change.** The CLI is a standalone script.
+- **Not a schema migration.** No database columns are added.
+- **Not a persisted verification result.** The verifier produces an exit code and prints to stdout; it does not write to disk or to the database.
+- **Not bulk verification.** The CLI verifies one file at a time.
+- **Not blockchain.** No smart contracts, no wallet signatures, no testnet, no mainnet.
+- **Not external notarization.** No third-party timestamping or attestation service.
 
 ### GL-026 is NOT
 

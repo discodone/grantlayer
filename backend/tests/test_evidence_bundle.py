@@ -1109,5 +1109,639 @@ class TestEvidenceBundle(unittest.TestCase):
         self.assertEqual(status, 404)
 
 
+class TestEvidenceBundleVerification(unittest.TestCase):
+    """GL-028: Offline evidence bundle verification tests."""
+
+    # ──────────────────────────────────────────────
+    # 41. Valid GL-027 export verifies successfully
+    # ──────────────────────────────────────────────
+    def test_valid_export_verifies_successfully(self):
+        bundle = {
+            "evidenceId": "ex-001",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-001",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-001",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        # Compute correct hash for this bundle
+        import backend.src.evidence_bundle as eb_mod
+        bundle["evidenceHash"] = eb_mod.compute_evidence_hash(bundle)
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["evidenceId"], "ex-001")
+        self.assertEqual(result["canonicalVersion"], "gl-evidence-v1")
+        self.assertEqual(result["hashAlgorithm"], "sha256")
+
+    # ──────────────────────────────────────────────
+    # 42. Meaningful bundle content change fails
+    # ──────────────────────────────────────────────
+    def test_content_change_fails_verification(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-002",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-002",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-002",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        bundle["evidenceHash"] = eb_mod.compute_evidence_hash(bundle)
+        # Tamper content
+        bundle["execution"]["resource"] = "tampered-resource"
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "hash_mismatch")
+
+    # ──────────────────────────────────────────────
+    # 43. Changing generatedAt alone still verifies
+    # ──────────────────────────────────────────────
+    def test_generated_at_change_still_verifies(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-003",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-003",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-003",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        bundle["evidenceHash"] = eb_mod.compute_evidence_hash(bundle)
+        # Change generatedAt (excluded from canonical hash)
+        bundle["generatedAt"] = "2099-01-01T00:00:00Z"
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertTrue(result["ok"])
+
+    # ──────────────────────────────────────────────
+    # 44. Changing evidenceHash to wrong value fails
+    # ──────────────────────────────────────────────
+    def test_wrong_evidence_hash_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-004",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-004",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-004",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "hash_mismatch")
+
+    # ──────────────────────────────────────────────
+    # 45. Missing evidenceHash fails
+    # ──────────────────────────────────────────────
+    def test_missing_evidence_hash_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-005",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-005",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-005",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "invalid_artifact")
+
+    # ──────────────────────────────────────────────
+    # 46. Missing canonicalVersion fails
+    # ──────────────────────────────────────────────
+    def test_missing_canonical_version_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-006",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-006",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-006",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "a" * 64,
+            "hashAlgorithm": "sha256",
+        }
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "invalid_artifact")
+
+    # ──────────────────────────────────────────────
+    # 47. Unsupported canonicalVersion fails
+    # ──────────────────────────────────────────────
+    def test_unsupported_canonical_version_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-007",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-007",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-007",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "a" * 64,
+            "canonicalVersion": "gl-evidence-v99",
+            "hashAlgorithm": "sha256",
+        }
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "unsupported_format")
+
+    # ──────────────────────────────────────────────
+    # 48. Missing hashAlgorithm fails
+    # ──────────────────────────────────────────────
+    def test_missing_hash_algorithm_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-008",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-008",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-008",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "a" * 64,
+            "canonicalVersion": "gl-evidence-v1",
+        }
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "invalid_artifact")
+
+    # ──────────────────────────────────────────────
+    # 49. Unsupported hashAlgorithm fails
+    # ──────────────────────────────────────────────
+    def test_unsupported_hash_algorithm_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-009",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-009",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-009",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "a" * 64,
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "md5",
+        }
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "unsupported_format")
+
+    # ──────────────────────────────────────────────
+    # 50. Invalid hash format fails
+    # ──────────────────────────────────────────────
+    def test_invalid_hash_format_fails(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-010",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-010",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-010",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "NOT_VALID_HEX",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "invalid_artifact")
+
+    # ──────────────────────────────────────────────
+    # 51. Reordered JSON keys still verify
+    # ──────────────────────────────────────────────
+    def test_reordered_keys_still_verify(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-011",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-011",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-011",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        bundle["evidenceHash"] = eb_mod.compute_evidence_hash(bundle)
+        # Reorder top-level keys
+        reordered = {
+            "hashAlgorithm": bundle["hashAlgorithm"],
+            "evidenceHash": bundle["evidenceHash"],
+            "canonicalVersion": bundle["canonicalVersion"],
+            "auditTrail": bundle["auditTrail"],
+            "usageLimits": bundle["usageLimits"],
+            "execution": bundle["execution"],
+            "grant": bundle["grant"],
+            "approval": bundle["approval"],
+            "request": bundle["request"],
+            "grantRequestId": bundle["grantRequestId"],
+            "grantId": bundle["grantId"],
+            "executionId": bundle["executionId"],
+            "generatedAt": bundle["generatedAt"],
+            "evidenceId": bundle["evidenceId"],
+        }
+        result = eb_mod.verify_evidence_export_artifact(reordered)
+        self.assertTrue(result["ok"])
+
+    # ──────────────────────────────────────────────
+    # 52. Build-then-verify round-trip using real bundle
+    # ──────────────────────────────────────────────
+    def test_build_then_verify_round_trip(self):
+        import backend.src.evidence_bundle as eb_mod
+        # Minimal dict that mimics a real built bundle structure
+        bundle = {
+            "evidenceId": "ex-012",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-012",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-012",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        bundle["evidenceHash"] = eb_mod.compute_evidence_hash(bundle)
+        result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertTrue(result["ok"])
+
+    # ──────────────────────────────────────────────
+    # 53. Real-db built bundle verifies through helper
+    # ──────────────────────────────────────────────
+    def test_real_bundle_verifies(self):
+        self._env_setup = {}
+        self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        os.environ["GRANTLAYER_DB"] = self.tmp_db.name
+        import backend.src.db as db_mod
+        importlib.reload(db_mod)
+        db_mod.init_db()
+        import backend.src.config as config_mod
+        importlib.reload(config_mod)
+        import backend.src.grants as grants_mod
+        importlib.reload(grants_mod)
+        import backend.src.crypto_signing as crypto_mod
+        importlib.reload(crypto_mod)
+        crypto_mod.ensure_demo_keypair()
+        import backend.src.demo_action as demo_mod
+        importlib.reload(demo_mod)
+        import backend.src.evidence_bundle as eb_mod
+        importlib.reload(eb_mod)
+
+        from backend.src.models import Grant
+        g = Grant(
+            subject_id="tech-01",
+            role="technician",
+            action="restart-service",
+            resource="customer-env-a",
+            valid_from="2026-01-01T00:00:00Z",
+            valid_until="2099-12-31T23:59:59Z",
+            created_by="admin",
+            reason="Routine maintenance",
+        )
+        grants_mod.create_grant(g)
+        result = demo_mod.handle_demo_action(
+            "tech-01", "technician", "restart-service", "customer-env-a"
+        )
+        bundle = eb_mod.build_evidence_bundle(result["executionId"])
+        verify_result = eb_mod.verify_evidence_export_artifact(bundle)
+        self.assertTrue(verify_result["ok"])
+
+        os.unlink(self.tmp_db.name)
+        del os.environ["GRANTLAYER_DB"]
+
+    # ──────────────────────────────────────────────
+    # 54. CLI: valid export exits 0
+    # ──────────────────────────────────────────────
+    def test_cli_valid_export_exits_0(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-cli-001",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-cli-001",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-cli-001",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        bundle["evidenceHash"] = eb_mod.compute_evidence_hash(bundle)
+        import json, tempfile, os, subprocess, sys
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 0)
+            self.assertIn("OK evidence bundle verified", proc.stdout)
+            self.assertNotIn("Bearer", proc.stdout)
+            self.assertNotIn("token", proc.stdout.lower())
+        finally:
+            os.unlink(path)
+
+    # ──────────────────────────────────────────────
+    # 55. CLI: tampered export exits 2
+    # ──────────────────────────────────────────────
+    def test_cli_tampered_export_exits_2(self):
+        import backend.src.evidence_bundle as eb_mod
+        bundle = {
+            "evidenceId": "ex-cli-002",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-cli-002",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-cli-002",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        import json, tempfile, os, subprocess, sys
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 2)
+            self.assertIn("FAIL evidence hash mismatch", proc.stdout)
+        finally:
+            os.unlink(path)
+
+    # ──────────────────────────────────────────────
+    # 56. CLI: nonexistent file exits 5
+    # ──────────────────────────────────────────────
+    def test_cli_nonexistent_file_exits_5(self):
+        import subprocess, sys
+        proc = subprocess.run(
+            [sys.executable, "scripts/verify_evidence_bundle.py", "/tmp/nonexistent-evidence-xyz.json"],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(proc.returncode, 5)
+        self.assertIn("FAIL evidence bundle file read or parse error", proc.stdout)
+
+    # ──────────────────────────────────────────────
+    # 57. CLI: malformed JSON exits 5
+    # ──────────────────────────────────────────────
+    def test_cli_malformed_json_exits_5(self):
+        import tempfile, os, subprocess, sys
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            f.write("this is not json")
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 5)
+            self.assertIn("FAIL evidence bundle file read or parse error", proc.stdout)
+            self.assertNotIn("Traceback", proc.stderr)
+        finally:
+            os.unlink(path)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

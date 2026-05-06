@@ -704,3 +704,79 @@ This ensures the same set of events always produces the same canonical JSON, eve
 - No schema migration
 - No persisted hash in database
 - No `POST /evidence/verify` endpoint
+
+## GL-028 — Offline Evidence Bundle Verification
+
+GL-028 adds a local, offline-only verification utility for exported evidence bundle JSON artifacts.
+
+### Architecture
+
+```
+exported JSON artifact
+  → parse JSON
+  → validate metadata (canonicalVersion, hashAlgorithm, evidenceHash format)
+  → canonical rebuild (same rules as GL-026)
+    → strip generatedAt, evidenceHash, canonicalVersion, hashAlgorithm
+    → recursively sort keys alphabetically
+    → compact JSON separators
+  → SHA-256 recompute
+  → compare to embedded evidenceHash
+  → stdout result + exit code
+```
+
+### Components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| Verification helper | `backend/src/evidence_bundle.py` | `verify_evidence_export_artifact(bundle)` — reusable function |
+| CLI script | `scripts/verify_evidence_bundle.py` | Standalone stdlib-only verifier |
+
+### Verification helper design
+
+```python
+def verify_evidence_export_artifact(bundle: dict) -> dict:
+    ...
+```
+
+- **Input:** already-parsed evidence bundle dict (e.g. from `json.loads`)
+- **Output:** `{ok: true, evidenceId, canonicalVersion, hashAlgorithm}` or `{ok: false, error, reason}`
+- **Validation order:** canonicalVersion → hashAlgorithm → evidenceHash format → hash recompute → compare
+- **Error codes:** `hash_mismatch`, `invalid_artifact`, `unsupported_format`
+
+### CLI design
+
+```bash
+python3 scripts/verify_evidence_bundle.py path/to/evidence.json
+```
+
+- Pure stdlib (`json`, `sys`, `pathlib`)
+- No network, no database, no secrets printed
+- Exit codes: 0 (OK), 2 (hash mismatch), 3 (invalid artifact), 4 (unsupported format), 5 (file/parse error)
+
+### Canonical/hash consistency with GL-026
+
+The verification helper **must reuse** the existing `canonical_evidence_bundle()` and `compute_evidence_hash()` functions from `backend/src/evidence_bundle.py`. This guarantees bit-for-bit identical canonical JSON between generation and verification.
+
+### Export artifact compatibility with GL-027
+
+GL-027 exports deterministic pretty-printed JSON (`sort_keys=True, indent=2`). The verifier parses JSON with `json.loads`, so whitespace and key order in the export file do not matter.
+
+### What verification proves and does not prove
+
+**Proves:** The exported JSON artifact content has not been altered since the hash was generated.
+
+**Does NOT prove:**
+- Database integrity (hash is read-time only)
+- Grant signature validity (separate Ed25519 mechanism)
+- Legal validity or compliance
+- Blockchain anchoring or external notarization
+
+### GL-028 does NOT include
+
+- No `/evidence/verify` endpoint
+- No server-side file storage
+- No database reads
+- No UI/dashboard/frontend changes
+- No PDF/ZIP export
+- No bulk verification
+- No blockchain, no external notarization, no external services

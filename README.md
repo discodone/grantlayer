@@ -601,6 +601,78 @@ New deny reasons: `grant_signature_missing` | `grant_signature_invalid` | `grant
 - ~~Sprint 2D: Docker packaging~~ ✅ Done
 - ~~Sprint 2E: Operator model (GL-021)~~ ✅ Done
 - ~~Sprint 2F: Real approval workflow (GL-022)~~ ✅ Done
+- ~~GL-028: Offline Evidence Bundle Verification~~ ✅ Done
+
+---
+
+## GL-028 — Offline Evidence Bundle Verification
+
+GL-028 adds a local, offline-only verification utility for exported evidence bundle JSON artifacts.
+
+### What it does
+
+Recomputes the GL-026 `evidenceHash` from the canonical bundle content and compares it to the embedded hash. This proves the exported JSON artifact has not been modified since the hash was generated.
+
+### What it does NOT do
+
+- **No server endpoint.** There is no `/evidence/verify` endpoint.
+- **No database access.** The verifier works purely on a local JSON file.
+- **No network calls.**
+- **No blockchain anchoring or external notarization.**
+- **Does not prove database integrity.** It only proves the exported JSON artifact is unchanged.
+- **Does not prove grant signature validity.** That is handled separately by Ed25519 grant signatures (Sprint 2B).
+
+### CLI usage
+
+```bash
+python3 scripts/verify_evidence_bundle.py path/to/evidence.json
+```
+
+### Exit codes
+
+| Exit code | Meaning |
+|-----------|---------|
+| 0 | OK — evidence bundle verified |
+| 2 | FAIL — evidence hash mismatch (content was modified) |
+| 3 | FAIL — invalid evidence bundle artifact (missing/invalid fields) |
+| 4 | FAIL — unsupported evidence bundle format (unexpected version or algorithm) |
+| 5 | FAIL — file read or parse error |
+
+### Backend helper
+
+The verifier can also be used programmatically:
+
+```python
+from backend.src.evidence_bundle import verify_evidence_export_artifact
+
+result = verify_evidence_export_artifact(bundle_dict)
+# result["ok"] is True or False
+# result["error"] gives a stable error code on failure
+```
+
+### Verification rules
+
+1. `canonicalVersion` must exist and equal `"gl-evidence-v1"`
+2. `hashAlgorithm` must exist and equal `"sha256"`
+3. `evidenceHash` must exist and be exactly 64-character lowercase hex
+4. The hash is recomputed using the same GL-026 canonicalization rules:
+   - Strip `generatedAt`, `evidenceHash`, `canonicalVersion`, `hashAlgorithm`
+   - Recursively sort all object keys alphabetically
+   - Serialize to compact JSON (`separators=(",", ":")`)
+   - Compute SHA-256
+5. The recomputed hash is compared to the embedded `evidenceHash`
+6. Changing `generatedAt` alone does **not** fail verification (it is excluded from the hash input)
+7. Changing any meaningful bundle content **does** fail verification
+
+### Security notes
+
+- No secrets, tokens, or raw signatures are printed by the CLI.
+- No raw bundle content is printed by default.
+- Safe error messages only — no stack traces on malformed JSON.
+
+---
+
+## Sprint 2F — Real Approval Workflow (GL-022)
 
 ---
 
