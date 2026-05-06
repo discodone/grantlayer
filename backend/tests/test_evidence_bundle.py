@@ -1742,6 +1742,97 @@ class TestEvidenceBundleVerification(unittest.TestCase):
         finally:
             os.unlink(path)
 
+    # ──────────────────────────────────────────────
+    # 58. CLI: missing evidenceHash exits 3
+    # ──────────────────────────────────────────────
+    def test_cli_missing_evidence_hash_exits_3(self):
+        import json, tempfile, os, subprocess, sys
+        bundle = {
+            "evidenceId": "ex-cli-003",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-cli-003",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-cli-003",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "canonicalVersion": "gl-evidence-v1",
+            "hashAlgorithm": "sha256",
+        }
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 3)
+            self.assertIn("FAIL invalid evidence bundle artifact", proc.stdout)
+        finally:
+            os.unlink(path)
+
+    # ──────────────────────────────────────────────
+    # 59. CLI: unsupported canonicalVersion exits 4
+    # ──────────────────────────────────────────────
+    def test_cli_unsupported_canonical_version_exits_4(self):
+        import json, tempfile, os, subprocess, sys
+        bundle = {
+            "evidenceId": "ex-cli-004",
+            "generatedAt": "2026-05-06T10:00:00Z",
+            "executionId": "ex-cli-004",
+            "grantId": None,
+            "grantRequestId": None,
+            "request": None,
+            "approval": None,
+            "grant": None,
+            "execution": {
+                "action": "restart-service",
+                "resource": "customer-env-a",
+                "operatorId": None,
+                "challengeId": None,
+                "challengeResult": "legacy_mode",
+                "policyResult": "no_grant",
+                "result": "denied",
+                "errorCode": "no_grant",
+                "executedAt": "2026-05-06T10:00:00Z",
+                "auditEventId": "ae-cli-004",
+            },
+            "usageLimits": {"affectedOutcome": False},
+            "auditTrail": [],
+            "evidenceHash": "a" * 64,
+            "canonicalVersion": "gl-evidence-v99",
+            "hashAlgorithm": "sha256",
+        }
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(bundle, f)
+            path = f.name
+        try:
+            proc = subprocess.run(
+                [sys.executable, "scripts/verify_evidence_bundle.py", path],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 4)
+            self.assertIn("FAIL unsupported evidence bundle format", proc.stdout)
+        finally:
+            os.unlink(path)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
