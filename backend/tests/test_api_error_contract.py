@@ -31,6 +31,7 @@ class TestApiErrorContract(unittest.TestCase):
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
         self._orig_admin_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
+        self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
 
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
 
@@ -67,6 +68,7 @@ class TestApiErrorContract(unittest.TestCase):
             ("GRANTLAYER_ENABLE_OPERATOR_MODEL", self._orig_enable_operator),
             ("GRANTLAYER_ADMIN_TOKEN", self._orig_admin_token),
             ("GRANTLAYER_REQUIRE_ADMIN_TOKEN", self._orig_require_admin),
+            ("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", self._orig_enable_demo),
         ]:
             if orig is None:
                 os.environ.pop(key, None)

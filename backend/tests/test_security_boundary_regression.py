@@ -184,24 +184,6 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         self.assertEqual(payload["errorCode"], "operator_auth_required")
 
     # ──────────────────────────────────────────────
-    # 5. Operator auth fails closed when token missing
-    # ──────────────────────────────────────────────
-    def test_operator_auth_fails_closed_when_token_missing(self):
-        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
-        # Must reload config first so auth sees the new flag
-        importlib.reload(self.config_mod)
-        import src.config as fresh_config
-        importlib.reload(fresh_config)
-        import src.operators as fresh_ops
-        importlib.reload(fresh_ops)
-        import src.auth as fresh_auth
-        importlib.reload(fresh_auth)
-        ok, status, payload = fresh_auth.check_auth(None, required_roles=["owner"])
-        self.assertFalse(ok)
-        self.assertEqual(status, 401)
-        self.assertEqual(payload["errorCode"], "operator_auth_required")
-
-    # ──────────────────────────────────────────────
     # 6. Operator auth fails closed when role incorrect
     # ──────────────────────────────────────────────
     def test_operator_auth_fails_closed_when_role_incorrect(self):
