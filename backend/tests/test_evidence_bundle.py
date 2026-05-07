@@ -221,6 +221,8 @@ class TestEvidenceBundle(unittest.TestCase):
         status, body = self._run_handler("/evidence/executions/nonexistent-id", auth="Bearer admin")
         self.assertEqual(status, 404)
         self.assertEqual(body["error"], "Execution not found")
+        self.assertEqual(body["errorCode"], "execution_not_found")
+        self.assertEqual(body["reason"], "The requested execution does not exist.")
 
     # ──────────────────────────────────────────────
     # 2. Builder returns None for missing execution
@@ -496,6 +498,8 @@ class TestEvidenceBundle(unittest.TestCase):
         status, body = self._run_handler(f"/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
         self.assertEqual(status, 403)
         self.assertEqual(body["error"], "operator_role_forbidden")
+        self.assertEqual(body["errorCode"], "operator_role_forbidden")
+        self.assertEqual(body["reason"], "Operator role is not authorized for this action.")
 
     # ──────────────────────────────────────────────
     # 14. Operator model: missing token fails closed
@@ -510,6 +514,8 @@ class TestEvidenceBundle(unittest.TestCase):
         status, body = self._run_handler(f"/evidence/executions/{ex_id}", auth=None)
         self.assertEqual(status, 401)
         self.assertEqual(body["error"], "operator_auth_required")
+        self.assertEqual(body["errorCode"], "operator_auth_required")
+        self.assertEqual(body["reason"], "Operator authentication is required.")
 
     # ──────────────────────────────────────────────
     # 15. Response shape matches expectation

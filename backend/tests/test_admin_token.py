@@ -35,6 +35,8 @@ class TestDemoAdminToken(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(status, 401)
         self.assertEqual(payload["error"], "admin_token_required")
+        self.assertEqual(payload["errorCode"], "admin_token_required")
+        self.assertEqual(payload["reason"], "Admin token is required for this endpoint.")
 
     def test_wrong_token_is_403_when_env_set(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "demo-token"
@@ -42,6 +44,8 @@ class TestDemoAdminToken(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(status, 403)
         self.assertEqual(payload["error"], "admin_token_invalid")
+        self.assertEqual(payload["errorCode"], "admin_token_invalid")
+        self.assertEqual(payload["reason"], "The provided admin token is invalid.")
 
     def test_correct_token_is_allowed(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "demo-token"
@@ -71,6 +75,8 @@ class TestDemoAdminToken(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(status, 403)
         self.assertEqual(payload["error"], "admin_token_required")
+        self.assertEqual(payload["errorCode"], "admin_token_required")
+        self.assertEqual(payload["reason"], "Admin token is required for this endpoint.")
 
     def test_require_admin_true_with_valid_token_allows(self):
         """When REQUIRE_ADMIN_TOKEN is true and valid token, allow."""

@@ -161,6 +161,8 @@ class TestProductCoreHardening(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(status, 403)
         self.assertEqual(payload["error"], "admin_token_required")
+        self.assertEqual(payload["errorCode"], "admin_token_required")
+        self.assertEqual(payload["reason"], "Admin token is required for this endpoint.")
 
     # ──────────────────────────────────────────────
     # 6. Admin-token: works with valid token when required

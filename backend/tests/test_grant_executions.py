@@ -468,6 +468,9 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             "/grant-executions/nonexistent-id", auth_token="auditor-token"
         )
         self.assertIn(b"404", status_line)
+        self.assertEqual(data["error"], "Grant execution not found")
+        self.assertEqual(data["errorCode"], "grant_execution_not_found")
+        self.assertEqual(data["reason"], "The requested grant execution does not exist.")
 
     # ──────────────────────────────────────────────
     # 13. Non-existent grant returns 404 for executions
