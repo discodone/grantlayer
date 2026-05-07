@@ -372,3 +372,52 @@ GL-028 adds a local, offline-only verification utility for exported evidence bun
 - **Not a schema migration.** The hash is computed at runtime; no database columns are added.
 - **Not a persisted hash.** The hash is not stored in SQLite.
 - **Not a verify endpoint.** There is no `POST /evidence/verify`; auditors recompute offline.
+
+## GL-029 — Evidence & Audit Finalization Sprint
+
+GL-029 adds offline, local-only evidence verification helpers and hardens the completeness and consistency checks without introducing new API endpoints, database migrations, or UI changes.
+
+### Verification report security boundaries
+
+- **No secrets printed.** `verify_evidence_export_artifact()` returns a dict containing only `ok`, `evidenceId`, `evidenceHash`, `canonicalVersion`, `hashAlgorithm`, `verifiedAt`, `error`, and `reason`. No bearer tokens, admin tokens, token hashes, salts, env values, private keys, raw signatures, or credentials are included.
+- **No raw bundle content emitted.** The CLI does not echo the bundle contents by default. The `--json` flag prints only the structured report dict.
+- **No stack traces on malformed JSON.** The CLI catches `JSONDecodeError` and returns exit code 5 with a clean failure message.
+
+### Completeness checks security boundaries
+
+- **Never crash on null or legacy bundles.** `check_evidence_completeness()` handles missing `execution`, missing `usageLimits`, and null `grantRequestId` gracefully. It returns warnings, not exceptions.
+- **No mutation of input bundle.** Both completeness and consistency helpers return fresh result dicts; the input `bundle` dict is never modified.
+- **No secrets leaked in result dicts.** `check_evidence_completeness()` and `check_denial_code_consistency()` return only boolean checks, string arrays (`warnings`, `errors`), and a `denialReason` string derived from a safe, hard-coded mapping.
+
+### Known error-code semantics
+
+GL-029 introduces `KNOWN_DENIAL_CODES`, a catalog of all denial/error codes produced by the policy engine, challenge handler, signature verifier, and usage limit enforcer:
+
+`no_grant`, `grant_expired`, `grant_revoked`, `grant_usage_exhausted`, `invalid_challenge`, `challenge_required_missing`, `grant_signature_missing`, `grant_signature_invalid`, `grant_payload_hash_mismatch`, `grant_request_denied`, `policy_mismatch`, `role_mismatch`, `internal_error`.
+
+Unknown error codes are flagged as a warning, not an error, so future codes do not break backward compatibility.
+
+### What GL-029 proves and does NOT prove
+
+**Proves:**
+- The exported JSON artifact content has not been altered since the `evidenceHash` was generated.
+- The bundle structure is complete (execution, grant linkage, request linkage, audit trail, usage limits consistent, outcomes consistent).
+- The denial/error code is a known catalog value and matches the `result` field.
+
+**Does NOT prove:**
+- Database integrity (hash is read-time only).
+- Cryptographic grant signature validity (separate Ed25519 mechanism).
+- Legal validity or compliance.
+- Blockchain anchoring or external notarization.
+
+### GL-029 does NOT include
+
+- **Not a server endpoint.** There is no `/evidence/verify` or `/audit-events/verify-chain` endpoint.
+- **Not a UI/dashboard/frontend change.** The helpers are backend-only.
+- **Not a schema migration.** No database columns are added.
+- **Not an audit chain.** There is no `chain_hash`, no `audit_events.chain_hash`, and no chain verification endpoint.
+- **Not PDF/ZIP/download export.** The bundle remains a JSON API response.
+- **Not bulk verification.** The CLI verifies one file at a time.
+- **Not blockchain.** No smart contracts, no wallet signatures, no testnet, no mainnet.
+- **Not external notarization.** No third-party timestamping or attestation service.
+

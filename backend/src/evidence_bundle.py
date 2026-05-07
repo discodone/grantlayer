@@ -104,7 +104,7 @@ def export_bundle_json(bundle: dict[str, Any]) -> str:
 
 # ── GL-028: Offline verification helper ──────────────────────────────
 
-VERIFY_ERROR_CODES = {"hash_mismatch", "invalid_artifact", "unsupported_format"}
+VERIFY_ERROR_CODES = {"hash_mismatch", "invalid_artifact", "unsupported_format", "parse_error"}
 
 
 def verify_evidence_export_artifact(bundle: dict[str, Any]) -> dict[str, Any]:
@@ -121,6 +121,8 @@ def verify_evidence_export_artifact(bundle: dict[str, Any]) -> dict[str, Any]:
       5. Recompute SHA-256
       6. Compare to evidenceHash
     """
+    evidence_id = bundle.get("evidenceId")
+
     # 1. canonicalVersion
     canonical_version = bundle.get("canonicalVersion")
     if canonical_version is None:
@@ -128,12 +130,14 @@ def verify_evidence_export_artifact(bundle: dict[str, Any]) -> dict[str, Any]:
             "ok": False,
             "error": "invalid_artifact",
             "reason": "missing canonicalVersion",
+            "evidenceId": evidence_id,
         }
     if canonical_version != "gl-evidence-v1":
         return {
             "ok": False,
             "error": "unsupported_format",
             "reason": f"unsupported canonicalVersion: {canonical_version}",
+            "evidenceId": evidence_id,
         }
 
     # 2. hashAlgorithm
@@ -143,12 +147,14 @@ def verify_evidence_export_artifact(bundle: dict[str, Any]) -> dict[str, Any]:
             "ok": False,
             "error": "invalid_artifact",
             "reason": "missing hashAlgorithm",
+            "evidenceId": evidence_id,
         }
     if hash_algorithm != "sha256":
         return {
             "ok": False,
             "error": "unsupported_format",
             "reason": f"unsupported hashAlgorithm: {hash_algorithm}",
+            "evidenceId": evidence_id,
         }
 
     # 3. evidenceHash
@@ -158,6 +164,7 @@ def verify_evidence_export_artifact(bundle: dict[str, Any]) -> dict[str, Any]:
             "ok": False,
             "error": "invalid_artifact",
             "reason": "missing evidenceHash",
+            "evidenceId": evidence_id,
         }
     if (
         not isinstance(evidence_hash, str)
@@ -168,6 +175,7 @@ def verify_evidence_export_artifact(bundle: dict[str, Any]) -> dict[str, Any]:
             "ok": False,
             "error": "invalid_artifact",
             "reason": "evidenceHash must be 64-character lowercase hex",
+            "evidenceId": evidence_id,
         }
 
     # 4–6. Rebuild canonical input, recompute, compare
@@ -177,13 +185,210 @@ def verify_evidence_export_artifact(bundle: dict[str, Any]) -> dict[str, Any]:
             "ok": False,
             "error": "hash_mismatch",
             "reason": "computed hash does not match evidenceHash",
+            "evidenceId": evidence_id,
         }
 
     return {
         "ok": True,
-        "evidenceId": bundle.get("evidenceId"),
+        "evidenceId": evidence_id,
+        "evidenceHash": evidence_hash,
         "canonicalVersion": canonical_version,
         "hashAlgorithm": hash_algorithm,
+        "verifiedAt": _iso_now(),
+    }
+
+
+# ── GL-029: Evidence completeness check ─────────────────────────────
+
+def check_evidence_completeness(bundle: dict[str, Any]) -> dict[str, Any]:
+    """Check structural completeness of an evidence bundle."""
+    checks: dict[str, Any] = {}
+    warnings: list[str] = []
+    errors: list[str] = []
+
+    execution = bundle.get("execution")
+    checks["executionPresent"] = execution is not None
+    if not checks["executionPresent"]:
+        errors.append("missing execution section")
+
+    grant_id = bundle.get("grantId")
+    grant = bundle.get("grant")
+    checks["grantLinkage"] = (grant_id is None) or (grant is not None)
+    if grant_id is not None and grant is None:
+        errors.append("grantId set but grant section missing")
+
+    grant_request_id = bundle.get("grantRequestId")
+    request = bundle.get("request")
+    approval = bundle.get("approval")
+    if grant_request_id is not None:
+        if request is not None and approval is not None:
+            checks["grantRequestLinkage"] = "present"
+        else:
+            checks["grantRequestLinkage"] = "missing_required"
+            errors.append("grantRequestId set but request or approval section missing")
+    else:
+        if request is not None or approval is not None:
+            warnings.append("request or approval present without grantRequestId")
+        checks["grantRequestLinkage"] = "missing_optional"
+
+    audit_event_id = execution.get("auditEventId") if execution else None
+    audit_trail = bundle.get("auditTrail")
+    checks["auditEventLinkage"] = audit_event_id is not None or (
+        isinstance(audit_trail, list) and len(audit_trail) > 0
+    )
+    checks["auditTrailPresent"] = isinstance(audit_trail, list) and len(audit_trail) > 0
+    if not checks["auditTrailPresent"]:
+        warnings.append("auditTrail is empty")
+
+    if isinstance(audit_trail, list) and len(audit_trail) > 0:
+        keys = [(ev.get("timestamp") or "", ev.get("id") or "") for ev in audit_trail]
+        if keys != sorted(keys):
+            warnings.append("auditTrail is not chronologically sorted")
+        if len(keys) != len({k for k in keys}):
+            errors.append("auditTrail contains duplicate events")
+
+    usage_limits = bundle.get("usageLimits")
+    checks["usageLimitsConsistent"] = True
+    if isinstance(usage_limits, dict):
+        error_code = execution.get("errorCode") if execution else None
+        if error_code == "grant_usage_exhausted":
+            if not usage_limits.get("affectedOutcome"):
+                checks["usageLimitsConsistent"] = False
+                errors.append(
+                    "errorCode is grant_usage_exhausted but usageLimits.affectedOutcome is false"
+                )
+        else:
+            if usage_limits.get("affectedOutcome") and error_code != "grant_usage_exhausted":
+                checks["usageLimitsConsistent"] = False
+                errors.append(
+                    "usageLimits.affectedOutcome is true but errorCode is not grant_usage_exhausted"
+                )
+    else:
+        if execution and execution.get("errorCode") == "grant_usage_exhausted":
+            checks["usageLimitsConsistent"] = False
+            errors.append("errorCode is grant_usage_exhausted but usageLimits section missing")
+
+    checks["outcomeConsistent"] = True
+    if execution:
+        result = execution.get("result")
+        error_code = execution.get("errorCode")
+        if result == "succeeded" and error_code is not None:
+            checks["outcomeConsistent"] = False
+            errors.append("result is succeeded but errorCode is not null")
+        if result == "denied" and error_code is None:
+            checks["outcomeConsistent"] = False
+            errors.append("result is denied but errorCode is null")
+
+    complete = len(errors) == 0 and checks.get("executionPresent", False)
+
+    return {
+        "complete": complete,
+        "checks": checks,
+        "warnings": warnings,
+        "errors": errors,
+    }
+
+
+# ── GL-029: Denial / error-code consistency check ───────────────────
+
+KNOWN_DENIAL_CODES = {
+    "no_grant",
+    "grant_expired",
+    "grant_revoked",
+    "grant_usage_exhausted",
+    "invalid_challenge",
+    "challenge_required_missing",
+    "grant_signature_missing",
+    "grant_signature_invalid",
+    "grant_payload_hash_mismatch",
+    "grant_request_denied",
+    "policy_mismatch",
+    "role_mismatch",
+    "internal_error",
+}
+
+
+def check_denial_code_consistency(bundle: dict[str, Any]) -> dict[str, Any]:
+    """Check that result and errorCode in the execution block are mutually consistent."""
+    execution = bundle.get("execution") or {}
+    result = execution.get("result")
+    error_code = execution.get("errorCode")
+
+    checks: dict[str, Any] = {}
+    warnings: list[str] = []
+    errors: list[str] = []
+
+    # errorCode catalog membership
+    if error_code is not None:
+        checks["errorCodeCatalogMembership"] = error_code in KNOWN_DENIAL_CODES
+        if not checks["errorCodeCatalogMembership"]:
+            warnings.append(f"unknown error code: {error_code}")
+    else:
+        checks["errorCodeCatalogMembership"] = True
+
+    # result matches errorCode
+    if result == "succeeded":
+        checks["resultMatchesErrorCode"] = error_code is None
+        if not checks["resultMatchesErrorCode"]:
+            errors.append("result is succeeded but errorCode is present")
+    elif result == "denied":
+        checks["resultMatchesErrorCode"] = error_code is not None
+        if not checks["resultMatchesErrorCode"]:
+            errors.append("result is denied but errorCode is missing")
+    elif result == "failed":
+        checks["resultMatchesErrorCode"] = True
+        warnings.append("result is failed — manual review recommended")
+    else:
+        checks["resultMatchesErrorCode"] = False
+        errors.append(f"unexpected result value: {result}")
+
+    # outcome matches bundle data
+    checks["outcomeMatchesBundleData"] = True
+    if result == "succeeded" and bundle.get("grantId") and not bundle.get("grant"):
+        checks["outcomeMatchesBundleData"] = False
+        errors.append("result succeeded but grant missing despite grantId")
+    if result == "denied":
+        if error_code == "grant_request_denied" and bundle.get("grant") is not None:
+            checks["outcomeMatchesBundleData"] = False
+            errors.append("result denied with grant_request_denied but grant section present")
+        if error_code == "no_grant" and bundle.get("grant") is not None:
+            checks["outcomeMatchesBundleData"] = False
+            errors.append("result denied with no_grant but grant section present")
+    if error_code == "grant_usage_exhausted":
+        ul = bundle.get("usageLimits")
+        if not isinstance(ul, dict) or not ul.get("affectedOutcome"):
+            checks["outcomeMatchesBundleData"] = False
+            errors.append("errorCode grant_usage_exhausted but usageLimits.affectedOutcome is false")
+
+    denial_reason = ""
+    if result == "denied" and error_code:
+        _denial_reasons = {
+            "no_grant": "no matching grant found",
+            "grant_expired": "grant has expired",
+            "grant_revoked": "grant has been revoked",
+            "grant_usage_exhausted": "grant usage limit reached",
+            "invalid_challenge": "challenge invalid or expired",
+            "challenge_required_missing": "required challenge missing",
+            "grant_signature_missing": "grant signature missing",
+            "grant_signature_invalid": "grant signature invalid",
+            "grant_payload_hash_mismatch": "grant payload hash mismatch",
+            "grant_request_denied": "grant request was denied",
+            "policy_mismatch": "policy mismatch",
+            "role_mismatch": "role mismatch",
+            "internal_error": "internal handler error",
+        }
+        denial_reason = _denial_reasons.get(error_code, f"denied: {error_code}")
+
+    consistent = len(errors) == 0 and checks.get("resultMatchesErrorCode", False)
+
+    return {
+        "consistent": consistent,
+        "result": result,
+        "errorCode": error_code,
+        "denialReason": denial_reason,
+        "checks": checks,
+        "warnings": warnings,
+        "errors": errors,
     }
 
 

@@ -95,7 +95,7 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **132 tests, 0 failures.**
+Expected output: **218 tests, 0 failures.**
 
 ## Configuration (GL-020 Product Hardening)
 
@@ -602,6 +602,101 @@ New deny reasons: `grant_signature_missing` | `grant_signature_invalid` | `grant
 - ~~Sprint 2E: Operator model (GL-021)~~ ✅ Done
 - ~~Sprint 2F: Real approval workflow (GL-022)~~ ✅ Done
 - ~~GL-028: Offline Evidence Bundle Verification~~ ✅ Done
+- ~~GL-029: Evidence & Audit Finalization Sprint~~ ✅ Done
+
+---
+
+## GL-029 — Evidence & Audit Finalization Sprint
+
+GL-029 hardens the evidence and audit trail from GL-025 through GL-028 without adding new API endpoints, database migrations, or UI changes.
+
+### A. Evidence Verification Report
+
+The existing `verify_evidence_export_artifact()` helper now returns a structured, machine-readable result dict.
+
+**Success form:**
+```json
+{
+  "ok": true,
+  "evidenceId": "ex-001",
+  "evidenceHash": "sha256-hex...",
+  "canonicalVersion": "gl-evidence-v1",
+  "hashAlgorithm": "sha256",
+  "verifiedAt": "2026-05-06T22:10:00Z"
+}
+```
+
+**Error form:**
+```json
+{
+  "ok": false,
+  "error": "hash_mismatch",
+  "reason": "computed hash does not match evidenceHash",
+  "evidenceId": "ex-001"
+}
+```
+
+- `verifiedAt` is excluded from the evidence hash input.
+- No secrets are exposed in the report.
+- Existing CLI exit codes remain unchanged.
+
+### B. Evidence Completeness Checks
+
+New helper: `check_evidence_completeness(bundle) -> dict`
+
+```json
+{
+  "complete": true,
+  "checks": {
+    "executionPresent": true,
+    "grantLinkage": true,
+    "grantRequestLinkage": "present",
+    "auditEventLinkage": true,
+    "auditTrailPresent": true,
+    "usageLimitsConsistent": true,
+    "outcomeConsistent": true
+  },
+  "warnings": [],
+  "errors": []
+}
+```
+
+Checks performed:
+- `execution` section exists
+- `grantId` → `grant` section present
+- `grantRequestId` → `request` and `approval` present
+- `auditTrail` chronological and deduplicated
+- `usageLimits` consistent with `grant_usage_exhausted`
+- `result` and `errorCode` mutually consistent
+
+### C. Denial / Error-Code Consistency
+
+New helper: `check_denial_code_consistency(bundle) -> dict`
+
+Validates:
+- `result` matches `errorCode` (succeeded → null, denied → present)
+- `errorCode` is a known catalog value (warns on unknown)
+- Denial reason is described in human-readable form (`denialReason`)
+- Outcome matches bundle data (e.g. `no_grant` → no `grant` section)
+
+Known denial codes:
+`no_grant`, `grant_expired`, `grant_revoked`, `grant_usage_exhausted`, `invalid_challenge`, `challenge_required_missing`, `grant_signature_missing`, `grant_signature_invalid`, `grant_payload_hash_mismatch`, `grant_request_denied`, `policy_mismatch`, `role_mismatch`, `internal_error`.
+
+Unknown error codes produce a warning, not an error, so future codes do not break validation.
+
+### D. Security Boundary Regression Tests
+
+- Completeness and consistency helpers never crash on null/legacy bundles
+- No secrets, tokens, or environment values leak from helper outputs
+- Helpers do not mutate the input bundle dict
+
+### GL-029 explicit non-scope
+
+- No new REST endpoints
+- No database schema changes
+- No UI or dashboard changes
+- No audit chain or blockchain anchoring
+- No new CLI scripts
 
 ---
 
