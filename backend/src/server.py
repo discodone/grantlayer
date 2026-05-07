@@ -204,7 +204,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             execution_id = m.group(1)
             execution = execs.get_grant_execution(execution_id)
             if execution is None:
-                self._send_json(404, {"error": "Grant execution not found"})
+                self._send_json(404, {"error": "Grant execution not found", "errorCode": "grant_execution_not_found", "reason": "The requested grant execution does not exist."})
                 return
             self._send_json(200, execution.to_dict())
 
@@ -235,7 +235,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             execution_id = m.group(1)
             bundle = build_evidence_bundle(execution_id)
             if bundle is None:
-                self._send_json(404, {"error": "Execution not found"})
+                self._send_json(404, {"error": "Execution not found", "errorCode": "execution_not_found", "reason": "The requested execution does not exist."})
                 return
             self._send_json(200, bundle)
 
@@ -250,7 +250,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             execution_id = m.group(1)
             bundle = build_evidence_bundle(execution_id)
             if bundle is None:
-                self._send_json(404, {"error": "Execution not found"})
+                self._send_json(404, {"error": "Execution not found", "errorCode": "execution_not_found", "reason": "The requested execution does not exist."})
                 return
             from .evidence_bundle import export_bundle_json
             body = export_bundle_json(bundle).encode("utf-8")

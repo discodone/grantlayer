@@ -46,9 +46,9 @@ def check_auth(
     if config.ENABLE_OPERATOR_MODEL:
         op = ops.authenticate_operator(auth_header)
         if op is None:
-            return False, 401, {"error": "operator_auth_required"}
+            return False, 401, {"error": "operator_auth_required", "errorCode": "operator_auth_required", "reason": "Operator authentication is required."}
         if required_roles is not None and not ops.check_role(op, required_roles):
-            return False, 403, {"error": "operator_role_forbidden"}
+            return False, 403, {"error": "operator_role_forbidden", "errorCode": "operator_role_forbidden", "reason": "Operator role is not authorized for this action."}
         return True, 200, {"operator": op.to_dict()}
 
     # Legacy admin-token mode
@@ -68,27 +68,27 @@ def check_admin_token(auth_header: str | None) -> tuple[bool, int, dict]:
     if not token_env:
         if require_token:
             # Fail closed
-            return False, 403, {"error": "admin_token_required"}
+            return False, 403, {"error": "admin_token_required", "errorCode": "admin_token_required", "reason": "Admin token is required for this endpoint."}
         # Legacy/demo mode: optional token
         return True, 200, {}
 
     # Case: token configured but missing header
     if not auth_header:
-        return False, 401, {"error": "admin_token_required"}
+        return False, 401, {"error": "admin_token_required", "errorCode": "admin_token_required", "reason": "Admin token is required for this endpoint."}
 
     # Case: token present — validate scheme + value
     scheme, _, token = auth_header.partition(" ")
     if scheme.lower() != "bearer":
-        return False, 403, {"error": "admin_token_invalid"}
+        return False, 403, {"error": "admin_token_invalid", "errorCode": "admin_token_invalid", "reason": "The provided admin token is invalid."}
 
     token = token.strip()
     if not token:
-        return False, 403, {"error": "admin_token_invalid"}
+        return False, 403, {"error": "admin_token_invalid", "errorCode": "admin_token_invalid", "reason": "The provided admin token is invalid."}
 
     if hmac.compare_digest(token, token_env):
         return True, 200, {}
 
-    return False, 403, {"error": "admin_token_invalid"}
+    return False, 403, {"error": "admin_token_invalid", "errorCode": "admin_token_invalid", "reason": "The provided admin token is invalid."}
 
 
 def admin_token_warning() -> str | None:
