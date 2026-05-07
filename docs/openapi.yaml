@@ -1,0 +1,1073 @@
+openapi: 3.0.3
+info:
+  title: GrantLayer MVP API
+  description: |
+    GrantLayer MVP — Release Candidate Contract Baseline (GL-031).
+
+    This document describes the existing HTTP surface as of GL-030.
+    No new endpoints, no response-shape changes, no schema migrations.
+
+    Auth modes:
+    - Legacy mode (`ENABLE_OPERATOR_MODEL=false`): `Authorization: Bearer <admin-token>`
+    - Operator mode (`ENABLE_OPERATOR_MODEL=true`): `Authorization: Bearer <operator-token>`
+
+    All error responses follow the GL-030 additive contract when applicable:
+    ```json
+    {
+      "error": "human-readable summary",
+      "errorCode": "machine-readable-code",
+      "reason": "detailed explanation"
+    }
+    ```
+  version: "0.31.0-rc"
+
+servers:
+  - url: http://localhost:8765
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns service health and configuration flags. Does NOT expose secrets or token values.
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, service, timestamp, dbConfigured, adminTokenConfigured, requireAdminToken, requireChallenge, demoEndpointsEnabled, operatorModelEnabled, operatorsConfigured]
+                properties:
+                  ok: { type: boolean, example: true }
+                  service: { type: string, example: "grantlayer-mvp" }
+                  timestamp: { type: string, format: date-time, example: "2026-05-07T10:00:00Z" }
+                  dbConfigured: { type: boolean }
+                  adminTokenConfigured: { type: boolean }
+                  requireAdminToken: { type: boolean }
+                  requireChallenge: { type: boolean }
+                  demoEndpointsEnabled: { type: boolean }
+                  operatorModelEnabled: { type: boolean }
+                  operatorsConfigured: { type: boolean }
+
+  /:
+    get:
+      summary: Dashboard
+      description: Serves the HTML dashboard. Falls back to 404 if the dashboard file is missing.
+      operationId: getDashboard
+      responses:
+        "200":
+          description: HTML dashboard
+          content:
+            text/html:
+              schema:
+                type: string
+        "404":
+          description: Dashboard not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /grants:
+    get:
+      summary: List grants
+      description: Returns all grants with signature metadata.
+      operationId: listGrants
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of grants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Grant"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      summary: Create grant
+      description: Create a new grant. In operator mode, the operator ID is used as `createdBy`.
+      operationId: createGrant
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subjectId, role, action, resource, validFrom, validUntil, createdBy, reason]
+              properties:
+                subjectId: { type: string }
+                role: { type: string }
+                action: { type: string }
+                resource: { type: string }
+                validFrom: { type: string, format: date-time }
+                validUntil: { type: string, format: date-time }
+                createdBy: { type: string }
+                reason: { type: string }
+                maxUses: { type: integer, nullable: true }
+      responses:
+        "201":
+          description: Grant created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grant"
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /grants/{id}:
+    get:
+      summary: Get grant by ID
+      description: Returns a single grant with signature metadata.
+      operationId: getGrant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Grant found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grant"
+        "404":
+          description: Grant not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /grants/{id}/revoke:
+    post:
+      summary: Revoke grant
+      description: Revoke an active grant.
+      operationId: revokeGrant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [revokedBy, reason]
+              properties:
+                revokedBy: { type: string }
+                reason: { type: string }
+      responses:
+        "200":
+          description: Grant revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, grantId]
+                properties:
+                  ok: { type: boolean }
+                  grantId: { type: string }
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Grant already revoked or not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /grant-requests:
+    get:
+      summary: List grant requests
+      description: Returns all grant requests, optionally filtered by status. Operator mode only.
+      operationId: listGrantRequests
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, enum: [requested, approved, denied, revoked, expired] }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of grant requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GrantRequest"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      summary: Create grant request
+      description: Create a new grant request in `requested` state. Operator mode only.
+      operationId: createGrantRequest
+      security:
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subjectId, role, action, resource, validFrom, validUntil, reason]
+              properties:
+                subjectId: { type: string }
+                role: { type: string }
+                action: { type: string }
+                resource: { type: string }
+                validFrom: { type: string, format: date-time }
+                validUntil: { type: string, format: date-time }
+                reason: { type: string }
+      responses:
+        "201":
+          description: Grant request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantRequest"
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /grant-requests/{id}:
+    get:
+      summary: Get grant request by ID
+      description: Returns a single grant request. Operator mode only.
+      operationId: getGrantRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Grant request found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantRequest"
+        "404":
+          description: Grant request not found or operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /grant-requests/{id}/approve:
+    post:
+      summary: Approve grant request
+      description: Approve a grant request and create the associated grant. Operator mode only.
+      operationId: approveGrantRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Request approved
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, request, grant]
+                properties:
+                  ok: { type: boolean }
+                  request:
+                    $ref: "#/components/schemas/GrantRequest"
+                  grant:
+                    $ref: "#/components/schemas/Grant"
+        "400":
+          description: Invalid state or request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or self-approval blocked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant request not found or operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /grant-requests/{id}/deny:
+    post:
+      summary: Deny grant request
+      description: Deny a grant request without creating a grant. Operator mode only.
+      operationId: denyGrantRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        "200":
+          description: Request denied
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, request]
+                properties:
+                  ok: { type: boolean }
+                  request:
+                    $ref: "#/components/schemas/GrantRequest"
+        "400":
+          description: Invalid JSON, missing reason, or invalid state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant request not found or operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /grant-executions:
+    get:
+      summary: List grant executions
+      description: Returns all grant executions, optionally filtered. Operator mode only.
+      operationId: listGrantExecutions
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, default: 200 }
+        - name: grantId
+          in: query
+          required: false
+          schema: { type: string }
+        - name: operatorId
+          in: query
+          required: false
+          schema: { type: string }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of grant executions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GrantExecution"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /grant-executions/{id}:
+    get:
+      summary: Get grant execution by ID
+      description: Returns a single grant execution. Operator mode only.
+      operationId: getGrantExecution
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Grant execution found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantExecution"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant execution not found or operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /grants/{id}/executions:
+    get:
+      summary: List executions for a grant
+      description: Returns all executions linked to a specific grant. Operator mode only.
+      operationId: listExecutionsForGrant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, default: 200 }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of grant executions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GrantExecution"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant not found or operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /audit-events:
+    get:
+      summary: List audit events
+      description: Returns audit events ordered by timestamp descending.
+      operationId: listAuditEvents
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, default: 200 }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of audit events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEvent"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /evidence/executions/{id}:
+    get:
+      summary: Get evidence bundle for execution
+      description: |
+        Returns a complete evidence bundle for a single GrantExecution.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getEvidenceBundle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Evidence bundle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceBundle"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /evidence/executions/{id}/export:
+    get:
+      summary: Export evidence bundle artifact
+      description: |
+        Returns a deterministic, pretty-printed JSON artifact for download.
+
+        Response headers:
+        - `Content-Type: application/json; charset=utf-8`
+        - `Content-Disposition: attachment; filename="evidence-{id}-{shortHash}.json"`
+        - `X-Evidence-Hash: {fullEvidenceHash}`
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: exportEvidenceBundle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Evidence bundle artifact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceBundle"
+          headers:
+            Content-Disposition:
+              description: Attachment filename for the evidence bundle
+              schema: { type: string }
+            X-Evidence-Hash:
+              description: SHA-256 evidence hash
+              schema: { type: string }
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /challenges:
+    get:
+      summary: List challenges
+      description: Returns all challenges.
+      operationId: listChallenges
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of challenges
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Challenge"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      summary: Create challenge
+      description: Create a new challenge for a subject + action + resource tuple.
+      operationId: createChallenge
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subjectId, action, resource]
+              properties:
+                subjectId: { type: string }
+                action: { type: string }
+                resource: { type: string }
+      responses:
+        "201":
+          description: Challenge created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [challengeId, subjectId, action, resource, expiresAt]
+                properties:
+                  challengeId: { type: string }
+                  subjectId: { type: string }
+                  action: { type: string }
+                  resource: { type: string }
+                  expiresAt: { type: string }
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /demo-action:
+    post:
+      summary: Demo protected action
+      description: |
+        Attempt a protected action against the policy engine.
+        Creates a GrantExecution and AuditEvent for every call.
+      operationId: demoAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subjectId, role, action, resource]
+              properties:
+                subjectId: { type: string }
+                role: { type: string }
+                action: { type: string }
+                resource: { type: string }
+                challengeId: { type: string, nullable: true }
+      responses:
+        "200":
+          description: Action result (approved or denied)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoActionResult"
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    LegacyAdminToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        Legacy admin token mode. Send `Authorization: Bearer <admin-token>`.
+        Used when `ENABLE_OPERATOR_MODEL=false`.
+    OperatorToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        Operator bearer token mode. Send `Authorization: Bearer <operator-token>`.
+        Used when `ENABLE_OPERATOR_MODEL=true`.
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Human-readable error summary
+        errorCode:
+          type: string
+          description: Machine-readable error code (GL-030 additive field)
+        reason:
+          type: string
+          description: Detailed explanation (GL-030 additive field)
+      example:
+        error: "Grant execution not found"
+        errorCode: "grant_execution_not_found"
+        reason: "The requested grant execution does not exist."
+
+    Grant:
+      type: object
+      properties:
+        id: { type: string }
+        subject_id: { type: string }
+        role: { type: string }
+        action: { type: string }
+        resource: { type: string }
+        valid_from: { type: string }
+        valid_until: { type: string }
+        created_by: { type: string }
+        reason: { type: string }
+        created_at: { type: string }
+        revoked: { type: boolean }
+        revoked_by: { type: string, nullable: true }
+        revoked_reason: { type: string, nullable: true }
+        revoked_at: { type: string, nullable: true }
+        signature: { type: string, nullable: true }
+        signing_key_id: { type: string, nullable: true }
+        payload_hash: { type: string, nullable: true }
+        max_uses: { type: integer, nullable: true }
+        use_count: { type: integer }
+        signaturePresent: { type: boolean }
+        signatureValid: { type: boolean }
+
+    GrantRequest:
+      type: object
+      properties:
+        id: { type: string }
+        subject_id: { type: string }
+        role: { type: string }
+        action: { type: string }
+        resource: { type: string }
+        valid_from: { type: string }
+        valid_until: { type: string }
+        requested_by: { type: string }
+        reason: { type: string }
+        status: { type: string, enum: [requested, approved, denied, revoked, expired] }
+        approved_by: { type: string, nullable: true }
+        approved_at: { type: string, nullable: true }
+        denied_by: { type: string, nullable: true }
+        denied_at: { type: string, nullable: true }
+        denial_reason: { type: string, nullable: true }
+        revoked_by: { type: string, nullable: true }
+        revoked_at: { type: string, nullable: true }
+        revoked_reason: { type: string, nullable: true }
+        grant_id: { type: string, nullable: true }
+        created_at: { type: string }
+        updated_at: { type: string }
+
+    GrantExecution:
+      type: object
+      properties:
+        id: { type: string }
+        grantId: { type: string, nullable: true }
+        grantRequestId: { type: string, nullable: true }
+        operatorId: { type: string, nullable: true }
+        action: { type: string }
+        resource: { type: string }
+        challengeId: { type: string, nullable: true }
+        challengeResult: { type: string }
+        policyResult: { type: string }
+        result: { type: string, enum: [succeeded, denied, failed] }
+        errorCode: { type: string, nullable: true }
+        executedAt: { type: string }
+        auditEventId: { type: string, nullable: true }
+        metadataJson: { type: string, nullable: true }
+
+    AuditEvent:
+      type: object
+      properties:
+        id: { type: string }
+        timestamp: { type: string }
+        subject_id: { type: string }
+        role: { type: string }
+        action: { type: string }
+        resource: { type: string }
+        approved: { type: boolean }
+        reason: { type: string }
+        matched_grant_id: { type: string, nullable: true }
+        challenge_id: { type: string, nullable: true }
+        challenge_present: { type: boolean }
+        challenge_result: { type: string }
+        grant_signature_result: { type: string }
+
+    Challenge:
+      type: object
+      properties:
+        id: { type: string }
+        subject_id: { type: string }
+        action: { type: string }
+        resource: { type: string }
+        created_at: { type: string }
+        expires_at: { type: string }
+        used_at: { type: string, nullable: true }
+        status: { type: string, enum: [active, used, expired] }
+
+    EvidenceBundle:
+      type: object
+      required:
+        - evidenceId
+        - executionId
+        - grantId
+        - grantRequestId
+        - evidenceHash
+        - canonicalVersion
+        - hashAlgorithm
+        - generatedAt
+        - request
+        - approval
+        - grant
+        - execution
+        - usageLimits
+        - auditTrail
+      properties:
+        evidenceId:
+          type: string
+          description: Same as executionId
+        executionId:
+          type: string
+        grantId:
+          type: string
+          nullable: true
+          description: Linked grant ID, or null if no grant matched
+        grantRequestId:
+          type: string
+          nullable: true
+          description: Linked grant request ID, or null if not applicable
+        evidenceHash:
+          type: string
+          description: SHA-256 hash of the canonical bundle (GL-026)
+        canonicalVersion:
+          type: string
+          enum: [gl-evidence-v1]
+        hashAlgorithm:
+          type: string
+          enum: [sha256]
+        generatedAt:
+          type: string
+          format: date-time
+        request:
+          type: object
+          nullable: true
+          description: Grant request section (present if grant request exists)
+          properties:
+            id: { type: string }
+            requestedBy: { type: string }
+            requestedAt: { type: string }
+            reason: { type: string }
+        approval:
+          type: object
+          nullable: true
+          description: Approval/denial section (present if request was approved or denied)
+          properties:
+            approvedBy: { type: string, nullable: true }
+            approvedAt: { type: string, nullable: true }
+            deniedBy: { type: string, nullable: true }
+            deniedAt: { type: string, nullable: true }
+            denialReason: { type: string, nullable: true }
+        grant:
+          type: object
+          nullable: true
+          description: Grant section (present if a grant was matched)
+          properties:
+            id: { type: string }
+            subjectId: { type: string }
+            role: { type: string }
+            action: { type: string }
+            resource: { type: string }
+            validFrom: { type: string }
+            validUntil: { type: string }
+            createdBy: { type: string }
+            createdAt: { type: string }
+            signingKeyId: { type: string, nullable: true }
+            payloadHash: { type: string, nullable: true }
+            maxUses: { type: integer, nullable: true }
+            useCount: { type: integer }
+            grantSignatureResult: { type: string }
+        execution:
+          type: object
+          description: Execution section
+          properties:
+            action: { type: string }
+            resource: { type: string }
+            operatorId: { type: string, nullable: true }
+            challengeId: { type: string, nullable: true }
+            challengeResult: { type: string }
+            policyResult: { type: string }
+            result: { type: string, enum: [succeeded, denied, failed] }
+            errorCode: { type: string, nullable: true }
+            executedAt: { type: string }
+            auditEventId: { type: string, nullable: true }
+        usageLimits:
+          type: object
+          description: Usage limit snapshot at time of execution
+          properties:
+            affectedOutcome: { type: boolean }
+            maxUses: { type: integer, nullable: true }
+            useCount: { type: integer, nullable: true }
+            reason: { type: string, nullable: true }
+        auditTrail:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditEvent"
+
+    DemoActionResult:
+      type: object
+      properties:
+        approved: { type: boolean }
+        message: { type: string, nullable: true }
+        reason: { type: string, nullable: true }
+        matchedGrantId: { type: string, nullable: true }
+        challengeId: { type: string, nullable: true }
+        challengeResult: { type: string, nullable: true }
+        auditEventId: { type: string }
+        grantSignatureResult: { type: string }
+        executionId: { type: string }
