@@ -7,6 +7,17 @@ info:
     This document describes the existing HTTP surface as of GL-030.
     No new endpoints, no response-shape changes, no schema migrations.
 
+    Known implementation gaps (security hardening deferred to GL-032+):
+    - The following endpoints do not currently enforce authentication even though
+      the contract documents the intended security model. Consumers should treat
+      the `security` blocks as the **target** contract.
+      - `GET /grants`, `GET /grants/{id}`, `GET /audit-events`
+      - `GET /challenges`, `POST /challenges`
+      - `GET /grant-requests`, `GET /grant-requests/{id}`
+    - The Grant response object duplicates several fields in both snake_case
+      and camelCase. Both shapes are present in the JSON for backward
+      compatibility.
+
     Auth modes:
     - Legacy mode (`ENABLE_OPERATOR_MODEL=false`): `Authorization: Bearer <admin-token>`
     - Operator mode (`ENABLE_OPERATOR_MODEL=true`): `Authorization: Bearer <operator-token>`
@@ -817,6 +828,88 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Action denied (no matching grant or challenge required)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoActionResult"
+
+  /operators/me:
+    get:
+      summary: Get current operator identity
+      description: |
+        Returns the currently authenticated operator's safe metadata
+        (operatorId, name, role, active). Does NOT expose the token hash.
+        Operator mode only.
+      operationId: getCurrentOperator
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Operator identity
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [operatorId, name, role, active]
+                properties:
+                  operatorId: { type: string }
+                  name: { type: string }
+                  role: { type: string }
+                  active: { type: boolean }
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /demo/tamper-grant/{id}:
+    post:
+      summary: Demo tamper a grant (DEMO ONLY)
+      description: |
+        **Demo endpoint.** Corrupts a grant field without re-signing to
+        demonstrate tamper detection. Requires `ENABLE_DEMO_ENDPOINTS=true`.
+        Never available in production builds.
+      operationId: tamperGrant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Tamper result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  grant_id: { type: string }
+                  field_changed: { type: string }
+        "403":
+          description: Demo endpoints disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   securitySchemes:
@@ -874,6 +967,9 @@ components:
         signature: { type: string, nullable: true }
         signing_key_id: { type: string, nullable: true }
         payload_hash: { type: string, nullable: true }
+        # camelCase duplicates injected by server for backward compatibility
+        signingKeyId: { type: string, nullable: true }
+        payloadHash: { type: string, nullable: true }
         max_uses: { type: integer, nullable: true }
         use_count: { type: integer }
         signaturePresent: { type: boolean }
