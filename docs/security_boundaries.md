@@ -421,3 +421,65 @@ Unknown error codes are flagged as a warning, not an error, so future codes do n
 - **Not blockchain.** No smart contracts, no wallet signatures, no testnet, no mainnet.
 - **Not external notarization.** No third-party timestamping or attestation service.
 
+## GL-032 — SQLite Persistence Boundaries & Production Readiness
+
+GL-032 hardens the existing SQLite-based MVP for safer local operation. It does **not** add a new database engine, storage adapter, or migration framework.
+
+### What GL-032 is
+
+- **Configuration hardening:** `GRANTLAYER_LOG_LEVEL` (DEBUG|INFO|WARNING|ERROR, default INFO) and `GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS` (default 2000) are centrally evaluated in `config.py`.
+- **Health readiness extension:** `GET /health` returns additive, safe readiness fields (`dbConnected`, `dbWritable`, `dbFilePresent`, `dbDirectoryWritable`, `dbSizeBytes`, `journalMode`, `dbPathKind`) without exposing absolute paths or secrets.
+- **Safe startup warnings:** `startup_warnings()` reports presence of tokens and unsafe defaults but never leaks token values.
+- **SQLite persistence documentation:** This section documents the single-writer boundary, WAL behavior, filesystem requirements, and backup/restore limits.
+
+### SQLite remains the only persistent store
+
+- GrantLayer MVP stores all data in a single SQLite database file.
+- There is no PostgreSQL, MySQL, or other relational backend in GL-032.
+- There is no storage abstraction layer or pluggable adapter.
+
+### Single-writer boundary
+
+- SQLite with WAL mode (`PRAGMA journal_mode=WAL`) supports one writer and multiple readers concurrently.
+- Do not open the `.db` file with another writer process while GrantLayer is running.
+- The health probe uses a **temporary table** write test so it does not interfere with persistent schema.
+
+### WAL files must be kept together
+
+When using a file-backed database, three files must be treated as a single unit for backup and restore:
+
+| File | Purpose |
+|------|---------|
+| `grantlayer.db` | Main database file |
+| `grantlayer.db-wal` | Write-ahead log (uncommitted changes) |
+| `grantlayer.db-shm` | Shared-memory file for WAL indexing |
+
+**Backups must include all three files while the server is stopped**, or use `VACUUM INTO` / SQLite online backup tools. Copying only `.db` while the server is running will produce an inconsistent snapshot.
+
+### Filesystem requirements
+
+- The directory containing the DB file must be writable for WAL creation and journal files.
+- Health checks report `dbDirectoryWritable` so operators can detect permission problems early.
+- In-memory databases (`:memory:`) are supported for testing; `dbPathKind` is `"memory"` and file-related fields are false/null.
+
+### Backup / restore limits
+
+- **No built-in automated backup.** GrantLayer does not schedule or perform backups.
+- **Recommended:** Stop the server, copy the `.db` + `.db-wal` + `.db-shm` set, then restart.
+- **Alternative:** Use SQLite `VACUUM INTO 'backup.db'` via an external SQLite client while the server is running (this produces a clean, standalone file without WAL).
+- **Restore:** Replace the three files with a consistent set and restart. Do not mix files from different points in time.
+
+### Safe logging and error output
+
+- Token values, hashes, salts, env values, and private keys are never written to logs or error responses.
+- `GET /health` never returns `dbPath`, absolute paths, or secrets.
+- Startup warnings report **presence** of settings, not their values.
+
+### What GL-032 is NOT
+
+- **Not a PostgreSQL sprint.** No Postgres driver, no connection pooling, no schema migration framework.
+- **Not a storage adapter sprint.** No pluggable storage interface.
+- **Not a migration sprint.** No Alembic, no SQLAlchemy migrations, no versioning table.
+- **Not a feature sprint.** No new user-facing features; only hardening, documentation, and safe defaults.
+- **Not a distributed system.** SQLite remains local-only; there is no replication, clustering, or multi-node support.
+

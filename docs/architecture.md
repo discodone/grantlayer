@@ -849,3 +849,91 @@ python3 scripts/verify_evidence_bundle.py path/to/evidence.json --json
 - **No PDF/ZIP/download export.** The bundle remains a JSON API response.
 - **No blockchain anchoring or external notarization.** All verification is local-only.
 
+## GL-032 — Health Readiness Flow
+
+GL-032 extends `GET /health` with additive, safe readiness fields from `get_db_health()`. No absolute paths, no secrets are exposed.
+
+### Health flow
+
+```
+GET /health
+  │
+  ├─ Build static payload (ok, service, timestamp, config booleans)
+  │
+  ├─ get_db_health()
+  │     ├─ dbPathKind: "file" or "memory"
+  │     ├─ dbFilePresent: os.path.isfile(DB_PATH) [file only]
+  │     ├─ dbSizeBytes: os.path.getsize(DB_PATH) [file only]
+  │     ├─ dbDirectoryWritable: os.access(db_dir, W_OK) [file only]
+  │     ├─ dbConnected: SELECT 1 succeeds
+  │     ├─ journalMode: PRAGMA journal_mode
+  │     └─ dbWritable: CREATE TEMP TABLE _gl032_health_probe → INSERT → DROP
+  │
+  └─ Merge and return JSON
+```
+
+### Safety rules
+
+- `dbPathKind` is `"file"` or `"memory"` — never the raw path.
+- `dbSizeBytes` is `None` for in-memory databases.
+- `dbFilePresent` and `dbDirectoryWritable` are `False` for in-memory databases.
+- The temp-table write probe ensures no persistent schema change.
+
+### Environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GRANTLAYER_LOG_LEVEL` | `INFO` | One of DEBUG, INFO, WARNING, ERROR. Invalid values fall back to INFO. |
+| `GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS` | `2000` | Health probe timeout in milliseconds. |
+
+### What GL-032 does NOT include
+
+- No new REST endpoints — only extends `GET /health` response.
+- No schema migration — temp table is transient.
+- No PostgreSQL or storage adapter.
+- No distributed system — SQLite remains local-only.
+
+## GL-032 — Health Readiness Flow
+
+GL-032 extends `GET /health` with additive, safe readiness fields from `get_db_health()`. No absolute paths, no secrets are exposed.
+
+### Health flow
+
+```
+GET /health
+  │
+  ├─ Build static payload (ok, service, timestamp, config booleans)
+  │
+  ├─ get_db_health()
+  │     ├─ dbPathKind: "file" or "memory"
+  │     ├─ dbFilePresent: os.path.isfile(DB_PATH) [file only]
+  │     ├─ dbSizeBytes: os.path.getsize(DB_PATH) [file only]
+  │     ├─ dbDirectoryWritable: os.access(db_dir, W_OK) [file only]
+  │     ├─ dbConnected: SELECT 1 succeeds
+  │     ├─ journalMode: PRAGMA journal_mode
+  │     └─ dbWritable: CREATE TEMP TABLE _gl032_health_probe → INSERT → DROP
+  │
+  └─ Merge and return JSON
+```
+
+### Safety rules
+
+- `dbPathKind` is `"file"` or `"memory"` — never the raw path.
+- `dbSizeBytes` is `None` for in-memory databases.
+- `dbFilePresent` and `dbDirectoryWritable` are `False` for in-memory databases.
+- The temp-table write probe ensures no persistent schema change.
+
+### Environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GRANTLAYER_LOG_LEVEL` | `INFO` | One of DEBUG, INFO, WARNING, ERROR. Invalid values fall back to INFO. |
+| `GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS` | `2000` | Health probe timeout in milliseconds. |
+
+### What GL-032 does NOT include
+
+- No new REST endpoints — only extends `GET /health` response.
+- No schema migration — temp table is transient.
+- No PostgreSQL or storage adapter.
+- No distributed system — SQLite remains local-only.
+

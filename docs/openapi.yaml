@@ -40,7 +40,7 @@ paths:
   /health:
     get:
       summary: Health check
-      description: Returns service health and configuration flags. Does NOT expose secrets or token values.
+      description: Returns service health and configuration flags. Does NOT expose secrets or token values. GL-032 adds SQLite readiness fields.
       operationId: healthCheck
       responses:
         "200":
@@ -61,6 +61,22 @@ paths:
                   demoEndpointsEnabled: { type: boolean }
                   operatorModelEnabled: { type: boolean }
                   operatorsConfigured: { type: boolean }
+                  # GL-032 readiness fields
+                  dbConnected: { type: boolean, description: "True if SELECT 1 succeeds against SQLite." }
+                  dbWritable: { type: boolean, description: "True if a temporary write probe succeeds." }
+                  dbFilePresent: { type: boolean, description: "True if the on-disk DB file exists. Always false for in-memory DB." }
+                  dbDirectoryWritable: { type: boolean, description: "True if the DB directory is writable. Always false for in-memory DB." }
+                  dbSizeBytes: { type: integer, nullable: true, description: "Size of the DB file in bytes; null for in-memory DB." }
+                  journalMode: { type: string, nullable: true, description: "SQLite PRAGMA journal_mode result (e.g. wal)." }
+                  dbPathKind: { type: string, enum: [file, memory], description: "Whether the DB is file-backed or in-memory." }
+                  # GL-032 readiness fields
+                  dbConnected: { type: boolean, description: "True if SELECT 1 succeeds against SQLite." }
+                  dbWritable: { type: boolean, description: "True if a temporary write probe succeeds." }
+                  dbFilePresent: { type: boolean, description: "True if the on-disk DB file exists. Always false for in-memory DB." }
+                  dbDirectoryWritable: { type: boolean, description: "True if the DB directory is writable. Always false for in-memory DB." }
+                  dbSizeBytes: { type: integer, nullable: true, description: "Size of the DB file in bytes; null for in-memory DB." }
+                  journalMode: { type: string, nullable: true, description: "SQLite PRAGMA journal_mode result (e.g. wal)." }
+                  dbPathKind: { type: string, enum: [file, memory], description: "Whether the DB is file-backed or in-memory." }
 
   /:
     get:

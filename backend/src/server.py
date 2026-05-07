@@ -96,7 +96,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(404, {"error": "Dashboard not found"})
 
         elif path == "/health":
-            self._send_json(200, {
+            health_payload = {
                 "ok": True,
                 "service": "grantlayer-mvp",
                 "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
@@ -107,7 +107,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 "demoEndpointsEnabled": config.ENABLE_DEMO_ENDPOINTS,
                 "operatorModelEnabled": config.ENABLE_OPERATOR_MODEL,
                 "operatorsConfigured": False,
-            })
+            }
+            # GL-032: additive readiness fields
+            from .db import get_db_health
+            health_payload.update(get_db_health())
+            self._send_json(200, health_payload)
 
         elif path == "/grants":
             grants = list_grants()

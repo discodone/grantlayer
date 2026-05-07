@@ -315,13 +315,47 @@ curl -s -X POST http://127.0.0.1:8765/grants \
 
 ## Docs
 
-- [docs/architecture.md](docs/architecture.md) — Component overview, request flow, stack decision
-- [docs/mvp_scope.md](docs/mvp_scope.md) — Sprint 1 scope, acceptance criteria, next sprints
-- [docs/security_boundaries.md](docs/security_boundaries.md) — What this MVP is NOT
+- [docs/operations/production_readiness_checklist.md](docs/operations/production_readiness_checklist.md) — GL-032 hardening status and remaining gaps
+- [docs/operations/backup_restore.md](docs/operations/backup_restore.md) — Manual SQLite backup/restore procedures
 
 ---
 
-## GL-025 — Execution Evidence Bundle
+## GL-032 — Production Readiness & SQLite Persistence Baseline
+
+GL-032 hardens the MVP from a stable release candidate toward safer local operation. It adds no new user-facing features.
+
+### What GL-032 adds
+
+- **Configuration hardening:** `GRANTLAYER_LOG_LEVEL` (DEBUG|INFO|WARNING|ERROR, default INFO) and `GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS` (default 2000 ms) with safe parsing in `config.py`.
+- **Health readiness extension:** `GET /health` returns additive, safe readiness fields (`dbConnected`, `dbWritable`, `dbFilePresent`, `dbDirectoryWritable`, `dbSizeBytes`, `journalMode`, `dbPathKind`) without leaking absolute paths or secrets.
+- **Safe startup warnings:** `startup_warnings()` reports token presence and unsafe defaults but never leaks values.
+- **SQLite persistence documentation:** Single-writer boundary, WAL behavior, filesystem requirements, and backup/restore limits are documented.
+
+### Environment variables added in GL-032
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GRANTLAYER_LOG_LEVEL` | `INFO` | Logging level. One of `DEBUG`, `INFO`, `WARNING`, `ERROR`. Invalid values fall back to `INFO`. |
+| `GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS` | `2000` | Timeout in milliseconds for DB health probes inside `GET /health`. |
+
+### What GL-032 is NOT
+
+- Not a PostgreSQL sprint — SQLite remains the only persistent store.
+- Not a storage adapter sprint — no pluggable storage interface.
+- Not a migration sprint — no Alembic or versioning table.
+- Not a distributed system — no replication, clustering, or multi-node support.
+
+---
+
+## Next sprint
+
+- ~~Sprint 2C: Demo admin token~~ ✅ Done
+- ~~Sprint 2D: Docker packaging~~ ✅ Done
+- ~~Sprint 2E: Operator model (GL-021)~~ ✅ Done
+- ~~Sprint 2F: Real approval workflow (GL-022)~~ ✅ Done
+- ~~GL-028: Offline Evidence Bundle Verification~~ ✅ Done
+- ~~GL-029: Evidence & Audit Finalization Sprint~~ ✅ Done
+- ~~GL-032: Production Readiness & SQLite Persistence Baseline~~ ✅ Done
 
 GL-025 adds a single read-only endpoint that aggregates the full grant lifecycle for a given `GrantExecution` into a minimal, audit-verifiable evidence bundle. No new tables, no migrations, no UI.
 
