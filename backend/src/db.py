@@ -1,7 +1,7 @@
 """GrantLayer MVP — SQLite database setup."""
 
-import sqlite3
 import os
+import sqlite3
 
 DB_PATH = os.environ.get("GRANTLAYER_DB", os.path.join(os.path.dirname(__file__), "../../data/grantlayer.db"))
 
@@ -163,3 +163,135 @@ def init_db() -> None:
         """)
     finally:
         conn.close()
+
+
+# ──────────────────────────────────────────────────────────────
+# Health / Readiness helpers (GL-032)
+# ──────────────────────────────────────────────────────────────
+
+def _db_is_file() -> bool:
+    """Return True if DB_PATH points to an on-disk file (not :memory:)."""
+    return DB_PATH != ":memory:" and not DB_PATH.startswith("file::memory:")
+
+
+def get_db_health() -> dict:
+    """Return safe, additive readiness fields for the SQLite backend.
+
+    No absolute paths, no raw dbPath values, no secrets.
+    """
+    result: dict = {
+        "dbConnected": False,
+        "dbWritable": False,
+        "dbFilePresent": False,
+        "dbDirectoryWritable": False,
+        "dbSizeBytes": None,
+        "journalMode": None,
+        "dbPathKind": "file" if _db_is_file() else "memory",
+    }
+
+    # dbFilePresent / dbSizeBytes
+    if _db_is_file():
+        try:
+            result["dbFilePresent"] = os.path.isfile(DB_PATH)
+            if result["dbFilePresent"]:
+                result["dbSizeBytes"] = os.path.getsize(DB_PATH)
+        except OSError:
+            pass
+
+    # dbDirectoryWritable
+        try:
+            db_dir = os.path.dirname(os.path.abspath(DB_PATH))
+            result["dbDirectoryWritable"] = os.access(db_dir, os.W_OK)
+        except OSError:
+            pass
+
+    # dbConnected + journalMode + dbWritable
+    try:
+        conn = get_conn()
+        try:
+            # connected
+            conn.execute("SELECT 1")
+            result["dbConnected"] = True
+
+            # journal mode
+            row = conn.execute("PRAGMA journal_mode").fetchone()
+            if row:
+                result["journalMode"] = row[0]
+
+            # writable — use a TEMP table so no persistent schema change
+            conn.execute("CREATE TEMP TABLE _gl032_health_probe (id INTEGER)")
+            conn.execute("INSERT INTO _gl032_health_probe VALUES (1)")
+            conn.execute("DROP TABLE _gl032_health_probe")
+            result["dbWritable"] = True
+        finally:
+            conn.close()
+    except Exception:
+        pass
+
+    return result
+
+
+# ──────────────────────────────────────────────────────────────
+# Health / Readiness helpers (GL-032)
+# ──────────────────────────────────────────────────────────────
+
+def _db_is_file() -> bool:
+    """Return True if DB_PATH points to an on-disk file (not :memory:)."""
+    return DB_PATH != ":memory:" and not DB_PATH.startswith("file::memory:")
+
+
+def get_db_health() -> dict:
+    """Return safe, additive readiness fields for the SQLite backend.
+
+    No absolute paths, no raw dbPath values, no secrets.
+    """
+    result: dict = {
+        "dbConnected": False,
+        "dbWritable": False,
+        "dbFilePresent": False,
+        "dbDirectoryWritable": False,
+        "dbSizeBytes": None,
+        "journalMode": None,
+        "dbPathKind": "file" if _db_is_file() else "memory",
+    }
+
+    # dbFilePresent / dbSizeBytes
+    if _db_is_file():
+        try:
+            result["dbFilePresent"] = os.path.isfile(DB_PATH)
+            if result["dbFilePresent"]:
+                result["dbSizeBytes"] = os.path.getsize(DB_PATH)
+        except OSError:
+            pass
+
+    # dbDirectoryWritable
+        try:
+            db_dir = os.path.dirname(os.path.abspath(DB_PATH))
+            result["dbDirectoryWritable"] = os.access(db_dir, os.W_OK)
+        except OSError:
+            pass
+
+    # dbConnected + journalMode + dbWritable
+    try:
+        conn = get_conn()
+        try:
+            # connected
+            conn.execute("SELECT 1")
+            result["dbConnected"] = True
+
+            # journal mode
+            row = conn.execute("PRAGMA journal_mode").fetchone()
+            if row:
+                result["journalMode"] = row[0]
+
+            # writable — use a TEMP table so no persistent schema change
+            conn.execute("CREATE TEMP TABLE _gl032_health_probe (id INTEGER)")
+            conn.execute("INSERT INTO _gl032_health_probe VALUES (1)")
+            conn.execute("DROP TABLE _gl032_health_probe")
+            result["dbWritable"] = True
+        finally:
+            conn.close()
+    except Exception:
+        pass
+
+    return result

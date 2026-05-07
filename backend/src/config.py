@@ -15,6 +15,9 @@ import os
 import warnings
 
 
+_LOG_LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR"}
+
+
 def _env_bool(name: str, default: bool = False) -> bool:
     """Parse an environment variable as a boolean (case-insensitive)."""
     value = os.environ.get(name, "").strip().lower()
@@ -30,6 +33,11 @@ def _env_int(name: str, default: int) -> int:
         return int(os.environ.get(name, str(default)))
     except (ValueError, TypeError):
         return default
+
+
+def _env_log_level(name: str, default: str = "INFO") -> str:
+    value = os.environ.get(name, "").strip().upper()
+    return value if value in _LOG_LEVELS else default
 
 
 # ──────────────────────────────────────────────────────────────
@@ -55,6 +63,13 @@ ENABLE_DEMO_ENDPOINTS: bool = _env_bool("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", defa
 GRANTLAYER_HOST: str = _env_str("GRANTLAYER_HOST", "127.0.0.1")
 GRANTLAYER_PORT: int = _env_int("GRANTLAYER_PORT", 8765)
 GRANTLAYER_DB: str = _env_str("GRANTLAYER_DB", "")
+
+# ──────────────────────────────────────────────────────────────
+# Logging & Health
+# ──────────────────────────────────────────────────────────────
+
+GRANTLAYER_LOG_LEVEL: str = _env_log_level("GRANTLAYER_LOG_LEVEL", default="INFO")
+GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS: int = _env_int("GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS", 2000)
 
 # ──────────────────────────────────────────────────────────────
 # Admin Token (Demo / Sprint-2C only)
