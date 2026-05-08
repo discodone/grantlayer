@@ -168,15 +168,6 @@ _db_retry_max = int(os.environ.get("GRANTLAYER_DB_RETRY_MAX", "5"))
 # Delay between retries in seconds
 _db_retry_delay = float(os.environ.get("GRANTLAYER_DB_RETRY_DELAY", "1.0"))
 
-# ──────────────────────────────────────────────────────────────
-# Bounded retry config (GL-035: PostgreSQL transient failures)
-# ──────────────────────────────────────────────────────────────
-
-# Maximum connection attempts for PostgreSQL on startup
-_db_retry_max = int(os.environ.get("GRANTLAYER_DB_RETRY_MAX", "5"))
-# Delay between retries in seconds
-_db_retry_delay = float(os.environ.get("GRANTLAYER_DB_RETRY_DELAY", "1.0"))
-
 
 class _ConnectionWrapper:
     """Wraps either sqlite3.Connection or psycopg2 connection.
