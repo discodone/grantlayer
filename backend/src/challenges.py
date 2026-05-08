@@ -2,7 +2,7 @@
 
 import datetime
 from typing import Optional, Tuple
-from .db import get_conn
+from .db import execute, query_one, query_all
 from .models import Challenge, ChallengeResult
 
 CHALLENGE_TTL_SECONDS = 300  # 5 minutes
@@ -17,56 +17,34 @@ def create_challenge(subject_id: str, action: str, resource: str) -> Challenge:
         resource=resource,
         expires_at=expires.isoformat().replace("+00:00", "Z"),
     )
-    conn = get_conn()
-    try:
-        conn.execute(
-            """INSERT INTO challenges
-               (id, subject_id, action, resource, created_at, expires_at, used_at, status)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (
-                challenge.id, challenge.subject_id, challenge.action, challenge.resource,
-                challenge.created_at, challenge.expires_at, challenge.used_at, challenge.status,
-            ),
-        )
-        conn.commit()
-    finally:
-        conn.close()
+    execute(
+        """INSERT INTO challenges
+           (id, subject_id, action, resource, created_at, expires_at, used_at, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (
+            challenge.id, challenge.subject_id, challenge.action, challenge.resource,
+            challenge.created_at, challenge.expires_at, challenge.used_at, challenge.status,
+        ),
+    )
     return challenge
 
 
 def get_challenge(challenge_id: str) -> Optional[Challenge]:
-    conn = get_conn()
-    try:
-        row = conn.execute(
-            "SELECT * FROM challenges WHERE id = ?", (challenge_id,)
-        ).fetchone()
-    finally:
-        conn.close()
+    row = query_one("SELECT * FROM challenges WHERE id = ?", (challenge_id,))
     return _row_to_challenge(row) if row else None
 
 
 def list_challenges() -> list:
-    conn = get_conn()
-    try:
-        rows = conn.execute(
-            "SELECT * FROM challenges ORDER BY created_at DESC"
-        ).fetchall()
-    finally:
-        conn.close()
+    rows = query_all("SELECT * FROM challenges ORDER BY created_at DESC")
     return [_row_to_challenge(r) for r in rows]
 
 
 def mark_used(challenge_id: str) -> None:
     used_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-    conn = get_conn()
-    try:
-        conn.execute(
-            "UPDATE challenges SET used_at = ?, status = 'used' WHERE id = ?",
-            (used_at, challenge_id),
-        )
-        conn.commit()
-    finally:
-        conn.close()
+    execute(
+        "UPDATE challenges SET used_at = ?, status = 'used' WHERE id = ?",
+        (used_at, challenge_id),
+    )
 
 
 def validate_challenge(
@@ -100,7 +78,7 @@ def validate_challenge(
     return "valid", challenge_id
 
 
-def _row_to_challenge(row) -> Challenge:
+def _row_to_challenge(row: dict) -> Challenge:
     return Challenge(
         id=row["id"],
         subject_id=row["subject_id"],

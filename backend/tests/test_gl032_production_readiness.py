@@ -149,10 +149,12 @@ class TestGL032ProductionReadiness(unittest.TestCase):
     # 8. get_db_health() returns consistent structure for memory DB
     # ──────────────────────────────────────────────
     def test_get_db_health_memory_db_structure(self):
-        # Point DB_PATH to :memory: temporarily
-        orig_path = self.db_mod.DB_PATH
+        # Point DB to :memory: temporarily
+        orig_path = self.db_mod.DB_PATH_OR_URL
+        orig_backend = self.db_mod.DB_BACKEND
         try:
-            self.db_mod.DB_PATH = ":memory:"
+            self.db_mod.DB_PATH_OR_URL = ":memory:"
+            self.db_mod.DB_BACKEND = "sqlite"
             health = self.db_mod.get_db_health()
             self.assertEqual(health["dbPathKind"], "memory")
             self.assertFalse(health["dbFilePresent"])
@@ -162,7 +164,8 @@ class TestGL032ProductionReadiness(unittest.TestCase):
             self.assertTrue(health["dbConnected"])
             self.assertTrue(health["dbWritable"])
         finally:
-            self.db_mod.DB_PATH = orig_path
+            self.db_mod.DB_PATH_OR_URL = orig_path
+            self.db_mod.DB_BACKEND = orig_backend
 
     # ──────────────────────────────────────────────
     # 9. /health response contains new readiness fields and no secrets
@@ -205,7 +208,7 @@ class TestGL032ProductionReadiness(unittest.TestCase):
         health = self.db_mod.get_db_health()
         health_str = json.dumps(health)
         # Must not contain raw DB path or common path fragments
-        self.assertNotIn(self.db_mod.DB_PATH, health_str)
+        self.assertNotIn(self.db_mod.DB_PATH_OR_URL, health_str)
         self.assertNotIn("grantlayer.db", health_str)
         self.assertNotIn("/paperclip", health_str)
         self.assertNotIn("/tmp", health_str)

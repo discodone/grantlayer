@@ -21,68 +21,50 @@ from .models import GrantRequest, Grant, AuditEvent
 
 def create_grant_request(request: GrantRequest) -> GrantRequest:
     """Create a new grant request in the 'requested' state."""
-    conn = db.get_conn()
-    try:
-        conn.execute(
-            """
-            INSERT INTO grant_requests (
-                id, subject_id, role, action, resource, valid_from, valid_until,
-                requested_by, reason, status, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                request.id,
-                request.subject_id,
-                request.role,
-                request.action,
-                request.resource,
-                request.valid_from,
-                request.valid_until,
-                request.requested_by,
-                request.reason,
-                request.status,
-                request.created_at,
-                request.updated_at,
-            ),
-        )
-        conn.commit()
-        return request
-    finally:
-        conn.close()
+    db.execute(
+        """
+        INSERT INTO grant_requests (
+            id, subject_id, role, action, resource, valid_from, valid_until,
+            requested_by, reason, status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            request.id,
+            request.subject_id,
+            request.role,
+            request.action,
+            request.resource,
+            request.valid_from,
+            request.valid_until,
+            request.requested_by,
+            request.reason,
+            request.status,
+            request.created_at,
+            request.updated_at,
+        ),
+    )
+    return request
 
 
 def get_grant_request(request_id: str) -> Optional[GrantRequest]:
     """Get a single grant request by ID."""
-    conn = db.get_conn()
-    try:
-        row = conn.execute(
-            "SELECT * FROM grant_requests WHERE id = ?", (request_id,)
-        ).fetchone()
-        if not row:
-            return None
-
-        return _row_to_grant_request(row)
-    finally:
-        conn.close()
+    row = db.query_one("SELECT * FROM grant_requests WHERE id = ?", (request_id,))
+    if not row:
+        return None
+    return _row_to_grant_request(row)
 
 
 def list_grant_requests(status_filter: Optional[str] = None) -> List[GrantRequest]:
     """List all grant requests, optionally filtered by status."""
-    conn = db.get_conn()
-    try:
-        if status_filter:
-            rows = conn.execute(
-                "SELECT * FROM grant_requests WHERE status = ? ORDER BY created_at DESC",
-                (status_filter,),
-            ).fetchall()
-        else:
-            rows = conn.execute(
-                "SELECT * FROM grant_requests ORDER BY created_at DESC"
-            ).fetchall()
+    if status_filter:
+        rows = db.query_all(
+            "SELECT * FROM grant_requests WHERE status = ? ORDER BY created_at DESC",
+            (status_filter,),
+        )
+    else:
+        rows = db.query_all("SELECT * FROM grant_requests ORDER BY created_at DESC")
 
-        return [_row_to_grant_request(row) for row in rows]
-    finally:
-        conn.close()
+    return [_row_to_grant_request(row) for row in rows]
 
 
 def approve_grant_request(
@@ -311,7 +293,7 @@ def expire_old_requests() -> int:
         conn.close()
 
 
-def _row_to_grant_request(row: sqlite3.Row) -> GrantRequest:
+def _row_to_grant_request(row: dict) -> GrantRequest:
     """Convert a database row to a GrantRequest object."""
     return GrantRequest(
         id=row["id"],
@@ -340,12 +322,8 @@ def _row_to_grant_request(row: sqlite3.Row) -> GrantRequest:
 
 def get_grant_request_id_by_grant_id(grant_id: str) -> Optional[str]:
     """Get the most recent grant_request_id associated with a grant_id."""
-    conn = db.get_conn()
-    try:
-        row = conn.execute(
-            "SELECT id FROM grant_requests WHERE grant_id = ? ORDER BY updated_at DESC LIMIT 1",
-            (grant_id,),
-        ).fetchone()
-        return row["id"] if row else None
-    finally:
-        conn.close()
+    row = db.query_one(
+        "SELECT id FROM grant_requests WHERE grant_id = ? ORDER BY updated_at DESC LIMIT 1",
+        (grant_id,),
+    )
+    return row["id"] if row else None

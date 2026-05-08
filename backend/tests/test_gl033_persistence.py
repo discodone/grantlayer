@@ -155,7 +155,7 @@ class TestGL033Persistence(unittest.TestCase):
             os.environ["GRANTLAYER_DATABASE_URL"] = f"sqlite://{tmp2.name}"
             os.environ["GRANTLAYER_DB"] = self.tmp_db.name
             importlib.reload(self.db_mod)
-            self.assertEqual(self.db_mod.DB_PATH, tmp2.name)
+            self.assertEqual(self.db_mod.DB_PATH_OR_URL, tmp2.name)
         finally:
             os.unlink(tmp2.name)
 
@@ -164,25 +164,25 @@ class TestGL033Persistence(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_sqlite_url_parsing(self):
         paths = {
-            "sqlite:///absolute/path.db": "/absolute/path.db",
-            "sqlite://relative/path.db": "relative/path.db",
-            "sqlite:relative/path.db": "relative/path.db",
-            "sqlite::memory:": ":memory:",
-            "sqlite:///:memory:": ":memory:",
+            "sqlite:///absolute/path.db": ("sqlite", "/absolute/path.db"),
+            "sqlite://relative/path.db": ("sqlite", "relative/path.db"),
+            "sqlite:relative/path.db": ("sqlite", "relative/path.db"),
+            "sqlite::memory:": ("sqlite", ":memory:"),
+            "sqlite:///:memory:": ("sqlite", ":memory:"),
         }
         for url, expected in paths.items():
             with self.subTest(url=url):
                 self.assertEqual(self.db_mod._parse_database_url(url), expected)
 
     # ──────────────────────────────────────────────
-    # 5. PostgreSQL URL parsing safely rejects
+    # 5. PostgreSQL URL parsing accepts and returns backend
     # ──────────────────────────────────────────────
-    def test_postgresql_url_rejected(self):
+    def test_postgresql_url_accepted(self):
         for url in ["postgres://localhost/db", "postgresql://localhost/db"]:
             with self.subTest(url=url):
-                with self.assertRaises(RuntimeError) as ctx:
-                    self.db_mod._parse_database_url(url)
-                self.assertIn("not supported yet", str(ctx.exception))
+                backend, dsn = self.db_mod._parse_database_url(url)
+                self.assertEqual(backend, "postgres")
+                self.assertEqual(dsn, url)
 
     # ──────────────────────────────────────────────
     # 6. GL-032 health probes are intact

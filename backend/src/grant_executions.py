@@ -5,11 +5,11 @@ One row per protected action attempt.
 
 from typing import List, Optional
 import json
-from .db import get_conn
+from .db import execute, query_one, query_all
 from .models import GrantExecution
 
 
-def _row_to_grant_execution(row) -> Optional[GrantExecution]:
+def _row_to_grant_execution(row: dict | None) -> Optional[GrantExecution]:
     if row is None:
         return None
     return GrantExecution(
@@ -32,48 +32,37 @@ def _row_to_grant_execution(row) -> Optional[GrantExecution]:
 
 def create_grant_execution(execution: GrantExecution) -> GrantExecution:
     """Insert a new grant execution record."""
-    conn = get_conn()
-    try:
-        conn.execute(
-            """
-            INSERT INTO grant_executions (
-                id, grant_id, grant_request_id, operator_id, action, resource,
-                challenge_id, challenge_result, policy_result, result, error_code,
-                executed_at, audit_event_id, metadata_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                execution.id,
-                execution.grant_id,
-                execution.grant_request_id,
-                execution.operator_id,
-                execution.action,
-                execution.resource,
-                execution.challenge_id,
-                execution.challenge_result,
-                execution.policy_result,
-                execution.result,
-                execution.error_code,
-                execution.executed_at,
-                execution.audit_event_id,
-                execution.metadata_json,
-            ),
-        )
-        conn.commit()
-    finally:
-        conn.close()
+    execute(
+        """
+        INSERT INTO grant_executions (
+            id, grant_id, grant_request_id, operator_id, action, resource,
+            challenge_id, challenge_result, policy_result, result, error_code,
+            executed_at, audit_event_id, metadata_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            execution.id,
+            execution.grant_id,
+            execution.grant_request_id,
+            execution.operator_id,
+            execution.action,
+            execution.resource,
+            execution.challenge_id,
+            execution.challenge_result,
+            execution.policy_result,
+            execution.result,
+            execution.error_code,
+            execution.executed_at,
+            execution.audit_event_id,
+            execution.metadata_json,
+        ),
+    )
     return execution
 
 
 def get_grant_execution(execution_id: str) -> Optional[GrantExecution]:
     """Get a single grant execution by ID."""
-    conn = get_conn()
-    try:
-        row = conn.execute(
-            "SELECT * FROM grant_executions WHERE id = ?", (execution_id,)
-        ).fetchone()
-    finally:
-        conn.close()
+    row = query_one("SELECT * FROM grant_executions WHERE id = ?", (execution_id,))
     return _row_to_grant_execution(row)
 
 
@@ -84,29 +73,25 @@ def list_grant_executions(
     limit: int = 200,
 ) -> List[GrantExecution]:
     """List grant executions, optionally filtered."""
-    conn = get_conn()
-    try:
-        conditions: list[str] = []
-        params: list = []
-        if grant_id is not None:
-            conditions.append("grant_id = ?")
-            params.append(grant_id)
-        if grant_request_id is not None:
-            conditions.append("grant_request_id = ?")
-            params.append(grant_request_id)
-        if operator_id is not None:
-            conditions.append("operator_id = ?")
-            params.append(operator_id)
+    conditions: list[str] = []
+    params: list = []
+    if grant_id is not None:
+        conditions.append("grant_id = ?")
+        params.append(grant_id)
+    if grant_request_id is not None:
+        conditions.append("grant_request_id = ?")
+        params.append(grant_request_id)
+    if operator_id is not None:
+        conditions.append("operator_id = ?")
+        params.append(operator_id)
 
-        base = "SELECT * FROM grant_executions"
-        if conditions:
-            base += " WHERE " + " AND ".join(conditions)
-        base += " ORDER BY executed_at DESC LIMIT ?"
-        params.append(limit)
+    base = "SELECT * FROM grant_executions"
+    if conditions:
+        base += " WHERE " + " AND ".join(conditions)
+    base += " ORDER BY executed_at DESC LIMIT ?"
+    params.append(limit)
 
-        rows = conn.execute(base, params).fetchall()
-    finally:
-        conn.close()
+    rows = query_all(base, tuple(params))
     return [_row_to_grant_execution(r) for r in rows]
 
 
@@ -119,12 +104,7 @@ def update_grant_execution_audit_event_id(
     execution_id: str, audit_event_id: str
 ) -> None:
     """Link an execution to its audit event after audit insertion."""
-    conn = get_conn()
-    try:
-        conn.execute(
-            "UPDATE grant_executions SET audit_event_id = ? WHERE id = ?",
-            (audit_event_id, execution_id),
-        )
-        conn.commit()
-    finally:
-        conn.close()
+    execute(
+        "UPDATE grant_executions SET audit_event_id = ? WHERE id = ?",
+        (audit_event_id, execution_id),
+    )
