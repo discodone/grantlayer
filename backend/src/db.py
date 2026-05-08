@@ -1,4 +1,4 @@
-"""GrantLayer MVP — Database connection factory and query helpers (GL-034).
+"""GrantLayer MVP — Database connection factory and query helpers (GL-034 / GL-035).
 
 Supports SQLite (default) and PostgreSQL backends.
 psycopg2 is lazy-imported only when a postgres:// URL is configured.
@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import time
 from typing import Any
 from urllib.parse import urlparse
 
@@ -115,6 +116,9 @@ def _parse_database_url(url: str) -> tuple[str, str]:
     PostgreSQL formats:
       postgres://... or postgresql://...
     """
+    if not url:
+        return "sqlite", ""
+
     parsed = urlparse(url)
 
     if parsed.scheme in ("postgres", "postgresql"):
@@ -154,6 +158,24 @@ DB_BACKEND, DB_PATH_OR_URL = _resolve_db_url()
 
 # Backward-compatible alias for code that references the single path variable.
 DB_PATH = DB_PATH_OR_URL
+
+# ──────────────────────────────────────────────────────────────
+# Bounded retry config (GL-035: PostgreSQL transient failures)
+# ──────────────────────────────────────────────────────────────
+
+# Maximum connection attempts for PostgreSQL on startup
+_db_retry_max = int(os.environ.get("GRANTLAYER_DB_RETRY_MAX", "5"))
+# Delay between retries in seconds
+_db_retry_delay = float(os.environ.get("GRANTLAYER_DB_RETRY_DELAY", "1.0"))
+
+# ──────────────────────────────────────────────────────────────
+# Bounded retry config (GL-035: PostgreSQL transient failures)
+# ──────────────────────────────────────────────────────────────
+
+# Maximum connection attempts for PostgreSQL on startup
+_db_retry_max = int(os.environ.get("GRANTLAYER_DB_RETRY_MAX", "5"))
+# Delay between retries in seconds
+_db_retry_delay = float(os.environ.get("GRANTLAYER_DB_RETRY_DELAY", "1.0"))
 
 
 class _ConnectionWrapper:
@@ -220,7 +242,10 @@ class _ConnectionWrapper:
 
 
 def get_conn() -> _ConnectionWrapper:
-    """Return a connection wrapper for the configured backend."""
+    """Return a connection wrapper for the configured backend.
+
+    For PostgreSQL, applies bounded retry on transient connection failures.
+    """
     if DB_BACKEND == "postgres":
         try:
             import psycopg2
@@ -230,8 +255,22 @@ def get_conn() -> _ConnectionWrapper:
                 "PostgreSQL is configured but psycopg2 is not installed. "
                 "Install it with: pip install psycopg2-binary"
             ) from exc
-        raw = psycopg2.connect(DB_PATH_OR_URL, cursor_factory=RealDictCursor)
-        return _ConnectionWrapper(raw, "postgres")
+
+        last_err: Exception | None = None
+        max_attempts = max(1, _db_retry_max)
+        for attempt in range(1, max_attempts + 1):
+            try:
+                raw = psycopg2.connect(DB_PATH_OR_URL, cursor_factory=RealDictCursor)
+                return _ConnectionWrapper(raw, "postgres")
+            except psycopg2.OperationalError as exc:
+                last_err = exc
+                if attempt < max_attempts:
+                    time.sleep(_db_retry_delay)
+                continue
+        raise RuntimeError(
+            f"PostgreSQL connection failed after {max_attempts} attempt(s). "
+            "Check that the server is reachable and the DSN is correct."
+        ) from last_err
 
     conn = sqlite3.connect(DB_PATH_OR_URL)
     conn.row_factory = sqlite3.Row
@@ -334,6 +373,10 @@ def get_db_health() -> dict[str, Any]:
         else "postgres"
         if DB_BACKEND == "postgres"
         else "file",
+        # GL-035: PostgreSQL additive fields
+        "pgVersion": None,
+        "pgBackendPid": None,
+        "pgActiveConnections": None,
     }
 
     # dbFilePresent / dbSizeBytes / dbDirectoryWritable (SQLite file only)
@@ -351,7 +394,7 @@ def get_db_health() -> dict[str, Any]:
         except OSError:
             pass
 
-    # dbConnected + journalMode + dbWritable
+    # dbConnected + journalMode + dbWritable + PostgreSQL fields
     try:
         conn = get_conn()
         try:
@@ -366,10 +409,45 @@ def get_db_health() -> dict[str, Any]:
                     result["journalMode"] = row[0]
 
             # writable — use a TEMP table so no persistent schema change
-            conn.execute("CREATE TEMP TABLE _gl032_health_probe (id INTEGER)")
-            conn.execute("INSERT INTO _gl032_health_probe VALUES (1)")
-            conn.execute("DROP TABLE _gl032_health_probe")
+            if DB_BACKEND == "postgres":
+                conn.execute("CREATE TEMP TABLE _gl032_health_probe (id INTEGER)")
+                conn.execute("INSERT INTO _gl032_health_probe VALUES (1)")
+                conn.execute("DROP TABLE _gl032_health_probe")
+            else:
+                conn.execute("CREATE TEMP TABLE _gl032_health_probe (id INTEGER)")
+                conn.execute("INSERT INTO _gl032_health_probe VALUES (1)")
+                conn.execute("DROP TABLE _gl032_health_probe")
             result["dbWritable"] = True
+
+            # GL-035: PostgreSQL version (available without elevated privileges)
+            if DB_BACKEND == "postgres":
+                try:
+                    row = conn.execute("SELECT version()").fetchone()
+                    if row:
+                        # version() returns e.g. "PostgreSQL 16.2 on ..."
+                        version_str = row[0] if isinstance(row, dict) else row[0]
+                        if version_str.startswith("PostgreSQL "):
+                            result["pgVersion"] = version_str.split(" ")[1]
+                except Exception:
+                    pass
+
+                # Backend PID (no elevated privileges needed)
+                try:
+                    row = conn.execute("SELECT pg_backend_pid()").fetchone()
+                    if row:
+                        result["pgBackendPid"] = row[0] if isinstance(row, dict) else row[0]
+                except Exception:
+                    pass
+
+                # Active connections count (no elevated privileges needed for pg_stat_activity)
+                try:
+                    row = conn.execute(
+                        "SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()"
+                    ).fetchone()
+                    if row:
+                        result["pgActiveConnections"] = row[0] if isinstance(row, dict) else row[0]
+                except Exception:
+                    pass
         finally:
             conn.close()
     except Exception:
