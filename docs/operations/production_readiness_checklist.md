@@ -46,7 +46,7 @@ This checklist documents the hardening items addressed in GL-032 and the remaini
 
 - [ ] **Real authentication:** OAuth2, mTLS, or hardware token integration.
 - [ ] **Session management:** Token rotation, expiry, and revocation.
-- [ ] **PostgreSQL backend:** Connection pooling, replication, managed backups.
+- [x] **PostgreSQL backend:** Available as an optional deployment. Connection pooling, replication, and managed backups are the responsibility of the operator.
 - [ ] **Schema migration framework:** Alembic or equivalent for versioned migrations.
 - [ ] **Multi-node / HA:** Load balancing, clustering, distributed consensus.
 - [ ] **Network exposure:** The server binds to `127.0.0.1` by default; any external exposure requires a reverse proxy with TLS.
