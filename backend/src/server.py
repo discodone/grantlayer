@@ -100,7 +100,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 "ok": True,
                 "service": "grantlayer-mvp",
                 "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
-                "dbConfigured": bool(config.GRANTLAYER_DB),
+                "dbConfigured": bool(config.GRANTLAYER_DB or config.GRANTLAYER_DATABASE_URL),
                 "adminTokenConfigured": admin_token_is_configured(),
                 "requireAdminToken": config.REQUIRE_ADMIN_TOKEN,
                 "requireChallenge": config.REQUIRE_CHALLENGE,

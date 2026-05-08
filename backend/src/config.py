@@ -63,6 +63,7 @@ ENABLE_DEMO_ENDPOINTS: bool = _env_bool("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", defa
 GRANTLAYER_HOST: str = _env_str("GRANTLAYER_HOST", "127.0.0.1")
 GRANTLAYER_PORT: int = _env_int("GRANTLAYER_PORT", 8765)
 GRANTLAYER_DB: str = _env_str("GRANTLAYER_DB", "")
+GRANTLAYER_DATABASE_URL: str = _env_str("GRANTLAYER_DATABASE_URL", "")
 
 # ──────────────────────────────────────────────────────────────
 # Logging & Health
