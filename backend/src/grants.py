@@ -2,12 +2,12 @@
 
 import datetime
 from typing import List, Optional
-from .db import get_conn
+from .db import get_conn, execute, query_one, query_all
 from .models import Grant
 from .crypto_signing import sign_grant as _sign_grant
 
 
-def _row_to_grant(row) -> Grant:
+def _row_to_grant(row: dict) -> Grant:
     return Grant(
         id=row["id"],
         subject_id=row["subject_id"],
@@ -32,56 +32,38 @@ def _row_to_grant(row) -> Grant:
 
 
 def list_grants() -> List[Grant]:
-    conn = get_conn()
-    try:
-        rows = conn.execute("SELECT * FROM grants ORDER BY created_at DESC").fetchall()
-        return [_row_to_grant(r) for r in rows]
-    finally:
-        conn.close()
+    rows = query_all("SELECT * FROM grants ORDER BY created_at DESC")
+    return [_row_to_grant(r) for r in rows]
 
 
 def get_grant(grant_id: str) -> Optional[Grant]:
-    conn = get_conn()
-    try:
-        row = conn.execute("SELECT * FROM grants WHERE id = ?", (grant_id,)).fetchone()
-        return _row_to_grant(row) if row else None
-    finally:
-        conn.close()
+    row = query_one("SELECT * FROM grants WHERE id = ?", (grant_id,))
+    return _row_to_grant(row) if row else None
 
 
 def create_grant(grant: Grant) -> Grant:
-    conn = get_conn()
-    try:
-        conn.execute(
-            """INSERT INTO grants
-               (id, subject_id, role, action, resource, valid_from, valid_until,
-                created_by, reason, revoked, created_at, max_uses, use_count)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)""",
-            (
-                grant.id, grant.subject_id, grant.role, grant.action,
-                grant.resource, grant.valid_from, grant.valid_until,
-                grant.created_by, grant.reason, grant.created_at,
-                grant.max_uses, grant.use_count,
-            ),
-        )
-        conn.commit()
-    finally:
-        conn.close()
+    execute(
+        """INSERT INTO grants
+           (id, subject_id, role, action, resource, valid_from, valid_until,
+            created_by, reason, revoked, created_at, max_uses, use_count)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)""",
+        (
+            grant.id, grant.subject_id, grant.role, grant.action,
+            grant.resource, grant.valid_from, grant.valid_until,
+            grant.created_by, grant.reason, grant.created_at,
+            grant.max_uses, grant.use_count,
+        ),
+    )
 
     sig_hex, hash_hex, key_id = _sign_grant(grant)
     grant.signature = sig_hex
     grant.payload_hash = hash_hex
     grant.signing_key_id = key_id
 
-    conn = get_conn()
-    try:
-        conn.execute(
-            "UPDATE grants SET signature = ?, signing_key_id = ?, payload_hash = ? WHERE id = ?",
-            (sig_hex, key_id, hash_hex, grant.id),
-        )
-        conn.commit()
-    finally:
-        conn.close()
+    execute(
+        "UPDATE grants SET signature = ?, signing_key_id = ?, payload_hash = ? WHERE id = ?",
+        (sig_hex, key_id, hash_hex, grant.id),
+    )
     return grant
 
 
@@ -92,12 +74,7 @@ def tamper_grant(grant_id: str) -> Optional[dict]:
         return None
     old_value = grant.role
     new_value = "tampered-role"
-    conn = get_conn()
-    try:
-        conn.execute("UPDATE grants SET role = ? WHERE id = ?", (new_value, grant_id))
-        conn.commit()
-    finally:
-        conn.close()
+    execute("UPDATE grants SET role = ? WHERE id = ?", (new_value, grant_id))
     return {
         "ok": True,
         "grantId": grant_id,
@@ -113,18 +90,13 @@ def tamper_grant(grant_id: str) -> Optional[dict]:
 
 def revoke_grant(grant_id: str, revoked_by: str, reason: str) -> bool:
     revoked_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-    conn = get_conn()
-    try:
-        cur = conn.execute(
-            """UPDATE grants
-               SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?
-               WHERE id = ? AND revoked = 0""",
-            (revoked_by, reason, revoked_at, grant_id),
-        )
-        conn.commit()
-        return cur.rowcount > 0
-    finally:
-        conn.close()
+    rowcount = execute(
+        """UPDATE grants
+           SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?
+           WHERE id = ? AND revoked = 0""",
+        (revoked_by, reason, revoked_at, grant_id),
+    )
+    return rowcount > 0
 
 
 def try_consume_grant_use(grant_id: str) -> bool:
@@ -133,18 +105,13 @@ def try_consume_grant_use(grant_id: str) -> bool:
     Returns True if the consumption succeeded, False if the grant
     was already exhausted (use_count >= max_uses).
     """
-    conn = get_conn()
-    try:
-        cur = conn.execute(
-            """
-            UPDATE grants
-            SET use_count = use_count + 1
-            WHERE id = ?
-              AND (max_uses IS NULL OR use_count < max_uses)
-            """,
-            (grant_id,),
-        )
-        conn.commit()
-        return cur.rowcount > 0
-    finally:
-        conn.close()
+    rowcount = execute(
+        """
+        UPDATE grants
+        SET use_count = use_count + 1
+        WHERE id = ?
+          AND (max_uses IS NULL OR use_count < max_uses)
+        """,
+        (grant_id,),
+    )
+    return rowcount > 0

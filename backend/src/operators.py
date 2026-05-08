@@ -13,7 +13,7 @@ import uuid
 import datetime
 from typing import Optional
 
-from .db import get_conn
+from .db import get_conn, execute, query_one, query_all
 
 
 # ──────────────────────────────────────────────────────────────
@@ -115,7 +115,7 @@ def _init_operators_table() -> None:
         conn.close()
 
 
-def _row_to_operator(row) -> Operator | None:
+def _row_to_operator(row: dict | None) -> Operator | None:
     if row is None:
         return None
     return Operator(
@@ -128,35 +128,21 @@ def _row_to_operator(row) -> Operator | None:
 
 
 def get_operator_by_id(operator_id: str) -> Operator | None:
-    conn = get_conn()
-    try:
-        row = conn.execute(
-            "SELECT * FROM operators WHERE id = ? AND active = 1", (operator_id,)
-        ).fetchone()
-        return _row_to_operator(row)
-    finally:
-        conn.close()
+    row = query_one(
+        "SELECT * FROM operators WHERE id = ? AND active = 1", (operator_id,)
+    )
+    return _row_to_operator(row)
 
 
-def _get_operator_row_by_token_hash(token_hash: str):
-    conn = get_conn()
-    try:
-        return conn.execute(
-            "SELECT * FROM operators WHERE token_hash = ? AND active = 1", (token_hash,)
-        ).fetchone()
-    finally:
-        conn.close()
+def _get_operator_row_by_token_hash(token_hash: str) -> dict | None:
+    return query_one(
+        "SELECT * FROM operators WHERE token_hash = ? AND active = 1", (token_hash,)
+    )
 
 
 def list_operators() -> list[Operator]:
-    conn = get_conn()
-    try:
-        rows = conn.execute(
-            "SELECT * FROM operators ORDER BY created_at DESC"
-        ).fetchall()
-        return [_row_to_operator(r) for r in rows if r is not None]
-    finally:
-        conn.close()
+    rows = query_all("SELECT * FROM operators ORDER BY created_at DESC")
+    return [_row_to_operator(r) for r in rows if r is not None]
 
 
 def authenticate_operator(authorization_header: str | None) -> Operator | None:
@@ -173,13 +159,7 @@ def authenticate_operator(authorization_header: str | None) -> Operator | None:
 
     # We don't know the hash in advance, so iterate active operators.
     # For MVP (small operator count) this is acceptable.
-    conn = get_conn()
-    try:
-        rows = conn.execute(
-            "SELECT id, token_hash FROM operators WHERE active = 1"
-        ).fetchall()
-    finally:
-        conn.close()
+    rows = query_all("SELECT id, token_hash FROM operators WHERE active = 1")
 
     for row in rows:
         if verify_token(token, row["token_hash"]):
@@ -208,9 +188,10 @@ def bootstrap_operator_if_needed() -> None:
 
     conn = get_conn()
     try:
-        count = conn.execute(
+        count_row = conn.execute(
             "SELECT COUNT(*) FROM operators"
-        ).fetchone()[0]
+        ).fetchone()
+        count = count_row[0] if count_row else 0
         if count > 0:
             return
 

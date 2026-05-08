@@ -1,14 +1,13 @@
-"""GrantLayer MVP — Schema migration runner (GL-033).
+"""GrantLayer MVP — Schema migration runner (GL-033 / GL-034).
 
-Minimal migration system: file-based, no ORM, SQLite-only in GL-033.
+Minimal migration system: file-based, no ORM, SQLite and PostgreSQL support.
 """
 
 import importlib.util
 import inspect
 import os
-import sqlite3
 import datetime
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 _MIGRATIONS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -31,7 +30,12 @@ def _load_module(filepath: str):
     return mod
 
 
-def _ensure_migrations_table(conn: sqlite3.Connection) -> None:
+def _backend(conn: Any) -> str:
+    """Return the database backend for a connection or wrapper."""
+    return getattr(conn, "backend", "sqlite")
+
+
+def _ensure_migrations_table(conn: Any) -> None:
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -43,38 +47,60 @@ def _ensure_migrations_table(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
-def _applied_versions(conn: sqlite3.Connection) -> List[str]:
+def _applied_versions(conn: Any) -> List[str]:
     """Return list of already-applied migration versions."""
     try:
         rows = conn.execute("SELECT version FROM schema_migrations ORDER BY version").fetchall()
         return [r[0] for r in rows]
-    except sqlite3.OperationalError:
-        # schema_migrations does not exist yet
+    except Exception:
+        # schema_migrations does not exist yet (or backend-specific error)
         return []
 
 
-def _mark_applied(conn: sqlite3.Connection, version: str) -> None:
+def _mark_applied(conn: Any, version: str) -> None:
     now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     conn.execute(
-        "INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)",
+        "INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)",
         (version, now),
     )
     conn.commit()
 
 
-def _table_exists(conn: sqlite3.Connection, name: str) -> bool:
-    row = conn.execute(
-        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)
-    ).fetchone()
+def _table_exists(conn: Any, name: str) -> bool:
+    backend = _backend(conn)
+    if backend == "postgres":
+        row = conn.execute(
+            "SELECT 1 FROM information_schema.tables WHERE table_name = %s",
+            (name,),
+        ).fetchone()
+    else:
+        row = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+            (name,),
+        ).fetchone()
     return row is not None
 
 
-def _column_exists(conn: sqlite3.Connection, table: str, column: str) -> bool:
-    try:
-        rows = conn.execute(f"PRAGMA table_info({table})").fetchall()
-        return any(r[1] == column for r in rows)
-    except sqlite3.OperationalError:
-        return False
+def _column_exists(conn: Any, table: str, column: str) -> bool:
+    backend = _backend(conn)
+    if backend == "postgres":
+        try:
+            row = conn.execute(
+                """
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name = %s AND column_name = %s
+                """,
+                (table, column),
+            ).fetchone()
+            return row is not None
+        except Exception:
+            return False
+    else:
+        try:
+            rows = conn.execute(f"PRAGMA table_info({table})").fetchall()
+            return any(r[1] == column for r in rows)
+        except Exception:
+            return False
 
 
 # ──────────────────────────────────────────────────────────────
@@ -126,7 +152,7 @@ _EXPECTED_INDEXES = [
 ]
 
 
-def _validate_gl032_baseline(conn: sqlite3.Connection) -> None:
+def _validate_gl032_baseline(conn: Any) -> None:
     """Raise RuntimeError if the existing DB does not look like GL-032 baseline."""
     for table, columns in _EXPECTED_TABLES.items():
         if not _table_exists(conn, table):
@@ -137,11 +163,18 @@ def _validate_gl032_baseline(conn: sqlite3.Connection) -> None:
                     f"Baseline validation failed: missing column '{col}' in '{table}'"
                 )
     # Validate expected indexes
+    backend = _backend(conn)
     for idx_name, idx_table in _EXPECTED_INDEXES:
-        row = conn.execute(
-            "SELECT 1 FROM sqlite_master WHERE type='index' AND name=? AND tbl_name=?",
-            (idx_name, idx_table),
-        ).fetchone()
+        if backend == "postgres":
+            row = conn.execute(
+                "SELECT 1 FROM pg_indexes WHERE indexname = %s AND tablename = %s",
+                (idx_name, idx_table),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='index' AND name=? AND tbl_name=?",
+                (idx_name, idx_table),
+            ).fetchone()
         if row is None:
             raise RuntimeError(
                 f"Baseline validation failed: missing index '{idx_name}' on '{idx_table}'"
@@ -152,7 +185,7 @@ def _validate_gl032_baseline(conn: sqlite3.Connection) -> None:
 # Public API
 # ──────────────────────────────────────────────────────────────
 
-def run_migrations(conn: sqlite3.Connection) -> None:
+def run_migrations(conn: Any) -> None:
     """Run all pending migrations in order.
 
     On a fresh DB the baseline migration creates the full schema.
@@ -183,7 +216,7 @@ def run_migrations(conn: sqlite3.Connection) -> None:
         _mark_applied(conn, version)
 
 
-def get_applied_versions(conn: sqlite3.Connection) -> List[str]:
+def get_applied_versions(conn: Any) -> List[str]:
     """Return currently-applied migration versions."""
     _ensure_migrations_table(conn)
     return _applied_versions(conn)
