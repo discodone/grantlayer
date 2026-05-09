@@ -1,0 +1,44 @@
+# GrantLayer MVP — PostgreSQL stack override (GL-035)
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.postgres.yml up -d
+#
+# Or set env:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.postgres.yml
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: grantlayer-postgres
+    environment:
+      - POSTGRES_USER=grantlayer
+      - POSTGRES_PASSWORD=${GRANTLAYER_POSTGRES_PASSWORD:-grantlayer_password_change_me}
+      - POSTGRES_DB=grantlayer
+    volumes:
+      - grantlayer-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grantlayer -d grantlayer"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - grantlayer
+
+  api:
+    container_name: grantlayer-api-postgres
+    environment:
+      - GRANTLAYER_DB=
+      - GRANTLAYER_DATABASE_URL=postgres://grantlayer:${GRANTLAYER_POSTGRES_PASSWORD:-grantlayer_password_change_me}@db:5432/grantlayer
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - grantlayer
+
+volumes:
+  grantlayer-postgres-data:
+
+networks:
+  grantlayer:
+    driver: bridge

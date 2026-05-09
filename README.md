@@ -45,7 +45,7 @@ This MVP demonstrates the core concept: a protected action can only execute if a
 
 - **Backend:** Python 3.13, stdlib + `cryptography` v43.0.0 (Ed25519)
 - **Frontend:** Vanilla HTML/JS, served by the backend — no build step
-- **Database:** SQLite (WAL mode), stored in `data/grantlayer.db`
+- **Database:** SQLite (WAL mode) or PostgreSQL, stored in `data/grantlayer.db` or PostgreSQL volume
 - **Tests:** Python `unittest` (stdlib)
 
 > Node.js was not available without sudo on this VM. Python stdlib produces an identical demo with zero external dependencies.

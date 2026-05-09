@@ -435,7 +435,7 @@ GL-032 hardens the existing SQLite-based MVP for safer local operation. It does 
 ### SQLite remains the only persistent store
 
 - GrantLayer MVP stores all data in a single SQLite database file.
-- There is no PostgreSQL, MySQL, or other relational backend in GL-032.
+- **Database:** PostgreSQL is now available as an optional backend. The security boundary for the database layer is the same as for SQLite: the database must be protected by the operator.
 - There is no storage abstraction layer or pluggable adapter.
 
 ### Single-writer boundary

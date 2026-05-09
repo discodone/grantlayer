@@ -28,7 +28,12 @@ Key variables for production persistence:
 | `GRANTLAYER_ENABLE_DEMO_ENDPOINTS` | Disable demo endpoints | `false` |
 | `GRANTLAYER_ADMIN_TOKEN` | Admin token value | `change-me` |
 
-## SQLite Production Notes
+## Database Options
+
+GrantLayer supports two database backends:
+
+### SQLite (Default)
+Recommended for development and small-scale deployments.
 
 - GrantLayer uses **WAL mode** by default. Three files move together:
   - `grantlayer.db`
@@ -38,6 +43,9 @@ Key variables for production persistence:
 - Only one writer at a time. Do not share the same `.db` file across multiple processes.
 - Backup: copy all three files after stopping the server, or use `VACUUM INTO` while running.
 - See `backup_restore.md` for detailed backup/restore procedures.
+
+### PostgreSQL
+For production deployments requiring concurrent connections and scalability. See [PostgreSQL Deployment Guide](../deployment/postgresql.md) for setup instructions.
 
 ## systemd Service Example
 
@@ -177,7 +185,7 @@ readinessProbe:
 
 ## What GL-033 Does NOT Provide
 
-- No PostgreSQL backend (planned for a future milestone).
+- PostgreSQL support is now available as an optional deployment path. See [PostgreSQL Deployment Guide](../deployment/postgresql.md) for details.
 - No automated horizontal scaling (SQLite is single-writer).
 - No built-in backup scheduling (use cron + scripts).
 - No TLS termination (run behind a reverse proxy).
