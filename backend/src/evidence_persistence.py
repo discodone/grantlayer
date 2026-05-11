@@ -127,6 +127,8 @@ def get_stored_bundle(archive_id: str) -> Optional[EvidenceBundle]:
         grant_request_id=row["grant_request_id"] if row["grant_request_id"] is not None else None,
         created_at=row["created_at"],
         stored_by=row["stored_by"] if row["stored_by"] is not None else None,
+        last_verified_at=row.get("last_verified_at"),
+        last_verification_status=row.get("last_verification_status"),
     )
 
 
@@ -149,6 +151,8 @@ def get_bundle_by_execution(execution_id: str) -> Optional[EvidenceBundle]:
         grant_request_id=row["grant_request_id"] if row["grant_request_id"] is not None else None,
         created_at=row["created_at"],
         stored_by=row["stored_by"] if row["stored_by"] is not None else None,
+        last_verified_at=row.get("last_verified_at"),
+        last_verification_status=row.get("last_verification_status"),
     )
 
 
@@ -205,7 +209,7 @@ def list_stored_bundles(
     # Fetch items
     items_sql = f"""
         SELECT id, evidence_hash, execution_id, grant_id, grant_request_id,
-               created_at, stored_by
+               created_at, stored_by, last_verified_at, last_verification_status
         FROM evidence_archives
         {where_clause}
         ORDER BY created_at DESC
@@ -222,6 +226,8 @@ def list_stored_bundles(
             "grantRequestId": r["grant_request_id"],
             "storedAt": r["created_at"],
             "storedBy": r["stored_by"],
+            "lastVerifiedAt": r.get("last_verified_at"),
+            "lastVerificationStatus": r.get("last_verification_status"),
         }
         for r in rows
     ]
@@ -249,3 +255,19 @@ def archive_execution(
     Returns store result dict, or error if bundle invalid.
     """
     return store_bundle(execution_id, bundle, stored_by=stored_by)
+
+
+def update_verification_status(archive_id: str, status: str) -> int:
+    """Update last_verified_at and last_verification_status for an archive.
+
+    Returns the number of rows updated (0 or 1).
+    """
+    now = _iso_now()
+    return db.execute(
+        """
+        UPDATE evidence_archives
+        SET last_verified_at = ?, last_verification_status = ?
+        WHERE id = ?
+        """,
+        (now, status, archive_id),
+    )
