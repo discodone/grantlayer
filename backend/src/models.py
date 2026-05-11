@@ -55,6 +55,32 @@ GrantRequestStatus = Literal["requested", "approved", "denied", "revoked", "expi
 GrantExecutionResult = Literal["succeeded", "denied", "failed"]
 
 
+# ──────────────────────────────────────────────
+# GL-037-A Provenance Event model
+# ──────────────────────────────────────────────
+
+@dataclass
+class ProvenanceEvent:
+    """Append-only provenance event for decision tracing."""
+    event_type: str
+    actor_type: str
+    actor_id: str
+    action: str
+    occurred_at: str
+    id: str = field(default_factory=_new_id)
+    created_at: str = field(default_factory=_now_iso)
+    resource_type: Optional[str] = None
+    resource_id: Optional[str] = None
+    execution_id: Optional[str] = None
+    grant_id: Optional[str] = None
+    evidence_hash: Optional[str] = None
+    verification_status: Optional[str] = None
+    metadata_json: Optional[str] = None
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
 @dataclass
 class GrantExecution:
     """GL-023 — One row per protected action attempt."""
