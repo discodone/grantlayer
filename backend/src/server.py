@@ -20,6 +20,7 @@ from . import operators as ops
 from . import grant_requests
 from . import grant_executions as execs
 from .evidence_bundle import build_evidence_bundle
+from .evidence_verification import verify_execution
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -270,6 +271,18 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self.send_header(k, v)
             self.end_headers()
             self.wfile.write(body)
+
+        elif m := re.fullmatch(r"/evidence/executions/([^/]+)/verify", path):
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            execution_id = m.group(1)
+            result = verify_execution(execution_id)
+            self._send_json(200, result)
 
         else:
             self._send_json(404, {"error": "Not found"})

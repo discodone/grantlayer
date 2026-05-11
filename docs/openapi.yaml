@@ -743,6 +743,50 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /evidence/executions/{id}/verify:
+    get:
+      summary: Verify evidence bundle for execution
+      description: |
+        Verifies the persisted evidence bundle for a GrantExecution.
+        Recomputes the SHA-256 evidenceHash, validates structural completeness
+        and denial-code consistency, and records the result.
+
+        Status values:
+        - `valid` — bundle hash matches and structure is consistent
+        - `invalid` — hash mismatch or structural/consistency failure
+        - `missing_data` — no persisted bundle found for execution
+        - `unsupported_version` — unsupported canonicalVersion or hashAlgorithm
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: verifyEvidenceBundle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceVerificationResult"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /challenges:
     get:
       summary: List challenges
@@ -1183,3 +1227,22 @@ components:
         auditEventId: { type: string }
         grantSignatureResult: { type: string }
         executionId: { type: string }
+
+    EvidenceVerificationResult:
+      type: object
+      required: [status, executionId, verifiedAt, reason]
+      properties:
+        status:
+          type: string
+          enum: [valid, invalid, missing_data, unsupported_version]
+          description: Verification outcome for the persisted evidence bundle.
+        executionId:
+          type: string
+          description: The execution ID that was verified.
+        verifiedAt:
+          type: string
+          format: date-time
+          description: ISO-8601 UTC timestamp of the verification.
+        reason:
+          type: string
+          description: Human-readable explanation of the verification outcome.

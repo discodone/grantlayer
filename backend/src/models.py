@@ -224,37 +224,8 @@ class EvidenceBundle:
     created_at: str = field(default_factory=_now_iso)
     stored_by: Optional[str] = None
 
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "evidenceHash": self.evidence_hash,
-            "canonicalVersion": self.canonical_version,
-            "hashAlgorithm": self.hash_algorithm,
-            "executionId": self.execution_id,
-            "grantId": self.grant_id,
-            "grantRequestId": self.grant_request_id,
-            "createdAt": self.created_at,
-            "storedBy": self.stored_by,
-        }
-
-
-# ──────────────────────────────────────────────
-# GL-036 Evidence Persistence model
-# ──────────────────────────────────────────────
-
-@dataclass
-class EvidenceBundle:
-    """Immutable persisted evidence bundle record."""
-    id: str                          # == execution_id (1:1 mapping)
-    evidence_hash: str
-    canonical_version: str
-    hash_algorithm: str
-    bundle_json: str                 # raw JSON payload
-    execution_id: str
-    grant_id: Optional[str]
-    grant_request_id: Optional[str]
-    created_at: str = field(default_factory=_now_iso)
-    stored_by: Optional[str] = None
+    last_verified_at: Optional[str] = None
+    last_verification_status: Optional[str] = None
 
     def to_dict(self) -> dict:
         return {
@@ -267,4 +238,6 @@ class EvidenceBundle:
             "grantRequestId": self.grant_request_id,
             "createdAt": self.created_at,
             "storedBy": self.stored_by,
+            "lastVerifiedAt": self.last_verified_at,
+            "lastVerificationStatus": self.last_verification_status,
         }
