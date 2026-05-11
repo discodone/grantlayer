@@ -1,45 +1,79 @@
-# GrantLayer MVP — Sprint 2B
+# GrantLayer
 
-A local demonstrator for action-level temporary access control with policy evaluation, challenge/replay protection, and audit logging.
+> **GrantLayer turns agentic grant workflows into verifiable institutional records.**
 
-## What is this MVP?
+GrantLayer is a verification, audit, and compliance layer for agentic grant and funding workflows.
 
-GrantLayer is an **action-level approval layer** for temporary privileged IT actions in MSP environments.
-Instead of asking "who can log in?" — GrantLayer asks "who may perform this specific action, right now, under these conditions?"
+When AI agents prepare funding applications, evaluate eligibility, collect evidence, or trigger approval decisions, institutions need a neutral verification layer — one that makes every step traceable, tamper-evident, and independently auditable. GrantLayer is that layer.
 
-This MVP demonstrates the core concept: a protected action can only execute if a valid, non-expired, non-revoked grant exists that matches the subject, role, action, and resource — and every attempt is logged to an immutable audit trail.
+**GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.**
 
-## What does it show?
+## What GrantLayer is
 
-- Creating time-limited grants (subject, role, action, resource, time window)
-- Policy evaluation: fail-closed (any ambiguity → denied)
-- Grant revocation
-- **Challenge/proof flow (Sprint 2A):** one-time-use challenge UUIDs with 5-minute TTL
-- **Replay protection:** a used challenge is permanently blocked (fail-closed)
-- **Ed25519 grant signatures (Sprint 2B):** every grant is signed on creation; signature is verified before each demo action
-- **Tamper detection:** modifying any grant field invalidates the signature → action is blocked
-- Protected demo action (approved or blocked by policy + signature + challenge)
-- Audit log for every attempt — approved and denied, with challenge and signature metadata
-- Live dashboard in the browser
+GrantLayer is **not** a payment app, a blockchain app, a demo app, or a pure funding platform. It is an infrastructure-level verification and audit layer for agent-driven processes that involve grants, approvals, evidence, and compliance decisions.
 
-### Sprint 2B — Ed25519 grant signatures (DEMO ONLY)
+Core concepts:
+- **Evidence Bundles** — collect evidence, criteria, sources, and timestamps for every grant lifecycle event
+- **Verification Core** — check completeness, consistency, versions, and hash integrity of stored evidence
+- **Audit Trails** — make traceable who or what decided what, when, and on which grounds
+- **Policy Layer** *(Phase 2)* — machine-readable grant rules, exclusion criteria, deadlines, and proof requirements
+
+## MVP scope
+
+The current MVP establishes the technical foundation:
+- Action-level grant model (subject, role, action, resource, time window)
+- Policy evaluation: fail-closed
+- Grant revocation, usage limits, Ed25519 signatures
+- Operator model with RBAC
+- Grant Request approval workflow
+- Grant Execution audit ledger
+- Evidence Bundles with SHA-256 integrity hash
+- Evidence Persistence (durable storage)
+- Evidence Verification Core (server-side hash verification)
+- SQLite (default) + PostgreSQL (optional)
+
+## What is explicitly not in this MVP
+
+- No blockchain (planned as optional Phase 3 integrity layer)
+- No wallets, stablecoins, or treasury logic
+- No UI beyond a local debug dashboard
+- No external notarization or certification services
+- No production authentication (no OAuth, JWT, TLS)
+
+## Roadmap
+
+See [docs/strategic_positioning.md](docs/strategic_positioning.md) for the full strategic context.
+
+### Phase 1 — MVP (current)
+
+Evidence Persistence, Evidence Verification Core, Audit Logs, Operator RBAC, Grant Request workflow, Policy engine, API/OpenAPI consistency, SQLite + PostgreSQL support. No blockchain dependency.
+
+### Phase 2 — Product Core
+
+Compliance/Policy layer (machine-readable grant rules, exclusion criteria, deadlines, proof requirements), Decision Provenance, Auditor exports, structured compliance reports, Agent permission model.
+
+### Phase 3 — Optional Crypto Integrity Layer
+
+Hash Anchoring of Evidence Bundle hashes, verification results, or decision records. Wallet/operator-based signatures. Optional Cardano or Ethereum anchoring for institutional-grade audit trails. Sensitive data stays off-chain; only hashes are anchored.
+
+## Technical implementation
+
+### Ed25519 grant signatures (DEMO ONLY)
 
 - Private key is stored unencrypted at `data/demo_ed25519_private_key.pem`
 - **Do not use this key in production**
 - Key files are gitignored (`data/*.pem`)
 - Single key ("demo-ed25519-v1"), no key rotation, no HSM, no PKI
-- The canonical payload (the signed content) covers 9 immutable fields: id, subjectId, role, action, resource, validFrom, validUntil, createdBy, reason
-- Revocation fields are NOT in the canonical payload — revocation is possible without invalidating the original signature
 
-## What it explicitly does NOT show
+## What it explicitly does NOT include
 
 - No real privileged actions (no filesystem, OS, or network changes)
 - No real admin rights
-- No blockchain / smart contracts / testnet
-- No authentication / JWT / TLS
+- No blockchain / smart contracts / testnet (blockchain is Phase 3 and optional)
+- No production authentication / JWT / TLS
 - No production use
 - No HSM, no key management, no PKI
-- See [docs/security_boundaries.md](docs/security_boundaries.md) for full list
+- See [docs/security_boundaries.md](docs/security_boundaries.md) for the complete list
 
 ## Stack
 
@@ -95,7 +129,7 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **218 tests, 0 failures.**
+Expected output: **360 tests, 3 skipped, 0 failures.**
 
 ## Configuration (GL-020 Product Hardening)
 
