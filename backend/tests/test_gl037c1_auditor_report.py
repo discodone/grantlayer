@@ -32,7 +32,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
         self.db = db_mod
         self.db.init_db()
 
-        from src.auditor_report import build_auditor_report
+        from src.auditor_report import build_auditor_report_for_execution
         from src.provenance_summary import build_decision_provenance_summary
         from src.provenance import record_provenance_event
         from src.grant_executions import create_grant_execution
@@ -42,7 +42,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
         from src import evidence_persistence as evp
         from src.evidence_bundle import build_evidence_bundle
 
-        self.build = build_auditor_report
+        self.build = build_auditor_report_for_execution
         self.build_summary = build_decision_provenance_summary
         self.record_event = record_provenance_event
         self.create_execution = create_grant_execution
@@ -86,6 +86,10 @@ class TestAuditorReportBuilder(unittest.TestCase):
 
     # ── Module location ─────────────────────────────────────
     def test_auditor_report_builder_lives_in_auditor_report_module(self):
+        from src import auditor_report as ar
+        self.assertTrue(hasattr(ar, "build_auditor_report_for_execution"))
+
+    def test_compat_wrapper_build_auditor_report_still_exists(self):
         from src import auditor_report as ar
         self.assertTrue(hasattr(ar, "build_auditor_report"))
 
@@ -401,6 +405,30 @@ class TestAuditorReportBuilder(unittest.TestCase):
         raw = json.dumps(result)
         for forbidden in ["GRANTLAYER_ADMIN_TOKEN", "password", "secret", "token", "private"]:
             self.assertNotIn(forbidden, raw.lower(), f"Secret leak detected: {forbidden}")
+
+    # ── Raw evidence flag ─────────────────────────────────────
+    def test_include_raw_evidence_false_omits_bundle(self):
+        self._make_execution("ex-raw-off")
+        self._archive_evidence("ex-raw-off")
+        result = self.build("ex-raw-off", include_raw_evidence=False)
+        self.assertIsNotNone(result)
+        self.assertNotIn("evidenceBundle", result)
+
+    def test_include_raw_evidence_true_includes_bundle(self):
+        self._make_execution("ex-raw-on")
+        self._archive_evidence("ex-raw-on")
+        result = self.build("ex-raw-on", include_raw_evidence=True)
+        self.assertIsNotNone(result)
+        self.assertIn("evidenceBundle", result)
+        self.assertIsNotNone(result["evidenceBundle"])
+        self.assertEqual(result["evidenceBundle"]["executionId"], "ex-raw-on")
+
+    def test_include_raw_evidence_true_none_when_no_archive(self):
+        self._make_execution("ex-raw-none")
+        result = self.build("ex-raw-none", include_raw_evidence=True)
+        self.assertIsNotNone(result)
+        self.assertIn("evidenceBundle", result)
+        self.assertIsNone(result["evidenceBundle"])
 
     # ── Consistency: no crash on null/legacy data ─────────────
     def test_no_crash_when_grant_missing(self):

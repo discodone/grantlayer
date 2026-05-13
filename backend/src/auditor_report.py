@@ -7,6 +7,7 @@ Read-only. No mutations. No secrets in response.
 from __future__ import annotations
 
 import datetime
+import json
 import uuid
 from typing import Any, Optional
 
@@ -14,6 +15,7 @@ from .models import Grant, GrantRequest
 from .provenance_summary import build_decision_provenance_summary
 from .grants import get_grant
 from .grant_requests import get_grant_request, get_grant_request_id_by_grant_id
+from .evidence_persistence import get_bundle_by_execution
 
 
 def _iso_now() -> str:
@@ -121,7 +123,10 @@ def _compute_findings(
     return findings
 
 
-def build_auditor_report(execution_id: str) -> Optional[dict[str, Any]]:
+def build_auditor_report_for_execution(
+    execution_id: str,
+    include_raw_evidence: bool = False,
+) -> Optional[dict[str, Any]]:
     """Build a minimal auditor report for a GrantExecution.
 
     Wraps the decision provenance summary with a formal report envelope,
@@ -130,6 +135,8 @@ def build_auditor_report(execution_id: str) -> Optional[dict[str, Any]]:
 
     Args:
         execution_id: The execution to report on.
+        include_raw_evidence: When True, include the raw archived evidence
+            bundle (if any) in the report under ``evidenceBundle``.
 
     Returns:
         A report dict, or None if the execution does not exist and has no
@@ -175,4 +182,20 @@ def build_auditor_report(execution_id: str) -> Optional[dict[str, Any]]:
     else:
         report["grantRequest"] = None
 
+    if include_raw_evidence:
+        bundle_record = get_bundle_by_execution(execution_id)
+        if bundle_record is not None and bundle_record.bundle_json:
+            try:
+                report["evidenceBundle"] = json.loads(bundle_record.bundle_json)
+            except json.JSONDecodeError:
+                report["evidenceBundle"] = None
+        else:
+            report["evidenceBundle"] = None
+
     return report
+
+
+# Compatibility wrapper for code that still uses the old name.
+def build_auditor_report(execution_id: str) -> Optional[dict[str, Any]]:
+    """Deprecated compatibility wrapper. Use ``build_auditor_report_for_execution``."""
+    return build_auditor_report_for_execution(execution_id)
