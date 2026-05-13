@@ -314,7 +314,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 return
             self._send_json(200, summary)
 
-        elif m := re.fullmatch(r"/auditor/executions/([^/]+)/report", path):
+        elif m := re.fullmatch(r"/auditor/reports/executions/([^/]+)", path):
             if config.ENABLE_OPERATOR_MODEL:
                 ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
                 if not ok:
