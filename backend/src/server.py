@@ -22,7 +22,6 @@ from . import grant_executions as execs
 from .evidence_bundle import build_evidence_bundle
 from .evidence_verification import verify_execution
 from .provenance_summary import build_decision_provenance_summary
-from .provenance_summary import build_decision_provenance_summary
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -286,7 +285,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             result = verify_execution(execution_id)
             self._send_json(200, result)
 
-        elif m := re.fullmatch(r"/provenance/executions/([^/]+)", path):
+        elif m := re.fullmatch(r"/provenance/executions/([^/]+)/summary", path):
             if config.ENABLE_OPERATOR_MODEL:
                 ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
                 if not ok:
@@ -295,7 +294,16 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 if not self._require_admin():
                     return
             execution_id = m.group(1)
-            summary = build_decision_provenance_summary(execution_id)
+            qs = parse_qs(urlparse(self.path).query)
+            include_timeline = qs.get("includeTimeline", ["true"])[0].lower() != "false"
+            include_warnings = qs.get("includeWarnings", ["true"])[0].lower() != "false"
+            include_raw_evidence = qs.get("includeRawEvidence", ["false"])[0].lower() == "true"
+            summary = build_decision_provenance_summary(
+                execution_id,
+                include_timeline=include_timeline,
+                include_warnings=include_warnings,
+                include_raw_evidence=include_raw_evidence,
+            )
             if summary is None:
                 self._send_json(404, {
                     "error": "Execution not found",
