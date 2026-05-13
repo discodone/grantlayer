@@ -22,6 +22,7 @@ from . import grant_executions as execs
 from .evidence_bundle import build_evidence_bundle
 from .evidence_verification import verify_execution
 from .provenance_summary import build_decision_provenance_summary
+from .auditor_report import build_auditor_report_for_execution
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -312,6 +313,30 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 })
                 return
             self._send_json(200, summary)
+
+        elif m := re.fullmatch(r"/auditor/executions/([^/]+)/report", path):
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            execution_id = m.group(1)
+            qs = parse_qs(urlparse(self.path).query)
+            include_raw_evidence = qs.get("includeRawEvidence", ["false"])[0].lower() == "true"
+            report = build_auditor_report_for_execution(
+                execution_id,
+                include_raw_evidence=include_raw_evidence,
+            )
+            if report is None:
+                self._send_json(404, {
+                    "error": "Execution not found",
+                    "errorCode": "execution_not_found",
+                    "reason": "The requested execution does not exist or has no linked provenance records.",
+                })
+                return
+            self._send_json(200, report)
 
         else:
             self._send_json(404, {"error": "Not found"})
