@@ -787,6 +787,62 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /provenance/executions/{executionId}/summary:
+    get:
+      summary: Decision Provenance Summary
+      description: |
+        Returns a decision provenance summary for a single GrantExecution.
+        Includes execution metadata, evidence archive status, verification,
+        provenance events, timeline, and warnings.
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getDecisionProvenanceSummary
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: includeTimeline
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+        - name: includeWarnings
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+        - name: includeRawEvidence
+          in: query
+          required: false
+          schema: { type: boolean, default: false }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Decision provenance summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionProvenanceSummary"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /challenges:
     get:
       summary: List challenges
@@ -1246,3 +1302,92 @@ components:
         reason:
           type: string
           description: Human-readable explanation of the verification outcome.
+
+    DecisionProvenanceSummary:
+      type: object
+      required:
+        - executionId
+        - grantId
+        - execution
+        - evidence
+        - verification
+        - provenanceEvents
+        - timeline
+        - warnings
+        - generatedAt
+      properties:
+        executionId:
+          type: string
+        grantId:
+          type: string
+          nullable: true
+        execution:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string }
+            action: { type: string }
+            resource: { type: string }
+            operatorId: { type: string, nullable: true }
+            grantId: { type: string, nullable: true }
+            grantRequestId: { type: string, nullable: true }
+            challengeId: { type: string, nullable: true }
+            challengeResult: { type: string }
+            policyResult: { type: string }
+            result: { type: string }
+            errorCode: { type: string, nullable: true }
+            executedAt: { type: string }
+            auditEventId: { type: string, nullable: true }
+        evidence:
+          type: object
+          properties:
+            present: { type: boolean }
+            hash:
+              type: string
+              nullable: true
+            bundleJson:
+              type: object
+              nullable: true
+        verification:
+          type: object
+          properties:
+            status:
+              type: string
+              nullable: true
+            verifiedAt:
+              type: string
+              nullable: true
+        provenanceEvents:
+          type: array
+          items:
+            type: object
+            properties:
+              eventType: { type: string }
+              actorType: { type: string }
+              actorId: { type: string }
+              action: { type: string }
+              occurredAt: { type: string }
+              resourceType: { type: string }
+              resourceId: { type: string }
+              evidenceHash: { type: string }
+              verificationStatus: { type: string }
+        timeline:
+          type: array
+          items:
+            type: object
+            properties:
+              eventType: { type: string }
+              actorType: { type: string }
+              actorId: { type: string }
+              action: { type: string }
+              occurredAt: { type: string }
+              resourceType: { type: string }
+              resourceId: { type: string }
+              evidenceHash: { type: string }
+              verificationStatus: { type: string }
+        warnings:
+          type: array
+          items: { type: string }
+        generatedAt:
+          type: string
+          format: date-time
