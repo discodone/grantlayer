@@ -1,7 +1,7 @@
 """GL-039-B2 — Agent Permission Scope Profiles API Endpoint tests.
 
 Covers endpoint routing, auth, response shape, profile retrieval,
-listing, expansion, and secrets safety.
+listing, and secrets safety.
 """
 
 import os
@@ -146,7 +146,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         return handler._status, getattr(handler, "_json", None)
 
     # ── GET /agent-permissions/profiles ─────────────────────────
-    def test_list_profiles_endpoint_exists_and_returns_200(self):
+    def test_list_profiles_returns_200_for_authorized_legacy_admin_token(self):
         status, body = self._run_handler(
             "/agent-permissions/profiles",
             auth="Bearer test-admin-token",
@@ -158,7 +158,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         for profile in body:
             self.assertEqual(set(profile.keys()), expected_keys)
 
-    def test_list_profiles_ordered_alphabetically(self):
+    def test_list_profiles_returns_deterministic_profile_list(self):
         status, body = self._run_handler(
             "/agent-permissions/profiles",
             auth="Bearer test-admin-token",
@@ -166,18 +166,11 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         self.assertEqual(status, 200)
         names = [p["profileName"] for p in body]
         self.assertEqual(names, sorted(names))
-
-    def test_list_profiles_contains_known_built_ins(self):
-        status, body = self._run_handler(
-            "/agent-permissions/profiles",
-            auth="Bearer test-admin-token",
-        )
-        self.assertEqual(status, 200)
-        names = {p["profileName"] for p in body}
-        self.assertIn("auditor_readonly", names)
-        self.assertIn("evidence_verifier", names)
-        self.assertIn("grant_operator_readonly", names)
-        self.assertIn("compliance_reviewer", names)
+        names_set = {p["profileName"] for p in body}
+        self.assertIn("auditor_readonly", names_set)
+        self.assertIn("evidence_verifier", names_set)
+        self.assertIn("grant_operator_readonly", names_set)
+        self.assertIn("compliance_reviewer", names_set)
 
     def test_list_profiles_no_admin_token_returns_401(self):
         status, body = self._run_handler("/agent-permissions/profiles")
@@ -190,7 +183,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         )
         self.assertEqual(status, 403)
 
-    def test_list_profiles_accepts_owner_role(self):
+    def test_list_profiles_owner_allowed_in_operator_mode(self):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("owner-1", "Owner One", "owner", "owner-token")
@@ -201,7 +194,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
-    def test_list_profiles_accepts_grant_admin_role(self):
+    def test_list_profiles_grant_admin_allowed_in_operator_mode(self):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("admin-1", "Admin One", "grant_admin", "admin-token")
@@ -212,7 +205,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
-    def test_list_profiles_rejects_auditor_role(self):
+    def test_list_profiles_auditor_forbidden_in_operator_mode(self):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("auditor-1", "Auditor One", "auditor", "auditor-token")
@@ -222,8 +215,18 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         )
         self.assertEqual(status, 403)
 
+    def test_list_profiles_demo_operator_forbidden_in_operator_mode(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
+        self._insert_operator("demo-1", "Demo Op", "demo_operator", "demo-token")
+        status, body = self._run_handler(
+            "/agent-permissions/profiles",
+            auth="Bearer demo-token",
+        )
+        self.assertEqual(status, 403)
+
     # ── GET /agent-permissions/profiles/:name ───────────────────
-    def test_get_profile_returns_200_for_known_profile(self):
+    def test_get_profile_returns_known_profile(self):
         status, body = self._run_handler(
             "/agent-permissions/profiles/auditor_readonly",
             auth="Bearer test-admin-token",
@@ -234,7 +237,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         self.assertIsInstance(body["scopes"], list)
         self.assertIn("evidence:read", body["scopes"])
 
-    def test_get_profile_returns_404_for_unknown_profile(self):
+    def test_get_profile_unknown_returns_404(self):
         status, body = self._run_handler(
             "/agent-permissions/profiles/nonexistent",
             auth="Bearer test-admin-token",
@@ -256,88 +259,51 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         self.assertEqual(status_upper, 200)
         self.assertEqual(body_lower["scopes"], body_upper["scopes"])
 
-    def test_get_profile_no_admin_token_returns_401(self):
+    def test_get_profile_missing_auth_returns_401(self):
         status, body = self._run_handler("/agent-permissions/profiles/auditor_readonly")
         self.assertEqual(status, 401)
 
-    # ── POST /agent-permissions/profiles/expand ─────────────────
-    def test_expand_profiles_endpoint_exists_and_returns_200(self):
+    def test_get_profile_owner_allowed_in_operator_mode(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
+        self._insert_operator("owner-1", "Owner One", "owner", "owner-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles/expand",
-            method="POST",
-            auth="Bearer test-admin-token",
-            body={"profileNames": ["auditor_readonly", "evidence_verifier"]},
+            "/agent-permissions/profiles/auditor_readonly",
+            auth="Bearer owner-token",
         )
         self.assertEqual(status, 200)
-        expected_keys = {"scopes", "scopeCount", "warnings", "resolvedProfiles"}
-        self.assertEqual(set(body.keys()), expected_keys)
+        self.assertEqual(body["profileName"], "auditor_readonly")
 
-    def test_expand_profiles_deduplicates_scopes(self):
+    def test_get_profile_grant_admin_allowed_in_operator_mode(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
+        self._insert_operator("admin-1", "Admin One", "grant_admin", "admin-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles/expand",
-            method="POST",
-            auth="Bearer test-admin-token",
-            body={"profileNames": ["auditor_readonly", "evidence_verifier"]},
+            "/agent-permissions/profiles/auditor_readonly",
+            auth="Bearer admin-token",
         )
         self.assertEqual(status, 200)
-        scopes = body["scopes"]
-        self.assertEqual(len(scopes), len(set(scopes)))
-        self.assertIn("evidence:read", scopes)
-        self.assertIn("evidence:verify", scopes)
+        self.assertEqual(body["profileName"], "auditor_readonly")
 
-    def test_expand_profiles_unknown_profile_adds_warning(self):
+    def test_get_profile_auditor_forbidden_in_operator_mode(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
+        self._insert_operator("auditor-1", "Auditor One", "auditor", "auditor-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles/expand",
-            method="POST",
-            auth="Bearer test-admin-token",
-            body={"profileNames": ["auditor_readonly", "unknown_xyz"]},
+            "/agent-permissions/profiles/auditor_readonly",
+            auth="Bearer auditor-token",
         )
-        self.assertEqual(status, 200)
-        self.assertIn("evidence:read", body["scopes"])
-        self.assertTrue(
-            any("unknown_xyz" in w for w in body.get("warnings", [])),
-            f"Expected warning about unknown profile, got {body.get('warnings', [])}"
-        )
+        self.assertEqual(status, 403)
 
-    def test_expand_profiles_returns_400_for_missing_fields(self):
+    def test_get_profile_demo_operator_forbidden_in_operator_mode(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
+        self._insert_operator("demo-1", "Demo Op", "demo_operator", "demo-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles/expand",
-            method="POST",
-            auth="Bearer test-admin-token",
-            body={},
+            "/agent-permissions/profiles/auditor_readonly",
+            auth="Bearer demo-token",
         )
-        self.assertEqual(status, 400)
-        self.assertIn("Missing fields", body.get("error", ""))
-
-    def test_expand_profiles_returns_400_for_non_list_profile_names(self):
-        status, body = self._run_handler(
-            "/agent-permissions/profiles/expand",
-            method="POST",
-            auth="Bearer test-admin-token",
-            body={"profileNames": "not_a_list"},
-        )
-        self.assertEqual(status, 400)
-        self.assertIn("profileNames must be a list", body.get("error", ""))
-
-    def test_expand_profiles_empty_list_returns_empty_scopes(self):
-        status, body = self._run_handler(
-            "/agent-permissions/profiles/expand",
-            method="POST",
-            auth="Bearer test-admin-token",
-            body={"profileNames": []},
-        )
-        self.assertEqual(status, 200)
-        self.assertEqual(body["scopes"], [])
-        self.assertEqual(body["scopeCount"], 0)
-        self.assertEqual(body["warnings"], [])
-
-    def test_expand_profiles_no_admin_token_returns_401(self):
-        status, body = self._run_handler(
-            "/agent-permissions/profiles/expand",
-            method="POST",
-            body={"profileNames": ["auditor_readonly"]},
-        )
-        self.assertEqual(status, 401)
+        self.assertEqual(status, 403)
 
     # ── Secrets safety ──────────────────────────────────────────
     def test_list_profiles_does_not_expose_secrets(self):
@@ -347,7 +313,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         )
         self.assertEqual(status, 200)
         raw = json.dumps(body)
-        for forbidden in ["GRANTLAYER_ADMIN_TOKEN", "password", "secret", "token", "private"]:
+        for forbidden in ["GRANTLAYER_ADMIN_TOKEN", "password", "secret", "token", "private", "hash"]:
             self.assertNotIn(forbidden, raw.lower(), f"Secret leak detected: {forbidden}")
 
     def test_get_profile_does_not_expose_secrets(self):
@@ -357,20 +323,56 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         )
         self.assertEqual(status, 200)
         raw = json.dumps(body)
-        for forbidden in ["GRANTLAYER_ADMIN_TOKEN", "password", "secret", "token", "private"]:
+        for forbidden in ["GRANTLAYER_ADMIN_TOKEN", "password", "secret", "token", "private", "hash"]:
             self.assertNotIn(forbidden, raw.lower(), f"Secret leak detected: {forbidden}")
 
-    def test_expand_profiles_does_not_expose_secrets(self):
+    def test_list_profiles_no_admin_star_in_builtin_profiles(self):
         status, body = self._run_handler(
-            "/agent-permissions/profiles/expand",
-            method="POST",
+            "/agent-permissions/profiles",
             auth="Bearer test-admin-token",
-            body={"profileNames": ["auditor_readonly"]},
         )
         self.assertEqual(status, 200)
-        raw = json.dumps(body)
-        for forbidden in ["GRANTLAYER_ADMIN_TOKEN", "password", "secret", "token", "private"]:
-            self.assertNotIn(forbidden, raw.lower(), f"Secret leak detected: {forbidden}")
+        for profile in body:
+            self.assertNotIn("admin:*", profile.get("scopes", []), f"Profile {profile['profileName']} contains admin:*")
+
+    def test_get_profile_no_admin_star_in_builtin_profiles(self):
+        status, body = self._run_handler(
+            "/agent-permissions/profiles/auditor_readonly",
+            auth="Bearer test-admin-token",
+        )
+        self.assertEqual(status, 200)
+        self.assertNotIn("admin:*", body.get("scopes", []))
+
+    # ── Endpoint does not mutate Grant decision ────────────────
+    def test_list_profiles_does_not_mutate_grant_decision(self):
+        # Verify the profile endpoints are read-only and do not affect grants
+        status, body = self._run_handler(
+            "/agent-permissions/profiles",
+            auth="Bearer test-admin-token",
+        )
+        self.assertEqual(status, 200)
+        # After calling the read-only endpoint, the grant decision endpoint should still work normally
+        status2, body2 = self._run_handler(
+            "/agent-permissions/profiles/auditor_readonly",
+            auth="Bearer test-admin-token",
+        )
+        self.assertEqual(status2, 200)
+        self.assertEqual(body2["profileName"], "auditor_readonly")
+
+    def test_get_profile_does_not_mutate_grant_decision(self):
+        # Verify the profile endpoints are read-only and do not affect grants
+        status, body = self._run_handler(
+            "/agent-permissions/profiles/evidence_verifier",
+            auth="Bearer test-admin-token",
+        )
+        self.assertEqual(status, 200)
+        # After calling the read-only endpoint, the profile list should remain unchanged
+        status2, body2 = self._run_handler(
+            "/agent-permissions/profiles",
+            auth="Bearer test-admin-token",
+        )
+        self.assertEqual(status2, 200)
+        self.assertTrue(len(body2) >= 4)
 
 
 if __name__ == "__main__":

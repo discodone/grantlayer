@@ -29,7 +29,6 @@ from .agent_permissions import evaluate_agent_permission
 from .agent_permission_profiles import (
     get_agent_permission_profile,
     list_agent_permission_profiles,
-    expand_agent_permission_profiles,
 )
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -686,29 +685,6 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 resource_id=data.get("resourceId"),
                 context=data.get("context"),
             )
-            self._send_json(200, result)
-
-        elif path == "/agent-permissions/profiles/expand":
-            if config.ENABLE_OPERATOR_MODEL:
-                ok, _ = self._require_operator(["owner", "grant_admin"])
-                if not ok:
-                    return
-            else:
-                if not self._require_admin():
-                    return
-            try:
-                data = self._read_json()
-            except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
-                return
-            if "profileNames" not in data:
-                self._send_json(400, {"error": "Missing fields: ['profileNames']"})
-                return
-            profile_names = data.get("profileNames")
-            if not isinstance(profile_names, list):
-                self._send_json(400, {"error": "profileNames must be a list"})
-                return
-            result = expand_agent_permission_profiles(profile_names)
             self._send_json(200, result)
 
         else:
