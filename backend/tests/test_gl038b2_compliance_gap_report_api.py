@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestComplianceGapReportAPI(unittest.TestCase):
-    """Tests for GET /compliance/gap-report/executions/{executionId} endpoint."""
+    """Tests for GET /compliance/gaps/executions/{executionId} endpoint."""
 
     def setUp(self):
         self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
@@ -176,7 +176,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
     # ── Endpoint routing ────────────────────────────────────────
     def test_endpoint_exists_and_returns_404_for_unknown_execution(self):
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/nonexistent-id",
+            "/compliance/gaps/executions/nonexistent-id",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 404)
@@ -195,7 +195,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             grant_id="g-api-1",
         )
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-api-1",
+            "/compliance/gaps/executions/ex-api-1",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -205,10 +205,10 @@ class TestComplianceGapReportAPI(unittest.TestCase):
     # ── Auth ────────────────────────────────────────────────────
     def test_endpoint_requires_admin_token_when_operator_disabled(self):
         self._make_execution("ex-auth-1")
-        status, body = self._run_handler("/compliance/gap-report/executions/ex-auth-1")
+        status, body = self._run_handler("/compliance/gaps/executions/ex-auth-1")
         self.assertEqual(status, 401)
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-auth-1",
+            "/compliance/gaps/executions/ex-auth-1",
             auth="Bearer wrong-token"
         )
         self.assertEqual(status, 403)
@@ -221,7 +221,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
 
         self._make_execution("ex-auth-2")
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-auth-2",
+            "/compliance/gaps/executions/ex-auth-2",
             auth="Bearer auditor-token"
         )
         self.assertEqual(status, 200)
@@ -235,7 +235,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
 
         self._make_execution("ex-auth-3")
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-auth-3",
+            "/compliance/gaps/executions/ex-auth-3",
             auth="Bearer demo-token"
         )
         self.assertEqual(status, 403)
@@ -273,7 +273,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
         ev_mod.verify_execution("ex-shape-1")
 
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-shape-1",
+            "/compliance/gaps/executions/ex-shape-1",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -320,7 +320,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
         ev_mod.verify_execution("ex-clear")
 
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-clear",
+            "/compliance/gaps/executions/ex-clear",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -349,7 +349,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
         self._archive_evidence("ex-partial")
         # No provenance events → missing_provenance_events gap (low severity)
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-partial",
+            "/compliance/gaps/executions/ex-partial",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -373,7 +373,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
         revoke_grant("g-blocked", "admin", "Emergency")
         self._make_execution("ex-blocked", grant_id="g-blocked")
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-blocked",
+            "/compliance/gaps/executions/ex-blocked",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -411,7 +411,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             grant_id="g-det-on",
         )
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-det-on?includeDetails=true",
+            "/compliance/gaps/executions/ex-det-on?includeDetails=true",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -435,7 +435,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
         )
         self.create_grant(grant)
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-det-off?includeDetails=false",
+            "/compliance/gaps/executions/ex-det-off?includeDetails=false",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -475,7 +475,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             grant_id="g-sec-1",
         )
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-sec-1",
+            "/compliance/gaps/executions/ex-sec-1",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -511,7 +511,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             grant_id="g-nobundle",
         )
         status, body = self._run_handler(
-            "/compliance/gap-report/executions/ex-nobundle",
+            "/compliance/gaps/executions/ex-nobundle",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)

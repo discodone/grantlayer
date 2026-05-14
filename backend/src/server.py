@@ -360,7 +360,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 return
             self._send_json(200, report)
 
-        elif m := re.fullmatch(r"/compliance/gap-report/executions/([^/]+)", path):
+        elif m := re.fullmatch(r"/compliance/gaps/executions/([^/]+)", path):
             if config.ENABLE_OPERATOR_MODEL:
                 ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
                 if not ok:
