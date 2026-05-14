@@ -1239,6 +1239,84 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /agent-permissions/profiles:
+    get:
+      summary: List agent permission scope profiles
+      description: |
+        Returns all built-in agent permission scope profiles in deterministic alphabetical order.
+        Each profile contains its name, description, allowed scopes, scope count, and any warnings.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: listAgentPermissionProfiles
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of agent permission scope profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgentPermissionProfile"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /agent-permissions/profiles/{profileName}:
+    get:
+      summary: Get agent permission scope profile by name
+      description: |
+        Returns a single built-in agent permission scope profile by name.
+        Profile names are case-insensitive and normalized internally.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: getAgentPermissionProfile
+      parameters:
+        - name: profileName
+          in: path
+          required: true
+          schema: { type: string }
+          description: Name of the built-in profile (e.g. `auditor_readonly`).
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Agent permission scope profile found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentPermissionProfile"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /demo/tamper-grant/{id}:
     post:
       summary: Demo tamper a grant (DEMO ONLY)
@@ -1834,6 +1912,35 @@ components:
               type: boolean
             criticalGapsPresent:
               type: boolean
+
+    AgentPermissionProfile:
+      type: object
+      required:
+        - profileName
+        - description
+        - scopes
+        - scopeCount
+        - warnings
+      properties:
+        profileName:
+          type: string
+          description: Normalized lowercase profile identifier.
+        description:
+          type: string
+          description: Human-readable summary of the profile purpose.
+        scopes:
+          type: array
+          items:
+            type: string
+          description: Deterministic list of scope strings granted by this profile.
+        scopeCount:
+          type: integer
+          description: Number of scopes in the profile.
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Validation warnings (e.g. unknown or malformed scope entries).
 
     ComplianceGapReport:
       type: object
