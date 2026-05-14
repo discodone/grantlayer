@@ -24,6 +24,7 @@ from .evidence_verification import verify_execution
 from .provenance_summary import build_decision_provenance_summary
 from .evidence_completeness import build_evidence_completeness_for_execution
 from .auditor_report import build_auditor_report_for_execution
+from .compliance_gap_report import build_compliance_gap_report_for_execution
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
     "dashboard", "index.html",
@@ -350,6 +351,27 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             qs = parse_qs(urlparse(self.path).query)
             include_details = qs.get("includeDetails", ["true"])[0].lower() != "false"
             report = build_evidence_completeness_for_execution(execution_id, include_details=include_details)
+            if report is None:
+                self._send_json(404, {
+                    "error": "Execution not found",
+                    "errorCode": "execution_not_found",
+                    "reason": "The requested execution does not exist or has no linked provenance records.",
+                })
+                return
+            self._send_json(200, report)
+
+        elif m := re.fullmatch(r"/compliance/gaps/executions/([^/]+)", path):
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            execution_id = m.group(1)
+            qs = parse_qs(urlparse(self.path).query)
+            include_details = qs.get("includeDetails", ["true"])[0].lower() != "false"
+            report = build_compliance_gap_report_for_execution(execution_id, include_details=include_details)
             if report is None:
                 self._send_json(404, {
                     "error": "Execution not found",

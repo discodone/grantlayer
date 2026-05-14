@@ -942,6 +942,57 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /compliance/gaps/executions/{executionId}:
+    get:
+      summary: Compliance Gap Report
+      description: |
+        Returns a structured compliance gap report for a single GrantExecution.
+        Aggregates the evidence completeness report and enriches it with gap
+        severity, blocking status, and recommended actions.
+
+        The `includeDetails` query parameter controls whether detailed
+        provenance events and completeness checks are included.
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getComplianceGapReport
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: includeDetails
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Compliance gap report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceGapReport"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found or compliance gap report not available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /challenges:
     get:
       summary: List challenges
@@ -1681,3 +1732,117 @@ components:
               type: boolean
             criticalGapsPresent:
               type: boolean
+
+    ComplianceGapReport:
+      type: object
+      required:
+        - reportType
+        - reportVersion
+        - executionId
+        - grantId
+        - generatedAt
+        - overallStatus
+        - severity
+        - complianceGaps
+        - blockingGaps
+        - recommendedActions
+        - completeness
+        - evidence
+        - verification
+        - provenance
+        - warnings
+        - auditReadiness
+      properties:
+        reportType:
+          type: string
+          enum: [compliance_gap_report]
+        reportVersion:
+          type: string
+          enum: [gl-compliance-gap-v1]
+        executionId:
+          type: string
+        grantId:
+          type: string
+          nullable: true
+        generatedAt:
+          type: string
+          format: date-time
+        overallStatus:
+          type: string
+          enum: [clear, gaps_detected, blocked]
+        severity:
+          type: string
+          enum: [none, low, medium, high, critical]
+        complianceGaps:
+          type: array
+          items:
+            type: object
+            required: [gapId, category, severity, description]
+            properties:
+              gapId: { type: string }
+              category: { type: string }
+              severity: { type: string, enum: [critical, high, medium, low] }
+              description: { type: string }
+        blockingGaps:
+          type: array
+          items:
+            type: object
+            required: [gapId, category, severity, description]
+            properties:
+              gapId: { type: string }
+              category: { type: string }
+              severity: { type: string, enum: [critical, high, medium, low] }
+              description: { type: string }
+        recommendedActions:
+          type: array
+          items: { type: string }
+        completeness:
+          type: object
+          required: [score, status]
+          properties:
+            score:
+              type: integer
+              nullable: true
+            status:
+              type: string
+              nullable: true
+        evidence:
+          type: object
+          properties:
+            present:
+              type: boolean
+            hash:
+              type: string
+              nullable: true
+        verification:
+          type: object
+          properties:
+            status:
+              type: string
+              nullable: true
+            verifiedAt:
+              type: string
+              nullable: true
+        provenance:
+          type: object
+          properties:
+            eventCount:
+              type: integer
+            events:
+              type: array
+              nullable: true
+              items:
+                type: object
+                properties:
+                  eventType: { type: string }
+                  actorType: { type: string }
+                  actorId: { type: string }
+                  action: { type: string }
+                  occurredAt: { type: string }
+        warnings:
+          type: array
+          items: { type: string }
+        auditReadiness:
+          type: string
+          enum: [ready, not_ready, blocked]
+          nullable: true
