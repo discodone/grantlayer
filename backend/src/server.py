@@ -25,6 +25,7 @@ from .provenance_summary import build_decision_provenance_summary
 from .evidence_completeness import build_evidence_completeness_for_execution
 from .auditor_report import build_auditor_report_for_execution
 from .compliance_gap_report import build_compliance_gap_report_for_execution
+from .agent_permissions import evaluate_agent_permission
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
     "dashboard", "index.html",
@@ -629,6 +630,33 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True, "request": updated_request.to_dict()})
             except ValueError as e:
                 self._send_json(400, {"error": str(e)})
+
+        elif path == "/agent-permissions/evaluate":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+            missing = self._missing(data, ["agentId", "requestedScope", "assignedScopes"])
+            if missing:
+                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                return
+            result = evaluate_agent_permission(
+                agent_id=data["agentId"],
+                requested_scope=data["requestedScope"],
+                assigned_scopes=data["assignedScopes"],
+                resource_type=data.get("resourceType"),
+                resource_id=data.get("resourceId"),
+                context=data.get("context"),
+            )
+            self._send_json(200, result)
 
         else:
             self._send_json(404, {"error": "Not found"})
