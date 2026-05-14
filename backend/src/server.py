@@ -633,7 +633,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
         elif path == "/agent-permissions/evaluate":
             if config.ENABLE_OPERATOR_MODEL:
-                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                ok, _ = self._require_operator(["owner", "grant_admin"])
                 if not ok:
                     return
             else:

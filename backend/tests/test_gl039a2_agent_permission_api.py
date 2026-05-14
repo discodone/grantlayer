@@ -194,7 +194,43 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
         )
         self.assertEqual(status, 403)
 
-    def test_endpoint_accepts_operator_roles_when_operator_enabled(self):
+    def test_endpoint_accepts_owner_role(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
+
+        self._insert_operator("owner-1", "Owner One", "owner", "owner-token")
+
+        status, body = self._run_handler(
+            "/agent-permissions/evaluate",
+            auth="Bearer owner-token",
+            body={
+                "agentId": "agent-1",
+                "requestedScope": "evidence:read",
+                "assignedScopes": ["evidence:read"],
+            },
+        )
+        self.assertEqual(status, 200)
+        self.assertTrue(body["allowed"])
+
+    def test_endpoint_accepts_grant_admin_role(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
+        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
+
+        self._insert_operator("admin-1", "Admin One", "grant_admin", "admin-token")
+
+        status, body = self._run_handler(
+            "/agent-permissions/evaluate",
+            auth="Bearer admin-token",
+            body={
+                "agentId": "agent-1",
+                "requestedScope": "evidence:read",
+                "assignedScopes": ["evidence:read"],
+            },
+        )
+        self.assertEqual(status, 200)
+        self.assertTrue(body["allowed"])
+
+    def test_endpoint_rejects_auditor_role(self):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
 
@@ -209,8 +245,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
                 "assignedScopes": ["evidence:read"],
             },
         )
-        self.assertEqual(status, 200)
-        self.assertTrue(body["allowed"])
+        self.assertEqual(status, 403)
 
     def test_endpoint_rejects_demo_operator_role(self):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"

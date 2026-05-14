@@ -1137,6 +1137,108 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /agent-permissions/evaluate:
+    post:
+      summary: Evaluate Agent Permission
+      description: |
+        Evaluates whether an agent is allowed to access a requested scope.
+        Returns the evaluation result with `allowed`, `matchedScope`, `reason`,
+        and optional `warnings`.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: evaluateAgentPermission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agentId
+                - requestedScope
+                - assignedScopes
+              properties:
+                agentId:
+                  type: string
+                  description: Unique identifier of the agent.
+                requestedScope:
+                  type: string
+                  description: Scope the agent is requesting access to.
+                assignedScopes:
+                  type: array
+                  items:
+                    type: string
+                  description: List of scopes currently assigned to the agent.
+                resourceType:
+                  type: string
+                  nullable: true
+                  description: Optional resource type context.
+                resourceId:
+                  type: string
+                  nullable: true
+                  description: Optional resource identifier context.
+                context:
+                  type: object
+                  nullable: true
+                  description: Optional additional context for the evaluation.
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Evaluation result
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - allowed
+                  - agentId
+                  - requestedScope
+                  - matchedScope
+                  - reason
+                  - warnings
+                properties:
+                  allowed:
+                    type: boolean
+                  agentId:
+                    type: string
+                  requestedScope:
+                    type: string
+                  matchedScope:
+                    type: string
+                    nullable: true
+                  resourceType:
+                    type: string
+                    nullable: true
+                  resourceId:
+                    type: string
+                    nullable: true
+                  reason:
+                    type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /demo/tamper-grant/{id}:
     post:
       summary: Demo tamper a grant (DEMO ONLY)
