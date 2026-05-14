@@ -891,6 +891,57 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /evidence/executions/{executionId}/completeness:
+    get:
+      summary: Evidence Completeness Report
+      description: |
+        Returns a structured evidence completeness score and diagnostic report
+        for a single GrantExecution. Aggregates the auditor report, evidence
+        presence, verification status, provenance events, and compliance gaps.
+
+        The `includeDetails` query parameter controls whether diagnostic
+        `checks` and full `provenance.events` are included.
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getEvidenceCompleteness
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: includeDetails
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Evidence completeness report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceCompletenessReport"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /challenges:
     get:
       summary: List challenges
@@ -1527,3 +1578,106 @@ components:
         evidenceBundle:
           type: object
           nullable: true
+
+    EvidenceCompletenessReport:
+      type: object
+      required:
+        - reportType
+        - reportVersion
+        - executionId
+        - grantId
+        - generatedAt
+        - completenessScore
+        - completenessStatus
+        - missingEvidence
+        - complianceGaps
+        - warnings
+        - auditReadiness
+        - evidence
+        - verification
+        - provenance
+      properties:
+        reportType:
+          type: string
+          enum: [evidence_completeness]
+        reportVersion:
+          type: string
+          enum: [gl-038-a1]
+        executionId:
+          type: string
+        grantId:
+          type: string
+          nullable: true
+        generatedAt:
+          type: string
+          format: date-time
+        completenessScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        completenessStatus:
+          type: string
+          enum: [complete, incomplete, critical]
+        missingEvidence:
+          type: array
+          items: { type: string }
+        complianceGaps:
+          type: array
+          items: { type: string }
+        warnings:
+          type: array
+          items: { type: string }
+        auditReadiness:
+          type: string
+          enum: [ready, not_ready, blocked]
+        evidence:
+          type: object
+          properties:
+            present:
+              type: boolean
+            hash:
+              type: string
+              nullable: true
+        verification:
+          type: object
+          properties:
+            status:
+              type: string
+              nullable: true
+            verifiedAt:
+              type: string
+              nullable: true
+        provenance:
+          type: object
+          properties:
+            eventCount:
+              type: integer
+            events:
+              type: array
+              nullable: true
+              items:
+                type: object
+                properties:
+                  eventType: { type: string }
+                  actorType: { type: string }
+                  actorId: { type: string }
+                  action: { type: string }
+                  occurredAt: { type: string }
+        checks:
+          type: object
+          nullable: true
+          properties:
+            auditorReportAvailable:
+              type: boolean
+            executionPresent:
+              type: boolean
+            evidencePresent:
+              type: boolean
+            evidenceVerified:
+              type: boolean
+            evidenceValid:
+              type: boolean
+            provenanceEventsPresent:
+              type: boolean
+            criticalGapsPresent:
+              type: boolean
