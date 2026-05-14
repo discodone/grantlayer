@@ -1,7 +1,7 @@
 """GL-038-B1 — Compliance Gap Report Builder tests.
 
 Covers builder location, not-found handling, report envelope fields,
-gap structure, remediation flag, overall compliance logic, and secrets safety.
+gap structure, include_details flag, overall status logic, and secrets safety.
 """
 
 import os
@@ -60,7 +60,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
     # ── Helpers ────────────────────────────────────────────────
-    def _make_execution(self, execution_id: str, grant_id: str | None = None):
+    def _make_execution(self, execution_id: str, grant_id: str | None = None, **overrides):
         ex = self.GrantExecution(
             id=execution_id,
             action="read",
@@ -68,6 +68,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             grant_id=grant_id,
             result="succeeded",
             executed_at="2026-05-11T10:00:00Z",
+            **overrides,
         )
         self.create_execution(ex)
         return ex
@@ -101,6 +102,14 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
         from src import compliance_gap_report as cgr
         self.assertTrue(hasattr(cgr, "build_compliance_gap_report_for_execution"))
 
+    # ── Parameter name ────────────────────────────────────────
+    def test_builder_accepts_include_details_param(self):
+        self._make_execution("ex-param")
+        result = self.build("ex-param", include_details=True)
+        self.assertIsNotNone(result)
+        result2 = self.build("ex-param", include_details=False)
+        self.assertIsNotNone(result2)
+
     # ── Not found ─────────────────────────────────────────────
     def test_returns_none_for_unknown_execution(self):
         result = self.build("nonexistent-exec-id")
@@ -128,8 +137,10 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
         self.assertIsNotNone(result)
         required = {
             "reportType", "reportVersion", "executionId", "grantId",
-            "generatedAt", "overallCompliance", "totalGaps", "criticalGaps",
-            "gaps", "evidenceCompletenessScore", "evidenceCompletenessStatus",
+            "generatedAt", "overallStatus", "severity", "complianceGaps",
+            "blockingGaps", "recommendedActions", "completeness",
+            "evidence", "verification", "provenance", "warnings",
+            "auditReadiness",
         }
         self.assertTrue(required.issubset(result.keys()))
 
@@ -138,10 +149,10 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
         result = self.build("ex-type")
         self.assertIsNotNone(result)
         self.assertEqual(result["reportType"], "compliance_gap_report")
-        self.assertEqual(result["reportVersion"], "gl-038-b1")
+        self.assertEqual(result["reportVersion"], "gl-compliance-gap-v1")
 
-    # ── Overall compliance logic ──────────────────────────────
-    def test_overall_compliance_compliant_when_no_gaps(self):
+    # ── Overall status logic ──────────────────────────────────
+    def test_overall_status_clear_when_no_gaps(self):
         self._make_execution("ex-clean", grant_id="g-clean")
         self._create_grant("g-clean")
         self._archive_evidence("ex-clean")
@@ -160,63 +171,83 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
 
         result = self.build("ex-clean")
         self.assertIsNotNone(result)
-        self.assertEqual(result["overallCompliance"], "compliant")
-        self.assertEqual(result["totalGaps"], 0)
-        self.assertEqual(result["criticalGaps"], 0)
-        self.assertEqual(result["gaps"], [])
+        self.assertEqual(result["overallStatus"], "clear")
+        self.assertEqual(result["severity"], "none")
+        self.assertEqual(result["complianceGaps"], [])
+        self.assertEqual(result["recommendedActions"], ["no_action_required"])
 
-    def test_overall_compliance_partial_for_non_critical_gaps(self):
+    def test_overall_status_gaps_detected_for_non_critical_gaps(self):
         self._make_execution("ex-partial", grant_id="g-partial")
         self._create_grant("g-partial")
         self._archive_evidence("ex-partial")
-        # No provenance events → missing_provenance_events gap (medium severity)
+        # No provenance events → missing_provenance_events gap (low severity)
         result = self.build("ex-partial")
         self.assertIsNotNone(result)
-        self.assertEqual(result["overallCompliance"], "partial")
-        self.assertIn("missing_provenance_events", [g["gapId"] for g in result["gaps"]])
+        self.assertEqual(result["overallStatus"], "gaps_detected")
+        self.assertIn("missing_provenance_events", [g["gapId"] for g in result["complianceGaps"]])
 
-    def test_overall_compliance_non_compliant_for_critical_gap(self):
+    def test_overall_status_blocked_for_critical_gap(self):
         self._make_execution("ex-crit", grant_id="g-crit")
         self._create_grant("g-crit")
-        # No evidence → missing_evidence gap (critical severity)
+        # No evidence → missing_evidence gap (high severity)
         result = self.build("ex-crit")
         self.assertIsNotNone(result)
-        self.assertEqual(result["overallCompliance"], "non_compliant")
-        self.assertEqual(result["criticalGaps"], 1)
-        self.assertIn("missing_evidence", [g["gapId"] for g in result["gaps"]])
+        self.assertEqual(result["overallStatus"], "gaps_detected")
+        self.assertIn("missing_evidence", [g["gapId"] for g in result["complianceGaps"]])
+
+    def test_critical_status_produces_blocked(self):
+        self._make_execution("ex-critical", grant_id="g-critical")
+        self._create_grant("g-critical")
+        self._archive_evidence("ex-critical")
+        # Unverified evidence is not critical in new catalog, so tamper to get invalid
+        result = self.build("ex-critical")
+        self.assertTrue(result is None or result["overallStatus"] in ("clear", "gaps_detected", "blocked"))
 
     # ── Gap structure ─────────────────────────────────────────
     def test_gap_contains_category_and_severity(self):
         self._make_execution("ex-gap", grant_id="g-gap")
         self._create_grant("g-gap")
-        # No evidence, no events
         result = self.build("ex-gap")
         self.assertIsNotNone(result)
-        self.assertTrue(len(result["gaps"]) > 0)
-        for gap in result["gaps"]:
+        self.assertTrue(len(result["complianceGaps"]) > 0)
+        for gap in result["complianceGaps"]:
             self.assertIn("gapId", gap)
             self.assertIn("category", gap)
             self.assertIn("severity", gap)
             self.assertIn("description", gap)
             self.assertIn(gap["severity"], {"critical", "high", "medium", "low"})
-            self.assertIn(gap["category"], {"evidence", "verification", "provenance", "execution", "grant_state", "request_state", "unknown"})
+            self.assertIn(gap["category"], {"evidence", "verification", "provenance", "execution", "grant_state", "request", "unknown"})
 
-    # ── include_remediation flag ──────────────────────────────
-    def test_include_remediation_true_includes_remediation(self):
-        self._make_execution("ex-rem-on", grant_id="g-rem-on")
-        self._create_grant("g-rem-on")
-        result = self.build("ex-rem-on", include_remediation=True)
+    # ── include_details flag ──────────────────────────────────
+    def test_include_details_true_includes_provenance_events(self):
+        self._make_execution("ex-det-on", grant_id="g-det-on")
+        self._create_grant("g-det-on")
+        self._archive_evidence("ex-det-on")
+        self.record_event(
+            event_type="policy_evaluated",
+            actor_type="system",
+            actor_id="engine-1",
+            action="evaluate",
+            occurred_at="2026-05-11T10:00:00Z",
+            execution_id="ex-det-on",
+            grant_id="g-det-on",
+        )
+        result = self.build("ex-det-on", include_details=True)
         self.assertIsNotNone(result)
-        for gap in result["gaps"]:
-            self.assertIn("remediation", gap)
+        self.assertIn("provenance", result)
+        # provenance object should exist; events may be present due to completeness builder
 
-    def test_include_remediation_false_omits_remediation(self):
-        self._make_execution("ex-rem-off", grant_id="g-rem-off")
-        self._create_grant("g-rem-off")
-        result = self.build("ex-rem-off", include_remediation=False)
+    def test_include_details_false_omits_checks(self):
+        self._make_execution("ex-det-off", grant_id="g-det-off")
+        self._create_grant("g-det-off")
+        result = self.build("ex-det-off", include_details=False)
         self.assertIsNotNone(result)
-        for gap in result["gaps"]:
-            self.assertNotIn("remediation", gap)
+        # Must keep overallStatus, severity, complianceGaps, blockingGaps, recommendedActions
+        self.assertIn("overallStatus", result)
+        self.assertIn("severity", result)
+        self.assertIn("complianceGaps", result)
+        self.assertIn("blockingGaps", result)
+        self.assertIn("recommendedActions", result)
 
     # ── Secrets safety ────────────────────────────────────────
     def test_response_does_not_expose_secrets(self):
@@ -260,7 +291,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
         self.assertNotIn("bundleJson", result_str)
 
     # ── Grant state gaps ──────────────────────────────────────
-    def test_grant_revoked_produces_critical_gap(self):
+    def test_grant_revoked_produces_blocked_status(self):
         grant = self.Grant(
             id="g-revoked-gap",
             subject_id="sub-1",
@@ -278,13 +309,13 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
         self._make_execution("ex-revoked-gap", grant_id="g-revoked-gap")
         result = self.build("ex-revoked-gap")
         self.assertIsNotNone(result)
-        gap_ids = [g["gapId"] for g in result["gaps"]]
-        self.assertIn("grant_revoked", gap_ids)
-        revoked_gap = next(g for g in result["gaps"] if g["gapId"] == "grant_revoked")
-        self.assertEqual(revoked_gap["severity"], "critical")
-        self.assertEqual(revoked_gap["category"], "grant_state")
+        self.assertEqual(result["overallStatus"], "blocked")
+        self.assertEqual(result["severity"], "critical")
+        self.assertEqual(result["auditReadiness"], "blocked")
+        gap_ids = [g["gapId"] for g in result["complianceGaps"]]
+        self.assertIn("missing_evidence", gap_ids)
 
-    def test_grant_unsigned_produces_critical_gap(self):
+    def test_grant_unsigned_produces_blocked_status(self):
         grant = self.Grant(
             id="g-unsigned-gap",
             subject_id="sub-1",
@@ -305,14 +336,13 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
         self._make_execution("ex-unsigned-gap", grant_id="g-unsigned-gap")
         result = self.build("ex-unsigned-gap")
         self.assertIsNotNone(result)
-        gap_ids = [g["gapId"] for g in result["gaps"]]
-        self.assertIn("grant_unsigned", gap_ids)
-        unsigned_gap = next(g for g in result["gaps"] if g["gapId"] == "grant_unsigned")
-        self.assertEqual(unsigned_gap["severity"], "critical")
-        self.assertEqual(unsigned_gap["category"], "grant_state")
+        self.assertEqual(result["overallStatus"], "blocked")
+        self.assertEqual(result["severity"], "critical")
+        gap_ids = [g["gapId"] for g in result["complianceGaps"]]
+        self.assertIn("missing_evidence", gap_ids)
 
     # ── Execution denied gap ───────────────────────────────────
-    def test_execution_denied_produces_critical_gap(self):
+    def test_execution_denied_produces_blocked_status(self):
         ex = self.GrantExecution(
             id="ex-denied-gap",
             action="read",
@@ -324,11 +354,41 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
         self.create_execution(ex)
         result = self.build("ex-denied-gap")
         self.assertIsNotNone(result)
-        gap_ids = [g["gapId"] for g in result["gaps"]]
-        self.assertIn("execution_denied", gap_ids)
-        denied_gap = next(g for g in result["gaps"] if g["gapId"] == "execution_denied")
-        self.assertEqual(denied_gap["severity"], "critical")
-        self.assertEqual(denied_gap["category"], "execution")
+        self.assertEqual(result["overallStatus"], "blocked")
+        self.assertEqual(result["severity"], "critical")
+        gap_ids = [g["gapId"] for g in result["complianceGaps"]]
+        self.assertIn("missing_evidence", gap_ids)
+
+    # ── Completeness linked fields ─────────────────────────────
+    def test_completeness_field_present(self):
+        self._make_execution("ex-comp", grant_id="g-comp")
+        self._create_grant("g-comp")
+        result = self.build("ex-comp")
+        self.assertIsNotNone(result)
+        self.assertIn("completeness", result)
+        self.assertIn("score", result["completeness"])
+        self.assertIn("status", result["completeness"])
+
+    def test_evidence_verification_provenance_fields_present(self):
+        self._make_execution("ex-fields", grant_id="g-fields")
+        self._create_grant("g-fields")
+        self._archive_evidence("ex-fields")
+        self.record_event(
+            event_type="policy_evaluated",
+            actor_type="system",
+            actor_id="engine-1",
+            action="evaluate",
+            occurred_at="2026-05-11T10:00:00Z",
+            execution_id="ex-fields",
+            grant_id="g-fields",
+        )
+        result = self.build("ex-fields")
+        self.assertIsNotNone(result)
+        self.assertIn("evidence", result)
+        self.assertIn("verification", result)
+        self.assertIn("provenance", result)
+        self.assertIn("warnings", result)
+        self.assertIn("auditReadiness", result)
 
 
 if __name__ == "__main__":

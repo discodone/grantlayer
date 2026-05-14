@@ -9,26 +9,10 @@ from __future__ import annotations
 import datetime
 from typing import Any, Optional
 
-from .auditor_report import build_auditor_report_for_execution
 from .evidence_completeness import build_evidence_completeness_for_execution
 
 
-_REPORT_VERSION = "gl-038-b1"
-
-
-# Mapping from auditor-report finding prefixes to canonical gap IDs
-_FINDING_PREFIX_TO_GAP_ID: dict[str, str] = {
-    "missing_evidence": "missing_evidence",
-    "unverified_evidence": "unverified_evidence",
-    "execution_denied": "execution_denied",
-    "execution_failed": "execution_failed",
-    "grant_revoked": "grant_revoked",
-    "grant_expired": "grant_expired",
-    "grant_usage_exhausted": "grant_usage_exhausted",
-    "grant_unsigned": "grant_unsigned",
-    "grant_request_denied": "grant_request_denied",
-    "grant_request_revoked": "grant_request_revoked",
-}
+_REPORT_VERSION = "gl-compliance-gap-v1"
 
 
 _GAP_CATALOGUE: dict[str, dict[str, str]] = {
@@ -39,19 +23,13 @@ _GAP_CATALOGUE: dict[str, dict[str, str]] = {
             "No execution record exists for this grant execution. "
             "Without execution context, compliance auditability is impaired."
         ),
-        "remediation": (
-            "Ensure the grant execution is properly recorded in the execution ledger."
-        ),
     },
     "missing_evidence": {
         "category": "evidence",
-        "severity": "critical",
+        "severity": "high",
         "description": (
             "No evidence bundle is archived for this execution. "
             "All grant executions must have supporting evidence for audit purposes."
-        ),
-        "remediation": (
-            "Archive an evidence bundle for this execution using the evidence bundle API."
         ),
     },
     "invalid_evidence": {
@@ -61,30 +39,21 @@ _GAP_CATALOGUE: dict[str, dict[str, str]] = {
             "The archived evidence bundle failed hash integrity verification. "
             "This indicates potential tampering or corruption."
         ),
-        "remediation": (
-            "Re-archive the evidence bundle and trigger verification to confirm integrity."
-        ),
     },
     "unverified_evidence": {
         "category": "verification",
-        "severity": "high",
+        "severity": "medium",
         "description": (
             "Evidence is present but has not been verified. "
             "Unverified evidence cannot be relied upon for compliance decisions."
         ),
-        "remediation": (
-            "Run evidence verification for this execution to confirm integrity."
-        ),
     },
     "missing_provenance_events": {
         "category": "provenance",
-        "severity": "medium",
+        "severity": "low",
         "description": (
             "No provenance events are recorded for this execution. "
             "Provenance events are required for full decision traceability."
-        ),
-        "remediation": (
-            "Ensure provenance event recording is enabled and operational during execution."
         ),
     },
     "execution_denied": {
@@ -94,8 +63,13 @@ _GAP_CATALOGUE: dict[str, dict[str, str]] = {
             "The execution was denied by the policy engine. "
             "Denied executions indicate a failed compliance check."
         ),
-        "remediation": (
-            "Review the policy engine decision and resolve the underlying compliance issue."
+    },
+    "execution_failed": {
+        "category": "execution",
+        "severity": "high",
+        "description": (
+            "The execution failed due to an internal error. "
+            "Failed executions may indicate an operational compliance gap."
         ),
     },
     "grant_revoked": {
@@ -105,9 +79,6 @@ _GAP_CATALOGUE: dict[str, dict[str, str]] = {
             "The associated grant has been revoked. "
             "Execution under a revoked grant is a critical compliance gap."
         ),
-        "remediation": (
-            "Re-issue the grant through the appropriate approval workflow if access is still required."
-        ),
     },
     "grant_expired": {
         "category": "grant_state",
@@ -115,9 +86,6 @@ _GAP_CATALOGUE: dict[str, dict[str, str]] = {
         "description": (
             "The associated grant has passed its validity window. "
             "Execution under an expired grant violates time-bound policies."
-        ),
-        "remediation": (
-            "Extend or renew the grant if access is still required."
         ),
     },
     "grant_usage_exhausted": {
@@ -127,9 +95,6 @@ _GAP_CATALOGUE: dict[str, dict[str, str]] = {
             "The associated grant has reached its usage limit. "
             "Further execution under an exhausted grant is not permitted."
         ),
-        "remediation": (
-            "Request a new grant or increase the usage limit through the appropriate workflow."
-        ),
     },
     "grant_unsigned": {
         "category": "grant_state",
@@ -138,159 +103,152 @@ _GAP_CATALOGUE: dict[str, dict[str, str]] = {
             "The associated grant lacks a valid signature or payload hash. "
             "Unsigned grants cannot be cryptographically verified."
         ),
-        "remediation": (
-            "Re-create the grant to ensure it is properly signed."
-        ),
     },
     "grant_request_denied": {
-        "category": "request_state",
+        "category": "request",
         "severity": "critical",
         "description": (
             "The original grant request was denied. "
             "Execution under a denied request indicates a process violation."
         ),
-        "remediation": (
-            "Resubmit the grant request with corrected information and obtain approval."
-        ),
     },
     "grant_request_revoked": {
-        "category": "request_state",
+        "category": "request",
         "severity": "high",
         "description": (
             "The original grant request was revoked. "
             "Execution under a revoked request is a compliance concern."
         ),
-        "remediation": (
-            "Resubmit the grant request if access is still required."
-        ),
-    },
-    "execution_failed": {
-        "category": "execution",
-        "severity": "high",
-        "description": (
-            "The execution failed due to an internal error. "
-            "Failed executions may indicate an operational compliance gap."
-        ),
-        "remediation": (
-            "Investigate the execution failure and ensure proper error handling is in place."
-        ),
     },
 }
+
+
+_RECOMMENDED_ACTION_MAP: dict[str, str] = {
+    "missing_evidence": "collect_missing_evidence",
+    "invalid_evidence": "resolve_invalid_evidence",
+    "unverified_evidence": "verify_evidence",
+    "missing_provenance_events": "add_provenance_events",
+    "missing_execution_context": "review_auditor_report",
+    "execution_denied": "review_auditor_report",
+    "execution_failed": "review_auditor_report",
+    "grant_revoked": "review_auditor_report",
+    "grant_expired": "review_auditor_report",
+    "grant_usage_exhausted": "review_auditor_report",
+    "grant_unsigned": "review_auditor_report",
+    "grant_request_denied": "review_auditor_report",
+    "grant_request_revoked": "review_auditor_report",
+}
+
+
+_BLOCKING_SEVERITIES = {"critical", "high"}
 
 
 def _iso_now() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def _finding_to_gap_id(finding: str) -> str | None:
-    """Map an auditor-report finding string to a canonical gap ID."""
-    lower = finding.lower()
-    for prefix, gap_id in _FINDING_PREFIX_TO_GAP_ID.items():
-        if lower.startswith(prefix):
-            return gap_id
-    return None
+def _severity_rank(severity: str) -> int:
+    return {"none": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}.get(severity, 0)
 
 
-def _collect_all_gaps(
-    completeness: dict[str, Any],
-    auditor_report: dict[str, Any],
-) -> list[str]:
-    """Collect all compliance gap IDs from both evidence completeness and auditor report."""
-    gap_set: set[str] = set()
-
-    # Gaps directly reported by evidence completeness
-    for gap_id in completeness.get("complianceGaps") or []:
-        gap_set.add(gap_id)
-
-    # Missing evidence items mapped to canonical gap IDs
-    for missing in completeness.get("missingEvidence") or []:
-        if missing == "execution_context":
-            gap_set.add("missing_execution_context")
-        elif missing == "evidence_bundle":
-            gap_set.add("missing_evidence")
-        elif missing == "provenance_events":
-            gap_set.add("missing_provenance_events")
-
-    # Gaps derived from auditor-report findings
-    for finding in auditor_report.get("findings") or []:
-        gap_id = _finding_to_gap_id(finding)
-        if gap_id is not None:
-            gap_set.add(gap_id)
-
-    return sorted(gap_set)
-
-
-def _compute_overall_compliance(gaps: list[dict[str, Any]]) -> str:
-    if any(gap["severity"] == "critical" for gap in gaps):
-        return "non_compliant"
-    if gaps:
-        return "partial"
-    return "compliant"
-
-
-def _build_gap_detail(gap_id: str, include_remediation: bool) -> dict[str, Any]:
+def _build_gap_detail(gap_id: str) -> dict[str, Any]:
     meta = _GAP_CATALOGUE.get(gap_id, {
         "category": "unknown",
         "severity": "medium",
         "description": f"Unrecognised compliance gap: {gap_id}",
-        "remediation": "Review the gap manually.",
     })
-    detail: dict[str, Any] = {
+    return {
         "gapId": gap_id,
         "category": meta["category"],
         "severity": meta["severity"],
         "description": meta["description"],
     }
-    if include_remediation:
-        detail["remediation"] = meta["remediation"]
-    return detail
+
+
+def _compute_overall_status_and_severity(
+    gaps: list[dict[str, Any]],
+    completeness_status: str,
+) -> tuple[str, str]:
+    if not gaps and completeness_status == "complete":
+        return "clear", "none"
+    if completeness_status == "critical" or any(g["severity"] == "critical" for g in gaps):
+        return "blocked", "critical"
+    if gaps:
+        max_rank = max(_severity_rank(g["severity"]) for g in gaps)
+        severity = {0: "none", 1: "low", 2: "medium", 3: "high", 4: "critical"}[max_rank]
+        return "gaps_detected", severity
+    return "gaps_detected", "low"
+
+
+def _build_recommended_actions(gaps: list[dict[str, Any]]) -> list[str]:
+    actions: list[str] = []
+    seen: set[str] = set()
+    for gap in gaps:
+        action = _RECOMMENDED_ACTION_MAP.get(gap["gapId"])
+        if action and action not in seen:
+            actions.append(action)
+            seen.add(action)
+    if not actions:
+        actions.append("no_action_required")
+    return actions
+
+
+def _build_blocking_gaps(gaps: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [g for g in gaps if g["severity"] in _BLOCKING_SEVERITIES]
 
 
 def build_compliance_gap_report_for_execution(
     execution_id: str,
-    include_remediation: bool = True,
+    include_details: bool = True,
 ) -> Optional[dict[str, Any]]:
     """Build a compliance gap report for a GrantExecution.
 
-    Uses both the evidence completeness report and the auditor report as
-    sources of truth. Does not trigger verification or mutate any state.
+    Uses the evidence completeness report as the single source of truth.
+    Does not trigger verification or mutate any state.
 
     Args:
         execution_id: The execution to report on.
-        include_remediation: When True, include remediation recommendations
-            for each gap.
+        include_details: When True, include detailed provenance events
+            and completeness check objects.
 
     Returns:
         A compliance gap report dict, or None if the execution cannot be
         resolved (no evidence completeness report available).
     """
-    completeness = build_evidence_completeness_for_execution(execution_id, include_details=False)
+    completeness = build_evidence_completeness_for_execution(execution_id, include_details=include_details)
     if completeness is None:
         return None
 
-    auditor_report = build_auditor_report_for_execution(execution_id)
-    if auditor_report is None:
-        return None
+    gap_ids = completeness.get("complianceGaps") or []
+    gaps = [_build_gap_detail(gid) for gid in gap_ids]
 
-    grant_id = completeness.get("grantId")
-    all_gap_ids = _collect_all_gaps(completeness, auditor_report)
+    overall_status, severity = _compute_overall_status_and_severity(
+        gaps, completeness.get("completenessStatus", "")
+    )
 
-    gaps = [_build_gap_detail(gap_id, include_remediation) for gap_id in all_gap_ids]
-    overall_compliance = _compute_overall_compliance(gaps)
-    critical_count = sum(1 for g in gaps if g["severity"] == "critical")
+    blocking_gaps = _build_blocking_gaps(gaps)
+    recommended_actions = _build_recommended_actions(gaps)
 
     report: dict[str, Any] = {
         "reportType": "compliance_gap_report",
         "reportVersion": _REPORT_VERSION,
         "executionId": execution_id,
-        "grantId": grant_id,
+        "grantId": completeness.get("grantId"),
         "generatedAt": _iso_now(),
-        "overallCompliance": overall_compliance,
-        "totalGaps": len(gaps),
-        "criticalGaps": critical_count,
-        "gaps": gaps,
-        "evidenceCompletenessScore": completeness.get("completenessScore"),
-        "evidenceCompletenessStatus": completeness.get("completenessStatus"),
+        "overallStatus": overall_status,
+        "severity": severity,
+        "complianceGaps": gaps,
+        "blockingGaps": blocking_gaps,
+        "recommendedActions": recommended_actions,
+        "completeness": {
+            "score": completeness.get("completenessScore"),
+            "status": completeness.get("completenessStatus"),
+        },
+        "evidence": completeness.get("evidence"),
+        "verification": completeness.get("verification"),
+        "provenance": completeness.get("provenance"),
+        "warnings": completeness.get("warnings") or [],
+        "auditReadiness": completeness.get("auditReadiness"),
     }
 
     return report
