@@ -809,7 +809,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             )
             self._send_json(200, result)
 
-        elif path == "/decision-provenance/build":
+        elif path == "/decision-provenance/v2/build":
             if config.ENABLE_OPERATOR_MODEL:
                 ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
                 if not ok:

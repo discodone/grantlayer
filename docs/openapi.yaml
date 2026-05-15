@@ -843,6 +843,93 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /decision-provenance/v2/build:
+    post:
+      summary: Build Decision Provenance v2
+      description: |
+        Builds a decision provenance v2 record from structured inputs.
+        Pure/read-only endpoint — no DB access, no persistence.
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: buildDecisionProvenanceV2
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decisionId:
+                  type: string
+                decisionType:
+                  type: string
+                subjectId:
+                  type: string
+                actorId:
+                  type: string
+                action:
+                  type: string
+                decision:
+                  type: string
+                reason:
+                  type: string
+                evidenceCompleteness:
+                  type: object
+                complianceGapReport:
+                  type: object
+                permissionResult:
+                  type: object
+                approvalRequirement:
+                  type: object
+                approvalLifecycle:
+                  type: object
+                provenanceSummary:
+                  type: object
+                auditorReport:
+                  type: object
+                policyResults:
+                  type: array
+                  items:
+                    type: object
+                inputs:
+                  type: object
+                context:
+                  type: object
+                createdAt:
+                  type: string
+                  format: date-time
+                includeDetails:
+                  type: boolean
+                  default: true
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Decision provenance v2 record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionProvenanceV2"
+        "400":
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /auditor/reports/executions/{executionId}:
     get:
       summary: Auditor Report
@@ -2664,4 +2751,94 @@ components:
         auditReadiness:
           type: string
           enum: [ready, not_ready, blocked]
+          nullable: true
+
+    DecisionProvenanceV2:
+      type: object
+      required:
+        - recordType
+        - recordVersion
+        - readiness
+        - signals
+        - blockers
+        - warnings
+        - missingInputs
+        - createdAt
+      properties:
+        recordType:
+          type: string
+          enum: [decision_provenance]
+        recordVersion:
+          type: string
+          enum: [gl-decision-provenance-v2]
+        decisionId:
+          type: string
+          nullable: true
+        decisionType:
+          type: string
+          nullable: true
+        subjectId:
+          type: string
+          nullable: true
+        actorId:
+          type: string
+          nullable: true
+        action:
+          type: string
+          nullable: true
+        decision:
+          type: string
+          nullable: true
+        decisionStatus:
+          type: string
+          nullable: true
+        reason:
+          type: string
+          nullable: true
+        readiness:
+          type: object
+          additionalProperties:
+            type: string
+        signals:
+          type: object
+          additionalProperties:
+            type: string
+        blockers:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        missingInputs:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        evidence:
+          type: object
+          nullable: true
+        compliance:
+          type: object
+          nullable: true
+        permission:
+          type: object
+          nullable: true
+        approval:
+          type: object
+          nullable: true
+        provenance:
+          type: object
+          nullable: true
+        auditor:
+          type: object
+          nullable: true
+        policy:
+          type: object
+          nullable: true
+        inputs:
+          type: object
           nullable: true
