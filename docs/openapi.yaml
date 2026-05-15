@@ -1317,6 +1317,90 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /agent-permissions/assignments/resolve:
+    post:
+      summary: Resolve Agent Permission Assignment
+      description: |
+        Resolves whether an agent's permission assignment (direct scopes + profile-based scopes)
+        authorizes a requested scope. Combines `assignedScopes` and `assignedProfiles` into effective
+        scopes, then evaluates the requested scope.
+
+        The `includeDetails` flag controls whether `profileResolution` and `evaluation` detail
+        objects are included in the response (default: `true`).
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: resolveAgentPermissionAssignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agentId
+                - requestedScope
+              properties:
+                agentId:
+                  type: string
+                  description: Unique identifier of the agent.
+                requestedScope:
+                  type: string
+                  description: Scope the agent is requesting access to.
+                assignedScopes:
+                  type: array
+                  items:
+                    type: string
+                  description: Scopes directly assigned to the agent.
+                assignedProfiles:
+                  type: array
+                  items:
+                    type: string
+                  description: Permission profile names assigned to the agent.
+                resourceType:
+                  type: string
+                  nullable: true
+                  description: Optional resource type context.
+                resourceId:
+                  type: string
+                  nullable: true
+                  description: Optional resource identifier context.
+                context:
+                  type: object
+                  nullable: true
+                  description: Optional additional context (currently unused, reserved for future).
+                includeDetails:
+                  type: boolean
+                  default: true
+                  description: Whether to include `profileResolution` and `evaluation` detail objects.
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Assignment resolution result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentPermissionAssignmentResolution"
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /demo/tamper-grant/{id}:
     post:
       summary: Demo tamper a grant (DEMO ONLY)
@@ -1941,6 +2025,105 @@ components:
           items:
             type: string
           description: Validation warnings (e.g. unknown or malformed scope entries).
+
+    AgentPermissionAssignmentResolution:
+      type: object
+      required:
+        - allowed
+        - agentId
+        - requestedScope
+        - assignedScopes
+        - assignedProfiles
+        - resolvedScopes
+        - matchedScope
+        - resourceType
+        - resourceId
+        - reason
+        - warnings
+      properties:
+        allowed:
+          type: boolean
+          description: Whether the requested scope is authorized.
+        agentId:
+          type: string
+        requestedScope:
+          type: string
+        assignedScopes:
+          type: array
+          items:
+            type: string
+          description: Echo of the directly assigned scopes.
+        assignedProfiles:
+          type: array
+          items:
+            type: string
+          description: Echo of the assigned profile names.
+        resolvedScopes:
+          type: array
+          items:
+            type: string
+          description: Effective scopes after combining direct scopes and profile-derived scopes, deduplicated and sorted.
+        matchedScope:
+          type: string
+          nullable: true
+          description: The scope that granted access, or null if denied.
+        resourceType:
+          type: string
+          nullable: true
+        resourceId:
+          type: string
+          nullable: true
+        reason:
+          type: string
+          description: Human-readable reason for allow/deny decision.
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Warnings about malformed inputs or unknown profiles.
+        profileResolution:
+          type: object
+          nullable: true
+          description: Detail object present only when `includeDetails=true`.
+          properties:
+            resolvedProfiles:
+              type: array
+              items:
+                type: string
+            unresolvedProfiles:
+              type: array
+              items:
+                type: string
+            warnings:
+              type: array
+              items:
+                type: string
+        evaluation:
+          type: object
+          nullable: true
+          description: Full permission evaluation detail present only when `includeDetails=true`.
+          properties:
+            allowed:
+              type: boolean
+            agentId:
+              type: string
+            requestedScope:
+              type: string
+            matchedScope:
+              type: string
+              nullable: true
+            resourceType:
+              type: string
+              nullable: true
+            resourceId:
+              type: string
+              nullable: true
+            reason:
+              type: string
+            warnings:
+              type: array
+              items:
+                type: string
 
     ComplianceGapReport:
       type: object

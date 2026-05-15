@@ -30,6 +30,7 @@ from .agent_permission_profiles import (
     get_agent_permission_profile,
     list_agent_permission_profiles,
 )
+from .agent_permission_assignments import resolve_agent_permission_assignment
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
     "dashboard", "index.html",
@@ -684,6 +685,35 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 resource_type=data.get("resourceType"),
                 resource_id=data.get("resourceId"),
                 context=data.get("context"),
+            )
+            self._send_json(200, result)
+
+        elif path == "/agent-permissions/assignments/resolve":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+            missing = self._missing(data, ["agentId", "requestedScope"])
+            if missing:
+                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                return
+            result = resolve_agent_permission_assignment(
+                agent_id=data["agentId"],
+                requested_scope=data["requestedScope"],
+                assigned_scopes=data.get("assignedScopes"),
+                assigned_profiles=data.get("assignedProfiles"),
+                resource_type=data.get("resourceType"),
+                resource_id=data.get("resourceId"),
+                context=data.get("context"),
+                include_details=data.get("includeDetails", True),
             )
             self._send_json(200, result)
 
