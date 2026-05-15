@@ -33,6 +33,7 @@ from .agent_permission_profiles import (
 from .agent_permission_assignments import resolve_agent_permission_assignment
 from .approval_rules import evaluate_approval_requirements
 from .approval_lifecycle import build_approval_request_lifecycle, transition_approval_request
+from .decision_provenance import build_decision_provenance_v2
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
     "dashboard", "index.html",
@@ -804,6 +805,42 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 permission_result=data.get("permissionResult"),
                 policy_flags=data.get("policyFlags"),
                 context=data.get("context"),
+                include_details=data.get("includeDetails", True),
+            )
+            self._send_json(200, result)
+
+        elif path == "/decision-provenance/build":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+            result = build_decision_provenance_v2(
+                decision_id=data.get("decisionId"),
+                decision_type=data.get("decisionType"),
+                subject_id=data.get("subjectId"),
+                actor_id=data.get("actorId"),
+                action=data.get("action"),
+                decision=data.get("decision"),
+                reason=data.get("reason"),
+                evidence_completeness=data.get("evidenceCompleteness"),
+                compliance_gap_report=data.get("complianceGapReport"),
+                permission_result=data.get("permissionResult"),
+                approval_requirement=data.get("approvalRequirement"),
+                approval_lifecycle=data.get("approvalLifecycle"),
+                provenance_summary=data.get("provenanceSummary"),
+                auditor_report=data.get("auditorReport"),
+                policy_results=data.get("policyResults"),
+                inputs=data.get("inputs"),
+                context=data.get("context"),
+                created_at=data.get("createdAt"),
                 include_details=data.get("includeDetails", True),
             )
             self._send_json(200, result)
