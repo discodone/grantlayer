@@ -1390,6 +1390,282 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /approvals/lifecycle/build:
+    post:
+      summary: Build Approval Request Lifecycle
+      description: |
+        Builds an approval request lifecycle from an approval requirement.
+
+        Returns the constructed approval request with status, decision, required approvals,
+        required roles, approvers list, timestamps, and optional detail fields.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: buildApprovalRequestLifecycle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approvalRequirement:
+                  type: object
+                  nullable: true
+                  description: The approval requirement from evaluateApprovalRequirements.
+                requestId:
+                  type: string
+                  nullable: true
+                  description: Unique identifier for the request.
+                action:
+                  type: string
+                  nullable: true
+                  description: The proposed action.
+                actorId:
+                  type: string
+                  nullable: true
+                  description: Identifier of the actor proposing the action.
+                subjectId:
+                  type: string
+                  nullable: true
+                  description: Identifier of the subject of the request.
+                requestedBy:
+                  type: string
+                  nullable: true
+                  description: Identifier of who requested the approval.
+                approvers:
+                  type: array
+                  items:
+                    type: object
+                  nullable: true
+                  description: List of approvers with role and id.
+                status:
+                  type: string
+                  nullable: true
+                  description: Override status (default derived from approvalRequirement).
+                createdAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Creation timestamp.
+                expiresAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Expiration timestamp.
+                context:
+                  type: object
+                  nullable: true
+                  description: Optional additional context (secrets redacted in response).
+                includeDetails:
+                  type: boolean
+                  nullable: true
+                  description: Whether to include context in response.
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Approval request lifecycle built
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestId:
+                    type: string
+                    nullable: true
+                  action:
+                    type: string
+                    nullable: true
+                  actorId:
+                    type: string
+                    nullable: true
+                  subjectId:
+                    type: string
+                    nullable: true
+                  requestedBy:
+                    type: string
+                    nullable: true
+                  status:
+                    type: string
+                  decision:
+                    type: string
+                  reason:
+                    type: string
+                  requiredApprovals:
+                    type: integer
+                  requiredRoles:
+                    type: array
+                    items:
+                      type: string
+                  approvers:
+                    type: array
+                    items:
+                      type: object
+                  blockers:
+                    type: array
+                    items:
+                      type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  receivedApprovals:
+                    type: integer
+                  approvedByRoles:
+                    type: array
+                    items:
+                      type: string
+                  context:
+                    type: object
+                    nullable: true
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /approvals/lifecycle/transition:
+    post:
+      summary: Transition Approval Request
+      description: |
+        Transitions an approval request to a new state.
+
+        Valid transitions: create, approve, reject, expire, cancel, block, reopen.
+
+        Returns the updated approval request with new status, decision, reason,
+        and approver tracking fields.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: transitionApprovalRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - approvalRequest
+                - transition
+              properties:
+                approvalRequest:
+                  type: object
+                  description: The current approval request state.
+                transition:
+                  type: string
+                  description: The transition to apply (create, approve, reject, expire, cancel, block, reopen).
+                actorId:
+                  type: string
+                  nullable: true
+                  description: Identifier of the actor performing the transition.
+                reason:
+                  type: string
+                  nullable: true
+                  description: Reason for the transition.
+                at:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Timestamp for the transition.
+                context:
+                  type: object
+                  nullable: true
+                  description: Optional additional context (secrets redacted in response). Pass {"allowBlockedReopen": true} to allow reopening blocked requests.
+                includeDetails:
+                  type: boolean
+                  nullable: true
+                  description: Whether to include context in response.
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Approval request transitioned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestId:
+                    type: string
+                    nullable: true
+                  action:
+                    type: string
+                    nullable: true
+                  actorId:
+                    type: string
+                    nullable: true
+                  subjectId:
+                    type: string
+                    nullable: true
+                  requestedBy:
+                    type: string
+                    nullable: true
+                  status:
+                    type: string
+                  decision:
+                    type: string
+                  reason:
+                    type: string
+                  requiredApprovals:
+                    type: integer
+                  requiredRoles:
+                    type: array
+                    items:
+                      type: string
+                  approvers:
+                    type: array
+                    items:
+                      type: object
+                  blockers:
+                    type: array
+                    items:
+                      type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  receivedApprovals:
+                    type: integer
+                  approvedByRoles:
+                    type: array
+                    items:
+                      type: string
+                  context:
+                    type: object
+                    nullable: true
+        "400":
+          description: Validation error, missing fields, or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /agent-permissions/profiles:
     get:
       summary: List agent permission scope profiles

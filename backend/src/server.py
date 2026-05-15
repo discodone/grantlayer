@@ -32,6 +32,7 @@ from .agent_permission_profiles import (
 )
 from .agent_permission_assignments import resolve_agent_permission_assignment
 from .approval_rules import evaluate_approval_requirements
+from .approval_lifecycle import build_approval_request_lifecycle, transition_approval_request
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
     "dashboard", "index.html",
@@ -713,6 +714,63 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 assigned_profiles=data.get("assignedProfiles"),
                 resource_type=data.get("resourceType"),
                 resource_id=data.get("resourceId"),
+                context=data.get("context"),
+                include_details=data.get("includeDetails", True),
+            )
+            self._send_json(200, result)
+
+        elif path == "/approvals/lifecycle/build":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+            result = build_approval_request_lifecycle(
+                approval_requirement=data.get("approvalRequirement"),
+                request_id=data.get("requestId"),
+                action=data.get("action"),
+                actor_id=data.get("actorId"),
+                subject_id=data.get("subjectId"),
+                requested_by=data.get("requestedBy"),
+                approvers=data.get("approvers"),
+                status=data.get("status"),
+                created_at=data.get("createdAt"),
+                expires_at=data.get("expiresAt"),
+                context=data.get("context"),
+                include_details=data.get("includeDetails", True),
+            )
+            self._send_json(200, result)
+
+        elif path == "/approvals/lifecycle/transition":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+            missing = self._missing(data, ["approvalRequest", "transition"])
+            if missing:
+                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                return
+            result = transition_approval_request(
+                approval_request=data["approvalRequest"],
+                transition=data["transition"],
+                actor_id=data.get("actorId"),
+                reason=data.get("reason"),
+                at=data.get("at"),
                 context=data.get("context"),
                 include_details=data.get("includeDetails", True),
             )
