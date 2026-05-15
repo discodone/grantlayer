@@ -1239,6 +1239,157 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /approvals/evaluate:
+    post:
+      summary: Evaluate Approval Requirements
+      description: |
+        Evaluates whether a proposed action requires approval based on risk,
+        compliance, evidence, permission, policy flags, and amount signals.
+
+        Returns the decision (`no_approval_required`, `approval_required`,
+        `four_eyes_required`, or `blocked`), required approvals count,
+        required roles, blockers, warnings, and optional detail fields.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: evaluateApprovalRequirements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  type: string
+                  description: The proposed action to evaluate.
+                actorId:
+                  type: string
+                  nullable: true
+                  description: Identifier of the actor proposing the action.
+                amount:
+                  type: number
+                  nullable: true
+                  description: Monetary amount associated with the action.
+                currency:
+                  type: string
+                  nullable: true
+                  description: Currency code for the amount.
+                riskLevel:
+                  type: string
+                  nullable: true
+                  description: Risk level (low, medium, high).
+                complianceReport:
+                  type: object
+                  nullable: true
+                  description: Compliance report with overallStatus and severity.
+                evidenceCompleteness:
+                  type: object
+                  nullable: true
+                  description: Evidence completeness status.
+                permissionResult:
+                  type: object
+                  nullable: true
+                  description: Permission evaluation result with allowed flag.
+                policyFlags:
+                  type: array
+                  items:
+                    type: string
+                  nullable: true
+                  description: Policy flags such as requires_approval or requires_four_eyes.
+                context:
+                  type: object
+                  nullable: true
+                  description: Optional additional context (not returned in response).
+                includeDetails:
+                  type: boolean
+                  nullable: true
+                  description: Whether to include checks and inputs in response.
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Evaluation result
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - action
+                  - actorId
+                  - approvalRequired
+                  - requiredApprovals
+                  - requiredRoles
+                  - decision
+                  - reason
+                  - blockers
+                  - warnings
+                  - riskLevel
+                  - amount
+                  - currency
+                properties:
+                  action:
+                    type: string
+                    nullable: true
+                  actorId:
+                    type: string
+                    nullable: true
+                  approvalRequired:
+                    type: boolean
+                  requiredApprovals:
+                    type: integer
+                  requiredRoles:
+                    type: array
+                    items:
+                      type: string
+                  decision:
+                    type: string
+                  reason:
+                    type: string
+                  blockers:
+                    type: array
+                    items:
+                      type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  riskLevel:
+                    type: string
+                    nullable: true
+                  amount:
+                    type: number
+                    nullable: true
+                  currency:
+                    type: string
+                    nullable: true
+                  checks:
+                    type: object
+                    nullable: true
+                  inputs:
+                    type: object
+                    nullable: true
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /agent-permissions/profiles:
     get:
       summary: List agent permission scope profiles

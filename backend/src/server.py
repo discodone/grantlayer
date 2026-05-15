@@ -31,6 +31,7 @@ from .agent_permission_profiles import (
     list_agent_permission_profiles,
 )
 from .agent_permission_assignments import resolve_agent_permission_assignment
+from .approval_rules import evaluate_approval_requirements
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
     "dashboard", "index.html",
@@ -712,6 +713,38 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 assigned_profiles=data.get("assignedProfiles"),
                 resource_type=data.get("resourceType"),
                 resource_id=data.get("resourceId"),
+                context=data.get("context"),
+                include_details=data.get("includeDetails", True),
+            )
+            self._send_json(200, result)
+
+        elif path == "/approvals/evaluate":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+            missing = self._missing(data, ["action"])
+            if missing:
+                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                return
+            result = evaluate_approval_requirements(
+                action=data["action"],
+                actor_id=data.get("actorId"),
+                amount=data.get("amount"),
+                currency=data.get("currency"),
+                risk_level=data.get("riskLevel"),
+                compliance_report=data.get("complianceReport"),
+                evidence_completeness=data.get("evidenceCompleteness"),
+                permission_result=data.get("permissionResult"),
+                policy_flags=data.get("policyFlags"),
                 context=data.get("context"),
                 include_details=data.get("includeDetails", True),
             )
