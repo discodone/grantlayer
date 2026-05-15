@@ -12,6 +12,7 @@ Provides two functions:
 
 from __future__ import annotations
 
+import json
 from typing import Any, Optional
 
 
@@ -547,21 +548,55 @@ def _copy_request_with_blocker(
     )
 
 
-def _normalise_approvers(approvers: Any) -> list[str]:
-    """Normalise approvers to a list of strings, deduplicated and sorted."""
+def _normalise_approvers(approvers: Any) -> list:
+    """Normalise approvers to a list, deduplicated and sorted.
+    
+    For string approvers, deduplicate and sort strings.
+    For dict approvers, deduplicate by JSON string representation and keep dicts.
+    """
     if not isinstance(approvers, list):
         return []
-    seen: set[str] = set()
-    unique: list[str] = []
+    
+    # Separate dict approvers from string/other approvers
+    dict_approvers = []
+    string_approvers = []
+    
     for a in approvers:
-        key = str(a)
-        if key not in seen:
-            seen.add(key)
-            unique.append(key)
-    return sorted(unique)
+        if isinstance(a, dict):
+            dict_approvers.append(a)
+        else:
+            string_approvers.append(str(a))
+    
+    # Deduplicate dict approvers by JSON string representation
+    seen_dicts: set[str] = set()
+    unique_dicts: list[dict] = []
+    dict_keys: list[str] = []
+    for d in dict_approvers:
+        key = json.dumps(d, sort_keys=True)
+        if key not in seen_dicts:
+            seen_dicts.add(key)
+            unique_dicts.append(d)
+            dict_keys.append(key)
+    
+    # Sort dict approvers by their JSON representation for determinism
+    sorted_dicts = [d for _, d in sorted(zip(dict_keys, unique_dicts))]
+    
+    # Deduplicate string approvers
+    seen_strings: set[str] = set()
+    unique_strings: list[str] = []
+    for s in string_approvers:
+        if s not in seen_strings:
+            seen_strings.add(s)
+            unique_strings.append(s)
+    
+    # Sort string approvers for determinism
+    unique_strings.sort()
+    
+    # Return combined list (dicts first, then strings)
+    return sorted_dicts + unique_strings
 
 
-def _deduplicate_approvers(approvers: Any) -> list[str]:
+def _deduplicate_approvers(approvers: Any) -> list:
     """Deduplicate and sort approvers deterministically."""
     return _normalise_approvers(approvers)
 
