@@ -34,6 +34,7 @@ from .agent_permission_assignments import resolve_agent_permission_assignment
 from .approval_rules import evaluate_approval_requirements
 from .approval_lifecycle import build_approval_request_lifecycle, transition_approval_request
 from .decision_provenance import build_decision_provenance_v2
+from .auditor_export import build_institutional_auditor_export
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
     "dashboard", "index.html",
@@ -839,6 +840,41 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 auditor_report=data.get("auditorReport"),
                 policy_results=data.get("policyResults"),
                 inputs=data.get("inputs"),
+                context=data.get("context"),
+                created_at=data.get("createdAt"),
+                include_details=data.get("includeDetails", True),
+            )
+            self._send_json(200, result)
+
+        elif path == "/auditor/exports/build":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+            result = build_institutional_auditor_export(
+                export_id=data.get("exportId"),
+                export_type=data.get("exportType"),
+                subject_id=data.get("subjectId"),
+                decision_id=data.get("decisionId"),
+                generated_by=data.get("generatedBy"),
+                auditor_id=data.get("auditorId"),
+                decision_provenance=data.get("decisionProvenance"),
+                auditor_report=data.get("auditorReport"),
+                evidence_completeness=data.get("evidenceCompleteness"),
+                compliance_gap_report=data.get("complianceGapReport"),
+                permission_result=data.get("permissionResult"),
+                approval_requirement=data.get("approvalRequirement"),
+                approval_lifecycle=data.get("approvalLifecycle"),
+                policy_results=data.get("policyResults"),
+                metadata=data.get("metadata"),
                 context=data.get("context"),
                 created_at=data.get("createdAt"),
                 include_details=data.get("includeDetails", True),

@@ -930,6 +930,91 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /auditor/exports/build:
+    post:
+      summary: Build Institutional Auditor Export
+      description: |
+        Builds an institutional auditor export from structured inputs.
+        Pure/read-only endpoint — no DB access, no persistence.
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: buildInstitutionalAuditorExport
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                exportId:
+                  type: string
+                exportType:
+                  type: string
+                subjectId:
+                  type: string
+                decisionId:
+                  type: string
+                generatedBy:
+                  type: string
+                auditorId:
+                  type: string
+                decisionProvenance:
+                  type: object
+                auditorReport:
+                  type: object
+                evidenceCompleteness:
+                  type: object
+                complianceGapReport:
+                  type: object
+                permissionResult:
+                  type: object
+                approvalRequirement:
+                  type: object
+                approvalLifecycle:
+                  type: object
+                policyResults:
+                  type: array
+                  items:
+                    type: object
+                metadata:
+                  type: object
+                context:
+                  type: object
+                createdAt:
+                  type: string
+                  format: date-time
+                includeDetails:
+                  type: boolean
+                  default: true
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Institutional auditor export record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InstitutionalAuditorExport"
+        "400":
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /auditor/reports/executions/{executionId}:
     get:
       summary: Auditor Report
@@ -2840,5 +2925,105 @@ components:
           type: object
           nullable: true
         inputs:
+          type: object
+          nullable: true
+
+    InstitutionalAuditorExport:
+      type: object
+      required:
+        - recordType
+        - recordVersion
+        - exportId
+        - exportType
+        - subjectId
+        - decisionId
+        - generatedBy
+        - auditorId
+        - exportStatus
+        - auditReadiness
+        - sections
+        - blockers
+        - warnings
+        - missingSections
+        - createdAt
+      properties:
+        recordType:
+          type: string
+          enum: [auditor_export]
+        recordVersion:
+          type: string
+          enum: [gl-auditor-export-v1]
+        exportId:
+          type: string
+          nullable: true
+        exportType:
+          type: string
+          nullable: true
+        subjectId:
+          type: string
+          nullable: true
+        decisionId:
+          type: string
+          nullable: true
+        generatedBy:
+          type: string
+          nullable: true
+        auditorId:
+          type: string
+          nullable: true
+        exportStatus:
+          type: string
+          enum: [ready, needs_review, blocked, incomplete, unknown]
+        auditReadiness:
+          type: string
+          enum: [audit_ready, needs_review, blocked, insufficient_evidence, unknown]
+        sections:
+          type: array
+          items:
+            type: string
+            enum: [decisionProvenance, auditorReport, evidence, compliance, permission, approval, policy]
+        blockers:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        missingSections:
+          type: array
+          items:
+            type: string
+            enum: [decisionProvenance, auditorReport, evidence, compliance, permission, approval, policy]
+        createdAt:
+          type: string
+          format: date-time
+        decisionProvenance:
+          type: object
+          nullable: true
+        auditorReport:
+          type: object
+          nullable: true
+        evidence:
+          type: object
+          nullable: true
+        compliance:
+          type: object
+          nullable: true
+        permission:
+          type: object
+          nullable: true
+        approval:
+          type: object
+          nullable: true
+        policy:
+          type: array
+          items:
+            type: object
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        context:
           type: object
           nullable: true
