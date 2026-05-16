@@ -18,6 +18,30 @@ RECORD_VERSION = "gl-auditor-export-v1"
 EXPORT_STATUSES = {"ready", "needs_review", "blocked", "incomplete", "unknown"}
 AUDIT_READINESS_STATUSES = {"audit_ready", "needs_review", "blocked", "insufficient_evidence"}
 
+_SECRET_KEY_FRAGMENTS = frozenset(
+    [
+        "token",
+        "secret",
+        "password",
+        "api_key",
+        "apikey",
+        "auth",
+        "authorization",
+        "credential",
+        "credentials",
+        "private_key",
+        "privatekey",
+        "netrc",
+        "cookie",
+        "jwt",
+        "ssho",
+        "bearer",
+        "access_token",
+        "refresh_token",
+        "id_token",
+    ]
+)
+
 
 # ─── Helpers ────────────────────────────────────────────────────────
 
@@ -27,6 +51,24 @@ def _iso_now() -> str:
 
 def _dedupe(lst: list[str]) -> list[str]:
     return list(dict.fromkeys(lst))
+
+
+def _is_dict(value: Any) -> bool:
+    return isinstance(value, dict)
+
+
+def _sanitize_context(context: Any) -> Any:
+    """Remove secrets and sensitive fields from *context* dict."""
+    if not _is_dict(context):
+        return context
+    safe: dict[str, Any] = {}
+    for key, value in context.items():
+        lower_key = str(key).lower()
+        if any(sk in lower_key for sk in _SECRET_KEY_FRAGMENTS):
+            safe[key] = "[REDACTED]"
+        else:
+            safe[key] = value
+    return safe
 
 
 def _sections_from_inputs(
@@ -274,6 +316,6 @@ def build_institutional_auditor_export(
         result["policy"] = policy_results
         result["metadata"] = metadata
         if context is not None:
-            result["context"] = context
+            result["context"] = _sanitize_context(context)
 
     return result
