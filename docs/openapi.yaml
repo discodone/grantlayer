@@ -897,135 +897,78 @@ paths:
           type: object
           nullable: true
 
-    ComplianceReadinessSummary:
-      type: object
-      required:
-        - recordType
-        - recordVersion
-        - subjectId
-        - workflowId
-        - readinessStatus
-        - readinessScore
-        - evidenceStatus
-        - complianceStatus
-        - permissionStatus
-        - approvalStatus
-        - provenanceStatus
-        - auditorExportStatus
-        - policyStatus
-        - blockers
-        - warnings
-        - missingInputs
-        - recommendedActions
-        - createdAt
-      properties:
-        recordType:
-          type: string
-          enum: [compliance_readiness_summary]
-        recordVersion:
-          type: string
-          enum: [gl-compliance-readiness-v1]
-        executionId:
-          type: string
-          nullable: true
-        grantId:
-          type: string
-          nullable: true
-        subjectId:
-          type: string
-          nullable: true
-        workflowId:
-          type: string
-          nullable: true
-        createdAt:
-          type: string
-          format: date-time
-        readinessStatus:
-          type: string
-          enum: [ready, needs_review, blocked, insufficient_data]
-        readinessScore:
-          type: integer
-          minimum: 0
-          maximum: 100
-        evidenceStatus:
-          type: string
-          enum: [ready, needs_review, blocked, not_assessed]
-        complianceStatus:
-          type: string
-          enum: [ready, needs_review, blocked, not_assessed]
-        permissionStatus:
-          type: string
-          enum: [ready, needs_review, blocked, not_assessed]
-        approvalStatus:
-          type: string
-          enum: [ready, needs_review, blocked, not_assessed]
-        provenanceStatus:
-          type: string
-          enum: [ready, needs_review, blocked, not_assessed]
-        auditorExportStatus:
-          type: string
-          enum: [ready, needs_review, blocked, not_assessed]
-        policyStatus:
-          type: string
-          enum: [ready, needs_review, blocked, not_assessed]
-        blockers:
-          type: array
-          items:
-            type: string
-        warnings:
-          type: array
-          items:
-            type: string
-        missingInputs:
-          type: array
-          items:
-            type: string
-        recommendedActions:
-          type: array
-          items:
-            type: string
-        evidenceCompleteness:
-          type: object
-          nullable: true
-        complianceGapReport:
-          type: object
-          nullable: true
-        permissionResult:
-          type: object
-          nullable: true
-        approvalRequirement:
-          type: object
-          nullable: true
-        approvalLifecycle:
-          type: object
-          nullable: true
-        decisionProvenance:
-          type: object
-          nullable: true
-        auditorExport:
-          type: object
-          nullable: true
-        policyRequirementEvaluation:
-          type: object
-          nullable: true
-        context:
-          type: object
-          nullable: true
-                  description: Optional resource type context.
-                resourceId:
-                  type: string
-                  nullable: true
-                  description: Optional resource identifier context.
-                context:
-                  type: object
-                  nullable: true
-                  description: Optional additional context for the evaluation.
       security:
         - LegacyAdminToken: []
         - OperatorToken: []
       responses:
         "200":
-          description: Evaluation result
+          description: Decision provenance v2 record built
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionProvenanceV2"
+        "400":
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /agent-permissions/evaluate:
+    post:
+      summary: Evaluate Agent Permission
+      description: |
+        Evaluates whether an agent is permitted to perform a requested scope.
+        Returns allowed, matched scope, reason, and warnings.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: evaluateAgentPermission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agentId
+                - requestedScope
+                - assignedScopes
+              properties:
+                agentId:
+                  type: string
+                requestedScope:
+                  type: string
+                assignedScopes:
+                  type: array
+                  items:
+                    type: string
+                resourceType:
+                  type: string
+                  nullable: true
+                resourceId:
+                  type: string
+                  nullable: true
+                context:
+                  type: object
+                  nullable: true
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Permission evaluation result
           content:
             application/json:
               schema:

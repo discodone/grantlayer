@@ -55,6 +55,22 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):  # noqa: N802
         print(f"[{self.log_date_time_string()}] {fmt % args}", flush=True)
 
+    def _gl030_error(self, error: str, code: str, reason: str | None = None) -> dict:
+        """Build a consistent GL-030 additive error payload.
+
+        All error responses use the shape:
+        {
+            "error": "human-readable summary",
+            "errorCode": "machine-readable-code",
+            "reason": "detailed explanation"
+        }
+        """
+        return {
+            "error": error,
+            "errorCode": code,
+            "reason": reason or error,
+        }
+
     def _send_json(self, status: int, data) -> None:
         body = json.dumps(data, default=str).encode()
         self.send_response(status)
@@ -110,7 +126,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 with open(DASHBOARD_PATH, "rb") as f:
                     self._send_html(f.read())
             except FileNotFoundError:
-                self._send_json(404, {"error": "Dashboard not found"})
+                self._send_json(404, self._gl030_error("Dashboard not found", "dashboard_not_found", "The requested dashboard file could not be found."))
 
         elif path == "/health":
             health_payload = {
@@ -156,7 +172,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             grant_id = m.group(1)
             g = get_grant(grant_id)
             if g is None:
-                self._send_json(404, {"error": "Grant not found"})
+                self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
             else:
                 d = g.to_dict()
                 sig_result = verify_grant_signature(g)
@@ -168,17 +184,17 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
         elif path == "/operators/me":
             if not config.ENABLE_OPERATOR_MODEL:
-                self._send_json(404, {"error": "operator_model_disabled"})
+                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
             op = ops.authenticate_operator(self.headers.get("Authorization"))
             if op is None:
-                self._send_json(401, {"error": "operator_auth_required"})
+                self._send_json(401, self._gl030_error("Operator authentication required", "operator_auth_required", "Operator authentication is required for this endpoint."))
                 return
             self._send_json(200, op.to_dict())
             
         elif path == "/grant-requests":
             if not config.ENABLE_OPERATOR_MODEL:
-                self._send_json(404, {"error": "operator_model_disabled"})
+                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
                 
             qs = parse_qs(urlparse(self.path).query)
@@ -193,13 +209,13 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             request_id = m.group(1)
             request = grant_requests.get_grant_request(request_id)
             if request is None:
-                self._send_json(404, {"error": "Grant request not found"})
+                self._send_json(404, self._gl030_error("Grant request not found", "grant_request_not_found", "The requested grant request does not exist."))
             else:
                 self._send_json(200, request.to_dict())
 
         elif path == "/grant-executions":
             if not config.ENABLE_OPERATOR_MODEL:
-                self._send_json(404, {"error": "operator_model_disabled"})
+                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
             ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
             if not ok:
@@ -217,7 +233,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
         elif m := re.fullmatch(r"/grant-executions/([^/]+)", path):
             if not config.ENABLE_OPERATOR_MODEL:
-                self._send_json(404, {"error": "operator_model_disabled"})
+                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
             ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
             if not ok:
@@ -231,14 +247,14 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
         elif m := re.fullmatch(r"/grants/([^/]+)/executions", path):
             if not config.ENABLE_OPERATOR_MODEL:
-                self._send_json(404, {"error": "operator_model_disabled"})
+                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
             ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
             grant_id = m.group(1)
             if get_grant(grant_id) is None:
-                self._send_json(404, {"error": "Grant not found"})
+                self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
                 return
             qs = parse_qs(urlparse(self.path).query)
             limit = int(qs.get("limit", ["200"])[0])
@@ -415,12 +431,12 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             profile_name = m.group(1)
             profile = get_agent_permission_profile(profile_name)
             if profile is None:
-                self._send_json(404, {"error": "Profile not found", "profileName": profile_name})
+                self._send_json(404, {**self._gl030_error("Profile not found", "profile_not_found", "The requested permission profile does not exist."), "profileName": profile_name})
                 return
             self._send_json(200, profile)
 
         else:
-            self._send_json(404, {"error": "Not found"})
+            self._send_json(404, self._gl030_error("Not found", "not_found", "The requested endpoint or resource does not exist."))
 
     def do_POST(self):  # noqa: N802
         path = urlparse(self.path).path
@@ -438,14 +454,14 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             missing = self._missing(data, [
                 "subjectId", "role", "action", "resource",
                 "validFrom", "validUntil", "createdBy", "reason",
             ])
             if missing:
-                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
             grant = Grant(
                 subject_id=data["subjectId"],
@@ -478,30 +494,30 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             missing = self._missing(data, ["revokedBy", "reason"])
             if missing:
-                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
             if get_grant(grant_id) is None:
-                self._send_json(404, {"error": "Grant not found"})
+                self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
                 return
             ok = revoke_grant(grant_id, data["revokedBy"], data["reason"])
             if ok:
                 self._send_json(200, {"ok": True, "grantId": grant_id})
             else:
-                self._send_json(409, {"error": "Grant already revoked or not found"})
+                self._send_json(409, self._gl030_error("Grant already revoked or not found", "grant_already_revoked", "The grant is already revoked or does not exist."))
 
         elif path == "/challenges":
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             missing = self._missing(data, ["subjectId", "action", "resource"])
             if missing:
-                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
             challenge = create_challenge(data["subjectId"], data["action"], data["resource"])
             self._send_json(201, {
@@ -514,7 +530,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
         elif m := re.fullmatch(r"/demo/tamper-grant/([^/]+)", path):
             if not config.ENABLE_DEMO_ENDPOINTS:
-                self._send_json(403, {"error": "demo_endpoints_disabled"})
+                self._send_json(403, self._gl030_error("Demo endpoints are disabled", "demo_endpoints_disabled", "Demo endpoints are not enabled on this instance."))
                 return
             if config.ENABLE_OPERATOR_MODEL:
                 ok, _ = self._require_operator(["owner", "demo_operator"])
@@ -526,7 +542,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             grant_id = m.group(1)
             result = tamper_grant(grant_id)
             if result is None:
-                self._send_json(404, {"error": "Grant not found"})
+                self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
             else:
                 self._send_json(200, result)
 
@@ -534,11 +550,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             missing = self._missing(data, ["subjectId", "role", "action", "resource"])
             if missing:
-                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
             caller_operator_id: str | None = None
             if config.ENABLE_OPERATOR_MODEL:
@@ -558,7 +574,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif path == "/grant-requests":
             # Create a new grant request
             if not config.ENABLE_OPERATOR_MODEL:
-                self._send_json(404, {"error": "operator_model_disabled"})
+                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
                 
             # Only grant_admin or owner roles can create requests
@@ -570,7 +586,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
                 
             missing = self._missing(data, [
@@ -578,7 +594,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 "validFrom", "validUntil", "reason",
             ])
             if missing:
-                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
                 
             request = GrantRequest(
@@ -597,7 +613,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             
         elif m := re.fullmatch(r"/grant-requests/([^/]+)/approve", path):
             if not config.ENABLE_OPERATOR_MODEL:
-                self._send_json(404, {"error": "operator_model_disabled"})
+                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
                 
             # Only grant_admin or owner roles can approve requests
@@ -610,13 +626,13 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             request = grant_requests.get_grant_request(request_id)
             
             if request is None:
-                self._send_json(404, {"error": "Grant request not found"})
+                self._send_json(404, self._gl030_error("Grant request not found", "grant_request_not_found", "The requested grant request does not exist."))
                 return
                 
             # Don't allow approving your own requests
             if request.requested_by == operator_id:
                 self._send_json(403, {
-                    "error": "Cannot approve your own request",
+                    **self._gl030_error("Cannot approve your own request", "self_approval_forbidden", "An operator cannot approve their own grant request."),
                     "requestedBy": request.requested_by,
                     "approverId": operator_id
                 })
@@ -630,11 +646,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                     "grant": new_grant.to_dict()
                 })
             except ValueError as e:
-                self._send_json(400, {"error": str(e)})
+                self._send_json(400, self._gl030_error(str(e), "invalid_request", str(e)))
                 
         elif m := re.fullmatch(r"/grant-requests/([^/]+)/deny", path):
             if not config.ENABLE_OPERATOR_MODEL:
-                self._send_json(404, {"error": "operator_model_disabled"})
+                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
                 
             # Only grant_admin or owner roles can deny requests
@@ -647,17 +663,17 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             request = grant_requests.get_grant_request(request_id)
             
             if request is None:
-                self._send_json(404, {"error": "Grant request not found"})
+                self._send_json(404, self._gl030_error("Grant request not found", "grant_request_not_found", "The requested grant request does not exist."))
                 return
                 
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
                 
             if "reason" not in data or not data["reason"]:
-                self._send_json(400, {"error": "Denial reason is required"})
+                self._send_json(400, self._gl030_error("Denial reason is required", "missing_denial_reason", "A reason is required when denying a grant request."))
                 return
                 
             try:
@@ -666,7 +682,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 )
                 self._send_json(200, {"ok": True, "request": updated_request.to_dict()})
             except ValueError as e:
-                self._send_json(400, {"error": str(e)})
+                self._send_json(400, self._gl030_error(str(e), "invalid_request", str(e)))
 
         elif path == "/agent-permissions/evaluate":
             if config.ENABLE_OPERATOR_MODEL:
@@ -679,11 +695,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             missing = self._missing(data, ["agentId", "requestedScope", "assignedScopes"])
             if missing:
-                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
             result = evaluate_agent_permission(
                 agent_id=data["agentId"],
@@ -706,11 +722,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             missing = self._missing(data, ["agentId", "requestedScope"])
             if missing:
-                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
             result = resolve_agent_permission_assignment(
                 agent_id=data["agentId"],
@@ -735,7 +751,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             result = build_approval_request_lifecycle(
                 approval_requirement=data.get("approvalRequirement"),
@@ -764,11 +780,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             missing = self._missing(data, ["approvalRequest", "transition"])
             if missing:
-                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
             result = transition_approval_request(
                 approval_request=data["approvalRequest"],
@@ -792,11 +808,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             missing = self._missing(data, ["action"])
             if missing:
-                self._send_json(400, {"error": f"Missing fields: {missing}"})
+                self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
             result = evaluate_approval_requirements(
                 action=data["action"],
@@ -824,7 +840,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             result = build_decision_provenance_v2(
                 decision_id=data.get("decisionId"),
@@ -860,7 +876,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             result = build_institutional_auditor_export(
                 export_id=data.get("exportId"),
@@ -895,7 +911,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             result = evaluate_policy_requirements(
                 policy_pack=data.get("policyPack"),
@@ -924,7 +940,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
-                self._send_json(400, {"error": "Invalid JSON"})
+                self._send_json(400, self._gl030_error("Invalid JSON", "invalid_json", "The request body is not valid JSON."))
                 return
             # Build summary from request body using the existing pure builder
             policy_req_eval = data.get("policyRequirementEvaluation")
@@ -964,7 +980,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, summary)
 
         else:
-            self._send_json(404, {"error": "Not found"})
+            self._send_json(404, self._gl030_error("Not found", "not_found", "The requested endpoint or resource does not exist."))
 
 
 def run(host: str = "127.0.0.1", port: int = 8765) -> None:
