@@ -29,6 +29,10 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
 
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
+        self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
+        self._orig_bootstrap_id = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_ID")
+        self._orig_bootstrap_name = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_NAME")
+        self._orig_bootstrap_role = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE")
         self._orig_admin_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
@@ -54,6 +58,10 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
 
         for key, orig in [
             ("GRANTLAYER_ENABLE_OPERATOR_MODEL", self._orig_enable_operator),
+            ("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", self._orig_bootstrap_token),
+            ("GRANTLAYER_BOOTSTRAP_OPERATOR_ID", self._orig_bootstrap_id),
+            ("GRANTLAYER_BOOTSTRAP_OPERATOR_NAME", self._orig_bootstrap_name),
+            ("GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE", self._orig_bootstrap_role),
             ("GRANTLAYER_ADMIN_TOKEN", self._orig_admin_token),
             ("GRANTLAYER_REQUIRE_ADMIN_TOKEN", self._orig_require_admin),
             ("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", self._orig_enable_demo),
@@ -62,6 +70,11 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = orig
+
+        import src.db as db_mod
+        importlib.reload(db_mod)
+        import src.config as config_mod
+        importlib.reload(config_mod)
 
     # ──────────────────────────────────────────────
     # 1. Expected product-core modules are importable
