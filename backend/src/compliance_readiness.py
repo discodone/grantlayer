@@ -18,6 +18,30 @@ RECORD_VERSION = "gl-compliance-readiness-v1"
 
 _READINESS_STATUSES = {"ready", "needs_review", "blocked", "not_assessed"}
 
+_SECRET_KEY_FRAGMENTS = frozenset(
+    [
+        "token",
+        "secret",
+        "password",
+        "api_key",
+        "apikey",
+        "auth",
+        "authorization",
+        "credential",
+        "credentials",
+        "private_key",
+        "privatekey",
+        "netrc",
+        "cookie",
+        "jwt",
+        "ssho",
+        "bearer",
+        "access_token",
+        "refresh_token",
+        "id_token",
+    ]
+)
+
 
 # ─── Helpers ────────────────────────────────────────────────────────
 
@@ -31,6 +55,20 @@ def _dedupe(lst: list[str]) -> list[str]:
 
 def _is_dict(value: Any) -> bool:
     return isinstance(value, dict)
+
+
+def _sanitize_context(context: Any) -> Any:
+    """Remove secrets and sensitive fields from *context* dict."""
+    if not _is_dict(context):
+        return context
+    safe: dict[str, Any] = {}
+    for key, value in context.items():
+        lower_key = str(key).lower()
+        if any(sk in lower_key for sk in _SECRET_KEY_FRAGMENTS):
+            safe[key] = "[REDACTED]"
+        else:
+            safe[key] = value
+    return safe
 
 
 # ─── Recommended actions mapper ─────────────────────────────────────
@@ -393,6 +431,6 @@ def build_compliance_readiness_summary(
         result["auditorReport"] = auditor_report
         result["policy"] = policy_results
         if context is not None:
-            result["context"] = context
+            result["context"] = _sanitize_context(context)
 
     return result
