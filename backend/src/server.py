@@ -33,6 +33,8 @@ from .agent_permission_profiles import (
 from .agent_permission_assignments import resolve_agent_permission_assignment
 from .approval_rules import evaluate_approval_requirements
 from .approval_lifecycle import build_approval_request_lifecycle, transition_approval_request
+from .compliance_readiness import build_compliance_readiness_summary
+from .compliance_readiness import build_compliance_readiness_summary
 from .decision_provenance import build_decision_provenance_v2
 from .auditor_export import build_institutional_auditor_export
 from .policy_requirements import evaluate_policy_requirements
@@ -910,6 +912,56 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 include_details=data.get("includeDetails", True),
             )
             self._send_json(200, result)
+
+        elif path == "/compliance/readiness/build":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError):
+                self._send_json(400, {"error": "Invalid JSON"})
+                return
+            # Build summary from request body using the existing pure builder
+            policy_req_eval = data.get("policyRequirementEvaluation")
+            summary = build_compliance_readiness_summary(
+                subject_id=data.get("subjectId"),
+                workflow_id=data.get("workflowId"),
+                evidence_completeness=data.get("evidenceCompleteness"),
+                compliance_gap_report=data.get("complianceGapReport"),
+                permission_result=data.get("permissionResult"),
+                approval_requirement=data.get("approvalRequirement"),
+                approval_lifecycle=data.get("approvalLifecycle"),
+                provenance_summary=data.get("decisionProvenance"),
+                auditor_report=data.get("auditorExport"),
+                policy_results=[policy_req_eval] if policy_req_eval is not None else None,
+                context=data.get("context"),
+                created_at=data.get("createdAt"),
+                include_details=data.get("includeDetails", True),
+            )
+            # Map builder output field names to API contract field names
+            if summary.get("readinessStatus") == "not_assessed":
+                summary["readinessStatus"] = "insufficient_data"
+            if "approval" in summary:
+                approval = summary.pop("approval")
+                if approval is not None:
+                    summary["approvalRequirement"] = approval.get("requirement")
+                    summary["approvalLifecycle"] = approval.get("lifecycle")
+            if "provenance" in summary:
+                summary["decisionProvenance"] = summary.pop("provenance")
+            if "auditorReport" in summary:
+                summary["auditorExport"] = summary.pop("auditorReport")
+            if "policy" in summary:
+                policy_list = summary.pop("policy")
+                if policy_list and len(policy_list) > 0:
+                    summary["policyRequirementEvaluation"] = policy_list[0]
+                else:
+                    summary["policyRequirementEvaluation"] = None
+            self._send_json(200, summary)
 
         else:
             self._send_json(404, {"error": "Not found"})

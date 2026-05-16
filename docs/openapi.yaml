@@ -893,540 +893,124 @@ paths:
                     type: object
                 inputs:
                   type: object
-                context:
-                  type: object
-                createdAt:
-                  type: string
-                  format: date-time
-                includeDetails:
-                  type: boolean
-                  default: true
-      security:
-        - LegacyAdminToken: []
-        - OperatorToken: []
-      responses:
-        "200":
-          description: Decision provenance v2 record
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DecisionProvenanceV2"
-        "400":
-          description: Invalid JSON
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Authorization failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+        context:
+          type: object
+          nullable: true
 
-  /auditor/exports/build:
-    post:
-      summary: Build Institutional Auditor Export
-      description: |
-        Builds an institutional auditor export from structured inputs.
-        Pure/read-only endpoint — no DB access, no persistence.
-
-        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
-      operationId: buildInstitutionalAuditorExport
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                exportId:
-                  type: string
-                exportType:
-                  type: string
-                subjectId:
-                  type: string
-                decisionId:
-                  type: string
-                generatedBy:
-                  type: string
-                auditorId:
-                  type: string
-                decisionProvenance:
-                  type: object
-                auditorReport:
-                  type: object
-                evidenceCompleteness:
-                  type: object
-                complianceGapReport:
-                  type: object
-                permissionResult:
-                  type: object
-                approvalRequirement:
-                  type: object
-                approvalLifecycle:
-                  type: object
-                policyResults:
-                  type: array
-                  items:
-                    type: object
-                metadata:
-                  type: object
-                context:
-                  type: object
-                createdAt:
-                  type: string
-                  format: date-time
-                includeDetails:
-                  type: boolean
-                  default: true
-      security:
-        - LegacyAdminToken: []
-        - OperatorToken: []
-      responses:
-        "200":
-          description: Institutional auditor export record
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InstitutionalAuditorExport"
-        "400":
-          description: Invalid JSON
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Authorization failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /policy-requirements/evaluate:
-    post:
-      summary: Evaluate Policy Requirements / Grant Rule Pack
-      description: |
-        Evaluates a machine-readable grant/funding policy pack against structured
-        GrantLayer signals. Pure/read-only endpoint — no DB access, no persistence.
-
-        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
-      operationId: evaluatePolicyRequirements
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                policyPack:
-                  type: object
-                  description: Machine-readable grant/funding policy pack.
-                subject:
-                  type: object
-                  description: Subject entity (e.g. grant request) with evidenceTypes, exclusionCodes, amount, currency, etc.
-                evidenceCompleteness:
-                  type: object
-                  description: Evidence completeness signal from GL-038.
-                complianceGapReport:
-                  type: object
-                  description: Compliance gap report signal from GL-038.
-                permissionResult:
-                  type: object
-                  description: Permission evaluation result from GL-039.
-                approvalRequirement:
-                  type: object
-                  description: Approval requirement from GL-040.
-                approvalLifecycle:
-                  type: object
-                  description: Approval lifecycle state from GL-040.
-                decisionProvenance:
-                  type: object
-                  description: Decision provenance v2 from GL-041.
-                auditorExport:
-                  type: object
-                  description: Institutional auditor export signal from GL-042.
-                context:
-                  type: object
-                  description: Optional caller context (secrets are redacted in response).
-                createdAt:
-                  type: string
-                  format: date-time
-                  description: Optional creation timestamp override.
-                includeDetails:
-                  type: boolean
-                  default: true
-                  description: Whether to include input detail objects in the response.
-      security:
-        - LegacyAdminToken: []
-        - OperatorToken: []
-      responses:
-        "200":
-          description: Policy requirement evaluation record
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PolicyRequirementEvaluation"
-        "400":
-          description: Invalid JSON
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Authorization failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /auditor/reports/executions/{executionId}:
-    get:
-      summary: Auditor Report
-      description: |
-        Returns a structured auditor report for a single GrantExecution.
-        Includes a decision provenance summary, linked grant and grant-request
-        context, automated findings, and an optional raw evidence bundle.
-
-        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
-      operationId: getAuditorReport
-      parameters:
-        - name: executionId
-          in: path
-          required: true
-          schema: { type: string }
-        - name: includeRawEvidence
-          in: query
-          required: false
-          schema: { type: boolean, default: false }
-      security:
-        - LegacyAdminToken: []
-        - OperatorToken: []
-      responses:
-        "200":
-          description: Auditor report
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuditorReport"
-        "401":
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Authorization failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Execution not found or report not available
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /evidence/executions/{executionId}/completeness:
-    get:
-      summary: Evidence Completeness Report
-      description: |
-        Returns a structured evidence completeness score and diagnostic report
-        for a single GrantExecution. Aggregates the auditor report, evidence
-        presence, verification status, provenance events, and compliance gaps.
-
-        The `includeDetails` query parameter controls whether diagnostic
-        `checks` and full `provenance.events` are included.
-
-        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
-      operationId: getEvidenceCompleteness
-      parameters:
-        - name: executionId
-          in: path
-          required: true
-          schema: { type: string }
-        - name: includeDetails
-          in: query
-          required: false
-          schema: { type: boolean, default: true }
-      security:
-        - LegacyAdminToken: []
-        - OperatorToken: []
-      responses:
-        "200":
-          description: Evidence completeness report
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EvidenceCompletenessReport"
-        "401":
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Authorization failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Execution not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /compliance/gaps/executions/{executionId}:
-    get:
-      summary: Compliance Gap Report
-      description: |
-        Returns a structured compliance gap report for a single GrantExecution.
-        Aggregates the evidence completeness report and enriches it with gap
-        severity, blocking status, and recommended actions.
-
-        The `includeDetails` query parameter controls whether detailed
-        provenance events and completeness checks are included.
-
-        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
-      operationId: getComplianceGapReport
-      parameters:
-        - name: executionId
-          in: path
-          required: true
-          schema: { type: string }
-        - name: includeDetails
-          in: query
-          required: false
-          schema: { type: boolean, default: true }
-      security:
-        - LegacyAdminToken: []
-        - OperatorToken: []
-      responses:
-        "200":
-          description: Compliance gap report
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ComplianceGapReport"
-        "401":
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Authorization failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Execution not found or compliance gap report not available
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /challenges:
-    get:
-      summary: List challenges
-      description: Returns all challenges.
-      operationId: listChallenges
-      security:
-        - LegacyAdminToken: []
-        - OperatorToken: []
-      responses:
-        "200":
-          description: List of challenges
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Challenge"
-        "401":
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-    post:
-      summary: Create challenge
-      description: Create a new challenge for a subject + action + resource tuple.
-      operationId: createChallenge
-      security:
-        - LegacyAdminToken: []
-        - OperatorToken: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [subjectId, action, resource]
-              properties:
-                subjectId: { type: string }
-                action: { type: string }
-                resource: { type: string }
-      responses:
-        "201":
-          description: Challenge created
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [challengeId, subjectId, action, resource, expiresAt]
-                properties:
-                  challengeId: { type: string }
-                  subjectId: { type: string }
-                  action: { type: string }
-                  resource: { type: string }
-                  expiresAt: { type: string }
-        "400":
-          description: Invalid JSON or missing fields
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /demo-action:
-    post:
-      summary: Demo protected action
-      description: |
-        Attempt a protected action against the policy engine.
-        Creates a GrantExecution and AuditEvent for every call.
-      operationId: demoAction
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [subjectId, role, action, resource]
-              properties:
-                subjectId: { type: string }
-                role: { type: string }
-                action: { type: string }
-                resource: { type: string }
-                challengeId: { type: string, nullable: true }
-      responses:
-        "200":
-          description: Action result (approved or denied)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DemoActionResult"
-        "400":
-          description: Invalid JSON or missing fields
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Action denied (no matching grant or challenge required)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DemoActionResult"
-
-  /operators/me:
-    get:
-      summary: Get current operator identity
-      description: |
-        Returns the currently authenticated operator's safe metadata
-        (operatorId, name, role, active). Does NOT expose the token hash.
-        Operator mode only.
-      operationId: getCurrentOperator
-      security:
-        - OperatorToken: []
-      responses:
-        "200":
-          description: Operator identity
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [operatorId, name, role, active]
-                properties:
-                  operatorId: { type: string }
-                  name: { type: string }
-                  role: { type: string }
-                  active: { type: boolean }
-        "401":
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Operator model disabled
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /agent-permissions/evaluate:
-    post:
-      summary: Evaluate Agent Permission
-      description: |
-        Evaluates whether an agent is allowed to access a requested scope.
-        Returns the evaluation result with `allowed`, `matchedScope`, `reason`,
-        and optional `warnings`.
-
-        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
-      operationId: evaluateAgentPermission
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - agentId
-                - requestedScope
-                - assignedScopes
-              properties:
-                agentId:
-                  type: string
-                  description: Unique identifier of the agent.
-                requestedScope:
-                  type: string
-                  description: Scope the agent is requesting access to.
-                assignedScopes:
-                  type: array
-                  items:
-                    type: string
-                  description: List of scopes currently assigned to the agent.
-                resourceType:
-                  type: string
-                  nullable: true
+    ComplianceReadinessSummary:
+      type: object
+      required:
+        - recordType
+        - recordVersion
+        - subjectId
+        - workflowId
+        - readinessStatus
+        - readinessScore
+        - evidenceStatus
+        - complianceStatus
+        - permissionStatus
+        - approvalStatus
+        - provenanceStatus
+        - auditorExportStatus
+        - policyStatus
+        - blockers
+        - warnings
+        - missingInputs
+        - recommendedActions
+        - createdAt
+      properties:
+        recordType:
+          type: string
+          enum: [compliance_readiness_summary]
+        recordVersion:
+          type: string
+          enum: [gl-compliance-readiness-v1]
+        executionId:
+          type: string
+          nullable: true
+        grantId:
+          type: string
+          nullable: true
+        subjectId:
+          type: string
+          nullable: true
+        workflowId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        readinessStatus:
+          type: string
+          enum: [ready, needs_review, blocked, insufficient_data]
+        readinessScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        evidenceStatus:
+          type: string
+          enum: [ready, needs_review, blocked, not_assessed]
+        complianceStatus:
+          type: string
+          enum: [ready, needs_review, blocked, not_assessed]
+        permissionStatus:
+          type: string
+          enum: [ready, needs_review, blocked, not_assessed]
+        approvalStatus:
+          type: string
+          enum: [ready, needs_review, blocked, not_assessed]
+        provenanceStatus:
+          type: string
+          enum: [ready, needs_review, blocked, not_assessed]
+        auditorExportStatus:
+          type: string
+          enum: [ready, needs_review, blocked, not_assessed]
+        policyStatus:
+          type: string
+          enum: [ready, needs_review, blocked, not_assessed]
+        blockers:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        missingInputs:
+          type: array
+          items:
+            type: string
+        recommendedActions:
+          type: array
+          items:
+            type: string
+        evidenceCompleteness:
+          type: object
+          nullable: true
+        complianceGapReport:
+          type: object
+          nullable: true
+        permissionResult:
+          type: object
+          nullable: true
+        approvalRequirement:
+          type: object
+          nullable: true
+        approvalLifecycle:
+          type: object
+          nullable: true
+        decisionProvenance:
+          type: object
+          nullable: true
+        auditorExport:
+          type: object
+          nullable: true
+        policyRequirementEvaluation:
+          type: object
+          nullable: true
+        context:
+          type: object
+          nullable: true
                   description: Optional resource type context.
                 resourceId:
                   type: string
