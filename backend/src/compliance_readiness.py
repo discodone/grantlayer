@@ -49,7 +49,10 @@ def _build_recommended_actions(blockers: list[str], warnings: list[str]) -> list
         "approval_lifecycle_denied": "Address denied approval lifecycle and resubmit.",
         "auditor_not_ready": "Remediate auditor findings to achieve audit-ready status.",
         "auditor_critical_findings": "Address critical auditor findings immediately.",
+        "auditor_export_blocked": "Address blocked auditor export before proceeding.",
         "policy_failed": "Review and fix failed policy checks.",
+        "policy_evaluation_blocked": "Address blocked policy evaluation before proceeding.",
+        "decision_provenance_blocked": "Address blocked decision provenance before proceeding.",
         # Warnings
         "evidence_incomplete": "Complete outstanding evidence submissions.",
         "compliance_gaps_detected": "Review and remediate detected compliance gaps.",
@@ -188,7 +191,11 @@ def _evaluate_dimension_readiness(
     # --- Provenance dimension ----------------------------------------
     if provenance_summary is not None:
         events = provenance_summary.get("events") or provenance_summary.get("provenanceEvents")
-        if events:
+        decision_status = provenance_summary.get("decisionStatus")
+        if decision_status == "blocked":
+            readiness["provenance"] = "blocked"
+            blockers.append("decision_provenance_blocked")
+        elif events:
             readiness["provenance"] = "ready"
         else:
             readiness["provenance"] = "needs_review"
@@ -199,7 +206,11 @@ def _evaluate_dimension_readiness(
 
     # --- Auditor dimension -------------------------------------------
     if auditor_report is not None:
-        if auditor_report.get("auditReady") is True or auditor_report.get("conclusion") == "clean":
+        export_status = auditor_report.get("exportStatus")
+        if export_status == "blocked":
+            readiness["auditor"] = "blocked"
+            blockers.append("auditor_export_blocked")
+        elif auditor_report.get("auditReady") is True or auditor_report.get("conclusion") == "clean":
             readiness["auditor"] = "ready"
         else:
             readiness["auditor"] = "blocked"
@@ -216,15 +227,21 @@ def _evaluate_dimension_readiness(
     if policy_results is not None:
         all_passed = True
         any_failed = False
+        any_blocked = False
         for policy_result in policy_results:
             if not _is_dict(policy_result):
                 continue
-            if policy_result.get("failed"):
+            if policy_result.get("evaluationStatus") == "blocked":
+                any_blocked = True
+            elif policy_result.get("failed"):
                 all_passed = False
                 any_failed = True
             elif not policy_result.get("passed"):
                 all_passed = False
-        if all_passed:
+        if any_blocked:
+            readiness["policy"] = "blocked"
+            blockers.append("policy_evaluation_blocked")
+        elif all_passed:
             readiness["policy"] = "ready"
         elif any_failed:
             readiness["policy"] = "blocked"
