@@ -1015,6 +1015,89 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /policy-requirements/evaluate:
+    post:
+      summary: Evaluate Policy Requirements / Grant Rule Pack
+      description: |
+        Evaluates a machine-readable grant/funding policy pack against structured
+        GrantLayer signals. Pure/read-only endpoint — no DB access, no persistence.
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: evaluatePolicyRequirements
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                policyPack:
+                  type: object
+                  description: Machine-readable grant/funding policy pack.
+                subject:
+                  type: object
+                  description: Subject entity (e.g. grant request) with evidenceTypes, exclusionCodes, amount, currency, etc.
+                evidenceCompleteness:
+                  type: object
+                  description: Evidence completeness signal from GL-038.
+                complianceGapReport:
+                  type: object
+                  description: Compliance gap report signal from GL-038.
+                permissionResult:
+                  type: object
+                  description: Permission evaluation result from GL-039.
+                approvalRequirement:
+                  type: object
+                  description: Approval requirement from GL-040.
+                approvalLifecycle:
+                  type: object
+                  description: Approval lifecycle state from GL-040.
+                decisionProvenance:
+                  type: object
+                  description: Decision provenance v2 from GL-041.
+                auditorExport:
+                  type: object
+                  description: Institutional auditor export signal from GL-042.
+                context:
+                  type: object
+                  description: Optional caller context (secrets are redacted in response).
+                createdAt:
+                  type: string
+                  format: date-time
+                  description: Optional creation timestamp override.
+                includeDetails:
+                  type: boolean
+                  default: true
+                  description: Whether to include input detail objects in the response.
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Policy requirement evaluation record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyRequirementEvaluation"
+        "400":
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /auditor/reports/executions/{executionId}:
     get:
       summary: Auditor Report
@@ -3022,6 +3105,129 @@ components:
             type: object
           nullable: true
         metadata:
+          type: object
+          nullable: true
+        context:
+          type: object
+          nullable: true
+
+    PolicyRequirementEvaluation:
+      type: object
+      required:
+        - recordType
+        - recordVersion
+        - policyPackId
+        - policyPackVersion
+        - evaluationStatus
+        - readiness
+        - requiredEvidence
+        - missingEvidence
+        - satisfiedEvidence
+        - exclusionViolations
+        - deadlineStatus
+        - amountStatus
+        - requiredRoles
+        - approvalPolicy
+        - blockers
+        - warnings
+        - missingInputs
+        - createdAt
+      properties:
+        recordType:
+          type: string
+          enum: [policy_requirement_evaluation]
+        recordVersion:
+          type: string
+          enum: [gl-policy-requirements-v1]
+        policyPackId:
+          type: string
+        policyPackVersion:
+          type: string
+          nullable: true
+        subjectId:
+          type: string
+          nullable: true
+        evaluationStatus:
+          type: string
+          enum: [passed, needs_review, blocked, incomplete, unknown]
+        readiness:
+          type: string
+          enum: [ready, needs_review, blocked, insufficient_data]
+        requiredEvidence:
+          type: array
+          items:
+            type: string
+        missingEvidence:
+          type: array
+          items:
+            type: string
+        satisfiedEvidence:
+          type: array
+          items:
+            type: string
+        exclusionViolations:
+          type: array
+          items:
+            type: string
+        deadlineStatus:
+          type: string
+          enum: [on_time, expired, expired_optional, none, missing]
+        amountStatus:
+          type: string
+          enum: [within_limit, above_limit, currency_mismatch, malformed, missing_subject_amount, missing_subject, none, missing]
+        requiredRoles:
+          type: array
+          items:
+            type: string
+        approvalPolicy:
+          type: object
+          properties:
+            minimumApprovals:
+              type: integer
+              nullable: true
+            fourEyesAboveAmount:
+              type: number
+              nullable: true
+        blockers:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        missingInputs:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        policyPack:
+          type: object
+          nullable: true
+        subject:
+          type: object
+          nullable: true
+        evidenceCompleteness:
+          type: object
+          nullable: true
+        complianceGapReport:
+          type: object
+          nullable: true
+        permissionResult:
+          type: object
+          nullable: true
+        approvalRequirement:
+          type: object
+          nullable: true
+        approvalLifecycle:
+          type: object
+          nullable: true
+        decisionProvenance:
+          type: object
+          nullable: true
+        auditorExport:
           type: object
           nullable: true
         context:
