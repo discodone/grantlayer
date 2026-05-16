@@ -1650,6 +1650,312 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /evidence/executions/{id}/completeness:
+    get:
+      summary: Evidence completeness report for execution
+      description: |
+        Returns the evidence completeness report for a GrantExecution.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getEvidenceCompleteness
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: includeDetails
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Evidence completeness report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceCompletenessReport"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /compliance/gaps/executions/{id}:
+    get:
+      summary: Compliance gap report for execution
+      description: |
+        Returns the compliance gap report for a GrantExecution.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getComplianceGapReport
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: includeDetails
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Compliance gap report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceGapReport"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auditor/reports/executions/{id}:
+    get:
+      summary: Auditor report for execution
+      description: |
+        Returns the institutional auditor report for a GrantExecution.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getAuditorReport
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: includeRawEvidence
+          in: query
+          required: false
+          schema: { type: boolean, default: false }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Auditor report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditorReport"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auditor/exports/build:
+    post:
+      summary: Build institutional auditor export
+      description: |
+        Builds an institutional auditor export from structured inputs.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: buildAuditorExport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                exportId: { type: string, nullable: true }
+                exportType: { type: string, nullable: true }
+                subjectId: { type: string, nullable: true }
+                decisionId: { type: string, nullable: true }
+                generatedBy: { type: string, nullable: true }
+                auditorId: { type: string, nullable: true }
+                decisionProvenance: { type: object, nullable: true }
+                auditorReport: { type: object, nullable: true }
+                evidenceCompleteness: { type: object, nullable: true }
+                complianceGapReport: { type: object, nullable: true }
+                permissionResult: { type: object, nullable: true }
+                approvalRequirement: { type: object, nullable: true }
+                approvalLifecycle: { type: object, nullable: true }
+                policyResults: { type: array, items: { type: object }, nullable: true }
+                metadata: { type: object, nullable: true }
+                context: { type: object, nullable: true }
+                createdAt: { type: string, nullable: true }
+                includeDetails: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Auditor export result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InstitutionalAuditorExport"
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /policy-requirements/evaluate:
+    post:
+      summary: Evaluate policy requirements
+      description: |
+        Evaluates a policy requirement rule pack against subject and context.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: evaluatePolicyRequirements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                policyPack: { type: object, nullable: true }
+                subject: { type: object, nullable: true }
+                evidenceCompleteness: { type: object, nullable: true }
+                complianceGapReport: { type: object, nullable: true }
+                permissionResult: { type: object, nullable: true }
+                approvalRequirement: { type: object, nullable: true }
+                approvalLifecycle: { type: object, nullable: true }
+                decisionProvenance: { type: object, nullable: true }
+                context: { type: object, nullable: true }
+                createdAt: { type: string, nullable: true }
+                includeDetails: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Policy requirement evaluation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyRequirementEvaluation"
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /compliance/readiness/build:
+    post:
+      summary: Build compliance readiness summary
+      description: |
+        Builds a compliance readiness summary from structured GrantLayer signals.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: buildComplianceReadiness
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subjectId: { type: string, nullable: true }
+                workflowId: { type: string, nullable: true }
+                evidenceCompleteness: { type: object, nullable: true }
+                complianceGapReport: { type: object, nullable: true }
+                permissionResult: { type: object, nullable: true }
+                approvalRequirement: { type: object, nullable: true }
+                approvalLifecycle: { type: object, nullable: true }
+                decisionProvenance: { type: object, nullable: true }
+                auditorExport: { type: object, nullable: true }
+                policyRequirementEvaluation: { type: object, nullable: true }
+                context: { type: object, nullable: true }
+                createdAt: { type: string, nullable: true }
+                includeDetails: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Compliance readiness summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceReadinessSummary"
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   securitySchemes:
     LegacyAdminToken:
