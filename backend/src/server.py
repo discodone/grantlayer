@@ -193,19 +193,31 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, op.to_dict())
             
         elif path == "/grant-requests":
-            if not config.ENABLE_OPERATOR_MODEL:
-                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
-                return
-                
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+
             qs = parse_qs(urlparse(self.path).query)
             status_filter = None
             if "status" in qs and qs["status"]:
                 status_filter = qs["status"][0]
-                
+
             requests = grant_requests.list_grant_requests(status_filter=status_filter)
             self._send_json(200, [r.to_dict() for r in requests])
-            
+
         elif m := re.fullmatch(r"/grant-requests/([^/]+)", path):
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
+
             request_id = m.group(1)
             request = grant_requests.get_grant_request(request_id)
             if request is None:
