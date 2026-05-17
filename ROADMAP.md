@@ -8,37 +8,46 @@ For full strategic context see [docs/strategic_positioning.md](docs/strategic_po
 
 ## Phase 1 — MVP (current)
 
-**Scope:** Technical foundation. Evidence persistence, verification, audit trails, policy evaluation. No blockchain dependency.
+**Scope:** Technical foundation plus Product Core. Evidence persistence, verification, audit trails, policy evaluation, compliance readiness, and agent permissions. No blockchain dependency.
 
 | Sprint | Focus | Status |
 |--------|-------|--------|
-| GL-013–GL-020 | Core grant model, policy engine, RBAC, demo hardening | ✅ Done |
-| GL-021 | Real operator / admin model | ✅ Done |
-| GL-022 | Grant Request approval workflow | ✅ Done |
-| GL-023 | Grant Execution audit ledger | ✅ Done |
-| GL-024 | Grant usage limits & exhaustion policy | ✅ Done |
-| GL-025–GL-029 | Evidence Bundles, integrity hash, offline verification, audit finalization | ✅ Done |
-| GL-030–GL-031 | API consistency hardening, OpenAPI contract | ✅ Done |
-| GL-032–GL-033 | Production readiness, SQLite persistence baseline | ✅ Done |
-| GL-034–GL-035 | PostgreSQL support + deployment hardening | ✅ Done |
-| GL-036 | Evidence Persistence + Evidence Verification Core | ✅ Done (pending merge) |
+| GL-013–GL-020 | Core grant model, policy engine, RBAC, demo hardening | Done |
+| GL-021 | Real operator / admin model | Done |
+| GL-022 | Grant Request approval workflow | Done |
+| GL-023 | Grant Execution audit ledger | Done |
+| GL-024 | Grant usage limits & exhaustion policy | Done |
+| GL-025–GL-029 | Evidence Bundles, integrity hash, offline verification, audit finalization | Done |
+| GL-030–GL-031 | API consistency hardening, OpenAPI contract | Done |
+| GL-032–GL-033 | Production readiness, SQLite persistence baseline | Done |
+| GL-034–GL-035 | PostgreSQL support + deployment hardening | Done |
+| GL-036 | Evidence Persistence + Evidence Verification Core | Done |
+| GL-037 | Provenance events, auditor report, summary | Done |
+| GL-038 | Evidence completeness scoring, compliance gap reports | Done |
+| GL-039 | Agent permission model (scopes, profiles, assignments) | Done |
+| GL-040 | Approval rules + lifecycle (build, transition, evaluate) | Done |
+| GL-041 | Decision Provenance v2 | Done |
+| GL-042 | Auditor Export | Done |
+| GL-043 | Policy Requirements / Rule Packs | Done |
+| GL-044 | Compliance Readiness Summary + API | Done |
+| GL-045-A | API Contract / Error Consistency | Done |
+| GL-045-B | Security / Secrets Regression Hardening | Done |
+| GL-045-C | Final Product Core Readiness Check | Done |
+| GL-046 | Auth Fix — Grant Request read endpoints require authentication | Done |
+| GL-047 | Import Fix — agent permission assignments use relative imports | Done |
 
-**MVP complete when:** GL-036 merged to main, 360 tests green, all core Evidence endpoints stable.
+**MVP + Product Core status:** Complete. 1130 tests, 3 skipped, 0 failures.
 
 ---
 
-## Phase 2 — Product Core
+## Next Work
 
-**Scope:** Make GrantLayer usable by real agent pipelines and institutions.
+The immediate next phase is **demo/integration readiness and cleanup**:
 
-- Compliance/Policy layer: machine-readable grant rules, exclusion criteria, deadlines, proof requirements
-- Decision Provenance: trace which agent, which model, which data contributed to each decision
-- Auditor exports: structured, signed compliance reports
-- Agent permission model: scoped API access for agent-to-agent grant flows
-- Evidence completeness scoring and compliance gap reports
-- Multi-step approval workflows (threshold-based, 4-eyes)
-
-**Not in Phase 2:** blockchain, wallet integration, payment flows, public UI.
+- Documentation alignment (README, ROADMAP, architecture docs)
+- Integration smoke tests with real agent pipelines
+- Performance baseline for the audit/evidence read paths
+- Operator onboarding documentation
 
 ---
 
@@ -50,7 +59,7 @@ For full strategic context see [docs/strategic_positioning.md](docs/strategic_po
 - Wallet/operator-based signatures for institutional-grade identity
 - Cardano or Ethereum anchoring (optional, configurable)
 - **Sensitive data stays off-chain.** Only SHA-256 hashes are anchored.
-- Optional stablecoin/treasury integration if Phase 2 introduces payment flows
+- Optional stablecoin/treasury integration if payment flows are introduced
 
 **Why optional:** For most institutions, SHA-256-hashed, server-side-verified evidence with a full audit trail is sufficient. Blockchain anchoring is a configurable add-on, not a core requirement.
 

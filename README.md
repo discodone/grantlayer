@@ -20,7 +20,7 @@ Core concepts:
 
 ## MVP scope
 
-The current MVP establishes the technical foundation:
+The current MVP and Product Core establish the technical foundation:
 - Action-level grant model (subject, role, action, resource, time window)
 - Policy evaluation: fail-closed
 - Grant revocation, usage limits, Ed25519 signatures
@@ -30,6 +30,16 @@ The current MVP establishes the technical foundation:
 - Evidence Bundles with SHA-256 integrity hash
 - Evidence Persistence (durable storage)
 - Evidence Verification Core (server-side hash verification)
+- Evidence Completeness scoring
+- Compliance Gap Reports
+- Agent Permissions (scopes, profiles, assignments)
+- Approval Rules and Approval Lifecycle
+- Decision Provenance v2
+- Auditor Reports and Exports
+- Policy Requirements / Rule Packs
+- Compliance Readiness Summary
+- API Error Consistency
+- Security / Secrets Regression Hardening
 - SQLite (default) + PostgreSQL (optional)
 
 ## What is explicitly not in this MVP
@@ -44,13 +54,13 @@ The current MVP establishes the technical foundation:
 
 See [docs/strategic_positioning.md](docs/strategic_positioning.md) for the full strategic context.
 
-### Phase 1 — MVP (current)
+### Phase 1 — MVP + Product Core (completed)
 
-Evidence Persistence, Evidence Verification Core, Audit Logs, Operator RBAC, Grant Request workflow, Policy engine, API/OpenAPI consistency, SQLite + PostgreSQL support. No blockchain dependency.
+The technical foundation and Product Core capabilities are complete: Evidence Persistence, Evidence Verification Core, Evidence Completeness, Compliance Gap Reports, Agent Permissions, Approval Rules, Approval Lifecycle, Decision Provenance v2, Auditor Reports and Exports, Policy Requirements, Compliance Readiness, API/OpenAPI consistency, Security/Secrets hardening, SQLite + PostgreSQL support. No blockchain dependency.
 
-### Phase 2 — Product Core
+### Phase 2 — Product Core (completed)
 
-Compliance/Policy layer (machine-readable grant rules, exclusion criteria, deadlines, proof requirements), Decision Provenance, Auditor exports, structured compliance reports, Agent permission model.
+All Product Core capabilities are implemented (GL-037 through GL-047): Compliance/Policy layer (machine-readable grant rules, exclusion criteria, deadlines, proof requirements), Decision Provenance, Auditor exports, structured compliance reports, Agent permission model, Evidence completeness scoring, Compliance gap reports, Multi-step approval workflows, API error consistency, Security/secrets regression hardening.
 
 ### Phase 3 — Optional Crypto Integrity Layer
 
@@ -96,7 +106,7 @@ cd grantlayer-mvp
 ## Start backend
 
 ```bash
-cd /home/adminuser/projects/grantlayer-mvp
+cd grantlayer-mvp
 python3 -m backend
 ```
 
@@ -120,7 +130,7 @@ The dashboard auto-refreshes every 10 seconds.
 ## Run tests
 
 ```bash
-cd /home/adminuser/projects/grantlayer-mvp
+cd grantlayer-mvp
 python3 -m unittest discover -s backend/tests -v
 ```
 
@@ -129,7 +139,7 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **360 tests, 3 skipped, 0 failures.**
+Expected output: **1130 tests, 3 skipped, 0 failures.**
 
 ## Configuration (GL-020 Product Hardening)
 
@@ -390,289 +400,13 @@ GL-032 hardens the MVP from a stable release candidate toward safer local operat
 - ~~GL-028: Offline Evidence Bundle Verification~~ ✅ Done
 - ~~GL-029: Evidence & Audit Finalization Sprint~~ ✅ Done
 - ~~GL-032: Production Readiness & SQLite Persistence Baseline~~ ✅ Done
+- ~~GL-033–GL-035: PostgreSQL support + deployment hardening~~ ✅ Done
+- ~~GL-036: Evidence Persistence + Evidence Verification Core~~ ✅ Done
+- ~~GL-037–GL-045-C: Product Core (Provenance, Auditor, Permissions, Approvals, Compliance)~~ ✅ Done
+- ~~GL-046: Auth Fix — Grant Request read endpoints require authentication~~ ✅ Done
+- ~~GL-047: Import Fix — agent permission assignments use relative imports~~ ✅ Done
 
-GL-025 adds a single read-only endpoint that aggregates the full grant lifecycle for a given `GrantExecution` into a minimal, audit-verifiable evidence bundle. No new tables, no migrations, no UI.
-
-### Purpose
-
-The evidence bundle answers, for any execution ID:
-
-- **Who requested the grant** — requester operator ID and reason from the linked `GrantRequest`
-- **Who approved the grant request** — approver operator ID and timestamp
-- **Which grant was created** — grant ID, subject, role, action, resource, time window
-- **Who executed the protected action** — operator ID from the execution record
-- **Which action/resource was attempted** — action and resource fields from the execution
-- **Which challenge/proof was used** — challenge ID and result
-- **Whether the execution succeeded or was denied** — result field (`succeeded` | `denied` | `failed`)
-- **Whether usage limits affected the decision** — `usageLimits.affectedOutcome` flag
-- **Which audit events prove the lifecycle** — `auditTrail` array
-
-### Endpoint
-
-```
-GET /evidence/executions/:id
-```
-
-Returns `200` with the evidence bundle, or `404` if the execution does not exist.
-
-### Authorization
-
-| Mode | Who can read |
-|------|-------------|
-| Operator model enabled | `owner`, `grant_admin`, `auditor` |
-| Operator model disabled | Valid legacy `GRANTLAYER_ADMIN_TOKEN` Bearer token |
-
-`demo_operator` role is **denied**. Missing or invalid Bearer token fails closed.
-
-### Response shape
-
-```json
-{
-  "evidenceId": "<execution-id>",
-  "generatedAt": "<iso-timestamp>",
-  "executionId": "<execution-id>",
-  "grantId": "<grant-id or null>",
-  "grantRequestId": "<grant-request-id or null>",
-  "request": null,
-  "approval": null,
-  "grant": null,
-  "execution": {
-    "action": "restart-service",
-    "resource": "customer-env-a",
-    "operatorId": null,
-    "challengeId": null,
-    "challengeResult": "legacy_mode",
-    "policyResult": "Access granted",
-    "result": "succeeded",
-    "errorCode": null,
-    "executedAt": "<iso-timestamp>",
-    "auditEventId": "<audit-event-id>"
-  },
-  "usageLimits": {
-    "affectedOutcome": false
-  },
-  "auditTrail": []
-}
-```
-
-When a `GrantRequest` was approved, `request` and `approval` blocks are populated:
-
-```json
-"request": {
-  "id": "...",
-  "requestedBy": "req-operator-id",
-  "requestedAt": "...",
-  "reason": "Scheduled maintenance"
-},
-"approval": {
-  "approvedBy": "owner-operator-id",
-  "approvedAt": "..."
-}
-```
-
-When a `GrantRequest` was denied, the `approval` block contains `deniedBy`, `deniedAt`, and `denialReason` instead.
-
-When a `Grant` was matched, the `grant` block is populated:
-
-```json
-"grant": {
-  "id": "...",
-  "subjectId": "tech-01",
-  "role": "technician",
-  "action": "restart-service",
-  "resource": "customer-env-a",
-  "validFrom": "...",
-  "validUntil": "...",
-  "createdBy": "...",
-  "createdAt": "...",
-  "signingKeyId": "demo-ed25519-v1",
-  "payloadHash": "<sha256-hex>",
-  "maxUses": null,
-  "useCount": 1,
-  "grantSignatureResult": "valid"
-}
-```
-
-`grantSignatureResult` is included when available from audit data (`valid` | `missing` | `invalid` | `hash_mismatch` | `not_checked`). No raw signature bytes are emitted.
-
-When usage limits caused a denial, `usageLimits.affectedOutcome` is `true`:
-
-```json
-"usageLimits": {
-  "affectedOutcome": true,
-  "reason": "grant_usage_exhausted",
-  "maxUses": 1,
-  "useCount": 1
-}
-```
-
-### GL-025 explicit non-scope
-
-- No `GET /evidence/grants/:id` or `GET /evidence/grant-requests/:id`
-- No bulk evidence export
-- No downloadable bundles
-- ~~No `bundleHash` or integrity hash~~ Addressed by GL-026 (`evidenceHash`).
-- No raw grant signature bytes in response
-- No dashboard or frontend changes
-
-## GL-026 — Evidence Bundle Integrity Hash & Export Readiness
-
-GL-026 adds a deterministic integrity hash to every evidence bundle so auditors can later verify whether a bundle has changed. This is **not** blockchain anchoring, external notarization, or a downloadable export. It is a local, self-contained integrity mechanism.
-
-### What GL-026 adds
-
-The `GET /evidence/executions/:id` response now includes three metadata fields:
-
-```json
-{
-  "evidenceId": "<execution-id>",
-  "generatedAt": "<iso-timestamp>",
-  "canonicalVersion": "gl-evidence-v1",
-  "hashAlgorithm": "sha256",
-  "evidenceHash": "<64-char-lowercase-sha256-hex>",
-  ...
-}
-```
-
-| Field | Value | Meaning |
-|-------|-------|---------|
-| `canonicalVersion` | `gl-evidence-v1` | Canonical serialization version. Used for future format evolution. |
-| `hashAlgorithm` | `sha256` | The hash algorithm used to compute `evidenceHash`. |
-| `evidenceHash` | 64-char lowercase hex | SHA-256 digest of the canonical JSON representation of the bundle. |
-
-### How the hash is computed
-
-1. **Build the bundle** — same aggregation as GL-025 (request, approval, grant, execution, usageLimits, auditTrail).
-2. **Sort the audit trail** — audit events are ordered deterministically by `timestamp` then `id`.
-3. **Strip volatile/self-referential fields** — `generatedAt`, `evidenceHash`, `canonicalVersion`, and `hashAlgorithm` are removed from the input before hashing.
-4. **Canonicalize** — all object keys are sorted recursively alphabetically. JSON is emitted with compact separators (`separators=(",", ":")`).
-5. **Hash** — `hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()` produces the 64-character lowercase hex string.
-
-### Why these exclusions?
-
-| Excluded field | Reason |
-|----------------|--------|
-| `generatedAt` | Wall-clock timestamp changes on every rebuild; including it would make the hash unstable. |
-| `evidenceHash` | A hash cannot include itself without recursion. |
-| `canonicalVersion` | Metadata about the serialization scheme, not part of the evidence data. |
-| `hashAlgorithm` | Metadata about the hash scheme, not part of the evidence data. |
-
-### Offline verification (auditor workflow)
-
-An auditor can recompute the hash independently:
-
-1. Obtain the evidence bundle JSON (e.g., via `GET /evidence/executions/:id`).
-2. Remove `generatedAt`, `evidenceHash`, `canonicalVersion`, and `hashAlgorithm` from the JSON.
-3. Recursively sort all object keys alphabetically.
-4. Serialize to compact JSON (`separators=(",", ":")`).
-5. Compute `SHA-256(serialized)`.
-6. Compare the result with `evidenceHash`.
-
-If they match, the bundle content has not been altered since the hash was generated.
-
-### What the hash proves and does not prove
-
-**Proves:** The bundle content (request, approval, grant, execution, usageLimits, auditTrail) has not been modified since the hash was generated.
-
-**Does NOT prove:**
-- That the underlying database was not tampered with (the hash is computed at read time).
-- That the grant or execution itself is cryptographically signed (that is the Ed25519 grant signature, separate from the bundle hash).
-- Blockchain anchoring, external notarization, or legal validity.
-
-### Response contains no secrets
-
-The evidence bundle and its canonical JSON input never contain:
-- Bearer tokens or operator tokens
-- Token hashes or salts
-- Raw Ed25519 signature bytes
-- Environment variable values
-- Private keys
-
-Only safe, already-public metadata is included (grant IDs, operator IDs, timestamps, policy results, audit events).
-
-### GL-026 explicit non-scope
-
-- **No blockchain** — the hash is local-only.
-- **No external notarization** — no third-party timestamping service.
-- **No PDF/ZIP/download export** — the bundle is still a JSON API response only.
-- **No UI/dashboard/frontend changes** — the hash fields appear only in the JSON response.
-- **No new endpoint** — `GET /evidence/executions/:id` is unchanged; only response fields are added.
-- **No schema migration** — the hash is computed on-the-fly at build time.
-- **No persisted hash** — the hash is not stored in the database.
-- **No verify endpoint** — auditors recompute offline; no `POST /evidence/verify` is provided.
-
-## Tamper & Verify Demo
-
-The dashboard includes a "Tamper & Verify Demo" section that shows the signature check in action:
-
-1. Select a signed grant from the dropdown
-2. Click "Tamper Selected Grant" — calls `POST /demo/tamper-grant/:id`
-3. The grant's `role` is changed in the database **without re-signing**
-4. Click "Run Protected Action" — the action is **blocked** with `grantSignatureResult: hash_mismatch`
-5. The audit log records the signature failure
-
-### `POST /demo/tamper-grant/:id` — demo only
-
-Intentionally corrupts a grant to demonstrate tamper detection.
-
-```json
-{
-  "ok": true,
-  "grantId": "...",
-  "tamperedField": "role",
-  "oldValue": "technician",
-  "newValue": "tampered-role",
-  "subjectId": "tech-01",
-  "action": "restart-service",
-  "resource": "customer-env-a",
-  "message": "Grant tampered without re-signing. Signature should now fail."
-}
-```
-
-**This endpoint is demo-only.** It must not exist in any production system. See [docs/security_boundaries.md](docs/security_boundaries.md).
-
-## Sprint 2B — Grant Signature Response Fields
-
-`POST /grants` response now includes:
-```json
-{
-  "signaturePresent": true,
-  "signingKeyId": "demo-ed25519-v1",
-  "payloadHash": "<sha256-hex>"
-}
-```
-
-`GET /grants` response now includes per grant:
-```json
-{
-  "signaturePresent": true,
-  "signingKeyId": "demo-ed25519-v1",
-  "payloadHash": "<sha256-hex>",
-  "signatureValid": true
-}
-```
-
-`POST /demo-action` response now includes:
-```json
-{
-  "grantSignatureResult": "valid"
-}
-```
-
-Possible `grantSignatureResult` values: `valid` | `missing` | `invalid` | `hash_mismatch` | `not_checked`
-
-New deny reasons: `grant_signature_missing` | `grant_signature_invalid` | `grant_payload_hash_mismatch`
-
-## Next sprint
-
-- ~~Sprint 2C: Demo admin token~~ ✅ Done
-- ~~Sprint 2D: Docker packaging~~ ✅ Done
-- ~~Sprint 2E: Operator model (GL-021)~~ ✅ Done
-- ~~Sprint 2F: Real approval workflow (GL-022)~~ ✅ Done
-- ~~GL-028: Offline Evidence Bundle Verification~~ ✅ Done
-- ~~GL-029: Evidence & Audit Finalization Sprint~~ ✅ Done
-
----
+Next work: demo/integration readiness and cleanup.
 
 ## GL-029 — Evidence & Audit Finalization Sprint
 
@@ -832,10 +566,6 @@ result = verify_evidence_export_artifact(bundle_dict)
 - No secrets, tokens, or raw signatures are printed by the CLI.
 - No raw bundle content is printed by default.
 - Safe error messages only — no stack traces on malformed JSON.
-
----
-
-## Sprint 2F — Real Approval Workflow (GL-022)
 
 ---
 
