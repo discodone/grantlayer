@@ -102,8 +102,8 @@ def approve_grant_request(
             reason=f"Approved from request {request_id}: {request.reason}",
         )
 
-        # Save the grant
-        grants.create_grant(grant)
+        # Save the grant using the shared transaction connection
+        grants.create_grant(grant, conn=conn)
 
         # Update the request to approved state
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
