@@ -41,27 +41,30 @@ def get_grant(grant_id: str) -> Optional[Grant]:
     return _row_to_grant(row) if row else None
 
 
-def create_grant(grant: Grant) -> Grant:
+def create_grant(grant: Grant, conn=None) -> Grant:
     # Generate signature before inserting to ensure atomic creation
     sig_hex, hash_hex, key_id = _sign_grant(grant)
     grant.signature = sig_hex
     grant.payload_hash = hash_hex
     grant.signing_key_id = key_id
 
-    execute(
-        """INSERT INTO grants
+    sql = """INSERT INTO grants
            (id, subject_id, role, action, resource, valid_from, valid_until,
             created_by, reason, revoked, created_at, max_uses, use_count,
             signature, signing_key_id, payload_hash)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)""",
-        (
-            grant.id, grant.subject_id, grant.role, grant.action,
-            grant.resource, grant.valid_from, grant.valid_until,
-            grant.created_by, grant.reason, grant.created_at,
-            grant.max_uses, grant.use_count,
-            sig_hex, key_id, hash_hex,
-        ),
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)"""
+    params = (
+        grant.id, grant.subject_id, grant.role, grant.action,
+        grant.resource, grant.valid_from, grant.valid_until,
+        grant.created_by, grant.reason, grant.created_at,
+        grant.max_uses, grant.use_count,
+        sig_hex, key_id, hash_hex,
     )
+
+    if conn is not None:
+        conn.execute(sql, params)
+    else:
+        execute(sql, params)
     return grant
 
 
