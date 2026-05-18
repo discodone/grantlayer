@@ -42,27 +42,25 @@ def get_grant(grant_id: str) -> Optional[Grant]:
 
 
 def create_grant(grant: Grant) -> Grant:
-    execute(
-        """INSERT INTO grants
-           (id, subject_id, role, action, resource, valid_from, valid_until,
-            created_by, reason, revoked, created_at, max_uses, use_count)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)""",
-        (
-            grant.id, grant.subject_id, grant.role, grant.action,
-            grant.resource, grant.valid_from, grant.valid_until,
-            grant.created_by, grant.reason, grant.created_at,
-            grant.max_uses, grant.use_count,
-        ),
-    )
-
+    # Generate signature before inserting to ensure atomic creation
     sig_hex, hash_hex, key_id = _sign_grant(grant)
     grant.signature = sig_hex
     grant.payload_hash = hash_hex
     grant.signing_key_id = key_id
 
     execute(
-        "UPDATE grants SET signature = ?, signing_key_id = ?, payload_hash = ? WHERE id = ?",
-        (sig_hex, key_id, hash_hex, grant.id),
+        """INSERT INTO grants
+           (id, subject_id, role, action, resource, valid_from, valid_until,
+            created_by, reason, revoked, created_at, max_uses, use_count,
+            signature, signing_key_id, payload_hash)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)""",
+        (
+            grant.id, grant.subject_id, grant.role, grant.action,
+            grant.resource, grant.valid_from, grant.valid_until,
+            grant.created_by, grant.reason, grant.created_at,
+            grant.max_uses, grant.use_count,
+            sig_hex, key_id, hash_hex,
+        ),
     )
     return grant
 
