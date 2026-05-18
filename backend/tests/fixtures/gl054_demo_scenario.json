@@ -1,0 +1,255 @@
+{
+  "scenarioId": "gl054-demo-scenario",
+  "scenarioVersion": "1.0",
+  "title": "Community Energy-Efficiency Microgrant Demo",
+  "description": "A deterministic demo scenario showing a municipality microgrant workflow for a community energy-efficiency project, from grant request through compliance readiness.",
+  "workflowId": "gl054-workflow-001",
+  "subjectId": "gl054-subject-001",
+  "actors": {
+    "applicant": {
+      "actorId": "gl054-applicant-001",
+      "actorType": "beneficiary",
+      "name": "Demo Community Organisation",
+      "role": "community_group"
+    },
+    "grantOperator": {
+      "actorId": "gl054-operator-001",
+      "actorType": "operator",
+      "name": "Demo Municipality Officer",
+      "role": "grant_operator"
+    },
+    "reviewAgent": {
+      "actorId": "gl054-review-agent-001",
+      "actorType": "agent",
+      "name": "Demo Eligibility Review Agent",
+      "role": "review_agent"
+    },
+    "auditor": {
+      "actorId": "gl054-auditor-001",
+      "actorType": "auditor",
+      "name": "Demo Independent Auditor",
+      "role": "auditor"
+    }
+  },
+  "grantRequest": {
+    "grantRequestId": "gl054-request-001",
+    "workflowId": "gl054-workflow-001",
+    "subjectId": "gl054-subject-001",
+    "role": "community_group",
+    "action": "energy_efficiency_install",
+    "resource": "demo-library-led-upgrade",
+    "validFrom": "2026-01-01T00:00:00Z",
+    "validUntil": "2026-12-31T23:59:59Z",
+    "requestedBy": "gl054-applicant-001",
+    "reason": "Install LED lighting in the local library to reduce energy consumption.",
+    "status": "requested",
+    "requestedAt": "2026-01-05T09:00:00Z"
+  },
+  "approval": {
+    "approvalId": "gl054-approval-001",
+    "grantRequestId": "gl054-request-001",
+    "status": "approved",
+    "approvedBy": "gl054-operator-001",
+    "approvedAt": "2026-01-10T14:00:00Z",
+    "grantId": "gl054-grant-001",
+    "reason": "Request meets policy requirements and budget availability."
+  },
+  "grant": {
+    "grantId": "gl054-grant-001",
+    "grantRequestId": "gl054-request-001",
+    "subjectId": "gl054-subject-001",
+    "role": "community_group",
+    "action": "energy_efficiency_install",
+    "resource": "demo-library-led-upgrade",
+    "validFrom": "2026-01-01T00:00:00Z",
+    "validUntil": "2026-12-31T23:59:59Z",
+    "signature": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899",
+    "signingKeyId": "demo-ed25519-v1",
+    "payloadHash": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+    "createdBy": "gl054-operator-001",
+    "reason": "Approved from request gl054-request-001: Install LED lighting in the local library to reduce energy consumption.",
+    "createdAt": "2026-01-10T14:01:00Z"
+  },
+  "execution": {
+    "executionId": "gl054-execution-001",
+    "grantId": "gl054-grant-001",
+    "grantRequestId": "gl054-request-001",
+    "operatorId": "gl054-applicant-001",
+    "action": "energy_efficiency_install",
+    "resource": "demo-library-led-upgrade",
+    "result": "succeeded",
+    "executedAt": "2026-03-15T10:00:00Z",
+    "metadataJson": "{\"workflowId\":\"gl054-workflow-001\",\"projectPhase\":\"completed\"}"
+  },
+  "evidence": [
+    {
+      "evidenceId": "gl054-evidence-001",
+      "executionId": "gl054-execution-001",
+      "grantId": "gl054-grant-001",
+      "grantRequestId": "gl054-request-001",
+      "generatedAt": "2026-03-15T10:01:00Z",
+      "evidenceHash": "112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+      "canonicalVersion": "gl-evidence-v1",
+      "hashAlgorithm": "sha256",
+      "grant": {
+        "grantId": "gl054-grant-001",
+        "subjectId": "gl054-subject-001",
+        "signingKeyId": "demo-ed25519-v1",
+        "payloadHash": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+      },
+      "execution": {
+        "result": "succeeded",
+        "executedAt": "2026-03-15T10:00:00Z"
+      },
+      "auditTrail": [
+        {
+          "timestamp": "2026-03-15T10:00:00Z",
+          "action": "energy_efficiency_install",
+          "approved": true
+        }
+      ]
+    }
+  ],
+  "evidenceVerification": {
+    "verificationId": "gl054-verification-001",
+    "evidenceId": "gl054-evidence-001",
+    "executionId": "gl054-execution-001",
+    "status": "valid",
+    "verifiedAt": "2026-03-15T10:02:00Z",
+    "recomputedHash": "112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    "storedHash": "112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    "match": true
+  },
+  "evidenceCompleteness": {
+    "reportType": "evidence_completeness",
+    "reportVersion": "gl-038-a1",
+    "executionId": "gl054-execution-001",
+    "grantId": "gl054-grant-001",
+    "completenessScore": 100,
+    "completenessStatus": "complete",
+    "complianceGaps": [],
+    "missingEvidence": [],
+    "auditReadiness": "ready",
+    "checks": {
+      "executionPresent": true,
+      "evidencePresent": true,
+      "evidenceVerified": true,
+      "provenanceEventsPresent": true,
+      "auditorReportAvailable": true,
+      "criticalGapsPresent": false
+    }
+  },
+  "complianceGapReport": {
+    "reportType": "compliance_gap_report",
+    "reportVersion": "gl-compliance-gap-v1",
+    "executionId": "gl054-execution-001",
+    "workflowId": "gl054-workflow-001",
+    "subjectId": "gl054-subject-001",
+    "overallStatus": "clear",
+    "severity": "none",
+    "complianceGaps": [],
+    "blockingGaps": [],
+    "recommendedActions": ["no_action_required"],
+    "completeness": {
+      "score": 100,
+      "status": "complete"
+    }
+  },
+  "policyRequirements": {
+    "recordType": "policy_requirement_evaluation",
+    "recordVersion": "gl-policy-requirements-v1",
+    "policyPackId": "gl054-policy-001",
+    "policyPackVersion": "1.0.0",
+    "subjectId": "gl054-subject-001",
+    "evaluationStatus": "passed",
+    "readiness": "ready",
+    "requiredEvidence": ["execution_log", "invoice_receipt"],
+    "missingEvidence": [],
+    "exclusionViolations": [],
+    "deadlineStatus": "none",
+    "amountStatus": "within_limit",
+    "blockers": [],
+    "warnings": []
+  },
+  "decisionProvenance": {
+    "recordType": "decision_provenance",
+    "recordVersion": "gl-decision-provenance-v2",
+    "decisionId": "gl054-decision-001",
+    "workflowId": "gl054-workflow-001",
+    "executionId": "gl054-execution-001",
+    "subjectId": "gl054-subject-001",
+    "actorId": "gl054-operator-001",
+    "action": "energy_efficiency_install",
+    "decision": "approved",
+    "decisionStatus": "approved",
+    "reason": "All signals indicate a clean, complete workflow with no gaps or blockers.",
+    "readiness": {
+      "evidence": "ready",
+      "compliance": "ready",
+      "permission": "ready",
+      "approval": "ready",
+      "provenance": "ready",
+      "policy": "ready"
+    },
+    "signals": {
+      "evidence": "complete",
+      "compliance": "complete",
+      "permission": "allowed",
+      "approval": "approved",
+      "provenance": "present",
+      "policy": "passed"
+    },
+    "blockers": [],
+    "warnings": []
+  },
+  "auditorExport": {
+    "recordType": "auditor_export",
+    "recordVersion": "gl-auditor-export-v1",
+    "exportId": "gl054-auditor-export-001",
+    "exportType": "workflow",
+    "workflowId": "gl054-workflow-001",
+    "subjectId": "gl054-subject-001",
+    "grantId": "gl054-grant-001",
+    "executionId": "gl054-execution-001",
+    "decisionId": "gl054-decision-001",
+    "exportStatus": "ready",
+    "auditReadiness": "audit_ready",
+    "sections": [
+      "decisionProvenance",
+      "auditorReport",
+      "evidence",
+      "compliance",
+      "permission",
+      "approval",
+      "policy"
+    ],
+    "blockers": [],
+    "warnings": []
+  },
+  "complianceReadiness": {
+    "recordType": "compliance_readiness_summary",
+    "recordVersion": "gl-compliance-readiness-v1",
+    "subjectId": "gl054-subject-001",
+    "workflowId": "gl054-workflow-001",
+    "grantId": "gl054-grant-001",
+    "executionId": "gl054-execution-001",
+    "readinessStatus": "ready",
+    "readinessScore": 100,
+    "evidenceStatus": "ready",
+    "complianceStatus": "ready",
+    "permissionStatus": "ready",
+    "approvalStatus": "ready",
+    "provenanceStatus": "ready",
+    "auditorExportStatus": "ready",
+    "policyStatus": "ready",
+    "blockers": [],
+    "warnings": [],
+    "recommendedActions": []
+  },
+  "notes": [
+    "This fixture is illustrative and not a live API contract.",
+    "All identifiers are stable demo IDs and contain no real personal data.",
+    "Signature and hash values are deterministic demo strings for readability.",
+    "Refer to docs/integration_guide.md and docs/demo_scenario.md for context."
+  ]
+}
