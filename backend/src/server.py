@@ -34,7 +34,6 @@ from .agent_permission_assignments import resolve_agent_permission_assignment
 from .approval_rules import evaluate_approval_requirements
 from .approval_lifecycle import build_approval_request_lifecycle, transition_approval_request
 from .compliance_readiness import build_compliance_readiness_summary
-from .compliance_readiness import build_compliance_readiness_summary
 from .decision_provenance import build_decision_provenance_v2
 from .auditor_export import build_institutional_auditor_export
 from .policy_requirements import evaluate_policy_requirements
@@ -253,7 +252,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             execution_id = m.group(1)
             execution = execs.get_grant_execution(execution_id)
             if execution is None:
-                self._send_json(404, {"error": "Grant execution not found", "errorCode": "grant_execution_not_found", "reason": "The requested grant execution does not exist."})
+                self._send_json(404, self._gl030_error("Grant execution not found", "grant_execution_not_found", "The requested grant execution does not exist."))
                 return
             self._send_json(200, execution.to_dict())
 
@@ -284,7 +283,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             execution_id = m.group(1)
             bundle = build_evidence_bundle(execution_id)
             if bundle is None:
-                self._send_json(404, {"error": "Execution not found", "errorCode": "execution_not_found", "reason": "The requested execution does not exist."})
+                self._send_json(404, self._gl030_error("Execution not found", "execution_not_found", "The requested execution does not exist."))
                 return
             self._send_json(200, bundle)
 
@@ -299,7 +298,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             execution_id = m.group(1)
             bundle = build_evidence_bundle(execution_id)
             if bundle is None:
-                self._send_json(404, {"error": "Execution not found", "errorCode": "execution_not_found", "reason": "The requested execution does not exist."})
+                self._send_json(404, self._gl030_error("Execution not found", "execution_not_found", "The requested execution does not exist."))
                 return
             from .evidence_bundle import export_bundle_json
             body = export_bundle_json(bundle).encode("utf-8")
