@@ -92,3 +92,5 @@ This demo scenario and its fixture **explicitly do not** provide:
 - **Personally identifiable real data** — every actor, subject, and identifier is synthetic and deterministic.
 
 GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.
+
+See also: [`docs/integration_ready_checklist.md`](integration_ready_checklist.md) — the minimum artifact and verification gate for Integration-Ready v0.
