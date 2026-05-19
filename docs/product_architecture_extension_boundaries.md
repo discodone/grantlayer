@@ -181,6 +181,7 @@ Product Core contracts should be stable; integrations and deployment-specific be
 
 - [`docs/api_openapi_contract_hardening_review.md`](api_openapi_contract_hardening_review.md) — GL-064 API/OpenAPI contract hardening review
 - [`docs/runtime_configuration_environment_model.md`](runtime_configuration_environment_model.md) — GL-066 runtime configuration and environment model
+- [`docs/production_auth_operator_access_design.md`](production_auth_operator_access_design.md) — GL-067 production auth and operator access design
 - [`docs/production_hardening_roadmap.md`](production_hardening_roadmap.md) — GL-063 production-hardening roadmap
 - [`docs/product_core_readiness.md`](product_core_readiness.md) — Product Core readiness and endpoint inventory
 - [`docs/examples/gl065/product_architecture_map.json`](examples/gl065/product_architecture_map.json) — machine-readable product architecture map

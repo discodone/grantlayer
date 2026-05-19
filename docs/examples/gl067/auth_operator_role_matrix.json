@@ -1,0 +1,261 @@
+{
+  "matrixId": "gl067-auth-operator-role-matrix",
+  "matrixVersion": "1.0",
+  "status": "product-foundation-planning",
+  "productStatement": "GrantLayer turns agentic grant workflows into verifiable institutional records.",
+  "runtimeModes": [
+    {
+      "mode": "local-dev",
+      "authExpectation": "developer convenience; simplified or bypassed authentication acceptable",
+      "allowedShortcut": "deterministic local admin token, no external identity provider, no role enforcement",
+      "auditExpectation": "minimal; operator actions may be attributed to a generic local-dev identity",
+      "productionClaimBoundary": "must not be described as production-ready"
+    },
+    {
+      "mode": "test",
+      "authExpectation": "deterministic automated verification; mock or bypassed authentication acceptable",
+      "allowedShortcut": "fixture-based operator identities, synthetic role assignments, mock auth provider",
+      "auditExpectation": "none required; test identities are synthetic and isolated from production data",
+      "productionClaimBoundary": "must not be described as production-ready"
+    },
+    {
+      "mode": "demo",
+      "authExpectation": "illustrative non-production walkthrough; simplified auth acceptable",
+      "allowedShortcut": "demo operator identity, demo tokens, no external identity provider",
+      "auditExpectation": "minimal; demo actions must be clearly labeled as synthetic",
+      "productionClaimBoundary": "must not be described as production-ready; explicitly labeled as demonstration only"
+    },
+    {
+      "mode": "integration",
+      "authExpectation": "controlled external technical integration; partner-agreed authentication",
+      "allowedShortcut": "partner-agreed auth provider with documented constraints",
+      "auditExpectation": "partner-agreed; operator actions should be attributable where possible",
+      "productionClaimBoundary": "must not be described as production-ready without explicit partner agreement and documented constraints"
+    },
+    {
+      "mode": "staging",
+      "authExpectation": "production-like validation; same auth target as production",
+      "allowedShortcut": "same backend and auth as production target; realistic but synthetic data",
+      "auditExpectation": "full audit trail to validate production behavior",
+      "productionClaimBoundary": "must not be described as production-ready; explicitly labeled as pre-production validation"
+    },
+    {
+      "mode": "production",
+      "authExpectation": "explicit hardened operation only",
+      "allowedShortcut": "none — every required auth configuration must be explicit, validated, and fail-closed if missing",
+      "auditExpectation": "full; all operator-sensitive actions must produce auditable records",
+      "productionClaimBoundary": "may be described as production-ready only when all required auth configuration is explicit, validated, and monitored"
+    }
+  ],
+  "operatorRoles": [
+    {
+      "role": "system_admin",
+      "purpose": "Ultimate system-level access for installation, bootstrap, and emergency recovery.",
+      "allowedCapabilities": [
+        "system configuration administration",
+        "permission profile administration",
+        "operator bootstrap"
+      ],
+      "deniedCapabilities": [
+        "readonly integration access"
+      ],
+      "auditExpectation": "all actions are fully audited; bootstrap and override actions require documented justification",
+      "productionRequirement": "must be bootstrapped explicitly with documented credentials; must not use default or demo tokens",
+      "nonGoals": "day-to-day grant or evidence operations; those belong to grant_admin and evidence_operator"
+    },
+    {
+      "role": "grant_admin",
+      "purpose": "Grant request and approval administration.",
+      "allowedCapabilities": [
+        "grant request administration",
+        "grant approval operations",
+        "grant creation and lifecycle operations"
+      ],
+      "deniedCapabilities": [
+        "system configuration administration",
+        "evidence verification operations",
+        "policy/rule pack administration"
+      ],
+      "auditExpectation": "all approval and lifecycle actions are auditable with actor, timestamp, and policy reference",
+      "productionRequirement": "must be assigned through explicit auth provider role mapping or bootstrap",
+      "nonGoals": "system-level configuration; evidence verification; policy administration"
+    },
+    {
+      "role": "evidence_operator",
+      "purpose": "Evidence bundle and verification management.",
+      "allowedCapabilities": [
+        "evidence write operations",
+        "evidence verification operations"
+      ],
+      "deniedCapabilities": [
+        "grant approval operations",
+        "policy/rule pack administration",
+        "system configuration administration"
+      ],
+      "auditExpectation": "all evidence writes and verification checks are auditable with hash references",
+      "productionRequirement": "must be assigned through explicit auth provider role mapping or bootstrap",
+      "nonGoals": "grant approvals; policy changes; system configuration"
+    },
+    {
+      "role": "policy_admin",
+      "purpose": "Policy and rule pack administration.",
+      "allowedCapabilities": [
+        "policy/rule pack administration",
+        "permission profile administration"
+      ],
+      "deniedCapabilities": [
+        "grant approval operations",
+        "evidence write operations",
+        "system configuration administration"
+      ],
+      "auditExpectation": "all policy and permission profile changes are auditable with before/after summaries",
+      "productionRequirement": "must be assigned through explicit auth provider role mapping or bootstrap",
+      "nonGoals": "grant approvals; evidence operations; system configuration"
+    },
+    {
+      "role": "auditor",
+      "purpose": "Institutional audit and compliance review.",
+      "allowedCapabilities": [
+        "auditor report/export access",
+        "compliance readiness review"
+      ],
+      "deniedCapabilities": [
+        "grant approval operations",
+        "evidence write operations",
+        "policy/rule pack administration",
+        "system configuration administration"
+      ],
+      "auditExpectation": "all export and review actions are auditable with scope and timestamp",
+      "productionRequirement": "must be assigned through explicit auth provider role mapping or bootstrap; read-only by design",
+      "nonGoals": "mutating any product core state; this role is explicitly read-only with export privileges"
+    },
+    {
+      "role": "readonly_integrator",
+      "purpose": "Read-only integration access for external systems.",
+      "allowedCapabilities": [
+        "readonly integration access"
+      ],
+      "deniedCapabilities": [
+        "grant approval operations",
+        "evidence write operations",
+        "policy/rule pack administration",
+        "system configuration administration",
+        "permission profile administration"
+      ],
+      "auditExpectation": "all queries are logged with caller identity and query scope",
+      "productionRequirement": "must be assigned through explicit auth provider role mapping or bootstrap; restricted to safe read paths",
+      "nonGoals": "any mutation of product core state"
+    },
+    {
+      "role": "external_workflow_agent",
+      "purpose": "Service-to-service workflow execution by external agents.",
+      "allowedCapabilities": [
+        "service-to-service workflow execution"
+      ],
+      "deniedCapabilities": [
+        "system configuration administration",
+        "grant approval operations",
+        "policy/rule pack administration"
+      ],
+      "auditExpectation": "all workflow actions are attributable to a stable operator or service identity with timestamps",
+      "productionRequirement": "must authenticate through an explicit service identity provider with mTLS or equivalent; must not use demo tokens",
+      "nonGoals": "direct system administration; human operator actions"
+    },
+    {
+      "role": "service_operator",
+      "purpose": "Internal service-to-service operations and maintenance.",
+      "allowedCapabilities": [
+        "service-to-service workflow execution",
+        "system health and maintenance operations"
+      ],
+      "deniedCapabilities": [
+        "grant approval operations",
+        "evidence write operations",
+        "policy/rule pack administration"
+      ],
+      "auditExpectation": "all service actions are attributable to a stable service identity with timestamps",
+      "productionRequirement": "must authenticate through an explicit internal service identity provider; must not use demo tokens",
+      "nonGoals": "direct human operator actions; grant approvals; evidence mutation"
+    }
+  ],
+  "capabilityGroups": [
+    {
+      "id": "cap-grant-request-admin",
+      "name": "Grant request administration",
+      "description": "Review, approve, reject, and manage grant requests. Link requests to subjects, scopes, and time bounds."
+    },
+    {
+      "id": "cap-grant-approval-ops",
+      "name": "Grant approval operations",
+      "description": "Execute approval decisions with required signatures. Enforce multi-step and quorum approval policies."
+    },
+    {
+      "id": "cap-grant-lifecycle-ops",
+      "name": "Grant creation and lifecycle operations",
+      "description": "Create, update, revoke, and expire grants. Manage grant execution records."
+    },
+    {
+      "id": "cap-evidence-write",
+      "name": "Evidence write operations",
+      "description": "Create, append, and finalize evidence bundles. Link evidence to grants, requests, and executions."
+    },
+    {
+      "id": "cap-evidence-verify",
+      "name": "Evidence verification operations",
+      "description": "Recompute and compare evidence hashes. Flag tampering, corruption, or completeness gaps."
+    },
+    {
+      "id": "cap-policy-admin",
+      "name": "Policy/rule pack administration",
+      "description": "Load, validate, and activate policy rule packs. Manage exclusions, deadlines, amount limits, and required roles."
+    },
+    {
+      "id": "cap-permission-profile-admin",
+      "name": "Permission profile administration",
+      "description": "Define and assign permission profiles. Manage scope templates and role hierarchies."
+    },
+    {
+      "id": "cap-auditor-export",
+      "name": "Auditor report/export access",
+      "description": "Export structured auditor records. Review compliance readiness summaries and gap reports."
+    },
+    {
+      "id": "cap-compliance-review",
+      "name": "Compliance readiness review",
+      "description": "Access compliance readiness outputs. Review but not mutate readiness dimensions."
+    },
+    {
+      "id": "cap-system-config-admin",
+      "name": "System configuration administration",
+      "description": "Configure runtime settings, feature flags, and extension toggles. Manage system-level parameters with documented override procedures."
+    },
+    {
+      "id": "cap-readonly-integration",
+      "name": "Readonly integration access",
+      "description": "Query grants, requests, evidence, and audit records. No mutation rights; no approval or revocation access."
+    },
+    {
+      "id": "cap-service-workflow",
+      "name": "Service-to-service workflow execution",
+      "description": "Execute workflow steps between services. Produce attributable action records with stable service identity."
+    }
+  ],
+  "productionClaimRules": [
+    "Production claim is allowed only when runtime mode is explicitly set to production.",
+    "Production claim requires auth provider configuration to be explicit, validated, and non-default.",
+    "Production claim requires operator bootstrap configuration with explicit role assignments.",
+    "Production claim requires fail-closed behavior on missing or invalid auth configuration.",
+    "Production claim requires role/capability mapping to be implemented and verified.",
+    "Production claim requires audit expectations to be implemented for all operator-sensitive actions.",
+    "Production claim requires no demo tokens, default passwords, or synthetic identities in the auth path."
+  ],
+  "relatedArtifacts": [
+    "docs/production_auth_operator_access_design.md",
+    "docs/examples/gl067/operator_access_boundary_catalog.json",
+    "backend/tests/test_gl067_production_auth_operator_access_design.py",
+    "docs/runtime_configuration_environment_model.md",
+    "docs/product_architecture_extension_boundaries.md",
+    "docs/production_hardening_roadmap.md",
+    "docs/api_openapi_contract_hardening_review.md"
+  ]
+}

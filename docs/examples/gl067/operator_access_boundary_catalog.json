@@ -1,0 +1,217 @@
+{
+  "catalogId": "gl067-operator-access-boundary-catalog",
+  "catalogVersion": "1.0",
+  "status": "product-foundation-planning",
+  "authBoundaries": [
+    {
+      "id": "boundary-operator-role-semantics",
+      "name": "Operator role semantics",
+      "purpose": "Defines the stable operator roles and their purposes that belong to the Product Core.",
+      "productCoreOwned": true,
+      "replaceableAdapter": false,
+      "expectedInputs": "auth provider claims, group memberships, or scopes",
+      "expectedOutputs": "mapped GrantLayer operator role and capability assignments",
+      "productionRequirement": "roles must be explicitly defined and enforced; no default or demo roles",
+      "implementationStatus": "planned",
+      "notes": "Auth provider adapters must map into these stable roles without redefining them."
+    },
+    {
+      "id": "boundary-capability-groups",
+      "name": "Capability groups",
+      "purpose": "Defines the stable capability boundaries that operator roles may exercise.",
+      "productCoreOwned": true,
+      "replaceableAdapter": false,
+      "expectedInputs": "operator role and requested action",
+      "expectedOutputs": "allowed or denied capability with audit reference",
+      "productionRequirement": "capability checks must be enforced at every protected boundary",
+      "implementationStatus": "planned",
+      "notes": "Auth provider adapters must not redefine capability groups; they map provider claims into them."
+    },
+    {
+      "id": "boundary-auth-provider-adapter",
+      "name": "Auth provider adapter",
+      "purpose": "Translates concrete auth provider mechanics into Product Core operator identities and roles.",
+      "productCoreOwned": false,
+      "replaceableAdapter": true,
+      "expectedInputs": "OAuth token, JWT, SSO assertion, mTLS certificate, or API key",
+      "expectedOutputs": "validated operator identity with stable role mapping",
+      "productionRequirement": "provider must be explicitly configured, validated, and fail-closed if unreachable",
+      "implementationStatus": "not-implemented",
+      "notes": "OAuth, JWT, SSO, and mTLS are all valid future adapter targets. Product Core must not depend on one."
+    },
+    {
+      "id": "boundary-role-capability-mapping",
+      "name": "Role/capability mapping helper",
+      "purpose": "Translates operator roles into allowed and denied capabilities for enforcement.",
+      "productCoreOwned": true,
+      "replaceableAdapter": false,
+      "expectedInputs": "operator role from the auth provider adapter",
+      "expectedOutputs": "list of allowed capabilities and denied capabilities",
+      "productionRequirement": "mapping must be deterministic, versioned, and auditable",
+      "implementationStatus": "planned",
+      "notes": "May be implemented as a configuration-driven lookup table validated on startup."
+    },
+    {
+      "id": "boundary-operator-bootstrap",
+      "name": "Operator bootstrap mechanism",
+      "purpose": "Creates the first operator/admin in a fresh deployment with secure role assignment.",
+      "productCoreOwned": true,
+      "replaceableAdapter": false,
+      "expectedInputs": "explicit bootstrap configuration with operator identity and role",
+      "expectedOutputs": "bootstrapped operator record with audit trail",
+      "productionRequirement": "must require explicit configuration; must not use hard-coded or demo defaults",
+      "implementationStatus": "not-implemented",
+      "notes": "Bootstrap is a one-time or carefully controlled process. Re-bootstrap should require elevated proof."
+    },
+    {
+      "id": "boundary-service-identity",
+      "name": "Service-to-service identity",
+      "purpose": "Provides stable identities for internal and external service workflow execution.",
+      "productCoreOwned": true,
+      "replaceableAdapter": false,
+      "expectedInputs": "service credentials from an explicit service identity provider",
+      "expectedOutputs": "attributable service operator record with scoped capabilities",
+      "productionRequirement": "must use explicit service identity provider; must not use demo tokens",
+      "implementationStatus": "not-implemented",
+      "notes": "external_workflow_agent and service_operator roles depend on this boundary."
+    },
+    {
+      "id": "boundary-auth-audit-events",
+      "name": "Auth audit event integration",
+      "purpose": "Feeds authentication and authorization events into the Product Core audit stream.",
+      "productCoreOwned": true,
+      "replaceableAdapter": false,
+      "expectedInputs": "auth success, auth failure, access denied, role assignment change",
+      "expectedOutputs": "structured audit event without secrets",
+      "productionRequirement": "all operator-sensitive actions must produce auditable records",
+      "implementationStatus": "not-implemented",
+      "notes": "Audit records must never contain plaintext tokens, JWTs, or provider-specific secrets."
+    },
+    {
+      "id": "boundary-production-fail-closed",
+      "name": "Production fail-closed enforcement",
+      "purpose": "Ensures production mode refuses to start if required auth configuration is missing or invalid.",
+      "productCoreOwned": true,
+      "replaceableAdapter": false,
+      "expectedInputs": "runtime mode, auth provider configuration, operator bootstrap state, role mapping state",
+      "expectedOutputs": "startup allowed or explicit structured error with no secret leakage",
+      "productionRequirement": "must refuse startup if any required auth config is missing, invalid, or uses demo defaults",
+      "implementationStatus": "not-implemented",
+      "notes": "Fail-closed behavior must be validated by integration tests before any production claim."
+    },
+    {
+      "id": "boundary-local-demo-shortcuts",
+      "name": "Local/test/demo auth shortcuts",
+      "purpose": "Provides non-production authentication convenience for developers, testers, and demonstrators.",
+      "productCoreOwned": false,
+      "replaceableAdapter": true,
+      "expectedInputs": "local-dev, test, or demo runtime mode flag",
+      "expectedOutputs": "simplified auth behavior with explicit non-production labeling",
+      "productionRequirement": "must be explicitly disabled in production; must fail closed if enabled",
+      "implementationStatus": "partial",
+      "notes": "Shortcuts are acceptable only when runtime mode is not production and is explicitly declared."
+    },
+    {
+      "id": "boundary-openapi-security-contract",
+      "name": "OpenAPI security contract",
+      "purpose": "Documents auth requirements in the OpenAPI contract for integrator and client clarity.",
+      "productCoreOwned": true,
+      "replaceableAdapter": false,
+      "expectedInputs": "stable role and capability definitions",
+      "expectedOutputs": "OpenAPI security schemes, scopes, and protected path annotations",
+      "productionRequirement": "contract must reflect actual enforcement; must not document unimplemented protections",
+      "implementationStatus": "not-implemented",
+      "notes": "Security contract updates must be versioned and reviewed like any other contract change."
+    }
+  ],
+  "providerAdapterExpectations": [
+    "Product Core should not depend on one specific auth provider.",
+    "OAuth, JWT, SSO, and mTLS can all be implemented as future provider adapters.",
+    "Local and demo tokens are non-production shortcuts only.",
+    "Production must use explicit provider configuration validated on startup.",
+    "Provider claims must map into stable GrantLayer roles and capabilities.",
+    "Provider-specific fields must not leak into Product Core records, audit logs, or evidence bundles."
+  ],
+  "failClosedRules": [
+    "Production mode must refuse to start if auth provider is not explicitly configured.",
+    "Production mode must refuse to start if operator bootstrap configuration is missing.",
+    "Production mode must refuse to start if role/capability mapping is not configured.",
+    "Production mode must refuse to start if demo or default admin tokens are present.",
+    "Production mode must refuse to start if local/test/demo auth shortcuts are enabled.",
+    "Production mode must refuse unauthenticated access to any protected endpoint.",
+    "Denied access must return a structured error without leaking configuration details or secrets.",
+    "Missing auth configuration must produce a clear, auditable error record."
+  ],
+  "localDemoTestShortcuts": [
+    {
+      "shortcut": "Deterministic test identity",
+      "allowedInModes": ["test"],
+      "purpose": "Synthetic operator IDs used in automated tests for deterministic behavior.",
+      "productionRisk": "Test identities provide no real authentication and must not be present in production."
+    },
+    {
+      "shortcut": "Local admin token for developer convenience",
+      "allowedInModes": ["local-dev"],
+      "purpose": "A simple shared token for local-dev environments to reduce setup friction.",
+      "productionRisk": "Shared tokens provide no identity verification, role separation, or auditability."
+    },
+    {
+      "shortcut": "Demo operator identity",
+      "allowedInModes": ["demo"],
+      "purpose": "A preconfigured operator for walkthroughs and stakeholder demonstrations.",
+      "productionRisk": "Preconfigured demo identities bypass real authentication and authorization checks."
+    },
+    {
+      "shortcut": "Fixture-based service identity",
+      "allowedInModes": ["test"],
+      "purpose": "Synthetic service accounts loaded from test fixtures for integration tests.",
+      "productionRisk": "Fixture identities are synthetic and must not be deployed to production environments."
+    },
+    {
+      "shortcut": "Readonly demo access",
+      "allowedInModes": ["demo"],
+      "purpose": "A preconfigured readonly account for demo integration queries.",
+      "productionRisk": "Demo readonly accounts lack real authentication and must not access production data."
+    }
+  ],
+  "productionRequiredConfiguration": [
+    "Auth provider type and configuration",
+    "Auth provider endpoint and validation rules",
+    "Operator bootstrap configuration with at least one valid admin",
+    "Role/capability mapping configuration",
+    "Service identity provider configuration for workflow agents",
+    "Audit event integration configuration",
+    "Fail-closed startup check configuration",
+    "OpenAPI security contract alignment with enforcement"
+  ],
+  "auditExpectations": [
+    "Grant approval actions must produce auditable records with actor, timestamp, and policy reference.",
+    "Evidence mutation actions must produce auditable records with hash references and actor identity.",
+    "Policy changes must produce auditable records with before/after summaries and actor identity.",
+    "Permission and role assignment changes must produce auditable records with actor and justification.",
+    "Auditor export access must produce auditable records with scope, timestamp, and actor identity.",
+    "Audit records must never contain plaintext tokens, JWTs, passwords, or provider-specific secrets.",
+    "External workflow agent actions must be attributable to a stable operator or service identity."
+  ],
+  "implementationNonGoals": [
+    "OAuth implementation",
+    "JWT validation implementation",
+    "SSO integration",
+    "Session management",
+    "Password login system",
+    "User management UI",
+    "Production secret store integration",
+    "Multi-tenant identity system",
+    "Dashboard access control implementation",
+    "Provider-specific identity integration"
+  ],
+  "relatedArtifacts": [
+    "docs/production_auth_operator_access_design.md",
+    "docs/examples/gl067/auth_operator_role_matrix.json",
+    "backend/tests/test_gl067_production_auth_operator_access_design.py",
+    "docs/runtime_configuration_environment_model.md",
+    "docs/product_architecture_extension_boundaries.md",
+    "docs/production_hardening_roadmap.md",
+    "docs/api_openapi_contract_hardening_review.md"
+  ]
+}
