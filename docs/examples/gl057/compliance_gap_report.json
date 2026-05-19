@@ -1,0 +1,16 @@
+{
+  "reportType": "compliance_gap_report",
+  "reportVersion": "gl-compliance-gap-v1",
+  "executionId": "gl057-execution-001",
+  "workflowId": "gl057-workflow-001",
+  "subjectId": "gl057-subject-001",
+  "overallStatus": "clear",
+  "severity": "none",
+  "complianceGaps": [],
+  "blockingGaps": [],
+  "recommendedActions": ["no_action_required"],
+  "completeness": {
+    "score": 100,
+    "status": "complete"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "recordType": "decision_provenance",
+  "recordVersion": "gl-decision-provenance-v2",
+  "decisionId": "gl057-decision-001",
+  "workflowId": "gl057-workflow-001",
+  "executionId": "gl057-execution-001",
+  "subjectId": "gl057-subject-001",
+  "actorId": "gl057-operator-001",
+  "action": "deploy",
+  "decision": "approved",
+  "decisionStatus": "approved",
+  "reason": "All signals indicate a clean, complete workflow with no gaps or blockers.",
+  "readiness": {
+    "evidence": "ready",
+    "compliance": "ready",
+    "permission": "ready",
+    "approval": "ready",
+    "provenance": "ready",
+    "policy": "ready"
+  },
+  "signals": {
+    "evidence": "complete",
+    "compliance": "complete",
+    "permission": "allowed",
+    "approval": "approved",
+    "provenance": "present",
+    "policy": "passed"
+  },
+  "blockers": [],
+  "warnings": []
+}

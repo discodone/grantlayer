@@ -1,0 +1,16 @@
+{
+  "recordType": "policy_requirement_evaluation",
+  "recordVersion": "gl-policy-requirements-v1",
+  "policyPackId": "gl057-policy-001",
+  "policyPackVersion": "1.0.0",
+  "subjectId": "gl057-subject-001",
+  "evaluationStatus": "passed",
+  "readiness": "ready",
+  "requiredEvidence": ["execution_log", "deployment_manifest"],
+  "missingEvidence": [],
+  "exclusionViolations": [],
+  "deadlineStatus": "none",
+  "amountStatus": "within_limit",
+  "blockers": [],
+  "warnings": []
+}
