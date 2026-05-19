@@ -1,0 +1,235 @@
+{
+  "agendaId": "gl062-pilot-review-agenda",
+  "agendaVersion": "1.0",
+  "title": "GrantLayer Pilot Review Agenda",
+  "description": "Machine-readable agenda for a first technical pilot partner review meeting. Defines the meeting goal, prerequisites, ordered agenda items, demo commands, required artifacts, decision options, stop conditions, and explicit non-goals.",
+  "status": "pilot-review-preparation",
+  "agendaDate": "2026-05-19",
+  "meetingGoal": "Confirm partner understanding of the GrantLayer Product Core, map one real workflow to GrantLayer records, identify integration touchpoints, surface production-hardening gaps, and agree on pilot success criteria or blockers.",
+  "prerequisites": [
+    "Partner has read docs/integration_guide.md",
+    "Partner has read docs/integrator_quickstart.md",
+    "Partner has read docs/minimal_api_usage_walkthrough.md",
+    "Partner has read docs/demo_scenario.md",
+    "Partner has read docs/pilot_ready_handoff_plan.md",
+    "Partner has read docs/pilot_ready_release_decision.md",
+    "Partner has read docs/demo_runner_api_smoke.md",
+    "Partner can run python3 scripts/demo/gl061_api_smoke.py --dry-run locally",
+    "Partner can run python3 -m unittest discover backend.tests -v locally"
+  ],
+  "agendaItems": [
+    {
+      "itemNumber": 1,
+      "title": "Product statement and problem fit",
+      "durationMinutes": 10,
+      "owner": "GrantLayer",
+      "goal": "Confirm the partner understands the core value proposition and sees a problem fit.",
+      "deliverable": "Partner can restate the product statement in their own words."
+    },
+    {
+      "itemNumber": 2,
+      "title": "Partner workflow overview",
+      "durationMinutes": 15,
+      "owner": "Partner",
+      "goal": "Understand the partner's current grant or funding workflow and pain points.",
+      "deliverable": "High-level workflow diagram or description shared by the partner."
+    },
+    {
+      "itemNumber": 3,
+      "title": "GrantLayer Product Core walkthrough",
+      "durationMinutes": 15,
+      "owner": "GrantLayer",
+      "goal": "Walk through the 12 Product Core stages from grant request to compliance readiness.",
+      "deliverable": "Partner can name each stage and its purpose."
+    },
+    {
+      "itemNumber": 4,
+      "title": "Demo scenario review",
+      "durationMinutes": 10,
+      "owner": "GrantLayer",
+      "goal": "Trace the municipality microgrant scenario and map it to the partner's domain.",
+      "deliverable": "Partner identifies at least one analogous step in their own workflow."
+    },
+    {
+      "itemNumber": 5,
+      "title": "GL-057 example JSON review",
+      "durationMinutes": 10,
+      "owner": "GrantLayer",
+      "goal": "Inspect the 12 static JSON examples and explain stable identifier relationships.",
+      "deliverable": "Partner traces a stable ID through at least three example files."
+    },
+    {
+      "itemNumber": 6,
+      "title": "GL-058 minimal API usage walkthrough",
+      "durationMinutes": 10,
+      "owner": "GrantLayer",
+      "goal": "Map each Product Core stage to an OpenAPI path and explain contract boundaries.",
+      "deliverable": "Partner can name the OpenAPI path for grant request creation and grant retrieval."
+    },
+    {
+      "itemNumber": 7,
+      "title": "GL-061 demo runner dry-run",
+      "durationMinutes": 5,
+      "owner": "GrantLayer",
+      "goal": "Run the demo runner locally to demonstrate artifact coherence.",
+      "deliverable": "Dry-run completes with zero errors and the partner sees the ordered smoke plan."
+    },
+    {
+      "itemNumber": 8,
+      "title": "Integration touchpoint mapping",
+      "durationMinutes": 15,
+      "owner": "Both",
+      "goal": "Identify where the partner's system would connect to GrantLayer.",
+      "deliverable": "A list of at least two candidate integration touchpoints (e.g., intake, approval, evidence bundle, auditor export)."
+    },
+    {
+      "itemNumber": 9,
+      "title": "Non-goals and production-hardening gaps",
+      "durationMinutes": 10,
+      "owner": "GrantLayer",
+      "goal": "Explicitly surface what is not included and what production operation would require.",
+      "deliverable": "Partner lists at least three production-hardening priorities and acknowledges non-goals."
+    },
+    {
+      "itemNumber": 10,
+      "title": "Pilot success criteria",
+      "durationMinutes": 10,
+      "owner": "Both",
+      "goal": "Review the success criteria checklist and agree on what success means for this phase.",
+      "deliverable": "A signed-off or agreed list of 3–5 pilot success criteria."
+    },
+    {
+      "itemNumber": 11,
+      "title": "Next decision",
+      "durationMinutes": 10,
+      "owner": "Both",
+      "goal": "Choose one recommended next path and schedule a follow-up if needed.",
+      "deliverable": "A single chosen decision option and a follow-up date or condition."
+    }
+  ],
+  "demoCommands": [
+    {
+      "command": "python3 scripts/demo/gl061_api_smoke.py --dry-run",
+      "purpose": "Demonstrate local artifact coherence without network access."
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl062_pilot_partner_preparation_pack -v",
+      "purpose": "Validate that the pilot partner preparation pack is present and coherent."
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl061_demo_runner_api_smoke -v",
+      "purpose": "Validate that the demo runner and smoke manifest are present and coherent."
+    },
+    {
+      "command": "python3 -m unittest discover backend.tests -v",
+      "purpose": "Run the full backend suite to confirm zero failures and zero errors."
+    }
+  ],
+  "requiredArtifacts": [
+    {
+      "artifactId": "gl053-integration-guide",
+      "title": "Minimum Viable Integration Guide",
+      "path": "docs/integration_guide.md",
+      "purpose": "Explains what GrantLayer is and what it solves."
+    },
+    {
+      "artifactId": "gl057-integrator-quickstart",
+      "title": "Integrator Quickstart",
+      "path": "docs/integrator_quickstart.md",
+      "purpose": "Minimal static JSON examples for quick integrator onboarding."
+    },
+    {
+      "artifactId": "gl058-api-walkthrough",
+      "title": "Minimal API Usage Walkthrough",
+      "path": "docs/minimal_api_usage_walkthrough.md",
+      "purpose": "Maps Product Core stages to OpenAPI paths."
+    },
+    {
+      "artifactId": "gl054-demo-scenario",
+      "title": "Integration Demo Scenario",
+      "path": "docs/demo_scenario.md",
+      "purpose": "Concrete deterministic example with actor definitions."
+    },
+    {
+      "artifactId": "gl059-handoff-plan",
+      "title": "Pilot-Ready Handoff Plan",
+      "path": "docs/pilot_ready_handoff_plan.md",
+      "purpose": "Technical handoff package for pilot discussions."
+    },
+    {
+      "artifactId": "gl060-release-decision",
+      "title": "Pilot-Ready Release Decision",
+      "path": "docs/pilot_ready_release_decision.md",
+      "purpose": "Formal release decision recording the current Pilot-Ready state."
+    },
+    {
+      "artifactId": "gl061-demo-runner",
+      "title": "Demo Runner / API Smoke Script",
+      "path": "docs/demo_runner_api_smoke.md",
+      "purpose": "Local dry-run confidence check for Pilot-Ready artifacts."
+    },
+    {
+      "artifactId": "gl062-preparation-pack",
+      "title": "Pilot Partner Preparation Pack",
+      "path": "docs/pilot_partner_preparation_pack.md",
+      "purpose": "This document — the practical package for the pilot partner discussion."
+    },
+    {
+      "artifactId": "gl062-questionnaire",
+      "title": "Pilot Partner Questionnaire",
+      "path": "docs/examples/gl062/pilot_partner_questionnaire.json",
+      "purpose": "Machine-readable partner questionnaire."
+    },
+    {
+      "artifactId": "gl062-agenda",
+      "title": "Pilot Review Agenda",
+      "path": "docs/examples/gl062/pilot_review_agenda.json",
+      "purpose": "Machine-readable pilot review agenda."
+    }
+  ],
+  "decisionOptions": [
+    {
+      "optionId": "opt-01",
+      "label": "Proceed to scoped pilot plan",
+      "description": "Define a time-boxed pilot with the partner, specific success criteria, and a clear endpoint."
+    },
+    {
+      "optionId": "opt-02",
+      "label": "Run local API smoke v2",
+      "description": "Extend the GL-061 demo runner to exercise more edge cases or integrate a lightweight local API client."
+    },
+    {
+      "optionId": "opt-03",
+      "label": "Prioritize production-hardening roadmap",
+      "description": "Rank critical gaps and plan a hardening sprint before the next partner discussion."
+    },
+    {
+      "optionId": "opt-04",
+      "label": "Pause for API / OpenAPI contract hardening",
+      "description": "Invest in tightening the OpenAPI specification and contract tests before proceeding."
+    }
+  ],
+  "defaultDecisionOptionId": "opt-01",
+  "stopConditions": [
+    "The full backend suite is failing.",
+    "OpenAPI / readiness validation is failing.",
+    "Any pilot handoff artifact is missing or unreadable.",
+    "Non-goals are unclear or have been silently promoted to in-scope features.",
+    "Production readiness is being claimed accidentally or implicitly.",
+    "Credentials or real personal data appear in examples, fixtures, or documentation.",
+    "The partner expects production SaaS deployment in this phase.",
+    "A P0 or P1 blocker is identified that prevents pilot planning."
+  ],
+  "nonGoals": [
+    "Production deployment (containers, load balancing, TLS termination, orchestration)",
+    "Production authentication (OAuth, JWT, SSO, HSM-backed key management)",
+    "Production key material (demo Ed25519 keypair and synthetic data only)",
+    "Production observability (metrics, logging pipelines, alerting, tracing)",
+    "Backup / restore (no automated backup, point-in-time recovery, or disaster runbooks)",
+    "SDKs (no client libraries for Python, JavaScript, or Go)",
+    "Legal or compliance certification (outputs are structured records, not legal advice)",
+    "Blockchain / wallet / payment integration (SHA-256 and Ed25519 only)",
+    "Dashboard / UI (HTML dashboard is present but not productized)",
+    "Multi-tenant SaaS (no tenant isolation, subscription billing, or SaaS onboarding)"
+  ]
+}

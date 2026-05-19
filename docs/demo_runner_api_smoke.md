@@ -94,3 +94,4 @@ This demo runner **explicitly does not** provide:
 - [`docs/pilot_ready_release_decision.md`](pilot_ready_release_decision.md) — pilot-ready release decision
 - [`docs/examples/gl061/api_smoke_manifest.json`](examples/gl061/api_smoke_manifest.json) — machine-readable smoke manifest
 - [`backend/tests/test_gl061_demo_runner_api_smoke.py`](../backend/tests/test_gl061_demo_runner_api_smoke.py) — validation test for the demo runner
+- [`docs/pilot_partner_preparation_pack.md`](pilot_partner_preparation_pack.md) — GL-062 pilot partner preparation pack
