@@ -1,0 +1,90 @@
+{
+  "matrixId": "gl070-persistence-backend-matrix",
+  "matrixVersion": "1.0",
+  "status": "product-foundation-planning",
+  "productStatement": "GrantLayer turns agentic grant workflows into verifiable institutional records.",
+  "persistenceBackends": [
+    {
+      "backend": "sqlite",
+      "purpose": "Convenience and deterministic non-production persistence",
+      "suitableRuntimeModes": ["local-dev", "test", "demo"],
+      "productionSuitable": false,
+      "requiredConfiguration": [
+        "Database file path or in-memory declaration",
+        "Schema migration enable/disable flag"
+      ],
+      "secretBearingFields": [],
+      "migrationExpectation": "File-based migration executed on startup for non-memory databases",
+      "backupExpectation": "No automated backup guidance; operator-dependent file copies",
+      "ciTestExpectation": "Full test suite runs in-memory without external services",
+      "implementationStatus": "implemented",
+      "notes": "SQLite is not sufficient alone for production-readiness claims. Must not become production default."
+    },
+    {
+      "backend": "postgresql",
+      "purpose": "Primary production candidate backend for institutional workloads",
+      "suitableRuntimeModes": ["integration", "staging", "production"],
+      "productionSuitable": false,
+      "requiredConfiguration": [
+        "Explicit database connection URL",
+        "Connection pool size",
+        "Connection timeout values",
+        "Retry policy",
+        "Schema migration validation flag"
+      ],
+      "secretBearingFields": [
+        "Connection URL credentials",
+        "SSL certificate paths",
+        "Connection pool credentials"
+      ],
+      "migrationExpectation": "Migrations must be validated against PostgreSQL before deployment",
+      "backupExpectation": "Automated backup schedule, retention policy, and disaster recovery runbooks required before production claim",
+      "ciTestExpectation": "CI must be able to run tests against a live PostgreSQL instance",
+      "implementationStatus": "not-implemented",
+      "notes": "PostgreSQL is the planned production backend but is not yet implemented or verified."
+    }
+  ],
+  "productCorePersistenceContracts": [
+    "stable_persistent_ids",
+    "grant_request_records",
+    "grant_records",
+    "grant_execution_records",
+    "evidence_bundle_records",
+    "evidence_verification_records",
+    "provenance_audit_records",
+    "policy_compliance_records",
+    "operator_access_records",
+    "transaction_expectations",
+    "deterministic_test_fixtures"
+  ],
+  "backendBoundaryRules": [
+    "Product Core should not depend on SQLite-specific behavior",
+    "Backend-specific connection details should stay behind configuration boundaries",
+    "Database credentials are secret-bearing config and must use approved secret sources",
+    "Storage backend choice should not change public API contracts",
+    "Persistence errors should map into stable error semantics",
+    "Production mode should fail closed if persistence config is missing or invalid"
+  ],
+  "productionClaimRules": [
+    "Production persistence claim requires explicit database backend declaration",
+    "Production persistence claim requires validated connection configuration",
+    "Production persistence claim requires credentials from approved secret source",
+    "Production persistence claim requires schema compatibility verified on target backend",
+    "Production persistence claim requires all migrations validated against target backend",
+    "Production persistence claim requires transaction consistency tests passing",
+    "Production persistence claim requires CI able to run PostgreSQL-backed tests",
+    "Production persistence claim requires backup/restore expectations defined and verified",
+    "Production persistence claim requires operational runbooks for persistence",
+    "Production persistence claim requires no SQLite-only default in production mode",
+    "Production persistence claim is not yet claimed"
+  ],
+  "relatedArtifacts": [
+    "docs/persistence_backend_postgresql_readiness_design.md",
+    "docs/examples/gl070/postgresql_readiness_catalog.json",
+    "backend/tests/test_gl070_persistence_backend_postgresql_readiness.py",
+    "docs/deployment_package_runtime_modes_design.md",
+    "docs/runtime_configuration_environment_model.md",
+    "docs/product_architecture_extension_boundaries.md",
+    "docs/production_hardening_roadmap.md"
+  ]
+}

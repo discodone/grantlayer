@@ -1,0 +1,153 @@
+{
+  "catalogId": "gl070-postgresql-readiness-catalog",
+  "catalogVersion": "1.0",
+  "status": "product-foundation-planning",
+  "productStatement": "GrantLayer turns agentic grant workflows into verifiable institutional records.",
+  "readinessCategories": [
+    {
+      "id": "connection-configuration",
+      "name": "Connection Configuration",
+      "purpose": "Explicit, validated PostgreSQL connection parameters",
+      "productionRequired": true,
+      "currentStatus": "not-implemented",
+      "futureValidationGate": "Connection parameters are declared in configuration schema and validated on startup",
+      "dependencies": ["persistence-configuration-schema", "secret-management-baseline"],
+      "notes": "Includes database URL, pool size, timeout, retry policy"
+    },
+    {
+      "id": "credential-secret-source",
+      "name": "Credential Secret Source",
+      "purpose": "Database credentials sourced through approved secret boundary",
+      "productionRequired": true,
+      "currentStatus": "not-implemented",
+      "futureValidationGate": "Credentials are never hard-coded; always resolved through secret source abstraction",
+      "dependencies": ["secret-management-baseline", "connection-configuration"],
+      "notes": "Aligns with GL-068 secret management baseline design"
+    },
+    {
+      "id": "schema-compatibility",
+      "name": "Schema Compatibility",
+      "purpose": "All Product Core tables, indexes, and constraints work on PostgreSQL",
+      "productionRequired": true,
+      "currentStatus": "not-verified",
+      "futureValidationGate": "Automated verification that every migration applies cleanly to PostgreSQL",
+      "dependencies": ["connection-configuration", "migration-system"],
+      "notes": "SQLite-specific DDL must not leak into Product Core contract"
+    },
+    {
+      "id": "migration-validation",
+      "name": "Migration Validation",
+      "purpose": "Every migration tested against both SQLite and PostgreSQL",
+      "productionRequired": true,
+      "currentStatus": "not-verified",
+      "futureValidationGate": "CI runs migration validation against PostgreSQL for every migration file",
+      "dependencies": ["schema-compatibility", "ci-postgresql-service"],
+      "notes": "Migrations must remain explicit, reviewable, and backward-compatible"
+    },
+    {
+      "id": "transaction-semantics",
+      "name": "Transaction Semantics",
+      "purpose": "Grant workflows demonstrate correct transaction behavior on PostgreSQL",
+      "productionRequired": true,
+      "currentStatus": "not-verified",
+      "futureValidationGate": "Regression tests verify atomic grant creation, approval, and evidence persistence under failure",
+      "dependencies": ["schema-compatibility", "connection-configuration"],
+      "notes": "Includes rollback scenarios and mid-transaction failure handling"
+    },
+    {
+      "id": "ci-postgresql-service",
+      "name": "CI PostgreSQL Service",
+      "purpose": "Test suite can execute against live PostgreSQL in CI or local environment",
+      "productionRequired": true,
+      "currentStatus": "not-implemented",
+      "futureValidationGate": "CI pipeline includes PostgreSQL-backed test execution with gating",
+      "dependencies": ["connection-configuration", "schema-compatibility"],
+      "notes": "Does not require production cloud database; local or containerized PostgreSQL acceptable"
+    },
+    {
+      "id": "backup-restore-expectations",
+      "name": "Backup/Restore Expectations",
+      "purpose": "Documented retention, restore procedures, and recovery verification",
+      "productionRequired": true,
+      "currentStatus": "not-defined",
+      "futureValidationGate": "Runbooks exist and recovery tests confirm restoration within defined objectives",
+      "dependencies": ["persistence-operational-runbook"],
+      "notes": "Aligned with GL-069 deployment package backup/restore configuration expectations"
+    },
+    {
+      "id": "persistence-operational-runbook",
+      "name": "Persistence Operational Runbook",
+      "purpose": "Operator guidance for database health, troubleshooting, and failover",
+      "productionRequired": true,
+      "currentStatus": "not-defined",
+      "futureValidationGate": "Runbook covers health checks, connection troubleshooting, and incident response",
+      "dependencies": ["connection-configuration", "backup-restore-expectations"],
+      "notes": "Must not contain credentials or secrets"
+    },
+    {
+      "id": "production-fail-closed-persistence",
+      "name": "Production Fail-Closed Persistence Startup",
+      "purpose": "Production mode refuses to start if persistence config is missing or invalid",
+      "productionRequired": true,
+      "currentStatus": "not-implemented",
+      "futureValidationGate": "Startup checks block production startup on missing backend declaration, invalid credentials, or unreachable database",
+      "dependencies": ["connection-configuration", "runtime-mode-declaration"],
+      "notes": "Aligned with GL-066 runtime configuration and GL-069 deployment package expectations"
+    }
+  ],
+  "futureImplementationItems": [
+    "persistence-configuration-schema",
+    "database-backend-selection-boundary",
+    "postgresql-connection-configuration",
+    "postgresql-test-service-ci-gate",
+    "schema-compatibility-verification",
+    "migration-execution-validation",
+    "transaction-consistency-regression-tests",
+    "backup-restore-design-verification",
+    "persistence-operational-runbook",
+    "production-fail-closed-persistence-startup-checks"
+  ],
+  "failClosedRules": [
+    "Production mode must refuse to start if database backend is not explicitly declared",
+    "Production mode must refuse to start if database credentials are missing or unresolved",
+    "Production mode must refuse to start if persistence backend is unreachable after retry",
+    "Production mode must refuse to start if schema version is unverified or incompatible",
+    "Production mode must not silently fall back to SQLite file or in-memory database",
+    "Production mode must not allow placeholder or default database credentials"
+  ],
+  "migrationExpectations": [
+    "Migrations must remain explicit and reviewable",
+    "Schema changes must not happen silently",
+    "Backward compatibility must be considered for product releases",
+    "Data migration risk must be separated from API behavior changes",
+    "Production deployment requires migration/runbook guidance"
+  ],
+  "transactionExpectations": [
+    "Grant approval and grant creation flows require transactional clarity",
+    "Evidence persistence and verification records need consistent linkage",
+    "Audit/provenance records should not be partially inconsistent with workflow state",
+    "Future PostgreSQL work should include transaction semantics tests"
+  ],
+  "backupRestoreRelationship": "Persistence backend readiness is connected to backup/restore and data lifecycle design. Backup/restore is not implemented in this block. Production persistence must define retention, restore, and recovery expectations.",
+  "implementationNonGoals": [
+    "PostgreSQL runtime support",
+    "DB adapter refactor",
+    "Migration changes",
+    "Schema changes",
+    "Docker Compose PostgreSQL service",
+    "CI PostgreSQL service",
+    "Cloud database setup",
+    "Backup/restore automation",
+    "Performance tuning",
+    "Multi-tenant database model"
+  ],
+  "relatedArtifacts": [
+    "docs/persistence_backend_postgresql_readiness_design.md",
+    "docs/examples/gl070/persistence_backend_matrix.json",
+    "backend/tests/test_gl070_persistence_backend_postgresql_readiness.py",
+    "docs/deployment_package_runtime_modes_design.md",
+    "docs/runtime_configuration_environment_model.md",
+    "docs/product_architecture_extension_boundaries.md",
+    "docs/production_hardening_roadmap.md"
+  ]
+}
