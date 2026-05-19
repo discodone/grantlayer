@@ -160,3 +160,5 @@ Integration-Ready v0 is achieved. The repository contains all required artifacts
 - [`docs/integration_ready_checklist.md`](integration_ready_checklist.md) — minimum artifact and verification gate definition
 - [`docs/integration_guide.md`](integration_guide.md) — minimum viable integration guide
 - [`docs/demo_scenario.md`](demo_scenario.md) — concrete deterministic demo scenario
+- [`docs/integrator_quickstart.md`](integrator_quickstart.md) — static example JSON files for quick integrator onboarding
+- [`docs/integrator_quickstart.md`](integrator_quickstart.md) — static example JSON files for quick integrator onboarding

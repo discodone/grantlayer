@@ -1,0 +1,19 @@
+{
+  "reportType": "evidence_completeness",
+  "reportVersion": "gl-038-a1",
+  "executionId": "gl057-execution-001",
+  "grantId": "gl057-grant-001",
+  "completenessScore": 100,
+  "completenessStatus": "complete",
+  "complianceGaps": [],
+  "missingEvidence": [],
+  "auditReadiness": "ready",
+  "checks": {
+    "executionPresent": true,
+    "evidencePresent": true,
+    "evidenceVerified": true,
+    "provenanceEventsPresent": true,
+    "auditorReportAvailable": true,
+    "criticalGapsPresent": false
+  }
+}

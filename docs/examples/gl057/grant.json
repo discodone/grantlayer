@@ -1,0 +1,16 @@
+{
+  "grantId": "gl057-grant-001",
+  "grantRequestId": "gl057-request-001",
+  "subjectId": "gl057-subject-001",
+  "role": "developer",
+  "action": "deploy",
+  "resource": "demo-service-gl057",
+  "validFrom": "2026-01-01T00:00:00Z",
+  "validUntil": "2026-12-31T23:59:59Z",
+  "signature": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899",
+  "signingKeyId": "demo-ed25519-v1",
+  "payloadHash": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+  "createdBy": "gl057-approver-001",
+  "reason": "Approved from request gl057-request-001: GL-057 integrator quickstart example request.",
+  "createdAt": "2026-01-16T10:01:00Z"
+}

@@ -1,0 +1,27 @@
+{
+  "evidenceId": "gl057-evidence-001",
+  "executionId": "gl057-execution-001",
+  "grantId": "gl057-grant-001",
+  "grantRequestId": "gl057-request-001",
+  "generatedAt": "2026-01-20T14:01:00Z",
+  "evidenceHash": "112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+  "canonicalVersion": "gl-evidence-v1",
+  "hashAlgorithm": "sha256",
+  "grant": {
+    "grantId": "gl057-grant-001",
+    "subjectId": "gl057-subject-001",
+    "signingKeyId": "demo-ed25519-v1",
+    "payloadHash": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+  },
+  "execution": {
+    "result": "succeeded",
+    "executedAt": "2026-01-20T14:00:00Z"
+  },
+  "auditTrail": [
+    {
+      "timestamp": "2026-01-20T14:00:00Z",
+      "action": "deploy",
+      "approved": true
+    }
+  ]
+}

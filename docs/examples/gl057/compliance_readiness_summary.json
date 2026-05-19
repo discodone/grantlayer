@@ -1,0 +1,20 @@
+{
+  "recordType": "compliance_readiness_summary",
+  "recordVersion": "gl-compliance-readiness-v1",
+  "subjectId": "gl057-subject-001",
+  "workflowId": "gl057-workflow-001",
+  "grantId": "gl057-grant-001",
+  "executionId": "gl057-execution-001",
+  "readinessStatus": "ready",
+  "readinessScore": 100,
+  "evidenceStatus": "ready",
+  "complianceStatus": "ready",
+  "permissionStatus": "ready",
+  "approvalStatus": "ready",
+  "provenanceStatus": "ready",
+  "auditorExportStatus": "ready",
+  "policyStatus": "ready",
+  "blockers": [],
+  "warnings": [],
+  "recommendedActions": []
+}

@@ -1,0 +1,24 @@
+{
+  "recordType": "auditor_export",
+  "recordVersion": "gl-auditor-export-v1",
+  "exportId": "gl057-auditor-export-001",
+  "exportType": "workflow",
+  "workflowId": "gl057-workflow-001",
+  "subjectId": "gl057-subject-001",
+  "grantId": "gl057-grant-001",
+  "executionId": "gl057-execution-001",
+  "decisionId": "gl057-decision-001",
+  "exportStatus": "ready",
+  "auditReadiness": "audit_ready",
+  "sections": [
+    "decisionProvenance",
+    "auditorReport",
+    "evidence",
+    "compliance",
+    "permission",
+    "approval",
+    "policy"
+  ],
+  "blockers": [],
+  "warnings": []
+}
