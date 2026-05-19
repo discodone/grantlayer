@@ -197,6 +197,7 @@ Any statement to external partners, documentation, or marketing materials must i
 
 ## See also
 
+- [`docs/api_openapi_contract_hardening_review.md`](api_openapi_contract_hardening_review.md) — GL-064 API/OpenAPI contract hardening review
 - [`docs/production_readiness_cut.md`](production_readiness_cut.md) — GL-063 production readiness cut
 - [`docs/pilot_ready_release_decision.md`](pilot_ready_release_decision.md) — GL-060 pilot-ready release decision
 - [`docs/pilot_partner_preparation_pack.md`](pilot_partner_preparation_pack.md) — GL-062 pilot partner preparation pack
