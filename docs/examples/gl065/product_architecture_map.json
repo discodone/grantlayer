@@ -1,0 +1,345 @@
+{
+  "architectureId": "gl065-product-architecture-map",
+  "architectureVersion": "1.0",
+  "status": "product-foundation-planning",
+  "productStatement": "GrantLayer turns agentic grant workflows into verifiable institutional records.",
+  "architectureLayers": [
+    {
+      "layerId": "layer-01-api-contract",
+      "name": "API / Contract Layer",
+      "purpose": "OpenAPI-documented HTTP surface that integrators and clients rely on.",
+      "stable": true
+    },
+    {
+      "layerId": "layer-02-product-core-domain",
+      "name": "Product Core Domain Layer",
+      "purpose": "Canonical domain models, lifecycles, and evaluation logic.",
+      "stable": true
+    },
+    {
+      "layerId": "layer-03-evidence-verification",
+      "name": "Evidence and Verification Layer",
+      "purpose": "Evidence bundles, hash computation, tamper detection, and completeness scoring.",
+      "stable": true
+    },
+    {
+      "layerId": "layer-04-policy-permission",
+      "name": "Policy and Permission Layer",
+      "purpose": "Policy rule packs, permission profiles, approval lifecycles, and requirement evaluation.",
+      "stable": true
+    },
+    {
+      "layerId": "layer-05-provenance-audit-export",
+      "name": "Provenance, Audit, and Export Layer",
+      "purpose": "Decision provenance, audit event records, and auditor exports.",
+      "stable": true
+    },
+    {
+      "layerId": "layer-06-persistence",
+      "name": "Persistence Layer",
+      "purpose": "Durable storage for grants, requests, evidence, audit events, and configuration.",
+      "stable": true
+    },
+    {
+      "layerId": "layer-07-runtime-configuration",
+      "name": "Runtime Configuration Layer",
+      "purpose": "Environment-specific settings, feature flags, and deployment parameters.",
+      "stable": false
+    },
+    {
+      "layerId": "layer-08-extension-adapter",
+      "name": "Extension / Adapter Layer",
+      "purpose": "Pluggable surfaces that map external formats, identity providers, and storage backends into the Product Core without redefining it.",
+      "stable": false
+    },
+    {
+      "layerId": "layer-09-optional-integration",
+      "name": "Optional Integration Layer",
+      "purpose": "Blockchain anchoring, wallet signing, payment integrations, dashboard clients, and observability sinks that may be attached but are not required for Product Core operation.",
+      "stable": false
+    }
+  ],
+  "coreModules": [
+    {
+      "moduleId": "core-grant-requests",
+      "name": "Grant Requests",
+      "description": "Subject-initiated requests for scoped actions, time-bounded and auditable."
+    },
+    {
+      "moduleId": "core-approvals",
+      "name": "Approvals",
+      "description": "Operator or policy-driven approval decisions linked to grant requests."
+    },
+    {
+      "moduleId": "core-grants",
+      "name": "Grants",
+      "description": "Active permission records with Ed25519 signatures and SHA-256 payload hashes."
+    },
+    {
+      "moduleId": "core-grant-executions",
+      "name": "Grant Executions",
+      "description": "One record per protected action attempt, linked to a Grant and a Grant Request."
+    },
+    {
+      "moduleId": "core-evidence-bundles",
+      "name": "Evidence Bundles",
+      "description": "Flat, deterministic JSON bundles aggregating the full lifecycle for a single execution."
+    },
+    {
+      "moduleId": "core-evidence-persistence",
+      "name": "Evidence Persistence",
+      "description": "Durable, immutable storage for evidence bundles with hash-based lookup."
+    },
+    {
+      "moduleId": "core-evidence-verification",
+      "name": "Evidence Verification",
+      "description": "Offline recomputation and comparison of evidence hashes to detect tampering or corruption."
+    },
+    {
+      "moduleId": "core-evidence-completeness",
+      "name": "Evidence Completeness",
+      "description": "Structured score and readiness flag derived from execution, evidence, verification, provenance, and policy coverage."
+    },
+    {
+      "moduleId": "core-compliance-gap-reports",
+      "name": "Compliance Gap Reports",
+      "description": "Automated gap detection mapped to severity catalogues with recommended actions."
+    },
+    {
+      "moduleId": "core-policy-requirements",
+      "name": "Policy Requirements / Rule Packs",
+      "description": "Machine-readable policy evaluation with required evidence, exclusions, deadlines, amount limits, required roles, and approval policies."
+    },
+    {
+      "moduleId": "core-agent-permissions",
+      "name": "Agent Permissions",
+      "description": "Scope-based permission evaluation, permission profiles, and assignment resolution for agents."
+    },
+    {
+      "moduleId": "core-approval-lifecycle",
+      "name": "Approval Lifecycle",
+      "description": "Evaluate whether an action needs approval, build approval lifecycles, and transition them through states."
+    },
+    {
+      "moduleId": "core-decision-provenance",
+      "name": "Decision Provenance",
+      "description": "Structured decision records linking evidence completeness, compliance gaps, permissions, approvals, provenance events, auditor findings, and policy results."
+    },
+    {
+      "moduleId": "core-auditor-exports",
+      "name": "Auditor Exports",
+      "description": "Institutional auditor export combining all signals into a single structured record with section coverage, blockers, and audit-readiness status."
+    },
+    {
+      "moduleId": "core-compliance-readiness",
+      "name": "Compliance Readiness",
+      "description": "Composite readiness summary across evidence, compliance, permission, approval, provenance, auditor, and policy dimensions."
+    },
+    {
+      "moduleId": "core-api-openapi-contract",
+      "name": "API / OpenAPI Contract",
+      "description": "Versioned HTTP contract with stable paths, schemas, and compatibility expectations."
+    },
+    {
+      "moduleId": "core-audit-events",
+      "name": "Audit / Event Records",
+      "description": "Append-only event log capturing significant state changes with timestamps and actor references."
+    },
+    {
+      "moduleId": "core-persistence",
+      "name": "Persistence Layer",
+      "description": "The abstraction boundary for durable storage, currently implemented with SQLite and optional PostgreSQL."
+    },
+    {
+      "moduleId": "core-operator-admin",
+      "name": "Operator / Admin Access Boundary",
+      "description": "The role-based access model that ensures only authorized actors can mutate Product Core state."
+    }
+  ],
+  "stablePublicContracts": [
+    "API paths and request/response schemas",
+    "Evidence bundle records",
+    "Verification result records",
+    "Provenance summaries",
+    "Auditor export records",
+    "Compliance readiness summaries",
+    "Policy requirement results",
+    "Permission evaluation results",
+    "Approval lifecycle records",
+    "Persistent IDs across workflow, grant, execution, evidence, and subject boundaries"
+  ],
+  "extensionSurfaces": [
+    {
+      "surfaceId": "ext-policy-rule-packs",
+      "name": "Policy rule packs",
+      "description": "Custom rule definitions that feed into the standard policy evaluation contract."
+    },
+    {
+      "surfaceId": "ext-evidence-source-adapters",
+      "name": "Evidence source adapters",
+      "description": "External evidence feeds mapped to the canonical evidence bundle shape."
+    },
+    {
+      "surfaceId": "ext-evidence-verification-strategies",
+      "name": "Evidence verification strategies",
+      "description": "Alternative or additional verification methods that still produce a standard verification result record."
+    },
+    {
+      "surfaceId": "ext-auditor-export-formats",
+      "name": "Auditor export formats",
+      "description": "New output formats that still export the canonical auditor export record structure."
+    },
+    {
+      "surfaceId": "ext-compliance-readiness-dimensions",
+      "name": "Compliance readiness dimensions",
+      "description": "Additional readiness dimensions that feed into the standard readiness summary."
+    },
+    {
+      "surfaceId": "ext-permission-profiles",
+      "name": "Permission profiles",
+      "description": "Optional profile definitions evaluated within the standard permission contract."
+    },
+    {
+      "surfaceId": "ext-approval-workflow-profiles",
+      "name": "Approval workflow profiles",
+      "description": "Optional workflow patterns that still produce standard approval lifecycle records."
+    },
+    {
+      "surfaceId": "ext-storage-backends",
+      "name": "Storage / persistence backends",
+      "description": "Replaceable storage implementations that preserve Product Core IDs and integrity constraints."
+    },
+    {
+      "surfaceId": "ext-auth-identity-providers",
+      "name": "Auth / identity providers",
+      "description": "Replaceable identity and authentication backends that still produce standard operator references and role assignments."
+    },
+    {
+      "surfaceId": "ext-sdk-api-clients",
+      "name": "SDK / API clients",
+      "description": "Generated or handwritten clients that speak the stable API contract."
+    },
+    {
+      "surfaceId": "ext-workflow-orchestrator",
+      "name": "Workflow orchestrator integrations",
+      "description": "External orchestrators that interact via the stable API contract."
+    },
+    {
+      "surfaceId": "ext-observability-sinks",
+      "name": "Observability sinks",
+      "description": "Metrics, logging, and alerting backends that consume standard event streams."
+    },
+    {
+      "surfaceId": "ext-blockchain-anchoring",
+      "name": "Optional blockchain anchoring",
+      "description": "Periodic anchoring of integrity hashes to a blockchain for enhanced tamper evidence."
+    },
+    {
+      "surfaceId": "ext-wallet-payment",
+      "name": "Optional wallet / payment integration",
+      "description": "Wallet signatures, disbursement records, or payment receipts linked to grant executions via stable IDs."
+    },
+    {
+      "surfaceId": "ext-dashboard-ui",
+      "name": "Dashboard / UI layer",
+      "description": "Client applications that consume the stable API contract without embedding Product Core logic."
+    }
+  ],
+  "internalImplementationDetails": [
+    "Internal file layout and module organization",
+    "Low-level helper function names and signatures",
+    "SQLite test implementation details",
+    "Exact storage implementation (schema, indices, migration ordering)",
+    "Temporary demo defaults and synthetic data",
+    "Local-only assumptions (e.g., single-machine deployment)",
+    "Current test fixture layout",
+    "Non-production auth shortcuts (e.g., admin-token bypass paths)"
+  ],
+  "explicitNonCoreAreas": [
+    "Payment processing",
+    "Wallet custody",
+    "Blockchain dependency",
+    "Public grant discovery / matchmaking",
+    "Full SaaS tenant management",
+    "Production dashboard product",
+    "Legal / compliance certification",
+    "HSM-backed signing implementation",
+    "Hosted production deployment automation"
+  ],
+  "customizationModel": [
+    {
+      "customizationId": "custom-rule-packs",
+      "name": "Rule packs",
+      "scope": "policy requirements, exclusions, thresholds"
+    },
+    {
+      "customizationId": "custom-approval-profiles",
+      "name": "Approval profiles",
+      "scope": "multi-step, quorum, delegated"
+    },
+    {
+      "customizationId": "custom-permission-profiles",
+      "name": "Permission profiles",
+      "scope": "scope templates, role hierarchies"
+    },
+    {
+      "customizationId": "custom-evidence-requirements",
+      "name": "Evidence requirements",
+      "scope": "what counts as sufficient evidence per domain"
+    },
+    {
+      "customizationId": "custom-export-formats",
+      "name": "Export formats",
+      "scope": "layout and serialization of auditor exports"
+    },
+    {
+      "customizationId": "custom-storage-backend",
+      "name": "Storage backend",
+      "scope": "SQLite, PostgreSQL, or future backend via the persistence boundary"
+    },
+    {
+      "customizationId": "custom-deployment-config",
+      "name": "Deployment / runtime configuration",
+      "scope": "environment variables, feature flags, container layout"
+    },
+    {
+      "customizationId": "custom-auth-provider",
+      "name": "Auth provider",
+      "scope": "local tokens, OAuth, SSO, mTLS"
+    },
+    {
+      "customizationId": "custom-client-sdk",
+      "name": "Client / SDK layer",
+      "scope": "Python, JavaScript, Go, etc."
+    },
+    {
+      "customizationId": "custom-ui-dashboard",
+      "name": "UI / dashboard",
+      "scope": "React, Vue, mobile, etc."
+    },
+    {
+      "customizationId": "custom-integrity-anchoring",
+      "name": "Optional integrity anchoring",
+      "scope": "frequency, chain, anchoring service"
+    }
+  ],
+  "recommendedEvolutionOrder": [
+    "Freeze and validate API / OpenAPI contract boundaries",
+    "Define the runtime configuration model",
+    "Define the auth / operator access model",
+    "Define the secret management baseline",
+    "Define the persistence backend boundary",
+    "Define extension / adaptor interface expectations",
+    "Add SDK / client examples after contract stabilization",
+    "Add UI / dashboard only after API and extension boundaries stabilize",
+    "Keep blockchain / payment optional and outside Product Core"
+  ],
+  "relatedArtifacts": [
+    "docs/api_openapi_contract_hardening_review.md",
+    "docs/production_hardening_roadmap.md",
+    "docs/product_core_readiness.md",
+    "docs/examples/gl065/product_architecture_map.json",
+    "docs/examples/gl065/extension_boundary_catalog.json",
+    "backend/tests/test_gl065_product_architecture_extension_boundaries.py"
+  ]
+}

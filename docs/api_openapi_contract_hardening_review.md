@@ -190,6 +190,7 @@ Any statement to external partners, documentation, or marketing materials must i
 - [`docs/openapi.yaml`](openapi.yaml) — definitive API contract
 - [`docs/production_hardening_roadmap.md`](production_hardening_roadmap.md) — GL-063 production-hardening roadmap with prioritized workstreams
 - [`docs/production_readiness_cut.md`](production_readiness_cut.md) — GL-063 production readiness cut
+- [`docs/product_architecture_extension_boundaries.md`](product_architecture_extension_boundaries.md) — GL-065 product architecture and extension boundaries
 - [`docs/pilot_ready_release_decision.md`](pilot_ready_release_decision.md) — GL-060 pilot-ready release decision
 - [`docs/integration_ready_checklist.md`](integration_ready_checklist.md) — Integration-Ready v0 checklist
 - [`docs/minimal_api_usage_walkthrough.md`](minimal_api_usage_walkthrough.md) — minimal API usage walkthrough
