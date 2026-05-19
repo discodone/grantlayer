@@ -369,3 +369,5 @@ A deterministic demo scenario and fixture are also available for integrators who
 The full backend suite is expected to pass with 0 failures and 0 errors.
 
 See also: [`docs/integration_ready_checklist.md`](integration_ready_checklist.md) — the minimum artifact and verification gate for Integration-Ready v0.
+
+- [`docs/minimal_api_usage_walkthrough.md`](minimal_api_usage_walkthrough.md) — step-by-step API-first walkthrough with stable identifiers and verified OpenAPI paths
