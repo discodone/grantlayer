@@ -146,6 +146,7 @@ After the first pilot discussion, the team should decide:
 ## See also
 
 - [`docs/pilot_ready_checklist.md`](pilot_ready_checklist.md) — pilot-ready validation gate
+- [`docs/pilot_ready_release_decision.md`](pilot_ready_release_decision.md) — GL-060 pilot-ready release decision
 - [`docs/integration_ready_release_candidate.md`](integration_ready_release_candidate.md) — Integration-Ready v0 consolidated review
 - [`docs/integrator_quickstart.md`](integrator_quickstart.md) — minimal static JSON examples
 - [`docs/minimal_api_usage_walkthrough.md`](minimal_api_usage_walkthrough.md) — API-first walkthrough
