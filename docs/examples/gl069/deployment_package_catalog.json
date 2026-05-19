@@ -1,0 +1,282 @@
+{
+  "catalogId": "gl069-deployment-package-catalog",
+  "catalogVersion": "1.0",
+  "status": "product-foundation-planning",
+  "productStatement": "GrantLayer turns agentic grant workflows into verifiable institutional records.",
+  "packageComponents": [
+    {
+      "id": "application-package",
+      "name": "Application package",
+      "purpose": "Runnable GrantLayer application code, dependencies, and entry points",
+      "requiredForLocalDemo": true,
+      "requiredForProduction": true,
+      "configurable": false,
+      "secretBearing": false,
+      "implementationStatus": "implemented",
+      "notes": "Must be built from validated source with reproducible build steps. No debug or test code in production artifact."
+    },
+    {
+      "id": "configuration-schema",
+      "name": "Configuration schema",
+      "purpose": "Validated schema that defines required, optional, and per-runtime-mode configuration fields",
+      "requiredForLocalDemo": true,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": false,
+      "implementationStatus": "planned",
+      "notes": "Must be explicit and versioned. Production must refuse to start if required fields are missing or invalid."
+    },
+    {
+      "id": "runtime-mode-declaration",
+      "name": "Runtime mode declaration",
+      "purpose": "Declared runtime mode validated on startup",
+      "requiredForLocalDemo": true,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": false,
+      "implementationStatus": "planned",
+      "notes": "Must be explicitly set and validated. Must fail closed if undeclared or invalid."
+    },
+    {
+      "id": "database-persistence-configuration",
+      "name": "Database / persistence configuration",
+      "purpose": "Active persistence backend and connection configuration",
+      "requiredForLocalDemo": true,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": true,
+      "implementationStatus": "partial",
+      "notes": "SQLite acceptable locally. Production requires explicit durable backend with validated connection."
+    },
+    {
+      "id": "secret-source-configuration",
+      "name": "Secret source configuration",
+      "purpose": "How keys, tokens, and credentials are sourced, rotated, and stored",
+      "requiredForLocalDemo": false,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": true,
+      "implementationStatus": "not-implemented",
+      "notes": "Production requires explicit secret manager. No demo or placeholder secrets allowed."
+    },
+    {
+      "id": "auth-operator-access-configuration",
+      "name": "Auth / operator access configuration",
+      "purpose": "Active auth provider and operator access model",
+      "requiredForLocalDemo": false,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": true,
+      "implementationStatus": "not-implemented",
+      "notes": "Production requires explicit auth provider and validated operator bootstrap."
+    },
+    {
+      "id": "evidence-storage-configuration",
+      "name": "Evidence storage configuration",
+      "purpose": "Where evidence bundles are persisted and retrieved",
+      "requiredForLocalDemo": false,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": true,
+      "implementationStatus": "partial",
+      "notes": "Production requires durable, explicit storage. Credentials must not leak into evidence metadata."
+    },
+    {
+      "id": "policy-rule-pack-configuration",
+      "name": "Policy / rule pack configuration",
+      "purpose": "Which policy rules are active and where they are loaded from",
+      "requiredForLocalDemo": true,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": false,
+      "implementationStatus": "partial",
+      "notes": "Production must not load demo or unverified rule packs."
+    },
+    {
+      "id": "observability-logging-configuration",
+      "name": "Observability / logging configuration",
+      "purpose": "Structured logging, metrics, alerting, and tracing backends and thresholds",
+      "requiredForLocalDemo": false,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": true,
+      "implementationStatus": "not-implemented",
+      "notes": "Production requires explicit structured logging and metrics. Sink credentials must not appear in startup output."
+    },
+    {
+      "id": "backup-restore-configuration",
+      "name": "Backup / restore configuration",
+      "purpose": "Automated backup schedule, retention policy, point-in-time recovery, and disaster runbooks",
+      "requiredForLocalDemo": false,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": true,
+      "implementationStatus": "not-implemented",
+      "notes": "Production requires explicit tested backup/restore plan. Credentials must be scoped to backup operations only."
+    },
+    {
+      "id": "health-readiness-checks",
+      "name": "Health / readiness checks",
+      "purpose": "Health and readiness probes verifying application and dependency status",
+      "requiredForLocalDemo": false,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": false,
+      "implementationStatus": "not-implemented",
+      "notes": "Must be implemented in production. Must not leak secrets or sensitive configuration in responses."
+    },
+    {
+      "id": "api-openapi-contract-artifact",
+      "name": "API / OpenAPI contract artifact",
+      "purpose": "Versioned OpenAPI specification defining the API contract",
+      "requiredForLocalDemo": true,
+      "requiredForProduction": true,
+      "configurable": false,
+      "secretBearing": false,
+      "implementationStatus": "implemented",
+      "notes": "Must match deployed application version. Must be available to integrators."
+    },
+    {
+      "id": "demo-sample-data-bundle",
+      "name": "Demo / sample data bundle",
+      "purpose": "Deterministic fixtures, example grants, evidence bundles, and policy rules for walkthroughs",
+      "requiredForLocalDemo": true,
+      "requiredForProduction": false,
+      "configurable": false,
+      "secretBearing": false,
+      "implementationStatus": "partial",
+      "notes": "Must not be loaded in production. Must be labeled as non-production."
+    },
+    {
+      "id": "integration-example-bundle",
+      "name": "Integration example bundle",
+      "purpose": "Example API calls, SDK snippets, and partner integration patterns",
+      "requiredForLocalDemo": true,
+      "requiredForProduction": false,
+      "configurable": false,
+      "secretBearing": false,
+      "implementationStatus": "partial",
+      "notes": "Must not contain real credentials or secrets. Must be labeled as examples only."
+    },
+    {
+      "id": "operator-runbook",
+      "name": "Operator runbook",
+      "purpose": "Step-by-step instructions for common operator tasks",
+      "requiredForLocalDemo": false,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": false,
+      "implementationStatus": "planned",
+      "notes": "Must be specific to the target environment. Must not contain secrets."
+    },
+    {
+      "id": "upgrade-migration-notes",
+      "name": "Upgrade / migration notes",
+      "purpose": "Documented steps and compatibility expectations between versions",
+      "requiredForLocalDemo": false,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": false,
+      "implementationStatus": "planned",
+      "notes": "Must be deterministic and tested. Must include rollback guidance."
+    },
+    {
+      "id": "extension-adaptor-configuration",
+      "name": "Extension / adaptor configuration",
+      "purpose": "Which extensions, adapters, and optional integrations are enabled",
+      "requiredForLocalDemo": false,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": false,
+      "implementationStatus": "not-implemented",
+      "notes": "Must be explicit in production. Must not load unverified or unauthorized extensions."
+    },
+    {
+      "id": "production-hardening-checklist",
+      "name": "Production hardening checklist",
+      "purpose": "Pre-deployment verification list covering deployment-critical configuration",
+      "requiredForLocalDemo": false,
+      "requiredForProduction": true,
+      "configurable": true,
+      "secretBearing": false,
+      "implementationStatus": "planned",
+      "notes": "Must be completed and signed off before any production claim."
+    }
+  ],
+  "deploymentBoundaries": [
+    {
+      "boundary": "Product Core should not depend on one hosting platform",
+      "rationale": "The core should run wherever the runtime configuration boundary is satisfied. Docker, Kubernetes, cloud, and bare-metal are all potential future targets."
+    },
+    {
+      "boundary": "Docker / Kubernetes / cloud deployment may be future packaging options, not Product Core assumptions",
+      "rationale": "Future packaging layers may wrap the product package, but the Product Core must not require them."
+    },
+    {
+      "boundary": "Deployment-specific configuration should stay outside Product Core records",
+      "rationale": "Host names, container IDs, and infrastructure metadata should not appear in evidence bundles, audit records, or provenance records."
+    },
+    {
+      "boundary": "Secrets must not be baked into images, docs, examples, fixtures, or logs",
+      "rationale": "The build process must not embed credentials into artifacts."
+    },
+    {
+      "boundary": "Extension / adaptor configuration should be environment-specific",
+      "rationale": "Which adapters are active should be part of runtime configuration, not hard-coded into the product package."
+    },
+    {
+      "boundary": "Production mode should fail closed if deployment-critical configuration is missing",
+      "rationale": "Missing, invalid, or unvalidated deployment configuration must block startup."
+    }
+  ],
+  "referencePackageExpectations": [
+    "Runnable application package with validated build artifact or reproducible source build steps",
+    "Example non-production configuration with explicit non-production warning labels",
+    "Versioned OpenAPI contract artifact matching the deployed application",
+    "Example rule packs with deterministic policy requirements, exclusions, and permission profiles",
+    "Example evidence fixtures with structured evidence bundles and verification examples",
+    "Dry-run smoke script as a lightweight executable confidence check",
+    "Operator runbook with common operations, step-by-step instructions, and rollback guidance",
+    "Production hardening checklist covering runtime mode, secrets, auth, persistence, observability, backup/restore, and network exposure",
+    "Explicit non-production warning labels on every example, fixture, and demo configuration"
+  ],
+  "productionRequiredConfiguration": [
+    "Explicit runtime mode set to production",
+    "Explicit deployment environment context",
+    "Explicit database/persistence backend with validated reachability",
+    "Explicit secret source configuration with validated values",
+    "Explicit auth/operator access configuration with validated role mapping",
+    "Explicit evidence storage configuration with durable retention",
+    "Explicit observability/logging configuration with structured output",
+    "Explicit backup/restore plan with tested recovery procedures",
+    "Explicit network binding/exposure rules with TLS and access controls",
+    "Explicit health/readiness checks implemented and accurate",
+    "Explicit production hardening checklist completed and signed off",
+    "Fail-closed behavior for missing or invalid required configuration"
+  ],
+  "implementationNonGoals": [
+    "Dockerfile implementation",
+    "docker-compose implementation",
+    "Kubernetes manifests implementation",
+    "Cloud deployment implementation",
+    "Production CI/CD pipeline implementation",
+    "Reverse proxy implementation",
+    "TLS automation implementation",
+    "Secret manager integration implementation",
+    "Monitoring stack implementation",
+    "Backup system implementation",
+    "Production database automation implementation",
+    "Hosted SaaS platform implementation",
+    "Multi-tenant deployment implementation"
+  ],
+  "relatedArtifacts": [
+    "docs/deployment_package_runtime_modes_design.md",
+    "docs/examples/gl069/deployment_runtime_mode_matrix.json",
+    "backend/tests/test_gl069_deployment_package_runtime_modes_design.py",
+    "docs/runtime_configuration_environment_model.md",
+    "docs/secret_management_baseline_design.md",
+    "docs/production_auth_operator_access_design.md",
+    "docs/product_architecture_extension_boundaries.md",
+    "docs/production_hardening_roadmap.md"
+  ]
+}

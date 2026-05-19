@@ -192,6 +192,7 @@ Any statement to external partners, documentation, or marketing materials must i
 - [`docs/secret_management_baseline_design.md`](secret_management_baseline_design.md) — GL-068 secret management baseline design
 - [`docs/production_hardening_roadmap.md`](production_hardening_roadmap.md) — GL-063 production-hardening roadmap
 - [`docs/api_openapi_contract_hardening_review.md`](api_openapi_contract_hardening_review.md) — GL-064 API/OpenAPI contract hardening review
+- [`docs/deployment_package_runtime_modes_design.md`](deployment_package_runtime_modes_design.md) — GL-069 deployment package and runtime modes design
 - [`docs/examples/gl066/runtime_environment_matrix.json`](examples/gl066/runtime_environment_matrix.json) — machine-readable runtime environment matrix
 - [`docs/examples/gl066/configuration_contract_catalog.json`](examples/gl066/configuration_contract_catalog.json) — machine-readable configuration contract catalog
 - [`backend/tests/test_gl066_runtime_configuration_environment_model.py`](../backend/tests/test_gl066_runtime_configuration_environment_model.py) — validation test for this runtime configuration environment model
