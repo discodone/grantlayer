@@ -1,0 +1,277 @@
+{
+  "questionnaireId": "gl062-pilot-partner-questionnaire",
+  "questionnaireVersion": "1.0",
+  "title": "GrantLayer Pilot Partner Questionnaire",
+  "description": "Machine-readable questionnaire for a first technical pilot partner discussion. Covers workflow fit, evidence needs, compliance expectations, integration touchpoints, data privacy, auth/security, production hardening, success criteria, and blockers.",
+  "status": "pilot-partner-preparation",
+  "questionnaireDate": "2026-05-19",
+  "partnerProfileQuestions": [
+    {
+      "id": "q-profile-01",
+      "category": "partnerProfile",
+      "question": "Is the partner an API-first technical evaluator?",
+      "type": "boolean",
+      "rationale": "An API-first partner can evaluate GrantLayer without a dedicated UI."
+    },
+    {
+      "id": "q-profile-02",
+      "category": "partnerProfile",
+      "question": "Does the partner have grant or funding workflow context?",
+      "type": "boolean",
+      "rationale": "Domain knowledge accelerates mapping real workflows to GrantLayer stages."
+    },
+    {
+      "id": "q-profile-03",
+      "category": "partnerProfile",
+      "question": "Does the partner have an evidence, audit, or compliance need?",
+      "type": "boolean",
+      "rationale": "A concrete need validates that GrantLayer solves a real problem."
+    },
+    {
+      "id": "q-profile-04",
+      "category": "partnerProfile",
+      "question": "Can the partner review local or test artifacts on their own machine?",
+      "type": "boolean",
+      "rationale": "Local review is the primary pilot mode; hosted demo is not required."
+    },
+    {
+      "id": "q-profile-05",
+      "category": "partnerProfile",
+      "question": "Is the partner willing to identify production-hardening gaps?",
+      "type": "boolean",
+      "rationale": "Gap identification is a key output of the pilot review."
+    },
+    {
+      "id": "q-profile-06",
+      "category": "partnerProfile",
+      "question": "Does the partner understand that production SaaS is not available in this phase?",
+      "type": "boolean",
+      "rationale": "Misaligned expectations about production readiness are a common pilot risk."
+    }
+  ],
+  "workflowFitQuestions": [
+    {
+      "id": "q-workflow-01",
+      "category": "workflowFit",
+      "question": "What grant or funding workflows does the institution run today?",
+      "type": "freeText",
+      "rationale": "Understanding current workflows is the foundation for integration mapping."
+    },
+    {
+      "id": "q-workflow-02",
+      "category": "workflowFit",
+      "question": "Where do agents or automation already participate in those workflows?",
+      "type": "freeText",
+      "rationale": "Agentic participation points are the natural GrantLayer integration sites."
+    },
+    {
+      "id": "q-workflow-03",
+      "category": "workflowFit",
+      "question": "What are the biggest friction points between agentic steps and institutional approval?",
+      "type": "freeText",
+      "rationale": "Friction points highlight where verification and audit records add value."
+    }
+  ],
+  "evidenceQuestions": [
+    {
+      "id": "q-evidence-01",
+      "category": "evidence",
+      "question": "What evidence is currently collected for a grant decision?",
+      "type": "freeText",
+      "rationale": "Evidence types determine how GrantLayer bundles map to partner reality."
+    },
+    {
+      "id": "q-evidence-02",
+      "category": "evidence",
+      "question": "How does the institution prove, after the fact, that a decision was correct and complete?",
+      "type": "freeText",
+      "rationale": "Post-hoc proof requirements validate the need for decision provenance."
+    },
+    {
+      "id": "q-evidence-03",
+      "category": "evidence",
+      "question": "Who requests the evidence (auditor, board, regulator, internal compliance)?",
+      "type": "freeText",
+      "rationale": "Stakeholders determine the format and urgency of auditor exports."
+    }
+  ],
+  "auditComplianceQuestions": [
+    {
+      "id": "q-audit-01",
+      "category": "auditCompliance",
+      "question": "What format do auditors or compliance officers expect?",
+      "type": "freeText",
+      "rationale": "Format expectations guide whether machine-readable exports or human-readable reports are needed."
+    },
+    {
+      "id": "q-audit-02",
+      "category": "auditCompliance",
+      "question": "Are machine-readable exports required, or only human-readable reports?",
+      "type": "singleChoice",
+      "options": ["Machine-readable only", "Human-readable only", "Both", "Not sure"],
+      "rationale": "Determines whether JSON auditor exports or PDF-style reports are the priority."
+    },
+    {
+      "id": "q-audit-03",
+      "category": "auditCompliance",
+      "question": "How often does the institution face audit requests that require reconstructing a decision chain?",
+      "type": "singleChoice",
+      "options": ["Monthly or more", "Quarterly", "Annually", "Rarely", "Never"],
+      "rationale": "Frequency of audit requests quantifies the operational value of decision provenance."
+    }
+  ],
+  "integrationQuestions": [
+    {
+      "id": "q-integration-01",
+      "category": "integration",
+      "question": "Would GrantLayer sit behind existing systems, or would existing systems call GrantLayer APIs?",
+      "type": "singleChoice",
+      "options": ["GrantLayer behind existing systems", "Existing systems call GrantLayer", "Both", "Not sure"],
+      "rationale": "Architecture direction determines which OpenAPI paths are most important."
+    },
+    {
+      "id": "q-integration-02",
+      "category": "integration",
+      "question": "Are synchronous or asynchronous approval flows preferred?",
+      "type": "singleChoice",
+      "options": ["Synchronous", "Asynchronous", "Both", "Not sure"],
+      "rationale": "Flow type influences whether webhook or polling patterns are needed."
+    },
+    {
+      "id": "q-integration-03",
+      "category": "integration",
+      "question": "What is the preferred API contract format?",
+      "type": "singleChoice",
+      "options": ["OpenAPI / REST", "GraphQL", "gRPC", "Other", "Not sure"],
+      "rationale": "Contract format preference signals compatibility with GrantLayer's OpenAPI-first design."
+    }
+  ],
+  "dataPrivacyQuestions": [
+    {
+      "id": "q-data-01",
+      "category": "dataPrivacy",
+      "question": "What data would flow into GrantLayer (personally identifiable, financial, operational)?",
+      "type": "freeText",
+      "rationale": "Data classification determines privacy and residency requirements."
+    },
+    {
+      "id": "q-data-02",
+      "category": "dataPrivacy",
+      "question": "What data must stay inside the partner's perimeter and never leave?",
+      "type": "freeText",
+      "rationale": "Perimeter constraints determine whether self-hosted or SaaS models are viable."
+    },
+    {
+      "id": "q-data-03",
+      "category": "dataPrivacy",
+      "question": "Are there data-residency or cross-border transfer constraints?",
+      "type": "boolean",
+      "rationale": "Residency constraints affect deployment architecture and cloud provider choices."
+    }
+  ],
+  "authSecurityQuestions": [
+    {
+      "id": "q-auth-01",
+      "category": "authSecurity",
+      "question": "What authentication and access-control model is used today (OAuth, SAML, API passcodes, mutual TLS)?",
+      "type": "freeText",
+      "rationale": "Current auth model informs production auth integration priorities."
+    },
+    {
+      "id": "q-auth-02",
+      "category": "authSecurity",
+      "question": "Is HSM-backed signing required, or is software Ed25519 acceptable for a pilot?",
+      "type": "singleChoice",
+      "options": ["HSM required", "Software Ed25519 acceptable", "Not sure"],
+      "rationale": "Signing requirements determine whether the current demo keypair is a blocker."
+    },
+    {
+      "id": "q-auth-03",
+      "category": "authSecurity",
+      "question": "What identity provider is used for operators and approvers?",
+      "type": "freeText",
+      "rationale": "Identity provider informs OIDC / SAML integration requirements."
+    }
+  ],
+  "productionHardeningQuestions": [
+    {
+      "id": "q-hardening-01",
+      "category": "productionHardening",
+      "question": "What would the partner need to see before running this in production?",
+      "type": "freeText",
+      "rationale": "Production requirements become the hardening roadmap."
+    },
+    {
+      "id": "q-hardening-02",
+      "category": "productionHardening",
+      "question": "Which requirements are blockers for a pilot, and which are only blockers for production?",
+      "type": "freeText",
+      "rationale": "Separating pilot blockers from production blockers keeps scope realistic."
+    },
+    {
+      "id": "q-hardening-03",
+      "category": "productionHardening",
+      "question": "What is the preferred priority order for hardening work?",
+      "type": "freeText",
+      "rationale": "Priority order guides sprint planning after pilot feedback."
+    }
+  ],
+  "pilotSuccessCriteriaQuestions": [
+    {
+      "id": "q-success-01",
+      "category": "pilotSuccessCriteria",
+      "question": "What would convince the partner that GrantLayer solves their verification problem?",
+      "type": "freeText",
+      "rationale": "Positive success criteria define the pilot's target outcome."
+    },
+    {
+      "id": "q-success-02",
+      "category": "pilotSuccessCriteria",
+      "question": "What would convince the partner that GrantLayer does not fit?",
+      "type": "freeText",
+      "rationale": "Negative success criteria help kill the pilot early if misalignment is fundamental."
+    },
+    {
+      "id": "q-success-03",
+      "category": "pilotSuccessCriteria",
+      "question": "What is a minimal viable pilot outcome the partner could present to stakeholders?",
+      "type": "freeText",
+      "rationale": "A minimal outcome makes the pilot time-boxed and evaluable."
+    }
+  ],
+  "blockerQuestions": [
+    {
+      "id": "q-blocker-01",
+      "category": "blockers",
+      "question": "Are there any P0 or P1 blockers that would prevent a pilot from starting?",
+      "type": "freeText",
+      "rationale": "Early blocker identification saves time if the pilot cannot proceed."
+    },
+    {
+      "id": "q-blocker-02",
+      "category": "blockers",
+      "question": "Are there regulatory, procurement, or security-review gates that must be cleared first?",
+      "type": "freeText",
+      "rationale": "Organizational gates often take longer than technical work."
+    },
+    {
+      "id": "q-blocker-03",
+      "category": "blockers",
+      "question": "Is there a hard deadline by which a pilot must show results?",
+      "type": "freeText",
+      "rationale": "Deadlines determine sprint length and the depth of pilot scope."
+    }
+  ],
+  "nonGoals": [
+    "Production deployment (containers, load balancing, TLS termination, orchestration)",
+    "Production authentication (OAuth, JWT, SSO, HSM-backed key management)",
+    "Production key material (demo Ed25519 keypair and synthetic data only)",
+    "Production observability (metrics, logging pipelines, alerting, tracing)",
+    "Backup / restore (no automated backup, point-in-time recovery, or disaster runbooks)",
+    "SDKs (no client libraries for Python, JavaScript, or Go)",
+    "Legal or compliance certification (outputs are structured records, not legal advice)",
+    "Blockchain / wallet / payment integration (SHA-256 and Ed25519 only)",
+    "Dashboard / UI (HTML dashboard is present but not productized)",
+    "Multi-tenant SaaS (no tenant isolation, subscription billing, or SaaS onboarding)"
+  ]
+}
