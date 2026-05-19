@@ -1,0 +1,158 @@
+{
+  "packageId": "gl059-pilot-handoff",
+  "packageVersion": "1.0",
+  "status": "pilot-ready-planning",
+  "title": "GrantLayer Pilot-Ready Handoff Package",
+  "description": "Machine-readable summary of the Integration-Ready v0 artifacts packaged for a first pilot or integration discussion. This package references all required docs, examples, and validation tests, and documents non-goals and pilot success criteria.",
+  "integrationReadyBase": "GL-052 through GL-058",
+  "createdDate": "2026-05-19",
+  "requiredDocs": [
+    {
+      "docId": "gl053-integration-guide",
+      "title": "Minimum Viable Integration Guide",
+      "path": "docs/integration_guide.md",
+      "gl": "GL-053"
+    },
+    {
+      "docId": "gl054-demo-scenario",
+      "title": "Integration Demo Scenario",
+      "path": "docs/demo_scenario.md",
+      "gl": "GL-054"
+    },
+    {
+      "docId": "gl055-integration-ready-checklist",
+      "title": "Integration-Ready Checklist",
+      "path": "docs/integration_ready_checklist.md",
+      "gl": "GL-055"
+    },
+    {
+      "docId": "gl056-integration-ready-rc",
+      "title": "Integration-Ready Release Candidate Review",
+      "path": "docs/integration_ready_release_candidate.md",
+      "gl": "GL-056"
+    },
+    {
+      "docId": "gl057-integrator-quickstart",
+      "title": "Integrator Quickstart",
+      "path": "docs/integrator_quickstart.md",
+      "gl": "GL-057"
+    },
+    {
+      "docId": "gl058-minimal-api-walkthrough",
+      "title": "Minimal API Usage Walkthrough",
+      "path": "docs/minimal_api_usage_walkthrough.md",
+      "gl": "GL-058"
+    },
+    {
+      "docId": "gl059-pilot-handoff-plan",
+      "title": "Pilot-Ready Handoff Plan",
+      "path": "docs/pilot_ready_handoff_plan.md",
+      "gl": "GL-059"
+    },
+    {
+      "docId": "gl059-pilot-ready-checklist",
+      "title": "Pilot-Ready Checklist",
+      "path": "docs/pilot_ready_checklist.md",
+      "gl": "GL-059"
+    }
+  ],
+  "requiredExamples": [
+    {
+      "exampleId": "gl054-demo-fixture",
+      "title": "Demo JSON Fixture",
+      "path": "backend/tests/fixtures/gl054_demo_scenario.json",
+      "gl": "GL-054"
+    },
+    {
+      "exampleId": "gl057-quickstart-examples",
+      "title": "GL-057 Quickstart Example JSON Files",
+      "path": "docs/examples/gl057/",
+      "gl": "GL-057"
+    },
+    {
+      "exampleId": "gl058-walkthrough-json",
+      "title": "Minimal API Usage Walkthrough JSON",
+      "path": "docs/examples/gl058/minimal_api_usage_walkthrough.json",
+      "gl": "GL-058"
+    },
+    {
+      "exampleId": "gl059-handoff-package",
+      "title": "Pilot Handoff Package JSON",
+      "path": "docs/examples/gl059/pilot_handoff_package.json",
+      "gl": "GL-059"
+    }
+  ],
+  "requiredTests": [
+    {
+      "testId": "gl052-e2e-test",
+      "title": "Product Core E2E Flow Test",
+      "path": "backend/tests/test_gl052_product_core_e2e_flow.py",
+      "gl": "GL-052"
+    },
+    {
+      "testId": "gl054-demo-fixture-test",
+      "title": "Demo Fixture Validation Test",
+      "path": "backend/tests/test_gl054_demo_scenario_fixture.py",
+      "gl": "GL-054"
+    },
+    {
+      "testId": "gl055-contract-readiness-test",
+      "title": "Integration Contract & Readiness Gate",
+      "path": "backend/tests/test_gl055_integration_contract_readiness.py",
+      "gl": "GL-055"
+    },
+    {
+      "testId": "gl057-quickstart-test",
+      "title": "Integrator Quickstart Validation Test",
+      "path": "backend/tests/test_gl057_integrator_quickstart_examples.py",
+      "gl": "GL-057"
+    },
+    {
+      "testId": "gl058-walkthrough-test",
+      "title": "Minimal API Usage Walkthrough Validation Test",
+      "path": "backend/tests/test_gl058_minimal_api_usage_walkthrough.py",
+      "gl": "GL-058"
+    },
+    {
+      "testId": "gl059-pilot-handoff-test",
+      "title": "Pilot Handoff Validation Test",
+      "path": "backend/tests/test_gl059_pilot_ready_handoff.py",
+      "gl": "GL-059"
+    }
+  ],
+  "verificationCommands": [
+    "python3 -m unittest backend.tests.test_gl059_pilot_ready_handoff -v",
+    "python3 -m unittest backend.tests.test_gl058_minimal_api_usage_walkthrough -v",
+    "python3 -m unittest backend.tests.test_gl055_integration_contract_readiness -v",
+    "python3 -m unittest discover backend.tests -v"
+  ],
+  "nonGoals": [
+    "Production authentication (OAuth, JWT, SSO, HSM-backed key management)",
+    "Production credential management (HSM, vault integration, credential rotation)",
+    "Deployment hardening (containers, load balancing, TLS termination, orchestration)",
+    "Observability (metrics, logging pipelines, alerting, tracing)",
+    "Backup / restore (automated backup, point-in-time recovery, disaster runbooks)",
+    "SDKs (Python, JavaScript, Go client libraries)",
+    "Blockchain / wallet / payment integrations",
+    "Legal or compliance certification",
+    "Dashboard / UI productization",
+    "Multi-tenant SaaS architecture (tenant isolation, subscription billing, SaaS onboarding)"
+  ],
+  "pilotSuccessCriteria": [
+    "Partner understands the core flow (request → approval → grant → execution → evidence → audit)",
+    "Partner can follow the minimal walkthrough and trace stable identifiers through every stage",
+    "Partner can inspect the demo fixture and static examples and understand the data relationships",
+    "Partner can identify where their system would integrate",
+    "Partner can list missing production requirements and differentiate them from Integration-Ready v0 scope",
+    "No P0/P1 integration blockers are found in the handoff artifacts"
+  ],
+  "recommendedNextDecisions": [
+    "Choose first pilot target / partner profile",
+    "Define pilot environment expectations (local vs hosted demo instance)",
+    "Decide whether to build a small demo runner or API smoke script",
+    "Decide production-hardening priority (OAuth/JWT, credential management, observability, backup/restore, multi-tenancy)",
+    "Decide whether SDK / client examples are needed"
+  ],
+  "productionReady": false,
+  "pilotDiscussionReady": true
+}

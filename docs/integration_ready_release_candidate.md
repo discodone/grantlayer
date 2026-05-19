@@ -162,3 +162,4 @@ Integration-Ready v0 is achieved. The repository contains all required artifacts
 - [`docs/demo_scenario.md`](demo_scenario.md) — concrete deterministic demo scenario
 - [`docs/integrator_quickstart.md`](integrator_quickstart.md) — static example JSON files for quick integrator onboarding
 - [`docs/minimal_api_usage_walkthrough.md`](minimal_api_usage_walkthrough.md) — minimal API usage walkthrough for integrators
+- [`docs/pilot_ready_handoff_plan.md`](pilot_ready_handoff_plan.md) — pilot-ready handoff plan for first integration discussion
