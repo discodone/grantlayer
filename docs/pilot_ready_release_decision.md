@@ -143,4 +143,5 @@ This record is validated by `backend/tests/test_gl060_pilot_ready_release_decisi
 
 - [`docs/pilot_ready_handoff_plan.md`](pilot_ready_handoff_plan.md) — GL-059 pilot-ready handoff plan
 - [`docs/pilot_ready_checklist.md`](pilot_ready_checklist.md) — GL-059 pilot-ready checklist
+- [`docs/demo_runner_api_smoke.md`](demo_runner_api_smoke.md) — GL-061 demo runner / API smoke script
 - [`docs/integration_ready_release_candidate.md`](integration_ready_release_candidate.md) — GL-056 Integration-Ready v0 consolidated review
