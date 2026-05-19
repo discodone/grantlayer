@@ -117,4 +117,5 @@ This quickstart **explicitly does not** provide:
 - [`docs/demo_scenario.md`](demo_scenario.md) — deterministic demo scenario with actors
 - [`docs/integration_ready_checklist.md`](integration_ready_checklist.md) — Integration-Ready v0 checklist
 - [`docs/integration_ready_release_candidate.md`](integration_ready_release_candidate.md) — Integration-Ready v0 release candidate review
+- [`docs/minimal_api_usage_walkthrough.md`](minimal_api_usage_walkthrough.md) — minimal API usage walkthrough mapping Product Core stages to OpenAPI paths
 - [`docs/openapi.yaml`](openapi.yaml) — definitive API contract
