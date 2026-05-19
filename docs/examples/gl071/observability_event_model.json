@@ -1,0 +1,159 @@
+{
+  "description": "Representative observability event categories for GrantLayer structured logging and observability readiness baseline. This is a design artifact; no observability or logging is implemented.",
+  "eventTypeDefinitions": [
+    {
+      "eventType": "api_request",
+      "category": "operational_log",
+      "description": "HTTP/API request start and completion; method, path, status, latency.",
+      "exampleLevel": "INFO",
+      "sensitivity": "low",
+      "redactionRequired": ["authorization_header"],
+      "forbiddenFields": ["raw_body", "access_token"],
+      "retentionHint": "short_term"
+    },
+    {
+      "eventType": "api_error",
+      "category": "operational_log",
+      "description": "Unhandled or structured API errors; status code, error code, error message.",
+      "exampleLevel": "ERROR",
+      "sensitivity": "medium",
+      "redactionRequired": ["stack_trace_local_vars"],
+      "forbiddenFields": ["raw_body", "access_token", "private_key"],
+      "retentionHint": "short_term"
+    },
+    {
+      "eventType": "auth_event",
+      "category": "security_event",
+      "description": "Login, logout, identity verification attempts, and outcomes.",
+      "exampleLevel": "INFO",
+      "sensitivity": "high",
+      "redactionRequired": ["credential_payload", "password_attempt"],
+      "forbiddenFields": ["raw_password", "access_token", "refresh_token", "mfa_secret"],
+      "retentionHint": "long_term"
+    },
+    {
+      "eventType": "permission_decision",
+      "category": "security_event",
+      "description": "Authorization checks, granted or denied, with policy context.",
+      "exampleLevel": "INFO",
+      "sensitivity": "medium",
+      "redactionRequired": [],
+      "forbiddenFields": ["raw_policy_payload", "private_key"],
+      "retentionHint": "long_term"
+    },
+    {
+      "eventType": "evidence_verification",
+      "category": "product_audit_record",
+      "description": "Evidence submitted for verification and the result.",
+      "exampleLevel": "INFO",
+      "sensitivity": "high",
+      "redactionRequired": ["evidence_content"],
+      "forbiddenFields": ["raw_evidence_payload", "full_evidence_document", "private_key"],
+      "retentionHint": "long_term"
+    },
+    {
+      "eventType": "approval_transition",
+      "category": "product_audit_record",
+      "description": "Grant state changes, who initiated them, and the resulting state.",
+      "exampleLevel": "INFO",
+      "sensitivity": "high",
+      "redactionRequired": [],
+      "forbiddenFields": ["raw_evidence_payload", "private_key", "full_sensitive_payload"],
+      "retentionHint": "long_term"
+    },
+    {
+      "eventType": "policy_evaluation",
+      "category": "product_audit_record",
+      "description": "Policy rules evaluated during a request or workflow step.",
+      "exampleLevel": "INFO",
+      "sensitivity": "medium",
+      "redactionRequired": ["rule_parameters"],
+      "forbiddenFields": ["raw_policy_payload", "private_key"],
+      "retentionHint": "long_term"
+    },
+    {
+      "eventType": "persistence_operation",
+      "category": "operational_log",
+      "description": "Database reads and writes, success or failure, not the raw query.",
+      "exampleLevel": "INFO",
+      "sensitivity": "medium",
+      "redactionRequired": ["query_parameters"],
+      "forbiddenFields": ["raw_sql", "connection_string", "password", "private_key"],
+      "retentionHint": "short_term"
+    },
+    {
+      "eventType": "configuration_event",
+      "category": "operational_log",
+      "description": "Runtime configuration changes, reloads, or validation results.",
+      "exampleLevel": "WARN",
+      "sensitivity": "medium",
+      "redactionRequired": ["secret_values"],
+      "forbiddenFields": ["raw_secret", "private_key", "access_token", "password"],
+      "retentionHint": "short_term"
+    },
+    {
+      "eventType": "operator_action",
+      "category": "security_event",
+      "description": "Operator-initiated commands, configuration changes, or recoveries.",
+      "exampleLevel": "INFO",
+      "sensitivity": "high",
+      "redactionRequired": ["command_arguments"],
+      "forbiddenFields": ["raw_secret", "private_key", "access_token", "password"],
+      "retentionHint": "long_term"
+    }
+  ],
+  "categoryDefinitions": {
+    "operational_log": {
+      "description": "System health, performance, and operator incident response signals. Short retention. Operator and SRE access.",
+      "integrityRequirement": "none",
+      "retention": "days_to_weeks",
+      "examples": ["api_request", "api_error", "persistence_operation", "configuration_event"]
+    },
+    "product_audit_record": {
+      "description": "Permanent, append-only record of decisions and state changes. Long-term retention. Auditor and compliance access.",
+      "integrityRequirement": "tamper_evident",
+      "retention": "long_term_regulated",
+      "examples": ["evidence_verification", "approval_transition", "policy_evaluation"]
+    },
+    "provenance_record": {
+      "description": "Cryptographically linked chain of custody for grant decisions. Immutable storage. Auditor and provenance system access.",
+      "integrityRequirement": "cryptographic_hash_or_signature",
+      "retention": "indefinite",
+      "examples": ["grant_approval_provenance", "evidence_anchoring_provenance"]
+    },
+    "security_event": {
+      "description": "Detection and forensic analysis of security-relevant activity. Long retention. Security team and SIEM access.",
+      "integrityRequirement": "append_only",
+      "retention": "long_term",
+      "examples": ["auth_event", "permission_decision", "operator_action"]
+    },
+    "debug_trace": {
+      "description": "Developer troubleshooting output. Very short retention or disabled. Developer-only access. Never enabled in production.",
+      "integrityRequirement": "none",
+      "retention": "ephemeral",
+      "examples": ["request_dump", "detailed_stack_trace", "variable_inspection"]
+    }
+  },
+  "redactionPolicy": {
+    "globalRules": [
+      "Replace redacted fields with standard marker [REDACTED] or structured equivalent.",
+      "Do not truncate or partially mask in a way that leaks information.",
+      "Apply redaction before serialization to the log sink.",
+      "Log redaction failures as a separate configuration_event or security_event."
+    ],
+    "sensitivityLevels": {
+      "low": {
+        "description": "Minimal redaction; generally safe to log.",
+        "requiredRedaction": []
+      },
+      "medium": {
+        "description": "Some fields may need redaction or omission.",
+        "requiredRedaction": ["query_parameters", "rule_parameters", "command_arguments"]
+      },
+      "high": {
+        "description": "Strict redaction; evidence, credentials, and personal data must be hashed or omitted.",
+        "requiredRedaction": ["credential_payload", "evidence_content", "personal_identifiers"]
+      }
+    }
+  }
+}
