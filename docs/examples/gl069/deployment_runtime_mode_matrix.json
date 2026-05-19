@@ -1,0 +1,320 @@
+{
+  "matrixId": "gl069-deployment-runtime-mode-matrix",
+  "matrixVersion": "1.0",
+  "status": "product-foundation-planning",
+  "productStatement": "GrantLayer turns agentic grant workflows into verifiable institutional records.",
+  "runtimeModes": [
+    {
+      "mode": "local-dev",
+      "purpose": "Developer convenience during active development",
+      "intendedOperator": "Developer",
+      "deploymentStyle": "Local process with local-only binding and no external dependencies",
+      "packageContents": [
+        "application-package",
+        "configuration-schema",
+        "runtime-mode-declaration",
+        "demo-sample-data-bundle",
+        "integration-example-bundle",
+        "operator-runbook"
+      ],
+      "allowedDefaults": [
+        "SQLite local database",
+        "Local file paths",
+        "Demo fixtures",
+        "In-memory test fixtures",
+        "Local-only API binding",
+        "Simplified logging",
+        "No external secret manager",
+        "No backup/restore guarantee",
+        "No production observability",
+        "Placeholder identities"
+      ],
+      "requiredExplicitConfiguration": [
+        "runtime-mode-declaration"
+      ],
+      "secretHandlingExpectation": "Developer convenience; deterministic or placeholder secrets acceptable; no external secret manager required",
+      "authExpectation": "Simplified or bypassed authentication acceptable; local admin token reference may be used",
+      "persistenceExpectation": "SQLite or local file storage acceptable",
+      "observabilityExpectation": "Simplified logging acceptable; no structured observability required",
+      "backupRestoreExpectation": "No backup/restore guarantee acceptable",
+      "networkExposureExpectation": "Local-only binding required; no external network exposure",
+      "productionClaimAllowed": false
+    },
+    {
+      "mode": "test",
+      "purpose": "Deterministic automated verification in CI and local test suites",
+      "intendedOperator": "Test automation",
+      "deploymentStyle": "Ephemeral process with isolated storage; no network exposure; self-contained",
+      "packageContents": [
+        "application-package",
+        "configuration-schema",
+        "runtime-mode-declaration",
+        "demo-sample-data-bundle",
+        "integration-example-bundle"
+      ],
+      "allowedDefaults": [
+        "SQLite in-memory or temporary files",
+        "Synthetic data",
+        "Mock auth provider",
+        "Deterministic fixtures",
+        "Local-only API binding",
+        "No external integrations",
+        "No backup/restore guarantee"
+      ],
+      "requiredExplicitConfiguration": [
+        "runtime-mode-declaration"
+      ],
+      "secretHandlingExpectation": "Synthetic secrets acceptable; mock secret sources; no real credentials",
+      "authExpectation": "Mock or bypassed authentication acceptable; fixture-based operator identities",
+      "persistenceExpectation": "SQLite in-memory or temporary files acceptable",
+      "observabilityExpectation": "None required; test output only",
+      "backupRestoreExpectation": "No backup/restore guarantee acceptable",
+      "networkExposureExpectation": "No network exposure; isolated process only",
+      "productionClaimAllowed": false
+    },
+    {
+      "mode": "demo",
+      "purpose": "Illustrative non-production walkthrough for integrators, partners, and stakeholders",
+      "intendedOperator": "Demonstrator or integrator",
+      "deploymentStyle": "Local or temporary hosted instance with limited binding; demo fixtures preloaded",
+      "packageContents": [
+        "application-package",
+        "configuration-schema",
+        "runtime-mode-declaration",
+        "demo-sample-data-bundle",
+        "integration-example-bundle",
+        "operator-runbook"
+      ],
+      "allowedDefaults": [
+        "Demo fixtures",
+        "Example data",
+        "Local-only API binding",
+        "Simplified auth",
+        "No real secrets",
+        "No backup/restore guarantee",
+        "No compliance certification"
+      ],
+      "requiredExplicitConfiguration": [
+        "runtime-mode-declaration",
+        "demo-fixture-isolation-label"
+      ],
+      "secretHandlingExpectation": "Placeholder secrets acceptable; no real credential values; labeled as synthetic",
+      "authExpectation": "Simplified auth acceptable; demo operator identity; no external identity provider",
+      "persistenceExpectation": "SQLite or local file storage acceptable",
+      "observabilityExpectation": "Simplified logging acceptable",
+      "backupRestoreExpectation": "No backup/restore guarantee acceptable",
+      "networkExposureExpectation": "Local-only or documented limited binding; no public exposure without constraints",
+      "productionClaimAllowed": false
+    },
+    {
+      "mode": "integration",
+      "purpose": "Controlled external technical integration with partner systems",
+      "intendedOperator": "Partner engineer",
+      "deploymentStyle": "Partner-agreed host or container with documented constraints and limited network exposure",
+      "packageContents": [
+        "application-package",
+        "configuration-schema",
+        "runtime-mode-declaration",
+        "database-persistence-configuration",
+        "secret-source-configuration",
+        "auth-operator-access-configuration",
+        "evidence-storage-configuration",
+        "observability-logging-configuration",
+        "health-readiness-checks",
+        "integration-example-bundle",
+        "operator-runbook"
+      ],
+      "allowedDefaults": [
+        "Partner-agreed database and auth configuration",
+        "Limited network exposure",
+        "Basic observability",
+        "Documented backup expectations"
+      ],
+      "requiredExplicitConfiguration": [
+        "runtime-mode-declaration",
+        "deployment-environment-context",
+        "partner-agreement-constraints"
+      ],
+      "secretHandlingExpectation": "Partner-agreed secret source with documented constraints; no placeholder secrets",
+      "authExpectation": "Partner-agreed authentication mechanism; documented constraints",
+      "persistenceExpectation": "Partner-agreed database backend; documented durability expectations",
+      "observabilityExpectation": "Basic observability acceptable; partner-agreed configuration",
+      "backupRestoreExpectation": "Documented backup expectations; partner-agreed procedures",
+      "networkExposureExpectation": "Limited and documented network exposure; partner-agreed access controls",
+      "productionClaimAllowed": false
+    },
+    {
+      "mode": "staging",
+      "purpose": "Production-like validation before production deployment",
+      "intendedOperator": "Platform engineer or release manager",
+      "deploymentStyle": "Production target layout without production data; full observability enabled; same package as production target",
+      "packageContents": [
+        "application-package",
+        "configuration-schema",
+        "runtime-mode-declaration",
+        "database-persistence-configuration",
+        "secret-source-configuration",
+        "auth-operator-access-configuration",
+        "evidence-storage-configuration",
+        "policy-rule-pack-configuration",
+        "observability-logging-configuration",
+        "backup-restore-configuration",
+        "health-readiness-checks",
+        "operator-runbook",
+        "upgrade-migration-notes",
+        "production-hardening-checklist"
+      ],
+      "allowedDefaults": [
+        "Same backend and auth as production target",
+        "Realistic but synthetic data",
+        "Full observability",
+        "Backup/restore tested"
+      ],
+      "requiredExplicitConfiguration": [
+        "runtime-mode-declaration",
+        "deployment-environment-context",
+        "database-persistence-backend",
+        "secret-source",
+        "auth-operator-access",
+        "evidence-storage",
+        "observability-logging",
+        "backup-restore-plan",
+        "network-binding-exposure",
+        "health-readiness-checks",
+        "production-hardening-checklist"
+      ],
+      "secretHandlingExpectation": "Production-like secret manager or validated environment boundary; realistic but synthetic data",
+      "authExpectation": "Same auth target as production; realistic but synthetic identities",
+      "persistenceExpectation": "Same database backend as production target; test data isolated",
+      "observabilityExpectation": "Full observability stack enabled to validate production behavior",
+      "backupRestoreExpectation": "Backup/restore tested with documented procedures",
+      "networkExposureExpectation": "Limited and documented network exposure; pre-production only",
+      "productionClaimAllowed": false
+    },
+    {
+      "mode": "production",
+      "purpose": "Explicit hardened operation only",
+      "intendedOperator": "Production operator or institutional admin",
+      "deploymentStyle": "Production-hardened deployment with explicit validated configuration, monitored observability, tested backup/restore, and documented runbooks",
+      "packageContents": [
+        "application-package",
+        "configuration-schema",
+        "runtime-mode-declaration",
+        "database-persistence-configuration",
+        "secret-source-configuration",
+        "auth-operator-access-configuration",
+        "evidence-storage-configuration",
+        "policy-rule-pack-configuration",
+        "observability-logging-configuration",
+        "backup-restore-configuration",
+        "health-readiness-checks",
+        "api-openapi-contract-artifact",
+        "operator-runbook",
+        "upgrade-migration-notes",
+        "extension-adaptor-configuration",
+        "production-hardening-checklist"
+      ],
+      "allowedDefaults": [],
+      "requiredExplicitConfiguration": [
+        "runtime-mode-declaration",
+        "deployment-environment-context",
+        "database-persistence-backend",
+        "secret-source",
+        "auth-operator-access",
+        "evidence-storage",
+        "observability-logging",
+        "backup-restore-plan",
+        "network-binding-exposure",
+        "health-readiness-checks",
+        "production-hardening-checklist"
+      ],
+      "secretHandlingExpectation": "Explicit managed secret boundary; no placeholder or demo secrets; fail-closed if missing",
+      "authExpectation": "Explicit auth provider with validated operator identity; no demo tokens; fail-closed if missing",
+      "persistenceExpectation": "Explicit durable database backend with validated connection and durability guarantees",
+      "observabilityExpectation": "Explicit structured logging, metrics, alerting, and tracing configuration",
+      "backupRestoreExpectation": "Explicit automated backup schedule, retention policy, point-in-time recovery, and disaster runbooks",
+      "networkExposureExpectation": "Explicit host, port, TLS, and access restrictions; minimal exposure required for function",
+      "productionClaimAllowed": true
+    }
+  ],
+  "deploymentClaimRules": [
+    "Production deployment claim is allowed only when runtime mode is explicitly set to production.",
+    "Production deployment claim requires all required deployment-critical configuration to be explicit, validated, and fail-closed if missing.",
+    "Production deployment claim requires explicit database/persistence backend with validated reachability.",
+    "Production deployment claim requires explicit secret source configuration with no placeholder or demo secrets.",
+    "Production deployment claim requires explicit auth/operator access configuration with no demo tokens.",
+    "Production deployment claim requires explicit evidence storage configuration with durable retention.",
+    "Production deployment claim requires explicit observability/logging configuration.",
+    "Production deployment claim requires explicit backup/restore plan with tested recovery procedures.",
+    "Production deployment claim requires explicit network binding/exposure rules with TLS.",
+    "Production deployment claim requires health/readiness checks implemented and returning accurate status.",
+    "Production deployment claim requires production hardening checklist completed and verified.",
+    "Production deployment claim requires no local/test/demo shortcuts, demo fixtures, or placeholder identities in the deployment package."
+  ],
+  "safeDefaults": [
+    {
+      "default": "SQLite local database",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "SQLite lacks production durability, scaling, and concurrency guarantees."
+    },
+    {
+      "default": "Local-only API binding",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "Local binding does not validate network security or external access controls."
+    },
+    {
+      "default": "Demo fixtures and sample data",
+      "allowedInModes": ["demo", "test"],
+      "productionRisk": "Demo fixtures are synthetic and must not be mixed with institutional data."
+    },
+    {
+      "default": "Placeholder identities",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "Placeholder identities provide no real authentication or authorization."
+    },
+    {
+      "default": "Simplified logging",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "Simplified logging lacks structured output, metrics, and alerting required for production operations."
+    },
+    {
+      "default": "No backup/restore guarantee",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "No backup/restore guarantee means data loss is possible without recovery path."
+    },
+    {
+      "default": "No external secret manager",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "No secret manager means credentials are not managed, rotated, or audited."
+    },
+    {
+      "default": "Dry-run smoke behavior",
+      "allowedInModes": ["test", "demo"],
+      "productionRisk": "Dry-run behavior does not validate real dependencies or secret resolution."
+    }
+  ],
+  "productionRequiredDeploymentConfiguration": [
+    "Explicit runtime mode set to production",
+    "Explicit deployment environment context",
+    "Explicit database/persistence backend with validated reachability",
+    "Explicit secret source configuration with validated values",
+    "Explicit auth/operator access configuration with validated role mapping",
+    "Explicit evidence storage configuration with durable retention",
+    "Explicit observability/logging configuration with structured output",
+    "Explicit backup/restore plan with tested recovery procedures",
+    "Explicit network binding/exposure rules with TLS and access controls",
+    "Explicit health/readiness checks implemented and accurate",
+    "Explicit production hardening checklist completed and signed off",
+    "Fail-closed behavior for missing or invalid required configuration"
+  ],
+  "relatedArtifacts": [
+    "docs/deployment_package_runtime_modes_design.md",
+    "docs/examples/gl069/deployment_package_catalog.json",
+    "backend/tests/test_gl069_deployment_package_runtime_modes_design.py",
+    "docs/runtime_configuration_environment_model.md",
+    "docs/secret_management_baseline_design.md",
+    "docs/production_auth_operator_access_design.md",
+    "docs/product_architecture_extension_boundaries.md",
+    "docs/production_hardening_roadmap.md"
+  ]
+}

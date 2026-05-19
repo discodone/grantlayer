@@ -204,6 +204,7 @@ Any statement to external partners, documentation, or marketing materials must i
 - [`docs/pilot_ready_release_decision.md`](pilot_ready_release_decision.md) — GL-060 pilot-ready release decision
 - [`docs/pilot_partner_preparation_pack.md`](pilot_partner_preparation_pack.md) — GL-062 pilot partner preparation pack
 - [`docs/pilot_ready_handoff_plan.md`](pilot_ready_handoff_plan.md) — GL-059 pilot-ready handoff plan
+- [`docs/deployment_package_runtime_modes_design.md`](deployment_package_runtime_modes_design.md) — GL-069 deployment package and runtime modes design
 - [`docs/examples/gl063/production_hardening_backlog.json`](examples/gl063/production_hardening_backlog.json) — machine-readable production hardening backlog
 - [`docs/examples/gl063/production_readiness_cut.json`](examples/gl063/production_readiness_cut.json) — machine-readable production readiness cut
 - [`backend/tests/test_gl063_production_hardening_roadmap.py`](../backend/tests/test_gl063_production_hardening_roadmap.py) — validation test for this roadmap and readiness cut

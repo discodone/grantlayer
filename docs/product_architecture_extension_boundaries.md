@@ -183,6 +183,7 @@ Product Core contracts should be stable; integrations and deployment-specific be
 - [`docs/runtime_configuration_environment_model.md`](runtime_configuration_environment_model.md) — GL-066 runtime configuration and environment model
 - [`docs/production_auth_operator_access_design.md`](production_auth_operator_access_design.md) — GL-067 production auth and operator access design
 - [`docs/production_hardening_roadmap.md`](production_hardening_roadmap.md) — GL-063 production-hardening roadmap
+- [`docs/deployment_package_runtime_modes_design.md`](deployment_package_runtime_modes_design.md) — GL-069 deployment package and runtime modes design
 - [`docs/product_core_readiness.md`](product_core_readiness.md) — Product Core readiness and endpoint inventory
 - [`docs/examples/gl065/product_architecture_map.json`](examples/gl065/product_architecture_map.json) — machine-readable product architecture map
 - [`docs/examples/gl065/extension_boundary_catalog.json`](examples/gl065/extension_boundary_catalog.json) — machine-readable extension boundary catalog
