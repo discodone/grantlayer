@@ -1,0 +1,238 @@
+{
+  "backlogId": "gl064-api-contract-hardening-backlog",
+  "backlogVersion": "1.0",
+  "status": "planning",
+  "productionReadyApiContract": false,
+  "pilotReadyApiReview": true,
+  "categories": [
+    "Endpoint inventory and path stability",
+    "Request schema completeness",
+    "Response schema completeness",
+    "Error response consistency",
+    "Authentication and authorization contract clarity",
+    "Operation IDs and naming consistency",
+    "Examples and sample payloads",
+    "Versioning and compatibility policy",
+    "Pagination/filtering/query parameter consistency",
+    "Audit/provenance/export contract clarity",
+    "Evidence and compliance payload consistency",
+    "OpenAPI validation in CI",
+    "External integrator documentation alignment",
+    "Deprecation and legacy-path policy",
+    "Production contract freeze process"
+  ],
+  "p0Workstreams": [
+    {
+      "id": "p0-contract-freeze-process",
+      "priority": "P0",
+      "title": "Define production API contract freeze process",
+      "rationale": "Without a documented freeze process, the OpenAPI contract can change arbitrarily, making it impossible for integrators to rely on the API surface.",
+      "dependencies": [],
+      "acceptanceGate": "A documented contract freeze process and a versioned OpenAPI artifact with a non-RC version."
+    },
+    {
+      "id": "p0-endpoint-inventory",
+      "priority": "P0",
+      "title": "Confirm endpoint inventory and legacy path policy",
+      "rationale": "Integrators need a complete, labeled inventory of every path so they can distinguish stable endpoints from experimental or deprecated ones.",
+      "dependencies": [],
+      "acceptanceGate": "An endpoint inventory document with maturity labels (stable / experimental / deprecated) for every path."
+    },
+    {
+      "id": "p0-error-response-standardization",
+      "priority": "P0",
+      "title": "Standardize error response schema",
+      "rationale": "Error responses are referenced consistently but may lack required fields, examples per status code, and strict schema enforcement across all endpoints.",
+      "dependencies": [],
+      "acceptanceGate": "OpenAPI ErrorResponse schema is complete and every error status code uses it consistently with examples."
+    },
+    {
+      "id": "p0-auth-permission-contract",
+      "priority": "P0",
+      "title": "Harden auth/permission contract documentation",
+      "rationale": "Several endpoints document security blocks that are not fully enforced, creating a gap between the contract and implementation that must be documented.",
+      "dependencies": [],
+      "acceptanceGate": "Auth/permission contract document that aligns OpenAPI security blocks with current implementation truth and target state."
+    },
+    {
+      "id": "p0-openapi-coverage",
+      "priority": "P0",
+      "title": "Validate OpenAPI path/schema coverage",
+      "rationale": "Missing request examples, missing response examples, undocumented query parameters, and inconsistent field naming reduce integrator confidence.",
+      "dependencies": ["p0-endpoint-inventory"],
+      "acceptanceGate": "Coverage report with zero undocumented public paths and zero schemas lacking examples."
+    },
+    {
+      "id": "p0-ci-openapi-validation",
+      "priority": "P0",
+      "title": "Add CI gate for OpenAPI contract validation",
+      "rationale": "Contract regressions must be caught before merge; structural and semantic validation of the OpenAPI document should be automated.",
+      "dependencies": ["p0-openapi-coverage"],
+      "acceptanceGate": "A CI stage that fails if OpenAPI is structurally invalid or if documented paths lack schemas."
+    },
+    {
+      "id": "p0-compatibility-deprecation",
+      "priority": "P0",
+      "title": "Document compatibility and deprecation rules",
+      "rationale": "Integrators need a guaranteed stability window and a clear communication channel for breaking changes.",
+      "dependencies": ["p0-contract-freeze-process", "p0-endpoint-inventory"],
+      "acceptanceGate": "A published compatibility and deprecation policy document with supported-version lifetimes."
+    }
+  ],
+  "p1Workstreams": [
+    {
+      "id": "p1-richer-examples",
+      "priority": "P1",
+      "title": "Add richer request/response examples",
+      "rationale": "Illustrative JSON examples for every request body and success response reduce onboarding time and surface contract ambiguities.",
+      "dependencies": ["p0-openapi-coverage"],
+      "acceptanceGate": "Every POST/PUT/PATCH request body and every 2xx response has at least one example or examples entry."
+    },
+    {
+      "id": "p1-integrator-grouping",
+      "priority": "P1",
+      "title": "Add integrator-focused endpoint grouping",
+      "rationale": "Grouping endpoints by Product Core area makes the OpenAPI document navigable for partners who think in workflow stages rather than paths.",
+      "dependencies": ["p0-endpoint-inventory"],
+      "acceptanceGate": "Integrators can navigate the OpenAPI document by Product Core concept without reading the full path list."
+    },
+    {
+      "id": "p1-planned-call-smoke",
+      "priority": "P1",
+      "title": "Add planned-call smoke validation against documented paths",
+      "rationale": "A machine-readable report mapping every OpenAPI path to at least one example or test fixture proves the contract is exercised.",
+      "dependencies": ["p0-openapi-coverage", "p0-ci-openapi-validation"],
+      "acceptanceGate": "A machine-readable report mapping every OpenAPI path to at least one example or test fixture."
+    },
+    {
+      "id": "p1-pagination-conventions",
+      "priority": "P1",
+      "title": "Document pagination/filter/query conventions",
+      "rationale": "List endpoints may accept pagination, filtering, and sorting in inconsistent ways; conventions must be standardized and documented.",
+      "dependencies": ["p0-openapi-coverage"],
+      "acceptanceGate": "A conventions document referenced by the OpenAPI spec with example query strings."
+    },
+    {
+      "id": "p1-align-demo-runner",
+      "priority": "P1",
+      "title": "Align demo runner with API usage walkthrough",
+      "rationale": "The GL-061 smoke manifest and the GL-058 walkthrough should reference the exact same OpenAPI paths in the same order.",
+      "dependencies": ["p1-planned-call-smoke"],
+      "acceptanceGate": "A coherence test proving every walkthrough step has a matching smoke manifest entry."
+    },
+    {
+      "id": "p1-partner-checklist",
+      "priority": "P1",
+      "title": "Add contract review checklist for pilot partners",
+      "rationale": "Partners need a short, checklist-driven way to evaluate whether the current contract meets their integration needs.",
+      "dependencies": ["p0-compatibility-deprecation"],
+      "acceptanceGate": "Partner-facing contract review checklist document with pass/fail criteria."
+    }
+  ],
+  "p2Workstreams": [
+    {
+      "id": "p2-sdk-readiness",
+      "priority": "P2",
+      "title": "SDK/client generation readiness",
+      "rationale": "Generated clients require a frozen contract and stable version; this is a post-pilot, post-freeze concern.",
+      "dependencies": ["p0-contract-freeze-process", "p1-richer-examples"],
+      "acceptanceGate": "Generated Python and TypeScript clients compile and pass basic integration tests against a local server."
+    },
+    {
+      "id": "p2-versioned-api-policy",
+      "priority": "P2",
+      "title": "Versioned API policy",
+      "rationale": "Formal URL or header versioning and a documented migration path between versions are required for long-term stability.",
+      "dependencies": ["p0-compatibility-deprecation"],
+      "acceptanceGate": "A versioned API policy document and a proof-of-concept versioned path."
+    },
+    {
+      "id": "p2-changelog-process",
+      "priority": "P2",
+      "title": "Public changelog process",
+      "rationale": "Integrators need visibility into contract changes; a machine-readable and human-readable changelog supports this.",
+      "dependencies": ["p0-contract-freeze-process"],
+      "acceptanceGate": "Changelog exists and is updated automatically from merged contract changes."
+    },
+    {
+      "id": "p2-schema-linting",
+      "priority": "P2",
+      "title": "Advanced schema linting",
+      "rationale": "Adopting a linter enforces naming conventions, example coverage, and security scheme consistency at scale.",
+      "dependencies": ["p0-ci-openapi-validation"],
+      "acceptanceGate": "Linter passes in CI with a documented rule set."
+    },
+    {
+      "id": "p2-conformance-tests",
+      "priority": "P2",
+      "title": "External conformance test pack",
+      "rationale": "Third-party conformance tests validate the running API against the OpenAPI contract, increasing integrator trust.",
+      "dependencies": ["p2-sdk-readiness", "p0-ci-openapi-validation"],
+      "acceptanceGate": "Conformance tests pass against a local GrantLayer instance."
+    },
+    {
+      "id": "p2-dashboard-alignment",
+      "priority": "P2",
+      "title": "Dashboard/API alignment after pilot validation",
+      "rationale": "The HTML dashboard must use the same endpoints and field names as the documented contract to prevent drift.",
+      "dependencies": ["p1-align-demo-runner"],
+      "acceptanceGate": "Dashboard network traffic audit shows no usage of undocumented paths or fields."
+    }
+  ],
+  "recommendedOrder": [
+    "p0-endpoint-inventory",
+    "p0-error-response-standardization",
+    "p0-auth-permission-contract",
+    "p0-openapi-coverage",
+    "p0-ci-openapi-validation",
+    "p1-planned-call-smoke",
+    "p0-compatibility-deprecation",
+    "p2-sdk-readiness"
+  ],
+  "notYetRecommended": [
+    "Rename endpoints without a deprecation policy",
+    "Remove legacy paths without a communicated timeline",
+    "Generate SDKs before contract freeze",
+    "Add versioned public API surface before versioning policy is defined",
+    "Change auth behavior as part of contract review",
+    "Rewrite OpenAPI broadly without scoped issue"
+  ],
+  "relatedArtifacts": [
+    {
+      "artifactId": "gl063-production-hardening-roadmap",
+      "path": "docs/production_hardening_roadmap.md",
+      "description": "Production-hardening roadmap with prioritized workstreams"
+    },
+    {
+      "artifactId": "gl063-production-readiness-cut",
+      "path": "docs/production_readiness_cut.md",
+      "description": "Production readiness cut documenting blockers and permitted scope"
+    },
+    {
+      "artifactId": "gl055-integration-contract-readiness",
+      "path": "backend/tests/test_gl055_integration_contract_readiness.py",
+      "description": "OpenAPI contract validation test guarding expected and legacy paths"
+    },
+    {
+      "artifactId": "gl058-minimal-api-usage-walkthrough",
+      "path": "docs/minimal_api_usage_walkthrough.md",
+      "description": "Step-by-step API-first walkthrough mapping Product Core stages to OpenAPI paths"
+    },
+    {
+      "artifactId": "gl061-demo-runner-api-smoke",
+      "path": "docs/demo_runner_api_smoke.md",
+      "description": "Demo runner / API smoke script for local dry-run confidence"
+    },
+    {
+      "artifactId": "gl064-api-contract-readiness-snapshot",
+      "path": "docs/examples/gl064/api_contract_readiness_snapshot.json",
+      "description": "Machine-readable API contract readiness snapshot"
+    }
+  ],
+  "verificationCommands": [
+    "python3 -m unittest backend.tests.test_gl064_api_openapi_contract_hardening_review -v",
+    "python3 -m unittest backend.tests.test_gl063_production_hardening_roadmap -v",
+    "python3 -m unittest backend.tests.test_gl055_integration_contract_readiness -v",
+    "python3 -m unittest discover backend.tests -v"
+  ]
+}
