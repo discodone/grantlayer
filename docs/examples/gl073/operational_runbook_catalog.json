@@ -1,0 +1,388 @@
+{
+  "schemaVersion": "gl073-1.0",
+  "description": "Operational runbook catalog for GrantLayer incident response. This catalog is a design-time artifact; no operational automation or incident response implementation is provided by GL-073.",
+  "runbookCategories": [
+    {
+      "category": "api_unavailable",
+      "description": "The API returns no response, 503 errors, or connection refused for all endpoints.",
+      "primarySignals": [
+        "Health check endpoint unreachable",
+        "503 Service Unavailable from all endpoints",
+        "Connection refused or timeout",
+        "Zero successful requests over a sustained window"
+      ],
+      "firstChecks": [
+        "Verify runtime mode and deployment version",
+        "Check database connectivity and connection pool status",
+        "Check secret source connectivity",
+        "Review recent deployment or configuration changes",
+        "Inspect process logs for startup or crash loops"
+      ],
+      "containmentGuidance": [
+        "Do not restart blindly without checking logs",
+        "If a deployment change triggered the outage, consider rollback before restart",
+        "Isolate the affected instance if multiple instances exist",
+        "Preserve current logs for post-incident analysis"
+      ],
+      "escalationGuidance": [
+        "Escalate to Incident Commander if outage persists beyond 5 minutes",
+        "Escalate to Database / Persistence SME if database connectivity is the root cause",
+        "Escalate to Security Officer if the outage follows a suspected security event"
+      ],
+      "unsafeActions": [
+        "Restarting without log review",
+        "Deleting database files to force recovery",
+        "Disabling authentication to restore access",
+        "Restoring from an unverified backup snapshot"
+      ],
+      "relatedDesignDocs": [
+        "docs/observability_structured_logging_baseline_design.md",
+        "docs/deployment_package_runtime_modes_design.md",
+        "docs/persistence_backend_postgresql_readiness_design.md"
+      ],
+      "implementationStatus": "design_only"
+    },
+    {
+      "category": "api_degraded",
+      "description": "The API responds but with elevated latency, elevated error rate, partial feature failure, or inconsistent responses.",
+      "primarySignals": [
+        "Elevated p95/p99 latency",
+        "Error rate above baseline threshold",
+        "Partial endpoint failure while others succeed",
+        "Inconsistent response content for identical requests"
+      ],
+      "firstChecks": [
+        "Identify the degraded endpoint or subsystem",
+        "Correlate with recent deployments or config changes",
+        "Check resource utilization (CPU, memory, connections)",
+        "Review error logs for recurring exception patterns",
+        "Validate that runtime mode matches deployment environment"
+      ],
+      "containmentGuidance": [
+        "Consider disabling the degraded endpoint if graceful degradation is supported",
+        "Reduce traffic to the affected subsystem if load balancing is available",
+        "Do not restart the entire service unless the degraded subsystem cannot be isolated"
+      ],
+      "escalationGuidance": [
+        "Escalate to Incident Commander if degradation affects >50% of requests",
+        "Escalate to Database / Persistence SME if query latency is the root cause",
+        "Escalate to Audit / Compliance Officer if inconsistent responses involve audit or evidence data"
+      ],
+      "unsafeActions": [
+        "Restarting the entire service without isolating the degraded component",
+        "Suppressing error logs to reduce noise",
+        "Bypassing validation logic to force responses"
+      ],
+      "relatedDesignDocs": [
+        "docs/observability_structured_logging_baseline_design.md",
+        "docs/deployment_package_runtime_modes_design.md",
+        "docs/product_architecture_extension_boundaries.md"
+      ],
+      "implementationStatus": "design_only"
+    },
+    {
+      "category": "auth_access_issue",
+      "description": "Users or operators cannot authenticate, tokens are rejected unexpectedly, or permissions are incorrectly granted or denied.",
+      "primarySignals": [
+        "Authentication failure rate spike",
+        "Token rejected with valid expiry",
+        "Permission denied for expected operations",
+        "Unexpected elevation of access for restricted roles"
+      ],
+      "firstChecks": [
+        "Distinguish auth provider failure from GrantLayer permission logic failure",
+        "Check token validity, expiry, and issuer",
+        "Verify runtime mode and whether demo tokens are active",
+        "Review recent auth provider or configuration changes"
+      ],
+      "containmentGuidance": [
+        "Do not disable authentication as a workaround",
+        "If a token type is compromised, revoke that token type scope-wide",
+        "Preserve auth logs for forensic analysis"
+      ],
+      "escalationGuidance": [
+        "Escalate to Security Officer for any suspected token compromise or auth bypass",
+        "Escalate to Incident Commander if the auth system is unavailable system-wide"
+      ],
+      "unsafeActions": [
+        "Disabling authentication to restore access",
+        "Elevating a demo token to bypass auth failure",
+        "Logging raw tokens or passwords during investigation",
+        "Sharing token values in communication channels"
+      ],
+      "relatedDesignDocs": [
+        "docs/production_auth_operator_access_design.md",
+        "docs/runtime_configuration_environment_model.md",
+        "docs/secret_management_baseline_design.md"
+      ],
+      "implementationStatus": "design_only"
+    },
+    {
+      "category": "suspected_secret_exposure",
+      "description": "Any suspicion that a secret (API key, signing key, token, password, connection string) has been exposed, leaked, or compromised.",
+      "primarySignals": [
+        "Secret found in public repository or communication channel",
+        "Unauthorized access using a valid credential",
+        "Unexplained credential usage patterns",
+        "Secret rotation audit finding"
+      ],
+      "firstChecks": [
+        "Identify which secret is suspected and its scope of usage",
+        "Determine whether the secret was logged, transmitted, or stored in plain text",
+        "Verify that no raw secrets appear in current logs or incident artifacts",
+        "Check recent access logs for anomalous usage"
+      ],
+      "containmentGuidance": [
+        "Revoke or rotate the suspected secret immediately",
+        "Isolate any system or service that received the exposed secret",
+        "Do not log the secret value in any incident record or runbook output"
+      ],
+      "escalationGuidance": [
+        "Escalate to Security Officer immediately",
+        "Escalate to Incident Commander if the exposure affects production or multiple tenants",
+        "Escalate to Audit / Compliance Officer if regulatory notification may be required"
+      ],
+      "unsafeActions": [
+        "Logging raw secret values during investigation",
+        "Delaying rotation to preserve service continuity",
+        "Sharing secret values in chat, email, or tickets",
+        "Restoring secrets from backup instead of rotating"
+      ],
+      "relatedDesignDocs": [
+        "docs/secret_management_baseline_design.md",
+        "docs/production_auth_operator_access_design.md",
+        "docs/runtime_configuration_environment_model.md"
+      ],
+      "implementationStatus": "design_only"
+    },
+    {
+      "category": "persistence_issue",
+      "description": "Database connection failures, query timeouts, data corruption suspicion, or replication lag.",
+      "primarySignals": [
+        "Database connection pool exhaustion",
+        "Query timeout spikes",
+        "Data corruption suspicion or checksum mismatch",
+        "Replication lag above threshold"
+      ],
+      "firstChecks": [
+        "Check database server health independently from application health",
+        "Verify connection string and credential validity",
+        "Review recent schema migrations or DDL changes",
+        "Check disk space, memory, and CPU on the database host",
+        "Validate that runtime mode matches the configured persistence backend"
+      ],
+      "containmentGuidance": [
+        "Reduce application load if connection pool is exhausted",
+        "Do not run destructive DDL or DML without a pre-change snapshot",
+        "Pause any background jobs that write to the affected database"
+      ],
+      "escalationGuidance": [
+        "Escalate to Database / Persistence SME for any corruption suspicion or restore need",
+        "Escalate to Incident Commander if the issue affects all product records",
+        "Escalate to Audit / Compliance Officer if audit or provenance records are at risk"
+      ],
+      "unsafeActions": [
+        "Running unverified DDL or DML on production data",
+        "Restoring from backup without validating snapshot integrity",
+        "Overwriting audit or provenance records during recovery",
+        "Deleting database files to force a restart"
+      ],
+      "relatedDesignDocs": [
+        "docs/persistence_backend_postgresql_readiness_design.md",
+        "docs/backup_restore_data_lifecycle_design.md",
+        "docs/runtime_configuration_environment_model.md"
+      ],
+      "implementationStatus": "design_only"
+    },
+    {
+      "category": "evidence_verification_issue",
+      "description": "Evidence fails verification, hash mismatch, tamper detection triggers, or completeness score anomalies.",
+      "primarySignals": [
+        "Evidence hash mismatch during verification",
+        "Tamper detection flag raised",
+        "Completeness score below expected threshold",
+        "Evidence payload retrieval failure"
+      ],
+      "firstChecks": [
+        "Isolate the affected evidence bundle by identifier",
+        "Distinguish between payload storage issue and verification logic issue",
+        "Check whether the evidence metadata matches the payload reference",
+        "Review recent changes to the evidence verification module"
+      ],
+      "containmentGuidance": [
+        "Preserve the current state of the affected evidence bundle for forensic analysis",
+        "Do not delete or modify evidence metadata to force a passing verification",
+        "Quarantine the affected bundle if quarantine capability exists"
+      ],
+      "escalationGuidance": [
+        "Escalate to Audit / Compliance Officer for any tamper detection or integrity concern",
+        "Escalate to Security Officer if the issue may indicate deliberate tampering",
+        "Escalate to Incident Commander if the issue affects a large subset of records"
+      ],
+      "unsafeActions": [
+        "Deleting evidence metadata to clear a verification failure",
+        "Suppressing tamper detection alerts",
+        "Recomputing hashes without investigating the root cause",
+        "Modifying evidence records to force a passing score"
+      ],
+      "relatedDesignDocs": [
+        "docs/product_architecture_extension_boundaries.md",
+        "docs/backup_restore_data_lifecycle_design.md",
+        "docs/observability_structured_logging_baseline_design.md"
+      ],
+      "implementationStatus": "design_only"
+    },
+    {
+      "category": "audit_provenance_integrity_concern",
+      "description": "Any suspicion that audit records or provenance records have been altered, deleted, or suppressed; or that the cryptographic integrity chain is broken.",
+      "primarySignals": [
+        "Audit record count or sequence anomaly",
+        "Provenance hash chain verification failure",
+        "Missing audit events for known actions",
+        "Audit log write failure or disk-full condition"
+      ],
+      "firstChecks": [
+        "Freeze any deletion or purge jobs immediately",
+        "Run hash chain verification if tooling is available",
+        "Compare current audit records with immutable storage copies if available",
+        "Review recent operator actions for any that touched audit or provenance data"
+      ],
+      "containmentGuidance": [
+        "Stop any process that writes, deletes, or modifies audit or provenance records",
+        "Preserve the current database state for forensic analysis",
+        "Do not attempt to rebuild or recompute audit records without explicit approval"
+      ],
+      "escalationGuidance": [
+        "Escalate to Audit / Compliance Officer immediately",
+        "Escalate to Security Officer if tampering is suspected",
+        "Escalate to Incident Commander if the integrity concern is systemic"
+      ],
+      "unsafeActions": [
+        "Overwriting or regenerating audit records",
+        "Deleting provenance events to resolve a chain break",
+        "Suppressing audit write failures",
+        "Modifying timestamps or actor IDs in audit records"
+      ],
+      "relatedDesignDocs": [
+        "docs/backup_restore_data_lifecycle_design.md",
+        "docs/observability_structured_logging_baseline_design.md",
+        "docs/product_architecture_extension_boundaries.md"
+      ],
+      "implementationStatus": "design_only"
+    },
+    {
+      "category": "backup_restore_issue",
+      "description": "Backup failure, backup integrity suspicion, restore need, or recovery point objective violation.",
+      "primarySignals": [
+        "Backup job failure or timeout",
+        "Backup integrity check failure",
+        "Recovery point objective exceeded (no recent successful backup)",
+        "Restore request due to data loss or corruption"
+      ],
+      "firstChecks": [
+        "Verify the backup scope and whether it includes the required data categories",
+        "Check backup integrity checksums or signatures",
+        "Identify the most recent successful backup snapshot",
+        "Confirm that secrets were excluded from the backup as required"
+      ],
+      "containmentGuidance": [
+        "Do not improvise destructive recovery steps",
+        "Scope the restore to the affected data categories only",
+        "Validate the restore snapshot in a non-production environment first if possible"
+      ],
+      "escalationGuidance": [
+        "Escalate to Database / Persistence SME for any restore that touches product, audit, or provenance data",
+        "Escalate to Incident Commander if the RPO violation affects production",
+        "Escalate to Audit / Compliance Officer if audit or provenance data is involved in the restore"
+      ],
+      "unsafeActions": [
+        "Restoring from an unverified backup snapshot",
+        "Performing a blanket database dump restore without category scoping",
+        "Overwriting audit or provenance records during restore",
+        "Restoring secrets from backup instead of using secret-management procedures"
+      ],
+      "relatedDesignDocs": [
+        "docs/backup_restore_data_lifecycle_design.md",
+        "docs/persistence_backend_postgresql_readiness_design.md",
+        "docs/secret_management_baseline_design.md"
+      ],
+      "implementationStatus": "design_only"
+    },
+    {
+      "category": "runtime_configuration_mismatch",
+      "description": "The system is running with the wrong runtime mode, unvalidated configuration, or a configuration value that contradicts the deployment environment.",
+      "primarySignals": [
+        "Runtime mode declaration does not match deployment environment",
+        "Configuration validation failure at startup or runtime",
+        "Inconsistent configuration across service instances",
+        "Unexpected feature flag state"
+      ],
+      "firstChecks": [
+        "Identify the declared runtime mode and the expected runtime mode",
+        "Review configuration source and recent changes",
+        "Check for environment variable overrides or stale config files",
+        "Verify that secrets and connection strings match the target environment"
+      ],
+      "containmentGuidance": [
+        "If the mismatch poses a security or data integrity risk, stop the service until config is corrected",
+        "Rebuild configuration from validated deployment artifacts rather than editing ad-hoc",
+        "Do not continue running production workloads with demo or test configuration"
+      ],
+      "escalationGuidance": [
+        "Escalate to Incident Commander if the mismatch affects production",
+        "Escalate to Security Officer if the mismatch exposes secrets or disables security controls",
+        "Escalate to Database / Persistence SME if the mismatch points to the wrong database"
+      ],
+      "unsafeActions": [
+        "Continuing to run with a known configuration mismatch",
+        "Applying ad-hoc configuration edits without validation",
+        "Copying configuration files from one environment to another without review",
+        "Disabling configuration validation to allow startup"
+      ],
+      "relatedDesignDocs": [
+        "docs/runtime_configuration_environment_model.md",
+        "docs/deployment_package_runtime_modes_design.md",
+        "docs/secret_management_baseline_design.md"
+      ],
+      "implementationStatus": "design_only"
+    },
+    {
+      "category": "deployment_rollback_needed",
+      "description": "A deployment has introduced regression, instability, or security exposure and must be rolled back.",
+      "primarySignals": [
+        "Error rate spike immediately after deployment",
+        "Newly introduced latency or resource exhaustion",
+        "Security regression or new vulnerability",
+        "Configuration regression or feature breakage"
+      ],
+      "firstChecks": [
+        "Identify the last known good deployment version",
+        "Verify rollback artifact integrity and availability",
+        "Review deployment logs and change summary",
+        "Confirm that the rollback does not reintroduce a previously fixed vulnerability"
+      ],
+      "containmentGuidance": [
+        "If the deployment introduced a security exposure, consider stopping traffic before rollback",
+        "Preserve the current deployment state and logs for root cause analysis",
+        "Do not rollback without confirming the rollback artifact is intact"
+      ],
+      "escalationGuidance": [
+        "Escalate to Incident Commander if the deployment affects production",
+        "Escalate to Security Officer if the deployment introduced a security exposure",
+        "Escalate to Database / Persistence SME if the deployment included schema or migration changes"
+      ],
+      "unsafeActions": [
+        "Rolling back without validating the rollback artifact",
+        "Rolling back a database migration without a tested rollback script",
+        "Suppressing deployment failure logs",
+        "Re-deploying the same failing artifact without root cause analysis"
+      ],
+      "relatedDesignDocs": [
+        "docs/deployment_package_runtime_modes_design.md",
+        "docs/persistence_backend_postgresql_readiness_design.md",
+        "docs/product_architecture_extension_boundaries.md"
+      ],
+      "implementationStatus": "design_only"
+    }
+  ]
+}

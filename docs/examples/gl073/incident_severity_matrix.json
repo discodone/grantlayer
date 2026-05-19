@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "gl073-1.0",
+  "description": "Incident severity matrix for GrantLayer operational incidents. This matrix is a design-time artifact; no incident response implementation is provided by GL-073.",
+  "severityLevels": [
+    {
+      "severity": "sev0",
+      "description": "Critical incident requiring immediate response. Complete service outage or severe integrity/security breach.",
+      "examples": [
+        "Complete API outage for all endpoints",
+        "Suspected secret exposure or credential compromise",
+        "Audit/provenance integrity breach or tamper detection",
+        "Data corruption affecting product records with no known good backup"
+      ],
+      "userImpact": "All users affected; institutional operations halted; potential compliance or legal exposure.",
+      "dataIntegrityRisk": "Critical — data may be corrupted, lost, or integrity chain broken.",
+      "securityRisk": "Critical — secrets may be exposed, unauthorized access may have occurred.",
+      "expectedResponseTime": "Immediate",
+      "escalationRequired": true,
+      "communicationRequired": true,
+      "postIncidentReviewRequired": true,
+      "implementationStatus": "design_only"
+    },
+    {
+      "severity": "sev1",
+      "description": "Major incident with significant impact. Severe degradation or high-severity security concern.",
+      "examples": [
+        "Severe API degradation with >50% error rate",
+        "Authentication system unavailable",
+        "Suspected data corruption in product records",
+        "Backup failure with no successful recent backup"
+      ],
+      "userImpact": "Most users affected; core workflows impaired.",
+      "dataIntegrityRisk": "High — partial data loss or inconsistency suspected.",
+      "securityRisk": "High — potential unauthorized access or auth bypass.",
+      "expectedResponseTime": "< 15 minutes",
+      "escalationRequired": true,
+      "communicationRequired": true,
+      "postIncidentReviewRequired": true,
+      "implementationStatus": "design_only"
+    },
+    {
+      "severity": "sev2",
+      "description": "Significant incident with moderate impact. Partial degradation or operational concern.",
+      "examples": [
+        "Partial feature degradation or intermittent errors",
+        "Database connection pool exhaustion or query timeout spikes",
+        "Backup completion failure or integrity check failure",
+        "Evidence verification failures affecting a subset of records"
+      ],
+      "userImpact": "Some users affected; non-core features may be impaired.",
+      "dataIntegrityRisk": "Medium — localized data inconsistency or verification failure.",
+      "securityRisk": "Medium — potential configuration drift or localized exposure.",
+      "expectedResponseTime": "< 1 hour",
+      "escalationRequired": true,
+      "communicationRequired": true,
+      "postIncidentReviewRequired": true,
+      "implementationStatus": "design_only"
+    },
+    {
+      "severity": "sev3",
+      "description": "Minor incident with limited impact. Non-critical bug or operational inconvenience.",
+      "examples": [
+        "Non-critical bug in a single endpoint",
+        "Elevated latency below degradation threshold",
+        "Single-tenant demo environment issue",
+        "Minor configuration warning without functional impact"
+      ],
+      "userImpact": "Few users affected; workaround typically available.",
+      "dataIntegrityRisk": "Low — no data loss or corruption expected.",
+      "securityRisk": "Low — no direct security exposure.",
+      "expectedResponseTime": "< 4 hours",
+      "escalationRequired": false,
+      "communicationRequired": false,
+      "postIncidentReviewRequired": false,
+      "implementationStatus": "design_only"
+    },
+    {
+      "severity": "sev4",
+      "description": "Low-priority issue with negligible impact. Cosmetic or documentation concern.",
+      "examples": [
+        "Cosmetic UI or dashboard display issue",
+        "Documentation gap or outdated runbook reference",
+        "Internal tool inconvenience without user impact",
+        "Non-urgent hygiene finding from routine review"
+      ],
+      "userImpact": "None or negligible; no operational impact.",
+      "dataIntegrityRisk": "None — no data at risk.",
+      "securityRisk": "None — no security exposure.",
+      "expectedResponseTime": "< 24 hours",
+      "escalationRequired": false,
+      "communicationRequired": false,
+      "postIncidentReviewRequired": false,
+      "implementationStatus": "design_only"
+    }
+  ]
+}
