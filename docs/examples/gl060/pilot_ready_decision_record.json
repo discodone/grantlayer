@@ -1,0 +1,175 @@
+{
+  "decisionId": "gl060-pilot-ready-release-decision",
+  "decisionVersion": "1.0",
+  "status": "pilot-ready-for-technical-review",
+  "title": "GrantLayer Pilot-Ready Release Decision",
+  "description": "Formal release decision recording the GrantLayer state after GL-059 and determining readiness for a first technical pilot discussion.",
+  "integrationReadyBase": "GL-052 through GL-059",
+  "createdDate": "2026-05-19",
+  "productionReady": false,
+  "pilotPlanningReady": true,
+  "supportingDocs": [
+    {
+      "docId": "gl053-integration-guide",
+      "title": "Minimum Viable Integration Guide",
+      "path": "docs/integration_guide.md",
+      "gl": "GL-053"
+    },
+    {
+      "docId": "gl054-demo-scenario",
+      "title": "Integration Demo Scenario",
+      "path": "docs/demo_scenario.md",
+      "gl": "GL-054"
+    },
+    {
+      "docId": "gl055-integration-ready-checklist",
+      "title": "Integration-Ready Checklist",
+      "path": "docs/integration_ready_checklist.md",
+      "gl": "GL-055"
+    },
+    {
+      "docId": "gl056-integration-ready-rc",
+      "title": "Integration-Ready Release Candidate Review",
+      "path": "docs/integration_ready_release_candidate.md",
+      "gl": "GL-056"
+    },
+    {
+      "docId": "gl057-integrator-quickstart",
+      "title": "Integrator Quickstart",
+      "path": "docs/integrator_quickstart.md",
+      "gl": "GL-057"
+    },
+    {
+      "docId": "gl058-minimal-api-walkthrough",
+      "title": "Minimal API Usage Walkthrough",
+      "path": "docs/minimal_api_usage_walkthrough.md",
+      "gl": "GL-058"
+    },
+    {
+      "docId": "gl059-pilot-handoff-plan",
+      "title": "Pilot-Ready Handoff Plan",
+      "path": "docs/pilot_ready_handoff_plan.md",
+      "gl": "GL-059"
+    },
+    {
+      "docId": "gl059-pilot-ready-checklist",
+      "title": "Pilot-Ready Checklist",
+      "path": "docs/pilot_ready_checklist.md",
+      "gl": "GL-059"
+    }
+  ],
+  "supportingExamples": [
+    {
+      "exampleId": "gl054-demo-fixture",
+      "title": "Demo JSON Fixture",
+      "path": "backend/tests/fixtures/gl054_demo_scenario.json",
+      "gl": "GL-054"
+    },
+    {
+      "exampleId": "gl057-quickstart-examples",
+      "title": "GL-057 Quickstart Example JSON Files",
+      "path": "docs/examples/gl057/",
+      "gl": "GL-057"
+    },
+    {
+      "exampleId": "gl058-walkthrough-json",
+      "title": "Minimal API Usage Walkthrough JSON",
+      "path": "docs/examples/gl058/minimal_api_usage_walkthrough.json",
+      "gl": "GL-058"
+    },
+    {
+      "exampleId": "gl059-handoff-package",
+      "title": "Pilot Handoff Package JSON",
+      "path": "docs/examples/gl059/pilot_handoff_package.json",
+      "gl": "GL-059"
+    }
+  ],
+  "supportingTests": [
+    {
+      "testId": "gl052-e2e-test",
+      "title": "Product Core E2E Flow Test",
+      "path": "backend/tests/test_gl052_product_core_e2e_flow.py",
+      "gl": "GL-052"
+    },
+    {
+      "testId": "gl054-demo-fixture-test",
+      "title": "Demo Fixture Validation Test",
+      "path": "backend/tests/test_gl054_demo_scenario_fixture.py",
+      "gl": "GL-054"
+    },
+    {
+      "testId": "gl055-contract-readiness-test",
+      "title": "Integration Contract & Readiness Gate",
+      "path": "backend/tests/test_gl055_integration_contract_readiness.py",
+      "gl": "GL-055"
+    },
+    {
+      "testId": "gl057-quickstart-test",
+      "title": "Integrator Quickstart Validation Test",
+      "path": "backend/tests/test_gl057_integrator_quickstart_examples.py",
+      "gl": "GL-057"
+    },
+    {
+      "testId": "gl058-walkthrough-test",
+      "title": "Minimal API Usage Walkthrough Validation Test",
+      "path": "backend/tests/test_gl058_minimal_api_usage_walkthrough.py",
+      "gl": "GL-058"
+    },
+    {
+      "testId": "gl059-pilot-handoff-test",
+      "title": "Pilot Handoff Validation Test",
+      "path": "backend/tests/test_gl059_pilot_ready_handoff.py",
+      "gl": "GL-059"
+    },
+    {
+      "testId": "gl060-pilot-release-decision-test",
+      "title": "Pilot-Ready Release Decision Validation Test",
+      "path": "backend/tests/test_gl060_pilot_ready_release_decision.py",
+      "gl": "GL-060"
+    }
+  ],
+  "verificationCommands": [
+    "python3 -m unittest backend.tests.test_gl060_pilot_ready_release_decision -v",
+    "python3 -m unittest backend.tests.test_gl059_pilot_ready_handoff -v",
+    "python3 -m unittest backend.tests.test_gl058_minimal_api_usage_walkthrough -v",
+    "python3 -m unittest discover backend.tests -v"
+  ],
+  "constraints": [
+    "Local / test environment only",
+    "No production auth",
+    "No production-sensitive credential storage",
+    "No production observability",
+    "No production backup / restore",
+    "No SDK",
+    "No legal / compliance certification",
+    "No payment / blockchain integration",
+    "No dashboard dependency",
+    "No multi-tenant SaaS architecture"
+  ],
+  "nonGoals": [
+    "Production authentication (OAuth, JWT, SSO, HSM-backed key management)",
+    "Production credential management (HSM, vault integration, credential rotation)",
+    "Deployment hardening (containers, load balancing, TLS termination, orchestration)",
+    "Observability (metrics, logging pipelines, alerting, tracing)",
+    "Backup / restore (automated backup, point-in-time recovery, disaster runbooks)",
+    "SDKs (Python, JavaScript, Go client libraries)",
+    "Blockchain / wallet / payment integrations",
+    "Legal or compliance certification",
+    "Dashboard / UI productization",
+    "Multi-tenant SaaS architecture (tenant isolation, subscription billing, SaaS onboarding)"
+  ],
+  "recommendedNextOptions": [
+    "Demo Runner / API Smoke Script",
+    "First Pilot Partner Preparation",
+    "Production-Hardening Roadmap"
+  ],
+  "defaultNextBlock": "Demo Runner / API Smoke Script",
+  "stopConditions": [
+    "Full backend suite failing",
+    "OpenAPI / readiness validation failing",
+    "Missing pilot handoff artifacts",
+    "Unclear non-goals",
+    "Production readiness being claimed accidentally",
+    "Sensitive data or real personal data in examples"
+  ]
+}
