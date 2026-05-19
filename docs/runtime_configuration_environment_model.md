@@ -188,6 +188,7 @@ Any statement to external partners, documentation, or marketing materials must i
 ## See also
 
 - [`docs/product_architecture_extension_boundaries.md`](product_architecture_extension_boundaries.md) — GL-065 product architecture and extension boundaries
+- [`docs/production_auth_operator_access_design.md`](production_auth_operator_access_design.md) — GL-067 production auth and operator access design
 - [`docs/production_hardening_roadmap.md`](production_hardening_roadmap.md) — GL-063 production-hardening roadmap
 - [`docs/api_openapi_contract_hardening_review.md`](api_openapi_contract_hardening_review.md) — GL-064 API/OpenAPI contract hardening review
 - [`docs/examples/gl066/runtime_environment_matrix.json`](examples/gl066/runtime_environment_matrix.json) — machine-readable runtime environment matrix
