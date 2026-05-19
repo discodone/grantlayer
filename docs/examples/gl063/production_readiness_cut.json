@@ -1,0 +1,100 @@
+{
+  "readinessCutId": "gl063-production-readiness-cut",
+  "readinessCutVersion": "1.0",
+  "integrationReady": true,
+  "pilotReady": true,
+  "productionReady": false,
+  "basis": [
+    "GL-052 Product Core E2E Flow Test",
+    "GL-053 Minimum Viable Integration Guide",
+    "GL-054 Integration Demo Pack",
+    "GL-055 Integration Contract & Readiness Gate",
+    "GL-056 Integration-Ready Release Candidate Review",
+    "GL-057 Integrator Quickstart Examples",
+    "GL-058 Minimal API Usage Walkthrough",
+    "GL-059 Pilot-Ready Handoff Plan",
+    "GL-060 Pilot-Ready Release Decision",
+    "GL-061 Demo Runner / API Smoke Script",
+    "GL-062 Pilot Partner Preparation Pack"
+  ],
+  "productionBlockers": [
+    {
+      "blockerId": "b01-auth",
+      "title": "Production auth is not implemented",
+      "description": "No OAuth, JWT, SSO, or HSM-backed key management exists."
+    },
+    {
+      "blockerId": "b02-secrets",
+      "title": "Production secrets are not managed",
+      "description": "Demo Ed25519 keypair and synthetic data remain in the repository."
+    },
+    {
+      "blockerId": "b03-deployment",
+      "title": "Deployment hardening is not specified",
+      "description": "No containers, load balancing, TLS termination, or orchestration guidance exists."
+    },
+    {
+      "blockerId": "b04-observability",
+      "title": "Observability is not implemented",
+      "description": "No metrics, logging pipelines, alerting, or tracing exists."
+    },
+    {
+      "blockerId": "b05-backup",
+      "title": "Backup/restore is not defined",
+      "description": "No automated backup, point-in-time recovery, or disaster runbooks exist."
+    },
+    {
+      "blockerId": "b06-postgres-ci",
+      "title": "PostgreSQL CI is not established",
+      "description": "SQLite is the default; PostgreSQL support exists but is not CI-gated."
+    },
+    {
+      "blockerId": "b07-openapi-freeze",
+      "title": "OpenAPI contract freeze process is not defined",
+      "description": "Versioning and breaking-change policy are not documented."
+    },
+    {
+      "blockerId": "b08-data-privacy",
+      "title": "Data privacy and evidence-handling boundaries are not defined",
+      "description": "No data-classification matrix or retention policy exists."
+    }
+  ],
+  "pilotPermittedScope": [
+    "Review docs — read integration guide, demo scenario, walkthroughs, and checklists.",
+    "Run dry-run demo smoke script — execute python3 scripts/demo/gl061_api_smoke.py --dry-run for local confidence.",
+    "Inspect examples — examine static JSON examples in docs/examples/gl057/ and docs/examples/gl058/.",
+    "Run backend tests — execute the full backend suite with expected zero failures and zero errors.",
+    "Map partner workflow — translate an internal grant or funding process into GrantLayer stages.",
+    "Identify production requirements — produce a ranked list of what production operation would require."
+  ],
+  "productionClaimStopConditions": [
+    "Full backend suite failing",
+    "Contract/readiness validation failing",
+    "Production auth missing",
+    "Production secrets missing",
+    "Deployment hardening missing",
+    "Backup/restore missing",
+    "Observability missing",
+    "Unclear compliance/legal boundary",
+    "Production readiness claimed accidentally"
+  ],
+  "nextRecommendedOptions": [
+    {
+      "optionId": "opt-01",
+      "title": "API/OpenAPI Contract Hardening Review",
+      "description": "Tighten the OpenAPI specification, define versioning, and resolve contract ambiguities."
+    },
+    {
+      "optionId": "opt-02",
+      "title": "Local API Smoke v2",
+      "description": "Extend the GL-061 demo runner to exercise more paths and produce a machine-readable confidence report."
+    }
+  ],
+  "defaultNextBlock": "API/OpenAPI Contract Hardening Review",
+  "verificationCommands": [
+    "python3 -m unittest backend.tests.test_gl063_production_hardening_roadmap -v",
+    "python3 -m unittest backend.tests.test_gl062_pilot_partner_preparation_pack -v",
+    "python3 -m unittest backend.tests.test_gl061_demo_runner_api_smoke -v",
+    "python3 -m unittest discover backend.tests -v"
+  ]
+}

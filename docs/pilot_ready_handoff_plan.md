@@ -156,3 +156,4 @@ After the first pilot discussion, the team should decide:
 - [`docs/integration_ready_checklist.md`](integration_ready_checklist.md) — Integration-Ready v0 checklist
 - [`docs/examples/gl059/pilot_handoff_package.json`](examples/gl059/pilot_handoff_package.json) — machine-readable handoff summary
 - [`docs/pilot_partner_preparation_pack.md`](pilot_partner_preparation_pack.md) — GL-062 pilot partner preparation pack
+- [`docs/production_hardening_roadmap.md`](production_hardening_roadmap.md) — GL-063 production-hardening roadmap

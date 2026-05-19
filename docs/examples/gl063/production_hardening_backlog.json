@@ -1,0 +1,323 @@
+{
+  "backlogId": "gl063-production-hardening-backlog",
+  "backlogVersion": "1.0",
+  "status": "planning",
+  "productionReady": false,
+  "pilotReady": true,
+  "categories": [
+    "Authentication and authorization hardening",
+    "Secret management",
+    "Deployment and environment hardening",
+    "Observability and logging",
+    "Backup and restore",
+    "Database production readiness / PostgreSQL CI",
+    "API and OpenAPI contract hardening",
+    "Test strategy and CI gates",
+    "Data privacy and evidence handling",
+    "Signing, key management, and HSM path",
+    "SDK / client examples",
+    "Dashboard / UI readiness",
+    "Multi-tenant SaaS architecture",
+    "Compliance/legal review boundary",
+    "Optional blockchain anchoring / wallet / payment integrations"
+  ],
+  "p0Workstreams": [
+    {
+      "id": "p0-auth-model",
+      "priority": "P0",
+      "title": "Production auth model",
+      "rationale": "Authentication is admin-token or operator-token only; production deployment requires a hardened auth architecture.",
+      "dependencies": [],
+      "acceptanceGate": "A documented auth decision record and a local proof-of-concept implementation plan."
+    },
+    {
+      "id": "p0-secret-management",
+      "priority": "P0",
+      "title": "Secret management",
+      "rationale": "The repository uses a demo Ed25519 keypair and synthetic data; production requires managed secrets, rotation, and access control.",
+      "dependencies": [],
+      "acceptanceGate": "A secret-management plan with no synthetic keys in the repository."
+    },
+    {
+      "id": "p0-deployment-environment",
+      "priority": "P0",
+      "title": "Deployment environment definition",
+      "rationale": "No containers, load balancing, TLS termination, or orchestration guidance exists; production requires a defined runtime target.",
+      "dependencies": [],
+      "acceptanceGate": "Environment definition document and a reproducible local deployment target."
+    },
+    {
+      "id": "p0-database-readiness",
+      "priority": "P0",
+      "title": "Database production readiness / PostgreSQL CI",
+      "rationale": "SQLite is the default; PostgreSQL support exists but is not CI-gated, creating production database risk.",
+      "dependencies": [],
+      "acceptanceGate": "PostgreSQL passes in CI alongside SQLite; migration rollback tested."
+    },
+    {
+      "id": "p0-backup-restore",
+      "priority": "P0",
+      "title": "Backup and restore plan",
+      "rationale": "No automated backup, point-in-time recovery, or disaster runbooks exist; production requires recoverability.",
+      "dependencies": ["p0-deployment-environment", "p0-database-readiness"],
+      "acceptanceGate": "Documented backup/restore procedure with a tested recovery scenario."
+    },
+    {
+      "id": "p0-observability",
+      "priority": "P0",
+      "title": "Observability baseline",
+      "rationale": "No metrics, logging pipelines, alerting, or tracing exist; production requires operational visibility.",
+      "dependencies": ["p0-deployment-environment"],
+      "acceptanceGate": "A local observability stack that captures the baseline signals."
+    },
+    {
+      "id": "p0-ci-gates",
+      "priority": "P0",
+      "title": "CI gate definition",
+      "rationale": "The minimum CI pipeline is not formally defined; production readiness requires automated quality gates.",
+      "dependencies": [],
+      "acceptanceGate": "All P0 CI stages pass before any merge to main."
+    },
+    {
+      "id": "p0-api-contract-freeze",
+      "priority": "P0",
+      "title": "API and OpenAPI contract hardening",
+      "rationale": "The current contract is verified for expected and legacy paths, but a freeze process and external review may reveal gaps.",
+      "dependencies": [],
+      "acceptanceGate": "A documented contract freeze process and a versioned OpenAPI artifact."
+    },
+    {
+      "id": "p0-data-privacy",
+      "priority": "P0",
+      "title": "Data privacy and evidence-handling boundaries",
+      "rationale": "What data may enter GrantLayer, what must stay in the partner perimeter, and how evidence retention maps to regulatory requirements are undefined.",
+      "dependencies": [],
+      "acceptanceGate": "A data-classification matrix and evidence retention policy draft."
+    }
+  ],
+  "p1Workstreams": [
+    {
+      "id": "p1-api-smoke-v2",
+      "priority": "P1",
+      "title": "Local API smoke v2 or planned-call validation",
+      "rationale": "Extending the GL-061 demo runner improves partner confidence and catches integration edge cases before production hardening.",
+      "dependencies": ["p0-api-contract-freeze"],
+      "acceptanceGate": "The smoke script validates additional paths and produces a machine-readable confidence report."
+    },
+    {
+      "id": "p1-sdk-examples",
+      "priority": "P1",
+      "title": "SDK / client examples",
+      "rationale": "No client libraries exist; minimal examples accelerate partner integration and surface API usability issues.",
+      "dependencies": ["p0-api-contract-freeze"],
+      "acceptanceGate": "Client examples exist, are tested, and map to the OpenAPI contract."
+    },
+    {
+      "id": "p1-external-integration-checklist",
+      "priority": "P1",
+      "title": "External integration checklist",
+      "rationale": "Partners need a clear map of where their systems connect to GrantLayer.",
+      "dependencies": ["p0-api-contract-freeze"],
+      "acceptanceGate": "A partner-facing integration checklist with touchpoint definitions."
+    },
+    {
+      "id": "p1-pilot-environment-docs",
+      "priority": "P1",
+      "title": "Pilot-specific environment documentation",
+      "rationale": "Partners need clear instructions to run GrantLayer locally or in a hosted demo instance.",
+      "dependencies": ["p0-deployment-environment"],
+      "acceptanceGate": "Partner environment setup guide with verified commands."
+    },
+    {
+      "id": "p1-operator-runbook",
+      "priority": "P1",
+      "title": "Operator/admin runbook",
+      "rationale": "Common operations must be documented before any partner runs the system.",
+      "dependencies": ["p0-deployment-environment", "p0-observability"],
+      "acceptanceGate": "A runbook covering the most frequent operator tasks."
+    },
+    {
+      "id": "p1-audit-export-workflow",
+      "priority": "P1",
+      "title": "Audit/export review workflow",
+      "rationale": "Auditors and compliance officers need guidance on how to review exported records.",
+      "dependencies": ["p0-data-privacy"],
+      "acceptanceGate": "Auditor review workflow with example output and interpretation guide."
+    },
+    {
+      "id": "p1-evidence-retention-policy",
+      "priority": "P1",
+      "title": "Evidence retention policy draft",
+      "rationale": "Evidence lifespan, immutable storage guarantees, and deletion constraints need a written policy.",
+      "dependencies": ["p0-data-privacy"],
+      "acceptanceGate": "A policy document reviewed by at least one stakeholder."
+    }
+  ],
+  "p2Workstreams": [
+    {
+      "id": "p2-dashboard-ui",
+      "priority": "P2",
+      "title": "Dashboard / UI readiness",
+      "rationale": "The HTML dashboard is present but not a productized UI; full productization is post-pilot work.",
+      "dependencies": ["p1-sdk-examples"],
+      "acceptanceGate": "UI supports all Product Core stages and passes basic accessibility checks."
+    },
+    {
+      "id": "p2-multi-tenant-saas",
+      "priority": "P2",
+      "title": "Multi-tenant SaaS architecture",
+      "rationale": "No tenant isolation, subscription billing, or SaaS onboarding exists; this is a major architectural expansion.",
+      "dependencies": ["p0-auth-model", "p0-secret-management", "p0-deployment-environment"],
+      "acceptanceGate": "Architecture decision record and a local multi-tenant proof of concept."
+    },
+    {
+      "id": "p2-hsm-upgrade",
+      "priority": "P2",
+      "title": "Signing, key management, and HSM path",
+      "rationale": "Software Ed25519 signing is acceptable for pilots; HSM-backed key management is a future upgrade.",
+      "dependencies": ["p0-secret-management"],
+      "acceptanceGate": "HSM integration plan with vendor-agnostic interface definition."
+    },
+    {
+      "id": "p2-blockchain-anchoring",
+      "priority": "P2",
+      "title": "Optional blockchain anchoring / wallet / payment integrations",
+      "rationale": "Integrity checks use standard SHA-256 and Ed25519 only; blockchain anchoring and payment are optional future integrations, not Product Core requirements.",
+      "dependencies": ["p0-secret-management", "p0-data-privacy"],
+      "acceptanceGate": "Integration design document with security and compliance review."
+    },
+    {
+      "id": "p2-advanced-observability",
+      "priority": "P2",
+      "title": "Advanced observability",
+      "rationale": "Distributed tracing, custom business metrics, and SLO dashboards are post-pilot enhancements.",
+      "dependencies": ["p0-observability"],
+      "acceptanceGate": "Tracing covers end-to-end grant flow; SLOs are defined and measured."
+    },
+    {
+      "id": "p2-compliance-review",
+      "priority": "P2",
+      "title": "Compliance/legal review boundary",
+      "rationale": "Formal compliance review support requires architecture diagrams, data-flow maps, and control matrices.",
+      "dependencies": ["p0-data-privacy", "p0-api-contract-freeze"],
+      "acceptanceGate": "Compliance package with architecture diagrams, data-flow maps, and control matrices."
+    }
+  ],
+  "recommendedOrder": [
+    "p0-api-contract-freeze",
+    "p0-auth-model",
+    "p0-secret-management",
+    "p1-api-smoke-v2",
+    "p0-deployment-environment",
+    "p0-observability",
+    "p0-backup-restore",
+    "p0-database-readiness",
+    "p0-ci-gates",
+    "p1-sdk-examples",
+    "p1-external-integration-checklist",
+    "p1-pilot-environment-docs",
+    "p1-operator-runbook",
+    "p1-audit-export-workflow",
+    "p1-evidence-retention-policy",
+    "p0-data-privacy",
+    "p2-dashboard-ui",
+    "p2-multi-tenant-saas",
+    "p2-hsm-upgrade",
+    "p2-blockchain-anchoring",
+    "p2-advanced-observability",
+    "p2-compliance-review"
+  ],
+  "notYetRecommended": [
+    "Full SaaS dashboard build",
+    "Blockchain/payment layer implementation",
+    "HSM integration implementation",
+    "Multi-tenant platform build",
+    "Production deployment automation"
+  ],
+  "relatedArtifacts": [
+    {
+      "artifactId": "gl052-e2e-test",
+      "title": "Product Core E2E Flow Test",
+      "path": "backend/tests/test_gl052_product_core_e2e_flow.py",
+      "gl": "GL-052"
+    },
+    {
+      "artifactId": "gl053-integration-guide",
+      "title": "Minimum Viable Integration Guide",
+      "path": "docs/integration_guide.md",
+      "gl": "GL-053"
+    },
+    {
+      "artifactId": "gl054-demo-pack",
+      "title": "Integration Demo Pack",
+      "path": "docs/demo_scenario.md",
+      "gl": "GL-054"
+    },
+    {
+      "artifactId": "gl055-contract-readiness",
+      "title": "Integration Contract & Readiness Gate",
+      "path": "backend/tests/test_gl055_integration_contract_readiness.py",
+      "gl": "GL-055"
+    },
+    {
+      "artifactId": "gl056-integration-rc",
+      "title": "Integration-Ready Release Candidate Review",
+      "path": "docs/integration_ready_release_candidate.md",
+      "gl": "GL-056"
+    },
+    {
+      "artifactId": "gl057-quickstart-examples",
+      "title": "Integrator Quickstart Examples",
+      "path": "docs/integrator_quickstart.md",
+      "gl": "GL-057"
+    },
+    {
+      "artifactId": "gl058-walkthrough",
+      "title": "Minimal API Usage Walkthrough",
+      "path": "docs/minimal_api_usage_walkthrough.md",
+      "gl": "GL-058"
+    },
+    {
+      "artifactId": "gl059-handoff-plan",
+      "title": "Pilot-Ready Handoff Plan",
+      "path": "docs/pilot_ready_handoff_plan.md",
+      "gl": "GL-059"
+    },
+    {
+      "artifactId": "gl060-release-decision",
+      "title": "Pilot-Ready Release Decision",
+      "path": "docs/pilot_ready_release_decision.md",
+      "gl": "GL-060"
+    },
+    {
+      "artifactId": "gl061-demo-runner",
+      "title": "Demo Runner / API Smoke Script",
+      "path": "scripts/demo/gl061_api_smoke.py",
+      "gl": "GL-061"
+    },
+    {
+      "artifactId": "gl062-pilot-partner-pack",
+      "title": "Pilot Partner Preparation Pack",
+      "path": "docs/pilot_partner_preparation_pack.md",
+      "gl": "GL-062"
+    },
+    {
+      "artifactId": "gl063-roadmap",
+      "title": "Production-Hardening Roadmap",
+      "path": "docs/production_hardening_roadmap.md",
+      "gl": "GL-063"
+    },
+    {
+      "artifactId": "gl063-readiness-cut",
+      "title": "Production Readiness Cut",
+      "path": "docs/production_readiness_cut.md",
+      "gl": "GL-063"
+    }
+  ],
+  "verificationCommands": [
+    "python3 -m unittest backend.tests.test_gl063_production_hardening_roadmap -v",
+    "python3 -m unittest backend.tests.test_gl062_pilot_partner_preparation_pack -v",
+    "python3 -m unittest backend.tests.test_gl061_demo_runner_api_smoke -v",
+    "python3 -m unittest discover backend.tests -v"
+  ]
+}

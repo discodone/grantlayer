@@ -185,3 +185,4 @@ The default recommended path is **1. proceed to scoped pilot plan**, because the
 - [`docs/minimal_api_usage_walkthrough.md`](minimal_api_usage_walkthrough.md) — GL-058 API-first walkthrough
 - [`docs/examples/gl062/pilot_partner_questionnaire.json`](examples/gl062/pilot_partner_questionnaire.json) — machine-readable partner questionnaire
 - [`docs/examples/gl062/pilot_review_agenda.json`](examples/gl062/pilot_review_agenda.json) — machine-readable pilot review agenda
+- [`docs/production_hardening_roadmap.md`](production_hardening_roadmap.md) — GL-063 production-hardening roadmap

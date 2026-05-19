@@ -146,3 +146,4 @@ This record is validated by `backend/tests/test_gl060_pilot_ready_release_decisi
 - [`docs/demo_runner_api_smoke.md`](demo_runner_api_smoke.md) — GL-061 demo runner / API smoke script
 - [`docs/integration_ready_release_candidate.md`](integration_ready_release_candidate.md) — GL-056 Integration-Ready v0 consolidated review
 - [`docs/pilot_partner_preparation_pack.md`](pilot_partner_preparation_pack.md) — GL-062 pilot partner preparation pack
+- [`docs/production_hardening_roadmap.md`](production_hardening_roadmap.md) — GL-063 production-hardening roadmap
