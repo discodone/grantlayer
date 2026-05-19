@@ -1,0 +1,153 @@
+{
+  "description": "Backup and restore scope matrix for GrantLayer data categories. This is a design artifact; no backup, restore, or storage is implemented.",
+  "version": "1.0",
+  "dataCategories": [
+    {
+      "category": "grant_requests",
+      "backupRequired": true,
+      "restoreRequired": true,
+      "retentionClass": "product_records",
+      "sensitivity": "high",
+      "mutability": "mutable_until_archived",
+      "productionCriticality": "highest",
+      "backupNotes": "Core business data. Must be included in every product backup.",
+      "restoreNotes": "Restored as part of full product restore or point-in-time restore."
+    },
+    {
+      "category": "grants",
+      "backupRequired": true,
+      "restoreRequired": true,
+      "retentionClass": "product_records",
+      "sensitivity": "high",
+      "mutability": "mutable_until_revoked_or_expired",
+      "productionCriticality": "highest",
+      "backupNotes": "Core business data. Includes signatures and state.",
+      "restoreNotes": "Restored as part of full product restore or point-in-time restore."
+    },
+    {
+      "category": "grant_executions",
+      "backupRequired": true,
+      "restoreRequired": true,
+      "retentionClass": "product_records",
+      "sensitivity": "high",
+      "mutability": "append_only",
+      "productionCriticality": "high",
+      "backupNotes": "Records of what happened when a grant was used.",
+      "restoreNotes": "Restored with product records. Must preserve linkage to grants."
+    },
+    {
+      "category": "evidence_metadata",
+      "backupRequired": true,
+      "restoreRequired": true,
+      "retentionClass": "product_records",
+      "sensitivity": "high",
+      "mutability": "append_only",
+      "productionCriticality": "high",
+      "backupNotes": "Metadata and verification results for evidence.",
+      "restoreNotes": "Restored with product records. Payload references preserved, not payloads."
+    },
+    {
+      "category": "evidence_payload_references",
+      "backupRequired": true,
+      "restoreRequired": false,
+      "retentionClass": "evidence_storage_adapter",
+      "sensitivity": "high",
+      "mutability": "immutable",
+      "productionCriticality": "high",
+      "backupNotes": "References to external storage. Payloads backed up by storage adapter.",
+      "restoreNotes": "References restored; payloads restored via evidence storage adapter."
+    },
+    {
+      "category": "provenance_events",
+      "backupRequired": true,
+      "restoreRequired": true,
+      "retentionClass": "indefinite",
+      "sensitivity": "very_high",
+      "mutability": "immutable",
+      "productionCriticality": "highest",
+      "backupNotes": "Append-only cryptographic chain. Must survive any restore event.",
+      "restoreNotes": "Must be verified after restore. Prefer immutable append-only storage over snapshot restore."
+    },
+    {
+      "category": "audit_events",
+      "backupRequired": true,
+      "restoreRequired": true,
+      "retentionClass": "audit_retention",
+      "sensitivity": "very_high",
+      "mutability": "immutable",
+      "productionCriticality": "highest",
+      "backupNotes": "Decision history. Tamper-evident storage preferred.",
+      "restoreNotes": "Must not overwrite existing audit records. Append-only restoration."
+    },
+    {
+      "category": "approval_records",
+      "backupRequired": true,
+      "restoreRequired": true,
+      "retentionClass": "product_records",
+      "sensitivity": "high",
+      "mutability": "immutable",
+      "productionCriticality": "highest",
+      "backupNotes": "Who approved what and when.",
+      "restoreNotes": "Restored with product records."
+    },
+    {
+      "category": "policy_requirement_results",
+      "backupRequired": true,
+      "restoreRequired": true,
+      "retentionClass": "product_records",
+      "sensitivity": "medium",
+      "mutability": "immutable",
+      "productionCriticality": "high",
+      "backupNotes": "Policy evaluation outcomes per grant or request.",
+      "restoreNotes": "Restored with product records."
+    },
+    {
+      "category": "compliance_gap_reports",
+      "backupRequired": false,
+      "restoreRequired": false,
+      "retentionClass": "compliance_reports",
+      "sensitivity": "medium",
+      "mutability": "mutable",
+      "productionCriticality": "medium",
+      "backupNotes": "Reproducible from product and policy data. Optional backup.",
+      "restoreNotes": "Can be regenerated from restored product and policy data."
+    },
+    {
+      "category": "configuration_records",
+      "backupRequired": false,
+      "restoreRequired": false,
+      "retentionClass": "configuration",
+      "sensitivity": "medium",
+      "mutability": "mutable",
+      "productionCriticality": "medium",
+      "backupNotes": "Should be reproducible from deployment artifacts and secrets.",
+      "restoreNotes": "Preferred approach is rebuild from validated source, not restore from backup."
+    },
+    {
+      "category": "operational_logs",
+      "backupRequired": false,
+      "restoreRequired": false,
+      "retentionClass": "operational_short_term",
+      "sensitivity": "low",
+      "mutability": "mutable",
+      "productionCriticality": "low",
+      "backupNotes": "Ephemeral. May be streamed to log aggregation. Not a restore priority.",
+      "restoreNotes": "Not restored. Systems generate new logs from current time forward."
+    },
+    {
+      "category": "secrets",
+      "backupRequired": false,
+      "restoreRequired": false,
+      "retentionClass": "secret_management",
+      "sensitivity": "very_high",
+      "mutability": "controlled_by_secret_manager",
+      "productionCriticality": "highest",
+      "backupNotes": "MUST NOT be stored in ordinary backups unless future secret-management policy explicitly allows it.",
+      "restoreNotes": "Recovered via approved secret-management procedures (secret manager, HSM, etc.), not from backup."
+    }
+  ],
+  "metadata": {
+    "status": "design-baseline",
+    "note": "No backup, restore, or storage implementation exists. This matrix defines intended scope for future implementation."
+  }
+}
