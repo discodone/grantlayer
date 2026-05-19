@@ -209,3 +209,4 @@ This walkthrough **explicitly does not** provide:
 - [`docs/integration_ready_release_candidate.md`](integration_ready_release_candidate.md) — Integration-Ready v0 release candidate review
 - [`docs/openapi.yaml`](openapi.yaml) — definitive API contract
 - [`docs/pilot_ready_handoff_plan.md`](pilot_ready_handoff_plan.md) — pilot-ready handoff plan for first integration discussion
+- [`docs/demo_runner_api_smoke.md`](demo_runner_api_smoke.md) — GL-061 demo runner / API smoke script

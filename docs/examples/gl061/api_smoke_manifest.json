@@ -1,0 +1,264 @@
+{
+  "smokeId": "gl061-api-smoke",
+  "smokeVersion": "1.0",
+  "title": "GrantLayer Demo Runner / API Smoke Manifest",
+  "description": "Machine-readable smoke manifest for the GL-061 demo runner. Defines the ordered Product Core sequence, stable identifiers, referenced example files, and verification commands for a local dry-run confidence check.",
+  "defaultMode": "dry-run",
+  "networkRequiredByDefault": false,
+  "productionReady": false,
+  "stableIds": {
+    "workflowId": "gl057-workflow-001",
+    "subjectId": "gl057-subject-001",
+    "grantRequestId": "gl057-request-001",
+    "grantId": "gl057-grant-001",
+    "executionId": "gl057-execution-001",
+    "evidenceId": "gl057-evidence-001",
+    "policyId": "gl057-policy-001",
+    "auditorExportId": "gl057-auditor-export-001"
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "name": "Grant Request",
+      "productCoreArea": "Grant Requests / Approvals",
+      "purpose": "Create a structured grant request capturing the subject, role, action, resource, validity window, and reason.",
+      "exampleFile": "docs/examples/gl057/grant_request.json",
+      "inputIds": ["gl057-workflow-001", "gl057-subject-001"],
+      "outputIds": ["gl057-request-001"],
+      "openapiPath": "/grant-requests",
+      "contractNote": "Documented OpenAPI POST path. Field contracts are definitive in docs/openapi.yaml."
+    },
+    {
+      "stepNumber": 2,
+      "name": "Approval Result",
+      "productCoreArea": "Grant Requests / Approvals",
+      "purpose": "Approve the request and produce a linked Grant record with an approval decision.",
+      "exampleFile": "docs/examples/gl057/approval_result.json",
+      "inputIds": ["gl057-request-001"],
+      "outputIds": ["gl057-grant-001"],
+      "openapiPath": "/grant-requests/{id}/approve",
+      "contractNote": "Documented OpenAPI POST path. Approval atomically creates the linked Grant."
+    },
+    {
+      "stepNumber": 3,
+      "name": "Grant",
+      "productCoreArea": "Grants",
+      "purpose": "Retrieve the signed Grant record containing Ed25519 signature, SHA-256 payload hash, and signing key ID.",
+      "exampleFile": "docs/examples/gl057/grant.json",
+      "inputIds": ["gl057-request-001"],
+      "outputIds": ["gl057-grant-001"],
+      "openapiPath": "/grants/{id}",
+      "contractNote": "Documented OpenAPI GET path. The Grant is created during approval and contains GL-050 integrity fields."
+    },
+    {
+      "stepNumber": 4,
+      "name": "Grant Execution",
+      "productCoreArea": "Grant Executions",
+      "purpose": "Record the protected action attempt, linking the Execution to the Grant and the original Grant Request.",
+      "exampleFile": "docs/examples/gl057/grant_execution.json",
+      "inputIds": ["gl057-grant-001", "gl057-request-001"],
+      "outputIds": ["gl057-execution-001"],
+      "openapiPath": "/grant-executions",
+      "contractNote": "Documented OpenAPI POST path. Each execution represents one protected action attempt."
+    },
+    {
+      "stepNumber": 5,
+      "name": "Evidence Item",
+      "productCoreArea": "Evidence Persistence / Verification",
+      "purpose": "Build an Evidence Bundle aggregating the grant, execution, audit trail, and a deterministic SHA-256 integrity hash.",
+      "exampleFile": "docs/examples/gl057/evidence_item.json",
+      "inputIds": ["gl057-execution-001", "gl057-grant-001", "gl057-request-001"],
+      "outputIds": ["gl057-evidence-001"],
+      "openapiPath": "/evidence/executions/{id}",
+      "contractNote": "Documented OpenAPI GET path. Returns the evidence bundle for a given execution."
+    },
+    {
+      "stepNumber": 6,
+      "name": "Evidence Completeness",
+      "productCoreArea": "Evidence Completeness",
+      "purpose": "Compute a structured completeness score and readiness flag from execution presence, evidence presence, verification status, and provenance events.",
+      "exampleFile": "docs/examples/gl057/evidence_completeness.json",
+      "inputIds": ["gl057-execution-001", "gl057-grant-001"],
+      "outputIds": [],
+      "openapiPath": "/evidence/executions/{id}/completeness",
+      "contractNote": "Documented OpenAPI GET path. Provides a machine-readable completeness assessment."
+    },
+    {
+      "stepNumber": 7,
+      "name": "Compliance Gap Report",
+      "productCoreArea": "Compliance Gap Reports",
+      "purpose": "Generate automated gap detection mapped to a severity catalogue with recommended actions.",
+      "exampleFile": "docs/examples/gl057/compliance_gap_report.json",
+      "inputIds": ["gl057-execution-001", "gl057-workflow-001", "gl057-subject-001"],
+      "outputIds": [],
+      "openapiPath": "/compliance/gaps/executions/{id}",
+      "contractNote": "Documented OpenAPI GET path. Returns critical/high/medium/low gaps for the execution."
+    },
+    {
+      "stepNumber": 8,
+      "name": "Policy Requirements Result",
+      "productCoreArea": "Policy Requirements / Rule Packs",
+      "purpose": "Evaluate machine-readable policy rules against subject evidence, exclusions, deadlines, amount limits, required roles, and approval policies.",
+      "exampleFile": "docs/examples/gl057/policy_requirements_result.json",
+      "inputIds": ["gl057-subject-001", "gl057-policy-001"],
+      "outputIds": [],
+      "openapiPath": "/policy-requirements/evaluate",
+      "contractNote": "Documented OpenAPI POST path. Returns a policy evaluation result with blockers and warnings."
+    },
+    {
+      "stepNumber": 9,
+      "name": "Decision Provenance Summary",
+      "productCoreArea": "Decision Provenance",
+      "purpose": "Synthesize evidence completeness, compliance gaps, permissions, approvals, provenance events, and policy results into a single structured decision record.",
+      "exampleFile": "docs/examples/gl057/decision_provenance_summary.json",
+      "inputIds": ["gl057-execution-001", "gl057-workflow-001"],
+      "outputIds": ["gl057-decision-001"],
+      "openapiPath": "/decision-provenance/v2/build",
+      "contractNote": "Documented OpenAPI POST path. Builds a decision provenance summary for the execution."
+    },
+    {
+      "stepNumber": 10,
+      "name": "Auditor Export",
+      "productCoreArea": "Auditor Reports / Auditor Exports",
+      "purpose": "Produce an institutional auditor export combining all upstream signals into a single structured record with section coverage, blockers, and audit-readiness status.",
+      "exampleFile": "docs/examples/gl057/auditor_export.json",
+      "inputIds": ["gl057-workflow-001", "gl057-grant-001", "gl057-execution-001"],
+      "outputIds": ["gl057-auditor-export-001"],
+      "openapiPath": "/auditor/exports/build",
+      "contractNote": "Documented OpenAPI POST path. Builds an exportable auditor record for the workflow."
+    },
+    {
+      "stepNumber": 11,
+      "name": "Compliance Readiness Summary",
+      "productCoreArea": "Compliance Readiness",
+      "purpose": "Build a composite readiness summary across evidence, compliance, permission, approval, provenance, auditor, and policy dimensions.",
+      "exampleFile": "docs/examples/gl057/compliance_readiness_summary.json",
+      "inputIds": ["gl057-workflow-001", "gl057-subject-001", "gl057-grant-001", "gl057-execution-001"],
+      "outputIds": [],
+      "openapiPath": "/compliance/readiness/build",
+      "contractNote": "Documented OpenAPI POST path. Returns the final readiness verdict for the workflow."
+    }
+  ],
+  "referencedExamples": [
+    {
+      "refId": "gl057-grant-request",
+      "title": "Grant Request",
+      "path": "docs/examples/gl057/grant_request.json",
+      "description": "A minimal Grant Request with subject, role, action, resource, and reason."
+    },
+    {
+      "refId": "gl057-approval-result",
+      "title": "Approval Result",
+      "path": "docs/examples/gl057/approval_result.json",
+      "description": "An approval record referencing the request and producing the grant."
+    },
+    {
+      "refId": "gl057-grant",
+      "title": "Grant",
+      "path": "docs/examples/gl057/grant.json",
+      "description": "A signed Grant with Ed25519 signature, payload hash, and signing key ID."
+    },
+    {
+      "refId": "gl057-grant-execution",
+      "title": "Grant Execution",
+      "path": "docs/examples/gl057/grant_execution.json",
+      "description": "An execution record linking the grant, request, and workflow."
+    },
+    {
+      "refId": "gl057-evidence-item",
+      "title": "Evidence Item",
+      "path": "docs/examples/gl057/evidence_item.json",
+      "description": "An Evidence Bundle with grant summary, execution summary, audit trail, and SHA-256 hash."
+    },
+    {
+      "refId": "gl057-evidence-completeness",
+      "title": "Evidence Completeness",
+      "path": "docs/examples/gl057/evidence_completeness.json",
+      "description": "A completeness report showing a full score and readiness status."
+    },
+    {
+      "refId": "gl057-compliance-gap-report",
+      "title": "Compliance Gap Report",
+      "path": "docs/examples/gl057/compliance_gap_report.json",
+      "description": "A compliance gap report with no gaps and no recommended actions."
+    },
+    {
+      "refId": "gl057-policy-requirements-result",
+      "title": "Policy Requirements Result",
+      "path": "docs/examples/gl057/policy_requirements_result.json",
+      "description": "A policy evaluation showing a passed status with no blockers."
+    },
+    {
+      "refId": "gl057-decision-provenance-summary",
+      "title": "Decision Provenance Summary",
+      "path": "docs/examples/gl057/decision_provenance_summary.json",
+      "description": "A decision provenance record synthesising all upstream signals."
+    },
+    {
+      "refId": "gl057-auditor-export",
+      "title": "Auditor Export",
+      "path": "docs/examples/gl057/auditor_export.json",
+      "description": "An auditor export pulling together every signal into a single audit-ready document."
+    },
+    {
+      "refId": "gl057-compliance-readiness-summary",
+      "title": "Compliance Readiness Summary",
+      "path": "docs/examples/gl057/compliance_readiness_summary.json",
+      "description": "A readiness summary scoring all dimensions as ready."
+    },
+    {
+      "refId": "gl057-minimal-flow-bundle",
+      "title": "Minimal Flow Bundle",
+      "path": "docs/examples/gl057/minimal_flow_bundle.json",
+      "description": "A lightweight index listing every artifact, its path, and the stable IDs that connect them."
+    }
+  ],
+  "verificationCommands": [
+    "python3 scripts/demo/gl061_api_smoke.py --dry-run",
+    "python3 -m unittest backend.tests.test_gl061_demo_runner_api_smoke -v",
+    "python3 -m unittest discover backend.tests -v"
+  ],
+  "nonGoals": [
+    "Production deployment",
+    "Production monitoring",
+    "Production authentication (OAuth, JWT, SSO, HSM-backed key management)",
+    "SDK generation (Python, JavaScript, Go client libraries)",
+    "External API certification",
+    "Legal or compliance advice",
+    "Blockchain / wallet / payment integration",
+    "Replacing backend tests",
+    "Live API server requirement for GL-061 dry-run"
+  ],
+  "relatedArtifacts": [
+    {
+      "artifactId": "gl057-quickstart-examples",
+      "title": "Integrator Quickstart Examples",
+      "location": "docs/examples/gl057/",
+      "purpose": "Minimal static JSON examples used as the data source for this smoke manifest."
+    },
+    {
+      "artifactId": "gl058-walkthrough-json",
+      "title": "Minimal API Usage Walkthrough JSON",
+      "location": "docs/examples/gl058/minimal_api_usage_walkthrough.json",
+      "purpose": "Machine-readable walkthrough index with stable IDs and OpenAPI path references."
+    },
+    {
+      "artifactId": "gl059-handoff-plan",
+      "title": "Pilot-Ready Handoff Plan",
+      "location": "docs/pilot_ready_handoff_plan.md",
+      "purpose": "Packages Integration-Ready v0 into a clear technical handoff for pilot discussions."
+    },
+    {
+      "artifactId": "gl060-release-decision",
+      "title": "Pilot-Ready Release Decision",
+      "location": "docs/pilot_ready_release_decision.md",
+      "purpose": "Formally records the current Pilot-Ready state and confirms readiness for first technical pilot discussion."
+    },
+    {
+      "artifactId": "gl061-smoke-test",
+      "title": "Demo Runner Validation Test",
+      "location": "backend/tests/test_gl061_demo_runner_api_smoke.py",
+      "purpose": "Validates that the demo runner script, smoke manifest, and usage document are present, coherent, and aligned."
+    }
+  ]
+}
