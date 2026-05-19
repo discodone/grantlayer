@@ -360,4 +360,10 @@ A deterministic backend end-to-end test exists that proves this entire flow:
 - Covers: Grant Request, Approval, Grant creation, Grant Execution, Evidence Bundle, Evidence Persistence, Evidence Verification, Evidence Completeness, Compliance Gap Report, Policy Requirements, Decision Provenance, Auditor Export, and Compliance Readiness.
 - Verifies: GL-050 signature fields are present, GL-051 transactional consistency is preserved, all outputs belong to the same coherent workflow/subject identifiers.
 
+A deterministic demo scenario and fixture are also available for integrators who want a concrete, readable example before running code:
+
+- Document: `docs/demo_scenario.md`
+- Fixture: `backend/tests/fixtures/gl054_demo_scenario.json`
+- Test: `backend/tests/test_gl054_demo_scenario_fixture.py`
+
 The full backend suite is expected to pass with 0 failures and 0 errors.
