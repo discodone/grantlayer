@@ -31,17 +31,17 @@ The recommended order for the first implementation cut prioritizes **foundationa
 
 | Sequence | Issue | Focus | Dependency |
 |----------|-------|-------|------------|
-| 1 | GL-075 | Runtime configuration enforcement | None |
-| 2 | GL-076 | Health / readiness endpoint baseline | GL-075 |
-| 3 | GL-077 | Structured logging helper / correlation ID baseline | GL-075 |
-| 4 | GL-078 | Secret source boundary hardening | GL-075, GL-077 |
-| 5 | GL-079 | Persistence backend abstraction groundwork | GL-075, GL-077 |
-| 6 | GL-080 | Deployment / runtime mode validation | GL-075, GL-076 |
-| 7 | GL-081 | Operator access hardening | GL-075, GL-077, GL-078 |
-| 8 | GL-082 | Claude Code review-only checkpoint (security/runtime) | GL-075 through GL-081 design alignment |
-| 9 | GL-083+ | Backup / restore / data lifecycle jobs | GL-079, GL-081 |
-| 10 | GL-084+ | Observability metrics and alerting | GL-076, GL-077 |
-| 11 | GL-085+ | Incident response automation | GL-076, GL-084 |
+| 1 | GL-076 | Runtime configuration enforcement baseline | None |
+| 2 | GL-077 | Health / readiness endpoint baseline | GL-076 |
+| 3 | GL-078 | Structured logging helper / correlation ID baseline | GL-076 |
+| 4 | GL-079 | Secret source boundary hardening | GL-076, GL-078 |
+| 5 | GL-080 | Persistence backend abstraction groundwork | GL-076, GL-078 |
+| 6 | GL-081 | Deployment / runtime mode validation | GL-076, GL-077 |
+| 7 | GL-082 | Operator access hardening | GL-076, GL-078, GL-079 |
+| 8 | GL-083 | Claude Code review-only checkpoint (security/runtime) | GL-076 through GL-082 design alignment |
+| 9 | GL-084+ | Backup / restore / data lifecycle jobs | GL-080, GL-082 |
+| 10 | GL-085+ | Observability metrics and alerting | GL-077, GL-078 |
+| 11 | GL-086+ | Incident response automation | GL-077, GL-085 |
 
 This ordering ensures that every block adds value without requiring downstream blocks to be complete first.
 
@@ -57,18 +57,18 @@ Each implementation block in the first cut must remain **small and safe**:
 - **No frontend changes**: dashboard and UI remain untouched.
 - **No deployment infrastructure changes**: Docker, orchestration, and infrastructure are out of scope for the first cut.
 
-## 4. Suggested GL-075+ sequence
+## 4. Suggested GL-076+ sequence
 
-### GL-075 — Runtime configuration enforcement
+### GL-076 — Runtime configuration enforcement baseline
 - **Goal**: Implement the runtime configuration model designed in GL-066.
-- **Scope**: Environment variable parsing, runtime mode detection, configuration validation at startup, and a fail-fast path for invalid configuration.
-- **Allowed files**: backend/src/config/* (new or existing), backend/tests/test_gl075_runtime_configuration_enforcement.py.
-- **Forbidden changes**: No OpenAPI changes, no frontend changes, no database schema changes (unless a config table is explicitly scoped and approved).
+- **Scope**: Environment variable parsing, runtime mode detection, configuration validation helper (`backend/src/runtime_config.py`), fail-fast `ValueError` for unsupported modes, and safe metadata inspection (`describe_runtime_config`).
+- **Allowed files**: `backend/src/runtime_config.py` (new), `backend/tests/test_gl076_runtime_configuration_enforcement.py`.
+- **Forbidden changes**: No OpenAPI changes, no frontend changes, no database schema changes.
 
-### GL-076 — Health / readiness endpoint baseline
+### GL-077 — Health / readiness endpoint baseline
 - **Goal**: Add coarse health and readiness endpoints that operators and future runbooks can use.
 - **Scope**: `/health` and `/ready` handlers, lightweight dependency checks (config loaded, database reachable), and structured response schemas.
-- **Allowed files**: backend/src/health.py (new), backend/tests/test_gl076_health_readiness_baseline.py.
+- **Allowed files**: backend/src/health.py (new), backend/tests/test_gl077_health_readiness_baseline.py.
 - **Forbidden changes**: No auth enforcement at these endpoints (they must remain accessible for health probes), no frontend changes.
 
 ### GL-077 — Structured logging helper / correlation ID baseline
@@ -102,44 +102,44 @@ Each implementation block in the first cut must remain **small and safe**:
 - **Forbidden changes**: No OAuth/JWT/SSO implementation unless explicitly scoped, no breaking changes to existing admin-token paths for existing tests.
 
 ### GL-082 — Claude Code review-only checkpoint (security / runtime)
-- **Goal**: Review-only checkpoint to validate that GL-075 through GL-081 implementations align with the design documents and do not introduce forbidden changes.
+- **Goal**: Review-only checkpoint to validate that GL-076 through GL-082 implementations align with the design documents and do not introduce forbidden changes.
 - **Scope**: No code changes. Review diff, test coverage, and rollback feasibility.
 - **Allowed files**: Review comments, updated planning docs only.
 - **Forbidden changes**: No implementation code changes during this checkpoint.
 
 ## 5. Which implementation blocks must remain small
 
-All blocks in GL-075 through GL-081 must remain small. Specifically:
+All blocks in GL-076 through GL-082 must remain small. Specifically:
 
-- **GL-075 (runtime config)**: must not grow into a full configuration-management system.
-- **GL-076 (health endpoints)**: must not grow into a full observability stack.
-- **GL-077 (structured logging)**: must not rewrite every existing log line in one issue.
-- **GL-078 (secret boundary)**: must not grow into a full vault or HSM integration.
-- **GL-079 (persistence abstraction)**: must not rewrite the whole data layer.
-- **GL-080 (deployment validation)**: must not implement containers or orchestration.
-- **GL-081 (operator access)**: must not implement OAuth, SSO, or mTLS in the first cut.
+- **GL-076 (runtime config)**: must not grow into a full configuration-management system.
+- **GL-077 (health endpoints)**: must not grow into a full observability stack.
+- **GL-078 (structured logging)**: must not rewrite every existing log line in one issue.
+- **GL-079 (secret boundary)**: must not grow into a full vault or HSM integration.
+- **GL-080 (persistence abstraction)**: must not rewrite the whole data layer.
+- **GL-081 (deployment validation)**: must not implement containers or orchestration.
+- **GL-082 (operator access)**: must not implement OAuth, SSO, or mTLS in the first cut.
 
 ## 6. Which blocks require full backend suite gates
 
-Every implementation block from GL-075 onward must pass the full backend suite with zero failures and zero errors before it can be considered complete. No exceptions.
+Every implementation block from GL-076 onward must pass the full backend suite with zero failures and zero errors before it can be considered complete. No exceptions.
 
 The following blocks are especially sensitive and must also pass targeted tests before the full suite:
 
-- **GL-075**: targeted tests for configuration validation edge cases.
-- **GL-076**: targeted tests for health endpoint responses and dependency failure simulation.
-- **GL-077**: targeted tests for secret redaction and field catalog compliance.
-- **GL-078**: targeted tests for secret retrieval failure and fallback behavior.
-- **GL-079**: targeted tests for backend switching and connection error handling.
-- **GL-080**: targeted tests for invalid runtime mode rejection.
-- **GL-081**: targeted tests for unauthorized access rejection and authorized access success.
+- **GL-076**: targeted tests for configuration validation edge cases.
+- **GL-077**: targeted tests for health endpoint responses and dependency failure simulation.
+- **GL-078**: targeted tests for secret redaction and field catalog compliance.
+- **GL-079**: targeted tests for secret retrieval failure and fallback behavior.
+- **GL-080**: targeted tests for backend switching and connection error handling.
+- **GL-081**: targeted tests for invalid runtime mode rejection.
+- **GL-082**: targeted tests for unauthorized access rejection and authorized access success.
 
 ## 7. Which blocks require optional Claude Code review-only gate before starting
 
 A **Claude Code review-only gate** is suggested before starting the following blocks, but it is **not a required step for every issue**:
 
-- **GL-075**: review the design-to-code mapping for runtime configuration.
-- **GL-078**: review secret handling to ensure no secrets are leaked in code, tests, or logs.
-- **GL-081**: review auth boundary changes to ensure no accidental lockouts or bypasses.
+- **GL-076**: review the design-to-code mapping for runtime configuration.
+- **GL-079**: review secret handling to ensure no secrets are leaked in code, tests, or logs.
+- **GL-082**: review auth boundary changes to ensure no accidental lockouts or bypasses.
 
 ## 8. Rollback considerations
 
@@ -155,13 +155,13 @@ Every implementation block must include a rollback plan:
 
 | Block | Targeted tests | Full suite gate | Regression tests |
 |-------|---------------|-----------------|------------------|
-| GL-075 | Config validation, env override, fail-fast | Yes | GL-055, GL-058, GL-061 |
-| GL-076 | Health/readiness responses, dependency checks | Yes | GL-055, GL-073 |
-| GL-077 | Secret redaction, correlation ID, field catalog | Yes | GL-071 |
-| GL-078 | Secret retrieval, fallback, boundary isolation | Yes | GL-068 |
-| GL-079 | Backend switching, connection handling | Yes | GL-070, GL-072 |
-| GL-080 | Runtime mode validation, startup asserts | Yes | GL-069 |
-| GL-081 | Auth success/failure, role enforcement | Yes | GL-067, GL-073 |
+| GL-076 | Config validation, env override, fail-fast | Yes | GL-055, GL-058, GL-061 |
+| GL-077 | Health/readiness responses, dependency checks | Yes | GL-055, GL-073 |
+| GL-078 | Secret redaction, correlation ID, field catalog | Yes | GL-071 |
+| GL-079 | Secret retrieval, fallback, boundary isolation | Yes | GL-068 |
+| GL-080 | Backend switching, connection handling | Yes | GL-070, GL-072 |
+| GL-081 | Runtime mode validation, startup asserts | Yes | GL-069 |
+| GL-082 | Auth success/failure, role enforcement | Yes | GL-067, GL-073 |
 
 All targeted tests must be written in the same issue as the implementation and must pass locally and in CI.
 
@@ -169,7 +169,7 @@ All targeted tests must be written in the same issue as the implementation and m
 
 **GrantLayer is not production-ready yet.**
 
-The implementation cut defined in this document is the first step toward closing P0 production-hardening gates. Completing GL-075 through GL-081 will improve the foundation, but it will not make GrantLayer production-ready. Production readiness requires:
+The implementation cut defined in this document is the first step toward closing P0 production-hardening gates. Completing GL-076 through GL-082 will improve the foundation, but it will not make GrantLayer production-ready. Production readiness requires:
 
 - All P0 gates from `docs/production_hardening_roadmap.md` to be implemented and verified.
 - PostgreSQL to be a first-class CI target.

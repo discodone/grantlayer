@@ -80,7 +80,6 @@ class TestGL068SecretManagementBaselineDesign(unittest.TestCase):
 
     FORBIDDEN_PATH_PATTERNS = [
         BACKEND_SRC_DIR / "config_loader.py",
-        BACKEND_SRC_DIR / "runtime_config.py",
         BACKEND_SRC_DIR / "environment.py",
         BACKEND_SRC_DIR / "settings.py",
         BACKEND_SRC_DIR / "secrets.py",

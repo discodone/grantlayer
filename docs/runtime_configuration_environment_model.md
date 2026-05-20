@@ -149,7 +149,7 @@ The following boundaries protect the Product Core from accidental implicit behav
 The following implementation blocks should be built after this planning document is accepted:
 
 1. **Configuration schema / loader** — a validated configuration schema and loader that reads from a defined boundary.
-2. **Runtime mode validation** — startup validation that rejects invalid or undeclared runtime modes.
+2. **Runtime mode validation** — startup validation that rejects invalid or undeclared runtime modes. *(Partially addressed by GL-076 — see note below.)*
 3. **Production fail-closed config checks** — explicit checks that refuse to start in production mode if required configuration is missing.
 4. **Secret source abstraction** — a boundary that abstracts secret storage so the Product Core does not depend on a specific vault or manager.
 5. **Database backend selection** — explicit backend selection with validation and connection testing.
@@ -158,6 +158,11 @@ The following implementation blocks should be built after this planning document
 8. **Observability configuration** — structured logging, metrics, and alerting setup.
 9. **Backup/restore configuration** — automated backup schedule and restore validation.
 10. **Extension/adaptor toggle configuration** — explicit enable/disable for extensions and experimental features.
+
+> **GL-076 note:** GL-076 introduces a small isolated runtime mode validation helper (`backend/src/runtime_config.py`) that supports `local`, `test`, `demo`, `staging`, and `production` modes. This helper validates runtime mode from environment variables, raises `ValueError` for unsupported modes, and provides safe metadata inspection without exposing raw environment values or secrets. It does **not** yet enforce all production configuration requirements, and it does **not** make GrantLayer production-ready.
+
+
+> **GL-076 note:** GL-076 introduces a small isolated runtime mode validation helper (`backend/src/runtime_config.py`) that supports `local`, `test`, `demo`, `staging`, and `production` modes. This helper validates runtime mode from environment variables, raises `ValueError` for unsupported modes, and provides safe metadata inspection without exposing raw environment values or secrets. It does **not** yet enforce all production configuration requirements, and it does **not** make GrantLayer production-ready.
 
 ## 10. What not to implement yet
 

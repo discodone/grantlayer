@@ -1,0 +1,62 @@
+{
+  "description": "Safe example behaviors for GL-076 runtime configuration enforcement baseline.",
+  "examples": [
+    {
+      "name": "absent_runtime_mode_defaults_to_local",
+      "env": {},
+      "expected": {
+        "getRuntimeMode": "local",
+        "isProductionLike": false,
+        "describeRuntimeConfig": {
+          "runtimeMode": "local",
+          "isProductionLike": false,
+          "supportedModes": ["demo", "local", "production", "staging", "test"],
+          "configSource": "default"
+        }
+      }
+    },
+    {
+      "name": "test_mode_accepted",
+      "env": {
+        "GRANTLAYER_RUNTIME_MODE": "test"
+      },
+      "expected": {
+        "getRuntimeMode": "test",
+        "isProductionLike": false,
+        "describeRuntimeConfig": {
+          "runtimeMode": "test",
+          "isProductionLike": false,
+          "supportedModes": ["demo", "local", "production", "staging", "test"],
+          "configSource": "environment"
+        }
+      }
+    },
+    {
+      "name": "staging_mode_accepted",
+      "env": {
+        "GRANTLAYER_RUNTIME_MODE": "staging"
+      },
+      "expected": {
+        "getRuntimeMode": "staging",
+        "isProductionLike": true,
+        "describeRuntimeConfig": {
+          "runtimeMode": "staging",
+          "isProductionLike": true,
+          "supportedModes": ["demo", "local", "production", "staging", "test"],
+          "configSource": "environment"
+        }
+      }
+    },
+    {
+      "name": "invalid_mode_rejected",
+      "env": {
+        "GRANTLAYER_RUNTIME_MODE": "invalid"
+      },
+      "expected": {
+        "getRuntimeMode": "ValueError: Unsupported runtime mode",
+        "isProductionLike": "ValueError: Unsupported runtime mode",
+        "describeRuntimeConfig": "ValueError: Unsupported runtime mode"
+      }
+    }
+  ]
+}
