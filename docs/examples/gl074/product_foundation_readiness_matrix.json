@@ -1,0 +1,167 @@
+{
+  "schemaVersion": "gl074-1.0",
+  "description": "Product Foundation readiness matrix consolidating the design baseline from GL-064 through GL-073. This matrix is a review artifact; no implementation is provided by GL-074.",
+  "generatedBy": "GL-074",
+  "foundationAreas": [
+    {
+      "area": "api_contract",
+      "design_status": "complete",
+      "implementation_status": "not_started",
+      "production_readiness": "not_ready",
+      "dependencies": [],
+      "blockers": ["Contract freeze process not implemented", "Versioning policy not formalized"],
+      "recommended_next_action": "Define contract freeze process after pilot feedback; do not implement API changes in the first cut.",
+      "risk_level": "medium",
+      "review_gate_required": false,
+      "related_docs": [
+        "docs/api_openapi_contract_hardening_review.md",
+        "docs/openapi.yaml",
+        "docs/integration_ready_checklist.md"
+      ]
+    },
+    {
+      "area": "architecture_boundaries",
+      "design_status": "complete",
+      "implementation_status": "not_started",
+      "production_readiness": "not_ready",
+      "dependencies": [],
+      "blockers": ["Extension interface contracts not yet frozen"],
+      "recommended_next_action": "Validate architecture map against first implementation blocks; update extension catalog if boundaries shift.",
+      "risk_level": "low",
+      "review_gate_required": false,
+      "related_docs": [
+        "docs/product_architecture_extension_boundaries.md",
+        "docs/examples/gl065/product_architecture_map.json",
+        "docs/examples/gl065/extension_boundary_catalog.json"
+      ]
+    },
+    {
+      "area": "runtime_configuration",
+      "design_status": "complete",
+      "implementation_status": "not_started",
+      "production_readiness": "not_ready",
+      "dependencies": [],
+      "blockers": [],
+      "recommended_next_action": "Implement runtime configuration enforcement as GL-075; validate at startup.",
+      "risk_level": "high",
+      "review_gate_required": true,
+      "related_docs": [
+        "docs/runtime_configuration_environment_model.md",
+        "docs/examples/gl066/runtime_environment_matrix.json",
+        "docs/examples/gl066/configuration_contract_catalog.json"
+      ]
+    },
+    {
+      "area": "operator_auth_access",
+      "design_status": "complete",
+      "implementation_status": "not_started",
+      "production_readiness": "not_ready",
+      "dependencies": ["runtime_configuration", "secret_management"],
+      "blockers": ["Auth model selection may need pilot partner input", "Secret source boundary not yet implemented"],
+      "recommended_next_action": "Implement operator access hardening as GL-081 after secrets and logging are in place.",
+      "risk_level": "high",
+      "review_gate_required": true,
+      "related_docs": [
+        "docs/production_auth_operator_access_design.md",
+        "docs/examples/gl067/auth_operator_role_matrix.json",
+        "docs/examples/gl067/operator_access_boundary_catalog.json"
+      ]
+    },
+    {
+      "area": "secret_management",
+      "design_status": "complete",
+      "implementation_status": "not_started",
+      "production_readiness": "not_ready",
+      "dependencies": ["runtime_configuration"],
+      "blockers": ["Demo Ed25519 keypair still in repository"],
+      "recommended_next_action": "Implement secret source boundary hardening as GL-078; replace demo keys with managed retrieval.",
+      "risk_level": "high",
+      "review_gate_required": true,
+      "related_docs": [
+        "docs/secret_management_baseline_design.md",
+        "docs/examples/gl068/secret_inventory_model.json",
+        "docs/examples/gl068/secret_handling_policy_catalog.json"
+      ]
+    },
+    {
+      "area": "deployment_runtime_modes",
+      "design_status": "complete",
+      "implementation_status": "not_started",
+      "production_readiness": "not_ready",
+      "dependencies": ["runtime_configuration", "observability_logging"],
+      "blockers": ["No container or orchestration definition implemented", "Runtime mode validation not wired"],
+      "recommended_next_action": "Implement deployment/runtime mode validation as GL-080 after configuration and health endpoints are in place.",
+      "risk_level": "medium",
+      "review_gate_required": false,
+      "related_docs": [
+        "docs/deployment_package_runtime_modes_design.md",
+        "docs/examples/gl069/deployment_runtime_mode_matrix.json",
+        "docs/examples/gl069/deployment_package_catalog.json"
+      ]
+    },
+    {
+      "area": "persistence_postgresql",
+      "design_status": "complete",
+      "implementation_status": "partial",
+      "production_readiness": "not_ready",
+      "dependencies": ["runtime_configuration", "secret_management"],
+      "blockers": ["SQLite is default; PostgreSQL not CI-gated", "Connection pooling strategy not implemented"],
+      "recommended_next_action": "Implement persistence backend abstraction groundwork as GL-079; establish PostgreSQL CI target in later block.",
+      "risk_level": "high",
+      "review_gate_required": true,
+      "related_docs": [
+        "docs/persistence_backend_postgresql_readiness_design.md",
+        "docs/examples/gl070/persistence_backend_matrix.json",
+        "docs/examples/gl070/postgresql_readiness_catalog.json"
+      ]
+    },
+    {
+      "area": "observability_logging",
+      "design_status": "complete",
+      "implementation_status": "not_started",
+      "production_readiness": "not_ready",
+      "dependencies": ["runtime_configuration"],
+      "blockers": ["No structured logging pipeline implemented", "No metrics or alerting stack implemented"],
+      "recommended_next_action": "Implement structured logging helper / correlation ID baseline as GL-077 before metrics and alerting.",
+      "risk_level": "medium",
+      "review_gate_required": false,
+      "related_docs": [
+        "docs/observability_structured_logging_baseline_design.md",
+        "docs/examples/gl071/structured_logging_field_catalog.json",
+        "docs/examples/gl071/observability_event_model.json"
+      ]
+    },
+    {
+      "area": "backup_restore_lifecycle",
+      "design_status": "complete",
+      "implementation_status": "not_started",
+      "production_readiness": "not_ready",
+      "dependencies": ["persistence_postgresql", "secret_management", "observability_logging"],
+      "blockers": ["No backup jobs implemented", "No restore procedure implemented", "No retention automation implemented"],
+      "recommended_next_action": "Schedule backup/restore/data lifecycle jobs after persistence abstraction and logging are implemented.",
+      "risk_level": "medium",
+      "review_gate_required": false,
+      "related_docs": [
+        "docs/backup_restore_data_lifecycle_design.md",
+        "docs/examples/gl072/backup_restore_scope_matrix.json",
+        "docs/examples/gl072/data_lifecycle_policy_catalog.json"
+      ]
+    },
+    {
+      "area": "operational_runbook_incident_response",
+      "design_status": "complete",
+      "implementation_status": "not_started",
+      "production_readiness": "not_ready",
+      "dependencies": ["observability_logging", "deployment_runtime_modes", "operator_auth_access"],
+      "blockers": ["No monitoring implemented", "No alerting implemented", "No incident ticketing integrated", "No operator action event logging implemented"],
+      "recommended_next_action": "Implement health endpoints and logging first; schedule incident response automation after observability baseline is operational.",
+      "risk_level": "high",
+      "review_gate_required": true,
+      "related_docs": [
+        "docs/operational_runbook_incident_response_design.md",
+        "docs/examples/gl073/incident_severity_matrix.json",
+        "docs/examples/gl073/operational_runbook_catalog.json"
+      ]
+    }
+  ]
+}
