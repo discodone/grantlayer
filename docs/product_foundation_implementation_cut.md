@@ -32,7 +32,7 @@ The recommended order for the first implementation cut prioritizes **foundationa
 | Sequence | Issue | Focus | Dependency |
 |----------|-------|-------|------------|
 | 1 | GL-076 | Runtime configuration enforcement baseline | None |
-| 2 | GL-077 | Health / readiness endpoint baseline | GL-076 |
+| 2 | **GL-077** | **Health / readiness endpoint baseline** | GL-076 |
 | 3 | GL-078 | Structured logging helper / correlation ID baseline | GL-076 |
 | 4 | GL-079 | Secret source boundary hardening | GL-076, GL-078 |
 | 5 | GL-080 | Persistence backend abstraction groundwork | GL-076, GL-078 |
@@ -66,10 +66,12 @@ Each implementation block in the first cut must remain **small and safe**:
 - **Forbidden changes**: No OpenAPI changes, no frontend changes, no database schema changes.
 
 ### GL-077 — Health / readiness endpoint baseline
-- **Goal**: Add coarse health and readiness endpoints that operators and future runbooks can use.
-- **Scope**: `/health` and `/ready` handlers, lightweight dependency checks (config loaded, database reachable), and structured response schemas.
-- **Allowed files**: backend/src/health.py (new), backend/tests/test_gl077_health_readiness_baseline.py.
-- **Forbidden changes**: No auth enforcement at these endpoints (they must remain accessible for health probes), no frontend changes.
+- **Goal**: Minimal operational endpoint baseline (`GET /health` and `GET /readiness`) that operators and future runbooks can use.
+- **Status**: Implemented as a minimal API-first baseline. It is **not** full production readiness.
+- **Scope**: Liveness (`/health`) and readiness (`/readiness`) handlers that safely surface only runtime mode metadata from the GL-076 helper. No DB connectivity checks, no persistence checks, no auth checks, no secret checks, no metrics/tracing/logging, and no deployment validation.
+- **Allowed files**: `backend/src/server.py`, `backend/tests/test_gl077_health_readiness_endpoint.py`, `docs/openapi.yaml`, `docs/product_foundation_implementation_cut.md`.
+- **Forbidden changes**: No auth enforcement at these endpoints (they must remain accessible for health probes), no frontend changes, no DB schema changes, no migration changes, no deployment/infrastructure changes.
+- **Future work**: Database connectivity, persistence health, auth/operator health, metrics, tracing, logging, and deployment validation checks remain out of scope for GL-077.
 
 ### GL-077 — Structured logging helper / correlation ID baseline
 - **Goal**: Introduce a structured logging helper that emits GL-071-compliant events and attaches correlation IDs.

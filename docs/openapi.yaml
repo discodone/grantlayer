@@ -39,37 +39,59 @@ servers:
 paths:
   /health:
     get:
-      summary: Health check
-      description: Returns service health and configuration flags. Does NOT expose secrets or token values. GL-032 adds SQLite readiness fields.
+      summary: Liveness health check
+      description: |
+        Liveness endpoint. Confirms the API process can respond.
+        Does NOT expose secrets, raw environment, or internal config.
+        GL-077 baseline response.
       operationId: healthCheck
       responses:
         "200":
-          description: Service is healthy
+          description: Service is alive
           content:
             application/json:
               schema:
                 type: object
-                required: [ok, service, timestamp, dbConfigured, adminTokenConfigured, requireAdminToken, requireChallenge, demoEndpointsEnabled, operatorModelEnabled, operatorsConfigured]
+                required: [status, service, checkType]
                 properties:
-                  ok: { type: boolean, example: true }
-                  service: { type: string, example: "grantlayer-mvp" }
-                  timestamp: { type: string, format: date-time, example: "2026-05-07T10:00:00Z" }
-                  dbConfigured: { type: boolean }
-                  adminTokenConfigured: { type: boolean }
-                  requireAdminToken: { type: boolean }
-                  requireChallenge: { type: boolean }
-                  demoEndpointsEnabled: { type: boolean }
-                  operatorModelEnabled: { type: boolean }
-                  operatorsConfigured: { type: boolean }
-                  # GL-032 readiness fields
-                  dbConnected: { type: boolean, description: "True if SELECT 1 succeeds against SQLite." }
-                  dbWritable: { type: boolean, description: "True if a temporary write probe succeeds." }
-                  dbFilePresent: { type: boolean, description: "True if the on-disk DB file exists. Always false for in-memory DB." }
-                  dbDirectoryWritable: { type: boolean, description: "True if the DB directory is writable. Always false for in-memory DB." }
-                  dbSizeBytes: { type: integer, nullable: true, description: "Size of the DB file in bytes; null for in-memory DB." }
-                  journalMode: { type: string, nullable: true, description: "SQLite PRAGMA journal_mode result (e.g. wal)." }
-                  dbPathKind: { type: string, enum: [file, memory], description: "Whether the DB is file-backed or in-memory." }
-                  dbPathKind: { type: string, enum: [file, memory], description: "Whether the DB is file-backed or in-memory." }
+                  status: { type: string, example: "ok" }
+                  service: { type: string, example: "grantlayer" }
+                  checkType: { type: string, example: "liveness" }
+
+  /readiness:
+    get:
+      summary: Readiness check
+      description: |
+        Readiness endpoint. Confirms the API can resolve runtime
+        configuration using the GL-076 runtime_config helper.
+        Does NOT expose raw environment values, secrets, or tokens.
+      operationId: readinessCheck
+      responses:
+        "200":
+          description: Runtime configuration valid and ready
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service, checkType, runtimeMode, isProductionLike]
+                properties:
+                  status: { type: string, example: "ready" }
+                  service: { type: string, example: "grantlayer" }
+                  checkType: { type: string, example: "readiness" }
+                  runtimeMode: { type: string, example: "local" }
+                  isProductionLike: { type: boolean, example: false }
+        "503":
+          description: Runtime configuration invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service, checkType, errorCode]
+                properties:
+                  status: { type: string, example: "not_ready" }
+                  service: { type: string, example: "grantlayer" }
+                  checkType: { type: string, example: "readiness" }
+                  errorCode: { type: string, example: "RUNTIME_CONFIG_INVALID" }
 
   /:
     get:

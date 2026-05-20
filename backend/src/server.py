@@ -2,7 +2,6 @@
 
 import json
 import re
-import datetime
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
@@ -13,7 +12,7 @@ from .grants import list_grants, create_grant, revoke_grant, get_grant, tamper_g
 from .audit_log import list_events
 from .demo_action import handle_demo_action
 from .challenges import create_challenge, list_challenges
-from .auth import check_auth, check_admin_token, admin_token_warning, admin_token_is_configured
+from .auth import check_auth, check_admin_token, admin_token_warning
 from .crypto_signing import ensure_demo_keypair, verify_grant_signature
 from . import config
 from . import operators as ops
@@ -37,6 +36,8 @@ from .compliance_readiness import build_compliance_readiness_summary
 from .decision_provenance import build_decision_provenance_v2
 from .auditor_export import build_institutional_auditor_export
 from .policy_requirements import evaluate_policy_requirements
+from .runtime_config import describe_runtime_config, get_runtime_mode
+
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
     "dashboard", "index.html",
@@ -128,22 +129,29 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(404, self._gl030_error("Dashboard not found", "dashboard_not_found", "The requested dashboard file could not be found."))
 
         elif path == "/health":
-            health_payload = {
-                "ok": True,
-                "service": "grantlayer-mvp",
-                "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
-                "dbConfigured": bool(config.GRANTLAYER_DB or config.GRANTLAYER_DATABASE_URL),
-                "adminTokenConfigured": admin_token_is_configured(),
-                "requireAdminToken": config.REQUIRE_ADMIN_TOKEN,
-                "requireChallenge": config.REQUIRE_CHALLENGE,
-                "demoEndpointsEnabled": config.ENABLE_DEMO_ENDPOINTS,
-                "operatorModelEnabled": config.ENABLE_OPERATOR_MODEL,
-                "operatorsConfigured": False,
-            }
-            # GL-032: additive readiness fields
-            from .db import get_db_health
-            health_payload.update(get_db_health())
-            self._send_json(200, health_payload)
+            self._send_json(200, {
+                "status": "ok",
+                "service": "grantlayer",
+                "checkType": "liveness",
+            })
+
+        elif path == "/readiness":
+            try:
+                runtime_info = describe_runtime_config()
+                self._send_json(200, {
+                    "status": "ready",
+                    "service": "grantlayer",
+                    "checkType": "readiness",
+                    "runtimeMode": runtime_info.get("runtimeMode"),
+                    "isProductionLike": runtime_info.get("isProductionLike"),
+                })
+            except ValueError:
+                self._send_json(503, {
+                    "status": "not_ready",
+                    "service": "grantlayer",
+                    "checkType": "readiness",
+                    "errorCode": "RUNTIME_CONFIG_INVALID",
+                })
 
         elif path == "/grants":
             grants = list_grants()
