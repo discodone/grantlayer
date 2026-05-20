@@ -50,6 +50,11 @@ CORS_HEADERS = {
 }
 
 
+class _QueryParamError(Exception):
+    """Raised when a query parameter fails safe parsing so the caller can return."""
+    pass
+
+
 class GrantLayerHandler(BaseHTTPRequestHandler):
 
     def log_message(self, fmt, *args):  # noqa: N802
@@ -97,6 +102,64 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
     def _missing(self, data: dict, fields: list) -> list:
         return [f for f in fields if not data.get(f)]
+
+    def _parse_int_query_param(
+        self, qs, name: str, default=None, minimum: int = 1, maximum: int = 1000
+    ) -> int | None:
+        """Safely parse an integer query parameter.
+
+        - Returns *default* if the parameter is absent or the list is empty.
+        - Returns the parsed integer if it is valid and within bounds.
+        - Sends a deterministic HTTP 400 JSON response and raises
+          `_QueryParamError` for invalid, out-of-bounds, or empty values.
+        """
+        raw_list = qs.get(name)
+        if not raw_list:
+            return default
+        raw = raw_list[0]
+        if raw == "":
+            self._send_json(
+                400,
+                self._gl030_error(
+                    f"Invalid query parameter: {name}",
+                    "INVALID_QUERY_PARAMETER",
+                    f"The {name} parameter must be a valid integer.",
+                ),
+            )
+            raise _QueryParamError(name)
+        try:
+            value = int(raw)
+        except (ValueError, TypeError):
+            self._send_json(
+                400,
+                self._gl030_error(
+                    f"Invalid query parameter: {name}",
+                    "INVALID_QUERY_PARAMETER",
+                    f"The {name} parameter must be a valid integer.",
+                ),
+            )
+            raise _QueryParamError(name)
+        if value < minimum:
+            self._send_json(
+                400,
+                self._gl030_error(
+                    f"Invalid query parameter: {name}",
+                    "INVALID_QUERY_PARAMETER",
+                    f"The {name} parameter must be at least {minimum}.",
+                ),
+            )
+            raise _QueryParamError(name)
+        if value > maximum:
+            self._send_json(
+                400,
+                self._gl030_error(
+                    f"Invalid query parameter: {name}",
+                    "INVALID_QUERY_PARAMETER",
+                    f"The {name} parameter must be at most {maximum}.",
+                ),
+            )
+            raise _QueryParamError(name)
+        return value
 
     def do_OPTIONS(self):  # noqa: N802
         self.send_response(204)
@@ -168,7 +231,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
         elif path == "/audit-events":
             qs = parse_qs(urlparse(self.path).query)
-            limit = int(qs.get("limit", ["200"])[0])
+            try:
+                limit = self._parse_int_query_param(qs, "limit", default=200)
+            except _QueryParamError:
+                return
             events = list_events(limit=limit)
             self._send_json(200, [e.to_dict() for e in events])
 
@@ -240,7 +306,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not ok:
                 return
             qs = parse_qs(urlparse(self.path).query)
-            limit = int(qs.get("limit", ["200"])[0])
+            try:
+                limit = self._parse_int_query_param(qs, "limit", default=200)
+            except _QueryParamError:
+                return
             grant_id = qs.get("grantId", [None])[0]
             operator_id = qs.get("operatorId", [None])[0]
             executions = execs.list_grant_executions(
@@ -276,7 +345,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
                 return
             qs = parse_qs(urlparse(self.path).query)
-            limit = int(qs.get("limit", ["200"])[0])
+            try:
+                limit = self._parse_int_query_param(qs, "limit", default=200)
+            except _QueryParamError:
+                return
             executions = execs.list_grant_executions_for_grant(grant_id, limit=limit)
             self._send_json(200, [e.to_dict() for e in executions])
 

@@ -527,6 +527,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/GrantExecution"
+        "400":
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Authentication required
           content:
@@ -609,6 +615,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/GrantExecution"
+        "400":
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Authentication required
           content:
@@ -650,6 +662,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/AuditEvent"
+        "400":
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Authentication required
           content:
