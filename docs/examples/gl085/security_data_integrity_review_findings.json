@@ -1,0 +1,282 @@
+{
+  "schemaVersion": "gl085-1.0",
+  "description": "GL-085 Security and Data Integrity Follow-up Claude Review Findings",
+  "generatedBy": "GL-085",
+  "reviewDate": "2026-05-20",
+  "reviewer": "Claude Code (claude-sonnet-4-6)",
+  "baseCommit": "9ad7f79d1409cd022cee5392f181d6175d88da8a",
+  "review_scope": [
+    "GL-080: revoke_grant_request atomicity fix",
+    "GL-081: PostgreSQL migration runner dict-row access fix",
+    "GL-082: Query parameter parsing hardening",
+    "GL-083: Auth enforcement for sensitive read endpoints",
+    "GL-084: /demo-action auth hardening",
+    "OpenAPI specification alignment with server behavior",
+    "Test suite quality and coverage gaps"
+  ],
+  "reviewed_issues": [
+    {"id": "GL-080", "title": "Fix revoke_grant_request Non-Atomic Write", "merged": true},
+    {"id": "GL-081", "title": "Fix PostgreSQL Migration Runner Dict-Row Access", "merged": true},
+    {"id": "GL-082", "title": "Harden Query Parameter Parsing", "merged": true},
+    {"id": "GL-083", "title": "Auth Enforcement for Read Endpoints", "merged": true},
+    {"id": "GL-084", "title": "/demo-action Auth-Hardening", "merged": true}
+  ],
+  "reviewed_files": [
+    "backend/src/grant_requests.py",
+    "backend/src/grants.py",
+    "backend/src/migrations/runner.py",
+    "backend/src/server.py",
+    "docs/openapi.yaml",
+    "backend/tests/test_gl080_revoke_grant_request_atomicity.py",
+    "backend/tests/test_gl081_postgresql_migration_runner_dict_row_access.py",
+    "backend/tests/test_gl082_query_parameter_parsing.py",
+    "backend/tests/test_gl083_auth_enforcement_read_endpoints.py",
+    "backend/tests/test_gl084_demo_action_auth_hardening.py",
+    "docs/product_foundation_claude_review_gate.md",
+    "docs/product_foundation_claude_independent_review.md",
+    "docs/secret_management_baseline_design.md",
+    "docs/production_auth_operator_access_design.md",
+    "docs/runtime_configuration_environment_model.md",
+    "docs/product_foundation_implementation_cut.md"
+  ],
+  "findings": [
+    {
+      "category": "revoke_grant_request_atomicity",
+      "status": "proceed",
+      "summary": "revoke_grant_request correctly uses BEGIN TRANSACTION with a shared connection passed to grants.revoke_grant(), and commits once. Rollback is performed on exception. grants.revoke_grant() correctly does not commit when conn is provided. The WHERE clause AND revoked=0 prevents double-revocation at the SQL level. Minor: audit log is written after commit, creating a potential unaudited-revocation gap if logging fails.",
+      "risk_level": "low",
+      "recommendation": "Track audit-after-commit behavior as a future audit integrity issue. No blocking change required before proceeding.",
+      "related_files": [
+        "backend/src/grant_requests.py",
+        "backend/src/grants.py",
+        "backend/tests/test_gl080_revoke_grant_request_atomicity.py"
+      ],
+      "related_issue": "GL-080"
+    },
+    {
+      "category": "migration_runner_dict_rows",
+      "status": "proceed_with_cautions",
+      "summary": "_version_from_row() correctly handles dict, tuple, list, sqlite3.Row, DictCursor, and generic mappings. Malformed rows raise ValueError with a meaningful message. _applied_versions() returns empty list on missing table (first-run safe). Critical caution: _mark_applied() calls conn.commit() internally. If run_migrations() is ever called within an outer transaction, premature commits will occur. The legacy GL-032 detection loop calls _mark_applied() per-version, compounding this risk. Current call site (startup) is safe, but this is a latent medium risk.",
+      "risk_level": "medium",
+      "recommendation": "In a future issue, refactor _mark_applied() to not call conn.commit() internally. Have run_migrations() manage transaction boundaries. Add a test that exercises run_migrations() within an outer transaction context.",
+      "related_files": [
+        "backend/src/migrations/runner.py",
+        "backend/tests/test_gl081_postgresql_migration_runner_dict_row_access.py"
+      ],
+      "related_issue": "GL-081"
+    },
+    {
+      "category": "query_parameter_parsing",
+      "status": "proceed",
+      "summary": "_parse_int_query_param() handles all invalid input cases deterministically: absent=default, empty=400, non-numeric=400, below minimum (1)=400, above maximum (1000)=400. All 400 responses use GL-030 format with errorCode INVALID_QUERY_PARAMETER. No unhandled 500s possible. Successful requests preserve pre-GL-082 behavior. Minor: OpenAPI does not document minimum:1 / maximum:1000 bounds constraints.",
+      "risk_level": "low",
+      "recommendation": "In GL-087 or a dedicated cleanup, add minimum:1 and maximum:1000 to all limit query parameter schemas in docs/openapi.yaml.",
+      "related_files": [
+        "backend/src/server.py",
+        "backend/tests/test_gl082_query_parameter_parsing.py",
+        "docs/openapi.yaml"
+      ],
+      "related_issue": "GL-082"
+    },
+    {
+      "category": "read_endpoint_auth_enforcement",
+      "status": "proceed_with_cautions",
+      "summary": "All sensitive read endpoints are protected in both operator mode and legacy mode. Public endpoints (health, readiness, POST /challenges) remain unauthenticated. 401 for missing/invalid auth, 403 for insufficient role. Error responses use GL-030 format without leaking credentials or stack traces. Caution 1: /operators/me calls ops.authenticate_operator() directly, not _require_operator() — bypasses standardized role-check pattern. Caution 2: auditor role is allowed on some endpoints (/audit-events, /grant-executions) but not others (/agent-permissions/profiles) — may be correct but is undocumented.",
+      "risk_level": "low",
+      "recommendation": "In GL-087, align /operators/me to use _require_operator() or document why direct authentication is intentional. Document role policy decisions in docs/production_auth_operator_access_design.md.",
+      "related_files": [
+        "backend/src/server.py",
+        "backend/tests/test_gl083_auth_enforcement_read_endpoints.py",
+        "docs/openapi.yaml"
+      ],
+      "related_issue": "GL-083"
+    },
+    {
+      "category": "demo_action_auth_hardening",
+      "status": "proceed",
+      "summary": "/demo-action now requires owner or grant_admin in operator mode, admin token in legacy mode. Anonymous requests return 401. auditor and demo_operator roles return 403. JSON parse errors return 400. Missing required fields return 400. No auth redesign introduced — uses the same _require_operator() and _require_admin() helpers as all other protected endpoints. caller_operator_id is extracted from token payload for audit.",
+      "risk_level": "low",
+      "recommendation": "No blocking issues. Track demo/production boundary hardening as GL-088.",
+      "related_files": [
+        "backend/src/server.py",
+        "backend/tests/test_gl084_demo_action_auth_hardening.py",
+        "docs/openapi.yaml"
+      ],
+      "related_issue": "GL-084"
+    },
+    {
+      "category": "openapi_consistency",
+      "status": "proceed_with_cautions",
+      "summary": "Security schemes LegacyAdminToken and OperatorToken are defined and consistently applied across all protected endpoints. All protected endpoints declare 401 and 403 responses. ErrorResponse schema matches GL-030 format. Gaps: (1) limit parameter schemas lack minimum/maximum constraints, (2) operator-mode-only endpoints (/grant-executions, /grants/{id}/executions) appear universally available in OpenAPI but return 404 in legacy mode, (3) /operators/me security declaration should be verified.",
+      "risk_level": "low",
+      "recommendation": "Resolve OpenAPI gaps in GL-087 as a documentation-only change. No server behavior changes needed.",
+      "related_files": [
+        "docs/openapi.yaml",
+        "backend/src/server.py"
+      ],
+      "related_issue": "GL-082, GL-083, GL-084"
+    },
+    {
+      "category": "error_response_safety",
+      "status": "proceed",
+      "summary": "All error responses across GL-082 through GL-084 use the GL-030 format with errorCode and reason fields. No stack traces, internal state, credentials, or token values are exposed in any error response. Error codes are deterministic and stable across repeated identical inputs.",
+      "risk_level": "low",
+      "recommendation": "No action needed. Continue enforcing GL-030 error format in all future endpoints.",
+      "related_files": [
+        "backend/src/server.py",
+        "docs/openapi.yaml"
+      ],
+      "related_issue": "GL-082, GL-083, GL-084"
+    },
+    {
+      "category": "test_quality",
+      "status": "proceed",
+      "summary": "All five GL-080 through GL-084 test suites are of high quality. GL-080: 6 tests covering happy path, two rollback paths, standalone compatibility, and shared-connection isolation. GL-081: 14+ tests covering all row types, error propagation, and integration. GL-082: 20+ tests covering all parameter error cases and contract validation. GL-083: 27 tests covering both auth modes, public endpoints, and OpenAPI contracts. GL-084: 21 tests covering 401/403/200 paths and regression coverage. Gaps: no test for _mark_applied() in outer transaction (GL-081), no test for /operators/me error format consistency (GL-083).",
+      "risk_level": "low",
+      "recommendation": "Add missing tests in GL-087 (operators/me format) and in a GL-08x migration hardening issue (_mark_applied transaction test).",
+      "related_files": [
+        "backend/tests/test_gl080_revoke_grant_request_atomicity.py",
+        "backend/tests/test_gl081_postgresql_migration_runner_dict_row_access.py",
+        "backend/tests/test_gl082_query_parameter_parsing.py",
+        "backend/tests/test_gl083_auth_enforcement_read_endpoints.py",
+        "backend/tests/test_gl084_demo_action_auth_hardening.py"
+      ],
+      "related_issue": "GL-080, GL-081, GL-082, GL-083, GL-084"
+    },
+    {
+      "category": "remaining_security_risks",
+      "status": "proceed_with_cautions",
+      "summary": "Identified latent/non-critical risks: (1) _mark_applied() premature commits if called from outer transaction — medium risk, latent; (2) /operators/me bypasses _require_operator() pattern — low risk, maintenance concern; (3) undocumented auditor role policy differences — low risk, documentation gap; (4) audit log written after commit — low risk, architecture trade-off; (5) no request body size limits — medium risk, DoS surface; (6) CORS not runtime-controlled — medium risk, configuration drift; (7) demo keypair not removed — high risk, production blocker.",
+      "risk_level": "medium",
+      "recommendation": "Track all risks as future issues. None are exploitable in current non-production deployment but must be resolved before production.",
+      "related_files": [
+        "backend/src/migrations/runner.py",
+        "backend/src/server.py",
+        "backend/src/grant_requests.py"
+      ],
+      "related_issue": "GL-086, GL-087, GL-088, GL-089, GL-090, GL-091"
+    },
+    {
+      "category": "production_readiness_gap",
+      "status": "blocked",
+      "summary": "GrantLayer is not production-ready. Open P0 gates: demo keypair not removed, no external secret store, no PostgreSQL CI gating, no startup production-mode validation (GL-091), no backup/restore verification, no structured logging with secret redaction, no CORS runtime boundary (GL-090), no request body size limits (GL-089), auth error response consistency gaps (GL-087), _mark_applied() transaction boundary risk. GL-085 closes none of these gates.",
+      "risk_level": "high",
+      "recommendation": "Do not make production readiness claims. Continue implementation tranche through GL-086 through GL-091 before reassessing production gate status.",
+      "related_files": [
+        "docs/product_foundation_implementation_cut.md",
+        "docs/product_foundation_claude_review_gate.md"
+      ],
+      "related_issue": "GL-086, GL-087, GL-088, GL-089, GL-090, GL-091"
+    }
+  ],
+  "risks": [
+    {
+      "id": "risk-081-premature-commit",
+      "title": "_mark_applied() premature commit boundary",
+      "description": "_mark_applied() calls conn.commit() internally. If run_migrations() is ever invoked within an outer transaction, all pending changes in that transaction will be prematurely committed. The legacy GL-032 detection path loops over all versions and commits once per version.",
+      "risk_level": "medium",
+      "mitigation": "Refactor _mark_applied() to remove internal conn.commit(). Have callers manage commit boundaries. Add an integration test that catches premature commits."
+    },
+    {
+      "id": "risk-083-operators-me-pattern",
+      "title": "/operators/me bypasses _require_operator() pattern",
+      "description": "/operators/me uses ops.authenticate_operator() directly instead of _require_operator(). This is functionally equivalent for the 401 case but bypasses standardized role-based enforcement pattern.",
+      "risk_level": "low",
+      "mitigation": "Align /operators/me to use _require_operator() or explicitly document why direct authentication is the correct approach for this endpoint."
+    },
+    {
+      "id": "risk-080-audit-after-commit",
+      "title": "Audit log written after transaction commit",
+      "description": "audit_log.append_event() in revoke_grant_request() is called after conn.commit(). If logging fails, the revocation is permanent but the audit trail is incomplete.",
+      "risk_level": "low",
+      "mitigation": "Decide whether audit failures should be hard-fail or best-effort. Document the decision. Consider transactional audit if audit integrity is a hard requirement."
+    },
+    {
+      "id": "risk-production-gates",
+      "title": "Multiple production readiness P0 gates remain open",
+      "description": "Demo keypair not removed, no external secret store, no startup fail-closed validation, no PostgreSQL CI gating, no backup/restore, no structured logging with secret redaction, no CORS runtime boundary, no request body limits.",
+      "risk_level": "high",
+      "mitigation": "Work through GL-086 through GL-091 and remaining P0 gates before any production readiness claim."
+    }
+  ],
+  "recommended_next_issues": [
+    {
+      "id": "GL-086",
+      "title": "Operator Auth Performance Hardening",
+      "rationale": "Validate auth token verification performance under load; consider caching or short-circuit for repeated checks within a single request lifecycle"
+    },
+    {
+      "id": "GL-087",
+      "title": "Auth / Error Response Consistency",
+      "rationale": "Align /operators/me to _require_operator() pattern; document auditor role policy; add OpenAPI parameter bounds; fix operator-mode-only endpoint declaration in spec"
+    },
+    {
+      "id": "GL-088",
+      "title": "Demo Permission Boundary Hardening",
+      "rationale": "Harden the boundary between demo mode and production data paths; document which data demo callers can and cannot access; prevent demo tokens from accessing non-demo resources"
+    },
+    {
+      "id": "GL-089",
+      "title": "Request Body Size / Safe JSON Parsing",
+      "rationale": "Add Content-Length validation and maximum body size guard on all POST/PUT endpoints; validate JSON is bounded before parsing to prevent memory pressure from large payloads"
+    },
+    {
+      "id": "GL-090",
+      "title": "CORS Runtime Boundary",
+      "rationale": "Move CORS configuration out of compiled code into the runtime configuration model; validate allowed origins at startup; enforce origin allowlist in non-demo modes"
+    },
+    {
+      "id": "GL-091",
+      "title": "Production Mode Safety Gate",
+      "rationale": "Implement fail-closed startup validation: refuse to start if required production configuration is missing, invalid, or unsafe defaults are detected; cover all 20 configuration categories from the runtime configuration model"
+    }
+  ],
+  "stop_gates": [
+    {
+      "gate_id": "stop-demo-keypair",
+      "trigger": "Before any production deployment",
+      "conditions": [
+        "Demo keypair must be removed from source code and fixtures",
+        "Signing key must be sourced from external secret store",
+        "No hardcoded key material in any committed file"
+      ]
+    },
+    {
+      "gate_id": "stop-secret-store",
+      "trigger": "Before any production deployment",
+      "conditions": [
+        "All secrets managed by external secret store (Vault, AWS Secrets Manager, or equivalent)",
+        "No plaintext secrets in environment variables or config files",
+        "Secret redaction in all log output"
+      ]
+    },
+    {
+      "gate_id": "stop-production-mode-validation",
+      "trigger": "Before any production deployment",
+      "conditions": [
+        "GL-091 Production Mode Safety Gate must be merged",
+        "Application must refuse to start with unsafe or missing production config",
+        "All 20 runtime configuration categories must be validated at startup"
+      ]
+    },
+    {
+      "gate_id": "stop-postgres-ci",
+      "trigger": "Before any production deployment",
+      "conditions": [
+        "Full backend test suite must pass against PostgreSQL CI target",
+        "Migration runner must be validated with PostgreSQL dict-row format in CI"
+      ]
+    },
+    {
+      "gate_id": "stop-mark-applied-fix",
+      "trigger": "Before _mark_applied() is called from within any outer transaction",
+      "conditions": [
+        "_mark_applied() must not call conn.commit() internally",
+        "run_migrations() must manage commit boundaries explicitly",
+        "Integration test must validate no premature commits occur"
+      ]
+    }
+  ],
+  "review_disposition": "proceed_with_cautions",
+  "disposition_summary": "The GL-080 through GL-084 hardening tranche is correctly implemented. No critical security vulnerabilities identified. Remaining risks are latent or low-severity. GrantLayer is not production-ready. Fixes for identified cautions must be split into future issues. Claude Code should be used periodically at review gates, not for every issue."
+}
