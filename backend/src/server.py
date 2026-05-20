@@ -217,6 +217,13 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 })
 
         elif path == "/grants":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
             grants = list_grants()
             result = []
             for g in grants:
@@ -230,6 +237,13 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif path == "/audit-events":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
             qs = parse_qs(urlparse(self.path).query)
             try:
                 limit = self._parse_int_query_param(qs, "limit", default=200)
@@ -239,9 +253,23 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, [e.to_dict() for e in events])
 
         elif path == "/challenges":
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
             self._send_json(200, [c.to_dict() for c in list_challenges()])
 
         elif m := re.fullmatch(r"/grants/([^/]+)", path):
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, _ = self._require_operator(["owner", "grant_admin", "auditor"])
+                if not ok:
+                    return
+            else:
+                if not self._require_admin():
+                    return
             grant_id = m.group(1)
             g = get_grant(grant_id)
             if g is None:
