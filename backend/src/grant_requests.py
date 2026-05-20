@@ -212,7 +212,7 @@ def revoke_grant_request(
         # If there's an associated grant, revoke it too
         if request.grant_id:
             grants.revoke_grant(
-                request.grant_id, operator_id, f"Revoked from request: {reason}"
+                request.grant_id, operator_id, f"Revoked from request: {reason}", conn=conn
             )
 
         # Update the request to revoked state
