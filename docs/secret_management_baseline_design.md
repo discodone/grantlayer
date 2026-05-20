@@ -246,8 +246,9 @@ Production mode must enforce the following fail-closed secret behavior:
 
 The following implementation blocks should be built after this planning document is accepted:
 
-1. **Secret configuration schema** — a validated schema that declares required secrets, their sources, and rotation expectations
-2. **Runtime secret source validation** — startup checks that verify secret sources are reachable and returning valid values
+1. **GL-079** — secret source boundary hardening baseline — adds isolated helper functions (`is_secret_key`, `read_optional_secret`, `read_required_secret`, `describe_secret_source`, `validate_required_secrets`, `redact_secret_value`) for safe secret lookup and validation. GL-079 does **not** add Vault/KMS/cloud secret manager integration, does **not** replace existing auth/operator access behavior, and does **not** make GrantLayer production-ready.
+2. **Secret configuration schema** — a validated schema that declares required secrets, their sources, and rotation expectations
+3. **Runtime secret source validation** — startup checks that verify secret sources are reachable and returning valid values
 3. **Production fail-closed startup checks** — explicit checks that refuse to start in production mode if required secrets are missing
 4. **Secret redaction helper** — a utility that masks or omits secret-bearing fields from logs, diagnostics, and exports
 5. **Signing/key management abstraction** — a boundary that abstracts key storage and rotation so the Product Core does not depend on one key provider
@@ -262,8 +263,7 @@ The following implementation blocks should be built after this planning document
 This block does **not** implement:
 
 - vault integration
-- secret loader
-- environment variable loader
+- secret loader (beyond the GL-079 safe environment-read helpers)
 - key rotation
 - HSM integration
 - KMS integration
