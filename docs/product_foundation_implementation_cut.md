@@ -80,10 +80,13 @@ Each implementation block in the first cut must remain **small and safe**:
 - **Forbidden changes**: No rewriting of existing log statements (gradual adoption), no OpenAPI changes, no external logging framework integration, no metrics or tracing implementation, no server/API behavior changes unless explicitly justified.
 
 ### GL-079 — Secret source boundary hardening
-- **Goal**: Abstract secret retrieval behind a boundary so that demo keys can be replaced by managed secrets without changing consumers.
-- **Scope**: Secret source interface, environment-based secret loader, and migration path away from the demo Ed25519 keypair.
-- **Allowed files**: `backend/src/secrets.py` (new), `backend/tests/test_gl079_secret_source_boundary.py`.
-- **Forbidden changes**: No full HSM integration yet, no vault implementation unless scoped, no auth behavior changes.
+- **Goal**: Add safe helper functions for secret lookup and validation without changing consumers.
+- **Scope**: Isolated `backend/src/secret_sources.py` helpers — `is_secret_key`, `read_optional_secret`, `read_required_secret`, `describe_secret_source`, `validate_required_secrets`, `redact_secret_value`. Environment-based read with no Vault/KMS/cloud integration. No server wiring, no auth behavior changes.
+- **Status**: Implemented as the first secret source boundary hardening baseline. It is **not** full secret management.
+- **Allowed files**: `backend/src/secret_sources.py` (new), `backend/tests/test_gl079_secret_source_boundary_hardening.py`, `docs/secret_management_baseline_design.md`, `docs/product_foundation_implementation_cut.md`, `docs/examples/gl079/secret_source_boundary_examples.json` (optional).
+- **Forbidden changes**: No full HSM integration yet, no vault implementation unless scoped, no auth behavior changes, no server.py integration, no OpenAPI changes, no persistence changes.
+- **Future work**: Secret configuration schema, runtime secret source validation with fail-closed startup checks, signing/key management abstraction, auth provider secret configuration, and evidence storage credential configuration remain out of scope for GL-079.
+- **Claude review note**: concrete auth-enforcement fixes and demo-action hardening remain separate follow-up issues from the Claude security review and are not part of GL-079.
 
 ### GL-080 — Persistence backend abstraction groundwork
 - **Goal**: Solidify the persistence backend abstraction so PostgreSQL can be wired in cleanly.
