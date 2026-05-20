@@ -73,38 +73,38 @@ Each implementation block in the first cut must remain **small and safe**:
 - **Forbidden changes**: No auth enforcement at these endpoints (they must remain accessible for health probes), no frontend changes, no DB schema changes, no migration changes, no deployment/infrastructure changes.
 - **Future work**: Database connectivity, persistence health, auth/operator health, metrics, tracing, logging, and deployment validation checks remain out of scope for GL-077.
 
-### GL-077 — Structured logging helper / correlation ID baseline
+### GL-078 — Structured logging helper / correlation ID baseline
 - **Goal**: Introduce a structured logging helper that emits GL-071-compliant events and attaches correlation IDs.
-- **Scope**: Logger factory, correlation ID middleware/generator, field catalog compliance, and redaction of secrets in log output.
-- **Allowed files**: backend/src/logging_helper.py (new), backend/tests/test_gl077_structured_logging_baseline.py.
-- **Forbidden changes**: No rewriting of existing log statements (gradual adoption), no OpenAPI changes.
+- **Scope**: Correlation ID generation/normalization, safe structured event construction (`build_log_event`), request context builder (`build_request_context`), deterministic metadata redaction (`redact_log_value`), supported event types catalog, and severity validation.
+- **Allowed files**: `backend/src/structured_logging.py` (new), `backend/tests/test_gl078_structured_logging_correlation_helper.py`, `docs/observability_structured_logging_baseline_design.md`, `docs/product_foundation_implementation_cut.md`, `docs/examples/gl078/structured_logging_examples.json`.
+- **Forbidden changes**: No rewriting of existing log statements (gradual adoption), no OpenAPI changes, no external logging framework integration, no metrics or tracing implementation, no server/API behavior changes unless explicitly justified.
 
-### GL-078 — Secret source boundary hardening
+### GL-079 — Secret source boundary hardening
 - **Goal**: Abstract secret retrieval behind a boundary so that demo keys can be replaced by managed secrets without changing consumers.
 - **Scope**: Secret source interface, environment-based secret loader, and migration path away from the demo Ed25519 keypair.
-- **Allowed files**: backend/src/secrets.py (new), backend/tests/test_gl078_secret_source_boundary.py.
+- **Allowed files**: `backend/src/secrets.py` (new), `backend/tests/test_gl079_secret_source_boundary.py`.
 - **Forbidden changes**: No full HSM integration yet, no vault implementation unless scoped, no auth behavior changes.
 
-### GL-079 — Persistence backend abstraction groundwork
+### GL-080 — Persistence backend abstraction groundwork
 - **Goal**: Solidify the persistence backend abstraction so PostgreSQL can be wired in cleanly.
 - **Scope**: Database session factory abstraction, connection pool configuration placeholder, and runtime-driven backend selection.
-- **Allowed files**: backend/src/persistence.py or backend/src/db/* (new or existing), backend/tests/test_gl079_persistence_backend_abstraction.py.
+- **Allowed files**: `backend/src/persistence.py` or `backend/src/db/*` (new or existing), `backend/tests/test_gl080_persistence_backend_abstraction.py`.
 - **Forbidden changes**: No schema rewrites, no migration rewrites, no data loss.
 
-### GL-080 — Deployment / runtime mode validation
+### GL-081 — Deployment / runtime mode validation
 - **Goal**: Validate that the application refuses to start in an invalid or mismatched runtime mode.
 - **Scope**: Startup assertions for runtime mode vs. configuration consistency, deployment artifact validation, and graceful failure modes.
-- **Allowed files**: backend/src/deployment_validation.py (new), backend/tests/test_gl080_deployment_runtime_mode_validation.py.
+- **Allowed files**: `backend/src/deployment_validation.py` (new), `backend/tests/test_gl081_deployment_runtime_mode_validation.py`.
 - **Forbidden changes**: No Docker changes, no infrastructure changes, no deployment scripts changes.
 
-### GL-081 — Operator access hardening
+### GL-082 — Operator access hardening
 - **Goal**: Strengthen operator authentication and authorization boundaries.
 - **Scope**: Operator role enforcement, token validation improvements, and access boundary checks for sensitive endpoints.
-- **Allowed files**: backend/src/auth/* (existing), backend/tests/test_gl081_operator_access_hardening.py.
+- **Allowed files**: `backend/src/auth/*` (existing), `backend/tests/test_gl082_operator_access_hardening.py`.
 - **Forbidden changes**: No OAuth/JWT/SSO implementation unless explicitly scoped, no breaking changes to existing admin-token paths for existing tests.
 
-### GL-082 — Claude Code review-only checkpoint (security / runtime)
-- **Goal**: Review-only checkpoint to validate that GL-076 through GL-082 implementations align with the design documents and do not introduce forbidden changes.
+### GL-083 — Claude Code review-only checkpoint (security / runtime)
+- **Goal**: Review-only checkpoint to validate that GL-076 through GL-083 implementations align with the design documents and do not introduce forbidden changes.
 - **Scope**: No code changes. Review diff, test coverage, and rollback feasibility.
 - **Allowed files**: Review comments, updated planning docs only.
 - **Forbidden changes**: No implementation code changes during this checkpoint.

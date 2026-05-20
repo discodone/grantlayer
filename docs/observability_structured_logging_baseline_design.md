@@ -24,6 +24,8 @@ It clarifies:
 
 This is a **product-foundation observability design document**.
 
+**GL-078 implements the first structured logging helper baseline** — correlation ID generation, safe structured event construction, and metadata redaction. GL-078 does not add external logging infrastructure, metrics, tracing, or monitoring. It does not make GrantLayer production-ready.
+
 GL-071 explicitly states:
 - GL-071 adds no observability implementation. GL-071 does not implement any observability.
 - GL-071 adds no logging implementation. GL-071 does not implement any logging.
