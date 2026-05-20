@@ -89,14 +89,16 @@ def tamper_grant(grant_id: str) -> Optional[dict]:
     }
 
 
-def revoke_grant(grant_id: str, revoked_by: str, reason: str) -> bool:
+def revoke_grant(grant_id: str, revoked_by: str, reason: str, conn=None) -> bool:
     revoked_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-    rowcount = execute(
-        """UPDATE grants
+    sql = """UPDATE grants
            SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?
-           WHERE id = ? AND revoked = 0""",
-        (revoked_by, reason, revoked_at, grant_id),
-    )
+           WHERE id = ? AND revoked = 0"""
+    params = (revoked_by, reason, revoked_at, grant_id)
+    if conn is not None:
+        cur = conn.execute(sql, params)
+        return (cur.rowcount or 0) > 0
+    rowcount = execute(sql, params)
     return rowcount > 0
 
 
