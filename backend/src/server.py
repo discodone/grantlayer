@@ -666,6 +666,15 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(200, result)
 
         elif path == "/demo-action":
+            caller_operator_id: str | None = None
+            if config.ENABLE_OPERATOR_MODEL:
+                ok, payload = self._require_operator(["owner", "grant_admin"])
+                if not ok:
+                    return
+                caller_operator_id = payload["operator"]["operatorId"]
+            else:
+                if not self._require_admin():
+                    return
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
@@ -675,11 +684,6 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
-            caller_operator_id: str | None = None
-            if config.ENABLE_OPERATOR_MODEL:
-                op = ops.authenticate_operator(self.headers.get("Authorization"))
-                if op is not None:
-                    caller_operator_id = op.operator_id
             result = handle_demo_action(
                 subject_id=data["subjectId"],
                 role=data["role"],

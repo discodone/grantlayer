@@ -1649,6 +1649,60 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /demo-action:
+    post:
+      summary: Execute a protected demo action
+      description: |
+        Executes a protected demo action through the policy engine.
+        Creates a GrantExecution and AuditEvent record.
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: demoAction
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - subjectId
+                - role
+                - action
+                - resource
+              properties:
+                subjectId: { type: string }
+                role: { type: string }
+                action: { type: string }
+                resource: { type: string }
+                challengeId: { type: string, nullable: true }
+      responses:
+        "200":
+          description: Demo action approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoActionResult"
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or action denied by policy engine
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /demo/tamper-grant/{id}:
     post:
       summary: Demo tamper a grant (DEMO ONLY)
