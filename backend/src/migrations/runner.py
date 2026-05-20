@@ -47,14 +47,34 @@ def _ensure_migrations_table(conn: Any) -> None:
     conn.commit()
 
 
+def _version_from_row(row: Any) -> str:
+    """Extract version string from a query result row.
+
+    Supports tuple/list rows, sqlite3.Row-like rows, and PostgreSQL
+    dict-like rows.
+    """
+    if isinstance(row, dict):
+        try:
+            return row["version"]
+        except KeyError:
+            raise ValueError(f"Cannot extract version from migration row: {row!r}")
+    try:
+        return row[0]
+    except (KeyError, IndexError, TypeError):
+        pass
+    try:
+        return row["version"]
+    except (KeyError, IndexError, TypeError):
+        pass
+    raise ValueError(f"Cannot extract version from migration row: {row!r}")
+
+
 def _applied_versions(conn: Any) -> List[str]:
     """Return list of already-applied migration versions."""
-    try:
-        rows = conn.execute("SELECT version FROM schema_migrations ORDER BY version").fetchall()
-        return [r[0] for r in rows]
-    except Exception:
-        # schema_migrations does not exist yet (or backend-specific error)
+    if not _table_exists(conn, "schema_migrations"):
         return []
+    rows = conn.execute("SELECT version FROM schema_migrations ORDER BY version").fetchall()
+    return [_version_from_row(r) for r in rows]
 
 
 def _mark_applied(conn: Any, version: str) -> None:
