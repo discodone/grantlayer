@@ -1,0 +1,51 @@
+{
+  "$schema": "gl077-health-readiness-examples",
+  "description": "Safe example responses for GL-077 health / readiness endpoints. No secrets or raw env values are included.",
+  "examples": [
+    {
+      "label": "health-ok",
+      "endpoint": "GET /health",
+      "status": 200,
+      "response": {
+        "status": "ok",
+        "service": "grantlayer",
+        "checkType": "liveness"
+      }
+    },
+    {
+      "label": "readiness-ready-local",
+      "endpoint": "GET /readiness",
+      "status": 200,
+      "response": {
+        "status": "ready",
+        "service": "grantlayer",
+        "checkType": "readiness",
+        "runtimeMode": "local",
+        "isProductionLike": false
+      }
+    },
+    {
+      "label": "readiness-ready-production-like",
+      "endpoint": "GET /readiness",
+      "status": 200,
+      "response": {
+        "status": "ready",
+        "service": "grantlayer",
+        "checkType": "readiness",
+        "runtimeMode": "production",
+        "isProductionLike": true
+      }
+    },
+    {
+      "label": "readiness-not-ready-invalid-runtime-config",
+      "endpoint": "GET /readiness",
+      "status": 503,
+      "response": {
+        "status": "not_ready",
+        "service": "grantlayer",
+        "checkType": "readiness",
+        "errorCode": "RUNTIME_CONFIG_INVALID"
+      }
+    }
+  ]
+}
