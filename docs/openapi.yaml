@@ -8,12 +8,6 @@ info:
     No new endpoints, no response-shape changes, no schema migrations.
 
     Known implementation gaps (security hardening deferred to GL-032+):
-    - The following endpoints do not currently enforce authentication even though
-      the contract documents the intended security model. Consumers should treat
-      the `security` blocks as the **target** contract.
-      - `GET /grants`, `GET /grants/{id}`, `GET /audit-events`
-      - `GET /challenges`, `POST /challenges`
-      - `GET /grant-requests`, `GET /grant-requests/{id}`
     - The Grant response object duplicates several fields in both snake_case
       and camelCase. Both shapes are present in the JSON for backward
       compatibility.
@@ -211,6 +205,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Grant"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Grant not found
           content:
