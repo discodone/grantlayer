@@ -189,6 +189,23 @@ class TestFindingsJsonStructure(unittest.TestCase):
 
 
 class TestNoForbiddenFilesChanged(unittest.TestCase):
+    def _get_current_branch(self):
+        import subprocess
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        return result.stdout.strip()
+
+    def setUp(self):
+        branch = self._get_current_branch()
+        if branch != "gl-085-security-data-integrity-follow-up-claude-review":
+            self.skipTest(
+                "Branch-wide diff check only valid on original GL-085 feature branch"
+            )
+
     def _get_branch_changed_files(self):
         import subprocess
         result = subprocess.run(
