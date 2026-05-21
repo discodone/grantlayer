@@ -687,6 +687,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /operators/me:
+    get:
+      summary: Get current operator profile
+      description: Returns the authenticated operator's own profile. Operator mode only.
+      operationId: getOperatorMe
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Operator profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  operatorId: { type: string }
+                  name: { type: string }
+                  role: { type: string }
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /evidence/executions/{id}:
     get:
       summary: Get evidence bundle for execution
@@ -1404,7 +1442,7 @@ paths:
                 context:
                   type: object
                   nullable: true
-                  description: Optional additional context (secrets redacted in response). Pass {"allowBlockedReopen": true} to allow reopening blocked requests.
+                  description: 'Optional additional context (secrets redacted in response). Pass {"allowBlockedReopen": true} to allow reopening blocked requests.'
                 includeDetails:
                   type: boolean
                   nullable: true

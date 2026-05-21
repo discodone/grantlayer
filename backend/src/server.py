@@ -167,23 +167,24 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self.send_header(k, v)
         self.end_headers()
 
-    def _require_admin(self) -> bool:
+    def _require_admin(self) -> tuple[bool, dict]:
         auth_header = self.headers.get("Authorization")
         cache_key = ("admin", hash(auth_header) if auth_header else None)
         cached = getattr(self, "_auth_cache", {}).get(cache_key)
         if cached is not None:
             ok, status, payload = cached
             if not ok:
-                return False
-            return True
+                self._send_json(status, payload)
+                return False, {}
+            return True, {}
         ok, status, payload = check_admin_token(auth_header)
         if not hasattr(self, "_auth_cache"):
             self._auth_cache = {}
         self._auth_cache[cache_key] = (ok, status, payload)
         if not ok:
             self._send_json(status, payload)
-            return False
-        return True
+            return False, {}
+        return True, {}
 
     def _require_operator(self, roles: list[str]) -> tuple[bool, dict]:
         auth_header = self.headers.get("Authorization")
@@ -192,6 +193,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         if cached is not None:
             ok, status, payload = cached
             if not ok:
+                self._send_json(status, payload)
                 return False, {}
             return True, payload
         ok, status, payload = check_auth(auth_header, required_roles=roles)
@@ -207,13 +209,12 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         """Unified auth check: operator model or legacy admin token.
 
         Consolidates the repeated ENABLE_OPERATOR_MODEL branching so each
-        endpoint calls auth once.  On failure the response is already sent.
+        endpoint calls auth once.  On failure the response is already sent
+        as deterministic safe JSON with keys 'error', 'errorCode', 'reason'.
         """
         if config.ENABLE_OPERATOR_MODEL:
             return self._require_operator(roles)
-        if not self._require_admin():
-            return False, {}
-        return True, {}
+        return self._require_admin()
 
     def do_GET(self):  # noqa: N802
         path = urlparse(self.path).path
