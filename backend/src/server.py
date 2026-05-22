@@ -594,6 +594,9 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(409, self._gl030_error("Grant already revoked or not found", "grant_already_revoked", "The grant is already revoked or does not exist."))
 
         elif path == "/challenges":
+            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            if not ok:
+                return
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError):
