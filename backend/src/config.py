@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 import warnings
 
+from .runtime_config import get_runtime_mode
 
 _LOG_LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR"}
 
@@ -41,12 +42,22 @@ def _env_log_level(name: str, default: str = "INFO") -> str:
 
 
 # ──────────────────────────────────────────────────────────────
+# Runtime Mode
+# ──────────────────────────────────────────────────────────────
+
+RUNTIME_MODE: str = get_runtime_mode()
+
+# ──────────────────────────────────────────────────────────────
 # Product / Demo Mode Flags
 # ──────────────────────────────────────────────────────────────
 
 # If True, all protected endpoints require the admin token.
 # If False, they fall back to optional/legacy behavior.
-REQUIRE_ADMIN_TOKEN: bool = _env_bool("GRANTLAYER_REQUIRE_ADMIN_TOKEN", default=False)
+# Default is secure (True) in production-like modes; opt-in (False) for local/test.
+REQUIRE_ADMIN_TOKEN: bool = _env_bool(
+    "GRANTLAYER_REQUIRE_ADMIN_TOKEN",
+    default=RUNTIME_MODE not in ("local", "test"),
+)
 
 # If True, POST /demo-action MUST include a valid challengeId.
 # If False, legacy mode without challenge remains allowed.
@@ -141,11 +152,101 @@ def startup_warnings() -> list[str]:
 def startup_ok() -> bool:
     """Return True if the current config looks safe for a product build.
 
-    This is advisory — the server still starts even if False.
+    In non-local / production-like modes this gate is enforced; the caller
+    must refuse to start the server if False.
     """
-    return (
-        REQUIRE_ADMIN_TOKEN
-        and bool(GRANTLAYER_ADMIN_TOKEN)
-        and REQUIRE_CHALLENGE
-        and not ENABLE_DEMO_ENDPOINTS
-    )
+    return bool(not startup_errors())
+
+
+def startup_errors() -> list[str]:
+    """Return a list of human-readable fatal config errors.
+
+    Messages are deterministic and safe (no secrets).
+    """
+    errs: list[str] = []
+
+    if not REQUIRE_ADMIN_TOKEN:
+        errs.append(
+            "ERROR: GRANTLAYER_REQUIRE_ADMIN_TOKEN is not enabled. "
+            "Admin token enforcement is mandatory in non-local / production-like modes."
+        )
+
+    if not GRANTLAYER_ADMIN_TOKEN:
+        errs.append(
+            "ERROR: GRANTLAYER_ADMIN_TOKEN is not set. "
+            "A configured admin token is mandatory when admin token enforcement is on."
+        )
+
+    if not REQUIRE_CHALLENGE:
+        errs.append(
+            "ERROR: GRANTLAYER_REQUIRE_CHALLENGE is not enabled. "
+            "Challenge enforcement is mandatory in non-local / production-like modes."
+        )
+
+    if ENABLE_DEMO_ENDPOINTS:
+        errs.append(
+            "ERROR: GRANTLAYER_ENABLE_DEMO_ENDPOINTS is enabled. "
+            "Demo endpoints must be disabled in non-local / production-like modes."
+        )
+
+    return errs
+
+    if not GRANTLAYER_ADMIN_TOKEN:
+        errs.append(
+            "ERROR: GRANTLAYER_ADMIN_TOKEN is not set. "
+            "A configured admin token is mandatory when admin token enforcement is on."
+        )
+
+    if not REQUIRE_CHALLENGE:
+        errs.append(
+            "ERROR: GRANTLAYER_REQUIRE_CHALLENGE is not enabled. "
+            "Challenge enforcement is mandatory in non-local / production-like modes."
+        )
+
+    if ENABLE_DEMO_ENDPOINTS:
+        errs.append(
+            "ERROR: GRANTLAYER_ENABLE_DEMO_ENDPOINTS is enabled. "
+            "Demo endpoints must be disabled in non-local / production-like modes."
+        )
+
+    return errs
+
+    if not GRANTLAYER_ADMIN_TOKEN:
+        errs.append(
+            "ERROR: GRANTLAYER_ADMIN_TOKEN is not set. "
+            "A configured admin token is mandatory when admin token enforcement is on."
+        )
+
+    if not REQUIRE_CHALLENGE:
+        errs.append(
+            "ERROR: GRANTLAYER_REQUIRE_CHALLENGE is not enabled. "
+            "Challenge enforcement is mandatory in non-local / production-like modes."
+        )
+
+    if ENABLE_DEMO_ENDPOINTS:
+        errs.append(
+            "ERROR: GRANTLAYER_ENABLE_DEMO_ENDPOINTS is enabled. "
+            "Demo endpoints must be disabled in non-local / production-like modes."
+        )
+
+    return errs
+
+    if not GRANTLAYER_ADMIN_TOKEN:
+        errs.append(
+            "ERROR: GRANTLAYER_ADMIN_TOKEN is not set. "
+            "A configured admin token is mandatory when admin token enforcement is on."
+        )
+
+    if not REQUIRE_CHALLENGE:
+        errs.append(
+            "ERROR: GRANTLAYER_REQUIRE_CHALLENGE is not enabled. "
+            "Challenge enforcement is mandatory in non-local / production-like modes."
+        )
+
+    if ENABLE_DEMO_ENDPOINTS:
+        errs.append(
+            "ERROR: GRANTLAYER_ENABLE_DEMO_ENDPOINTS is enabled. "
+            "Demo endpoints must be disabled in non-local / production-like modes."
+        )
+
+    return errs
