@@ -1,5 +1,6 @@
 """GrantLayer MVP — HTTP server."""
 
+import hashlib
 import json
 import re
 import os
@@ -261,7 +262,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
     def _require_admin(self) -> tuple[bool, dict]:
         auth_header = self.headers.get("Authorization")
-        cache_key = ("admin", hash(auth_header) if auth_header else None)
+        cache_key = ("admin", hashlib.sha256(auth_header.encode("utf-8")).hexdigest() if auth_header else None)
         cached = getattr(self, "_auth_cache", {}).get(cache_key)
         if cached is not None:
             ok, status, payload = cached
@@ -280,7 +281,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
     def _require_operator(self, roles: list[str]) -> tuple[bool, dict]:
         auth_header = self.headers.get("Authorization")
-        cache_key = ("operator", tuple(roles), hash(auth_header) if auth_header else None)
+        cache_key = ("operator", tuple(roles), hashlib.sha256(auth_header.encode("utf-8")).hexdigest() if auth_header else None)
         cached = getattr(self, "_auth_cache", {}).get(cache_key)
         if cached is not None:
             ok, status, payload = cached
