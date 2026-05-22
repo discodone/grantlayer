@@ -1,5 +1,6 @@
 """GrantLayer MVP — HTTP server."""
 
+import datetime
 import hashlib
 import json
 import re
@@ -194,7 +195,88 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             )
 
     def _missing(self, data: dict, fields: list) -> list:
-        return [f for f in fields if not data.get(f)]
+        return [f for f in fields if f not in data or data.get(f) is None]
+
+    def _validate_iso_timestamp(self, value, field_name: str) -> tuple[bool, dict | None]:
+        """Validate a value is a valid ISO-8601 timestamp string.
+
+        Returns (ok, error_payload).  Does not leak raw exceptions.
+        """
+        if not isinstance(value, str) or not value.strip():
+            return False, self._gl030_error(
+                f"Invalid {field_name}",
+                "invalid_timestamp",
+                f"{field_name} must be a valid ISO-8601 timestamp.",
+            )
+        try:
+            if value.endswith("Z"):
+                datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
+            else:
+                datetime.datetime.fromisoformat(value)
+        except ValueError:
+            return False, self._gl030_error(
+                f"Invalid {field_name}",
+                "invalid_timestamp",
+                f"{field_name} must be a valid ISO-8601 timestamp.",
+            )
+        return True, None
+
+    def _validate_grant_dates(self, valid_from: str, valid_until: str) -> tuple[bool, dict | None]:
+        """Validate that valid_from and valid_until are parseable and valid_from < valid_until."""
+        ok, err = self._validate_iso_timestamp(valid_from, "validFrom")
+        if not ok:
+            return False, err
+        ok, err = self._validate_iso_timestamp(valid_until, "validUntil")
+        if not ok:
+            return False, err
+        try:
+            vf = (
+                datetime.datetime.fromisoformat(valid_from.replace("Z", "+00:00"))
+                if valid_from.endswith("Z")
+                else datetime.datetime.fromisoformat(valid_from)
+            )
+            vu = (
+                datetime.datetime.fromisoformat(valid_until.replace("Z", "+00:00"))
+                if valid_until.endswith("Z")
+                else datetime.datetime.fromisoformat(valid_until)
+            )
+        except ValueError:
+            return False, self._gl030_error(
+                "Invalid date range",
+                "invalid_date_range",
+                "The specified date range is invalid.",
+            )
+        if vf >= vu:
+            return False, self._gl030_error(
+                "Invalid date range",
+                "invalid_date_range",
+                "validFrom must be strictly before validUntil.",
+            )
+        return True, None
+
+    def _validate_max_uses(self, value) -> tuple[bool, dict | None]:
+        """Validate maxUses: if present it must be an integer >= 1.  bool is not accepted as int."""
+        if value is None:
+            return True, None
+        if isinstance(value, bool):
+            return False, self._gl030_error(
+                "Invalid maxUses",
+                "invalid_max_uses",
+                "maxUses must be an integer >= 1.",
+            )
+        if not isinstance(value, int):
+            return False, self._gl030_error(
+                "Invalid maxUses",
+                "invalid_max_uses",
+                "maxUses must be an integer >= 1.",
+            )
+        if value < 1:
+            return False, self._gl030_error(
+                "Invalid maxUses",
+                "invalid_max_uses",
+                "maxUses must be an integer >= 1.",
+            )
+        return True, None
 
     def _parse_int_query_param(
         self, qs, name: str, default=None, minimum: int = 1, maximum: int = 1000
@@ -644,6 +726,23 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
+            # GL-093: validate required string fields are non-empty strings
+            for field in ("subjectId", "role", "action", "resource", "createdBy", "reason"):
+                if field in data and (not isinstance(data[field], str) or data[field].strip() == ""):
+                    self._send_json(400, self._gl030_error(
+                        f"Invalid field: {field}",
+                        "invalid_field",
+                        f"{field} must be a non-empty string.",
+                    ))
+                    return
+            ok, err = self._validate_grant_dates(data["validFrom"], data["validUntil"])
+            if not ok:
+                self._send_json(400, err)
+                return
+            ok, err = self._validate_max_uses(data.get("maxUses"))
+            if not ok:
+                self._send_json(400, err)
+                return
             grant = Grant(
                 subject_id=data["subjectId"],
                 role=data["role"],
@@ -772,7 +871,18 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
-                
+            for field in ("subjectId", "role", "action", "resource", "reason"):
+                if field in data and (not isinstance(data[field], str) or data[field].strip() == ""):
+                    self._send_json(400, self._gl030_error(
+                        f"Invalid field: {field}",
+                        "invalid_field",
+                        f"{field} must be a non-empty string.",
+                    ))
+                    return
+            ok, err = self._validate_grant_dates(data["validFrom"], data["validUntil"])
+            if not ok:
+                self._send_json(400, err)
+                return
             request = GrantRequest(
                 subject_id=data["subjectId"],
                 role=data["role"],
