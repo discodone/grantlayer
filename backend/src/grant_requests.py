@@ -158,6 +158,9 @@ def deny_grant_request(
                 f"Cannot deny grant request {request_id} with status {request.status}"
             )
 
+        # Start transaction
+        conn.execute("BEGIN TRANSACTION")
+
         # Update the request to denied state
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
         conn.execute(
@@ -168,23 +171,28 @@ def deny_grant_request(
             """,
             ("denied", operator_id, now, reason, now, request_id),
         )
-        conn.commit()
         
-        # Log an audit event for the denial
+        # Log an audit event for the denial inside the same transaction
         audit_log.append_event(
             AuditEvent(
                 subject_id=operator_id,
                 role="operator",
                 action="deny_grant_request",
                 resource=f"grant_request/{request_id}",
-                approved=True,  # approval of the action, not the grant
+                approved=False,
                 reason=f"Grant request {request_id} denied: {reason}",
-            )
+            ),
+            conn=conn,
         )
+        
+        conn.commit()
         
         # Return the updated request
         updated_request = get_grant_request(request_id)
         return updated_request
+    except Exception as e:
+        conn.rollback()
+        raise e
     finally:
         conn.close()
 
@@ -236,7 +244,7 @@ def revoke_grant_request(
                 role="operator",
                 action="revoke_grant_request",
                 resource=f"grant_request/{request_id}",
-                approved=True,  # approval of the action, not the grant
+                approved=False,
                 reason=f"Grant request {request_id} revoked: {reason}",
             )
         )

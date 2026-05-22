@@ -679,9 +679,9 @@ class TestGrantRequests(unittest.TestCase):
         self.assertEqual(approve_events[0].subject_id, "approver-1")
         self.assertEqual(deny_events[0].subject_id, "approver-1")
         
-        # All events should be "approved" (this means the action was allowed)
+        # Approval: granted; Deny: not granted
         self.assertTrue(approve_events[0].approved)
-        self.assertTrue(deny_events[0].approved)
+        self.assertFalse(deny_events[0].approved)
 
 
 if __name__ == "__main__":

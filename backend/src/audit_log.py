@@ -5,22 +5,24 @@ from .db import execute, query_one, query_all
 from .models import AuditEvent
 
 
-def append_event(event: AuditEvent) -> None:
-    execute(
-        """INSERT INTO audit_events
+def append_event(event: AuditEvent, conn=None) -> None:
+    sql = """INSERT INTO audit_events
            (id, timestamp, subject_id, role, action, resource,
             approved, reason, matched_grant_id,
             challenge_id, challenge_present, challenge_result,
             grant_signature_result)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (
-            event.id, event.timestamp, event.subject_id, event.role,
-            event.action, event.resource, int(event.approved),
-            event.reason, event.matched_grant_id,
-            event.challenge_id, int(event.challenge_present), event.challenge_result,
-            event.grant_signature_result,
-        ),
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+    params = (
+        event.id, event.timestamp, event.subject_id, event.role,
+        event.action, event.resource, int(event.approved),
+        event.reason, event.matched_grant_id,
+        event.challenge_id, int(event.challenge_present), event.challenge_result,
+        event.grant_signature_result,
     )
+    if conn is not None:
+        conn.execute(sql, params)
+    else:
+        execute(sql, params)
 
 
 def get_event(event_id: str) -> Optional[AuditEvent]:
