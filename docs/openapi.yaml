@@ -687,6 +687,86 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /challenges:
+    get:
+      summary: List challenges
+      description: Returns all challenges ordered by creation time descending.
+      operationId: listChallenges
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of challenges
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Challenge"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      summary: Create challenge
+      description: Create a new challenge for a subject-action-resource tuple.
+      operationId: createChallenge
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subjectId, action, resource]
+              properties:
+                subjectId: { type: string }
+                action: { type: string }
+                resource: { type: string }
+      responses:
+        "201":
+          description: Challenge created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [challengeId, subjectId, action, resource, expiresAt]
+                properties:
+                  challengeId: { type: string }
+                  subjectId: { type: string }
+                  action: { type: string }
+                  resource: { type: string }
+                  expiresAt: { type: string }
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /operators/me:
     get:
       summary: Get current operator profile
