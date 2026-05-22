@@ -1036,6 +1036,13 @@ def run(host: str = "127.0.0.1", port: int = 8765) -> None:
         print(warning, flush=True)
     for msg in config.startup_warnings():
         print(msg, flush=True)
+    # GL-089: fail-closed startup gate for non-local / production-like modes
+    if config.RUNTIME_MODE not in ("local", "test"):
+        if not config.startup_ok():
+            print("FATAL: Unsafe configuration detected in non-local mode. Server will not start.", flush=True)
+            for err in config.startup_errors():
+                print(err, flush=True)
+            raise SystemExit(1)
     server = HTTPServer((host, port), GrantLayerHandler)
     print(f"GrantLayer MVP running on http://{host}:{port}", flush=True)
     print(f"Dashboard:   http://{host}:{port}/", flush=True)
