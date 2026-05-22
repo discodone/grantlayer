@@ -541,6 +541,7 @@ class TestGl092NoForbiddenFilesChanged(unittest.TestCase):
             "backend/src/grant_requests.py",
             "backend/src/audit_log.py",
             "backend/tests/test_gl092_deny_revoke_audit_semantics.py",
+            "backend/tests/test_grant_requests.py",
             "docs/product_foundation_implementation_cut.md",
         }
         for path in changed:
