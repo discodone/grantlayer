@@ -113,5 +113,5 @@ def verify_grant_signature(grant: Grant) -> GrantSignatureResult:
         sig_bytes = bytes.fromhex(grant.signature)
         public_key.verify(sig_bytes, raw_payload)
         return "valid"
-    except (InvalidSignature, ValueError, Exception):
+    except (InvalidSignature, ValueError):
         return "invalid"
