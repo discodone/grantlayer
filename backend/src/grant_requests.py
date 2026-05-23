@@ -71,6 +71,14 @@ def list_grant_requests(status_filter: Optional[str] = None) -> List[GrantReques
     return [_row_to_grant_request(row) for row in rows]
 
 
+def _is_request_expired(request: GrantRequest) -> bool:
+    """Check if a grant request has exceeded the 24-hour expiry window."""
+    cutoff = (
+        datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=24)
+    ).isoformat().replace("+00:00", "Z")
+    return request.created_at < cutoff
+
+
 def approve_grant_request(
     request_id: str, operator_id: str
 ) -> Tuple[GrantRequest, Grant]:
@@ -90,6 +98,10 @@ def approve_grant_request(
             raise ValueError(
                 f"Cannot approve grant request {request_id} with status {request.status}"
             )
+
+        # GL-098: Reject approval of expired requests deterministically
+        if _is_request_expired(request):
+            raise ValueError("Grant request has expired")
 
         # GL-097: Self-approval guard
         if request.requested_by == operator_id:
@@ -296,7 +308,10 @@ def expire_old_requests() -> int:
         
         if not to_expire:
             return 0
-            
+        
+        # Start transaction
+        conn.execute("BEGIN TRANSACTION")
+        
         # Update requests to expired state
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
         conn.executemany(
@@ -307,10 +322,28 @@ def expire_old_requests() -> int:
             """,
             [(now, row["id"]) for row in to_expire],
         )
+        
+        # GL-098: Create expiry audit events for each expired request
+        for row in to_expire:
+            audit_log.append_event(
+                AuditEvent(
+                    subject_id="system",
+                    role="system",
+                    action="expire_grant_request",
+                    resource=f"grant_request/{row['id']}",
+                    approved=False,
+                    reason=f"Grant request {row['id']} expired after 24 hours",
+                ),
+                conn=conn,
+            )
+        
         conn.commit()
         
         # Return number of expired requests
         return len(to_expire)
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 
