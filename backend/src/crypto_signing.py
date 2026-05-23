@@ -6,6 +6,7 @@ Private key is stored unencrypted at data/demo_ed25519_private_key.pem.
 
 import hashlib
 import os
+import stat
 from typing import Tuple
 
 from cryptography.exceptions import InvalidSignature
@@ -31,20 +32,42 @@ _PUBLIC_KEY_PATH = os.path.join(_DATA_DIR, "demo_ed25519_public_key.pem")
 DEMO_KEY_ID = "demo-ed25519-v1"
 
 
+def _check_private_key_permissions(path: str) -> None:
+    """Fail closed if the private key file has unsafe permissions.
+
+    Rejects group-readable, group-writable, world-readable, and world-writable.
+    Safe modes are owner-only (e.g. 0o600).
+    """
+    file_stat = os.stat(path)
+    mode = stat.S_IMODE(file_stat.st_mode)
+    if mode & 0o077:
+        raise PermissionError(
+            "Private key file has unsafe permissions. "
+            "Expected owner-only access (mode 0o600 or stricter)."
+        )
+
+
 def ensure_demo_keypair() -> None:
     """Generate Ed25519 keypair if not present at data/ paths. Idempotent."""
     os.makedirs(os.path.abspath(_DATA_DIR), exist_ok=True)
     if os.path.exists(_PRIVATE_KEY_PATH) and os.path.exists(_PUBLIC_KEY_PATH):
+        # Harden pre-existing private key files created before permission enforcement
+        file_stat = os.stat(_PRIVATE_KEY_PATH)
+        mode = stat.S_IMODE(file_stat.st_mode)
+        if mode != 0o600:
+            os.chmod(_PRIVATE_KEY_PATH, 0o600)
         return
     private_key = Ed25519PrivateKey.generate()
     public_key = private_key.public_key()
     with open(_PRIVATE_KEY_PATH, "wb") as f:
         f.write(private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()))
+    os.chmod(_PRIVATE_KEY_PATH, 0o600)
     with open(_PUBLIC_KEY_PATH, "wb") as f:
         f.write(public_key.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
 
 
 def load_private_key() -> Ed25519PrivateKey:
+    _check_private_key_permissions(_PRIVATE_KEY_PATH)
     with open(_PRIVATE_KEY_PATH, "rb") as f:
         return load_pem_private_key(f.read(), password=None)
 
