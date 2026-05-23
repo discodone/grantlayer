@@ -1,0 +1,128 @@
+{
+  "reviewId": "GL-094B",
+  "reviewType": "audit_log_immutability_review",
+  "reviewDate": "2026-05-23",
+  "baseMain": "eca46bf582243dfcdafbf0fa330cc083b8b97ea2",
+  "predecessorReview": "GL-094A",
+  "predecessorConclusion": "proceed_with_cautions",
+  "findings": [
+    {
+      "id": "GL094B-FINDING-001",
+      "severity": "high",
+      "status": "confirmed",
+      "title": "No tamper-evidence fields on audit events",
+      "description": "audit_log.append_event() inserts thirteen fields into audit_events with no integrity-bearing metadata: no row hash, no HMAC, no cryptographic signature, no sequence number, and no hash chain linking rows. An adversary with database write access can modify or delete audit rows and the tampering is undetectable without an external reference. The grant table stores signature, signing_key_id, and payload_hash at insert time; audit_events has no equivalent protection.",
+      "affectedFiles": [
+        "backend/src/audit_log.py"
+      ],
+      "recommendedIssue": "GL-098: Add hash chain and tamper-evidence fields to audit events"
+    },
+    {
+      "id": "GL094B-FINDING-002",
+      "severity": "high",
+      "status": "confirmed",
+      "title": "approve_grant_request and revoke_grant_request write audit outside transaction",
+      "description": "In grant_requests.py, approve_grant_request() commits its transaction at line 120 and then calls audit_log.append_event() at line 123 with no conn argument (outside the transaction). revoke_grant_request() follows the same pattern: commit at line 238, audit write at line 241. A crash or exception between the commit and the audit write leaves the state change persisted but the audit record permanently lost. The deny path correctly passes conn=conn and is transactionally safe. The approve and revoke paths are inconsistent with this correct pattern.",
+      "affectedFiles": [
+        "backend/src/grant_requests.py"
+      ],
+      "recommendedIssue": "GL-099: Fix approve and revoke transactional audit writes to pass conn=conn"
+    },
+    {
+      "id": "GL094B-FINDING-003",
+      "severity": "high",
+      "status": "confirmed",
+      "title": "Grant lifecycle events not logged to audit trail",
+      "description": "backend/src/grants.py implements create_grant(), revoke_grant(), and try_consume_grant_use(). None of these functions call audit_log.append_event(). Grant creation, direct grant revocation, and each individual grant use consumption are completely absent from the audit_events table. An auditor reviewing audit_events sees approve/deny/revoke actions on grant requests but has no record of the underlying grant object being created, directly revoked, or consumed.",
+      "affectedFiles": [
+        "backend/src/grants.py"
+      ],
+      "recommendedIssue": "GL-100: Add audit logging to grants.py lifecycle events"
+    },
+    {
+      "id": "GL094B-FINDING-004",
+      "severity": "medium",
+      "status": "confirmed",
+      "title": "expire_old_requests() transitions requests with no audit trail",
+      "description": "grant_requests.py expire_old_requests() (lines 262-301) performs a batch UPDATE transitioning stale grant requests from 'requested' to 'expired'. No audit_log.append_event() call is present. Expired requests leave no forensic record of when or why the transition occurred. There is no way to distinguish a request that was pending and then expired from one that was never submitted.",
+      "affectedFiles": [
+        "backend/src/grant_requests.py"
+      ],
+      "recommendedIssue": "GL-099: Add per-request audit events inside expire_old_requests() transaction"
+    },
+    {
+      "id": "GL094B-FINDING-005",
+      "severity": "high",
+      "status": "confirmed",
+      "title": "No database-level immutability constraints on audit_events table",
+      "description": "The audit_events table has no SQLite trigger (BEFORE UPDATE, BEFORE DELETE), no row-level policy, no STRICT table definition, and no CHECK constraint that prevents UPDATE or DELETE on existing rows. Application-level append-only convention is the only guard. Any actor with filesystem access to the SQLite database file or a writable connection can modify or erase audit rows without triggering any rejection. No separate read-only credential or write-once view separates audit reads from audit writes.",
+      "affectedFiles": [
+        "backend/src/audit_log.py"
+      ],
+      "recommendedIssue": "GL-097: Enforce audit log immutability at the database layer with triggers or write-once table"
+    },
+    {
+      "id": "GL094B-FINDING-006",
+      "severity": "medium",
+      "status": "test_gap",
+      "title": "No test coverage for audit event immutability or post-commit audit loss",
+      "description": "Existing tests verify audit event creation and correct approved field semantics. No test asserts that an existing audit event cannot be modified or deleted, that direct UPDATE/DELETE is rejected at any layer, or that a row retrieved after an attempted modification is identical to the original. No test simulates a crash between transaction commit and post-commit audit write in approve_grant_request() or revoke_grant_request(). The rollback behavior for deny_grant_request() is tested (test_gl092_deny_revoke_audit_semantics.py lines 164-184) but the equivalent post-commit loss scenario for approve and revoke is untested.",
+      "affectedFiles": [
+        "backend/tests/test_grant_requests.py",
+        "backend/tests/test_gl092_deny_revoke_audit_semantics.py"
+      ],
+      "recommendedIssue": "GL-097: Add immutability and post-commit loss tests when implementing enforcement"
+    },
+    {
+      "id": "GL094B-FINDING-007",
+      "severity": "medium",
+      "status": "confirmed",
+      "title": "tamper_grant() demo function has no production access control guard",
+      "description": "backend/src/grants.py contains a tamper_grant() function that issues a direct UPDATE on a grant row, deliberately invalidating its cryptographic signature without re-signing. The function carries a demo comment but has no environment check, feature flag, assert, or authorization gate preventing invocation in a production context. While this affects grant integrity rather than the audit log directly, it demonstrates that no database-level constraint prevents mutation of sensitive rows and that a demo escape hatch exists in production code.",
+      "affectedFiles": [
+        "backend/src/grants.py"
+      ],
+      "recommendedIssue": "GL-100: Remove or add non-production assertion guard to tamper_grant()"
+    }
+  ],
+  "semanticCorrectness": {
+    "status": "resolved_by_existing_work",
+    "note": "approved field is correctly set to True for approve_grant_request and False for deny_grant_request and revoke_grant_request. Action field values are unambiguous. Tested in test_gl092_deny_revoke_audit_semantics.py."
+  },
+  "auditFailureHandling": {
+    "deny": "Exceptions in audit write propagate to cause transaction rollback — correct behavior",
+    "approve": "Exception in post-commit audit write is caught but rollback has no effect; audit record is permanently lost",
+    "revoke": "Same as approve — post-commit audit loss on exception"
+  },
+  "httpExposure": {
+    "status": "no_mutation_endpoints",
+    "note": "server.py exposes no DELETE or UPDATE endpoint for audit_events. Audit endpoint is read-only GET /audit-events requiring owner/grant_admin/auditor role."
+  },
+  "recommendedNextIssues": [
+    {
+      "issueId": "GL-097",
+      "title": "Enforce audit log immutability at database layer",
+      "rationale": "High severity — schema-level triggers or write-once table are the only mechanism that prevents bypass by direct database access. Addresses FINDING-005 and FINDING-006.",
+      "priority": 1
+    },
+    {
+      "issueId": "GL-098",
+      "title": "Add hash chain and tamper-evidence fields to audit events",
+      "rationale": "High severity — row_hash and prev_hash fields enable offline verification that the audit trail has not been modified or truncated. Addresses FINDING-001.",
+      "priority": 2
+    },
+    {
+      "issueId": "GL-099",
+      "title": "Fix transactional audit writes for approve and revoke; add expire audit trail",
+      "rationale": "High severity — approve and revoke audits must be written inside their transactions (passing conn=conn) to prevent silent audit loss on crash. Expiration must also be audited. Addresses FINDING-002 and FINDING-004.",
+      "priority": 3
+    },
+    {
+      "issueId": "GL-100",
+      "title": "Add audit logging to grants.py lifecycle events; guard tamper_grant()",
+      "rationale": "Medium severity — grant creation, revocation, and consumption are currently invisible in the audit trail. tamper_grant() needs a non-production guard. Addresses FINDING-003 and FINDING-007.",
+      "priority": 4
+    }
+  ],
+  "conclusion": "proceed_with_cautions"
+}
