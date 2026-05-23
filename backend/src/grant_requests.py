@@ -19,6 +19,10 @@ from . import audit_log
 from .models import GrantRequest, Grant, AuditEvent
 
 
+# GL-097: Maximum length for denial reasons to prevent abuse
+MAX_DENIAL_REASON_LENGTH = 1000
+
+
 def create_grant_request(request: GrantRequest) -> GrantRequest:
     """Create a new grant request in the 'requested' state."""
     db.execute(
@@ -86,6 +90,10 @@ def approve_grant_request(
             raise ValueError(
                 f"Cannot approve grant request {request_id} with status {request.status}"
             )
+
+        # GL-097: Self-approval guard
+        if request.requested_by == operator_id:
+            raise ValueError("Self-approval is not permitted")
 
         # Start transaction
         conn.execute("BEGIN TRANSACTION")
@@ -156,6 +164,12 @@ def deny_grant_request(
         if request.status != "requested":
             raise ValueError(
                 f"Cannot deny grant request {request_id} with status {request.status}"
+            )
+
+        # GL-097: Denial reason length guard
+        if len(reason) > MAX_DENIAL_REASON_LENGTH:
+            raise ValueError(
+                f"Denial reason exceeds maximum length of {MAX_DENIAL_REASON_LENGTH} characters"
             )
 
         # Start transaction
