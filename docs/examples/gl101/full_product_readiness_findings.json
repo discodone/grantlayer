@@ -1,0 +1,312 @@
+{
+  "reviewId": "GL-101",
+  "reviewType": "full_product_readiness_gap_review",
+  "baseMain": "ecabe409241c59204b4cb1eab57e8719759560bd",
+  "productReadiness": "not_product_ready",
+  "productionReadiness": "not_ready",
+  "reviewedIssues": ["GL-095", "GL-096", "GL-097", "GL-098", "GL-099", "GL-100"],
+  "findings": [
+    {
+      "id": "GL101-FINDING-001",
+      "severity": "critical",
+      "status": "required_for_finished_product",
+      "category": "audit_trust",
+      "title": "Audit events have no database-level immutability enforcement",
+      "description": "The audit_events table remains mutable by any process with database write access. There are no SQLite triggers, row-level policies, or PostgreSQL RLS rules preventing UPDATE or DELETE. An attacker with filesystem or credential access can silently alter or erase the audit trail without detection.",
+      "affectedFiles": ["backend/src/audit_log.py", "backend/src/db.py"],
+      "recommendedIssue": "GL-102"
+    },
+    {
+      "id": "GL101-FINDING-002",
+      "severity": "critical",
+      "status": "required_for_finished_product",
+      "category": "audit_trust",
+      "title": "Audit events have no hash chain or tamper-evidence fields",
+      "description": "Each audit row is independent. There is no row_hash, prev_hash, sequence number, or cryptographic commitment. An adversary can insert, delete, or reorder rows without leaving a detectable artifact. The thirteen fields stored per event include no integrity-bearing metadata.",
+      "affectedFiles": ["backend/src/audit_log.py"],
+      "recommendedIssue": "GL-103"
+    },
+    {
+      "id": "GL101-FINDING-003",
+      "severity": "high",
+      "status": "required_for_finished_product",
+      "category": "security",
+      "title": "Operator token authentication is O(n) with no index on token_hash",
+      "description": "authenticate_operator() iterates all active operators and runs PBKDF2-HMAC-SHA256 (600,000 iterations) per entry. No index exists on token_hash. Even a small operator table forces millions of PBKDF2 iterations per request, creating a CPU-exhaustion vector.",
+      "affectedFiles": ["backend/src/operators.py"],
+      "recommendedIssue": "GL-104"
+    },
+    {
+      "id": "GL101-FINDING-004",
+      "severity": "high",
+      "status": "required_for_finished_product",
+      "category": "observability",
+      "title": "Structured logging module exists but is not integrated into server.py request path",
+      "description": "structured_logging.py provides build_log_event(), generate_correlation_id(), and redaction helpers, all implemented and tested in isolation. server.py uses print() for all output. In a production incident there is no structured log stream to query, correlate, or alert on.",
+      "affectedFiles": ["backend/src/server.py", "backend/src/structured_logging.py"],
+      "recommendedIssue": "GL-105"
+    },
+    {
+      "id": "GL101-FINDING-005",
+      "severity": "high",
+      "status": "required_for_finished_product",
+      "category": "operations",
+      "title": "No migration rollback, dry-run, or concurrent guard",
+      "description": "Migrations are one-way with no rollback(conn). No preview mode exists. Multiple instances starting simultaneously can race to apply the same migration. A failed migration in production requires manual database recovery.",
+      "affectedFiles": ["backend/src/migrations/runner.py"],
+      "recommendedIssue": "GL-106"
+    },
+    {
+      "id": "GL101-FINDING-006",
+      "severity": "high",
+      "status": "required_for_finished_product",
+      "category": "persistence",
+      "title": "PostgreSQL migrations never validated in CI against a real PostgreSQL instance",
+      "description": "The persistence design document explicitly states PostgreSQL must be CI-gated. No CI job runs against a real PostgreSQL instance. The SQL placeholder translation layer has never been validated against a live PostgreSQL backend.",
+      "affectedFiles": ["backend/src/db.py", "backend/src/migrations/runner.py"],
+      "recommendedIssue": "GL-107"
+    },
+    {
+      "id": "GL101-FINDING-007",
+      "severity": "high",
+      "status": "required_for_finished_product",
+      "category": "security",
+      "title": "No rate limiting on authentication or sensitive endpoints",
+      "description": "No per-IP, per-client, or per-operator rate limiting exists. The O(n) PBKDF2 auth path combined with unlimited request volume creates a trivial CPU-exhaustion DoS vector.",
+      "affectedFiles": ["backend/src/server.py", "backend/src/operators.py"],
+      "recommendedIssue": "GL-108"
+    },
+    {
+      "id": "GL101-FINDING-008",
+      "severity": "high",
+      "status": "required_for_finished_product",
+      "category": "operations",
+      "title": "Backup/restore and incident response are design-only artifacts",
+      "description": "Backup/restore and incident response exist as design documents only. No automated backup schedule, no tested restore procedure, no on-call playbook, and no executable runbooks exist. Mean time to recovery is undefined.",
+      "affectedFiles": ["docs/backup_restore_data_lifecycle_design.md", "docs/operational_runbook_incident_response_design.md"],
+      "recommendedIssue": "GL-109"
+    },
+    {
+      "id": "GL101-FINDING-009",
+      "severity": "high",
+      "status": "required_for_finished_product",
+      "category": "security",
+      "title": "secret_sources.py is not integrated with config.py secret loading",
+      "description": "config.py reads secrets directly via os.environ.get(). The safe boundary layer in secret_sources.py (redaction, safe errors, no-value-in-repr) is unused during startup. Secrets are loaded without centralized validation or redaction guarantees.",
+      "affectedFiles": ["backend/src/config.py", "backend/src/secret_sources.py"],
+      "recommendedIssue": "GL-110"
+    },
+    {
+      "id": "GL101-FINDING-010",
+      "severity": "high",
+      "status": "required_for_finished_product",
+      "category": "security",
+      "title": "Operator tokens have no expiry, rotation, or last-used tracking",
+      "description": "Tokens are issued once and never expire. There is no token_expires_at, no last_used_at, and no rotation endpoint. A leaked operator token is valid indefinitely. Bootstrap re-initialization requires manual database row deletion.",
+      "affectedFiles": ["backend/src/operators.py"],
+      "recommendedIssue": "GL-111"
+    },
+    {
+      "id": "GL101-FINDING-011",
+      "severity": "high",
+      "status": "required_for_finished_product",
+      "category": "api_contract",
+      "title": "OpenAPI contract is pre-release and declares only localhost",
+      "description": "The contract is at 0.31.0-rc (release candidate, not frozen). The servers section contains only http://localhost:8765. No staging or production server URL is declared. No breaking-change policy or deprecation timeline exists.",
+      "affectedFiles": ["docs/openapi.yaml"],
+      "recommendedIssue": "GL-112"
+    },
+    {
+      "id": "GL101-FINDING-012",
+      "severity": "high",
+      "status": "required_for_finished_product",
+      "category": "observability",
+      "title": "No correlation ID propagation via HTTP headers",
+      "description": "generate_correlation_id() is implemented but never used. No request handler reads X-Request-ID, generates a correlation ID per request, or includes it in response headers. Cross-system tracing is impossible.",
+      "affectedFiles": ["backend/src/server.py", "backend/src/structured_logging.py"],
+      "recommendedIssue": "GL-113"
+    },
+    {
+      "id": "GL101-FINDING-013",
+      "severity": "medium",
+      "status": "required_for_finished_product",
+      "category": "operations",
+      "title": "No connection pooling for PostgreSQL backend",
+      "description": "db.py opens a new connection per operation. This is acceptable for SQLite and low-traffic staging but will become a bottleneck under production load on PostgreSQL.",
+      "affectedFiles": ["backend/src/db.py"],
+      "recommendedIssue": "GL-114"
+    },
+    {
+      "id": "GL101-FINDING-014",
+      "severity": "medium",
+      "status": "required_for_finished_product",
+      "category": "security",
+      "title": "No auth failure logging with correlation ID or anomaly detection",
+      "description": "Repeated authentication failures produce no observable structured signals. There is no application-level backoff, lockout, or alerting on repeated auth failures. A distributed brute-force attack against weak operator tokens would produce no observable signals.",
+      "affectedFiles": ["backend/src/operators.py", "backend/src/server.py"],
+      "recommendedIssue": "GL-115"
+    },
+    {
+      "id": "GL101-FINDING-015",
+      "severity": "low",
+      "status": "required_for_finished_product",
+      "category": "architecture",
+      "title": "server.py monolith will become a maintenance burden",
+      "description": "server.py contains all HTTP route handlers, middleware, auth guards, request parsing, and startup logic in a single ~1270-line file. This is acceptable for the current phase but will become a maintenance burden as middleware layers are added. Module decomposition should be planned before the next major feature phase.",
+      "affectedFiles": ["backend/src/server.py"],
+      "recommendedIssue": "GL-116"
+    }
+  ],
+  "resolvedRisks": [
+    {
+      "id": "GL101-RESOLVED-001",
+      "resolvedBy": "GL-095",
+      "title": "CORS wildcard removed",
+      "evidence": "server.py _cors_headers_for() implements exact string matching against config.CORS_ALLOWED_ORIGINS. Tests confirm no wildcard, no arbitrary origin reflection, andauth requirements remain intact."
+    },
+    {
+      "id": "GL101-RESOLVED-002",
+      "resolvedBy": "GL-096",
+      "title": "Private key file permission enforcement",
+      "evidence": "crypto_signing.py sets 0o600 at generation and _check_private_key_permissions() rejects mode & 0o077 at load time. Tests verify world-readable, group-readable, and group-writable keys are rejected."
+    },
+    {
+      "id": "GL101-RESOLVED-003",
+      "resolvedBy": "GL-097",
+      "title": "Self-approval guard encapsulated in grant_requests module",
+      "evidence": "grant_requests.py approve_grant_request() raises ValueError('Self-approval is not permitted') before state mutation. Tests verify state unchanged and no misleading audit event created."
+    },
+    {
+      "id": "GL101-RESOLVED-004",
+      "resolvedBy": "GL-097",
+      "title": "Denial reason length bounded to 1000 characters",
+      "evidence": "grant_requests.py deny_grant_request() validates len(reason) <= MAX_DENIAL_REASON_LENGTH before state or audit mutation. Overlong reasons are rejected with safe error messages."
+    },
+    {
+      "id": "GL101-RESOLVED-005",
+      "resolvedBy": "GL-098",
+      "title": "Request expiry trigger implemented with audit trail",
+      "evidence": "expire_old_requests() transitions stale requests to expired and creates audit events with action='expire_grant_request' and approved=False. Tests verify idempotency and correct semantics."
+    },
+    {
+      "id": "GL101-RESOLVED-006",
+      "resolvedBy": "GL-099",
+      "title": "Approval and revoke audit writes are now transactionally consistent",
+      "evidence": "approve_grant_request() and revoke_grant_request() pass conn=conn to audit_log.append_event(), matching the correct pattern already used by deny_grant_request(). Tests verify rollback on audit failure."
+    },
+    {
+      "id": "GL101-RESOLVED-007",
+      "resolvedBy": "GL-100",
+      "title": "tamper_grant HTTP endpoint blocked in production",
+      "evidence": "POST /demo/tamper-grant returns 403 when ENABLE_DEMO_ENDPOINTS is not set. The direct module call remains available for test simulation. Tests verify blocked by default and accessible only with demo flag + auth."
+    }
+  ],
+  "recommendedNextIssues": [
+    {
+      "issue": "GL-102",
+      "title": "Audit log immutability at database layer",
+      "priority": "critical",
+      "category": "audit_trust",
+      "rationale": "Database-level triggers or write-once table are the only mechanism preventing silent audit tampering by direct DB access. This is the highest-priority blocker for a finished product."
+    },
+    {
+      "issue": "GL-103",
+      "title": "Hash chain and tamper-evidence fields on audit events",
+      "priority": "critical",
+      "category": "audit_trust",
+      "rationale": "Without row_hash and prev_hash, audit tampering is undetectable even with read-only enforcement. Required for forensic compliance claims."
+    },
+    {
+      "issue": "GL-104",
+      "title": "Operator token auth performance and index hardening",
+      "priority": "high",
+      "category": "security",
+      "rationale": "O(n) PBKDF2 scan is a CPU-exhaustion DoS vector. Must be fixed before operator model can be used with any realistic operator count."
+    },
+    {
+      "issue": "GL-105",
+      "title": "Structured logging integration into server.py request lifecycle",
+      "priority": "high",
+      "category": "observability",
+      "rationale": "structured_logging.py is fully implemented but unused. Production incident diagnosis requires structured output from request handlers and auth paths."
+    },
+    {
+      "issue": "GL-106",
+      "title": "Migration safety: rollback, dry-run, concurrent guard",
+      "priority": "high",
+      "category": "operations",
+      "rationale": "One-way migrations with no preview or concurrency guard are not safe for production deployments or rolling upgrades."
+    },
+    {
+      "issue": "GL-107",
+      "title": "PostgreSQL CI gating for migrations and test suite",
+      "priority": "high",
+      "category": "persistence",
+      "rationale": "PostgreSQL is the stated production target but has never been validated in CI. Schema and placeholder translation risks are untested against a real backend."
+    },
+    {
+      "issue": "GL-108",
+      "title": "Rate limiting on auth and mutation endpoints",
+      "priority": "high",
+      "category": "security",
+      "rationale": "Unlimited requests against PBKDF2 auth and mutation endpoints create trivial DoS vectors. Required before accepting untrusted client traffic."
+    },
+    {
+      "issue": "GL-109",
+      "title": "Operational runbooks: backup/restore and incident response",
+      "priority": "high",
+      "category": "operations",
+      "rationale": "Design documents are not executable procedures. Production readiness requires tested backup schedules, restore verification, and incident playbooks."
+    },
+    {
+      "issue": "GL-110",
+      "title": "Integrate secret_sources.py with config.py startup path",
+      "priority": "high",
+      "category": "security",
+      "rationale": "The safe secret boundary layer exists but is bypassed by config loading. Centralized validation and redaction must be active for all secret reads."
+    },
+    {
+      "issue": "GL-111",
+      "title": "Operator token expiry, last-used tracking, and rotation",
+      "priority": "high",
+      "category": "security",
+      "rationale": "Indefinite token validity is a critical security risk. Leaked tokens remain valid forever. Token lifecycle must support expiry and rotation."
+    },
+    {
+      "issue": "GL-112",
+      "title": "OpenAPI contract freeze and versioning policy",
+      "priority": "high",
+      "category": "api_contract",
+      "rationale": "External integrators cannot rely on a 0.31.0-rc contract. Freeze, version, and document breaking-change policy before any integration commitment."
+    },
+    {
+      "issue": "GL-113",
+      "title": "Correlation ID propagation via HTTP headers",
+      "priority": "medium",
+      "category": "observability",
+      "rationale": "Cross-system request tracing is impossible without correlation ID propagation. Required for debugging integrations and incident correlation."
+    },
+    {
+      "issue": "GL-114",
+      "title": "PostgreSQL connection pooling",
+      "priority": "medium",
+      "category": "persistence",
+      "rationale": "Single-connection-per-operation design will bottleneck under production PostgreSQL load. Connection pooling is required for throughput."
+    },
+    {
+      "issue": "GL-115",
+      "title": "Auth failure logging and anomaly detection signals",
+      "priority": "medium",
+      "category": "security",
+      "rationale": "Repeated authentication failures produce no structured signals. Detection and alerting on brute-force attempts requires explicit auth failure logging."
+    },
+    {
+      "issue": "GL-116",
+      "title": "Module decomposition plan for server.py monolith",
+      "priority": "low",
+      "category": "architecture",
+      "rationale": "The ~1270-line monolith will become unmaintainable as middleware layers grow. Decomposition should be planned before the next major feature phase."
+    }
+  ],
+  "conclusion": "not_product_ready"
+}
