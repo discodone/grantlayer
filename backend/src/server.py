@@ -45,11 +45,21 @@ DASHBOARD_PATH = os.path.join(
     "dashboard", "index.html",
 )
 
-CORS_HEADERS = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-}
+def _cors_headers_for(origin: str | None) -> dict[str, str]:
+    """Return CORS headers only for explicitly allowed origins.
+
+    Uses exact string matching. No wildcard grants. No reflection of
+    arbitrary origins. Unlisted origins receive no CORS access.
+    """
+    if origin and origin in config.CORS_ALLOWED_ORIGINS:
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Vary": "Origin",
+        }
+    return {}
+
 
 MAX_JSON_BODY_BYTES = 1_048_576
 
@@ -111,7 +121,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
-        for k, v in CORS_HEADERS.items():
+        origin = self.headers.get("Origin")
+        for k, v in _cors_headers_for(origin).items():
             self.send_header(k, v)
         self.end_headers()
         self.wfile.write(body)
@@ -337,8 +348,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         return value
 
     def do_OPTIONS(self):  # noqa: N802
+        """Handle CORS preflight deterministically and without state mutation."""
         self.send_response(204)
-        for k, v in CORS_HEADERS.items():
+        origin = self.headers.get("Origin")
+        for k, v in _cors_headers_for(origin).items():
             self.send_header(k, v)
         self.end_headers()
 
@@ -595,7 +608,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
             self.send_header("X-Evidence-Hash", evidence_hash)
-            for k, v in CORS_HEADERS.items():
+            origin = self.headers.get("Origin")
+            for k, v in _cors_headers_for(origin).items():
                 self.send_header(k, v)
             self.end_headers()
             self.wfile.write(body)

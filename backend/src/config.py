@@ -41,6 +41,13 @@ def _env_log_level(name: str, default: str = "INFO") -> str:
     return value if value in _LOG_LEVELS else default
 
 
+def _env_list(name: str, default: list[str] | None = None) -> list[str]:
+    value = os.environ.get(name, "")
+    if not value:
+        return default if default is not None else []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
 # ──────────────────────────────────────────────────────────────
 # Runtime Mode
 # ──────────────────────────────────────────────────────────────
@@ -99,6 +106,18 @@ GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERAT
 GRANTLAYER_BOOTSTRAP_OPERATOR_ID: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_ID", "bootstrap-admin")
 GRANTLAYER_BOOTSTRAP_OPERATOR_NAME: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_NAME", "Bootstrap Admin")
 GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE", "owner")
+
+# ──────────────────────────────────────────────────────────────
+# CORS Origin Allowlist (GL-095)
+# ──────────────────────────────────────────────────────────────
+
+# Comma-separated list of allowed origins for CORS.
+# Empty list disables CORS entirely (no Access-Control-Allow-Origin header).
+# Exact origin matching only; no wildcards, no subdomains, no reflection.
+CORS_ALLOWED_ORIGINS: list[str] = _env_list(
+    "GRANTLAYER_CORS_ALLOWED_ORIGINS",
+    default=["http://127.0.0.1:8765", "http://localhost:8765"],
+)
 
 # ──────────────────────────────────────────────────────────────
 # Startup Warnings (explicit, not noisy)
