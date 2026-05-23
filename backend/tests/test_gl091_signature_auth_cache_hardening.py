@@ -211,7 +211,10 @@ class TestGl091SignatureVerificationHardening(_BaseGl091):
     def test_invalid_signature_returns_invalid(self):
         grant = self._make_grant()
         sig, phash, key_id = self.crypto_mod.sign_grant(grant)
-        grant.signature = sig[:-2] + "00"  # corrupt last byte
+        # XOR first byte — guaranteed different regardless of signature value
+        sig_bytes = bytearray(bytes.fromhex(sig))
+        sig_bytes[0] ^= 0xFF
+        grant.signature = sig_bytes.hex()
         grant.payload_hash = phash
         grant.signing_key_id = key_id
         result = self.crypto_mod.verify_grant_signature(grant)

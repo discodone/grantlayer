@@ -154,6 +154,15 @@ class TestGl094bJsonArtifact(unittest.TestCase):
 class TestGl094bNoBranchProductionChanges(unittest.TestCase):
     """Verify that no production code files were modified on this branch."""
 
+    def _current_branch(self):
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        return result.stdout.strip()
+
     def _changed_files(self):
         result = subprocess.run(
             ["git", "diff", "--name-only", "main...HEAD"],
@@ -178,18 +187,29 @@ class TestGl094bNoBranchProductionChanges(unittest.TestCase):
         )
 
     def test_expected_artifact_files_changed(self):
-        changed = self._changed_files()
         expected = {
             "docs/audit_log_immutability_review.md",
             "docs/examples/gl094b/audit_log_immutability_findings.json",
             "backend/tests/test_gl094b_audit_log_immutability_review_artifact.py",
         }
+        # Always: assert artifact files exist on disk
+        for path in expected:
+            self.assertTrue(
+                os.path.isfile(os.path.join(REPO_ROOT, path)),
+                f"Expected artifact file missing from disk: {path}",
+            )
+        # On the original GL-094B feature branch: also verify files appear in git diff
+        if self._current_branch() != "gl-094b-audit-log-immutability-review":
+            return
+        changed = self._changed_files()
         for path in expected:
             self.assertIn(
                 path, changed, f"Expected artifact file not found in branch diff: {path}"
             )
 
     def test_only_allowed_files_changed(self):
+        if self._current_branch() != "gl-094b-audit-log-immutability-review":
+            self.skipTest("Allowed-files diff check only valid on original GL-094B feature branch")
         changed = self._changed_files()
         allowed = {
             "docs/audit_log_immutability_review.md",
