@@ -175,31 +175,50 @@ class TestNoProductionFilesChanged(unittest.TestCase):
         )
 
     def test_artifact_files_present_in_diff(self):
-        # Include committed changes (main...HEAD) and uncommitted changes (status)
+        expected_artifacts = {
+            "docs/phase1_security_remediation_review.md",
+            "docs/examples/gl094a/phase1_security_review_findings.json",
+            "backend/tests/test_gl094a_phase1_security_review_artifact.py",
+        }
+
+        # Primary assertion: artifact files must exist on disk regardless of branch.
+        missing_on_disk = {
+            a for a in expected_artifacts
+            if not os.path.isfile(os.path.join(REPO_ROOT, a))
+        }
+        self.assertFalse(
+            missing_on_disk,
+            f"Expected GL-094A artifact files not found on disk: {missing_on_disk}",
+        )
+
+        # Secondary assertion: on the GL-094A introducing branch the three
+        # artifacts must appear in the branch diff or working-tree status.
+        # The review markdown is the sentinel: if it is absent from the diff,
+        # the GL-094A artifacts were already merged to main and the disk-
+        # existence check above is the meaningful assertion.
         diff_result = subprocess.run(
             ["git", "diff", "--name-only", "main...HEAD"],
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
         )
+        committed = set(diff_result.stdout.splitlines())
+        if "docs/phase1_security_remediation_review.md" not in committed:
+            return
+
+        # Review markdown is new in this branch — all three artifacts must appear.
         status_result = subprocess.run(
             ["git", "status", "--porcelain"],
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
         )
-        committed = set(diff_result.stdout.splitlines())
         # porcelain lines: "?? path" or " M path" — extract the path (last token).
         # New directories appear as "?? dir/" so we match prefix as well.
         status_tokens = {
             line.strip().split()[-1]
             for line in status_result.stdout.splitlines()
             if line.strip()
-        }
-        expected_artifacts = {
-            "docs/phase1_security_remediation_review.md",
-            "docs/examples/gl094a/phase1_security_review_findings.json",
-            "backend/tests/test_gl094a_phase1_security_review_artifact.py",
         }
         missing = set()
         for artifact in expected_artifacts:
