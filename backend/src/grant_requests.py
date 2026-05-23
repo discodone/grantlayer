@@ -135,11 +135,8 @@ def approve_grant_request(
             """,
             ("approved", operator_id, now, grant.id, now, request_id),
         )
-        
-        # Commit the transaction
-        conn.commit()
-        
-        # Log an audit event for the approval
+
+        # Log an audit event for the approval inside the same transaction
         audit_log.append_event(
             AuditEvent(
                 subject_id=operator_id,
@@ -148,9 +145,13 @@ def approve_grant_request(
                 resource=f"grant_request/{request_id}",
                 approved=True,
                 reason=f"Grant request {request_id} approved",
-            )
+            ),
+            conn=conn,
         )
-        
+
+        # Commit the transaction
+        conn.commit()
+
         # Return the updated request and the newly created grant
         updated_request = get_grant_request(request_id)
         return updated_request, grant
@@ -259,11 +260,8 @@ def revoke_grant_request(
             """,
             ("revoked", operator_id, now, reason, now, request_id),
         )
-        
-        # Commit the transaction
-        conn.commit()
-        
-        # Log an audit event for the revocation
+
+        # Log an audit event for the revocation inside the same transaction
         audit_log.append_event(
             AuditEvent(
                 subject_id=operator_id,
@@ -272,9 +270,13 @@ def revoke_grant_request(
                 resource=f"grant_request/{request_id}",
                 approved=False,
                 reason=f"Grant request {request_id} revoked: {reason}",
-            )
+            ),
+            conn=conn,
         )
-        
+
+        # Commit the transaction
+        conn.commit()
+
         # Return the updated request
         updated_request = get_grant_request(request_id)
         return updated_request
