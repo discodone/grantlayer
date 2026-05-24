@@ -148,6 +148,8 @@ class AuditEvent:
     grant_signature_result: str = "not_checked"
     id: str = field(default_factory=_new_id)
     timestamp: str = field(default_factory=_now_iso)
+    row_hash: Optional[str] = None
+    prev_hash: Optional[str] = None
 
     def to_dict(self) -> dict:
         return asdict(self)
