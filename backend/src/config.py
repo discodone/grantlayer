@@ -120,6 +120,26 @@ CORS_ALLOWED_ORIGINS: list[str] = _env_list(
 )
 
 # ──────────────────────────────────────────────────────────────
+# Private Key Configuration (GL-110)
+# ──────────────────────────────────────────────────────────────
+
+# Externalized private key material (PEM string). Takes precedence over file.
+GRANTLAYER_SIGNING_PRIVATE_KEY: str = _env_str("GRANTLAYER_SIGNING_PRIVATE_KEY", "")
+
+# Explicit private key file path. Falls back to default data/ path if unset.
+GRANTLAYER_SIGNING_PRIVATE_KEY_FILE: str = _env_str("GRANTLAYER_SIGNING_PRIVATE_KEY_FILE", "")
+
+# Passphrase for encrypted private key files.
+GRANTLAYER_SIGNING_PRIVATE_KEY_PASSPHRASE: str = _env_str("GRANTLAYER_SIGNING_PRIVATE_KEY_PASSPHRASE", "")
+
+# Allow plaintext private key file loading. Default is True in local/test for
+# backward compatibility; False in production-like modes.
+GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: bool = _env_bool(
+    "GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE",
+    default=RUNTIME_MODE in ("local", "test"),
+)
+
+# ──────────────────────────────────────────────────────────────
 # Rate Limiting (GL-106)
 # ──────────────────────────────────────────────────────────────
 
