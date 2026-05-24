@@ -2,6 +2,7 @@
 
 import os
 import datetime
+import logging
 from typing import Optional
 from .models import AccessRequest, AuditEvent, PolicyResult, GrantExecution
 from .policy_engine import evaluate_access
@@ -14,6 +15,8 @@ from .grant_executions import (
     update_grant_execution_audit_event_id,
 )
 from .grant_requests import get_grant_request_id_by_grant_id
+
+logger = logging.getLogger(__name__)
 
 
 def _get_env_bool(name: str) -> bool:
@@ -175,8 +178,13 @@ def handle_demo_action(
                 "executionId": execution.id,
             }
 
-    except Exception:
+    except Exception as exc:
         # Internal handler error after authorization path began
+        logger.error(
+            "demo_action unexpected failure: component=demo_action action=%s exception_type=%s",
+            action,
+            type(exc).__name__,
+        )
         execution.policy_result = "error"
         execution.result = "failed"
         execution.error_code = "internal_handler_error"
