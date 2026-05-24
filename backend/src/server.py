@@ -39,10 +39,16 @@ from .decision_provenance import build_decision_provenance_v2
 from .auditor_export import build_institutional_auditor_export
 from .policy_requirements import evaluate_policy_requirements
 from .runtime_config import describe_runtime_config, get_runtime_mode
+from .rate_limiter import RateLimiter
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
     "dashboard", "index.html",
+)
+
+_rate_limiter = RateLimiter(
+    auth_limit=config.GRANTLAYER_RATE_LIMIT_AUTH,
+    api_limit=config.GRANTLAYER_RATE_LIMIT_API,
 )
 
 def _cors_headers_for(origin: str | None) -> dict[str, str]:
@@ -404,6 +410,40 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             return self._require_operator(roles)
         return self._require_admin()
 
+    def _check_rate_limit(self, group: str) -> bool:
+        """Check rate limit for the current client IP and endpoint group.
+
+        Returns True if the request is allowed.  On False a deterministic
+        HTTP 429 response with Retry-After is already sent.
+
+        When client_address is not available (e.g. some test mocks) the
+        check is skipped to avoid breaking test suites that are not
+        explicitly testing rate-limit behaviour.
+        """
+        client_address = getattr(self, "client_address", None)
+        if client_address is None:
+            return True
+        ip = client_address[0]
+        allowed, retry_after = _rate_limiter.check(ip, group)
+        if not allowed:
+            payload = self._gl030_error(
+                "Rate limit exceeded",
+                "rate_limit_exceeded",
+                f"Too many requests. Retry after {retry_after} seconds.",
+            )
+            body = json.dumps(payload).encode()
+            self.send_response(429)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Retry-After", str(retry_after))
+            origin = self.headers.get("Origin")
+            for k, v in _cors_headers_for(origin).items():
+                self.send_header(k, v)
+            self.end_headers()
+            self.wfile.write(body)
+            return False
+        return True
+
     def do_GET(self):  # noqa: N802
         path = urlparse(self.path).path
 
@@ -440,6 +480,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 })
 
         elif path == "/grants":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -456,6 +498,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif path == "/audit-events":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -468,12 +512,16 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, [e.to_dict() for e in events])
 
         elif path == "/challenges":
+            if not self._check_rate_limit("auth"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
             self._send_json(200, [c.to_dict() for c in list_challenges()])
 
         elif m := re.fullmatch(r"/grants/([^/]+)", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -491,6 +539,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(200, d)
 
         elif path == "/operators/me":
+            if not self._check_rate_limit("auth"):
+                return
             if not config.ENABLE_OPERATOR_MODEL:
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
@@ -500,6 +550,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, payload.get("operator", {}))
             
         elif path == "/grant-requests":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -513,6 +565,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, [r.to_dict() for r in requests])
 
         elif m := re.fullmatch(r"/grant-requests/([^/]+)", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -525,6 +579,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(200, request.to_dict())
 
         elif path == "/grant-executions":
+            if not self._check_rate_limit("api"):
+                return
             if not config.ENABLE_OPERATOR_MODEL:
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
@@ -546,6 +602,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, [e.to_dict() for e in executions])
 
         elif m := re.fullmatch(r"/grant-executions/([^/]+)", path):
+            if not self._check_rate_limit("api"):
+                return
             if not config.ENABLE_OPERATOR_MODEL:
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
@@ -560,6 +618,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, execution.to_dict())
 
         elif m := re.fullmatch(r"/grants/([^/]+)/executions", path):
+            if not self._check_rate_limit("api"):
+                return
             if not config.ENABLE_OPERATOR_MODEL:
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
@@ -579,6 +639,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, [e.to_dict() for e in executions])
 
         elif m := re.fullmatch(r"/evidence/executions/([^/]+)", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -590,6 +652,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, bundle)
 
         elif m := re.fullmatch(r"/evidence/executions/([^/]+)/export", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -615,6 +679,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
 
         elif m := re.fullmatch(r"/evidence/executions/([^/]+)/verify", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -623,6 +689,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif m := re.fullmatch(r"/provenance/executions/([^/]+)/summary", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -647,6 +715,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, summary)
 
         elif m := re.fullmatch(r"/auditor/reports/executions/([^/]+)", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -667,6 +737,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, report)
 
         elif m := re.fullmatch(r"/evidence/executions/([^/]+)/completeness", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -684,6 +756,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, report)
 
         elif m := re.fullmatch(r"/compliance/gaps/executions/([^/]+)", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -701,12 +775,16 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, report)
 
         elif path == "/agent-permissions/profiles":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
             self._send_json(200, list_agent_permission_profiles())
 
         elif m := re.fullmatch(r"/agent-permissions/profiles/([^/]+)", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
@@ -724,6 +802,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
 
         if path == "/grants":
+            if not self._check_rate_limit("api"):
+                return
             ok, payload = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
@@ -777,6 +857,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             })
 
         elif m := re.fullmatch(r"/grants/([^/]+)/revoke", path):
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
@@ -800,6 +882,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(409, self._gl030_error("Grant already revoked or not found", "grant_already_revoked", "The grant is already revoked or does not exist."))
 
         elif path == "/challenges":
+            if not self._check_rate_limit("auth"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -822,6 +906,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             })
 
         elif m := re.fullmatch(r"/demo/tamper-grant/([^/]+)", path):
+            if not self._check_rate_limit("auth"):
+                return
             if not config.ENABLE_DEMO_ENDPOINTS:
                 self._send_json(403, self._gl030_error("Demo endpoints are disabled", "demo_endpoints_disabled", "Demo endpoints are not enabled on this instance."))
                 return
@@ -836,6 +922,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(200, result)
 
         elif path == "/demo-action":
+            if not self._check_rate_limit("auth"):
+                return
             caller_operator_id: str | None = None
             ok, payload = self._require_auth(["owner", "grant_admin"])
             if not ok:
@@ -863,6 +951,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             
         elif path == "/grant-requests":
             # Create a new grant request
+            if not self._check_rate_limit("api"):
+                return
             if not config.ENABLE_OPERATOR_MODEL:
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
@@ -912,6 +1002,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(201, created_request.to_dict())
             
         elif m := re.fullmatch(r"/grant-requests/([^/]+)/approve", path):
+            if not self._check_rate_limit("api"):
+                return
             if not config.ENABLE_OPERATOR_MODEL:
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
@@ -948,6 +1040,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(400, self._gl030_error(str(e), "invalid_request", str(e)))
                 
         elif m := re.fullmatch(r"/grant-requests/([^/]+)/deny", path):
+            if not self._check_rate_limit("api"):
+                return
             if not config.ENABLE_OPERATOR_MODEL:
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
@@ -983,6 +1077,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(400, self._gl030_error(str(e), "invalid_request", str(e)))
 
         elif path == "/agent-permissions/evaluate":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
@@ -1006,6 +1102,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif path == "/agent-permissions/assignments/resolve":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
@@ -1031,6 +1129,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif path == "/approvals/lifecycle/build":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
@@ -1056,6 +1156,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif path == "/approvals/lifecycle/transition":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
@@ -1080,6 +1182,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif path == "/approvals/evaluate":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
@@ -1108,6 +1212,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif path == "/decision-provenance/v2/build":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -1140,6 +1246,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif path == "/auditor/exports/build":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -1171,6 +1279,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif path == "/policy-requirements/evaluate":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
@@ -1196,6 +1306,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result)
 
         elif path == "/compliance/readiness/build":
+            if not self._check_rate_limit("api"):
+                return
             ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
