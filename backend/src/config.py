@@ -120,6 +120,13 @@ CORS_ALLOWED_ORIGINS: list[str] = _env_list(
 )
 
 # ──────────────────────────────────────────────────────────────
+# Rate Limiting (GL-106)
+# ──────────────────────────────────────────────────────────────
+
+GRANTLAYER_RATE_LIMIT_AUTH: int = max(1, _env_int("GRANTLAYER_RATE_LIMIT_AUTH", 10))
+GRANTLAYER_RATE_LIMIT_API: int = max(1, _env_int("GRANTLAYER_RATE_LIMIT_API", 120))
+
+# ──────────────────────────────────────────────────────────────
 # Startup Warnings (explicit, not noisy)
 # ──────────────────────────────────────────────────────────────
 
