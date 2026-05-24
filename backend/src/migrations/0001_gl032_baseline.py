@@ -50,7 +50,9 @@ def apply(conn: sqlite3.Connection) -> None:
             challenge_id     TEXT DEFAULT NULL,
             challenge_present INTEGER DEFAULT 0,
             challenge_result TEXT DEFAULT 'legacy_mode',
-            grant_signature_result TEXT DEFAULT 'not_checked'
+            grant_signature_result TEXT DEFAULT 'not_checked',
+            row_hash         TEXT,
+            prev_hash        TEXT
         );
 
         -- Challenges
