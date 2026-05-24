@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.serialization import (
     load_pem_public_key,
 )
 
+from . import config
 from .models import Grant, GrantSignatureResult
 
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "../../data")
@@ -47,6 +48,64 @@ def _check_private_key_permissions(path: str) -> None:
         )
 
 
+def _is_encrypted_pem(key_data: bytes) -> bool:
+    """Return True if the PEM data appears to be encrypted."""
+    return b"ENCRYPTED PRIVATE KEY" in key_data
+
+
+def _get_passphrase() -> bytes | None:
+    """Return passphrase bytes if configured, otherwise None."""
+    passphrase = config.GRANTLAYER_SIGNING_PRIVATE_KEY_PASSPHRASE
+    if passphrase:
+        return passphrase.encode("utf-8")
+    return None
+
+
+def _check_plaintext_production(key_data: bytes) -> None:
+    """Fail closed in production-like modes when loading plaintext files."""
+    if _is_encrypted_pem(key_data):
+        return
+    if not config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE:
+        raise PermissionError(
+            "Plaintext private key file loading is not allowed in this runtime mode. "
+            "Use an encrypted key file, externalized key config, or set the explicit override."
+        )
+
+
+def _load_private_key_from_bytes(key_data: bytes, passphrase: bytes | None) -> Ed25519PrivateKey:
+    """Load an Ed25519 private key from PEM bytes with safe error handling.
+
+    Does not leak key material or passphrase values in exceptions.
+    """
+    try:
+        return load_pem_private_key(key_data, password=passphrase)
+    except TypeError as exc:
+        exc_str = str(exc).lower()
+        if "not given but private key is encrypted" in exc_str:
+            raise ValueError(
+                "Encrypted private key requires a passphrase."
+            ) from None
+        if "password was given but private key is not encrypted" in exc_str:
+            raise ValueError(
+                "Passphrase provided for an unencrypted private key."
+            ) from None
+        raise
+    except ValueError as exc:
+        exc_str = str(exc).lower()
+        if any(term in exc_str for term in ("password", "passphrase", "incorrect", "decrypt")):
+            raise ValueError(
+                "Invalid passphrase or encrypted private key format."
+            ) from None
+        raise
+
+
+def _resolve_private_key_path() -> str:
+    """Resolve the private key file path from config or default."""
+    if config.GRANTLAYER_SIGNING_PRIVATE_KEY_FILE:
+        return config.GRANTLAYER_SIGNING_PRIVATE_KEY_FILE
+    return _PRIVATE_KEY_PATH
+
+
 def ensure_demo_keypair() -> None:
     """Generate Ed25519 keypair if not present at data/ paths. Idempotent."""
     os.makedirs(os.path.abspath(_DATA_DIR), exist_ok=True)
@@ -67,9 +126,30 @@ def ensure_demo_keypair() -> None:
 
 
 def load_private_key() -> Ed25519PrivateKey:
-    _check_private_key_permissions(_PRIVATE_KEY_PATH)
-    with open(_PRIVATE_KEY_PATH, "rb") as f:
-        return load_pem_private_key(f.read(), password=None)
+    """Load the signing private key from env, file, or default path.
+
+    Priority:
+      1. GRANTLAYER_SIGNING_PRIVATE_KEY (externalized config/env)
+      2. GRANTLAYER_SIGNING_PRIVATE_KEY_FILE (explicit file path)
+      3. Default _PRIVATE_KEY_PATH (backward compatibility)
+
+    In production-like modes, plaintext file loading is rejected unless
+    GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE is explicitly enabled.
+    """
+    # Priority 1: externalized key material
+    if config.GRANTLAYER_SIGNING_PRIVATE_KEY:
+        key_data = config.GRANTLAYER_SIGNING_PRIVATE_KEY.encode("utf-8")
+        passphrase = _get_passphrase()
+        return _load_private_key_from_bytes(key_data, passphrase)
+
+    # Priority 2 & 3: file-based loading
+    path = _resolve_private_key_path()
+    _check_private_key_permissions(path)
+    with open(path, "rb") as f:
+        key_data = f.read()
+    _check_plaintext_production(key_data)
+    passphrase = _get_passphrase()
+    return _load_private_key_from_bytes(key_data, passphrase)
 
 
 def load_public_key() -> Ed25519PublicKey:
