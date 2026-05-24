@@ -61,6 +61,14 @@ def verify_token(token: str, stored_hash: str) -> bool:
     return hmac.compare_digest(expected, _hash)
 
 
+def derive_token_lookup_hash(token: str) -> str:
+    """Return a fast, deterministic SHA-256 lookup hash for a token.
+
+    This is NOT a secure password hash — it is used strictly for
+    narrowing the candidate set before PBKDF2 verification."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
 # ──────────────────────────────────────────────────────────────
 # Data model
 # ──────────────────────────────────────────────────────────────
@@ -101,12 +109,13 @@ def _init_operators_table() -> None:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS operators (
-                id         TEXT PRIMARY KEY,
-                name       TEXT NOT NULL,
-                role       TEXT NOT NULL,
-                token_hash TEXT NOT NULL,
-                active     INTEGER NOT NULL DEFAULT 1,
-                created_at TEXT NOT NULL
+                id                TEXT PRIMARY KEY,
+                name              TEXT NOT NULL,
+                role              TEXT NOT NULL,
+                token_hash        TEXT NOT NULL,
+                token_lookup_hash TEXT,
+                active            INTEGER NOT NULL DEFAULT 1,
+                created_at        TEXT NOT NULL
             );
             """
         )
@@ -157,11 +166,23 @@ def authenticate_operator(authorization_header: str | None) -> Operator | None:
     if not token:
         return None
 
-    # We don't know the hash in advance, so iterate active operators.
-    # For MVP (small operator count) this is acceptable.
-    rows = query_all("SELECT id, token_hash FROM operators WHERE active = 1")
+    # O(1) deterministic narrowing via SHA-256 lookup hash.
+    # For legacy rows without token_lookup_hash, we fall back to
+    # scanning only the legacy subset (ideally empty after migration).
+    lookup = derive_token_lookup_hash(token)
+    row = query_one(
+        "SELECT id, token_hash FROM operators WHERE token_lookup_hash = ? AND active = 1",
+        (lookup,),
+    )
+    if row is not None and verify_token(token, row["token_hash"]):
+        return get_operator_by_id(row["id"])
 
-    for row in rows:
+    # Legacy fallback: rows created before GL-107 may lack token_lookup_hash.
+    # This path is bounded by the number of legacy operators, not all operators.
+    legacy_rows = query_all(
+        "SELECT id, token_hash FROM operators WHERE active = 1 AND token_lookup_hash IS NULL"
+    )
+    for row in legacy_rows:
         if verify_token(token, row["token_hash"]):
             return get_operator_by_id(row["id"])
 
@@ -197,14 +218,15 @@ def bootstrap_operator_if_needed() -> None:
 
         conn.execute(
             """
-            INSERT INTO operators (id, name, role, token_hash, active, created_at)
-            VALUES (?, ?, ?, ?, 1, ?)
+            INSERT INTO operators (id, name, role, token_hash, token_lookup_hash, active, created_at)
+            VALUES (?, ?, ?, ?, ?, 1, ?)
             """,
             (
                 config.GRANTLAYER_BOOTSTRAP_OPERATOR_ID,
                 config.GRANTLAYER_BOOTSTRAP_OPERATOR_NAME,
                 config.GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE,
                 hash_token(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
+                derive_token_lookup_hash(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
                 datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
             ),
         )

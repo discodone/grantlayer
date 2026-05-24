@@ -69,12 +69,13 @@ def apply(conn: sqlite3.Connection) -> None:
 
         -- Operators
         CREATE TABLE IF NOT EXISTS operators (
-            id         TEXT PRIMARY KEY,
-            name       TEXT NOT NULL,
-            role       TEXT NOT NULL,
-            token_hash TEXT NOT NULL,
-            active     INTEGER NOT NULL DEFAULT 1,
-            created_at TEXT NOT NULL
+            id                TEXT PRIMARY KEY,
+            name              TEXT NOT NULL,
+            role              TEXT NOT NULL,
+            token_hash        TEXT NOT NULL,
+            token_lookup_hash TEXT,
+            active            INTEGER NOT NULL DEFAULT 1,
+            created_at        TEXT NOT NULL
         );
 
         -- Grant requests
