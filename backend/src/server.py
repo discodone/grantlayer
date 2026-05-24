@@ -541,11 +541,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif path == "/operators/me":
             if not self._check_rate_limit("auth"):
                 return
-            if not config.ENABLE_OPERATOR_MODEL:
-                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
-                return
             ok, payload = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
+                return
+            if not config.ENABLE_OPERATOR_MODEL:
+                self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
             self._send_json(200, payload.get("operator", {}))
             
