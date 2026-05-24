@@ -462,3 +462,118 @@ def list_events_by_grant(grant_id: str, limit: int = 50) -> List[AuditEvent]:
         )
         for r in rows
     ]
+
+
+# ──────────────────────────────────────────────────────────────
+# Chain verification report builder (GL-105)
+# ──────────────────────────────────────────────────────────────
+
+def build_audit_chain_verification_report() -> dict:
+    """Build a stable auditor-readable structured report from GL-104 verification.
+
+    Uses verify_audit_hash_chain() internally and produces a deterministic,
+    read-only structured report object suitable for auditor review.
+
+    Returns a structured dict:
+        {
+            "report_type": str,
+            "valid": bool,
+            "checked_events": int,
+            "failure_count": int,
+            "failures": list[dict],
+            "summary": str,
+            "status": str,
+            "recommendations": list[str],
+        }
+
+    This helper is read-only and does not insert or mutate audit_events.
+    """
+    # Count total and skipped rows to represent historical/pre-chain behavior
+    rows = query_all(
+        "SELECT * FROM audit_events ORDER BY timestamp ASC, rowid ASC"
+    )
+    total_events = len(rows)
+    chain_rows = [r for r in rows if r.get("row_hash") is not None]
+    skipped_events = total_events - len(chain_rows)
+
+    result = verify_audit_hash_chain()
+    failures = result["failures"]
+    failure_count = len(failures)
+    checked_events = result["checked"]
+    valid = result["valid"]
+
+    if valid:
+        if checked_events == 0:
+            if skipped_events > 0:
+                summary = (
+                    f"No chain events to verify; {skipped_events} "
+                    "historical/pre-chain row(s) skipped."
+                )
+                status = "historical_only"
+            else:
+                summary = "No chain events to verify; audit log is empty."
+                status = "empty"
+        else:
+            if skipped_events > 0:
+                summary = (
+                    f"Audit chain verified: {checked_events} event(s) checked, "
+                    f"{skipped_events} historical/pre-chain row(s) skipped, "
+                    "no failures."
+                )
+            else:
+                summary = (
+                    f"Audit chain verified: {checked_events} event(s) checked, "
+                    "no failures."
+                )
+            status = "valid"
+    else:
+        summary = (
+            f"Audit chain verification failed: {failure_count} failure(s) in "
+            f"{checked_events} event(s) checked."
+        )
+        status = "invalid"
+
+    recommendations = []
+    if valid:
+        if checked_events == 0:
+            recommendations.append(
+                "No action required; no chain events present."
+            )
+        else:
+            recommendations.append(
+                "No action required; chain integrity is intact."
+            )
+    else:
+        has_row_hash_mismatch = any(
+            "row_hash mismatch" in f["reason"] for f in failures
+        )
+        has_prev_hash_mismatch = any(
+            "prev_hash mismatch" in f["reason"] for f in failures
+        )
+
+        if has_row_hash_mismatch:
+            recommendations.append(
+                "Investigate row_hash mismatches: audit event data may have "
+                "been tampered with."
+            )
+        if has_prev_hash_mismatch:
+            recommendations.append(
+                "Investigate prev_hash mismatches: chain continuity may be "
+                "broken or events reordered."
+            )
+        if not has_row_hash_mismatch and not has_prev_hash_mismatch:
+            recommendations.append(
+                "Investigate verification failures: review audit_events for "
+                "anomalies."
+            )
+
+    return {
+        "report_type": "audit_chain_verification",
+        "valid": valid,
+        "checked_events": checked_events,
+        "failure_count": failure_count,
+        "failures": list(failures),
+        "summary": summary,
+        "status": status,
+        "recommendations": recommendations,
+    }
