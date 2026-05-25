@@ -24,6 +24,7 @@ _SAFE_FIELDS: set[str] = {
     "correlation_id",
     "request_id",
     "exception_type",
+    "reason_code",
 }
 
 _SENSITIVE_FIELDS: set[str] = {

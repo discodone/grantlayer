@@ -176,7 +176,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         self._inject_correlation_header()
         super().end_headers()
 
-    def _log_event(self, event: str, status_code: int, status: str | None = None) -> None:
+    def _log_event(self, event: str, status_code: int, status: str | None = None, reason_code: str | None = None) -> None:
         """Emit a safe structured log event. Never raises."""
         try:
             path = self._normalize_path(urlparse(self.path).path)
@@ -187,6 +187,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             }
             if status is not None:
                 fields["status"] = status
+            if reason_code is not None:
+                fields["reason_code"] = reason_code
             correlation_id = getattr(self, "correlation_id", None)
             if correlation_id:
                 fields["correlation_id"] = correlation_id
@@ -466,7 +468,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, status, payload = cached
             if not ok:
                 self._send_json(status, payload)
-                self._log_event("auth_failed", status, status=payload.get("errorCode", "unknown"))
+                self._log_event("auth_failed", status, reason_code=payload.get("errorCode", "unknown"))
                 return False, {}
             return True, {}
         ok, status, payload = check_admin_token(auth_header)
@@ -475,7 +477,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         self._auth_cache[cache_key] = (ok, status, payload)
         if not ok:
             self._send_json(status, payload)
-            self._log_event("auth_failed", status, status=payload.get("errorCode", "unknown"))
+            self._log_event("auth_failed", status, reason_code=payload.get("errorCode", "unknown"))
             return False, {}
         return True, {}
 
@@ -487,7 +489,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, status, payload = cached
             if not ok:
                 self._send_json(status, payload)
-                self._log_event("auth_failed", status, status=payload.get("errorCode", "unknown"))
+                self._log_event("auth_failed", status, reason_code=payload.get("errorCode", "unknown"))
                 return False, {}
             return True, payload
         ok, status, payload = check_auth(auth_header, required_roles=roles)
@@ -496,7 +498,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         self._auth_cache[cache_key] = (ok, status, payload)
         if not ok:
             self._send_json(status, payload)
-            self._log_event("auth_failed", status, status=payload.get("errorCode", "unknown"))
+            self._log_event("auth_failed", status, reason_code=payload.get("errorCode", "unknown"))
             return False, {}
         return True, payload
 
