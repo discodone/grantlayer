@@ -40,6 +40,7 @@ from .auditor_export import build_institutional_auditor_export
 from .policy_requirements import evaluate_policy_requirements
 from .runtime_config import describe_runtime_config, get_runtime_mode
 from .rate_limiter import RateLimiter
+from .logging_utils import get_logger, safe_log
 from .validation import (
     MAX_SHORT_ID_LENGTH,
     MAX_ROLE_LENGTH,
@@ -58,6 +59,8 @@ _rate_limiter = RateLimiter(
     auth_limit=config.GRANTLAYER_RATE_LIMIT_AUTH,
     api_limit=config.GRANTLAYER_RATE_LIMIT_API,
 )
+
+_server_logger = get_logger("grantlayer.server")
 
 def _cors_headers_for(origin: str | None) -> dict[str, str]:
     """Return CORS headers only for explicitly allowed origins.
@@ -112,6 +115,57 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             "reason": reason or error,
         }
 
+    def _normalize_path(self, path: str) -> str:
+        """Normalize dynamic path segments to avoid leaking IDs in logs."""
+        if re.fullmatch(r"/grants/[^/]+", path):
+            return "/grants/{id}"
+        if re.fullmatch(r"/grants/[^/]+/revoke", path):
+            return "/grants/{id}/revoke"
+        if re.fullmatch(r"/grants/[^/]+/executions", path):
+            return "/grants/{id}/executions"
+        if re.fullmatch(r"/grant-requests/[^/]+", path):
+            return "/grant-requests/{id}"
+        if re.fullmatch(r"/grant-requests/[^/]+/approve", path):
+            return "/grant-requests/{id}/approve"
+        if re.fullmatch(r"/grant-requests/[^/]+/deny", path):
+            return "/grant-requests/{id}/deny"
+        if re.fullmatch(r"/grant-executions/[^/]+", path):
+            return "/grant-executions/{id}"
+        if re.fullmatch(r"/evidence/executions/[^/]+", path):
+            return "/evidence/executions/{id}"
+        if re.fullmatch(r"/evidence/executions/[^/]+/export", path):
+            return "/evidence/executions/{id}/export"
+        if re.fullmatch(r"/evidence/executions/[^/]+/verify", path):
+            return "/evidence/executions/{id}/verify"
+        if re.fullmatch(r"/evidence/executions/[^/]+/completeness", path):
+            return "/evidence/executions/{id}/completeness"
+        if re.fullmatch(r"/provenance/executions/[^/]+/summary", path):
+            return "/provenance/executions/{id}/summary"
+        if re.fullmatch(r"/auditor/reports/executions/[^/]+", path):
+            return "/auditor/reports/executions/{id}"
+        if re.fullmatch(r"/compliance/gaps/executions/[^/]+", path):
+            return "/compliance/gaps/executions/{id}"
+        if re.fullmatch(r"/agent-permissions/profiles/[^/]+", path):
+            return "/agent-permissions/profiles/{name}"
+        if re.fullmatch(r"/demo/tamper-grant/[^/]+", path):
+            return "/demo/tamper-grant/{id}"
+        return path
+
+    def _log_event(self, event: str, status_code: int, status: str | None = None) -> None:
+        """Emit a safe structured log event. Never raises."""
+        try:
+            path = self._normalize_path(urlparse(self.path).path)
+            fields: dict[str, object] = {
+                "method": self.command,
+                "path": path,
+                "status_code": status_code,
+            }
+            if status is not None:
+                fields["status"] = status
+            safe_log(_server_logger, "info", event, **fields)
+        except Exception:
+            pass
+
     def _handle_json_error(self, exc: Exception) -> None:
         """Send a safe deterministic response for JSON body parse failures.
 
@@ -120,6 +174,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         """
         if isinstance(exc, _BodyParseError):
             self._send_json(exc.status, exc.payload)
+            try:
+                error_code = exc.payload.get("errorCode", "invalid_body")
+            except Exception:
+                error_code = "invalid_body"
+            self._log_event("request_rejected", exc.status, status=error_code)
         else:
             self._send_json(
                 400,
@@ -129,6 +188,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                     "The request body is not valid JSON.",
                 ),
             )
+            self._log_event("request_rejected", 400, status="INVALID_JSON")
 
     def _send_json(self, status: int, data) -> None:
         body = json.dumps(data, default=str).encode()
@@ -377,6 +437,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, status, payload = cached
             if not ok:
                 self._send_json(status, payload)
+                self._log_event("auth_failed", status, status=payload.get("errorCode", "unknown"))
                 return False, {}
             return True, {}
         ok, status, payload = check_admin_token(auth_header)
@@ -385,6 +446,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         self._auth_cache[cache_key] = (ok, status, payload)
         if not ok:
             self._send_json(status, payload)
+            self._log_event("auth_failed", status, status=payload.get("errorCode", "unknown"))
             return False, {}
         return True, {}
 
@@ -396,6 +458,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, status, payload = cached
             if not ok:
                 self._send_json(status, payload)
+                self._log_event("auth_failed", status, status=payload.get("errorCode", "unknown"))
                 return False, {}
             return True, payload
         ok, status, payload = check_auth(auth_header, required_roles=roles)
@@ -404,6 +467,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         self._auth_cache[cache_key] = (ok, status, payload)
         if not ok:
             self._send_json(status, payload)
+            self._log_event("auth_failed", status, status=payload.get("errorCode", "unknown"))
             return False, {}
         return True, payload
 
@@ -449,6 +513,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self.send_header(k, v)
             self.end_headers()
             self.wfile.write(body)
+            self._log_event("rate_limited", 429, status="rate_limit_exceeded")
             return False
         return True
 
@@ -504,6 +569,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 d["signatureValid"] = sig_result == "valid"
                 result.append(d)
             self._send_json(200, result)
+            self._log_event("request_completed", 200)
 
         elif path == "/audit-events":
             if not self._check_rate_limit("api"):
@@ -881,6 +947,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 "signingKeyId": grant.signing_key_id,
                 "payloadHash": grant.payload_hash,
             })
+            self._log_event("request_completed", 201)
 
         elif m := re.fullmatch(r"/grants/([^/]+)/revoke", path):
             if not self._check_rate_limit("api"):
