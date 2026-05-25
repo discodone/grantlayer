@@ -41,6 +41,7 @@ from .policy_requirements import evaluate_policy_requirements
 from .runtime_config import describe_runtime_config, get_runtime_mode
 from .rate_limiter import RateLimiter
 from .logging_utils import get_logger, safe_log
+from .structured_logging import normalize_correlation_id
 from .validation import (
     MAX_SHORT_ID_LENGTH,
     MAX_ROLE_LENGTH,
@@ -151,6 +152,30 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             return "/demo/tamper-grant/{id}"
         return path
 
+    def _ensure_correlation_id(self) -> None:
+        """Extract or generate a safe correlation ID for this request.
+
+        Prefers X-Correlation-ID, falls back to X-Request-ID, and generates
+        a new safe ID if neither is present or safe.
+        """
+        if hasattr(self, "correlation_id"):
+            return
+        inbound = self.headers.get("X-Correlation-ID")
+        if not inbound:
+            inbound = self.headers.get("X-Request-ID")
+        self.correlation_id = normalize_correlation_id(inbound)
+
+    def _inject_correlation_header(self) -> None:
+        """Send X-Correlation-ID header if we have one."""
+        correlation_id = getattr(self, "correlation_id", None)
+        if correlation_id:
+            self.send_header("X-Correlation-ID", correlation_id)
+
+    def end_headers(self) -> None:
+        """Emit X-Correlation-ID response header before finishing headers."""
+        self._inject_correlation_header()
+        super().end_headers()
+
     def _log_event(self, event: str, status_code: int, status: str | None = None) -> None:
         """Emit a safe structured log event. Never raises."""
         try:
@@ -162,6 +187,9 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             }
             if status is not None:
                 fields["status"] = status
+            correlation_id = getattr(self, "correlation_id", None)
+            if correlation_id:
+                fields["correlation_id"] = correlation_id
             safe_log(_server_logger, "info", event, **fields)
         except Exception:
             pass
@@ -423,6 +451,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):  # noqa: N802
         """Handle CORS preflight deterministically and without state mutation."""
+        self._ensure_correlation_id()
         self.send_response(204)
         origin = self.headers.get("Origin")
         for k, v in _cors_headers_for(origin).items():
@@ -518,6 +547,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         return True
 
     def do_GET(self):  # noqa: N802
+        self._ensure_correlation_id()
         path = urlparse(self.path).path
 
         if path in ("/", "/dashboard"):
@@ -873,6 +903,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(404, self._gl030_error("Not found", "not_found", "The requested endpoint or resource does not exist."))
 
     def do_POST(self):  # noqa: N802
+        self._ensure_correlation_id()
         path = urlparse(self.path).path
 
         if path == "/grants":
