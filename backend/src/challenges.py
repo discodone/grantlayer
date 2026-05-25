@@ -4,11 +4,15 @@ import datetime
 from typing import Optional, Tuple
 from .db import execute, query_one, query_all
 from .models import Challenge, ChallengeResult
+from .validation import MAX_SHORT_ID_LENGTH, MAX_NAME_LENGTH, validate_string_length
 
 CHALLENGE_TTL_SECONDS = 300  # 5 minutes
 
 
 def create_challenge(subject_id: str, action: str, resource: str) -> Challenge:
+    validate_string_length(subject_id, "subject_id", MAX_SHORT_ID_LENGTH)
+    validate_string_length(action, "action", MAX_NAME_LENGTH)
+    validate_string_length(resource, "resource", MAX_NAME_LENGTH)
     now = datetime.datetime.now(datetime.timezone.utc)
     expires = now + datetime.timedelta(seconds=CHALLENGE_TTL_SECONDS)
     challenge = Challenge(

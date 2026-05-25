@@ -17,6 +17,13 @@ from . import db
 from . import grants
 from . import audit_log
 from .models import GrantRequest, Grant, AuditEvent
+from .validation import (
+    MAX_SHORT_ID_LENGTH,
+    MAX_ROLE_LENGTH,
+    MAX_NAME_LENGTH,
+    MAX_REASON_LENGTH,
+    validate_string_length,
+)
 
 
 # GL-097: Maximum length for denial reasons to prevent abuse
@@ -25,6 +32,11 @@ MAX_DENIAL_REASON_LENGTH = 1000
 
 def create_grant_request(request: GrantRequest) -> GrantRequest:
     """Create a new grant request in the 'requested' state."""
+    validate_string_length(request.subject_id, "subject_id", MAX_SHORT_ID_LENGTH)
+    validate_string_length(request.role, "role", MAX_ROLE_LENGTH)
+    validate_string_length(request.action, "action", MAX_NAME_LENGTH)
+    validate_string_length(request.resource, "resource", MAX_NAME_LENGTH)
+    validate_string_length(request.reason, "reason", MAX_REASON_LENGTH)
     db.execute(
         """
         INSERT INTO grant_requests (
@@ -228,6 +240,7 @@ def revoke_grant_request(
     request_id: str, operator_id: str, reason: str
 ) -> GrantRequest:
     """Revoke a previously approved grant request."""
+    validate_string_length(reason, "reason", MAX_REASON_LENGTH)
     conn = db.get_conn()
     try:
         # Get the request

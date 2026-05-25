@@ -40,6 +40,14 @@ from .auditor_export import build_institutional_auditor_export
 from .policy_requirements import evaluate_policy_requirements
 from .runtime_config import describe_runtime_config, get_runtime_mode
 from .rate_limiter import RateLimiter
+from .validation import (
+    MAX_SHORT_ID_LENGTH,
+    MAX_ROLE_LENGTH,
+    MAX_NAME_LENGTH,
+    MAX_REASON_LENGTH,
+    validate_string_length,
+    validate_optional_string_length,
+)
 
 DASHBOARD_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -829,6 +837,24 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                         f"{field} must be a non-empty string.",
                     ))
                     return
+            # GL-114: validate string lengths
+            for field, max_len in (
+                ("subjectId", MAX_SHORT_ID_LENGTH),
+                ("role", MAX_ROLE_LENGTH),
+                ("action", MAX_NAME_LENGTH),
+                ("resource", MAX_NAME_LENGTH),
+                ("createdBy", MAX_SHORT_ID_LENGTH),
+                ("reason", MAX_REASON_LENGTH),
+            ):
+                try:
+                    validate_string_length(data[field], field, max_len)
+                except ValueError as e:
+                    self._send_json(400, self._gl030_error(
+                        f"Invalid field: {field}",
+                        "invalid_field",
+                        str(e),
+                    ))
+                    return
             ok, err = self._validate_grant_dates(data["validFrom"], data["validUntil"])
             if not ok:
                 self._send_json(400, err)
@@ -872,6 +898,17 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
+            # GL-114: validate revoke reason length
+            try:
+                validate_string_length(data["revokedBy"], "revokedBy", MAX_SHORT_ID_LENGTH)
+                validate_string_length(data["reason"], "reason", MAX_REASON_LENGTH)
+            except ValueError as e:
+                self._send_json(400, self._gl030_error(
+                    "Invalid field",
+                    "invalid_field",
+                    str(e),
+                ))
+                return
             if get_grant(grant_id) is None:
                 self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
                 return
@@ -896,6 +933,21 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
+            # GL-114: validate challenge string lengths
+            for field, max_len in (
+                ("subjectId", MAX_SHORT_ID_LENGTH),
+                ("action", MAX_NAME_LENGTH),
+                ("resource", MAX_NAME_LENGTH),
+            ):
+                try:
+                    validate_string_length(data[field], field, max_len)
+                except ValueError as e:
+                    self._send_json(400, self._gl030_error(
+                        f"Invalid field: {field}",
+                        "invalid_field",
+                        str(e),
+                    ))
+                    return
             challenge = create_challenge(data["subjectId"], data["action"], data["resource"])
             self._send_json(201, {
                 "challengeId": challenge.id,
@@ -939,6 +991,31 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
+            # GL-114: validate demo-action string lengths
+            for field, max_len in (
+                ("subjectId", MAX_SHORT_ID_LENGTH),
+                ("role", MAX_ROLE_LENGTH),
+                ("action", MAX_NAME_LENGTH),
+                ("resource", MAX_NAME_LENGTH),
+            ):
+                try:
+                    validate_string_length(data[field], field, max_len)
+                except ValueError as e:
+                    self._send_json(400, self._gl030_error(
+                        f"Invalid field: {field}",
+                        "invalid_field",
+                        str(e),
+                    ))
+                    return
+            try:
+                validate_optional_string_length(data.get("challengeId"), "challengeId", MAX_SHORT_ID_LENGTH)
+            except ValueError as e:
+                self._send_json(400, self._gl030_error(
+                    "Invalid field",
+                    "invalid_field",
+                    str(e),
+                ))
+                return
             result = handle_demo_action(
                 subject_id=data["subjectId"],
                 role=data["role"],
@@ -981,6 +1058,23 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                         f"Invalid field: {field}",
                         "invalid_field",
                         f"{field} must be a non-empty string.",
+                    ))
+                    return
+            # GL-114: validate string lengths
+            for field, max_len in (
+                ("subjectId", MAX_SHORT_ID_LENGTH),
+                ("role", MAX_ROLE_LENGTH),
+                ("action", MAX_NAME_LENGTH),
+                ("resource", MAX_NAME_LENGTH),
+                ("reason", MAX_REASON_LENGTH),
+            ):
+                try:
+                    validate_string_length(data[field], field, max_len)
+                except ValueError as e:
+                    self._send_json(400, self._gl030_error(
+                        f"Invalid field: {field}",
+                        "invalid_field",
+                        str(e),
                     ))
                     return
             ok, err = self._validate_grant_dates(data["validFrom"], data["validUntil"])
@@ -1067,7 +1161,16 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if "reason" not in data or not data["reason"]:
                 self._send_json(400, self._gl030_error("Denial reason is required", "missing_denial_reason", "A reason is required when denying a grant request."))
                 return
-                
+            # GL-114: validate denial reason length
+            try:
+                validate_string_length(data["reason"], "reason", MAX_REASON_LENGTH)
+            except ValueError as e:
+                self._send_json(400, self._gl030_error(
+                    "Invalid field",
+                    "invalid_field",
+                    str(e),
+                ))
+                return
             try:
                 updated_request = grant_requests.deny_grant_request(
                     request_id, operator_id, data["reason"]
