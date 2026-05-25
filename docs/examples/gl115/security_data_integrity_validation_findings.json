@@ -1,0 +1,436 @@
+{
+  "issue_id": "GL-115",
+  "review_type": "security_data_integrity_validation_review_gate",
+  "reviewed_after_main_commit": "179d7d8bc6ea8203ee86c8047e3ef63aa2707c27",
+  "disposition": "proceed_with_cautions",
+  "reviewed_areas": [
+    "backend/src/server.py",
+    "backend/src/audit_log.py",
+    "backend/src/grant_requests.py",
+    "backend/src/challenges.py",
+    "backend/src/validation.py",
+    "backend/src/structured_logging.py",
+    "backend/src/logging_utils.py",
+    "backend/src/runtime_config.py",
+    "backend/src/secret_sources.py",
+    "backend/src/operators.py",
+    "backend/src/rate_limiter.py",
+    "backend/src/db.py",
+    "backend/tests/test_gl102_audit_log_db_immutability.py",
+    "backend/tests/test_gl103_audit_hash_chain.py",
+    "backend/tests/test_gl104_audit_chain_verification_helper.py",
+    "backend/tests/test_gl105_audit_chain_verification_report.py",
+    "backend/tests/test_gl106_rate_limiting.py",
+    "backend/tests/test_gl107_operator_auth_token_lookup.py",
+    "backend/tests/test_gl108_postgres_audit_immutability.py",
+    "backend/tests/test_gl109_operators_me_authentication.py",
+    "backend/tests/test_gl110_private_key_encryption_externalization.py",
+    "backend/tests/test_gl111_demo_action_exception_logging.py",
+    "backend/tests/test_gl112_audit_log_duplication_cleanup.py",
+    "backend/tests/test_gl113_structured_logging.py",
+    "backend/tests/test_gl114_string_length_validation.py",
+    "backend/tests/test_security_boundary_regression.py",
+    "docs/full_product_readiness_gap_review.md",
+    "docs/production_hardening_roadmap.md",
+    "docs/runtime_configuration_environment_model.md",
+    "docs/secret_management_baseline_design.md"
+  ],
+  "resolved_or_improved_risks": [
+    {
+      "id": "GL115-R-001",
+      "resolved_by": "GL-102",
+      "title": "Audit events had no database-level immutability guard",
+      "evidence": "SQLite trigger on audit_events blocks UPDATE and DELETE; test_gl102 verifies mutation raises an exception"
+    },
+    {
+      "id": "GL115-R-002",
+      "resolved_by": "GL-103",
+      "title": "Audit events had no hash chain or tamper-evidence fields",
+      "evidence": "SHA-256 row_hash and prev_hash fields added; genesis hash is 64 zeros; deterministic canonical JSON used for hashing"
+    },
+    {
+      "id": "GL115-R-003",
+      "resolved_by": "GL-104",
+      "title": "No helper to verify audit chain integrity offline",
+      "evidence": "verify_audit_hash_chain() reads audit_events in order and validates each row_hash and prev_hash linkage"
+    },
+    {
+      "id": "GL115-R-004",
+      "resolved_by": "GL-105",
+      "title": "No auditor-readable verification report",
+      "evidence": "build_audit_chain_verification_report() returns structured dict with checked_count, failure_count, failures, and recommendations"
+    },
+    {
+      "id": "GL115-R-005",
+      "resolved_by": "GL-106",
+      "title": "No rate limiting on auth or API endpoints",
+      "evidence": "Per-IP sliding-window RateLimiter enforces 10 req/min on auth group and 120 req/min on api group; applied before request processing"
+    },
+    {
+      "id": "GL115-R-006",
+      "resolved_by": "GL-107",
+      "title": "O(n) PBKDF2 loop on invalid tokens was a CPU-exhaustion DoS vector",
+      "evidence": "SHA-256 lookup_hash prefix check eliminates PBKDF2 evaluation for tokens not in the operator table"
+    },
+    {
+      "id": "GL115-R-007",
+      "resolved_by": "GL-108",
+      "title": "PostgreSQL audit_events table had no server-side immutability triggers",
+      "evidence": "BEFORE UPDATE and BEFORE DELETE triggers added in sql/audit_immutability_postgres.sql; raise EXCEPTION restrict_audit_mutation"
+    },
+    {
+      "id": "GL115-R-008",
+      "resolved_by": "GL-109",
+      "title": "/operators/me disclosed operator identity on unauthenticated calls",
+      "evidence": "Endpoint now fails closed; returns 401 with no operator data when auth header is absent or invalid"
+    },
+    {
+      "id": "GL115-R-009",
+      "resolved_by": "GL-110",
+      "title": "Private key allowed as plaintext in production-like modes",
+      "evidence": "is_production_like() gate enforces encrypted key or env-var externalization; unsafe file permissions rejected"
+    },
+    {
+      "id": "GL115-R-010",
+      "resolved_by": "GL-111",
+      "title": "Demo action exceptions could leak sensitive data in logs",
+      "evidence": "Unexpected exceptions are caught and logged safely; no stack trace or payload content exposed"
+    },
+    {
+      "id": "GL115-R-011",
+      "resolved_by": "GL-112",
+      "title": "Audit log helper code was duplicated across modules",
+      "evidence": "Deduplication refactor removed redundant internal helpers; no functional or API behavior change"
+    },
+    {
+      "id": "GL115-R-012",
+      "resolved_by": "GL-113",
+      "title": "No structured logging baseline with secret redaction",
+      "evidence": "structured_logging.py provides build_log_event() with 13+ sensitive key patterns and recursive redaction up to depth 10; logging_utils.py adds field allowlist/blocklist"
+    },
+    {
+      "id": "GL115-R-013",
+      "resolved_by": "GL-114",
+      "title": "User-supplied strings had no length validation",
+      "evidence": "validation.py provides validate_string_length() with constants MAX_SHORT_ID_LENGTH=128, MAX_ROLE_LENGTH=64, MAX_NAME_LENGTH=256, MAX_REASON_LENGTH=1000; applied to all user inputs"
+    }
+  ],
+  "findings": [
+    {
+      "id": "GL115-F-001",
+      "severity": "high",
+      "category": "persistence",
+      "title": "PostgreSQL Audit Immutability Triggers Not CI-Gated",
+      "evidence": "backend/src/server.py and CI configuration run SQLite by default. test_gl108_postgres_audit_immutability.py uses psycopg2 and skips if the library or a live PostgreSQL instance is unavailable. No CI matrix or docker-compose configuration runs the GL-108 test suite against a real PostgreSQL instance. The audit immutability guarantee for production is structurally unverified in any automated pipeline.",
+      "risk": "The most critical production security guarantee — that audit events cannot be silently deleted or modified in PostgreSQL — is exercised only in manual or developer environments. A regression in trigger installation or scope could go undetected until a post-deployment audit failure.",
+      "recommendation": "Add a docker-compose.test.yml (or equivalent CI job) that starts PostgreSQL, applies sql/audit_immutability_postgres.sql, and runs test_gl108_postgres_audit_immutability.py against the live database. No production code changes required. Make this job required-to-pass before merge.",
+      "suggested_issue_title": "GL-116: PostgreSQL Integration Test CI Gate",
+      "implementation_scope": [
+        "docker-compose.test.yml or .github/workflows/postgres-ci.yml",
+        "backend/tests/test_gl108_postgres_audit_immutability.py (add CI skip guard removal)",
+        "Makefile or scripts/run-postgres-tests.sh"
+      ],
+      "blocks_production": true
+    },
+    {
+      "id": "GL115-F-002",
+      "severity": "medium",
+      "category": "observability",
+      "title": "Structured Logging Not Integrated into server.py Request Handlers",
+      "evidence": "Grep of backend/src/server.py finds zero imports from structured_logging or logging_utils. HTTP request start, completion, auth failures, and rate limit rejections produce no structured log events. GL-113 provided the baseline helpers but they remain unused in the HTTP layer.",
+      "risk": "Production operations teams have no structured observability. Auth events, rate limit hits, and request errors appear only in raw unstructured stderr output or are completely silent. Incident response and SLA monitoring are severely hampered.",
+      "recommendation": "Import build_log_event and safe_log from logging_utils.py. Emit structured events at: (1) request start with method/path/correlation_id, (2) request completion with status code and duration, (3) auth failure with ip and failure reason, (4) rate limit rejection with ip and group. Use the existing 12 event types and 5 severity levels defined in structured_logging.py.",
+      "suggested_issue_title": "GL-117: Structured Logging Integration into server.py Request Handlers",
+      "implementation_scope": [
+        "backend/src/server.py"
+      ],
+      "blocks_production": false
+    },
+    {
+      "id": "GL115-F-003",
+      "severity": "medium",
+      "category": "observability",
+      "title": "Correlation ID Not Propagated Across Request Lifecycle",
+      "evidence": "structured_logging.py provides generate_correlation_id() and build_request_context() but server.py never calls them. Audit log events have no correlation_id field. Cross-request tracing from HTTP layer through to audit events is impossible.",
+      "risk": "When an incident involves multiple operations in a user session, there is no way to correlate log lines to a single originating request. Root-cause analysis requires manual timestamp matching across server logs and audit events.",
+      "recommendation": "In GrantLayerHandler.handle(), extract X-Correlation-ID from the request header or call generate_correlation_id() to create one. Thread the ID through to all audit event metadata and all structured log events within the request. Return the correlation ID in the X-Correlation-ID response header.",
+      "suggested_issue_title": "GL-118: Correlation ID Propagation Baseline",
+      "implementation_scope": [
+        "backend/src/server.py",
+        "backend/src/audit_log.py (add optional metadata field to AuditEvent)"
+      ],
+      "blocks_production": false
+    },
+    {
+      "id": "GL115-F-004",
+      "severity": "medium",
+      "category": "security",
+      "title": "Operator Tokens Have No Expiry or Rotation Mechanism",
+      "evidence": "backend/src/operators.py schema at line 118 defines columns: id, name, role, token_hash, token_lookup_hash, active, created_at. There is no expires_at, valid_until, or last_rotated_at column. Once created, an operator token is valid indefinitely unless the active flag is manually set to false.",
+      "risk": "A compromised operator token grants indefinite access. No automatic expiry reduces the blast radius of a credential exposure. Token rotation is not possible without a custom DELETE + CREATE cycle with no audit continuity.",
+      "recommendation": "Add optional expires_at TEXT column to the operators table. In auth.py, check expires_at against UTC now before accepting the token. Add a /operators/{id}/rotate endpoint that generates a new token, invalidates the old hash, and emits an audit event. Keep backward-compatible: NULL expires_at means no expiry.",
+      "suggested_issue_title": "GL-119: Operator Token Expiry and Rotation Baseline",
+      "implementation_scope": [
+        "backend/src/operators.py",
+        "backend/src/auth.py",
+        "backend/src/server.py (new rotate endpoint)",
+        "backend/src/migrations/ (new migration)"
+      ],
+      "blocks_production": false
+    },
+    {
+      "id": "GL115-F-005",
+      "severity": "medium",
+      "category": "security",
+      "title": "Auth Failure Events Not Logged as Structured Audit Events",
+      "evidence": "server.py _require_auth() at line 414 sends HTTP 401/403 responses. Grep for append_event() calls on auth failure paths returns no results. Rate limit rejections (line 439) also produce no audit event. The 10-test security boundary regression suite verifies correct HTTP response codes but does not verify audit log emission.",
+      "risk": "Failed authentication attempts are invisible in the audit log. A credential brute-force or token-sweep attack, even if rate-limited at the HTTP layer, leaves no trace for post-incident forensic analysis. Anomaly detection and alerting based on auth failure rates are impossible.",
+      "recommendation": "Call append_event() with action='auth_failure' on every rejected authentication attempt. Include in event metadata: source_ip, endpoint, failure_reason (e.g., missing_token, invalid_token, expired_token, role_forbidden). Rate limit rejections should emit action='rate_limit_exceeded' with the group name.",
+      "suggested_issue_title": "GL-120: Auth Failure Structured Event Logging",
+      "implementation_scope": [
+        "backend/src/server.py"
+      ],
+      "blocks_production": false
+    },
+    {
+      "id": "GL115-F-006",
+      "severity": "medium",
+      "category": "persistence",
+      "title": "No PostgreSQL Connection Pooling Baseline",
+      "evidence": "Grep of all backend/src/*.py files finds no import of psycopg2.pool, SQLAlchemy connection pool, or any pool primitive. Every HTTP request that hits the database creates a new connection. PostgreSQL default max_connections is 100.",
+      "risk": "Under concurrent production load, PostgreSQL connections will be exhausted rapidly. Each connection setup adds 10-50ms latency per request. Under a connection storm, requests will fail with 'too many connections' errors rather than being queued, causing cascading failures.",
+      "recommendation": "Implement a SimpleConnectionPool (psycopg2.pool) in db.py with pool_min=2, pool_max=10. Return connections to the pool in a finally block or context manager. Ensure pool.putconn() is called on exception paths. Keep SQLite path unchanged.",
+      "suggested_issue_title": "GL-123: PostgreSQL Connection Pooling Baseline",
+      "implementation_scope": [
+        "backend/src/db.py"
+      ],
+      "blocks_production": false
+    },
+    {
+      "id": "GL115-F-007",
+      "severity": "low",
+      "category": "architecture",
+      "title": "server.py Monolith (1,485 Lines) Not Decomposed",
+      "evidence": "backend/src/server.py is 1,485 lines containing HTTP dispatch, CORS logic, rate limiting wiring, auth guards, and 30+ endpoint handler methods all in a single BaseHTTPRequestHandler subclass. This was flagged as a HIGH priority maintainability risk in the GL-101 full product readiness gap review.",
+      "risk": "Increasing cost to test, maintain, and extend. Routing logic, auth guards, and CORS cannot be tested without spinning up the full HTTP server. A bug in one endpoint handler can mask another. Onboarding new contributors is slowed.",
+      "recommendation": "Design a decomposition plan: (1) extract a routing table mapping (method, path_pattern) to handler functions, (2) extract middleware chain (CORS, rate limiting, auth) as composable wrapper functions, (3) group endpoint handlers into domain modules (grants.py, audit.py, operators.py). Implement incrementally without changing API behavior.",
+      "suggested_issue_title": "GL-121: server.py Modular Decomposition Plan",
+      "implementation_scope": [
+        "backend/src/server.py",
+        "backend/src/routes/ (new module directory)",
+        "backend/src/middleware/ (new module directory)"
+      ],
+      "blocks_production": false
+    },
+    {
+      "id": "GL115-F-008",
+      "severity": "low",
+      "category": "security",
+      "title": "BytesIO Content-Length Bypass Embedded in Production Code Path",
+      "evidence": "backend/src/server.py lines 154-166: when Content-Length header is absent, the handler checks isinstance(self.rfile, BytesIO) and skips the content-length requirement. Comment reads 'Backward compatibility: test mocks using BytesIO with empty headers'. This is a test-only workaround in the production request parsing path.",
+      "risk": "Test-only logic embedded in the production code path. If the isinstance check is somehow bypassed (e.g., via a future refactor or subclass), Content-Length validation is silently skipped. Introduces a maintenance risk and violates the principle of keeping test shims out of production code.",
+      "recommendation": "Move the BytesIO compatibility shim to test fixtures: add a helper in tests/conftest.py or a test base class that sets a Content-Length header before submitting the request body. Remove lines 154-166 from server.py _read_json(). This change is safe because all test HTTP calls will set the header properly.",
+      "suggested_issue_title": "GL-122: Remove BytesIO Content-Length Bypass from Production Code Path",
+      "implementation_scope": [
+        "backend/src/server.py",
+        "backend/tests/conftest.py or test base class"
+      ],
+      "blocks_production": false
+    },
+    {
+      "id": "GL115-F-009",
+      "severity": "low",
+      "category": "security",
+      "title": "Challenge TTL Hardcoded at 300 Seconds, Not Runtime-Configurable",
+      "evidence": "backend/src/challenges.py line 9: CHALLENGE_TTL_SECONDS = 300 is a module-level constant. It is not referenced from runtime_config.py and is not configurable via any environment variable. The runtime_config system supports environment-driven configuration but challenge TTL is excluded.",
+      "risk": "Deployments with slow approval workflows (multi-approver, async notification) cannot extend the TTL without code changes. High-security deployments cannot tighten it to 60 seconds without code changes. The operational flexibility of runtime_config is not leveraged.",
+      "recommendation": "Add GRANTLAYER_CHALLENGE_TTL_SECONDS to the runtime configuration. Read it in runtime_config.py with a default of 300. Pass the value to create_challenge() as a parameter. Add validation: minimum 60 seconds, maximum 3600 seconds.",
+      "suggested_issue_title": "GL-124: Challenge TTL Runtime Configuration",
+      "implementation_scope": [
+        "backend/src/challenges.py",
+        "backend/src/runtime_config.py",
+        "backend/src/server.py (pass ttl to create_challenge)"
+      ],
+      "blocks_production": false
+    },
+    {
+      "id": "GL115-F-010",
+      "severity": "low",
+      "category": "security",
+      "title": "Rate Limiting Is Per-IP Only; No Per-Token Rate Limiting",
+      "evidence": "backend/src/rate_limiter.py and server.py _check_rate_limit() key on IP address only. A compromised operator token used from multiple IPs or via a distributed proxy bypasses the per-IP rate limit entirely. Per-token rate limiting is not implemented.",
+      "risk": "Token-sweep or credential-stuffing attacks distributed across many IPs are rate-limit-invisible at the token level. A leaked operator token could be used to make hundreds of requests per minute from different IP addresses, each below the per-IP threshold.",
+      "recommendation": "Extend RateLimiter.check() to accept an optional token_id parameter. Apply a separate per-token limit (e.g., 30 auth-group requests/min) in addition to the existing per-IP limit. In server.py _check_rate_limit(), pass the authenticated operator ID after _require_auth() succeeds.",
+      "suggested_issue_title": "GL-125: Per-Token Rate Limiting Baseline",
+      "implementation_scope": [
+        "backend/src/rate_limiter.py",
+        "backend/src/server.py"
+      ],
+      "blocks_production": false
+    }
+  ],
+  "recommended_next_issues": [
+    {
+      "title": "GL-116: PostgreSQL Integration Test CI Gate",
+      "rationale": "The GL-108 PostgreSQL audit immutability triggers are the only production-blocking gap. They exist in code but are never verified by automated CI against a real PostgreSQL instance. Until this CI gate passes, the audit tamper-protection guarantee for production is unverified.",
+      "expected_changed_files": [
+        "docker-compose.test.yml",
+        "Makefile or scripts/run-postgres-tests.sh",
+        "backend/tests/test_gl108_postgres_audit_immutability.py (remove skip guard for CI)"
+      ],
+      "forbidden_changes": [
+        "backend/src/*.py",
+        "docs/openapi.yaml",
+        "backend/src/migrations/",
+        "frontend/",
+        "website/"
+      ],
+      "acceptance_summary": "A CI job (docker-compose or equivalent) starts PostgreSQL, applies sql/audit_immutability_postgres.sql, runs test_gl108_postgres_audit_immutability.py, and all tests pass with 0 failures. The job is required-to-pass before branch merge."
+    },
+    {
+      "title": "GL-117: Structured Logging Integration into server.py Request Handlers",
+      "rationale": "GL-113 built the structured logging infrastructure but it is completely unused in server.py. Production operations have no structured observability. This is the most impactful observability improvement available with a small implementation surface.",
+      "expected_changed_files": [
+        "backend/src/server.py"
+      ],
+      "forbidden_changes": [
+        "docs/openapi.yaml",
+        "backend/src/migrations/",
+        "backend/src/structured_logging.py (extend only if needed)",
+        "frontend/",
+        "website/"
+      ],
+      "acceptance_summary": "server.py emits structured JSON log events for: request start, request completion (with status code and duration_ms), auth failure, and rate limit rejection. Each event includes correlation_id, component, action, and severity. Sensitive fields are redacted. Existing tests continue to pass."
+    },
+    {
+      "title": "GL-118: Correlation ID Propagation Baseline",
+      "rationale": "Cross-request tracing is impossible without correlation IDs threaded from HTTP headers through the full request lifecycle into audit log events. This is a prerequisite for incident response and distributed tracing.",
+      "expected_changed_files": [
+        "backend/src/server.py",
+        "backend/src/audit_log.py"
+      ],
+      "forbidden_changes": [
+        "docs/openapi.yaml",
+        "backend/src/migrations/",
+        "frontend/",
+        "website/"
+      ],
+      "acceptance_summary": "Each request extracts or generates a correlation ID. The ID is included in all structured log events within the request and in audit event metadata. The ID is returned in the X-Correlation-ID response header. Tests verify the header is present and propagated."
+    },
+    {
+      "title": "GL-119: Operator Token Expiry and Rotation Baseline",
+      "rationale": "Operator tokens with no expiry create indefinite access windows for compromised credentials. Adding optional expiry and a rotation endpoint closes the credential lifecycle gap identified in the GL-101 review.",
+      "expected_changed_files": [
+        "backend/src/operators.py",
+        "backend/src/auth.py",
+        "backend/src/server.py",
+        "backend/src/migrations/"
+      ],
+      "forbidden_changes": [
+        "frontend/",
+        "website/"
+      ],
+      "acceptance_summary": "Operators table has optional expires_at column. Auth rejects tokens past their expiry with error code token_expired. POST /operators/{id}/rotate generates a new token, invalidates the old hash, emits an audit event, and returns the new token. NULL expires_at means no expiry (backward-compatible)."
+    },
+    {
+      "title": "GL-120: Auth Failure Structured Event Logging",
+      "rationale": "Auth failures are invisible in the audit log. A brute-force or token-sweep attack leaves no forensic trace. Logging auth failures as audit events enables anomaly detection, alerting, and post-incident analysis.",
+      "expected_changed_files": [
+        "backend/src/server.py"
+      ],
+      "forbidden_changes": [
+        "docs/openapi.yaml",
+        "backend/src/migrations/",
+        "frontend/",
+        "website/"
+      ],
+      "acceptance_summary": "Every HTTP 401 and HTTP 403 response from auth guards generates an audit event with action=auth_failure, source_ip, endpoint, and failure_reason. Rate limit rejections generate action=rate_limit_exceeded. Tests verify audit events are emitted on auth failure paths."
+    },
+    {
+      "title": "GL-123: PostgreSQL Connection Pooling Baseline",
+      "rationale": "Direct per-request connections will exhaust PostgreSQL max_connections under production load. A minimal connection pool is required for any production deployment.",
+      "expected_changed_files": [
+        "backend/src/db.py"
+      ],
+      "forbidden_changes": [
+        "docs/openapi.yaml",
+        "backend/src/migrations/",
+        "frontend/",
+        "website/"
+      ],
+      "acceptance_summary": "db.py uses psycopg2.pool.SimpleConnectionPool in PostgreSQL mode with pool_min=2, pool_max=10. Connections are returned in finally blocks. SQLite path is unchanged. Tests verify pool is initialized on first use and connections are returned after each query."
+    },
+    {
+      "title": "GL-121: server.py Modular Decomposition Plan",
+      "rationale": "server.py at 1,485 lines is a maintainability liability flagged in GL-101. A decomposition plan (even without full implementation) reduces onboarding cost and enables unit testing of routing and auth logic in isolation.",
+      "expected_changed_files": [
+        "docs/server_decomposition_plan.md",
+        "backend/src/server.py (incremental, non-breaking extract)"
+      ],
+      "forbidden_changes": [
+        "docs/openapi.yaml",
+        "backend/src/migrations/",
+        "frontend/",
+        "website/"
+      ],
+      "acceptance_summary": "A decomposition plan document exists. At least one domain module (e.g., backend/src/routes/grants.py) is extracted with its handler functions. All existing tests continue to pass. No API behavior changes."
+    },
+    {
+      "title": "GL-122: Remove BytesIO Content-Length Bypass from Production Code Path",
+      "rationale": "Test-only workaround embedded in production request parsing creates a maintenance risk. Moving it to test fixtures enforces separation of concerns.",
+      "expected_changed_files": [
+        "backend/src/server.py",
+        "backend/tests/conftest.py or test base class"
+      ],
+      "forbidden_changes": [
+        "docs/openapi.yaml",
+        "backend/src/migrations/",
+        "frontend/",
+        "website/"
+      ],
+      "acceptance_summary": "Lines 154-166 of server.py _read_json() are removed. Test fixtures set Content-Length headers appropriately. All 3,001 existing tests continue to pass."
+    },
+    {
+      "title": "GL-124: Challenge TTL Runtime Configuration",
+      "rationale": "Hardcoded 5-minute challenge TTL is inflexible for different deployment contexts. The runtime_config system already supports environment-driven configuration and this is a natural extension.",
+      "expected_changed_files": [
+        "backend/src/challenges.py",
+        "backend/src/runtime_config.py",
+        "backend/src/server.py"
+      ],
+      "forbidden_changes": [
+        "docs/openapi.yaml",
+        "backend/src/migrations/",
+        "frontend/",
+        "website/"
+      ],
+      "acceptance_summary": "GRANTLAYER_CHALLENGE_TTL_SECONDS env var overrides the default 300-second TTL. Validation enforces 60-3600 second range. Default behavior unchanged when env var is absent."
+    },
+    {
+      "title": "GL-125: Per-Token Rate Limiting Baseline",
+      "rationale": "IP-based rate limiting is bypassable by distributed clients using a single compromised token. Per-token rate limiting adds defense-in-depth against token misuse across multiple source IPs.",
+      "expected_changed_files": [
+        "backend/src/rate_limiter.py",
+        "backend/src/server.py"
+      ],
+      "forbidden_changes": [
+        "docs/openapi.yaml",
+        "backend/src/migrations/",
+        "frontend/",
+        "website/"
+      ],
+      "acceptance_summary": "RateLimiter.check() accepts optional token_id. A separate per-token limit (30 req/min for auth group) is applied when token_id is provided. Existing per-IP limits are unchanged. Tests verify per-token limit triggers independently of per-IP limit."
+    }
+  ],
+  "production_readiness_summary": {
+    "disposition": "proceed_with_cautions",
+    "total_findings": 10,
+    "critical": 0,
+    "high": 1,
+    "medium": 5,
+    "low": 4,
+    "blocks_production_count": 1,
+    "blocking_finding": "GL115-F-001: PostgreSQL Audit Immutability Triggers Not CI-Gated",
+    "conclusion": "GL-102 through GL-114 resolved all 2 critical and 8 of 10 high-priority blockers from the GL-101 full product readiness gap review. The audit trust layer is architecturally complete. Auth performance, rate limiting, key externalization, and input validation are all in place. The single remaining production blocker is the absence of a CI gate for PostgreSQL audit immutability triggers (GL115-F-001). The five medium-severity findings are material operational and security gaps but do not constitute active vulnerabilities. Proceed with GL-116 as the immediate next implementation issue."
+  }
+}
