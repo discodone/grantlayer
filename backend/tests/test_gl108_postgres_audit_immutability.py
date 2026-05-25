@@ -640,5 +640,128 @@ class TestGl108DiffScope(unittest.TestCase):
                 f"GL-108 changed a forbidden file: {path}")
 
 
+# ═══════════════════════════════════════════════════════════════════════
+# 11. GL-116 Real PostgreSQL integration test for GL-108 triggers
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestGl116PostgresAuditImmutabilityIntegration(unittest.TestCase):
+    """GL-116: Real PostgreSQL integration test proving GL-108 audit
+    immutability triggers block UPDATE and DELETE on audit_events.
+
+    Skips cleanly when PostgreSQL is not configured or unreachable.
+    Fails hard when PostgreSQL is reachable but immutability triggers
+    do not work.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.pg_url = os.environ.get("GRANTLAYER_DATABASE_URL", "")
+        if not cls.pg_url:
+            cls.pg_url = os.environ.get("GRANTLAYER_TEST_DATABASE_URL", "")
+        if not cls.pg_url or not cls.pg_url.startswith("postgres"):
+            raise unittest.SkipTest(
+                "No PostgreSQL test URL configured. "
+                "Set GRANTLAYER_DATABASE_URL or GRANTLAYER_TEST_DATABASE_URL "
+                "to run this integration test."
+            )
+        try:
+            import psycopg2
+            conn = psycopg2.connect(cls.pg_url)
+            conn.cursor().execute("SELECT 1")
+            conn.close()
+        except Exception as exc:
+            raise unittest.SkipTest(f"PostgreSQL not reachable: {exc}")
+
+    def _get_db_mod(self):
+        import src.db as db_mod
+        importlib.reload(db_mod)
+        return db_mod
+
+    def setUp(self):
+        self.test_event_id = f"gl116-test-{os.urandom(4).hex()}"
+        db_mod = self._get_db_mod()
+        orig_backend = db_mod.DB_BACKEND
+        orig_url = db_mod.DB_PATH_OR_URL
+        try:
+            db_mod.DB_BACKEND = "postgres"
+            db_mod.DB_PATH_OR_URL = self.pg_url
+            db_mod.init_db()
+            with db_mod.get_conn() as conn:
+                conn.execute(
+                    "INSERT INTO audit_events (id, timestamp, subject_id, role, action, resource, approved, reason) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (self.test_event_id, "2026-01-01T00:00:00Z", "gl116-subject", "tester", "read", "gl116-resource", 1, "GL-116 test"),
+                )
+                conn.commit()
+        finally:
+            db_mod.DB_BACKEND = orig_backend
+            db_mod.DB_PATH_OR_URL = orig_url
+
+    def test_postgres_update_audit_events_blocked(self):
+        """UPDATE audit_events must be blocked by the immutability trigger."""
+        db_mod = self._get_db_mod()
+        orig_backend = db_mod.DB_BACKEND
+        orig_url = db_mod.DB_PATH_OR_URL
+        try:
+            db_mod.DB_BACKEND = "postgres"
+            db_mod.DB_PATH_OR_URL = self.pg_url
+            with db_mod.get_conn() as conn:
+                with self.assertRaises(Exception) as ctx:
+                    conn.execute(
+                        "UPDATE audit_events SET reason = 'tampered' WHERE id = ?",
+                        (self.test_event_id,),
+                    )
+                msg = str(ctx.exception).lower()
+                self.assertIn("immutable", msg,
+                    f"Expected 'immutable' in error message, got: {msg}")
+        finally:
+            db_mod.DB_BACKEND = orig_backend
+            db_mod.DB_PATH_OR_URL = orig_url
+
+    def test_postgres_delete_audit_events_blocked(self):
+        """DELETE audit_events must be blocked by the immutability trigger."""
+        db_mod = self._get_db_mod()
+        orig_backend = db_mod.DB_BACKEND
+        orig_url = db_mod.DB_PATH_OR_URL
+        try:
+            db_mod.DB_BACKEND = "postgres"
+            db_mod.DB_PATH_OR_URL = self.pg_url
+            with db_mod.get_conn() as conn:
+                with self.assertRaises(Exception) as ctx:
+                    conn.execute(
+                        "DELETE FROM audit_events WHERE id = ?",
+                        (self.test_event_id,),
+                    )
+                msg = str(ctx.exception).lower()
+                self.assertIn("immutable", msg,
+                    f"Expected 'immutable' in error message, got: {msg}")
+        finally:
+            db_mod.DB_BACKEND = orig_backend
+            db_mod.DB_PATH_OR_URL = orig_url
+
+    def test_postgres_insert_and_select_still_work(self):
+        """INSERT and SELECT on audit_events must still work."""
+        new_id = f"gl116-insert-{os.urandom(4).hex()}"
+        db_mod = self._get_db_mod()
+        orig_backend = db_mod.DB_BACKEND
+        orig_url = db_mod.DB_PATH_OR_URL
+        try:
+            db_mod.DB_BACKEND = "postgres"
+            db_mod.DB_PATH_OR_URL = self.pg_url
+            with db_mod.get_conn() as conn:
+                conn.execute(
+                    "INSERT INTO audit_events (id, timestamp, subject_id, role, action, resource, approved, reason) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (new_id, "2026-01-01T00:00:00Z", "gl116-subject", "tester", "write", "gl116-resource", 1, "GL-116 insert test"),
+                )
+                conn.commit()
+                row = conn.execute("SELECT * FROM audit_events WHERE id = ?", (new_id,)).fetchone()
+                self.assertIsNotNone(row)
+                self.assertEqual(row["action"], "write")
+        finally:
+            db_mod.DB_BACKEND = orig_backend
+            db_mod.DB_PATH_OR_URL = orig_url
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
