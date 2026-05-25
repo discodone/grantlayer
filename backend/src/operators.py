@@ -23,6 +23,7 @@ from .db import get_conn, execute, query_one, query_all
 TOKEN_HASH_ITERATIONS = 600_000
 TOKEN_HASH_ALGORITHM = "sha256"
 TOKEN_HASH_FORMAT = "pbkdf2_sha256"
+DEFAULT_TOKEN_TTL_DAYS = 90
 
 
 def hash_token(token: str) -> str:
@@ -69,6 +70,26 @@ def derive_token_lookup_hash(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
+def _now_utc_iso() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _is_expired(expires_at: str | None) -> bool:
+    """Return True if expires_at is in the past.
+
+    Null/missing expires_at is treated as not expired for backward
+    compatibility. Malformed timestamps are treated as expired (fail closed).
+    """
+    if not expires_at:
+        return False
+    try:
+        expiry = datetime.datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+        now = datetime.datetime.now(datetime.timezone.utc)
+        return now >= expiry
+    except Exception:
+        return True
+
+
 # ──────────────────────────────────────────────────────────────
 # Data model
 # ──────────────────────────────────────────────────────────────
@@ -81,14 +102,16 @@ class Operator:
         role: str,
         active: bool = True,
         created_at: Optional[str] = None,
+        expires_at: Optional[str] = None,
+        rotated_at: Optional[str] = None,
     ):
         self.operator_id = operator_id
         self.name = name
         self.role = role
         self.active = active
-        self.created_at = created_at or datetime.datetime.now(
-            datetime.timezone.utc
-        ).isoformat().replace("+00:00", "Z")
+        self.created_at = created_at or _now_utc_iso()
+        self.expires_at = expires_at
+        self.rotated_at = rotated_at
 
     def to_dict(self) -> dict:
         return {
@@ -115,7 +138,9 @@ def _init_operators_table() -> None:
                 token_hash        TEXT NOT NULL,
                 token_lookup_hash TEXT,
                 active            INTEGER NOT NULL DEFAULT 1,
-                created_at        TEXT NOT NULL
+                created_at        TEXT NOT NULL,
+                expires_at        TEXT,
+                rotated_at        TEXT
             );
             """
         )
@@ -133,6 +158,8 @@ def _row_to_operator(row: dict | None) -> Operator | None:
         role=row["role"],
         active=bool(row["active"]),
         created_at=row["created_at"],
+        expires_at=row.get("expires_at"),
+        rotated_at=row.get("rotated_at"),
     )
 
 
@@ -154,44 +181,113 @@ def list_operators() -> list[Operator]:
     return [_row_to_operator(r) for r in rows if r is not None]
 
 
+def is_operator_token_expired(operator_id: str) -> bool | None:
+    """Check whether an operator's token is expired.
+
+    Returns None if the operator is not found or inactive.
+    """
+    row = query_one(
+        "SELECT expires_at FROM operators WHERE id = ? AND active = 1", (operator_id,)
+    )
+    if row is None:
+        return None
+    return _is_expired(row.get("expires_at"))
+
+
+def authenticate_operator_with_reason(
+    authorization_header: str | None,
+) -> tuple[Operator | None, str | None]:
+    """Validate Bearer token and return operator with a reason code on failure.
+
+    Returns (operator, reason_code).  On success reason_code is None.
+    On failure operator is None and reason_code is a stable string:
+      - "operator_auth_required"  — missing, malformed, or invalid token
+      - "operator_token_expired"  — token hash verified but expired
+    """
+    if not authorization_header or not authorization_header.startswith("Bearer "):
+        return None, "operator_auth_required"
+    token = authorization_header.removeprefix("Bearer ").strip()
+    if not token:
+        return None, "operator_auth_required"
+
+    # O(1) deterministic narrowing via SHA-256 lookup hash.
+    lookup = derive_token_lookup_hash(token)
+    row = query_one(
+        "SELECT id, token_hash, expires_at FROM operators WHERE token_lookup_hash = ? AND active = 1",
+        (lookup,),
+    )
+    if row is not None and verify_token(token, row["token_hash"]):
+        if _is_expired(row.get("expires_at")):
+            return None, "operator_token_expired"
+        return get_operator_by_id(row["id"]), None
+
+    # Legacy fallback: rows created before GL-107 may lack token_lookup_hash.
+    legacy_rows = query_all(
+        "SELECT id, token_hash, expires_at FROM operators WHERE active = 1 AND token_lookup_hash IS NULL"
+    )
+    for row in legacy_rows:
+        if verify_token(token, row["token_hash"]):
+            if _is_expired(row.get("expires_at")):
+                return None, "operator_token_expired"
+            return get_operator_by_id(row["id"]), None
+
+    return None, "operator_auth_required"
+
+
 def authenticate_operator(authorization_header: str | None) -> Operator | None:
     """Validate Bearer token and return operator (without token_hash).
 
     Returns None for missing/malformed header, unknown/inactive operator,
-    or token hash mismatch.
+    token hash mismatch, or expired token.
     """
-    if not authorization_header or not authorization_header.startswith("Bearer "):
-        return None
-    token = authorization_header.removeprefix("Bearer ").strip()
-    if not token:
-        return None
-
-    # O(1) deterministic narrowing via SHA-256 lookup hash.
-    # For legacy rows without token_lookup_hash, we fall back to
-    # scanning only the legacy subset (ideally empty after migration).
-    lookup = derive_token_lookup_hash(token)
-    row = query_one(
-        "SELECT id, token_hash FROM operators WHERE token_lookup_hash = ? AND active = 1",
-        (lookup,),
-    )
-    if row is not None and verify_token(token, row["token_hash"]):
-        return get_operator_by_id(row["id"])
-
-    # Legacy fallback: rows created before GL-107 may lack token_lookup_hash.
-    # This path is bounded by the number of legacy operators, not all operators.
-    legacy_rows = query_all(
-        "SELECT id, token_hash FROM operators WHERE active = 1 AND token_lookup_hash IS NULL"
-    )
-    for row in legacy_rows:
-        if verify_token(token, row["token_hash"]):
-            return get_operator_by_id(row["id"])
-
-    return None
+    op, _reason = authenticate_operator_with_reason(authorization_header)
+    return op
 
 
 def check_role(operator: Operator, required_roles: list[str]) -> bool:
     """Return True if operator.role is in required_roles."""
     return operator.role in required_roles
+
+
+def rotate_operator_token(operator_id: str, ttl_days: int = DEFAULT_TOKEN_TTL_DAYS) -> str | None:
+    """Rotate an operator's token material.
+
+    Generates a new raw token, hashes it with PBKDF2, computes a new
+    token_lookup_hash, updates the operator row, and returns the new
+    raw token exactly once.  Returns None if the operator is not found
+    or inactive.
+    """
+    op = get_operator_by_id(operator_id)
+    if op is None:
+        return None
+
+    new_token = secrets.token_urlsafe(32)
+    new_hash = hash_token(new_token)
+    new_lookup = derive_token_lookup_hash(new_token)
+    now = _now_utc_iso()
+    expires = (
+        datetime.datetime.now(datetime.timezone.utc)
+        + datetime.timedelta(days=ttl_days)
+    ).isoformat().replace("+00:00", "Z")
+
+    conn = get_conn()
+    try:
+        conn.execute(
+            """
+            UPDATE operators
+            SET token_hash = ?,
+                token_lookup_hash = ?,
+                rotated_at = ?,
+                expires_at = ?
+            WHERE id = ?
+            """,
+            (new_hash, new_lookup, now, expires, operator_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    return new_token
 
 
 # ──────────────────────────────────────────────────────────────
@@ -216,10 +312,15 @@ def bootstrap_operator_if_needed() -> None:
         if count > 0:
             return
 
+        expires = (
+            datetime.datetime.now(datetime.timezone.utc)
+            + datetime.timedelta(days=DEFAULT_TOKEN_TTL_DAYS)
+        ).isoformat().replace("+00:00", "Z")
+
         conn.execute(
             """
-            INSERT INTO operators (id, name, role, token_hash, token_lookup_hash, active, created_at)
-            VALUES (?, ?, ?, ?, ?, 1, ?)
+            INSERT INTO operators (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at)
+            VALUES (?, ?, ?, ?, ?, 1, ?, ?)
             """,
             (
                 config.GRANTLAYER_BOOTSTRAP_OPERATOR_ID,
@@ -227,7 +328,8 @@ def bootstrap_operator_if_needed() -> None:
                 config.GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE,
                 hash_token(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
                 derive_token_lookup_hash(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
-                datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+                _now_utc_iso(),
+                expires,
             ),
         )
         conn.commit()

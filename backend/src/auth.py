@@ -44,8 +44,14 @@ def check_auth(
     Returns (ok, http_status, payload).
     """
     if config.ENABLE_OPERATOR_MODEL:
-        op = ops.authenticate_operator(auth_header)
+        op, reason = ops.authenticate_operator_with_reason(auth_header)
         if op is None:
+            if reason == "operator_token_expired":
+                return False, 401, {
+                    "error": "operator_token_expired",
+                    "errorCode": "operator_token_expired",
+                    "reason": "Operator token has expired.",
+                }
             return False, 401, {"error": "operator_auth_required", "errorCode": "operator_auth_required", "reason": "Operator authentication is required."}
         if required_roles is not None and not ops.check_role(op, required_roles):
             return False, 403, {"error": "operator_role_forbidden", "errorCode": "operator_role_forbidden", "reason": "Operator role is not authorized for this action."}

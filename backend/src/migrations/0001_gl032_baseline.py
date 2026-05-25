@@ -75,7 +75,9 @@ def apply(conn: sqlite3.Connection) -> None:
             token_hash        TEXT NOT NULL,
             token_lookup_hash TEXT,
             active            INTEGER NOT NULL DEFAULT 1,
-            created_at        TEXT NOT NULL
+            created_at        TEXT NOT NULL,
+            expires_at        TEXT,
+            rotated_at        TEXT
         );
 
         -- Grant requests
