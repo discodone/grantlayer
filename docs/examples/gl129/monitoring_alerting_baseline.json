@@ -1,0 +1,108 @@
+{
+  "issue_id": "GL-129",
+  "title": "Monitoring / Alerting Baseline",
+  "baseline_type": "monitoring_alerting_baseline",
+  "review_only": true,
+  "monitoring_backend_implemented": false,
+  "production_code_changed": false,
+  "signal_categories": [
+    "availability",
+    "readiness",
+    "request volume",
+    "request latency",
+    "error rate",
+    "auth failures",
+    "forbidden/role failures",
+    "rate-limit events",
+    "invalid payload/request rejection events",
+    "audit write failures",
+    "audit/hash-chain integrity issues",
+    "database connectivity and pool pressure",
+    "PostgreSQL audit immutability failures",
+    "runtime gate failures",
+    "operational smoke failures",
+    "backup/restore drill failures",
+    "unexpected exceptions"
+  ],
+  "required_log_fields": [
+    "timestamp",
+    "level",
+    "component",
+    "event/action",
+    "correlation_id",
+    "method/path/status",
+    "reason_code"
+  ],
+  "secret_safety_rules": [
+    "no raw Authorization header",
+    "no raw tokens",
+    "no raw request bodies",
+    "no DB passwords",
+    "no private keys/passphrases",
+    "no backup credentials"
+  ],
+  "alert_categories": [
+    "service health failure",
+    "readiness failure",
+    "elevated 5xx/error rate",
+    "repeated auth failures",
+    "repeated forbidden/operator role failures",
+    "repeated rate-limit events",
+    "repeated invalid payload/request rejection events",
+    "audit write failure",
+    "audit/hash-chain anomaly",
+    "DB connectivity/pool failure",
+    "PostgreSQL immutability guard failure",
+    "runtime gate failure",
+    "smoke test failure",
+    "backup/restore drill failure",
+    "unexpected exception spike"
+  ],
+  "pilot_go_criteria": [
+    "alert owner is assigned",
+    "alert review cadence is defined",
+    "runtime gate passes",
+    "smoke tests pass",
+    "backup/restore drill passes",
+    "full backend suite passes",
+    "structured logs/correlation IDs are available"
+  ],
+  "pilot_no_go_criteria": [
+    "no alert receiver/owner",
+    "health/readiness failures are unobserved",
+    "auth/security failures are unobserved",
+    "DB/audit failures are unobserved",
+    "logs leak secrets",
+    "runtime/smoke/backup/full-suite gate fails"
+  ],
+  "related_gates": [
+    "GL-117",
+    "GL-118",
+    "GL-120",
+    "GL-125",
+    "GL-126",
+    "GL-127",
+    "GL-128"
+  ],
+  "recommended_next_steps": [
+    "choose monitoring backend",
+    "wire log aggregation",
+    "define alert receivers",
+    "test alert delivery",
+    "create incident-response handoff in GL-130"
+  ],
+  "explicit_non_goals": [
+    "no monitoring backend integration",
+    "no new metrics endpoint unless future issue",
+    "no production code changes",
+    "no OpenAPI changes",
+    "no frontend/website/design work"
+  ],
+  "secret_safety": {
+    "no_raw_tokens": true,
+    "no_raw_request_bodies": true,
+    "no_db_passwords": true,
+    "no_private_keys": true,
+    "no_backup_credentials": true
+  }
+}
