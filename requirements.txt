@@ -1,0 +1,5 @@
+# GrantLayer Python runtime dependencies
+# These are the non-stdlib packages imported by backend/src/* at runtime.
+
+cryptography>=42.0.0
+psycopg2-binary>=2.9.0
