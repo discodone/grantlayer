@@ -1,0 +1,16 @@
+{
+  "issue_id": "GL-137",
+  "artifact_type": "dependency_manifest",
+  "runtime_manifest_added": true,
+  "dev_manifest_added": true,
+  "requirements_txt": "requirements.txt",
+  "requirements_dev_txt": "requirements-dev.txt",
+  "production_code_changed": false,
+  "package_published": false,
+  "pyproject_added": false,
+  "dependencies_vendored": false,
+  "secrets_added": false,
+  "public_github_readiness_improved": true,
+  "developer_setup_documented": true,
+  "next_issue": "GL-138 Remove Duplicate check_admin_token Stub"
+}
