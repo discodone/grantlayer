@@ -1,0 +1,102 @@
+{
+  "issue_id": "GL-135",
+  "artifact_type": "security_remediation_intake",
+  "review_only": true,
+  "production_code_changed": false,
+  "remediations_implemented": false,
+  "senior_review_integrated": true,
+  "remediation_plan_integrated": true,
+  "current_state": {
+    "gl128_through_gl134_completed": true,
+    "gl134_pilot_partner_dry_run_completed": true,
+    "controlled_pilot_preparation_strong": true,
+    "production_saas_complete": false,
+    "multitenant_isolation_implemented": false,
+    "remediation_block_inserted": true,
+    "tenant_workspace_implementation_started": false
+  },
+  "p0_findings": [
+    {
+      "finding": "Committed demo private key / key hygiene",
+      "description": "A demo Ed25519 private key is tracked in the repository. Tracked demo secrets are unacceptable in any production claim.",
+      "roadmap_issue": "GL-136 Remove Demo Private Key From Tracking / Add Key Hygiene Gate"
+    }
+  ],
+  "p1_findings": [
+    {
+      "finding": "Missing Python dependency manifest",
+      "description": "No committed requirements.txt, pyproject.toml, setup.py, or Pipfile records exact runtime and development dependencies.",
+      "roadmap_issue": "GL-137 Add Python Dependency Manifest"
+    },
+    {
+      "finding": "Duplicate check_admin_token stub",
+      "description": "A duplicate or redundant check_admin_token stub exists, creating maintenance confusion and auth enforcement divergence risk.",
+      "roadmap_issue": "GL-138 Remove Duplicate check_admin_token Stub"
+    },
+    {
+      "finding": "Audit hash-chain write lock",
+      "description": "The audit hash-chain computation does not use a write lock. Concurrent writes can break tamper-evident integrity.",
+      "roadmap_issue": "GL-139 Audit Hash-Chain Write Lock Baseline"
+    },
+    {
+      "finding": "ThreadingHTTPServer only after/with audit lock",
+      "description": "Single-threaded HTTPServer limits concurrency. ThreadingHTTPServer must not be enabled until GL-139 audit lock is implemented and tested.",
+      "roadmap_issue": "GL-140 ThreadingHTTPServer Enablement"
+    },
+    {
+      "finding": "Operator model default true and legacy deprecation",
+      "description": "ENABLE_OPERATOR_MODEL defaults to false. The default must favor the secure path and legacy paths must be scheduled for removal.",
+      "roadmap_issue": "GL-141 Operator Model Default True / Legacy Deprecation"
+    },
+    {
+      "finding": "BytesIO test hack removal",
+      "description": "The _read_json utility contains a BytesIO check that exists only to support tests. Production parsing must not contain test-only branches.",
+      "roadmap_issue": "GL-142 Remove BytesIO Test Hack From _read_json"
+    }
+  ],
+  "p2_findings": [
+    {
+      "finding": "server.py route decomposition",
+      "description": "Routing logic is concentrated in a single large server.py file. Should be decomposed into route modules without changing endpoint behavior.",
+      "roadmap_issue": "GL-143 server.py Route Decomposition Plan"
+    }
+  ],
+  "p3_findings": [
+    {
+      "finding": "Redis/distributed rate limiter for horizontal scaling",
+      "description": "The in-memory rate limiter cannot scale across multiple processes or machines. A distributed implementation is future horizontal-scaling work.",
+      "roadmap_issue": "Future: GL-144+ Distributed Rate Limiter"
+    }
+  ],
+  "corrected_roadmap": [
+    "GL-136 Remove Demo Private Key From Tracking / Add Key Hygiene Gate",
+    "GL-137 Add Python Dependency Manifest",
+    "GL-138 Remove Duplicate check_admin_token Stub",
+    "GL-139 Audit Hash-Chain Write Lock Baseline",
+    "GL-140 ThreadingHTTPServer Enablement",
+    "GL-141 Operator Model Default True / Legacy Deprecation",
+    "GL-142 Remove BytesIO Test Hack From _read_json",
+    "GL-143 server.py Route Decomposition Plan",
+    "GL-144 Tenant / Workspace Data Model Design"
+  ],
+  "sequencing_rules": [
+    "ThreadingHTTPServer must not be enabled before audit hash-chain write locking is implemented and tested (GL-139 before GL-140).",
+    "Production SaaS must not be claimed until P0/P1 remediations and tenant/workspace boundaries are implemented.",
+    "Full backend suite must use scripts/run-full-backend-suite.sh, not a 120-second-limited wrapper."
+  ],
+  "explicit_non_goals": [
+    "no code remediation in GL-135",
+    "no key removal/history rewrite in GL-135",
+    "no dependency changes in GL-135",
+    "no runtime behavior changes in GL-135",
+    "no tenant implementation in GL-135",
+    "no workspace implementation in GL-135",
+    "no production code changes (backend/src/)",
+    "no API / OpenAPI change",
+    "no DB migration or schema change",
+    "no dependency additions or version changes",
+    "no website, landing page, design, brand, or marketing file changes",
+    "no deployment automation, monitoring backend integration, or incident automation"
+  ],
+  "next_issue": "GL-136 Remove Demo Private Key From Tracking / Add Key Hygiene Gate"
+}
