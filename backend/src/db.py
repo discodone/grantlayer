@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import threading
 import time
 from typing import Any
 from urllib.parse import urlparse
@@ -159,6 +160,10 @@ DB_BACKEND, DB_PATH_OR_URL = _resolve_db_url()
 # Backward-compatible alias for code that references the single path variable.
 DB_PATH = DB_PATH_OR_URL
 
+# PostgreSQL connection pool state (GL-123)
+_pg_pool: Any = None
+_pg_pool_lock = threading.Lock()
+
 # ──────────────────────────────────────────────────────────────
 # Bounded retry config (GL-035: PostgreSQL transient failures)
 # ──────────────────────────────────────────────────────────────
@@ -167,6 +172,10 @@ DB_PATH = DB_PATH_OR_URL
 _db_retry_max = int(os.environ.get("GRANTLAYER_DB_RETRY_MAX", "5"))
 # Delay between retries in seconds
 _db_retry_delay = float(os.environ.get("GRANTLAYER_DB_RETRY_DELAY", "1.0"))
+
+# Connection pool sizing for PostgreSQL (GL-123)
+_db_pool_min = int(os.environ.get("GRANTLAYER_DB_POOL_MIN", "2"))
+_db_pool_max = int(os.environ.get("GRANTLAYER_DB_POOL_MAX", "10"))
 
 
 class _ConnectionWrapper:
@@ -181,9 +190,10 @@ class _ConnectionWrapper:
       conn.close()
     """
 
-    def __init__(self, raw_conn: Any, backend: str) -> None:
+    def __init__(self, raw_conn: Any, backend: str, pool: Any = None) -> None:
         self._conn = raw_conn
         self.backend = backend
+        self._pool = pool
 
     def cursor(self) -> Any:
         return self._conn.cursor()
@@ -223,7 +233,10 @@ class _ConnectionWrapper:
         self._conn.rollback()
 
     def close(self) -> None:
-        self._conn.close()
+        if self._pool is not None:
+            self._pool.putconn(self._conn)
+        else:
+            self._conn.close()
 
     def __enter__(self) -> "_ConnectionWrapper":
         return self
@@ -235,39 +248,67 @@ class _ConnectionWrapper:
 def get_conn() -> _ConnectionWrapper:
     """Return a connection wrapper for the configured backend.
 
-    For PostgreSQL, applies bounded retry on transient connection failures.
+    For PostgreSQL, uses a SimpleConnectionPool (GL-123) with bounded retry
+    on transient pool-creation failures. Connections are returned to the pool
+    via wrapper.close() so existing finally-block patterns continue to work.
     """
     if DB_BACKEND == "postgres":
         try:
             import psycopg2
             from psycopg2.extras import RealDictCursor
+            from psycopg2.pool import SimpleConnectionPool
         except ImportError as exc:
             raise RuntimeError(
                 "PostgreSQL is configured but psycopg2 is not installed. "
                 "Install it with: pip install psycopg2-binary"
             ) from exc
 
-        last_err: Exception | None = None
-        max_attempts = max(1, _db_retry_max)
-        for attempt in range(1, max_attempts + 1):
-            try:
-                raw = psycopg2.connect(DB_PATH_OR_URL, cursor_factory=RealDictCursor)
-                return _ConnectionWrapper(raw, "postgres")
-            except psycopg2.OperationalError as exc:
-                last_err = exc
-                if attempt < max_attempts:
-                    time.sleep(_db_retry_delay)
-                continue
-        raise RuntimeError(
-            f"PostgreSQL connection failed after {max_attempts} attempt(s). "
-            "Check that the server is reachable and the DSN is correct."
-        ) from last_err
+        global _pg_pool
+        if _pg_pool is None:
+            with _pg_pool_lock:
+                if _pg_pool is None:
+                    last_err: Exception | None = None
+                    max_attempts = max(1, _db_retry_max)
+                    for attempt in range(1, max_attempts + 1):
+                        try:
+                            _pg_pool = SimpleConnectionPool(
+                                max(1, _db_pool_min),
+                                max(1, _db_pool_max),
+                                DB_PATH_OR_URL,
+                                cursor_factory=RealDictCursor,
+                            )
+                            break
+                        except psycopg2.OperationalError as exc:
+                            last_err = exc
+                            if attempt < max_attempts:
+                                time.sleep(_db_retry_delay)
+                            continue
+                    if _pg_pool is None:
+                        raise RuntimeError(
+                            f"PostgreSQL connection failed after {max_attempts} attempt(s). "
+                            "Check that the server is reachable and the DSN is correct."
+                        ) from last_err
+
+        raw = _pg_pool.getconn()
+        return _ConnectionWrapper(raw, "postgres", pool=_pg_pool)
 
     conn = sqlite3.connect(DB_PATH_OR_URL)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return _ConnectionWrapper(conn, "sqlite")
+
+
+def _close_pg_pool() -> None:
+    """Close the PostgreSQL connection pool and release all connections.
+
+    Safe to call when no pool exists. Intended for test cleanup and graceful
+    shutdown; not required for normal operation.
+    """
+    global _pg_pool
+    if _pg_pool is not None:
+        _pg_pool.closeall()
+        _pg_pool = None
 
 
 def init_db() -> None:
