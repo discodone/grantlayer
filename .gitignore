@@ -12,16 +12,27 @@ build/
 .venv/
 venv/
 env/
-.env
-*.env
 
 # SQLite — never commit demo data
 data/*.db
 data/*.db-wal
 data/*.db-shm
 
-# Demo keys — never commit private keys
-data/*.pem
+# Key / secret / certificate hygiene (GL-136)
+*.pem
+*.key
+*.p8
+*.p12
+*.crt
+*.cert
+*.csr
+.env
+.env.*
+!.env.example
+secrets/
+private/
+keys/
+certs/
 
 # OS
 .DS_Store

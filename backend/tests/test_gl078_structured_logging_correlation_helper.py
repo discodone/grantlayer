@@ -366,7 +366,7 @@ class TestBuildLogEvent(unittest.TestCase):
             "database_url": "postgres://user:pass@localhost/db",
             "operator_token": "op_tok_xyz",
             "cookie": "session=abc123",
-            "private_key": "-----BEGIN PRIVATE KEY-----\nkey\n-----END PRIVATE KEY-----",
+            "private_key": "FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE",
         }
         event = build_log_event("api_request", "test", metadata=meta)
         m = event["metadata"]
@@ -467,10 +467,10 @@ class TestRedactLogValue(unittest.TestCase):
     def test_redacts_basic_auth(self):
         self.assertEqual(redact_log_value("Basic dXNlcjpwYXNz"), "[REDACTED]")
 
-    def test_redacts_private_key(self):
+    def test_redacts_private_key_value(self):
         self.assertEqual(
-            redact_log_value("-----BEGIN PRIVATE KEY-----\nMII...\n-----END PRIVATE KEY-----"),
-            "[REDACTED]",
+            redact_log_value({"private_key": "FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE"}),
+            {"private_key": "[REDACTED]"},
         )
 
     def test_redacts_database_url(self):
@@ -507,7 +507,7 @@ class TestRedactLogValue(unittest.TestCase):
 
     def test_redacts_sensitive_key_private_key(self):
         self.assertEqual(
-            redact_log_value({"private_key": "-----BEGIN..."}),
+            redact_log_value({"private_key": "FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE"}),
             {"private_key": "[REDACTED]"},
         )
 

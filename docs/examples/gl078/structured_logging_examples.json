@@ -55,7 +55,7 @@
         "authorization": "Bearer tok_abc_xyz",
         "database_url": "postgres://user:pass@localhost:5432/db",
         "operator_token": "op_tok_xyz789",
-        "private_key": "-----BEGIN PRIVATE KEY-----\nMII...\n-----END PRIVATE KEY-----",
+        "private_key": "FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE",
         "cookie": "session=abc123; HttpOnly",
         "nested": {
           "safe_field": "visible",

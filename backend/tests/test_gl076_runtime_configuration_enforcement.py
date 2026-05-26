@@ -150,13 +150,13 @@ class TestDescribeRuntimeConfig(unittest.TestCase):
         """describe_runtime_config does not expose secrets, tokens, private keys."""
         env = {
             "GRANTLAYER_RUNTIME_MODE": "staging",
-            "PRIVATE_KEY": "-----BEGIN PRIVATE KEY-----",
+            "PRIVATE_KEY": "FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE",
             "API_KEY": "ak_live_12345",
             "OPERATOR_TOKEN": "op_token_xyz",
         }
         result = describe_runtime_config(env)
         for value in result.values():
-            self.assertNotIn("PRIVATE KEY", str(value))
+            self.assertNotIn("FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE", str(value))
             self.assertNotIn("ak_live_12345", str(value))
             self.assertNotIn("op_token_xyz", str(value))
 
