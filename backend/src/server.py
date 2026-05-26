@@ -298,7 +298,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             )
         raw = self.rfile.read(length)
         try:
-            return json.loads(raw)
+            parsed = json.loads(raw)
         except json.JSONDecodeError:
             raise _BodyParseError(
                 400,
@@ -308,6 +308,16 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                     "The request body is not valid JSON.",
                 ),
             )
+        if not isinstance(parsed, dict):
+            raise _BodyParseError(
+                400,
+                self._gl030_error(
+                    "Invalid JSON",
+                    "invalid_json_object",
+                    "The request body must be a JSON object.",
+                ),
+            )
+        return parsed
 
     def _missing(self, data: dict, fields: list) -> list:
         return [f for f in fields if f not in data or data.get(f) is None]
