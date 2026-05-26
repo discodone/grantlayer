@@ -37,8 +37,15 @@ class TestGl136NoTrackedPrivateKeys(unittest.TestCase):
             text=True,
         )
         files = [ln.strip() for ln in result.stdout.splitlines() if ln.strip()]
+        # Exclude GL-136 gate files that legitimately document forbidden markers
+        excluded = {
+            "backend/tests/test_gl136_key_hygiene.py",
+            "docs/examples/gl136/key_hygiene.json",
+        }
         hits = []
         for name in files:
+            if name in excluded:
+                continue
             p = _REPO_ROOT / name
             try:
                 if p.is_dir():
