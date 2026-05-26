@@ -1,0 +1,125 @@
+{
+  "issue_id": "GL-131",
+  "title": "Pilot Environment Setup Checklist",
+  "baseline_type": "pilot_environment_setup_checklist",
+  "review_only": true,
+  "deployment_automation_implemented": false,
+  "infrastructure_provisioning_implemented": false,
+  "monitoring_backend_implemented": false,
+  "incident_automation_implemented": false,
+  "production_code_changed": false,
+  "environment_identity_requirements": [
+    "pilot environment name",
+    "environment owner/operator",
+    "technical responder",
+    "business/operator owner",
+    "main/release commit",
+    "runtime mode",
+    "database mode",
+    "pilot start/end window"
+  ],
+  "runtime_config_requirements": [
+    "production-like runtime mode intentionally selected",
+    "local/test/demo modes not used for real pilot unless explicitly approved",
+    "startup fail-closed gates pass",
+    "unsafe config rejected",
+    "runtime gate command required"
+  ],
+  "secret_safety_requirements": [
+    "admin token configured securely",
+    "operator token handling defined",
+    "DB URL/credentials handled securely",
+    "signing/private keys handled securely",
+    "no secrets in docs/logs/screenshots",
+    "no raw Authorization headers/tokens/request bodies in evidence"
+  ],
+  "database_requirements": [
+    "SQLite limited to local/demo/test",
+    "PostgreSQL expected/preferred for production-like pilot",
+    "migrations applied",
+    "audit immutability expectations understood",
+    "PostgreSQL connection pooling config reviewed",
+    "DB backup method identified"
+  ],
+  "operator_requirements": [
+    "named operator owner",
+    "token expiry/rotation understood",
+    "revoked/expired behavior verified",
+    "emergency escalation contact known"
+  ],
+  "required_validation_commands": [
+    "scripts/run-production-runtime-gate.sh",
+    "scripts/run-operational-smoke-tests.sh",
+    "scripts/run-backup-restore-drill.sh",
+    "scripts/run-full-backend-suite.sh"
+  ],
+  "monitoring_alerting_requirements": [
+    "alert owner assigned",
+    "alert receiver/channel known",
+    "alert review cadence defined",
+    "GL-129 baseline acknowledged"
+  ],
+  "incident_response_requirements": [
+    "incident owner assigned",
+    "GL-130 runbook acknowledged",
+    "escalation path documented",
+    "evidence capture rules understood"
+  ],
+  "backup_restore_requirements": [
+    "backup method identified",
+    "restore drill known",
+    "isolated restore expectation acknowledged",
+    "no direct restore over pilot/production without review"
+  ],
+  "pilot_go_criteria": [
+    "environment identity complete",
+    "runtime/config safe",
+    "secrets safe",
+    "database ready",
+    "operator prepared",
+    "required gates pass",
+    "monitoring owned",
+    "incident response owned",
+    "backup/restore ready",
+    "pilot commit traceable"
+  ],
+  "pilot_no_go_criteria": [
+    "any required gate fails",
+    "secrets unsafe",
+    "DB/audit setup uncertain",
+    "monitoring unowned",
+    "incident response unowned",
+    "backup/restore unclear",
+    "pilot commit not traceable"
+  ],
+  "related_gates": [
+    "GL-125",
+    "GL-126",
+    "GL-127",
+    "GL-128",
+    "GL-129",
+    "GL-130"
+  ],
+  "recommended_next_steps": [
+    "GL-132 Tenant / Workspace Boundary Decision"
+  ],
+  "explicit_non_goals": [
+    "no deployment automation",
+    "no infrastructure provisioning",
+    "no monitoring backend integration",
+    "no incident automation",
+    "no tenant/workspace boundary decision",
+    "no production code changes",
+    "no OpenAPI changes",
+    "no frontend/website/design work"
+  ],
+  "secret_safety": {
+    "no_raw_authorization_header": true,
+    "no_raw_tokens": true,
+    "no_raw_request_bodies": true,
+    "no_db_passwords": true,
+    "no_private_keys": true,
+    "no_backup_credentials": true,
+    "no_secrets_in_screenshots": true
+  }
+}
