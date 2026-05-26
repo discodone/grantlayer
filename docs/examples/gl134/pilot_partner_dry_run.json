@@ -1,0 +1,166 @@
+{
+  "issue_id": "GL-134",
+  "title": "Pilot Partner Dry Run",
+  "artifact_type": "pilot_partner_dry_run",
+  "review_only": true,
+  "dry_run_only": true,
+  "real_pilot_started": false,
+  "real_customer_data_used": false,
+  "partner_approval_claimed": false,
+  "production_saas_approved": false,
+  "shared_multitenant_saas_approved": false,
+  "production_code_changed": false,
+  "dry_run_posture": {
+    "controlled_dry_run_only": true,
+    "no_real_pilot_started": true,
+    "no_real_customer_data": true,
+    "no_partner_approval_claimed": true,
+    "production_saas_not_complete": true,
+    "shared_multitenant_saas_not_approved": true
+  },
+  "simulated_partner_profile": {
+    "partner_name": "Example Pilot Partner",
+    "pilot_owner": "Dry-Run Owner (placeholder)",
+    "technical_responder": "Dry-Run Technical Responder (placeholder)",
+    "operator_business_owner": "Dry-Run Operator Owner (placeholder)",
+    "use_case_summary": "Validate grant lifecycle, auth boundaries, audit trail, and evidence capture in a controlled single-environment pilot context using synthetic data only",
+    "pilot_environment": "Single pilot environment or operator-bounded scope",
+    "data_scope": "Synthetic/test data only — no unrelated customer data mixed"
+  },
+  "preflight_checklist": [
+    "GL-128 release cut reviewed",
+    "GL-129 monitoring baseline reviewed",
+    "GL-130 incident runbook reviewed",
+    "GL-131 pilot environment checklist reviewed",
+    "GL-132 tenant/workspace boundary decision reviewed",
+    "GL-133 security review preparation reviewed",
+    "Named owner assigned",
+    "No secrets in screenshots/logs/docs",
+    "Synthetic/test data only"
+  ],
+  "dry_run_agenda": [
+    "Kickoff — confirm participants, scope, synthetic data only, and time bounds",
+    "Environment identity review — review environment name, purpose, ownership, and operator assignments (GL-131)",
+    "Runtime gate review — walk through scripts/run-production-runtime-gate.sh and confirm expected pass/fail outcomes (GL-126)",
+    "Smoke test review — walk through scripts/run-operational-smoke-tests.sh and confirm post-deployment validation coverage (GL-125)",
+    "Backup/restore drill review — walk through scripts/run-backup-restore-drill.sh and confirm critical data categories and non-destructive restore guidance (GL-127)",
+    "Monitoring/alert review — review monitoring ownership, review cadence, and simulate one monitoring alert scenario (GL-129)",
+    "Incident response tabletop — simulate one incident response path using the GL-130 runbook; confirm escalation path and ownership",
+    "Tenant/workspace boundary review — review GL-132 decision; confirm no multi-tenant claims; confirm unrelated customer data is not mixed",
+    "Security review package review — review GL-133 scope and evidence artifacts; confirm reviewer checklist items are understood",
+    "Go/no-go decision — record the final dry-run decision and open caveats"
+  ],
+  "step_by_step_scenario": [
+    "Identify pilot environment — document environment name, purpose, and operator assignments per GL-131",
+    "Verify main commit / release commit — record the commit hash of the deployed or referenced code; confirm it matches a known release cut",
+    "Verify runtime/config posture — review scripts/run-production-runtime-gate.sh output; confirm no unsafe defaults are present",
+    "Verify operator/token assumptions — confirm named operators exist, roles are assigned, and token safety assumptions are documented",
+    "Run or reference smoke tests — execute or review scripts/run-operational-smoke-tests.sh; confirm health, auth boundary, payload validation, correlation ID, and logging safety",
+    "Run or reference production runtime gate — execute or review scripts/run-production-runtime-gate.sh; confirm config validation passes",
+    "Run or reference backup/restore drill — execute or review scripts/run-backup-restore-drill.sh; confirm critical data categories and restore acceptance criteria are met",
+    "Simulate one monitoring alert — describe a hypothetical alert condition, confirm the monitoring owner and review cadence, and document the expected response",
+    "Simulate one incident response path — describe a hypothetical incident, walk through the GL-130 escalation path, and assign incident owner and technical responder",
+    "Validate evidence capture without secrets — review all screenshots, log snippets, and command outputs for secret safety; redact or reject any that contain raw tokens, headers, passwords, private keys, or backup credentials",
+    "Confirm tenant/workspace non-claims — explicitly state that no multi-tenant isolation is implemented and that no shared SaaS claims are made",
+    "Record final dry-run decision — document GO or NO-GO with rationale, caveats, and must-fix findings"
+  ],
+  "required_validation_commands": [
+    "scripts/run-full-backend-suite.sh",
+    "scripts/run-production-runtime-gate.sh",
+    "scripts/run-operational-smoke-tests.sh",
+    "scripts/run-backup-restore-drill.sh",
+    "python3 -m unittest backend.tests.test_security_boundary_regression -v",
+    "python3 -m unittest backend.tests.test_gl128_pilot_readiness_release_cut -v",
+    "python3 -m unittest backend.tests.test_gl129_monitoring_alerting_baseline -v",
+    "python3 -m unittest backend.tests.test_gl130_incident_response_runbook_execution_gate -v",
+    "python3 -m unittest backend.tests.test_gl131_pilot_environment_setup_checklist -v",
+    "python3 -m unittest backend.tests.test_gl132_tenant_workspace_boundary_decision -v",
+    "python3 -m unittest backend.tests.test_gl133_external_security_review_preparation -v"
+  ],
+  "evidence_capture_requirements": [
+    "date / time",
+    "dry-run owner",
+    "main commit",
+    "synthetic data confirmation",
+    "commands run and results",
+    "screenshots / log snippets without secrets",
+    "correlation IDs if applicable",
+    "open caveats",
+    "final go/no-go decision"
+  ],
+  "monitoring_incident_security_checkpoints": [
+    "monitoring owner assigned (GL-129)",
+    "alert receiver / channel documented",
+    "incident owner assigned (GL-130)",
+    "escalation path documented",
+    "security reviewer owner assigned (GL-133)",
+    "must-fix findings tracker documented"
+  ],
+  "tenant_workspace_boundary_checks": [
+    "single pilot environment or operator-bounded scope",
+    "no unrelated customer data mixed",
+    "no shared SaaS claims",
+    "no multi-tenant isolation assumed",
+    "follow-up tenant implementation issues identified (GL-135, GL-136, GL-137, GL-138)"
+  ],
+  "pilot_go_criteria": [
+    "all relevant readiness docs (GL-128 through GL-133) are reviewed",
+    "environment ownership is clear and documented",
+    "no real customer data is used during the dry run",
+    "tenant/workspace limitations are acknowledged and documented",
+    "monitoring, incident, and security responsibilities are assigned to named owners",
+    "required validation commands are known and pass, or have approved caveats",
+    "must-fix issues are documented and tracked"
+  ],
+  "pilot_no_go_criteria": [
+    "owner is unclear or unassigned",
+    "secrets are exposed in evidence, logs, or documentation",
+    "real customer data is used during the dry run",
+    "tenant/workspace boundaries are unclear or claimed without justification",
+    "monitoring or incident response is unowned",
+    "runtime, smoke, backup, or security gates fail without approved caveats",
+    "external security review blockers remain unresolved"
+  ],
+  "follow_up_issues": [
+    "GL-135 Tenant / Workspace Data Model Design",
+    "GL-136 Tenant-Aware Authorization Design",
+    "GL-137 Cross-Tenant Isolation Test Plan",
+    "GL-138 Tenant-Aware Audit/Evidence Boundary Plan",
+    "GL-139 Controlled Pilot Launch Checklist"
+  ],
+  "related_gates": [
+    "GL-128",
+    "GL-129",
+    "GL-130",
+    "GL-131",
+    "GL-132",
+    "GL-133"
+  ],
+  "explicit_non_goals": [
+    "no real pilot execution",
+    "no partner approval",
+    "no production SaaS approval",
+    "no tenant implementation",
+    "no workspace implementation",
+    "no deployment automation",
+    "no monitoring backend integration",
+    "no incident automation",
+    "no frontend/onboarding/billing work",
+    "no production code changes (backend/src/)",
+    "no API / OpenAPI change",
+    "no DB migration or schema change",
+    "no dependency additions or version changes",
+    "no website, landing page, design, brand, or marketing file changes",
+    "no real customer or partner data",
+    "no secrets printed or exposed"
+  ],
+  "secret_safety": {
+    "no_raw_tokens": true,
+    "no_raw_authorization_header": true,
+    "no_raw_request_bodies": true,
+    "no_db_passwords": true,
+    "no_private_keys": true,
+    "no_backup_credentials": true,
+    "no_secrets_in_screenshots": true
+  }
+}
