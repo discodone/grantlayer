@@ -31,7 +31,7 @@ class TestSecretContextLeakage(unittest.TestCase):
             "service_token": "bearer-deadbeef",
             "user_password": "hunter2",
             "db_secret": "postgres://root:password@db:5432",
-            "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIIB",
+            "private_key": "FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE",
             "normal_field": "this-is-safe",
         }
 

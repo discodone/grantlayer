@@ -303,12 +303,11 @@ class TestGl126SecretRedaction(unittest.TestCase):
         from backend.src.runtime_config import describe_runtime_config
         env = {
             "GRANTLAYER_RUNTIME_MODE": "production",
-            "GRANTLAYER_SIGNING_PRIVATE_KEY": "-----BEGIN PRIVATE KEY-----\nMII...",
+            "GRANTLAYER_SIGNING_PRIVATE_KEY": "FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE",
         }
         result = describe_runtime_config(env)
         result_str = str(result)
-        self.assertNotIn("PRIVATE KEY", result_str)
-        self.assertNotIn("MII...", result_str)
+        self.assertNotIn("FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE", result_str)
 
     def test_describe_runtime_config_does_not_expose_operator_token(self):
         from backend.src.runtime_config import describe_runtime_config

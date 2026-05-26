@@ -1,0 +1,44 @@
+{
+  "issue_id": "GL-136",
+  "artifact_type": "key_hygiene_gate",
+  "review_only": false,
+  "tracked_private_key_material_removed": true,
+  "git_history_rewritten": false,
+  "force_push_used": false,
+  "real_secrets_added": false,
+  "new_real_private_keys_added": false,
+  "production_code_changed": false,
+  "auth_semantics_changed": false,
+  "private_key_patterns_guarded": true,
+  "public_github_blocker_addressed_for_active_tree": true,
+  "history_cleanup_deferred_to_separate_decision": true,
+  "ignored_patterns": [
+    "*.pem",
+    "*.key",
+    "*.p8",
+    "*.p12",
+    "*.crt",
+    "*.cert",
+    "*.csr",
+    ".env",
+    ".env.*",
+    "!.env.example",
+    "secrets/",
+    "private/",
+    "keys/",
+    "certs/"
+  ],
+  "forbidden_markers": [
+    "-----BEGIN PRIVATE KEY-----",
+    "-----BEGIN RSA PRIVATE KEY-----",
+    "-----BEGIN EC PRIVATE KEY-----",
+    "-----BEGIN OPENSSH PRIVATE KEY-----",
+    "-----BEGIN DSA PRIVATE KEY-----"
+  ],
+  "allowed_placeholder_rules": [
+    "placeholders must not contain valid private key PEM blocks",
+    "example values must be clearly fake",
+    "local generated keys must remain ignored"
+  ],
+  "next_issue": "GL-137 Add Python Dependency Manifest"
+}
