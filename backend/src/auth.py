@@ -24,10 +24,6 @@ def _get_env_bool(name: str) -> bool:
     return value in ("1", "true", "yes", "on")
 
 
-def check_admin_token(auth_header: str | None) -> tuple[bool, int, dict]:
-    ...
-
-
 # ──────────────────────────────────────────────
 # New unified auth guard
 # ──────────────────────────────────────────────
