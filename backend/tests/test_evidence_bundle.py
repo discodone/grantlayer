@@ -38,6 +38,7 @@ class TestEvidenceBundle(unittest.TestCase):
 
         # Save env vars we will mutate
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         self._orig_admin_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")

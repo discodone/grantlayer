@@ -479,7 +479,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
 
     def test_gl089_auth_default_fail_closed_intact(self):
         """Without operator model + empty admin token + require_admin=true, endpoints fail closed."""
-        os.environ.pop("GRANTLAYER_ENABLE_OPERATOR_MODEL", None)
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = ""
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"

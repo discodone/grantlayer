@@ -1,0 +1,15 @@
+{
+  "issue_id": "GL-141",
+  "artifact_type": "operator_model_default",
+  "operator_model_default_enabled": true,
+  "legacy_disabled_mode_supported": true,
+  "legacy_disabled_mode_deprecated": true,
+  "auth_semantics_changed": false,
+  "endpoint_api_behavior_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "threading_http_server_preserved": true,
+  "audit_hash_chain_lock_preserved": true,
+  "next_issue": "GL-142 Remove BytesIO Test Hack From _read_json"
+}
