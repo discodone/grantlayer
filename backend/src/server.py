@@ -241,15 +241,6 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
     def _read_json(self) -> dict:
         content_length = self.headers.get("Content-Length")
         if content_length is None:
-            # Backward compatibility: test mocks using BytesIO with empty
-            # content should be treated as empty body. For real connections,
-            # require Content-Length to bound reads safely.
-            try:
-                from io import BytesIO
-                if isinstance(self.rfile, BytesIO) and self.rfile.tell() >= len(self.rfile.getvalue()):
-                    return {}
-            except Exception:
-                pass
             raise _BodyParseError(
                 400,
                 self._gl030_error(
