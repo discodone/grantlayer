@@ -1,0 +1,96 @@
+{
+  "issue_id": "GL-149",
+  "artifact_type": "public_github_readiness_pack",
+  "readiness_pack_created": true,
+  "github_publication_performed": false,
+  "git_remotes_changed": false,
+  "git_history_rewritten": false,
+  "secret_history_cleanup_performed": false,
+  "production_code_changed": false,
+  "backend_src_changed": false,
+  "endpoint_api_behavior_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "sdk_changed": false,
+  "langgraph_langchain_example_changed": false,
+  "public_github_ready_claimed_complete": false,
+  "public_release_approved": false,
+  "production_saas_ready_claimed": false,
+  "tenant_isolation_claimed_implemented": false,
+  "uses_real_secrets": false,
+  "uses_real_customer_data": false,
+  "current_posture": "developer-preview / controlled-pilot — local-first developer evaluation; public GitHub readiness review only; public push requires explicit later approval",
+  "readiness_checklist": [
+    "GL-136 key hygiene preserved",
+    "GL-137 dependency manifest present",
+    "GL-145 developer adoption strategy present",
+    "GL-146 quickstart present and validated",
+    "GL-147 minimal Python SDK present and validated",
+    "GL-148 integration example present and validated",
+    "README posture clear",
+    "license/contributing/security posture identified",
+    "no real secrets/customer data in docs/examples"
+  ],
+  "repository_safety_checks": [
+    ".gitignore secret/key patterns present",
+    "docs/examples use placeholders only",
+    "no real customer data in tracked files",
+    "no real production tokens in tracked files",
+    "no public production SaaS claim",
+    "no tenant isolation implementation claim",
+    "no external service required for quickstart baseline"
+  ],
+  "developer_entry_path": [
+    "Start with GL-146 quickstart",
+    "Use GL-147 SDK",
+    "Review GL-148 agent workflow example",
+    "Provide feedback through GL-150 path"
+  ],
+  "messaging_rules": [
+    "Say developer-preview / local evaluation",
+    "Say controlled pilot caveats",
+    "Say not production SaaS",
+    "Say tenant isolation not implemented",
+    "Say examples are local/demo only",
+    "Say no real customer data"
+  ],
+  "release_blockers": [
+    "Any detected secret/key material",
+    "Any real customer data",
+    "Broken quickstart",
+    "Broken SDK tests",
+    "Broken integration example",
+    "Unclear license/contributing/security posture",
+    "Production SaaS overclaims",
+    "Tenant-isolation overclaims",
+    "Dependency manifest mismatch"
+  ],
+  "go_no_go_criteria": {
+    "go": "All readiness checklist items present, all safety checks pass, all release blockers resolved, messaging rules followed, GL-149 validation test passes, full backend suite passes on main",
+    "no_go": "Any release blocker unresolved, any secret or real customer data found, any production SaaS or tenant-isolation overclaim present, any validation gate fails",
+    "constraints": [
+      "Ready for public readiness review only — not approved for public GitHub publication",
+      "Explicit human approval required for public publication",
+      "Full suite green before any future public push"
+    ]
+  },
+  "validation_gates": [
+    "GL-136 key hygiene",
+    "GL-137 dependency manifest",
+    "GL-145 developer adoption strategy",
+    "GL-146 ten-minute quickstart",
+    "GL-147 minimal Python SDK",
+    "GL-148 LangGraph/LangChain integration example",
+    "security boundary regression",
+    "full backend suite on main"
+  ],
+  "proposed_follow_up_tasks": [
+    "GL-150 First Developer Feedback Log",
+    "Optional GitHub repository metadata issue",
+    "Optional LICENSE / CONTRIBUTING / SECURITY decision issue",
+    "Optional secret-history audit issue",
+    "Optional public README polish issue"
+  ],
+  "next_issue": "GL-150 First Developer Feedback Log"
+}
