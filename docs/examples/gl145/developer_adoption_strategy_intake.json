@@ -1,0 +1,177 @@
+{
+  "issue_id": "GL-145",
+  "artifact_type": "developer_adoption_strategy_intake",
+  "strategy_intake_only": true,
+  "production_code_changed": false,
+  "sdk_implemented": false,
+  "quickstart_implemented": false,
+  "langgraph_langchain_example_implemented": false,
+  "public_github_ready_claimed": false,
+  "production_saas_ready_claimed": false,
+  "tenant_isolation_claimed_implemented": false,
+  "endpoint_api_behavior_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "target_developer_audiences": [
+    "local evaluator",
+    "AI-agent/LangGraph developer",
+    "grant/compliance workflow integrator",
+    "pilot partner technical reviewer",
+    "security-conscious contributor"
+  ],
+  "adoption_track": [
+    {
+      "issue": "GL-146",
+      "title": "10-Minute Quickstart",
+      "purpose": "A runnable, copy-paste quickstart that gets a developer from clone to first API call in 10 minutes."
+    },
+    {
+      "issue": "GL-147",
+      "title": "Minimal Python SDK",
+      "purpose": "A minimal Python client/SDK that wraps the OpenAPI contract with typed requests and responses."
+    },
+    {
+      "issue": "GL-148",
+      "title": "LangGraph/LangChain Integration Example",
+      "purpose": "A concrete example showing how GrantLayer grant requests, evidence bundles, and policy checks fit into a LangGraph node graph."
+    },
+    {
+      "issue": "GL-149",
+      "title": "Public GitHub Readiness Pack",
+      "purpose": "A checklist and set of artifacts (README, CONTRIBUTING, issue templates, CI badges) that prepare the repo for public visibility."
+    },
+    {
+      "issue": "GL-150",
+      "title": "First Developer Feedback Log",
+      "purpose": "A structured log or template for capturing the first real (or explicitly simulated) developer feedback on the quickstart, SDK, and integration example."
+    }
+  ],
+  "artifact_map": [
+    {
+      "issue": "GL-146",
+      "artifact": "quickstart guide",
+      "location": "docs/gl146_10_minute_quickstart.md"
+    },
+    {
+      "issue": "GL-146",
+      "artifact": "quickstart validation test",
+      "location": "backend/tests/test_gl146_10_minute_quickstart.py"
+    },
+    {
+      "issue": "GL-147",
+      "artifact": "minimal SDK",
+      "location": "sdk/python/grantlayer/ (TBD in GL-147)"
+    },
+    {
+      "issue": "GL-147",
+      "artifact": "SDK usage examples",
+      "location": "docs/examples/gl147/"
+    },
+    {
+      "issue": "GL-148",
+      "artifact": "integration example",
+      "location": "docs/examples/gl148/"
+    },
+    {
+      "issue": "GL-148",
+      "artifact": "integration validation test",
+      "location": "backend/tests/test_gl148_langgraph_integration.py"
+    },
+    {
+      "issue": "GL-149",
+      "artifact": "public readiness checklist",
+      "location": "docs/gl149_public_github_readiness_pack.md"
+    },
+    {
+      "issue": "GL-149",
+      "artifact": "readiness JSON artifact",
+      "location": "docs/examples/gl149/public_github_readiness_pack.json"
+    },
+    {
+      "issue": "GL-150",
+      "artifact": "feedback template/log",
+      "location": "docs/gl150_first_developer_feedback_log.md"
+    },
+    {
+      "issue": "GL-150",
+      "artifact": "feedback JSON artifact",
+      "location": "docs/examples/gl150/first_developer_feedback_log.json"
+    }
+  ],
+  "messaging_rules": [
+    "Avoid production SaaS claims",
+    "Avoid tenant isolation claims",
+    "Describe pilot/developer-preview status accurately",
+    "Document security caveats clearly",
+    "Do not expose secrets"
+  ],
+  "risks": [
+    {
+      "risk": "overclaiming readiness",
+      "severity": "High",
+      "mitigation": "Messaging rules and explicit non-goal statements in every adoption issue."
+    },
+    {
+      "risk": "stale examples",
+      "severity": "Medium",
+      "mitigation": "Validation gates require examples to be tested; quickstart must be copy-paste runnable."
+    },
+    {
+      "risk": "API drift",
+      "severity": "Medium",
+      "mitigation": "Validation gates require no OpenAPI drift unless explicitly planned; SDK must track OpenAPI."
+    },
+    {
+      "risk": "hidden local assumptions",
+      "severity": "Medium",
+      "mitigation": "Quickstart must work on a clean clone with no hidden config; document all env vars."
+    },
+    {
+      "risk": "auth confusion",
+      "severity": "Medium",
+      "mitigation": "Clearly distinguish demo-mode from product-mode; never present demo-mode as secure."
+    },
+    {
+      "risk": "secrets in public docs",
+      "severity": "High",
+      "mitigation": "Automated scan for PEM markers, tokens, and passwords in all docs and examples."
+    },
+    {
+      "risk": "dependency/setup friction",
+      "severity": "Medium",
+      "mitigation": "Minimal Python SDK must use only stdlib + cryptography (same as backend); document install steps."
+    },
+    {
+      "risk": "examples that are not reproducible",
+      "severity": "High",
+      "mitigation": "Every example must have a corresponding validation test that runs in CI."
+    }
+  ],
+  "validation_gates": [
+    "Docs are copy-paste runnable where applicable",
+    "Examples tested",
+    "JSON examples valid",
+    "No secrets",
+    "No OpenAPI drift unless explicitly planned",
+    "Full backend suite on main before push"
+  ],
+  "non_goals": [
+    "No SDK implementation in GL-145",
+    "No quickstart implementation in GL-145",
+    "No LangGraph/LangChain implementation in GL-145",
+    "No public GitHub release in GL-145",
+    "No API change",
+    "No auth redesign",
+    "No tenant/workspace implementation",
+    "No production SaaS claim"
+  ],
+  "proposed_follow_up_issues": [
+    "GL-146 10-Minute Quickstart",
+    "GL-147 Minimal Python SDK",
+    "GL-148 LangGraph/LangChain Integration Example",
+    "GL-149 Public GitHub Readiness Pack",
+    "GL-150 First Developer Feedback Log"
+  ],
+  "next_issue": "GL-146 10-Minute Quickstart"
+}
