@@ -182,7 +182,7 @@ class TestGl095CorsWildcardRemoved(_BaseGl095):
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = ""
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin-token"
-        os.environ.pop("GRANTLAYER_ENABLE_OPERATOR_MODEL", None)
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         importlib.reload(self.config_mod)
         import src.server as fresh_server
         importlib.reload(fresh_server)
@@ -221,7 +221,7 @@ class TestGl095ArbitraryOriginNotReflected(_BaseGl095):
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin-token"
-        os.environ.pop("GRANTLAYER_ENABLE_OPERATOR_MODEL", None)
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         importlib.reload(self.config_mod)
         import src.server as fresh_server
         importlib.reload(fresh_server)

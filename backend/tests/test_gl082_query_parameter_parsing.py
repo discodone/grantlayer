@@ -115,6 +115,18 @@ class _BaseGl082(unittest.TestCase):
 class TestGl082AuditEvents(_BaseGl082):
     """GET /audit-events query parameter safety."""
 
+    def setUp(self):
+        super().setUp()
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        importlib.reload(self.config_mod)
+        import src.auth as fresh_auth
+        importlib.reload(fresh_auth)
+        self.auth_mod = fresh_auth
+        import src.server as fresh_server
+        importlib.reload(fresh_server)
+        self.server_mod = fresh_server
+        self.handler_class = fresh_server.GrantLayerHandler
+
     def test_valid_limit_returns_200(self):
         handler = self._make_handler("/audit-events?limit=5")
         status, _ = self._run_handler(handler)

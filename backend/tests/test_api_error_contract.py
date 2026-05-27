@@ -156,7 +156,7 @@ class TestApiErrorContract(unittest.TestCase):
     # 6. Operator model disabled returns 404
     # ──────────────────────────────────────────────
     def test_operator_model_disabled_returns_404_contract(self):
-        os.environ.pop("GRANTLAYER_ENABLE_OPERATOR_MODEL", None)
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         importlib.reload(self.config_mod)
         self.assertFalse(self.config_mod.ENABLE_OPERATOR_MODEL)
         # Simulate the server's response shape

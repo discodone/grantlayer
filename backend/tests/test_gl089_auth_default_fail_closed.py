@@ -339,7 +339,7 @@ class TestGl089LegacyEndpointProtections(_BaseGl089):
 
     def setUp(self):
         super().setUp()
-        os.environ.pop("GRANTLAYER_ENABLE_OPERATOR_MODEL", None)
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = ""
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         self._reload_config()

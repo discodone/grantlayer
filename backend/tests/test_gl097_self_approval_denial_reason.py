@@ -400,7 +400,7 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         self.assertEqual(data.get("errorCode"), "payload_too_large")
 
     def test_gl089_auth_default_fail_closed_intact(self):
-        os.environ.pop("GRANTLAYER_ENABLE_OPERATOR_MODEL", None)
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = ""
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
