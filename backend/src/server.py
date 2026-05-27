@@ -5,7 +5,7 @@ import hashlib
 import json
 import re
 import os
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 from .db import init_db
@@ -1585,7 +1585,7 @@ def run(host: str = "127.0.0.1", port: int = 8765) -> None:
             for err in config.startup_errors():
                 print(err, flush=True)
             raise SystemExit(1)
-    server = HTTPServer((host, port), GrantLayerHandler)
+    server = ThreadingHTTPServer((host, port), GrantLayerHandler)
     print(f"GrantLayer MVP running on http://{host}:{port}", flush=True)
     print(f"Dashboard:   http://{host}:{port}/", flush=True)
     print("Press Ctrl+C to stop.", flush=True)
