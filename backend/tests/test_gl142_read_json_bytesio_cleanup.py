@@ -438,6 +438,7 @@ _GL142_BRANCH = "gl-142-read-json-bytesio-cleanup"
 _ALLOWED_CHANGED = {
     "backend/src/server.py",
     "backend/tests/test_gl142_read_json_bytesio_cleanup.py",
+    "backend/tests/test_gl045a_api_contract_consistency.py",
     "backend/tests/test_gl090_request_body_json_hardening.py",
     "backend/tests/test_gl124_request_payload_shape_validation.py",
     "backend/tests/test_gl141_operator_model_default.py",
