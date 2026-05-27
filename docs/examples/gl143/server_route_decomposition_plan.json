@@ -1,0 +1,108 @@
+{
+  "issue_id": "GL-143",
+  "artifact_type": "server_route_decomposition_plan",
+  "plan_only": true,
+  "production_code_changed": false,
+  "server_py_changed": false,
+  "route_decomposition_implemented": false,
+  "endpoint_api_behavior_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "auth_semantics_changed": false,
+  "request_parsing_changed": false,
+  "threading_http_server_changed": false,
+  "audit_hash_chain_changed": false,
+  "validation_gates": [
+    "GL-087 auth error response consistency",
+    "GL-090 request body JSON hardening",
+    "GL-124 request payload shape validation",
+    "GL-139 audit hash-chain write lock",
+    "GL-140 ThreadingHTTPServer",
+    "GL-141 operator model default",
+    "GL-142 read_json BytesIO cleanup",
+    "GL-045A API contract consistency",
+    "security boundary regression",
+    "full backend suite on main"
+  ],
+  "risk_register": [
+    {
+      "risk": "auth semantics drift",
+      "severity": "high",
+      "mitigation": "Gate on GL-087. Characterization tests must cover every auth failure path."
+    },
+    {
+      "risk": "request parsing drift",
+      "severity": "medium",
+      "mitigation": "Gate on GL-090 and GL-124. Preserve exact error codes and status codes."
+    },
+    {
+      "risk": "structured logging / correlation drift",
+      "severity": "medium",
+      "mitigation": "Gate on GL-113 / GL-117 integration. Correlation ID must still propagate to response headers."
+    },
+    {
+      "risk": "audit / hash-chain drift",
+      "severity": "medium",
+      "mitigation": "Gate on GL-139. No extraction must remove or weaken the write lock."
+    },
+    {
+      "risk": "ThreadingHTTPServer runtime drift",
+      "severity": "medium",
+      "mitigation": "Gate on GL-140. run() must continue to instantiate ThreadingHTTPServer."
+    },
+    {
+      "risk": "rate limit drift",
+      "severity": "low",
+      "mitigation": "Preserve per-IP limits, 429 responses, and Retry-After headers."
+    },
+    {
+      "risk": "OpenAPI / API behavior drift",
+      "severity": "high",
+      "mitigation": "Gate on GL-045A. Validate against OpenAPI spec after every extraction step."
+    }
+  ],
+  "proposed_follow_up_issues": [
+    {
+      "issue_id": "GL-143A",
+      "title": "Route characterization tests",
+      "description": "Add exhaustive HTTP-level characterization tests for every route before any extraction."
+    },
+    {
+      "issue_id": "GL-143B",
+      "title": "Response/error helper extraction",
+      "description": "Extract _send_json, _send_html, _gl030_error, _handle_json_error to a dedicated module or mixin."
+    },
+    {
+      "issue_id": "GL-143C",
+      "title": "Request parsing helper extraction",
+      "description": "Extract _read_json, _missing, _parse_int_query_param, and validation helpers to a dedicated module."
+    },
+    {
+      "issue_id": "GL-143D",
+      "title": "Route dispatch registry plan/extraction",
+      "description": "Replace do_GET/do_POST if/elif chains with a registry-based dispatch table."
+    },
+    {
+      "issue_id": "GL-143E",
+      "title": "Public route group extraction",
+      "description": "Extract /health, /readiness, /dashboard to a public routes module."
+    },
+    {
+      "issue_id": "GL-143F",
+      "title": "Protected route group extraction",
+      "description": "Extract read-only and mutation protected routes to domain route modules."
+    }
+  ],
+  "non_goals": [
+    "No production code change in GL-143",
+    "No actual refactor in GL-143",
+    "No route movement in GL-143",
+    "No OpenAPI change in GL-143",
+    "No auth redesign in GL-143",
+    "No tenant/workspace implementation in GL-143",
+    "No dependency change in GL-143",
+    "No production SaaS claim in GL-143"
+  ],
+  "next_issue": "GL-144 Tenant / Workspace Data Model Design"
+}
