@@ -1,0 +1,209 @@
+{
+  "issue_id": "GL-144",
+  "title": "Tenant / Workspace Data Model Design",
+  "artifact_type": "tenant_workspace_data_model_design",
+  "design_only": true,
+  "production_code_changed": false,
+  "tenant_implementation_added": false,
+  "workspace_implementation_added": false,
+  "db_schema_changed": false,
+  "migration_changed": false,
+  "endpoint_api_behavior_changed": false,
+  "openapi_changed": false,
+  "auth_semantics_changed": false,
+  "operator_model_default_changed": false,
+  "audit_hash_chain_changed": false,
+  "request_parsing_changed": false,
+  "threading_http_server_changed": false,
+  "production_saas_ready_claimed": false,
+  "tenant_isolation_claimed_implemented": false,
+  "current_posture": {
+    "no_production_tenant_workspace_isolation": true,
+    "controlled_pilot_caveats_remain": true,
+    "shared_production_saas_for_unrelated_customers_blocked": true,
+    "gl132_boundary_decision_authoritative": true,
+    "single_namespace_per_deployment": true,
+    "operator_bounded_workspace_only": true
+  },
+  "proposed_entities": {
+    "tenants": {
+      "purpose": "top-level customer boundary",
+      "fields": [
+        "id",
+        "slug",
+        "name",
+        "display_name",
+        "status",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "workspaces": {
+      "purpose": "scoped operating context within a tenant",
+      "fields": [
+        "id",
+        "tenant_id",
+        "slug",
+        "name",
+        "display_name",
+        "status",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "tenant_memberships": {
+      "purpose": "associate operators with tenants",
+      "fields": [
+        "id",
+        "tenant_id",
+        "operator_id",
+        "role",
+        "status",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "workspace_memberships": {
+      "purpose": "associate operators with workspaces",
+      "fields": [
+        "id",
+        "workspace_id",
+        "operator_id",
+        "role",
+        "status",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "operator_scope": {
+      "purpose": "define workspace access scope for operators within a tenant",
+      "fields": [
+        "operator_id",
+        "tenant_id",
+        "workspace_id",
+        "scope_type",
+        "created_at"
+      ]
+    }
+  },
+  "relationship_model": {
+    "tenant_to_workspace": "1:N (Tenant has many Workspaces)",
+    "workspace_to_tenant": "N:1 (Workspace belongs to one Tenant)",
+    "operator_to_tenant": "N:M via tenant_memberships",
+    "operator_to_workspace": "N:M via workspace_memberships",
+    "grant_request_ownership": "belongs to one workspace",
+    "grant_execution_ownership": "belongs to one workspace",
+    "evidence_ownership": "belongs to one workspace",
+    "audit_event_context": "carries tenant/workspace context",
+    "provenance_event_context": "carries tenant/workspace context"
+  },
+  "isolation_rules": [
+    "customer-owned resources must be tenant/workspace scoped",
+    "no cross-tenant reads by default",
+    "no cross-workspace access without explicit scope",
+    "admin legacy mode is not SaaS tenant isolation",
+    "background/system operations must have explicit system scope"
+  ],
+  "auth_permission_implications": [
+    "operator token lookup remains secure",
+    "future permissions must include tenant/workspace scope",
+    "explicit deny-by-default for missing scope",
+    "no implicit global access except designated system/admin flows",
+    "current GL-141 default operator model remains preserved"
+  ],
+  "audit_provenance_implications": [
+    "audit events should include tenant/workspace context later",
+    "provenance chains should preserve resource ownership context",
+    "logs should include safe tenant/workspace identifiers not secrets",
+    "hash-chain immutability must be preserved"
+  ],
+  "migration_sequence": [
+    "GL-144 design only",
+    "schema migration plan later (GL-144A)",
+    "migration implementation later (GL-144B)",
+    "backfill strategy later (GL-144D)",
+    "endpoint authorization enforcement later (GL-144E)",
+    "audit/provenance scoping later (GL-144F)",
+    "public SaaS claim only after validation gates pass"
+  ],
+  "risk_register": [
+    {
+      "risk": "partial tenant isolation",
+      "severity": "High",
+      "mitigation": "Do not claim SaaS readiness until all resource paths enforce scope."
+    },
+    {
+      "risk": "missing filters",
+      "severity": "High",
+      "mitigation": "Every read and write query must include explicit tenant/workspace filter."
+    },
+    {
+      "risk": "cross-tenant leakage",
+      "severity": "Critical",
+      "mitigation": "Automated tests must verify that no endpoint leaks data across tenants."
+    },
+    {
+      "risk": "audit ambiguity",
+      "severity": "Medium",
+      "mitigation": "Audit events without tenant/workspace context must not be trusted for scoped reporting."
+    },
+    {
+      "risk": "operator/admin confusion",
+      "severity": "Medium",
+      "mitigation": "Legacy admin mode and tenant-scoped admin must be clearly distinguished."
+    },
+    {
+      "risk": "migration/backfill corruption",
+      "severity": "High",
+      "mitigation": "Backfill must be reversible; test on a full copy of production data before applying."
+    },
+    {
+      "risk": "performance/indexing risk",
+      "severity": "Medium",
+      "mitigation": "Proposed indexes must be validated against realistic data volumes before deployment."
+    },
+    {
+      "risk": "OpenAPI drift",
+      "severity": "Medium",
+      "mitigation": "Any API addition must be reflected in docs/openapi.yaml."
+    },
+    {
+      "risk": "test gaps",
+      "severity": "High",
+      "mitigation": "Add cross-tenant isolation tests before claiming any SaaS readiness."
+    }
+  ],
+  "validation_gates": [
+    "GL-132 tenant/workspace boundary decision",
+    "GL-139 audit hash-chain write lock",
+    "GL-140 ThreadingHTTPServer",
+    "GL-141 operator model default",
+    "GL-142 request parsing cleanup",
+    "GL-143 route decomposition plan",
+    "security boundary regression",
+    "full backend suite on main"
+  ],
+  "non_goals": [
+    "no implementation",
+    "no schema/migration",
+    "no API/OpenAPI change",
+    "no auth redesign",
+    "no endpoint enforcement",
+    "no frontend/website/design work",
+    "no production SaaS readiness claim",
+    "no shared SaaS approval",
+    "no dependency additions",
+    "no production code changes",
+    "no claude changes"
+  ],
+  "proposed_follow_up_issues": [
+    "GL-144A Tenant/Workspace schema migration plan",
+    "GL-144B Tenant/Workspace persistence model",
+    "GL-144C Membership/scope model",
+    "GL-144D Resource ownership backfill strategy",
+    "GL-144E Endpoint authorization enforcement plan",
+    "GL-144F Audit/provenance tenant scoping plan",
+    "GL-144G OpenAPI contract update plan"
+  ],
+  "next_issue": "GL-145 Developer Adoption Strategy Intake"
+}
