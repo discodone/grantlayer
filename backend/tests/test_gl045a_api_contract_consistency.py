@@ -104,7 +104,7 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
 
     def _http_request(self, method: str, path: str, body=None, auth=None):
         handler = self.handler_class.__new__(self.handler_class)
-        req_body = json.dumps(body).encode() if body else b""
+        req_body = json.dumps(body).encode() if body is not None else b""
         handler.rfile = BytesIO(req_body)
         handler.wfile = BytesIO()
         headers = {}
