@@ -100,7 +100,7 @@ GRANTLAYER_ADMIN_TOKEN: str = _env_str("GRANTLAYER_ADMIN_TOKEN", "")
 # Operator Model (GL-021)
 # ──────────────────────────────────────────────────────────────
 
-ENABLE_OPERATOR_MODEL: bool = _env_bool("GRANTLAYER_ENABLE_OPERATOR_MODEL", default=False)
+ENABLE_OPERATOR_MODEL: bool = _env_bool("GRANTLAYER_ENABLE_OPERATOR_MODEL", default=True)
 
 GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", "")
 GRANTLAYER_BOOTSTRAP_OPERATOR_ID: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_ID", "bootstrap-admin")
