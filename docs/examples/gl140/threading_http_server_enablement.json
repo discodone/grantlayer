@@ -1,0 +1,12 @@
+{
+  "issue_id": "GL-140",
+  "artifact_type": "threading_http_server_enablement",
+  "threading_http_server_enabled": true,
+  "process_local_write_lock_preserved": true,
+  "audit_event_schema_changed": false,
+  "db_schema_changed": false,
+  "openapi_changed": false,
+  "dependencies_changed": false,
+  "auth_semantics_changed": false,
+  "endpoint_behavior_changed": false
+}
