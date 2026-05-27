@@ -2,9 +2,17 @@
 
 import hashlib
 import json
+from threading import RLock
 from typing import List, Optional
 from .db import execute, query_one, query_all
 from .models import AuditEvent
+
+
+# ──────────────────────────────────────────────────────────────
+# Process-local write lock for hash-chain critical section (GL-139)
+# ──────────────────────────────────────────────────────────────
+
+_AUDIT_HASH_CHAIN_WRITE_LOCK = RLock()
 
 
 # ──────────────────────────────────────────────────────────────
@@ -265,32 +273,34 @@ def verify_audit_hash_chain() -> dict:
 # ──────────────────────────────────────────────────────────────
 
 def append_event(event: AuditEvent, conn=None) -> None:
-    # GL-103: compute hash-chain linkage
-    latest = _get_latest_row_hash(conn)
-    prev_hash = latest if latest is not None else None
-    row_hash = _compute_row_hash(event, prev_hash)
+    # GL-139: serialize hash-chain append critical section
+    with _AUDIT_HASH_CHAIN_WRITE_LOCK:
+        # GL-103: compute hash-chain linkage
+        latest = _get_latest_row_hash(conn)
+        prev_hash = latest if latest is not None else None
+        row_hash = _compute_row_hash(event, prev_hash)
 
-    sql = """INSERT INTO audit_events
-           (id, timestamp, subject_id, role, action, resource,
-            approved, reason, matched_grant_id,
-            challenge_id, challenge_present, challenge_result,
-            grant_signature_result, row_hash, prev_hash)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
-    params = (
-        event.id, event.timestamp, event.subject_id, event.role,
-        event.action, event.resource, int(event.approved),
-        event.reason, event.matched_grant_id,
-        event.challenge_id, int(event.challenge_present), event.challenge_result,
-        event.grant_signature_result,
-        row_hash, prev_hash,
-    )
-    if conn is not None:
-        conn.execute(sql, params)
-    else:
-        execute(sql, params)
-    # Mutate the event in-place so callers see the hashes
-    event.row_hash = row_hash
-    event.prev_hash = prev_hash
+        sql = """INSERT INTO audit_events
+               (id, timestamp, subject_id, role, action, resource,
+                approved, reason, matched_grant_id,
+                challenge_id, challenge_present, challenge_result,
+                grant_signature_result, row_hash, prev_hash)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+        params = (
+            event.id, event.timestamp, event.subject_id, event.role,
+            event.action, event.resource, int(event.approved),
+            event.reason, event.matched_grant_id,
+            event.challenge_id, int(event.challenge_present), event.challenge_result,
+            event.grant_signature_result,
+            row_hash, prev_hash,
+        )
+        if conn is not None:
+            conn.execute(sql, params)
+        else:
+            execute(sql, params)
+        # Mutate the event in-place so callers see the hashes
+        event.row_hash = row_hash
+        event.prev_hash = prev_hash
 
 
 def get_event(event_id: str) -> Optional[AuditEvent]:
