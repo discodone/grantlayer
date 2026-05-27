@@ -1,0 +1,68 @@
+{
+  "issue_id": "GL-146",
+  "artifact_type": "ten_minute_quickstart",
+  "quickstart_created": true,
+  "production_code_changed": false,
+  "backend_src_changed": false,
+  "endpoint_api_behavior_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "sdk_implemented": false,
+  "langgraph_langchain_example_implemented": false,
+  "public_github_ready_claimed": false,
+  "production_saas_ready_claimed": false,
+  "tenant_isolation_claimed_implemented": false,
+  "uses_real_secrets": false,
+  "uses_real_customer_data": false,
+  "sections": [
+    "Title and Status",
+    "What This Quickstart Does",
+    "What This Quickstart Does Not Do",
+    "Prerequisites",
+    "Setup",
+    "Configuration",
+    "Run Backend",
+    "Verify Health / Readiness",
+    "Minimal Smoke Path",
+    "Troubleshooting",
+    "Safety Checklist",
+    "Next Steps"
+  ],
+  "commands_documented": [
+    "git clone",
+    "python3 -m venv",
+    "pip install -r requirements.txt",
+    "python3 -m backend",
+    "curl http://127.0.0.1:8765/health",
+    "curl http://127.0.0.1:8765/readiness",
+    "curl -X POST http://127.0.0.1:8765/grants",
+    "curl -X POST http://127.0.0.1:8765/demo-action",
+    "curl http://127.0.0.1:8765/audit-events",
+    "curl -X POST http://127.0.0.1:8765/grants/{id}/revoke"
+  ],
+  "safety_caveats": [
+    "No production SaaS readiness claim",
+    "Tenant isolation not implemented",
+    "No real secrets used",
+    "No real customer data used",
+    "Local-only demo/testing scope"
+  ],
+  "troubleshooting_topics": [
+    "Port already in use",
+    "Missing dependency",
+    "Python import path",
+    "Auth/operator token confusion",
+    "Readiness not ready",
+    "Request body/content-length issues"
+  ],
+  "validation_gates": [
+    "Docs are copy-paste runnable where applicable",
+    "Examples tested",
+    "JSON examples valid",
+    "No secrets",
+    "No OpenAPI drift",
+    "Full backend suite on main before push"
+  ],
+  "next_issue": "GL-147 Minimal Python SDK"
+}
