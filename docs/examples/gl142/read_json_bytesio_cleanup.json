@@ -1,0 +1,17 @@
+{
+  "issue_id": "GL-142",
+  "artifact_type": "read_json_bytesio_cleanup",
+  "bytesio_specific_production_hack_removed": true,
+  "request_parsing_behavior_changed": false,
+  "request_validation_weakened": false,
+  "raw_request_body_echoed": false,
+  "endpoint_api_behavior_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "auth_semantics_changed": false,
+  "operator_model_default_preserved": true,
+  "threading_http_server_preserved": true,
+  "audit_hash_chain_lock_preserved": true,
+  "next_issue": "GL-143 server.py Route Decomposition Plan"
+}
