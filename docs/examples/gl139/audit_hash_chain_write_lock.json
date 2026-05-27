@@ -1,0 +1,13 @@
+{
+  "issue_id": "GL-139",
+  "artifact_type": "audit_hash_chain_write_lock",
+  "process_local_write_lock_added": true,
+  "distributed_locking_added": false,
+  "threading_http_server_enabled": false,
+  "audit_event_schema_changed": false,
+  "db_schema_changed": false,
+  "openapi_changed": false,
+  "dependencies_changed": false,
+  "auth_semantics_changed": false,
+  "next_issue": "GL-140 ThreadingHTTPServer Enablement"
+}
