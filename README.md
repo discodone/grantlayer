@@ -69,16 +69,13 @@ GrantLayer is in a **developer-preview / controlled-pilot posture**. The primary
 
 ## License posture
 
-- **Intended/recommended license direction:** Apache License 2.0.
-- A `LICENSE` file and explicit license policy decision are planned as a follow-up (see **Next steps** below).
-- No `LICENSE` file exists in the repository yet.
-
----
+- **License:** Apache License 2.0. See [LICENSE](LICENSE).
+- A `LICENSE` file was added in **GL-153**.
 
 ## Contribution and security posture
 
-- **Contributing guide** — `CONTRIBUTING.md` is not present. A contribution policy is planned as a follow-up.
-- **Security policy** — `SECURITY.md` is not present. A security reporting policy is planned as a follow-up.
+- **Contributing guide** — See [CONTRIBUTING.md](CONTRIBUTING.md). Covers developer-preview rules, coding-agent contribution guidelines, DCO recommendation, and testing expectations.
+- **Security policy** — See [SECURITY.md](SECURITY.md). Covers reporting guidance, vulnerability scope, data-handling rules, and current caveats.
 - No mature public contribution process is claimed.
 
 ---
@@ -308,10 +305,11 @@ curl -s http://127.0.0.1:8765/audit-events | python3 -m json.tool
 
 | Issue | Title | Purpose |
 |-------|-------|---------|
-| GL-152 | LICENSE / CONTRIBUTING / SECURITY Decision Pack | Decide on and add LICENSE, CONTRIBUTING.md, and SECURITY.md files. |
-| GL-153 | GitHub Issue Templates / Feedback Templates | Create issue templates, PR template, and feedback templates if public publication is approved later. |
-| GL-154 | Public Secret / Sensitive Data Scan Gate | Perform an explicit secret-history audit (e.g. with `git-secrets`, `truffleHog`, or manual review) before any public push. |
+| GL-153 | LICENSE / CONTRIBUTING / SECURITY Decision Pack | Add LICENSE, CONTRIBUTING.md, and SECURITY.md files. |
+| GL-154 | AGENTS.md + llms.txt + Agent Integration Manifest | Add agent entry points, task contracts, and integration manifest. |
+| GL-155 | Agent Examples Pack | Add ready-to-run agent examples and task contracts. |
+| GL-156 | GitHub Issue Templates / Feedback Templates | Create issue templates, PR template, and feedback templates if public publication is approved later. |
 
 ---
 
-> This README was polished in **GL-151 Public README / Repo Metadata Polish**. It does **not** publish to GitHub, change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
+> This README was polished in **GL-151 Public README / Repo Metadata Polish**, completed blockers were fixed in **GL-152 Public Checklist Blocker Fixes**, and governance files were added in **GL-153 LICENSE / CONTRIBUTING / SECURITY Decision Pack**. It does **not** publish to GitHub, change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
