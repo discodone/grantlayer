@@ -546,6 +546,12 @@ class TestGL162ABranchScopeGuard(unittest.TestCase):
         "backend/src/server.py",
         "backend/src/grant_requests.py",
         "backend/tests/test_gl162a_pre_publication_security_review_fixes.py",
+        # narrowly necessary existing test updates for role allowlist compatibility
+        "backend/tests/test_gl093_grant_input_validation.py",
+        "backend/tests/test_gl097_self_approval_denial_reason.py",
+        "backend/tests/test_gl099_transactional_audit_consistency.py",
+        "backend/tests/test_gl114_string_length_validation.py",
+        "backend/tests/test_grant_requests.py",
     })
 
     _FORBIDDEN_PATTERNS = [
