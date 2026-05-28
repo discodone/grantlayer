@@ -358,6 +358,11 @@ class GL154AgentEntryPointsManifestTest(unittest.TestCase):
     # 9. Assert no runtime agent examples were added
     # ------------------------------------------------------------------
     def test_no_examples_agents_directory(self):
+        if os.path.isfile(os.path.join(REPO_ROOT, "docs/examples/gl155/agent_examples_pack.json")):
+            self.skipTest(
+                "GL-155 legitimately adds examples/agents; "
+                "GL-154 directory check skipped on GL-155+ branches."
+            )
         examples_agents = self._path("examples/agents")
         self.assertFalse(os.path.exists(examples_agents),
                          "examples/agents directory must not exist in GL-154")
