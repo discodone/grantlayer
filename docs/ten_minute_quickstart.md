@@ -74,9 +74,12 @@ This is **NOT tenant/workspace implementation.**
 ### 5.1 Clone the repository
 
 ```bash
-git clone https://forge.hofercloud.eu/toni/grantlayer-mvp.git
+git clone https://github.com/<ORG_OR_USER>/grantlayer-mvp.git
 cd grantlayer-mvp
 ```
+
+> Replace `<ORG_OR_USER>` with the future public GitHub owner after publication.
+> Until then, use the approved internal source.
 
 > If you already have the repo locally, `cd` into it instead.
 

@@ -47,7 +47,7 @@ The following capabilities form the current Product Core:
 GrantLayer is a Python project. The following commands have been verified in the reference environment:
 
 ```bash
-cd /home/adminuser/projects/grantlayer-mvp
+cd grantlayer-mvp
 python3 -m unittest discover backend.tests -v
 ```
 
