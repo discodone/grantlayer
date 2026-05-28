@@ -1,0 +1,184 @@
+name: Agent task request
+description: Define a scoped task for coding agents
+title: "[Agent Task]: "
+labels: ["agent-task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Read these first:**
+        - [AGENTS.md](../../AGENTS.md) — agent operating rules and forbidden areas
+        - [docs/agent_task_contract.md](../../docs/agent_task_contract.md) — task contract format and validation policy
+        - [docs/agent_integration_manifest.json](../../docs/agent_integration_manifest.json) — integration manifest
+        - [docs/agent_quickstart.md](../../docs/agent_quickstart.md) — 60-second orientation
+
+        **Developer Preview — GrantLayer is not production SaaS. Tenant isolation is not implemented.**
+
+        Agents must not broaden scope beyond what is listed in this issue.
+        Agents must not stage or commit `.claude/` files.
+        Do not include real secrets, real customer data, or private personal data.
+
+  - type: input
+    id: issue_id
+    attributes:
+      label: Issue ID
+      description: The GL issue ID for this task (e.g. GL-156).
+      placeholder: "GL-XXX"
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should the agent accomplish? Be specific and scoped.
+      placeholder: "Add … to … so that …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Background needed to understand the task. Reference prior issues if relevant.
+      placeholder: "GL-XXX completed … This task builds on … by adding …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_changed_files
+    attributes:
+      label: Expected changed files
+      description: List every file the agent is expected to create or modify.
+      placeholder: |
+        - path/to/new_file.py
+        - path/to/modified_file.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: allowed_files
+    attributes:
+      label: Allowed files (if necessary)
+      description: Files the agent may touch only if strictly required by the task.
+      placeholder: |
+        - README.md
+        - CONTRIBUTING.md
+    validations:
+      required: false
+
+  - type: textarea
+    id: forbidden_files
+    attributes:
+      label: Forbidden files
+      description: |
+        Files the agent must never touch for this task.
+        Always forbidden regardless of this list: `backend/src/*`, migrations, `requirements.txt`,
+        `requirements-dev.txt`, `pyproject.toml`, `setup.py`, `Pipfile`, `poetry.lock`,
+        `scripts/*`, `frontend/*`, `website/*`, `design/*`, `.claude/*`,
+        `sdk/python/grantlayer_client.py`, `docs/openapi.yaml`.
+      placeholder: |
+        - examples/agents/evidence_review_agent.py
+        - examples/langgraph_langchain/grantlayer_agent_example.py
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      description: What must be true for this task to be considered complete?
+      placeholder: |
+        1. All expected files exist and are valid.
+        2. JSON artifact booleans pass assertions.
+        3. Issue-specific test passes.
+        4. Security boundary regression test passes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation_commands
+    attributes:
+      label: Validation commands
+      description: Commands the agent must run to verify the work.
+      placeholder: |
+        python3 -m unittest backend.tests.test_glXXX_my_task -v
+        python3 -m unittest backend.tests.test_security_boundary_regression -v
+    validations:
+      required: true
+
+  - type: textarea
+    id: final_report_requirements
+    attributes:
+      label: Final report requirements
+      description: |
+        The agent must produce a final report. Specify required fields.
+        See docs/agent_task_contract.md for the standard final report format.
+        The final report must include a disposition:
+        ready_for_merge | merged_done | blocked | needs_manual_review | provider_timeout_recovery_needed
+      placeholder: |
+        Branch, base commit, commit hash, pushed to origin, working tree clean,
+        changed files list, scope assertions, test results, disposition.
+    validations:
+      required: true
+
+  - type: textarea
+    id: safety_boundaries
+    attributes:
+      label: Safety boundaries
+      description: Explicit safety constraints for this task.
+      value: |
+        - Do not publish to GitHub or call the GitHub API.
+        - Do not create live GitHub issues or PRs.
+        - Do not change git remotes.
+        - Do not rewrite git history.
+        - Do not perform secret-history cleanup.
+        - Do not change production backend code (backend/src/*).
+        - Do not change endpoint or API behavior.
+        - Do not change OpenAPI spec.
+        - Do not add migrations or change DB schema.
+        - Do not change auth semantics.
+        - Do not add dependencies.
+        - Do not change SDK implementation.
+        - Do not change LangGraph/LangChain code.
+        - Do not change runtime agent examples.
+        - Do not stage or commit .claude/ files.
+        - Do not use real secrets, real customer data, or private personal data.
+        - Do not claim production SaaS readiness.
+        - Do not claim tenant isolation is implemented.
+        - Do not claim a public GitHub release has happened.
+        - Do not merge to main. Do not push main.
+    validations:
+      required: true
+
+  - type: textarea
+    id: branch_merge_separation
+    attributes:
+      label: Branch / merge separation
+      description: Coding agents write branches; Fast-Merge agents merge to main. Do not merge in the same pass.
+      value: |
+        - Branch name: gl-XXX-short-description
+        - Base: main
+        - Merge to main: handled by Fast-Merge agent, not this coding agent.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: safety_checklist
+    attributes:
+      label: Safety checklist
+      options:
+        - label: I did not include real secrets.
+          required: true
+        - label: I did not include real customer data.
+          required: true
+        - label: I did not include private personal data.
+          required: true
+        - label: I understand GrantLayer is not production SaaS.
+          required: true
+        - label: I understand tenant isolation is not implemented.
+          required: true
+        - label: The agent must not stage or commit .claude/ files.
+          required: true
+        - label: The agent must produce a final report as specified.
+          required: true

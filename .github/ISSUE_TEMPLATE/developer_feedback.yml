@@ -1,0 +1,102 @@
+name: Developer feedback
+description: Share feedback from trying the developer-preview workflow
+title: "[Feedback]: "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Developer Preview — GrantLayer is not production SaaS. Tenant isolation is not implemented.**
+
+        Thank you for trying GrantLayer. Your feedback helps improve the developer experience.
+        Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) before submitting.
+
+        **Do not include real secrets, real customer data, or private personal data in this feedback.**
+
+  - type: textarea
+    id: what_you_tried
+    attributes:
+      label: What you tried
+      description: Describe what you were attempting to do with GrantLayer.
+      placeholder: "I was trying to … using …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what_worked
+    attributes:
+      label: What worked
+      description: What went smoothly? What was clear or helpful?
+      placeholder: "The quickstart was easy to follow. The SDK client was intuitive for …"
+    validations:
+      required: false
+
+  - type: textarea
+    id: what_was_confusing
+    attributes:
+      label: What was confusing or frustrating
+      description: Where did you get stuck? What was unclear?
+      placeholder: "I wasn't sure how to … The error message for … was unhelpful because …"
+    validations:
+      required: false
+
+  - type: textarea
+    id: missing_docs_examples
+    attributes:
+      label: Missing docs or examples
+      description: What documentation or examples were you looking for but couldn't find?
+      placeholder: "There is no example showing how to … I couldn't find docs for …"
+    validations:
+      required: false
+
+  - type: textarea
+    id: agent_coding_agent_experience
+    attributes:
+      label: Agent / coding-agent experience
+      description: If you used a coding agent (e.g. Claude Code) to work with this repository, how was that experience?
+      placeholder: "I used Claude Code to … The agent task contract was / was not clear because …"
+    validations:
+      required: false
+
+  - type: textarea
+    id: quickstart_experience
+    attributes:
+      label: Quickstart experience
+      description: How was the docs/agent_quickstart.md or README quickstart experience?
+      placeholder: "Step 3 was confusing because … The quickstart worked well up to …"
+    validations:
+      required: false
+
+  - type: textarea
+    id: sdk_experience
+    attributes:
+      label: SDK experience
+      description: If you used the Python SDK client, how was that experience?
+      placeholder: "The sdk/python client worked for … but I had trouble with …"
+    validations:
+      required: false
+
+  - type: textarea
+    id: suggested_improvement
+    attributes:
+      label: Suggested improvement
+      description: What one change would most improve the developer experience?
+      placeholder: "Add an example showing … / Clarify the docs for … / Fix the error message when …"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: safety_checklist
+    attributes:
+      label: Safety checklist
+      options:
+        - label: I did not include real secrets.
+          required: true
+        - label: I did not include real customer data.
+          required: true
+        - label: I did not include private personal data.
+          required: true
+        - label: I understand GrantLayer is not production SaaS.
+          required: true
+        - label: I understand tenant isolation is not implemented.
+          required: true

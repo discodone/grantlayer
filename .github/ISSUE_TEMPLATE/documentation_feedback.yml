@@ -1,0 +1,83 @@
+name: Documentation feedback
+description: Report unclear, missing, or inconsistent docs
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Developer Preview — GrantLayer is not production SaaS. Tenant isolation is not implemented.**
+
+        Help us improve the documentation. Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) before submitting.
+
+        **Do not include real secrets, real customer data, or private personal data in this report.**
+
+  - type: input
+    id: page_file
+    attributes:
+      label: Page / file
+      description: Which file or doc page has the issue? (e.g. docs/agent_quickstart.md, README.md)
+      placeholder: "docs/agent_quickstart.md"
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: Issue description
+      description: What is wrong, unclear, or missing?
+      placeholder: |
+        The section on … says … but the actual behavior is …
+        There is no explanation of … which I needed to understand …
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested_wording
+    attributes:
+      label: Suggested wording or content
+      description: If you have a suggestion for how to fix it, paste it here.
+      placeholder: "Replace 'X' with 'Y'. Add a note explaining that …"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: affected_audience
+    attributes:
+      label: Affected audience
+      description: Who is most affected by this documentation issue?
+      options:
+        - Developers integrating GrantLayer
+        - Coding agents / AI assistants using the repository
+        - Both developers and agents
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: agent_docs_affected
+    attributes:
+      label: Are agent docs affected?
+      description: Does this issue affect docs that coding agents rely on (AGENTS.md, agent_task_contract.md, agent_quickstart.md, agent_integration_manifest.json)?
+      options:
+        - label: "Yes — AGENTS.md"
+        - label: "Yes — docs/agent_task_contract.md"
+        - label: "Yes — docs/agent_quickstart.md"
+        - label: "Yes — docs/agent_integration_manifest.json"
+        - label: "No — not agent-specific docs"
+
+  - type: checkboxes
+    id: safety_checklist
+    attributes:
+      label: Safety checklist
+      options:
+        - label: I did not include real secrets.
+          required: true
+        - label: I did not include real customer data.
+          required: true
+        - label: I did not include private personal data.
+          required: true
+        - label: I understand GrantLayer is not production SaaS.
+          required: true
+        - label: I understand tenant isolation is not implemented.
+          required: true
