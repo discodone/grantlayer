@@ -1,0 +1,105 @@
+{
+  "issue_id": "GL-158",
+  "artifact_type": "git_history_exposure_review_public_snapshot_decision",
+  "description": "Decision pack for git history exposure review. Recommends a clean public snapshot for any future public GitHub developer-preview release. Full internal history publication not recommended without explicit forensic audit approval.",
+
+  "review_document_added": true,
+  "validation_test_added": true,
+  "clean_public_snapshot_recommended": true,
+
+  "full_history_publication_recommended": false,
+  "history_rewrite_performed": false,
+  "git_filter_repo_run": false,
+  "bfg_run": false,
+  "commits_deleted": false,
+  "secret_history_cleanup_performed": false,
+  "secrets_rotated": false,
+  "github_publication_performed": false,
+  "live_github_issues_created": false,
+  "github_api_called": false,
+  "git_remotes_changed": false,
+  "public_repo_created": false,
+  "mirror_repo_created": false,
+  "production_code_changed": false,
+  "backend_src_changed": false,
+  "endpoint_api_behavior_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "sdk_changed": false,
+  "langgraph_langchain_code_changed": false,
+  "runtime_agent_examples_changed": false,
+  "frontend_website_design_changed": false,
+  "production_saas_ready_claimed": false,
+  "tenant_isolation_claimed_implemented": false,
+  "public_github_release_claimed": false,
+  "full_history_clean_claimed": false,
+  "uses_real_secrets": false,
+  "uses_real_customer_data": false,
+  "includes_private_personal_data": false,
+
+  "exposure_categories_reviewed": [
+    "internal_hostnames",
+    "internal_absolute_paths",
+    "local_terminal_and_provider_traces",
+    "prompt_and_final_report_artifacts",
+    "stale_branch_names_and_internal_workflow_details",
+    "possible_credentials_and_secrets_in_history",
+    "real_customer_data_risk",
+    "private_personal_data_risk"
+  ],
+
+  "decision_options_considered": [
+    "publish_full_history",
+    "filter_or_rewrite_existing_history",
+    "publish_clean_public_snapshot",
+    "keep_private_until_later"
+  ],
+
+  "recommendation": "Publish a clean public snapshot. Use an orphan branch or new public repository initialized from the current vetted working tree. Do not include internal git history in the initial public release. Full history publication may be revisited only if a later dedicated forensic history audit produces explicit evidence that the full history is clean.",
+
+  "gl159_requirements": [
+    "Create a private snapshot branch or private mirror repository from current vetted working tree",
+    "Verify resulting tree matches expected content",
+    "Run GL-157 scan gate against snapshot tree and confirm exit 0",
+    "Run all public-readiness validation tests against the snapshot",
+    "Verify git remote configuration shows no accidental GitHub remote",
+    "Verify .claude/ is not present in the snapshot tree",
+    "Verify no private hostnames or internal paths in snapshot tree",
+    "Verify no accidental GitHub publication occurs during dry run",
+    "Document dry-run result in a structured report artifact"
+  ],
+
+  "gl160_go_no_go_inputs": [
+    "Whether to publish clean snapshot to public GitHub",
+    "Whether repository metadata is correct for developer preview",
+    "Whether required release caveats are present in README and SECURITY",
+    "Whether GL-159 dry-run result approves publication",
+    "Whether scan gate passes on final snapshot before publication",
+    "Whether any new issues from GL-159 must be resolved first"
+  ],
+
+  "validation_gates": {
+    "json_artifact_valid": true,
+    "review_document_exists": true,
+    "validation_test_exists": true,
+    "doc_contains_required_caveats": true,
+    "doc_contains_exposure_categories": true,
+    "doc_contains_decision_options": true,
+    "doc_contains_recommendation": true,
+    "doc_contains_clean_snapshot_rationale": true,
+    "doc_contains_gl159_requirements": true,
+    "doc_contains_gl160_go_no_go_inputs": true,
+    "doc_contains_risk_register": true,
+    "doc_contains_go_no_go_criteria": true,
+    "doc_contains_non_goals": true,
+    "no_forbidden_content_in_doc": true,
+    "no_forbidden_content_in_json": true,
+    "scope_guard_passed": true,
+    "gl157_regression_passed": true,
+    "gl156_regression_passed": true,
+    "security_boundary_regression_passed": true
+  },
+
+  "next_issue": "GL-159 GitHub Private Mirror Dry Run"
+}
