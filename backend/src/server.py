@@ -1228,6 +1228,14 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                         str(e),
                     ))
                     return
+            # GL-162A: validate role against explicit allowlist
+            if data["role"] not in grant_requests.ALLOWED_GRANT_ROLES:
+                self._send_json(400, self._gl030_error(
+                    "Invalid field: role",
+                    "invalid_field",
+                    f"role must be one of: {sorted(grant_requests.ALLOWED_GRANT_ROLES)}",
+                ))
+                return
             ok, err = self._validate_grant_dates(data["validFrom"], data["validUntil"])
             if not ok:
                 self._send_json(400, err)
