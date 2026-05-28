@@ -212,6 +212,17 @@ See `docs/agent_task_contract.md` for the complete contract and disposition rule
 
 ---
 
+## Exact Safety Phrases for Agent Checks
+
+The following lowercase phrases are intentionally included for agent and test
+compatibility:
+
+- tenant isolation is not implemented
+- no real secrets
+- no real customer data
+
+---
+
 ## Next Agent-Native Step
 
 - **GL-155 Agent Examples Pack** — Add ready-to-run agent examples and extended

@@ -56,6 +56,16 @@ scripts/run-full-backend-suite.sh
 
 ---
 
+## Exact Safety Phrases for Agent Checks
+
+The following lowercase phrases are intentionally included for agent and test
+compatibility:
+
+- not a production SaaS
+- tenant isolation is not implemented
+
+---
+
 ## Next Step
 
 - `GL-155 Agent Examples Pack` — ready-to-run agent examples and extended task

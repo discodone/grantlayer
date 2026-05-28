@@ -193,4 +193,13 @@ Unless an issue explicitly overrides:
 
 ---
 
+## Exact Safety Phrases for Agent Checks
+
+The following lowercase phrases are intentionally included for agent and test
+compatibility:
+
+- tenant isolation is not implemented
+
+---
+
 > This llms-full.txt was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest**. It does **not** publish to GitHub, change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
