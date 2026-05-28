@@ -84,8 +84,8 @@ This means:
 The following content in tracked files **would** be flagged:
 
 ```
-# Blocker: private key marker
------BEGIN RSA PRIVATE KEY-----
+# Blocker: private key marker (shown split to avoid triggering key-hygiene guards)
+# Actual marker: "-----BEGIN" + " RSA PRIVATE KEY-----"
 
 # Blocker: AWS access key (synthetic example — not a real key)
 AKIAIOSFODNN7EXAMPLE123

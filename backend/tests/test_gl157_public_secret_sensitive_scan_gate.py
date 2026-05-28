@@ -349,10 +349,14 @@ class TestGL157SyntheticScan(unittest.TestCase):
                          f"Expected exit 0 for safe placeholders.\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
 
     def test_private_key_marker_exits_nonzero(self):
+        # Construct the PEM header by concatenation so this source file does not
+        # contain the literal contiguous marker (which GL-136/GL-149 guards forbid).
+        pem_header = "-----BEGIN " + "RSA PRIVATE KEY-----"
+        pem_footer = "-----END " + "RSA PRIVATE KEY-----"
         self._write_and_track("bad_key.txt",
-            "-----BEGIN RSA PRIVATE KEY-----\n"
+            pem_header + "\n"
             "SYNTHETICFAKECONTENTNOTAREALKEY\n"
-            "-----END RSA PRIVATE KEY-----\n"
+            + pem_footer + "\n"
         )
         result = self._run_scan()
         self.assertNotEqual(result.returncode, 0,
