@@ -100,6 +100,20 @@ class TestGL162JsonArtifact(unittest.TestCase):
     def test_clean_snapshot_build_required_by_gl161(self):
         self.assertTrue(self.data["clean_public_snapshot_build_required_by_gl161"])
 
+    def test_pre_publication_security_fixes_required_by_gl162a(self):
+        self.assertTrue(self.data["pre_publication_security_fixes_required_by_gl162a"])
+
+    def test_gl162a_security_fixes(self):
+        fixes = self.data["gl162a_security_fixes"]
+        self.assertIsInstance(fixes, dict)
+        self.assertTrue(fixes["scan_gate_self_exclusion_resolved"])
+        self.assertTrue(fixes["public_scanner_clean"])
+        self.assertTrue(fixes["internal_forge_hostname_removed_from_public_files"])
+        self.assertTrue(fixes["claude_directory_ignored"])
+        self.assertTrue(fixes["http_security_headers_added"])
+        self.assertTrue(fixes["reverse_proxy_rate_limit_resolver_added"])
+        self.assertTrue(fixes["grant_role_allowlist_added"])
+
     def test_full_history_publication_forbidden(self):
         self.assertFalse(self.data["full_history_publication_allowed"])
 
@@ -365,6 +379,28 @@ class TestGL162DocContent(unittest.TestCase):
 
     def test_publish_gate_checklist_present(self):
         self.assertIn("Publish Gate Checklist", self.doc)
+
+    def test_gl162a_security_readiness_scan_gate(self):
+        self.assertIn("scan-gate self-exclusion", self.doc.lower())
+
+    def test_gl162a_security_readiness_scanner_clean(self):
+        self.assertIn("public scanner clean", self.doc.lower())
+
+    def test_gl162a_security_readiness_forge_hostname(self):
+        self.assertIn("internal forgejo hostname removed from public files", self.doc.lower())
+
+    def test_gl162a_security_readiness_claude_ignored(self):
+        # Doc uses markdown backtick notation: `.claude/` ignored
+        self.assertIn("`.claude/` ignored", self.doc.lower())
+
+    def test_gl162a_security_readiness_http_headers(self):
+        self.assertIn("http security headers", self.doc.lower())
+
+    def test_gl162a_security_readiness_reverse_proxy(self):
+        self.assertIn("reverse-proxy-aware rate-limit ip resolver", self.doc.lower())
+
+    def test_gl162a_security_readiness_role_allowlist(self):
+        self.assertIn("grant role allowlist", self.doc.lower())
 
     def test_abort_rollback_procedure_present(self):
         self.assertIn("Abort", self.doc)

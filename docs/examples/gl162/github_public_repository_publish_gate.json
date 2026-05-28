@@ -13,6 +13,7 @@
   "manual_approval_phrase": "I approve publishing the clean GrantLayer developer-preview snapshot to public GitHub.",
   "clean_public_snapshot_required_by_gl160": true,
   "clean_public_snapshot_build_required_by_gl161": true,
+  "pre_publication_security_fixes_required_by_gl162a": true,
   "full_history_publication_allowed": false,
   "github_publication_performed": false,
   "public_repo_created": false,
@@ -45,6 +46,15 @@
   "uses_real_secrets": false,
   "uses_real_customer_data": false,
   "includes_private_personal_data": false,
+  "gl162a_security_fixes": {
+    "scan_gate_self_exclusion_resolved": true,
+    "public_scanner_clean": true,
+    "internal_forge_hostname_removed_from_public_files": true,
+    "claude_directory_ignored": true,
+    "http_security_headers_added": true,
+    "reverse_proxy_rate_limit_resolver_added": true,
+    "grant_role_allowlist_added": true
+  },
   "suggested_topics": [
     "grant-management",
     "audit-trail",
@@ -80,6 +90,7 @@
     "run_gl161_snapshot_build",
     "run_public_secret_sensitive_scan_on_snapshot",
     "run_gl162_targeted_test",
+    "run_gl162a_targeted_test",
     "run_gl161_regression",
     "run_gl160_regression",
     "run_gl159_regression",
