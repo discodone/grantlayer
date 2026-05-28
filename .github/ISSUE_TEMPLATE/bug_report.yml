@@ -1,0 +1,122 @@
+name: Bug report
+description: Report a reproducible GrantLayer developer-preview bug
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Developer Preview — GrantLayer is not production SaaS. Tenant isolation is not implemented.**
+
+        Before filing, please read [CONTRIBUTING.md](../../CONTRIBUTING.md) and [SECURITY.md](../../SECURITY.md).
+        For security-sensitive findings, do **not** open a public issue — see the [security policy](../../SECURITY.md).
+
+        **Do not include real secrets, real customer data, or private personal data in this report.**
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One-sentence description of the bug.
+      placeholder: "e.g. Grant lifecycle endpoint returns 500 when audit log is empty"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: Affected area
+      description: Which part of GrantLayer is affected?
+      options:
+        - Auth / Token
+        - Grant lifecycle (create / approve / reject)
+        - Audit log
+        - SDK (Python client)
+        - Agent examples / coding-agent workflow
+        - Documentation / quickstart
+        - CI / test infrastructure
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the bug.
+      placeholder: |
+        1. Start the backend with `uvicorn backend.src.server:app --reload`
+        2. POST /v1/grants with body …
+        3. Observe …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+      description: What should happen?
+      placeholder: "The endpoint should return 200 with …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual behavior
+      description: What actually happens?
+      placeholder: "The endpoint returns 500 with traceback …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: local_environment
+    attributes:
+      label: Local environment
+      description: Python version, OS, relevant dependency versions.
+      placeholder: |
+        Python: 3.11.x
+        OS: Ubuntu 22.04 / macOS 14
+        pip list output (relevant packages only)
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs_output
+    attributes:
+      label: Logs / output
+      description: |
+        Paste relevant log output here.
+        ⚠️ Do not paste real secrets, API tokens, real customer data, or private personal data.
+        Redact any sensitive values before posting (e.g. replace tokens with `<token>`).
+      placeholder: "Paste redacted logs here …"
+    validations:
+      required: false
+
+  - type: textarea
+    id: validation_run
+    attributes:
+      label: Validation run
+      description: Output of the relevant test or validation command, if applicable.
+      placeholder: |
+        python3 -m unittest backend.tests.test_security_boundary_regression -v
+        … (paste output)
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: safety_checklist
+    attributes:
+      label: Safety checklist
+      description: Please confirm all items before submitting.
+      options:
+        - label: I did not include real secrets.
+          required: true
+        - label: I did not include real customer data.
+          required: true
+        - label: I did not include private personal data.
+          required: true
+        - label: I understand GrantLayer is not production SaaS.
+          required: true
+        - label: I understand tenant isolation is not implemented.
+          required: true

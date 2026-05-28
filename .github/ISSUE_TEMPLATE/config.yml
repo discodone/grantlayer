@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security policy
+    url: ../../SECURITY.md
+    about: Read responsible disclosure guidance before reporting sensitive issues.
+  - name: Agent task contract
+    url: ../../docs/agent_task_contract.md
+    about: Use this for scoped coding-agent tasks.
+  - name: Agent quickstart
+    url: ../../docs/agent_quickstart.md
+    about: Start here before asking an agent to modify the repository.
