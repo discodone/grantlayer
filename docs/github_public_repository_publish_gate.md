@@ -18,9 +18,24 @@ Before any publication attempt:
 
 1. **GL-160 go/no-go decision completed** — `docs/public_github_go_no_go_decision.md` must be present and merged on main.
 2. **GL-161 clean public snapshot build completed** — `scripts/build-clean-public-snapshot.sh` must be present and merged on main; the snapshot must have been built and validated locally.
-3. **Clean public snapshot required** — Only the output of the GL-161 snapshot build process may be published. No other tree form is acceptable.
-4. **Full internal history publication is forbidden** — The full Forgejo git history must never be pushed to a public GitHub repository.
-5. **Manual approval required before actual publication** — See the [Required Manual Approval](#required-manual-approval) section.
+3. **GL-162A pre-publication security fixes completed** — all six pre-publication security review findings must be resolved on main before actual publication.
+4. **Clean public snapshot required** — Only the output of the GL-161 snapshot build process may be published. No other tree form is acceptable.
+5. **Full internal history publication is forbidden** — The full Forgejo git history must never be pushed to a public GitHub repository.
+6. **Manual approval required before actual publication** — See the [Required Manual Approval](#required-manual-approval) section.
+
+---
+
+## Security Readiness Summary
+
+The following pre-publication security findings have been resolved (GL-162A):
+
+- **Scan-gate self-exclusion resolved** — the public scanner no longer fails on its own meta-files.
+- **Public scanner clean** — the public secret/sensitive scan gate reports no blockers on the current working tree.
+- **Internal Forgejo hostname removed from public files** — the internal Forgejo host URL is no longer present in any public-facing documentation.
+- **`.claude/` ignored** — the `.claude/` directory is excluded from the public snapshot and listed in `.gitignore`.
+- **HTTP security headers added** — `X-Content-Type-Options`, `X-Frame-Options`, `Cache-Control`, and `Content-Security-Policy` headers are set on all responses.
+- **Reverse-proxy-aware rate-limit IP resolver added** — the rate limiter resolves the real client IP behind a reverse proxy via `CF-Connecting-IP` / `X-Forwarded-For`.
+- **Grant role allowlist added** — only permitted grant roles (`ALLOWED_GRANT_ROLES`) are accepted in grant requests.
 
 ---
 
@@ -154,6 +169,7 @@ All steps must pass before publication proceeds:
 - [ ] Run GL-161 snapshot build (`scripts/build-clean-public-snapshot.sh`)
 - [ ] Run public secret/sensitive scan (GL-157 scan gate) on the snapshot output
 - [ ] Run GL-162 targeted test (`python3 -m unittest backend.tests.test_gl162_github_public_repository_publish_gate -v`)
+- [ ] Run GL-162A targeted test (`python3 -m unittest backend.tests.test_gl162a_pre_publication_security_review_fixes -v`)
 - [ ] Run GL-161 regression (`python3 -m unittest backend.tests.test_gl161_clean_public_snapshot_build -v`)
 - [ ] Run GL-160 regression (`python3 -m unittest backend.tests.test_gl160_public_github_go_no_go_decision -v`)
 - [ ] Run GL-159 regression (`python3 -m unittest backend.tests.test_gl159_github_private_mirror_dry_run -v`)
