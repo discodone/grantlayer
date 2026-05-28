@@ -415,6 +415,7 @@ class GL154AgentEntryPointsManifestTest(unittest.TestCase):
             "docs/ten_minute_quickstart.md",
             "sdk/python/README.md",
             "docs/langgraph_langchain_integration_example.md",
+            "backend/tests/test_gl153_license_contributing_security_decision.py",
         }
 
         forbidden = (
