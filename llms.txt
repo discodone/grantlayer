@@ -1,0 +1,62 @@
+# llms.txt
+
+## GrantLayer — Developer Preview
+
+GrantLayer is a verification, audit, and compliance layer for agentic grant and
+funding workflows, written in Python (stdlib + `cryptography`). It runs locally
+with SQLite or PostgreSQL.
+
+**Status:** Developer Preview — local evaluation and controlled pilot only.
+
+**Important caveats:**
+- Not a production SaaS. Do not deploy to shared multi-tenant infrastructure.
+- Tenant isolation is not implemented.
+- No real secrets or customer data are used anywhere.
+- Public GitHub release has not happened.
+
+---
+
+## Start Here
+
+| File | Purpose |
+|------|---------|
+| `README.md` | Project overview, status, stack, API quick reference |
+| `AGENTS.md` | Primary entry point for AI coding agents: rules, boundaries, workflow |
+| `docs/agent_quickstart.md` | 60-second orientation for first agent contributions |
+| `docs/agent_task_contract.md` | Issue/task specification structure and final-report format |
+| `docs/ten_minute_quickstart.md` | Clone → install → start backend → smoke path |
+| `sdk/python/README.md` | Minimal Python SDK usage guide |
+| `docs/langgraph_langchain_integration_example.md` | How GrantLayer fits into an agentic workflow |
+
+---
+
+## Safety
+
+- Do not use real secrets — all documentation uses placeholder tokens.
+- Do not use real customer data — all examples use synthetic identifiers.
+- Do not claim production SaaS readiness.
+- Do not claim tenant isolation is implemented.
+- Do not stage or commit `.claude/` files.
+
+---
+
+## Validation Commands
+
+```bash
+# Fast regression
+python3 -m unittest backend.tests.test_security_boundary_regression -v
+
+# Issue-specific (example)
+python3 -m unittest backend.tests.test_gl154_agent_entry_points_manifest -v
+
+# Full suite (only in long-timeout environments; do not run through a
+# 120-second-limited agent shell wrapper)
+scripts/run-full-backend-suite.sh
+```
+
+---
+
+## Next Step
+
+- `GL-155 Agent Examples Pack` — ready-to-run agent examples and extended task
+  contracts.
