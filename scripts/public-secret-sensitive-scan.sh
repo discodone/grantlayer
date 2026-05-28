@@ -61,9 +61,31 @@ cd "$REPO_ROOT"
 
 SKIP_EXTENSIONS="png jpg jpeg gif ico bmp svg pdf db sqlite sqlite3 pyc pyo so dylib dll zip tar gz bz2 xz whl egg"
 
+# Scanner meta files: excluded from scanning to prevent self-flagging.
+# These files legitimately contain scanner patterns (as patterns, examples, or test fixtures)
+# and are not genuine secrets.
+META_EXCLUDE=(
+    "scripts/public-secret-sensitive-scan.sh"
+    "docs/public_secret_sensitive_scan_gate.md"
+    "backend/tests/test_gl157_public_secret_sensitive_scan_gate.py"
+    "backend/tests/test_gl162a_pre_publication_security_review_fixes.py"
+)
+
 TOTAL_FILES=0
 TOTAL_BLOCKERS=0
+META_EXCLUDED_COUNT=0
 declare -A CATEGORY_COUNTS
+
+_is_meta_excluded() {
+    local file="$1"
+    local excluded
+    for excluded in "${META_EXCLUDE[@]}"; do
+        if [[ "$file" == "$excluded" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
 
 _is_skip_ext() {
     local file="$1"
@@ -185,6 +207,10 @@ while IFS= read -r rel_file; do
     [[ -z "$rel_file" ]] && continue
     local_file="$REPO_ROOT/$rel_file"
     [[ -f "$local_file" ]] || continue
+    if _is_meta_excluded "$rel_file"; then
+        META_EXCLUDED_COUNT=$((META_EXCLUDED_COUNT + 1))
+        continue
+    fi
     if _is_skip_ext "$rel_file"; then
         continue
     fi
@@ -193,6 +219,7 @@ while IFS= read -r rel_file; do
 done <<< "$TRACKED_FILES"
 
 echo "[$SCRIPT_NAME] Scanned files : $TOTAL_FILES"
+echo "[$SCRIPT_NAME] Meta-excluded : $META_EXCLUDED_COUNT (scanner/docs/tests self-references)"
 echo "[$SCRIPT_NAME] Blockers found: $TOTAL_BLOCKERS"
 
 if [[ $TOTAL_BLOCKERS -gt 0 ]]; then

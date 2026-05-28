@@ -2,6 +2,7 @@
 
 import datetime
 import hashlib
+import ipaddress
 import json
 import re
 import os
@@ -78,6 +79,13 @@ def _cors_headers_for(origin: str | None) -> dict[str, str]:
         }
     return {}
 
+
+_SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Cache-Control": "no-store",
+    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+}
 
 MAX_JSON_BODY_BYTES = 1_048_576
 
@@ -228,6 +236,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         origin = self.headers.get("Origin")
         for k, v in _cors_headers_for(origin).items():
             self.send_header(k, v)
+        for k, v in _SECURITY_HEADERS.items():
+            self.send_header(k, v)
         self.end_headers()
         self.wfile.write(body)
 
@@ -235,6 +245,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        for k, v in _SECURITY_HEADERS.items():
+            self.send_header(k, v)
         self.end_headers()
         self.wfile.write(body)
 
@@ -514,20 +526,54 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             return self._require_operator(roles)
         return self._require_admin()
 
+    def _resolve_client_ip(self) -> str | None:
+        """Resolve the real client IP with safe reverse-proxy header support.
+
+        Priority:
+        1. CF-Connecting-IP if syntactically valid (Cloudflare termination)
+        2. First valid IP in X-Forwarded-For
+        3. Fallback to client_address[0]
+
+        Malformed values are silently ignored; whitespace is trimmed.
+        Uses stdlib ipaddress — no added dependencies.
+        """
+        def _valid_ip(value: str) -> str | None:
+            try:
+                ipaddress.ip_address(value.strip())
+                return value.strip()
+            except ValueError:
+                return None
+
+        cf_ip = (self.headers.get("CF-Connecting-IP") or "").strip()
+        if cf_ip:
+            resolved = _valid_ip(cf_ip)
+            if resolved:
+                return resolved
+
+        xff = (self.headers.get("X-Forwarded-For") or "").strip()
+        if xff:
+            first = xff.split(",")[0]
+            resolved = _valid_ip(first)
+            if resolved:
+                return resolved
+
+        client_address = getattr(self, "client_address", None)
+        if client_address:
+            return client_address[0]
+        return None
+
     def _check_rate_limit(self, group: str) -> bool:
         """Check rate limit for the current client IP and endpoint group.
 
         Returns True if the request is allowed.  On False a deterministic
         HTTP 429 response with Retry-After is already sent.
 
-        When client_address is not available (e.g. some test mocks) the
-        check is skipped to avoid breaking test suites that are not
-        explicitly testing rate-limit behaviour.
+        When no client IP is resolvable (e.g. some test mocks) the check is
+        skipped to avoid breaking test suites not testing rate-limit behaviour.
         """
-        client_address = getattr(self, "client_address", None)
-        if client_address is None:
+        ip = self._resolve_client_ip()
+        if ip is None:
             return True
-        ip = client_address[0]
         allowed, retry_after = _rate_limiter.check(ip, group)
         if not allowed:
             payload = self._gl030_error(
@@ -542,6 +588,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self.send_header("Retry-After", str(retry_after))
             origin = self.headers.get("Origin")
             for k, v in _cors_headers_for(origin).items():
+                self.send_header(k, v)
+            for k, v in _SECURITY_HEADERS.items():
                 self.send_header(k, v)
             self.end_headers()
             self.wfile.write(body)
@@ -781,6 +829,8 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self.send_header("X-Evidence-Hash", evidence_hash)
             origin = self.headers.get("Origin")
             for k, v in _cors_headers_for(origin).items():
+                self.send_header(k, v)
+            for k, v in _SECURITY_HEADERS.items():
                 self.send_header(k, v)
             self.end_headers()
             self.wfile.write(body)
