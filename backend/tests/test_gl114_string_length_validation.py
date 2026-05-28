@@ -584,7 +584,7 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {
             "subjectId": "sub-1",
-            "role": "engineer",
+            "role": "reviewer",
             "action": "read",
             "resource": "repo-a",
             "validFrom": "2026-01-01T00:00:00Z",
@@ -602,7 +602,7 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {
             "subjectId": "x" * 128,
-            "role": "x" * 64,
+            "role": "reviewer",
             "action": "x" * 256,
             "resource": "x" * 256,
             "validFrom": "2026-01-01T00:00:00Z",
@@ -733,7 +733,7 @@ class TestGl114NoStateMutationOnFailure(_BaseGl114):
         before = len(self.requests_mod.list_grant_requests())
         payload = {
             "subjectId": "sub-1",
-            "role": "engineer",
+            "role": "reviewer",
             "action": "read",
             "resource": "repo-a",
             "validFrom": "2026-01-01T00:00:00Z",
@@ -777,7 +777,7 @@ class TestGl114ExistingBehaviorPreserved(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {
             "subjectId": "sub-1",
-            "role": "engineer",
+            "role": "reviewer",
             "action": "read",
             "resource": "repo-a",
             "validFrom": "2026-01-01T00:00:00Z",

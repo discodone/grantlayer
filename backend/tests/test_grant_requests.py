@@ -351,7 +351,7 @@ class TestGrantRequests(unittest.TestCase):
         # 1. Create a grant request
         req_data = {
             "subjectId": "tech-01",
-            "role": "technician", 
+            "role": "operator",
             "action": "restart-service",
             "resource": "customer-env-a",
             "validFrom": "2026-01-01T00:00:00Z",
@@ -579,7 +579,7 @@ class TestGrantRequests(unittest.TestCase):
         # Create a grant request
         req_data = {
             "subjectId": "tech-01",
-            "role": "technician",
+            "role": "operator",
             "action": "restart-service",
             "resource": "customer-env-a",
             "validFrom": "2026-01-01T00:00:00Z",

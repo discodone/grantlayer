@@ -598,7 +598,7 @@ class TestGl099ServerSafety(_BaseGl099):
 
         req_data = {
             "subjectId": "tech-01",
-            "role": "technician",
+            "role": "operator",
             "action": "restart-service",
             "resource": "customer-env-a",
             "validFrom": "2026-01-01T00:00:00Z",
