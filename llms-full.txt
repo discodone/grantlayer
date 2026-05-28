@@ -1,0 +1,205 @@
+# llms-full.txt
+
+## GrantLayer — Full Agent Entry Map
+
+---
+
+### 1. Project Overview
+
+GrantLayer is a verification, audit, and compliance layer for agentic grant and
+funding workflows. When AI agents prepare funding applications, evaluate
+eligibility, collect evidence, or trigger approval decisions, institutions need
+a neutral verification layer — one that makes every step traceable,
+tamper-evident, and independently auditable.
+
+**Primary language:** Python 3.13 (stdlib + `cryptography` v43.0.0)
+**Database:** SQLite (default) or PostgreSQL (optional)
+**Tests:** Python `unittest`
+**License:** Apache-2.0
+
+---
+
+### 2. Status / Caveats
+
+| Posture | Value |
+|---------|-------|
+| Maturity | Developer Preview — local evaluation and controlled pilot only |
+| Production SaaS readiness | Not claimed |
+| Tenant/workspace isolation | Not implemented |
+| Public GitHub release | Not performed |
+| Real customer data | No — synthetic identifiers only |
+| Real secrets | No — placeholder tokens only |
+
+- This is **not a production SaaS**.
+- **Tenant isolation is not implemented** — data shares a single namespace.
+- **No real secrets or customer data** anywhere in the repository.
+- **Public GitHub release has not happened** — explicit go/no-go required (GL-160).
+
+---
+
+### 3. Repository Map
+
+```
+grantlayer-mvp/
+├── AGENTS.md                      # Primary entry point for AI coding agents
+├── llms.txt                       # Concise agent entry map
+├── llms-full.txt                  # This file — detailed map
+├── README.md                      # Human + agent project overview
+├── LICENSE                        # Apache-2.0
+├── CONTRIBUTING.md                # Contribution rules and coding-agent guidelines
+├── SECURITY.md                    # Security policy and reporting guidance
+├── requirements.txt               # Python runtime dependencies (DO NOT CHANGE)
+├── requirements-dev.txt           # Dev dependencies (DO NOT CHANGE)
+├── backend/
+│   ├── src/                       # PRODUCTION CODE — agent changes forbidden by default
+│   ├── tests/                     # Tests — safe for agent contributions
+│   └── __main__.py                # Backend entry point
+├── docs/
+│   ├── agent_quickstart.md        # 60-second orientation for agents
+│   ├── agent_task_contract.md     # Issue/task contract and final-report format
+│   ├── agent_integration_manifest.json # Machine-readable metadata
+│   ├── ten_minute_quickstart.md   # Developer quickstart
+│   ├── langgraph_langchain_integration_example.md # Agent workflow example docs
+│   ├── public_github_readiness_pack.md # Public-readiness checklist
+│   ├── first_developer_feedback_log.md # Developer feedback intake
+│   ├── examples/gl*/              # Issue-specific validation artifacts
+│   └── openapi.yaml               # OpenAPI contract (DO NOT CHANGE)
+├── sdk/python/
+│   ├── grantlayer_client.py       # SDK code (DO NOT CHANGE unless issue allows)
+│   └── README.md                  # SDK usage guide — safe to update
+├── examples/langgraph_langchain/
+│   └── grantlayer_agent_example.py # LangGraph example (DO NOT CHANGE unless issue allows)
+└── scripts/                       # Dev/test scripts (DO NOT CHANGE)
+```
+
+---
+
+### 4. Important Docs
+
+| Document | What it covers |
+|----------|----------------|
+| `AGENTS.md` | Agent rules, safe/forbidden areas, workflow, final report format |
+| `docs/agent_quickstart.md` | 60-second orientation for first agent contributions |
+| `docs/agent_task_contract.md` | Task specification structure, disposition values, validation policy |
+| `docs/agent_integration_manifest.json` | Machine-readable project metadata |
+| `README.md` | Project overview, status, developer entry path, API quick reference |
+| `CONTRIBUTING.md` | Contribution guidelines, DCO recommendation, coding-agent rules |
+| `SECURITY.md` | Security policy, vulnerability scope, reporting guidance |
+
+---
+
+### 5. SDK Entry Point
+
+- `sdk/python/README.md` — how to import and use the minimal Python SDK.
+- `sdk/python/grantlayer_client.py` — runtime SDK code. Do not change unless the
+  issue explicitly scopes to SDK work.
+
+---
+
+### 6. LangGraph / LangChain Docs
+
+- `docs/langgraph_langchain_integration_example.md` — how GrantLayer fits into an
+  agentic workflow, with dry-run and local-backend usage instructions.
+- `examples/langgraph_langchain/grantlayer_agent_example.py` — runtime example.
+  Do not change unless the issue explicitly scopes to LangGraph/LangChain work.
+
+---
+
+### 7. Agent Task Contract
+
+Every agent issue follows `docs/agent_task_contract.md`. Key concepts:
+- Issue ID, goal, expected changed files, allowed files, forbidden files
+- Acceptance criteria, validation commands, final report format
+- Disposition values: `ready_for_merge`, `merged_done`, `blocked`,
+  `needs_manual_review`, `provider_timeout_recovery_needed`
+- Public-readiness safety policy (no overclaim rules)
+
+---
+
+### 8. Public-Readiness Docs
+
+- `docs/public_github_readiness_pack.md` — Readiness checklist, messaging rules,
+  release blockers, and go/no-go criteria before any future public sharing.
+- `docs/first_developer_feedback_log.md` — First structured feedback intake
+  (internal dry-run only; no real external feedback claimed).
+- LICENSE, CONTRIBUTING.md, SECURITY.md provide governance baseline.
+
+---
+
+### 9. Validation Commands
+
+```bash
+# Fast regression (run on every agent branch)
+python3 -m unittest backend.tests.test_security_boundary_regression -v
+
+# Issue-specific examples
+python3 -m unittest backend.tests.test_gl154_agent_entry_points_manifest -v
+python3 -m unittest backend.tests.test_gl153_license_contributing_security_decision -v
+
+# Full backend suite
+# Only run in environments with a real long-timeout shell.
+# Do NOT run through a 120-second-limited agent wrapper.
+scripts/run-full-backend-suite.sh
+```
+
+---
+
+### 10. Safe Default Change Areas
+
+- Any `.md` file (especially under `docs/`)
+- Any file under `backend/tests/` (test-only, no prod logic changes)
+- JSON validation artifacts under `docs/examples/gl*/`
+- SDK README (`sdk/python/README.md`)
+- CONTRIBUTING.md, SECURITY.md (updates allowed if necessary)
+
+---
+
+### 11. Forbidden Default Change Areas
+
+Unless an issue explicitly overrides:
+- `backend/src/*` (production backend code)
+- `docs/openapi.yaml`
+- `backend/src/migrations/*`
+- `requirements.txt`, `requirements-dev.txt`
+- `scripts/*`
+- `frontend/*`, `website/*`, `design/*`
+- `.claude/*` (do not stage or commit)
+- `sdk/python/grantlayer_client.py`
+- `examples/langgraph_langchain/grantlayer_agent_example.py`
+
+---
+
+### 12. No-Overclaim Rules
+
+- Do **not** claim production SaaS readiness.
+- Do **not** claim tenant isolation is implemented.
+- Do **not** claim a public GitHub release has happened.
+- Do **not** use real secrets or real customer data.
+- Do **not** rewrite git history or perform secret-history cleanup.
+- Do **not** change git remotes or publish to GitHub.
+
+---
+
+### 13. Next Planned Issues
+
+| Issue | Title | Purpose |
+|-------|-------|---------|
+| GL-155 | Agent Examples Pack | Add ready-to-run agent examples and task contracts |
+| GL-156 | GitHub Issue Templates / Feedback Templates | Issue/PR templates if public publication approved |
+| GL-157 | Public Secret / Sensitive Data Scan Gate | Automated scan for secrets before public release |
+| GL-158 | Git History Exposure Review / Public Snapshot Decision | Decide whether to rewrite history or snapshot |
+| GL-159 | GitHub Private Mirror Dry Run | Test mirroring to a private GitHub repo first |
+| GL-160 | Public GitHub Go/No-Go + Publish | Explicit decision and publication |
+
+---
+
+## Exact Safety Phrases for Agent Checks
+
+The following lowercase phrases are intentionally included for agent and test
+compatibility:
+
+- tenant isolation is not implemented
+
+---
+
+> This llms-full.txt was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest**. It does **not** publish to GitHub, change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.

@@ -47,6 +47,33 @@ GrantLayer is in a **developer-preview / controlled-pilot posture**. The primary
 
 ---
 
+## For AI Coding Agents
+
+GrantLayer is local-first and agent-friendly. If you are an AI coding agent, start here:
+
+| File | Purpose |
+|------|---------|
+| [`AGENTS.md`](AGENTS.md) | Primary agent entry point: rules, boundaries, workflow, and safety |
+| [`llms.txt`](llms.txt) | Concise project summary and agent entry links |
+| [`llms-full.txt`](llms-full.txt) | Detailed repository map, safe/forbidden areas, and next steps |
+| [`docs/agent_quickstart.md`](docs/agent_quickstart.md) | 60-second orientation for first contributions |
+| [`docs/agent_task_contract.md`](docs/agent_task_contract.md) | Issue/task specification and final-report format |
+| [`docs/agent_integration_manifest.json`](docs/agent_integration_manifest.json) | Machine-readable project metadata |
+| [`docs/ten_minute_quickstart.md`](docs/ten_minute_quickstart.md) | Clone → install → start backend → smoke path |
+| [`sdk/python/README.md`](sdk/python/README.md) | Minimal Python SDK usage guide |
+| [`docs/langgraph_langchain_integration_example.md`](docs/langgraph_langchain_integration_example.md) | How GrantLayer fits into an agentic workflow |
+
+**Important caveats:**
+- GrantLayer is in **Developer Preview** — local evaluation and controlled pilot only.
+- **No real secrets or customer data** anywhere in the repository.
+- **Not production SaaS** — do not deploy to shared multi-tenant infrastructure.
+- **Tenant isolation is not implemented** — data shares a single namespace.
+- **Public GitHub release has not happened** — explicit approval required (GL-160).
+
+Runtime agent examples are planned for **GL-155 Agent Examples Pack**.
+
+---
+
 ## Repository and readiness links
 
 - [docs/public_github_readiness_pack.md](docs/public_github_readiness_pack.md) — Readiness checklist, messaging rules, release blockers, and go/no-go criteria before any future public sharing.
