@@ -43,7 +43,7 @@ Exit codes:
 | `github_token` | `ghp_` and `github_pat_` prefixes |
 | `generic_secret_assign` | `api_key =`, `apiKey:`, `secret =`, `token =`, `password =`, `private_key =` assignments |
 | `bearer_token` | `Bearer` followed by a 20+ character high-entropy-looking string |
-| `internal_hostname` | `forge.hofercloud.eu`, `terminal.hofercloud.eu` |
+| `internal_hostname` | Private internal hostnames (e.g. `internal-forge.example.com`) |
 | `internal_path` | `/home/adminuser`, `/home/oai`, `/mnt/data` |
 | `customer_data` | `customer email`, `customer name`, `customer id`, `real grant applicant` |
 | `private_personal_data` | `passport`, `social security number`, `national id`, `bank account` |
@@ -91,7 +91,7 @@ The following content in tracked files **would** be flagged:
 AKIAIOSFODNN7EXAMPLE123
 
 # Blocker: internal hostname reference
-Remote: forge.hofercloud.eu/org/repo.git
+Remote: internal-forge.example.com/org/repo.git
 
 # Blocker: internal absolute path
 config_path: /home/adminuser/config.json

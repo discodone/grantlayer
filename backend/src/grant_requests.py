@@ -29,6 +29,18 @@ from .validation import (
 # GL-097: Maximum length for denial reasons to prevent abuse
 MAX_DENIAL_REASON_LENGTH = 1000
 
+# GL-162A: Explicit allowlist of permitted grant roles for the public API (developer preview).
+# Enforced at the HTTP layer (server.py) to validate user input without breaking internal
+# test fixtures that use non-standard role strings for isolation purposes.
+ALLOWED_GRANT_ROLES: frozenset[str] = frozenset({
+    "viewer",
+    "reviewer",
+    "approver",
+    "auditor",
+    "operator",
+    "admin",
+})
+
 
 def create_grant_request(request: GrantRequest) -> GrantRequest:
     """Create a new grant request in the 'requested' state."""

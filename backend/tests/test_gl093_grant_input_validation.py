@@ -456,7 +456,7 @@ class TestGl093GrantRequestsValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {
             "subjectId": "sub-1",
-            "role": "engineer",
+            "role": "reviewer",
             "action": "read",
             "resource": "repo-a",
             "validFrom": "bad",
@@ -474,7 +474,7 @@ class TestGl093GrantRequestsValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {
             "subjectId": "sub-1",
-            "role": "engineer",
+            "role": "reviewer",
             "action": "read",
             "resource": "repo-a",
             "validFrom": "2026-01-01T00:00:00Z",
@@ -510,7 +510,7 @@ class TestGl093GrantRequestsValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {
             "subjectId": "sub-1",
-            "role": "engineer",
+            "role": "reviewer",
             "action": "read",
             "resource": "repo-a",
             "validFrom": "2026-01-01T00:00:00Z",
