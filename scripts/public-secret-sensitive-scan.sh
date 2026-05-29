@@ -27,7 +27,7 @@ Scan categories:
   github_token             ghp_ / github_pat_ prefixes
   generic_secret_assign    api_key= / apiKey: / secret= / token= / password= / private_key=
   bearer_token             Bearer followed by 20+ char high-entropy string
-  internal_hostname        forge.hofercloud.eu / terminal.hofercloud.eu
+  internal_hostname        forge.internal.invalid / terminal.internal.invalid
   internal_path            /home/adminuser / /home/oai / /mnt/data
   customer_data            customer email/name/id / real grant applicant
   private_personal_data    passport / social security number / national id / bank account
@@ -194,7 +194,7 @@ _scan_file() {
         "Bearer [A-Za-z0-9+/=_.-]{20,}" ""
 
     _scan_file_pattern "$file" "internal_hostname" \
-        "(forge\.hofercloud\.eu|terminal\.hofercloud\.eu)" "-i"
+        "(forge\.internal\.invalid|terminal\.internal\.invalid)" "-i"
 
     _scan_file_pattern "$file" "internal_path" \
         "(/home/adminuser|/home/oai|/mnt/data)" ""

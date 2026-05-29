@@ -14,10 +14,13 @@ When AI agents prepare funding applications, evaluate eligibility, collect evide
 
 | Posture | Value |
 |---------|-------|
-| Maturity | **Developer Preview** — local evaluation and controlled pilot only |
+| Release label | **GL-0.1 / Developer Preview** |
+| Maturity | Local evaluation and controlled pilot only |
 | Production SaaS readiness | **Not claimed** |
 | Tenant/workspace isolation | **Not implemented** |
 | Public GitHub release | **Not performed** — requires explicit later approval |
+| Public snapshot | Clean developer-facing snapshot — no internal paths, no real secrets |
+| Source of truth | Internal Forgejo — public GitHub is a clean read-only snapshot |
 | Real customer data in examples | **No** — all examples use synthetic identifiers |
 | Real secrets in examples | **No** — all tokens and keys are placeholders |
 

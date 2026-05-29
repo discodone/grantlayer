@@ -68,7 +68,7 @@ class TestGL157ScriptContent(unittest.TestCase):
         self.assertIn("private key", self.script_text.lower())
 
     def test_checks_internal_hostname_forge(self):
-        self.assertIn("forge.hofercloud.eu", self.script_text)
+        self.assertIn("forge.internal.invalid", self.script_text)
 
     def test_checks_internal_path_adminuser(self):
         self.assertIn("/home/adminuser", self.script_text)
@@ -364,7 +364,7 @@ class TestGL157SyntheticScan(unittest.TestCase):
 
     def test_internal_hostname_exits_nonzero(self):
         self._write_and_track("hostname_ref.txt",
-            "Remote: forge.hofercloud.eu/toni/repo.git\n"
+            "Remote: forge.internal.invalid/toni/repo.git\n"
         )
         result = self._run_scan()
         self.assertNotEqual(result.returncode, 0,
@@ -389,7 +389,7 @@ class TestGL157SyntheticScan(unittest.TestCase):
     def test_untracked_blocker_file_ignored(self):
         # Write a file with a blocker but do NOT git add it
         self._write_untracked("untracked_blocker.txt",
-            "forge.hofercloud.eu\n"
+            "forge.internal.invalid\n"
         )
         result = self._run_scan()
         # The scan only checks tracked files; untracked file must not appear in output
@@ -399,7 +399,7 @@ class TestGL157SyntheticScan(unittest.TestCase):
     def test_claude_dir_blocker_excluded(self):
         # Track a file inside .claude/ that contains a blocker pattern
         self._write_and_track(".claude/settings.txt",
-            "forge.hofercloud.eu\n"
+            "forge.internal.invalid\n"
             "token = real-secret-value-here\n"
         )
         result = self._run_scan()

@@ -107,6 +107,14 @@ def validate_manifest(manifest: dict) -> None:
         raise SystemExit("[ERROR] Manifest referencedExamples must be a non-empty list")
 
 
+def _safe_repo_path(base: pathlib.Path, rel: str, label: str) -> pathlib.Path:
+    """Resolve rel relative to base and reject traversal outside base."""
+    resolved = (base / rel).resolve()
+    if not str(resolved).startswith(str(base.resolve())):
+        raise SystemExit(f"[ERROR] {label} path escapes repo root: {rel!r}")
+    return resolved
+
+
 def validate_referenced_examples(manifest: dict) -> None:
     referenced = manifest.get("referencedExamples", [])
     seen = set()
@@ -117,7 +125,7 @@ def validate_referenced_examples(manifest: dict) -> None:
         if path_str in seen:
             raise SystemExit(f"[ERROR] Duplicate referencedExamples path: {path_str}")
         seen.add(path_str)
-        path = REPO_ROOT / path_str
+        path = _safe_repo_path(REPO_ROOT, path_str, "referencedExamples")
         load_json(path, f"referenced example '{path_str}'")
 
     steps = manifest.get("steps", [])
@@ -125,7 +133,7 @@ def validate_referenced_examples(manifest: dict) -> None:
         step_file = step.get("exampleFile")
         if not step_file:
             continue
-        path = REPO_ROOT / step_file
+        path = _safe_repo_path(REPO_ROOT, step_file, "step exampleFile")
         if not path.exists():
             raise SystemExit(f"[ERROR] Step example file not found: {step_file}")
         try:

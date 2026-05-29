@@ -100,7 +100,7 @@ class GrantLayerClient:
             raw_err = exc.read()
             try:
                 msg = json.loads(raw_err).get("error", "request failed")
-            except Exception:
+            except (ValueError, KeyError):
                 msg = "request failed"
             raise GrantLayerHTTPError(exc.code, msg) from None
         except urllib.error.URLError as exc:

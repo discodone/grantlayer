@@ -39,10 +39,10 @@ def main(argv: list[str]) -> int:
             print("FAIL evidence bundle file read or parse error", file=sys.stdout)
         return 5
 
-    path = Path(args[1])
+    path = Path(args[1]).resolve()
     try:
         raw = path.read_text(encoding="utf-8")
-    except Exception as exc:
+    except (OSError, PermissionError) as exc:
         if json_output:
             print(json.dumps({"ok": False, "error": "parse_error", "reason": "file read error"}), file=sys.stdout)
         else:
