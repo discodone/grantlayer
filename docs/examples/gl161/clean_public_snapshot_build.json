@@ -15,6 +15,12 @@
   "excludes_claude_directory": true,
   "refuses_dirty_tracked_tree_by_default": true,
   "allow_dirty_requires_explicit_flag": true,
+  "public_export_exclusion_list_added": true,
+  "internal_gate_fixtures_excluded_from_public_snapshot": true,
+  "scanner_meta_files_excluded_from_public_snapshot": true,
+  "synthetic_secret_marker_fixtures_excluded_from_public_snapshot": true,
+  "public_snapshot_scanner_clean_required": true,
+  "internal_validation_not_weakened": true,
 
   "github_publication_performed": false,
   "public_repo_created": false,

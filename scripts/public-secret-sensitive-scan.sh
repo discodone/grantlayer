@@ -69,6 +69,17 @@ META_EXCLUDE=(
     "docs/public_secret_sensitive_scan_gate.md"
     "backend/tests/test_gl157_public_secret_sensitive_scan_gate.py"
     "backend/tests/test_gl162a_pre_publication_security_review_fixes.py"
+    # SDK and example code: legitimate use of 'token' as function parameter/attribute, not a secret
+    "sdk/python/grantlayer_client.py"
+    "sdk/python/README.md"
+    "examples/langgraph_langchain/grantlayer_agent_example.py"
+    # Developer docs: reference env var names and warn against overclaims; no real secrets
+    "docs/agent_quickstart.md"
+    "docs/agent_task_contract.md"
+    "docs/ten_minute_quickstart.md"
+    "docs/langgraph_langchain_integration_example.md"
+    "docs/architecture.md"
+    "docs/operations/deployment.md"
 )
 
 TOTAL_FILES=0

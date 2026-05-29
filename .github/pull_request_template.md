@@ -33,8 +33,8 @@ Results:
 
 ## Public-readiness checklist
 
-- [ ] No production SaaS readiness claimed.
-- [ ] No tenant isolation implemented claimed.
+- [ ] No production SaaS-readiness claimed.
+- [ ] Confirm: tenant isolation is not implemented — no such claim.
 - [ ] No public GitHub release claimed (unless this is the explicit GL-160 go/no-go issue).
 
 ## Agent / coding-agent checklist

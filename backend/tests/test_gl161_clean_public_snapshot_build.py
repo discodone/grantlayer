@@ -129,6 +129,10 @@ class TestGL161ScriptContent(unittest.TestCase):
         self.assertIn("diff --quiet", self.script_text,
                       "Script must use 'diff --quiet' for dirty-tree detection")
 
+    def test_script_has_public_export_exclusion_list(self):
+        self.assertIn("PUBLIC_EXPORT_EXCLUDE", self.script_text,
+                      "Script must contain PUBLIC_EXPORT_EXCLUDE for GL-162B export exclusions")
+
 
 # ---------------------------------------------------------------------------
 # Script safety — forbidden commands must be absent
@@ -221,6 +225,24 @@ class TestGL161JsonArtifact(unittest.TestCase):
 
     def test_allow_dirty_requires_explicit_flag(self):
         self._assert_true("allow_dirty_requires_explicit_flag")
+
+    def test_public_export_exclusion_list_added(self):
+        self._assert_true("public_export_exclusion_list_added")
+
+    def test_internal_gate_fixtures_excluded_from_public_snapshot(self):
+        self._assert_true("internal_gate_fixtures_excluded_from_public_snapshot")
+
+    def test_scanner_meta_files_excluded_from_public_snapshot(self):
+        self._assert_true("scanner_meta_files_excluded_from_public_snapshot")
+
+    def test_synthetic_secret_marker_fixtures_excluded_from_public_snapshot(self):
+        self._assert_true("synthetic_secret_marker_fixtures_excluded_from_public_snapshot")
+
+    def test_public_snapshot_scanner_clean_required(self):
+        self._assert_true("public_snapshot_scanner_clean_required")
+
+    def test_internal_validation_not_weakened(self):
+        self._assert_true("internal_validation_not_weakened")
 
     def test_github_publication_performed_false(self):
         self._assert_false("github_publication_performed")

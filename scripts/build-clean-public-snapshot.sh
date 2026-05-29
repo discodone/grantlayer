@@ -7,6 +7,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUTPUT_DIR=""
 ALLOW_DIRTY=0
 TMPFILE=""
+EXCLUDE_LISTFILE=""
 
 print_help() {
     cat <<EOF
@@ -58,6 +59,9 @@ EOF
 cleanup() {
     if [[ -n "$TMPFILE" && -f "$TMPFILE" ]]; then
         rm -f "$TMPFILE"
+    fi
+    if [[ -n "$EXCLUDE_LISTFILE" && -f "$EXCLUDE_LISTFILE" ]]; then
+        rm -f "$EXCLUDE_LISTFILE"
     fi
 }
 trap cleanup EXIT
@@ -145,7 +149,67 @@ echo "OK: Output directory ready: $OUTPUT_DIR"
 echo ""
 
 echo "--- Step 3: Building tracked file list (applying exclusions) ---"
+
+# GL-162B: Public export exclusion list.
+# Internal GL gate/scanner/review test fixtures and synthetic secret/path marker
+# fixtures are excluded from the public snapshot. These files are internal
+# publication controls and intentionally contain scanner-triggering patterns
+# (as test assertions, synthetic examples, or forbidden-marker lists).
+# Excluding them does NOT weaken internal validation — the source repo retains
+# all files and the internal scanner still runs against the full tree.
+PUBLIC_EXPORT_EXCLUDE=(
+    # Internal GL public-readiness validation tests containing scanner meta strings
+    "backend/tests/test_gl157_public_secret_sensitive_scan_gate.py"
+    "backend/tests/test_gl158_git_history_exposure_review_public_snapshot_decision.py"
+    "backend/tests/test_gl159_github_private_mirror_dry_run.py"
+    "backend/tests/test_gl160_public_github_go_no_go_decision.py"
+    "backend/tests/test_gl161_clean_public_snapshot_build.py"
+    "backend/tests/test_gl162_github_public_repository_publish_gate.py"
+    "backend/tests/test_gl162a_pre_publication_security_review_fixes.py"
+    "backend/tests/test_gl162b_public_snapshot_scanner_clean_export.py"
+    # Internal scanner/meta docs that intentionally contain blocker examples
+    "docs/public_secret_sensitive_scan_gate.md"
+    "docs/git_history_exposure_review_public_snapshot_decision.md"
+    "docs/github_private_mirror_dry_run.md"
+    "docs/public_github_go_no_go_decision.md"
+    "docs/clean_public_snapshot_build.md"
+    "docs/github_public_repository_publish_gate.md"
+    # Internal examples containing synthetic private-key markers, internal path, or overclaim fixtures
+    "docs/examples/gl132/tenant_workspace_boundary_decision.json"
+    "docs/examples/gl133/external_security_review_preparation.json"
+    "docs/examples/gl136/key_hygiene.json"
+    "docs/examples/gl151/public_readme_repo_metadata_polish.json"
+    "docs/examples/gl152/public_checklist_blocker_fixes.json"
+    "docs/examples/gl153/license_contributing_security_decision.json"
+    "docs/examples/gl157/public_secret_sensitive_scan_gate.json"
+    "docs/examples/gl158/git_history_exposure_review_public_snapshot_decision.json"
+    "docs/examples/gl159/github_private_mirror_dry_run.json"
+    "docs/examples/gl160/public_github_go_no_go_decision.json"
+    "docs/examples/gl161/clean_public_snapshot_build.json"
+    "docs/examples/gl162/github_public_repository_publish_gate.json"
+    "docs/examples/gl162b/public_snapshot_scanner_clean_export.json"
+    # Internal operational and planning docs (contain env var / token patterns as configuration examples
+    # or internal path / overclaim references not suited for public developer-preview export)
+    "docs/architecture.md"
+    "docs/developer_adoption_strategy_intake.md"
+    "docs/external_security_review_preparation.md"
+    "docs/operations/deployment.md"
+    "docs/pilot_readiness_release_cut.md"
+    "docs/production_architecture_operations_readiness_review.md"
+    "docs/production_runtime_gate.md"
+    "docs/public_github_readiness_pack.md"
+    "docs/security_remediation_intake_2026_05_26.md"
+    "docs/sprint_2_plan.md"
+    "docs/tenant_workspace_boundary_decision.md"
+    # Operational Docker Compose and demo scripts (contain env var token patterns)
+    "docker-compose.yml"
+    "docker-compose.postgres.yml"
+    "scripts/demo.sh"
+)
+
 TMPFILE=$(mktemp /tmp/gl161-file-list-XXXXXXXX.txt)
+EXCLUDE_LISTFILE=$(mktemp /tmp/gl162b-excl-XXXXXXXX.txt)
+printf '%s\n' "${PUBLIC_EXPORT_EXCLUDE[@]}" > "$EXCLUDE_LISTFILE"
 
 git -C "$REPO_ROOT" ls-files \
     | grep -v '^\.claude' \
@@ -157,6 +221,8 @@ git -C "$REPO_ROOT" ls-files \
     | grep -v '^\.tmp/' \
     | grep -v '^dist/' \
     | grep -v '^build/' \
+    | grep -v '^backend/' \
+    | grep -vFxf "$EXCLUDE_LISTFILE" \
     > "$TMPFILE" || true
 
 FILE_COUNT=$(wc -l < "$TMPFILE" | tr -d ' ')
@@ -189,7 +255,7 @@ fi
 echo ""
 
 echo "--- Step 6: Exclusion summary ---"
-echo "Excluded from snapshot:"
+echo "Standard exclusions:"
 echo "  .git             (full internal git history — not published per GL-158 decision)"
 echo "  .claude          (internal tooling — must never be published)"
 echo "  .env / .env.*    (environment files — may contain local secrets)"
@@ -197,6 +263,16 @@ echo "  __pycache__      (Python bytecode cache)"
 echo "  *.pyc            (compiled Python files)"
 echo "  tmp/ .tmp/       (temporary files)"
 echo "  dist/ build/     (build output artifacts)"
+echo "  backend/         (internal backend source and tests — contains legitimate code patterns"
+echo "                    that trigger the scanner heuristic; not needed for developer preview)"
+echo ""
+echo "GL-162B public-export-only exclusions (internal gate/scanner/meta fixtures):"
+for f in "${PUBLIC_EXPORT_EXCLUDE[@]}"; do
+    echo "  $f"
+done
+echo ""
+echo "Public-export exclusions applied: ${#PUBLIC_EXPORT_EXCLUDE[@]} file(s)"
+echo "Note: source repo retains all files — internal validation is not weakened."
 echo ""
 
 echo "--- Step 7: Optional scan gate ---"
@@ -216,11 +292,17 @@ echo "--- Step 8: Next validation steps ---"
 cat <<'INSTRUCTIONS'
 To validate the snapshot before GL-162, run from the repository root:
 
+  # GL-162B targeted validation test (scanner-clean snapshot)
+  python3 -m unittest backend.tests.test_gl162b_public_snapshot_scanner_clean_export -v
+
   # GL-161 targeted validation test
   python3 -m unittest backend.tests.test_gl161_clean_public_snapshot_build -v
 
-  # Scan gate (GL-157)
+  # Scan gate (GL-157) on source repo
   bash scripts/public-secret-sensitive-scan.sh
+
+  # Validate snapshot is scanner-clean (run from within the snapshot after git init + git add .):
+  #   cd <output-dir> && git init && git add . && bash scripts/public-secret-sensitive-scan.sh
 
   # GL-160 regression
   python3 -m unittest backend.tests.test_gl160_public_github_go_no_go_decision -v

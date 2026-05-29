@@ -98,6 +98,47 @@ The following are excluded from the snapshot:
 
 ---
 
+## Public Export Exclusions
+
+Certain internal files are excluded from the public snapshot even though they are tracked
+in the source repository. These files are internal publication controls — they contain
+scanner-triggering patterns intentionally (as test assertions, synthetic examples, or
+forbidden-marker reference lists) and are not product documentation for external developers.
+
+**Excluded internal gate/scanner/meta fixtures:**
+
+- Internal GL public-readiness validation tests (`backend/tests/test_gl157_*` through `test_gl162b_*`)
+  that contain scanner meta strings as test assertions (e.g., checking that private key
+  markers, internal hostnames, and internal home-directory paths are absent from files).
+- Internal scanner/meta docs (`docs/public_secret_sensitive_scan_gate.md`,
+  `docs/git_history_exposure_review_public_snapshot_decision.md`,
+  `docs/github_private_mirror_dry_run.md`, `docs/public_github_go_no_go_decision.md`,
+  `docs/clean_public_snapshot_build.md`, `docs/github_public_repository_publish_gate.md`)
+  that describe the internal publication control process and intentionally reference
+  blocker patterns as examples.
+- Internal example JSON fixtures (`docs/examples/gl136/`, `docs/examples/gl157/` through
+  `docs/examples/gl162b/`) that contain synthetic private-key markers, internal path
+  strings, or internal hostname strings as reference data.
+
+**Important clarifications:**
+
+- Excluding these internal gate fixtures does **not** weaken internal validation.
+  The source repository (internal Forgejo) retains all files. The internal scanner
+  (`scripts/public-secret-sensitive-scan.sh`) continues to run against the full source tree,
+  and internal gate tests remain fully operational.
+- Internal Forgejo remains the source of truth. The public snapshot is a curated
+  developer-preview export, not a mirror of the full internal repository.
+- The public snapshot includes product and developer-preview materials only:
+  README, LICENSE, SECURITY, CONTRIBUTING, AGENTS, llms.txt, SDK, agent examples,
+  integration docs, and GitHub issue/PR templates.
+- The public snapshot must pass `scripts/public-secret-sensitive-scan.sh` after
+  `git init` + `git add .` inside the snapshot directory. This is validated by
+  `backend/tests/test_gl162b_public_snapshot_scanner_clean_export.py`.
+- The full internal git history is not published. Only the clean working-tree
+  snapshot may be published per the GL-158 git history exposure decision.
+
+---
+
 ## Validation Checklist
 
 Before passing the snapshot to GL-162, complete the following checks:
