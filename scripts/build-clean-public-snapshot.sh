@@ -213,6 +213,11 @@ PUBLIC_EXPORT_EXCLUDE=(
     # keep the public snapshot free of backend test infrastructure references)
     "backend/tests/test_gl162c_public_snapshot_ci_compatibility.py"
     "docs/examples/gl162c/public_github_ci_snapshot_compatibility.json"
+    # GL-162C follow-up: standalone CI compatibility test script under scripts/ — contains
+    # internal hostname strings as test assertions (_INTERNAL_HOSTNAMES list); blocked by
+    # the public scanner. Excluded here so future snapshot builds cannot accidentally
+    # include it if the file is ever added under scripts/ in the source repo.
+    "scripts/test_gl162c_public_snapshot_ci_compatibility.py"
 )
 
 TMPFILE=$(mktemp /tmp/gl161-file-list-XXXXXXXX.txt)

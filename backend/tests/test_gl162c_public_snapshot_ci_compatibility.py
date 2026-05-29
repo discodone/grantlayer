@@ -36,6 +36,9 @@ EXCLUDED_FROM_SNAPSHOT = [
     POSTGRES_CI_WORKFLOW,
     "backend/tests/test_gl162c_public_snapshot_ci_compatibility.py",
     "docs/examples/gl162c/public_github_ci_snapshot_compatibility.json",
+    # GL-162C follow-up: scripts/ copy of the CI compat test contains internal
+    # hostname strings (_INTERNAL_HOSTNAMES) that trigger the public scanner.
+    "scripts/test_gl162c_public_snapshot_ci_compatibility.py",
     # GL-162B exclusions must remain intact
     "backend/tests/test_gl157_public_secret_sensitive_scan_gate.py",
     "backend/tests/test_gl161_clean_public_snapshot_build.py",
@@ -218,6 +221,15 @@ class TestGL162CBuildScriptContent(unittest.TestCase):
 
     def test_script_excludes_gl162c_test(self):
         self.assertIn("test_gl162c_public_snapshot_ci_compatibility.py", self.script_text)
+
+    def test_script_excludes_scripts_ci_compat_test(self):
+        self.assertIn(
+            "scripts/test_gl162c_public_snapshot_ci_compatibility.py",
+            self.script_text,
+            "Build script must explicitly exclude "
+            "scripts/test_gl162c_public_snapshot_ci_compatibility.py "
+            "(contains _INTERNAL_HOSTNAMES that block the public scanner)"
+        )
 
     def test_script_excludes_gl162c_json(self):
         self.assertIn("docs/examples/gl162c/public_github_ci_snapshot_compatibility.json",
