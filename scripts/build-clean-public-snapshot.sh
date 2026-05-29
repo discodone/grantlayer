@@ -205,6 +205,14 @@ PUBLIC_EXPORT_EXCLUDE=(
     "docker-compose.yml"
     "docker-compose.postgres.yml"
     "scripts/demo.sh"
+    # GL-162C: Internal backend CI workflow — requires backend/ which is intentionally
+    # excluded from the public snapshot. Publishing this workflow causes spurious CI
+    # failures on the public GitHub repository.
+    ".github/workflows/postgres-ci.yml"
+    # GL-162C: CI compatibility validation test and artifact (internal — excluded to
+    # keep the public snapshot free of backend test infrastructure references)
+    "backend/tests/test_gl162c_public_snapshot_ci_compatibility.py"
+    "docs/examples/gl162c/public_github_ci_snapshot_compatibility.json"
 )
 
 TMPFILE=$(mktemp /tmp/gl161-file-list-XXXXXXXX.txt)
@@ -252,6 +260,19 @@ if [[ -e "$OUTPUT_DIR/.claude" ]]; then
 else
     echo "OK: .claude excluded (internal tooling must never be published)."
 fi
+
+if [[ -d "$OUTPUT_DIR/.github/workflows" ]]; then
+    BAD_WORKFLOWS=$(grep -rl 'backend[./]tests' "$OUTPUT_DIR/.github/workflows/" 2>/dev/null || true)
+    if [[ -n "$BAD_WORKFLOWS" ]]; then
+        echo "FAIL: workflow(s) referencing backend.tests found in snapshot (GL-162C):" >&2
+        echo "$BAD_WORKFLOWS" >&2
+        exit 1
+    else
+        echo "OK: no backend-dependent CI workflows in .github/workflows/ (GL-162C)."
+    fi
+else
+    echo "OK: .github/workflows/ absent or empty — no backend-dependent CI workflows (GL-162C)."
+fi
 echo ""
 
 echo "--- Step 6: Exclusion summary ---"
@@ -291,6 +312,9 @@ echo ""
 echo "--- Step 8: Next validation steps ---"
 cat <<'INSTRUCTIONS'
 To validate the snapshot before GL-162, run from the repository root:
+
+  # GL-162C targeted validation (CI snapshot compatibility)
+  python3 -m unittest backend.tests.test_gl162c_public_snapshot_ci_compatibility -v
 
   # GL-162B targeted validation test (scanner-clean snapshot)
   python3 -m unittest backend.tests.test_gl162b_public_snapshot_scanner_clean_export -v
