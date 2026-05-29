@@ -218,7 +218,7 @@ class TestGL162AScannerDetectsRealBlockers(unittest.TestCase):
         """Scanner must detect a synthetic internal hostname in a normal tracked file."""
         # Use a hostname that matches the internal_hostname pattern used by the scanner
         self._write_and_track("normal_config.txt",
-            "git_remote: forge.hofercloud.eu/org/repo.git\n")
+            "git_remote: forge.internal.invalid/org/repo.git\n")
         result = self._run_scan()
         self.assertNotEqual(result.returncode, 0,
                             f"Expected non-zero for internal hostname blocker.\n"

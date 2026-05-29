@@ -85,6 +85,46 @@ Public release remains blocked if the GL-136 gate fails. Before public release:
 2. Run the full backend test suite.
 3. Confirm no tracked files contain private key PEM markers.
 
+## Test Credential Placeholders
+
+Certain values that resemble credentials are intentionally present in the
+repository as **non-secret test placeholders** for CI or local test
+infrastructure. These are not real secrets and have never been used as
+production credentials.
+
+### grantlayer_test_password
+
+**Location:** `.github/workflows/postgres-ci.yml`
+
+**Decision:** Non-secret test placeholder. This value is the ephemeral
+PostgreSQL password used by the CI Docker service container during automated
+testing. The workflow file contains the explicit comment:
+*"Ephemeral CI-only test database credential; not a production secret."*
+
+**Rules that apply to all test credential placeholders:**
+
+1. **No real secrets in public examples or CI fixtures.** Test credentials
+   must be obviously fake (e.g. `grantlayer_test_password`, `change-me`,
+   `test-token`). They must never be real passwords, API keys, or tokens
+   that grant access to any live system.
+2. **Do not reuse test placeholders as real credentials.** A value used as a
+   CI placeholder must never be configured as a real credential in any
+   environment.
+3. **Users must not use real secrets or customer data in Developer Preview.**
+   The Developer Preview posture does not provide the isolation guarantees
+   required for real credentials or real customer data.
+4. **Future tokens, passwords, and keys in examples must use obvious
+   placeholders only.** Acceptable patterns: `change-me-in-production`,
+   `<your-token-here>`, `example-token`, `test-token`.
+5. **Real secrets require rotation and must never be committed.** If a real
+   credential is accidentally committed, rotate it immediately — removing it
+   from tracked files is not sufficient because it remains in git history.
+
+**History rewrite decision:** Because `grantlayer_test_password` is a
+non-secret placeholder and not a real credential, no history rewrite or
+secret rotation is required. The value is documented here to confirm this
+decision explicitly.
+
 ## Non-Goals
 
 - No Git history rewrite.
