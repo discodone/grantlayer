@@ -41,8 +41,8 @@ The following are explicitly excluded from this workflow:
 - Direct public GitHub hotfixes except in a narrowly defined emergency (see Section 11)
 - Live GitHub API automation that creates issues, comments, or labels programmatically
 - Production incident response or on-call escalation
-- Claims that GrantLayer is production-ready SaaS
-- Claims that tenant isolation is implemented
+- Making or endorsing any claim that GrantLayer is ready for production SaaS deployment (this is a Developer Preview only)
+- Making or endorsing any claim that tenant-level workspace isolation is in place (it is not; this remains a known gap)
 - Accepting real secrets or real customer data from external reporters
 - Merging public GitHub history into internal Forgejo (public history is a snapshot, not a branch)
 - Processing out-of-scope feature requests as immediate work items
