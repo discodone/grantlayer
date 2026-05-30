@@ -332,15 +332,6 @@ To validate the snapshot before GL-162, run from the repository root:
 
   # Validate snapshot is scanner-clean (run from within the snapshot after git init + git add .):
   #   cd <output-dir> && git init && git add . && bash scripts/public-secret-sensitive-scan.sh
-  # NOTE: Running git init inside the snapshot leaves a .git directory there.
-  # When copying the snapshot into the persistent publish clone, you MUST exclude .git:
-  #   rsync (preferred):
-  #     rsync -a --delete --exclude='.git' <snapshot>/ <publish-clone>/
-  #   cp fallback (if rsync unavailable — do NOT use 'cp -a <snapshot>/. <publish-clone>/'):
-  #     find <snapshot>/ -mindepth 1 -maxdepth 1 ! -name '.git' -exec cp -a {} <publish-clone>/ \;
-
-  # GL-164A targeted validation test (language classification + copy safety)
-  python3 -m unittest backend.tests.test_gl164a_public_repo_discovery_metadata -v
 
   # GL-160 regression
   python3 -m unittest backend.tests.test_gl160_public_github_go_no_go_decision -v
