@@ -80,6 +80,8 @@ META_EXCLUDE=(
     "docs/langgraph_langchain_integration_example.md"
     "docs/architecture.md"
     "docs/operations/deployment.md"
+    # Template env file: all values are placeholders by definition; no real secrets
+    ".env.example"
 )
 
 TOTAL_FILES=0

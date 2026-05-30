@@ -60,6 +60,7 @@ PUBLIC_FILES_REQUIRED = [
     "SECURITY.md",
     "CONTRIBUTING.md",
     "AGENTS.md",
+    ".env.example",
 ]
 
 # Forbidden content strings that must not appear anywhere in the snapshot.
@@ -265,6 +266,10 @@ class TestGL162BBuildScriptContent(unittest.TestCase):
 
     def test_script_excludes_scanner_meta_doc(self):
         self.assertIn("docs/public_secret_sensitive_scan_gate.md", self.script_text)
+
+    def test_script_includes_env_example(self):
+        self.assertIn(".env.example", self.script_text,
+                      "Script must pass .env.example through to snapshot (GL-162E)")
 
     def test_script_no_git_push(self):
         self.assertNotIn("git push", self.script_text)
