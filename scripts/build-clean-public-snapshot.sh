@@ -227,7 +227,7 @@ printf '%s\n' "${PUBLIC_EXPORT_EXCLUDE[@]}" > "$EXCLUDE_LISTFILE"
 git -C "$REPO_ROOT" ls-files \
     | grep -v '^\.claude' \
     | grep -v '^\.env$' \
-    | grep -v '^\.env\.' \
+    | awk '!/^\.env\./ || /^\.env\.example$/' \
     | grep -v '__pycache__' \
     | grep -v '\.pyc$' \
     | grep -v '^tmp/' \
@@ -284,7 +284,7 @@ echo "--- Step 6: Exclusion summary ---"
 echo "Standard exclusions:"
 echo "  .git             (full internal git history — not published per GL-158 decision)"
 echo "  .claude          (internal tooling — must never be published)"
-echo "  .env / .env.*    (environment files — may contain local secrets)"
+echo "  .env / .env.*    (real environment files — may contain local secrets; .env.example included)"
 echo "  __pycache__      (Python bytecode cache)"
 echo "  *.pyc            (compiled Python files)"
 echo "  tmp/ .tmp/       (temporary files)"
