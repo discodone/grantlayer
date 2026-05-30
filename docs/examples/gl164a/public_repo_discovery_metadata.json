@@ -1,0 +1,57 @@
+{
+  "issue": "GL-164A",
+  "title": "Public Repository Discovery Metadata — GitHub Linguist Classification",
+  "status": "developer-preview",
+  "publicRepository": "https://github.com/discodone/grantlayer",
+  "publicHeadAtPlanning": "1cae43fb634561adee743ec8b299838fb5c6b807",
+  "sourceOfTruth": "internal-forgejo",
+  "publicSnapshotModel": true,
+  "directPublicEditsAllowed": "emergency-only",
+  "motivation": "GitHub showed Shell as the primary repository language because scripts/ contains support tooling shell scripts. GrantLayer is a Python/API-first Developer Preview project. The language bar should reflect the Python SDK and examples, not support scripts.",
+  "gitattributesFile": ".gitattributes",
+  "linguistRulesAdded": [
+    {
+      "pattern": "*.sh",
+      "attribute": "linguist-detectable=false",
+      "rationale": "Shell scripts in scripts/ are support tooling (build, test runners, publish helpers). They are not the primary product language. Marking as non-detectable excludes them from GitHub language statistics without hiding or removing any files."
+    }
+  ],
+  "filesNotHidden": [
+    "sdk/python/grantlayer_client.py",
+    "examples/agents/approval_guardrail_agent.py",
+    "examples/agents/audit_export_agent.py",
+    "examples/agents/evidence_review_agent.py",
+    "examples/agents/policy_check_agent.py",
+    "examples/langgraph_langchain/grantlayer_agent_example.py",
+    "scripts/demo/gl061_api_smoke.py",
+    "scripts/verify_evidence_bundle.py"
+  ],
+  "productBehaviorChanged": false,
+  "gitattributesAffectsRuntime": false,
+  "publishCopySafetyNote": {
+    "issue": "When the scanner is run inside the generated snapshot (requiring git init && git add .), a .git directory is created in the snapshot output directory. A subsequent cp -a or rsync without .git exclusion copies this empty repo into the persistent publish clone, overwriting its remote configuration.",
+    "requiredBehavior": "The copy/overlay step from generated snapshot to persistent publish clone MUST always exclude .git.",
+    "rsyncCommand": "rsync -a --delete --exclude='.git' <snapshot>/ <publish-clone>/",
+    "cpFallback": "find <snapshot>/ -mindepth 1 -maxdepth 1 ! -name '.git' -exec cp -a {} <publish-clone>/ \\;",
+    "note": "rsync is preferred. If unavailable, use the find+cp fallback shown above. Never use plain 'cp -a <snapshot>/. <publish-clone>/' — the trailing dot copies hidden directories including .git."
+  },
+  "snapshotValidation": {
+    "gitattributesPresentInSnapshot": true,
+    "backendAbsent": true,
+    "claudeAbsent": true,
+    "postgresCiAbsent": true,
+    "envExamplePresent": true,
+    "gl163DocPresent": true,
+    "scannerResult": "EXIT 0 / 0 blockers"
+  },
+  "forbiddenScopeConfirmation": {
+    "backendSrcUnchanged": true,
+    "openApiUnchanged": true,
+    "migrationsUnchanged": true,
+    "dependenciesUnchanged": true,
+    "sdkImplementationUnchanged": true,
+    "dashboardBehaviorUnchanged": true,
+    "noProductionReadyClaims": true,
+    "noTenantIsolationImplementedClaims": true
+  }
+}

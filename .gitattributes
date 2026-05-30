@@ -1,0 +1,14 @@
+# GitHub Linguist language classification rules.
+# These rules affect only how GitHub displays repository language statistics.
+# They do not affect runtime behavior, file interpretation, compilation,
+# or any tool outside of GitHub's Linguist classifier.
+#
+# GrantLayer is a Python/API-first Developer Preview project.
+# The scripts/ directory contains shell support tooling (build, test runners,
+# publish helpers) that should not represent the repository's primary language.
+
+# Shell scripts are support/tooling only.
+# Marking as non-detectable prevents them from dominating the GitHub
+# language bar and allows the Python SDK, examples, and client code
+# to represent the repository accurately.
+*.sh linguist-detectable=false
