@@ -31,9 +31,40 @@ GrantLayer is in a **developer-preview / controlled-pilot posture**. The primary
 ## What you can do today
 
 - **Run the local quickstart** — clone the repo, start the backend, and run a minimal safe API smoke path in ~10 minutes.
+- **Generate the first verifiable output** — run one local Python example that writes a deterministic GrantLayer-style institutional record without starting the backend.
 - **Use the minimal Python SDK** — import the SDK and make typed calls to health, readiness, grants, and audit endpoints.
 - **Inspect the LangGraph/LangChain-style example** — review how GrantLayer fits into an agentic workflow without installing LangGraph or LangChain.
 - **Review public readiness and feedback docs** — read the readiness pack, feedback log, key-hygiene rules, and dependency manifest.
+
+---
+
+## First verifiable output quickstart
+
+For the fastest public-repo entry point, run the GL-168 first verifiable output
+example from the repository root:
+
+```bash
+python3 examples/first_verifiable_output.py --output /tmp/grantlayer_first_output.json
+```
+
+Expected output file:
+
+```text
+/tmp/grantlayer_first_output.json
+```
+
+The committed deterministic reference output is:
+
+```text
+examples/first_verifiable_output.json
+```
+
+Read the walkthrough in
+[docs/first_verifiable_output.md](docs/first_verifiable_output.md). This path
+uses Python standard library modules only, requires no real secrets, requires no
+customer data, and is local/demo only. It prepares a first inspectable
+GrantLayer-style record; it does not claim production SaaS readiness, and tenant
+isolation is not implemented yet.
 
 ---
 
@@ -41,10 +72,11 @@ GrantLayer is in a **developer-preview / controlled-pilot posture**. The primary
 
 | Step | Document | What it covers |
 |------|----------|----------------|
-| 1 | [docs/ten_minute_quickstart.md](docs/ten_minute_quickstart.md) | Clone, install, start backend, run smoke path |
-| 2 | [sdk/python/README.md](sdk/python/README.md) | Import the SDK, make typed calls, handle errors |
-| 3 | [docs/langgraph_langchain_integration_example.md](docs/langgraph_langchain_integration_example.md) | See how GrantLayer fits into an agent workflow |
-| 4 | [docs/first_developer_feedback_log.md](docs/first_developer_feedback_log.md) | Structured feedback intake after trying the above |
+| 1 | [docs/first_verifiable_output.md](docs/first_verifiable_output.md) | Run the deterministic first verifiable output example |
+| 2 | [docs/ten_minute_quickstart.md](docs/ten_minute_quickstart.md) | Clone, install, start backend, run smoke path |
+| 3 | [sdk/python/README.md](sdk/python/README.md) | Import the SDK, make typed calls, handle errors |
+| 4 | [docs/langgraph_langchain_integration_example.md](docs/langgraph_langchain_integration_example.md) | See how GrantLayer fits into an agent workflow |
+| 5 | [docs/first_developer_feedback_log.md](docs/first_developer_feedback_log.md) | Structured feedback intake after trying the above |
 
 > **Note:** All three steps work with SQLite and local Python only. No cloud service, database subscription, or third-party API is required for the baseline path.
 
@@ -94,6 +126,7 @@ Runtime agent examples are planned for **GL-155 Agent Examples Pack**.
 - **Production SaaS readiness is not claimed** — the backend has not completed all production-hardening gates required for a shared multi-tenant SaaS.
 - **Tenant isolation is not implemented** — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers.
 - **Public GitHub release/publication has not happened** — explicit human approval is still required before any public push.
+- **GL-169 is public-facing polish only** — this issue prepares quickstart and repository orientation content; it performs no GitHub push and no repository visibility change.
 - **Local evaluation only** — this repo is intended for developer exploration and controlled pilot discussion, not production deployment.
 
 ---

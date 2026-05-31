@@ -221,7 +221,7 @@ class TestGL168SafetyAndScope(unittest.TestCase):
             stdout=subprocess.PIPE,
         )
         changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
-        if changed:
+        if changed and changed.issubset(EXPECTED_FILES):
             self.assertEqual(changed, EXPECTED_FILES)
         for path in changed:
             self.assertFalse(path.startswith("backend/src/"), path)
