@@ -22,6 +22,8 @@ limitations.
 | Production SaaS readiness claimed | **No** |
 | Tenant isolation claimed/implemented | **No** |
 
+Status and readiness caveats: see `README.md`.
+
 This is **NOT production deployment guidance.**
 This is **NOT managed SaaS setup.**
 This is **NOT SDK implementation.**

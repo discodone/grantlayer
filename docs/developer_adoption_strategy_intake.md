@@ -23,6 +23,8 @@ issues, and go/no-go criteria for the Developer Adoption track.
 | Production SaaS readiness claimed | **No** |
 | Tenant isolation claimed/implemented | **No** |
 
+Status and readiness caveats: see `README.md`.
+
 This is **NOT SDK implementation.**
 This is **NOT quickstart implementation.**
 This is **NOT LangGraph/LangChain integration implementation.**
@@ -36,13 +38,11 @@ This is **NOT production SaaS enablement.**
 
 ## 2. Current Posture
 
-GrantLayer is suitable for **controlled pilot/developer-preview exploration with
-caveats**. The following posture statements apply:
+GrantLayer remains suitable for controlled pilot/developer-preview exploration
+with caveats. The canonical public status and readiness posture is maintained
+in `README.md`; this document only records GL-145-specific developer adoption
+context.
 
-- **Production SaaS readiness is not claimed** — the backend has not completed
-  all production-hardening gates required for a shared multi-tenant SaaS.
-- **Tenant isolation is not implemented** — the backend does not enforce
-  tenant/workspace boundaries at the data, authorization, or audit layers.
 - **GL-144 tenant/workspace design exists but implementation is future work** —
   the data model design is accepted, but no schema changes, migrations, or
   production code changes have been made.

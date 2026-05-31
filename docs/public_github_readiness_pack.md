@@ -24,6 +24,8 @@ go/no-go criteria before any future public GitHub publication.
 | Production SaaS readiness claimed | **No** |
 | Tenant isolation claimed/implemented | **No** |
 
+Status and readiness caveats: see `README.md`.
+
 This is **NOT GitHub publication.**
 This is **NOT git remote work.**
 This is **NOT secret history rewrite.**
@@ -43,10 +45,9 @@ following characteristics:
 - **Public push requires explicit later approval** — no branch, tag, or
   repository may be pushed to a public GitHub remote without a separate,
   explicit human approval step documented outside this issue.
-- **Production SaaS readiness is not claimed** — the backend has not completed
-  all production-hardening gates required for a shared multi-tenant SaaS.
-- **Tenant isolation is not implemented** — the backend does not enforce
-  tenant/workspace boundaries at the data, authorization, or audit layers.
+- **Status and readiness caveats** — see `README.md` for the canonical public
+  posture, including production SaaS, tenant/workspace isolation, public
+  GitHub release, secrets, and customer-data caveats.
 
 ---
 
