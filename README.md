@@ -79,6 +79,7 @@ Runtime agent examples are planned for **GL-155 Agent Examples Pack**.
 
 ## Repository and readiness links
 
+- [CHANGELOG.md](CHANGELOG.md) — Public snapshot and version notes.
 - [docs/public_github_readiness_pack.md](docs/public_github_readiness_pack.md) — Readiness checklist, messaging rules, release blockers, and go/no-go criteria before any future public sharing.
 - [docs/first_developer_feedback_log.md](docs/first_developer_feedback_log.md) — First structured feedback intake (internal dry-run only; no real external feedback claimed).
 - [docs/key_hygiene.md](docs/key_hygiene.md) — Key and secret hygiene rules for the repository.
