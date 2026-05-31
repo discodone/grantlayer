@@ -1,0 +1,62 @@
+{
+  "issue_id": "GL-169",
+  "title": "Quickstart URL + Public Repo Polish",
+  "base_commit": "00c5f765033839352b4e63e4a651993d62e6a894",
+  "changed_files": [
+    "README.md",
+    "backend/tests/test_gl168_first_verifiable_output.py",
+    "backend/tests/test_gl169_quickstart_public_repo_polish.py",
+    "docs/examples/gl169/quickstart_public_repo_polish.json"
+  ],
+  "public_facing_summary": {
+    "what_is_grantlayer": "GrantLayer is a developer-preview verification, audit, and compliance layer for agentic grant and funding workflows.",
+    "current_status": "Developer Preview / GL-0.1; local evaluation and controlled pilot only.",
+    "first_run_path": "Run the GL-168 first verifiable output example, then inspect the deterministic JSON record."
+  },
+  "quickstart_command": "python3 examples/first_verifiable_output.py --output /tmp/grantlayer_first_output.json",
+  "expected_output": {
+    "generated_path": "/tmp/grantlayer_first_output.json",
+    "committed_reference_path": "examples/first_verifiable_output.json",
+    "documentation_path": "docs/first_verifiable_output.md"
+  },
+  "safety_caveats": [
+    "no real secrets required",
+    "no customer data required",
+    "local/demo only",
+    "not production SaaS",
+    "tenant isolation is not implemented yet",
+    "public-facing polish only; no GitHub push is performed",
+    "public-facing polish only; no repository visibility change is performed"
+  ],
+  "non_goals": [
+    "push_to_github",
+    "change_repository_visibility",
+    "publish_public_snapshot",
+    "claim_production_saas_readiness",
+    "claim_tenant_isolation_implemented",
+    "change_backend_src",
+    "change_openapi",
+    "change_migrations",
+    "change_database_schema",
+    "change_dependencies",
+    "change_sdk_implementation",
+    "change_runtime_agent_implementation"
+  ],
+  "validation_checklist": [
+    "README includes public-facing GrantLayer description",
+    "README includes current status and technical preview caveat",
+    "README links to docs/first_verifiable_output.md",
+    "README includes the exact first verifiable output command",
+    "README states /tmp/grantlayer_first_output.json as the expected generated output",
+    "README states examples/first_verifiable_output.json as the committed deterministic output",
+    "README states no real secrets and no customer data are required",
+    "README states local/demo only, not production SaaS, and tenant isolation is not implemented yet",
+    "README states GL-169 performs no GitHub push and no repository visibility change",
+    "Focused GL-169 regression test passes",
+    "GL-168 scope guard remains compatible with later issue branches",
+    "GL-168 first verifiable output regression test passes",
+    "Security boundary regression test passes",
+    "git diff --check passes"
+  ],
+  "next_recommended_step": "Fast-Merge Agent review, full-suite validation if practical, and merge to internal main; public snapshot publication remains deferred and out of scope."
+}
