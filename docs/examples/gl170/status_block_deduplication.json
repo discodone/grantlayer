@@ -1,0 +1,83 @@
+{
+  "issue_id": "GL-170",
+  "title": "Status Block Deduplication",
+  "baseline_main": "6165dcd8ea9377674400ba960ae574023a9686a9",
+  "canonical_status_sources": [
+    {
+      "path": "README.md",
+      "role": "canonical public status and readiness source",
+      "retained_caveats": [
+        "Production SaaS readiness is not claimed",
+        "Tenant/workspace isolation is not implemented",
+        "Public GitHub release is not performed and requires explicit later approval",
+        "No real customer data in examples",
+        "No real secrets in examples"
+      ]
+    },
+    {
+      "path": "SECURITY.md",
+      "role": "canonical security caveat source",
+      "retained_caveats": [
+        "Tenant/workspace isolation is not implemented",
+        "Public GitHub release is not performed and requires explicit later approval",
+        "Production SaaS readiness is not claimed in security posture"
+      ]
+    }
+  ],
+  "deduplicated_docs": [
+    {
+      "path": "docs/developer_adoption_strategy_intake.md",
+      "change": "Replaced repeated broad production SaaS and tenant isolation posture bullets with a pointer to README.md while retaining GL-144-specific implementation caveats."
+    },
+    {
+      "path": "docs/public_github_readiness_pack.md",
+      "change": "Replaced repeated broad production SaaS and tenant isolation posture bullets with a README.md pointer while retaining public GitHub publication approval caveats."
+    },
+    {
+      "path": "docs/ten_minute_quickstart.md",
+      "change": "Added a short README.md pointer near the status table so the quickstart can rely on the canonical public readiness source while keeping quickstart-specific non-goals."
+    }
+  ],
+  "retained_caveats": [
+    "README.md retains the full public status table and safety and limitations section.",
+    "SECURITY.md retains security-specific readiness caveats.",
+    "Selected docs still state issue-specific non-goals such as no production deployment, no public GitHub publication, no tenant/workspace implementation, and no production SaaS enablement where relevant.",
+    "First-output documentation and README links remain intact."
+  ],
+  "removed_or_replaced_repetition_patterns": [
+    "Repeated long bullets explaining that production SaaS readiness is not claimed.",
+    "Repeated long bullets explaining that tenant isolation is not implemented.",
+    "Repeated broad readiness posture blocks in non-canonical public-facing docs."
+  ],
+  "non_goals": [
+    "change_backend_src",
+    "change_openapi",
+    "change_migrations",
+    "change_dependencies",
+    "change_auth_security_runtime_behavior",
+    "remove_all_readiness_caveats",
+    "claim_production_saas_readiness",
+    "claim_tenant_isolation_implemented",
+    "claim_public_github_release_completed",
+    "push_to_github",
+    "publish_snapshot",
+    "use_external_snapshot_tooling"
+  ],
+  "validation_summary": {
+    "json_parses": true,
+    "readme_canonical_status_retained": true,
+    "deduplicated_docs_point_to_readme": true,
+    "first_output_path_preserved": true,
+    "external_snapshot_tool_references_introduced": false,
+    "validation_commands": [
+      "python3 -m py_compile backend/tests/test_gl170_status_block_deduplication.py",
+      "python3 -m unittest backend.tests.test_gl170_status_block_deduplication -v",
+      "python3 -m unittest backend.tests.test_gl169_quickstart_public_repo_polish -v",
+      "python3 -m unittest backend.tests.test_gl168_first_verifiable_output -v",
+      "python3 -m unittest backend.tests.test_security_boundary_regression -v",
+      "git diff --check",
+      "git diff --name-only main...HEAD",
+      "git status --short"
+    ]
+  }
+}
