@@ -70,8 +70,14 @@ class TestGL169ReadmePublicPolish(unittest.TestCase):
             "examples/first_verifiable_output.json",
             "/tmp/grantlayer_first_output.json",
             "committed deterministic reference output",
+            "git clone https://github.com/discodone/grantlayer.git",
         ]:
             self.assertIn(phrase, self.readme)
+        self.assertNotIn("git clone <repo>", self.readme)
+        self.assertNotIn(
+            "https://github.com/<org_or_user>/grantlayer-mvp.git",
+            self.readme,
+        )
 
     def test_readme_includes_exact_first_output_command(self):
         self.assertIn(

@@ -221,8 +221,8 @@ The current MVP and Product Core establish the technical foundation:
 No installation required. Python 3.10+ and stdlib are sufficient.
 
 ```bash
-git clone <repo>  # or just copy the directory
-cd grantlayer-mvp
+git clone https://github.com/Discodone/grantlayer.git
+cd grantlayer
 ```
 
 ## Start backend
