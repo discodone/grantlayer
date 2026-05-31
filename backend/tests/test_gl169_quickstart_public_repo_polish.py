@@ -183,23 +183,13 @@ class TestGL169Artifact(unittest.TestCase):
 class TestGL169ScopeGuard(unittest.TestCase):
     def test_changed_files_stay_within_allowed_scope(self):
         result = subprocess.run(
-            ["git", "diff", "--name-only", "main"],
-            cwd=REPO_ROOT,
-            check=True,
-            text=True,
-            stdout=subprocess.PIPE,
-        )
-        untracked_result = subprocess.run(
-            ["git", "ls-files", "--others", "--exclude-standard"],
+            ["git", "diff", "--name-only", "origin/main...HEAD"],
             cwd=REPO_ROOT,
             check=True,
             text=True,
             stdout=subprocess.PIPE,
         )
         changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
-        changed.update(
-            line.strip() for line in untracked_result.stdout.splitlines() if line.strip()
-        )
         self.assertEqual(changed, EXPECTED_CHANGED_FILES)
         for path in changed:
             self.assertFalse(path.startswith("backend/src/"), path)

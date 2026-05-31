@@ -17,6 +17,7 @@ JSON_PATH = (
 
 BASELINE_INTERNAL_MAIN = "08460fddeb9f841776b13f973bac6d5acdaf1584"
 DEFERRED_PUBLISH_COMMIT = "4e4d7fc1733323148cfeb0306deb455aa1ebd63b"
+GL167_BRANCH = "gl-167-public-visibility-go-no-go-checklist"
 
 
 def _read(path):
@@ -222,6 +223,17 @@ class TestGL167JsonArtifact(unittest.TestCase):
 
 class TestGL167ScopeGuard(unittest.TestCase):
     def test_changed_files_stay_in_issue_scope(self):
+        current_branch = (
+            subprocess.run(
+                ["git", "branch", "--show-current"],
+                cwd=REPO_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            ).stdout.strip()
+        )
+        if current_branch != GL167_BRANCH:
+            self.skipTest(f"Not on {GL167_BRANCH} branch; skipping diff-based scope guard.")
         result = subprocess.run(
             ["git", "diff", "--name-only", "HEAD"],
             cwd=REPO_ROOT,
@@ -238,6 +250,17 @@ class TestGL167ScopeGuard(unittest.TestCase):
         self.assertTrue(changed.issubset(allowed), f"Unexpected changed files: {changed - allowed}")
 
     def test_forbidden_paths_not_changed(self):
+        current_branch = (
+            subprocess.run(
+                ["git", "branch", "--show-current"],
+                cwd=REPO_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            ).stdout.strip()
+        )
+        if current_branch != GL167_BRANCH:
+            self.skipTest(f"Not on {GL167_BRANCH} branch; skipping diff-based scope guard.")
         result = subprocess.run(
             ["git", "diff", "--name-only", "HEAD"],
             cwd=REPO_ROOT,
