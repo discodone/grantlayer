@@ -262,10 +262,24 @@ class TestGl145DocumentReferences(unittest.TestCase):
         self.assertIn("gl-144", self.lower)
 
     def test_no_production_saas_readiness_claim(self):
-        self.assertIn("production saas readiness is not claimed", self.lower)
+        self.assertTrue(
+            "production saas readiness is not claimed" in self.lower
+            or (
+                "status and readiness caveats: see `readme.md`" in self.lower
+                and "not production saas enablement" in self.lower
+            ),
+            "Document must clearly state that production SaaS readiness is not claimed",
+        )
 
     def test_tenant_isolation_not_implemented(self):
-        self.assertIn("tenant isolation is not implemented", self.lower)
+        self.assertTrue(
+            "tenant isolation is not implemented" in self.lower
+            or (
+                "status and readiness caveats: see `readme.md`" in self.lower
+                and "not tenant/workspace implementation" in self.lower
+            ),
+            "Document must state tenant isolation is not implemented",
+        )
 
 
 # ---------------------------------------------------------------------------

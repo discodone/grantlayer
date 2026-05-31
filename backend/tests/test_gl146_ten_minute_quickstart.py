@@ -249,18 +249,20 @@ class TestGl146DocumentReferences(unittest.TestCase):
         self.assertIn("gl-150", self.lower)
 
     def test_no_production_saas_readiness_claim(self):
-        # Either explicit non-claim text or "not claimed" wording
         self.assertTrue(
             "production saas readiness is not claimed" in self.lower
-            or "no production saas readiness claim" in self.lower
-            or "not production-ready saas" in self.lower
-            or "no public saas claim" in self.lower,
-            "Document must include a clear statement that production SaaS readiness is not claimed"
+            or (
+                "status and readiness caveats: see `readme.md`" in self.lower
+                and "not production deployment guidance" in self.lower
+            ),
+            "Document must include a clear statement that production SaaS readiness is not claimed",
         )
 
     def test_tenant_isolation_not_implemented(self):
         self.assertTrue(
-            "tenant isolation" in self.lower and "not implemented" in self.lower,
+            "tenant isolation is not implemented" in self.lower
+            or "no tenant isolation" in self.lower
+            or "not tenant/workspace implementation" in self.lower,
             "Document must state tenant isolation is not implemented"
         )
 

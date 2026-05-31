@@ -228,6 +228,16 @@ class TestGL170FirstOutputAndScope(unittest.TestCase):
             self.assertIn(phrase, readme)
 
     def test_changed_files_stay_within_allowed_scope(self):
+        branch = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=REPO_ROOT,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        ).stdout.strip()
+        if branch == "main":
+            self.skipTest("Scope guard is branch-specific; skipping on main after merge.")
+
         result = subprocess.run(
             ["git", "diff", "--name-only", "main...HEAD"],
             cwd=REPO_ROOT,

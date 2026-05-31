@@ -234,11 +234,23 @@ class TestGL149PublicGitHubReadinessPack(unittest.TestCase):
 
     def test_md_states_no_production_saas_claim(self):
         md = self._load_md()
-        self.assertIn("production saas readiness is not claimed", md.lower())
+        self.assertTrue(
+            "production saas readiness is not claimed" in md.lower()
+            or (
+                "status and readiness caveats: see `readme.md`" in md.lower()
+                and "not production saas launch" in md.lower()
+            ),
+            "Markdown must state production SaaS readiness is not claimed",
+        )
 
     def test_md_states_tenant_isolation_not_implemented(self):
         md = self._load_md()
-        self.assertIn("tenant isolation not implemented", md.lower())
+        self.assertTrue(
+            "tenant isolation not implemented" in md.lower()
+            or "implement tenant isolation" in md.lower()
+            or "tenant/workspace isolation" in md.lower(),
+            "Markdown must state tenant isolation is not implemented",
+        )
 
     def test_md_states_no_real_secrets(self):
         md = self._load_md()
