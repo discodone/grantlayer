@@ -1,0 +1,141 @@
+{
+  "audit_trail": [
+    {
+      "actor": "gl168-demo-agent",
+      "event_hash": "75feeff169c122a08f1a1ba5dc32cb7ea241aa936f55faa8a53b07f02b8420a2",
+      "id": "gl168-audit-001",
+      "payload": {
+        "grant_request_id": "gl168-grant-request-001"
+      },
+      "previous_event_hash": null,
+      "timestamp": "2026-01-15T12:00:00Z",
+      "type": "grant_request_created"
+    },
+    {
+      "actor": "gl168-demo-system",
+      "event_hash": "03b24c3bbd40eb23e15bb9819312dde74d8aed36e3e8ea986f4b5fc90ddb75af",
+      "id": "gl168-audit-002",
+      "payload": {
+        "evidence_item_count": 3
+      },
+      "previous_event_hash": "75feeff169c122a08f1a1ba5dc32cb7ea241aa936f55faa8a53b07f02b8420a2",
+      "timestamp": "2026-01-15T12:00:45Z",
+      "type": "evidence_collected"
+    },
+    {
+      "actor": "gl168-demo-operator",
+      "event_hash": "31ccac30f826dc6874ca5c307262cd41894dbad54f146f037171a1555795bfd9",
+      "id": "gl168-audit-003",
+      "payload": {
+        "grant_id": "gl168-grant-001",
+        "grant_request_id": "gl168-grant-request-001"
+      },
+      "previous_event_hash": "03b24c3bbd40eb23e15bb9819312dde74d8aed36e3e8ea986f4b5fc90ddb75af",
+      "timestamp": "2026-01-15T12:01:00Z",
+      "type": "grant_request_approved"
+    },
+    {
+      "actor": "gl168-demo-system",
+      "event_hash": "7b7b819577afe018a7ad2dc78f6cdd86ba195da520034e9ab715bd5773270a15",
+      "id": "gl168-audit-004",
+      "payload": {
+        "bundle_sha256": "687ff5f525218d2a9eaa9067a2737aca29b99f32198cbdbc4344f5e14ab757bb",
+        "evidence_bundle_id": "gl168-evidence-bundle-001"
+      },
+      "previous_event_hash": "31ccac30f826dc6874ca5c307262cd41894dbad54f146f037171a1555795bfd9",
+      "timestamp": "2026-01-15T12:02:30Z",
+      "type": "evidence_bundle_sealed"
+    }
+  ],
+  "caveats": [
+    "Synthetic local example data only.",
+    "No network calls, backend service, secrets, or GitHub auth required.",
+    "Not production SaaS readiness.",
+    "Tenant isolation is not implemented."
+  ],
+  "compliance_readiness_summary": {
+    "checks": {
+      "audit_trail_chained": "passed",
+      "evidence_hashes_present": "passed",
+      "production_saas_readiness": "not_claimed",
+      "synthetic_data_only": "passed",
+      "tenant_isolation": "not_implemented"
+    },
+    "generated_at": "2026-01-15T12:03:00Z",
+    "recommended_next_step": "Review the JSON artifact and compare hashes.",
+    "status": "ready_for_local_review"
+  },
+  "decision": {
+    "approved_grant_id": "gl168-grant-001",
+    "decided_at": "2026-01-15T12:01:00Z",
+    "decided_by": "gl168-demo-operator",
+    "decision": "approved",
+    "grant_request_id": "gl168-grant-request-001",
+    "id": "gl168-decision-001",
+    "rationale": "Synthetic policy and evidence checks passed for local demo."
+  },
+  "evidence_bundle": {
+    "bundle_sha256": "687ff5f525218d2a9eaa9067a2737aca29b99f32198cbdbc4344f5e14ab757bb",
+    "content": {
+      "canonical_version": "gl168.example.v1",
+      "decision_id": "gl168-decision-001",
+      "evidence_item_hashes": [
+        "ebf696708ab48770f5207de45845e4f7e2f5ef956d3d52a82a8dea8f3665208f",
+        "00152b537279ad30481a4fa5996647785180b46795ee7b833b7005f8894289f1",
+        "0363201a26b2dad5deb659c98a941e22ea1ebfb58ca707e191711d282dbe0f2c"
+      ],
+      "grant_request_id": "gl168-grant-request-001"
+    },
+    "created_at": "2026-01-15T12:02:30Z",
+    "id": "gl168-evidence-bundle-001"
+  },
+  "evidence_items": [
+    {
+      "content": {
+        "checked_at": "2026-01-15T12:00:30Z",
+        "details": "Requested action is allowed for the synthetic role.",
+        "policy_id": "synthetic-policy-gl168",
+        "result": "passed"
+      },
+      "content_sha256": "ebf696708ab48770f5207de45845e4f7e2f5ef956d3d52a82a8dea8f3665208f",
+      "id": "gl168-evidence-001",
+      "type": "policy_check"
+    },
+    {
+      "content": {
+        "approval_id": "gl168-decision-001",
+        "approved": true,
+        "approved_at": "2026-01-15T12:01:00Z",
+        "approved_by": "gl168-demo-operator"
+      },
+      "content_sha256": "00152b537279ad30481a4fa5996647785180b46795ee7b833b7005f8894289f1",
+      "id": "gl168-evidence-002",
+      "type": "approval_record"
+    },
+    {
+      "content": {
+        "checked_at": "2026-01-15T12:02:00Z",
+        "note": "Synthetic data only; no production SaaS readiness claim.",
+        "status": "ready_for_local_demo"
+      },
+      "content_sha256": "0363201a26b2dad5deb659c98a941e22ea1ebfb58ca707e191711d282dbe0f2c",
+      "id": "gl168-evidence-003",
+      "type": "compliance_note"
+    }
+  ],
+  "example_id": "gl168-first-verifiable-output",
+  "generated_at": "2026-01-15T12:00:00Z",
+  "grant_request": {
+    "action": "review_application",
+    "created_at": "2026-01-15T12:00:00Z",
+    "id": "gl168-grant-request-001",
+    "reason": "Synthetic local example showing first verifiable output.",
+    "requested_by": "gl168-demo-agent",
+    "requested_role": "evidence_reviewer",
+    "resource": "synthetic-grant-application-gl168",
+    "subject_id": "gl168-demo-subject-001",
+    "workflow_id": "gl168-demo-workflow-001"
+  },
+  "record_type": "grantlayer_first_verifiable_output_example",
+  "record_version": "1.0"
+}
