@@ -77,7 +77,7 @@ When reporting security issues, please follow these data-handling rules:
 
 ## 6. Current Caveats
 
-- **Formal visibility decision pending** — a clean public snapshot has been published via the snapshot workflow (GL-172); a formal public-visibility decision (GL-175) is still required before broader promotion.
+- **Public GitHub publication has not happened** — a clean developer snapshot has been published via the snapshot workflow (GL-172), but a formal public-visibility decision (GL-175) is still required before broader promotion.
 - **Production SaaS readiness not claimed** — the backend has not completed all production-hardening gates required for a shared multi-tenant SaaS.
 - **Tenant isolation not implemented** — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers.
 
