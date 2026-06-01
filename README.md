@@ -126,7 +126,7 @@ Runtime agent examples are planned for **GL-155 Agent Examples Pack**.
 - **Production SaaS readiness is not claimed** — the backend has not completed all production-hardening gates required for a shared multi-tenant SaaS.
 - **Tenant isolation is not implemented** — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers.
 - **Public GitHub release/publication has not happened** — explicit human approval is still required before any public push.
-- **GL-169 is public-facing polish only** — this issue prepares quickstart and repository orientation content; it performs no GitHub push and no repository visibility change.
+- **No GitHub push has been performed directly** — all internal development issues (through GL-172) are internal-only; public GitHub content is synced only via the explicit clean snapshot publish workflow and no repository visibility change has been made.
 - **Local evaluation only** — this repo is intended for developer exploration and controlled pilot discussion, not production deployment.
 
 ---
