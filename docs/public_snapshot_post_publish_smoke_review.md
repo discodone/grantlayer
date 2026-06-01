@@ -64,7 +64,7 @@ The public snapshot clone was checked for the following exclusions and leakage i
 - `.claude`
 - `backend/internal` fixtures
 - internal Forgejo hostnames or remotes
-- `/paperclip/grantlayer-mvp`
+- internal repository absolute path
 - Paperclip references
 - private key markers
 - raw tokens, API keys, passwords, session cookies, JWTs

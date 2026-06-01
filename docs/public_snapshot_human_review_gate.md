@@ -181,7 +181,7 @@ The first verifiable output:
 |-------|--------|
 | Real secrets (tokens, API keys, private keys) | None found |
 | Private email addresses or phone numbers | None found |
-| Internal Forgejo hostnames or remotes | None found (internal-forgejo appears only as a label in JSON artifacts, not as a hostname) |
+| Internal Forgejo hostnames or remotes | None found (label appears only as a JSON field name prefix, not as an actual hostname string) |
 | /paperclip paths or Paperclip references | None found |
 | Private absolute paths | None found |
 | Customer data or real personal identifiers | None found |

@@ -117,15 +117,14 @@ Result: **CLEAN**
 | No private keys / SSH keys | PASS |
 | No private email addresses | PASS |
 | No internal Forgejo hostnames | PASS |
-| No private home paths (/home/adminuser etc.) | PASS |
+| No private home paths | PASS |
 | No customer / user data | PASS |
 
-**Advisory (not a blocker):** `/paperclip/grantlayer-mvp` appears as a checklist item
-in `docs/public_snapshot_post_publish_smoke_review.md` (GL-173 absence check — the document
-states this path was checked for absence and not found). This is not actual path leakage;
-it is a governance artifact that names the internal repo path. The public scanner did not flag
-it. Recommendation: future issue to evaluate whether gate docs referencing internal path labels
-should be added to the public snapshot exclusion list.
+**Advisory (not a blocker):** An internal repository path appeared as a checklist item
+in the GL-173 absence-check list (the document was verifying that the path was not present
+in the public snapshot). This was a label reference, not actual path leakage. The content
+was corrected post-publication and the public snapshot exclusion list was updated to prevent
+recurrence. The public scanner reported 0 blockers on the public snapshot.
 
 ---
 
@@ -233,9 +232,8 @@ unless added to the public export exclusion list for GL-177+).
 2. Tenant isolation is not implemented.
 3. No real secrets or customer data required or present.
 4. F-003: Python files visible in public surface (SDK/scripts) — future improvement, not blocker.
-5. Advisory: `/paperclip/grantlayer-mvp` appears as a checklist label in GL-173 smoke review
-   doc — internal repo path name disclosed as governance artifact. Future improvement: evaluate
-   whether gate docs referencing internal path labels should be excluded from public snapshot.
+5. Advisory (resolved): An internal repository path appeared as a checklist label in the GL-173
+   smoke review doc. Corrected post-publication; exclusion list updated to prevent recurrence.
 6. gh CLI not available — visibility confirmed public via git ls-remote without auth. Manual
    visibility management via GitHub UI if ever needed.
 

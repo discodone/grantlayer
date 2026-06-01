@@ -230,6 +230,9 @@ PUBLIC_EXPORT_EXCLUDE=(
     # and are internal-only governance documents, same as other excluded gate/readiness docs.
     "docs/public_release_github_snapshot_readiness_review.md"
     "docs/examples/gl171/public_release_github_snapshot_readiness_review.json"
+    # GL-176: internal publication report — internal governance doc, not developer-preview content.
+    "docs/public_github_visibility_change_report.md"
+    "docs/examples/gl176/public_github_visibility_change_report.json"
 )
 
 TMPFILE=$(mktemp /tmp/gl161-file-list-XXXXXXXX.txt)
