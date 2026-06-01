@@ -218,6 +218,18 @@ PUBLIC_EXPORT_EXCLUDE=(
     # the public scanner. Excluded here so future snapshot builds cannot accidentally
     # include it if the file is ever added under scripts/ in the source repo.
     "scripts/test_gl162c_public_snapshot_ci_compatibility.py"
+    # GL-172 F-001: demo_script.md references an internal operational path and
+    # must not appear in the public snapshot.
+    "docs/demo_script.md"
+    # GL-172 F-002: three example artifacts carry an internal infrastructure source label
+    # disclosing internal tooling name; excluded from public snapshot.
+    "docs/examples/gl163/post_public_agent_intake_triage.json"
+    "docs/examples/gl164a/public_repo_discovery_metadata.json"
+    "docs/examples/gl165/public_changelog_version_anchors.json"
+    # GL-172: internal gate review documents — describe findings (including resolved paths/labels)
+    # and are internal-only governance documents, same as other excluded gate/readiness docs.
+    "docs/public_release_github_snapshot_readiness_review.md"
+    "docs/examples/gl171/public_release_github_snapshot_readiness_review.json"
 )
 
 TMPFILE=$(mktemp /tmp/gl161-file-list-XXXXXXXX.txt)
