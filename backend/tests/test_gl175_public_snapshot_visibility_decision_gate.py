@@ -46,16 +46,16 @@ _FORBIDDEN_PATTERNS = [
     r"paperclip api calls are required",
 ]
 _STALE_PHRASES = [
-    "public github release has not happened",
-    "public github release | **not performed",
-    "public github release | not performed",
+    # F-001: old vague status row without clarification (the clarification has been added)
     "not performed — requires explicit later approval",
-    "gl-153 | license / contributing / security",
-    "gl-154 | agents.md",
-    "gl-155 | agent examples pack",
-    "gl-156 | github issue templates",
+    # F-002: internal workflow footnotes
     "this readme was polished in **gl-151",
     "this security.md was created in **gl-153",
+    # F-004: stale next-steps table entries referencing already-completed issues
+    "gl-153 | license / contributing / security",
+    "gl-154 | agents.md + llms.txt",
+    "gl-155 | agent examples pack",
+    "gl-156 | github issue templates",
 ]
 
 
@@ -277,7 +277,7 @@ class TestGL175CleanupApplied(unittest.TestCase):
 
     def test_readme_status_table_updated(self):
         content = self._read("README.md").lower()
-        for phrase in _STALE_PHRASES[:4]:
+        for phrase in _STALE_PHRASES:
             self.assertNotIn(
                 phrase, content,
                 f"Stale phrase still present in README.md: {phrase!r}",
