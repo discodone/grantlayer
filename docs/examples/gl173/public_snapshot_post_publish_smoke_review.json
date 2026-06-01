@@ -1,0 +1,80 @@
+{
+  "issue_id": "GL-173",
+  "title": "Public Snapshot Post-Publish Smoke Review",
+  "github_repo": "https://github.com/discodone/grantlayer.git",
+  "public_commit": "4b42f7f00b11a12413d4e4bdce99c4ea921dfa0d",
+  "smoke_clone_path": "/tmp/grantlayer-public-smoke-gl173",
+  "checks_performed": [
+    "verified clean git status in the public clone",
+    "verified README.md exists",
+    "verified SECURITY.md exists",
+    "verified examples/first_verifiable_output.py exists",
+    "verified examples/first_verifiable_output.json exists",
+    "verified docs/first_verifiable_output.md exists",
+    "verified README links to docs/first_verifiable_output.md",
+    "verified README includes the public GitHub clone URL",
+    "verified README does not contain internal repo clone placeholders",
+    "ran the first verifiable output example",
+    "diffed the generated JSON against the committed reference JSON",
+    "performed public snapshot absence checks",
+    "performed external developer readiness checks"
+  ],
+  "first_output_smoke": {
+    "command": "python3 examples/first_verifiable_output.py --output /tmp/grantlayer-public-smoke-output-gl173.json",
+    "reference": "examples/first_verifiable_output.json",
+    "result": "pass",
+    "diff_result": "exact_match",
+    "network_required": false,
+    "secrets_required": false,
+    "backend_service_required": false
+  },
+  "absence_checks": {
+    "docs_demo_script_md_absent": true,
+    "docs_examples_gl163_audit_snapshot_asset_json_absent": true,
+    "excluded_gl164_gl165_internal_label_artifacts_absent": true,
+    "dot_claude_absent": true,
+    "backend_internal_fixtures_absent": true,
+    "internal_forgejo_hostnames_or_remotes_absent": true,
+    "paperclip_path_absent": true,
+    "paperclip_references_absent": true,
+    "private_key_markers_absent": true,
+    "raw_tokens_api_keys_passwords_session_cookies_jwts_absent": true,
+    "private_absolute_paths_absent": true,
+    "customer_data_absent": true,
+    "private_emails_or_phone_numbers_absent": true,
+    "internal_repo_push_instructions_absent": true,
+    "github_visibility_change_instructions_absent": true
+  },
+  "findings": [],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "total": 0
+  },
+  "external_developer_readiness": "pass",
+  "github_push_performed": false,
+  "visibility_changed": false,
+  "non_goals": [
+    "change_github_visibility",
+    "push_to_github",
+    "force_push",
+    "rewrite_history",
+    "modify_backend_src",
+    "modify_openapi",
+    "modify_migrations",
+    "modify_dependencies",
+    "modify_snapshot_publish_script_behavior",
+    "use_prohibited_external_tool",
+    "call_forbidden_apis",
+    "claim_production_saas_readiness",
+    "claim_tenant_isolation_implemented"
+  ],
+  "changed_files": [
+    "docs/public_snapshot_post_publish_smoke_review.md",
+    "docs/examples/gl173/public_snapshot_post_publish_smoke_review.json",
+    "backend/tests/test_gl173_public_snapshot_post_publish_smoke_review.py"
+  ],
+  "next_recommended_step": "public snapshot human review / decide whether to keep the repo private or proceed to an explicit visibility decision gate"
+}
