@@ -1,0 +1,215 @@
+{
+  "issue_id": "GL-174",
+  "title": "Public Snapshot Human Review Gate",
+  "public_repo": "https://github.com/discodone/grantlayer.git",
+  "public_commit_reviewed": "4b42f7f00b11a12413d4e4bdce99c4ea921dfa0d",
+  "internal_base_commit": "24c8f8a8a22609f89afe3d1b40b94bbb593e8d4f",
+  "review_date": "2026-06-01",
+  "reviewer_personas": [
+    "external_backend_developer",
+    "institutional_compliance_reviewer",
+    "ai_agent_workflow_developer"
+  ],
+  "checks_performed": [
+    "README first impression and 30-second clarity",
+    "README clone URL correctness",
+    "README placeholder text absence",
+    "README status table accuracy",
+    "README production SaaS readiness claim check",
+    "README tenant isolation claim check",
+    "README developer entry path table",
+    "README agent section",
+    "README footer internal workflow notation check",
+    "README Next steps table staleness check",
+    "SECURITY.md canonical status check",
+    "CHANGELOG narrative coherence",
+    "AGENTS.md presence and quality",
+    "llms.txt and llms-full.txt presence",
+    "examples/first_verifiable_output.py discoverability",
+    "examples/first_verifiable_output.json discoverability",
+    "docs/first_verifiable_output.md discoverability",
+    "examples/agents/*.py agent examples",
+    "sdk/python/grantlayer_client.py SDK surface",
+    "Public Python code surface count and quality",
+    "Private data scan: secrets, tokens, private keys",
+    "Private data scan: email addresses and phone numbers",
+    "Private data scan: internal Forgejo hostnames or remotes",
+    "Private data scan: /paperclip paths and Paperclip references",
+    "Private data scan: private absolute paths",
+    "Private data scan: customer data",
+    "Private data scan: GitHub visibility-change instructions",
+    "Private data scan: internal push instructions",
+    "GL-168/169/170/171/172/173 narrative coherence",
+    "README/SECURITY canonical status handling (GL-170 deduplication)"
+  ],
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "low",
+      "status": "open",
+      "area": "README and SECURITY status table",
+      "summary": "Both README.md and SECURITY.md show 'Public GitHub release: Not performed' in their status tables. The public snapshot IS accessible on GitHub at commit 4b42f7f (confirmed by GL-173 smoke clone and GL-174 direct clone). The intended distinction is 'clean snapshot synced to GitHub' vs 'formal public visibility decision', but this distinction is not explained in the status table row. External readers who clone the repo and read this status may be confused.",
+      "recommendation": "Add a clarifying note to the status table row distinguishing 'clean snapshot synced to GitHub (controlled access)' from 'formal public visibility decision (pending)'."
+    },
+    {
+      "id": "F-002",
+      "severity": "low",
+      "status": "open",
+      "area": "README footer",
+      "summary": "The README's final paragraph reads as an internal methodology commit note referencing GL-151, GL-152, and GL-153 and containing a long list of non-actions ('It does not publish to GitHub, change git remotes, rewrite history...'). This is internal workflow documentation that reads awkwardly to external developers.",
+      "recommendation": "Remove or relocate the internal audit footnote from the user-facing README. This content belongs in commit messages or an internal changelog."
+    },
+    {
+      "id": "F-003",
+      "severity": "medium",
+      "status": "open",
+      "area": "Public code surface",
+      "summary": "The public snapshot exposes 9 Python files (examples, SDK, scripts) and 62+ Markdown documents. The backend (main production codebase) is intentionally excluded by the clean snapshot architecture. For an external developer or institutional reviewer, the visible code surface may feel thin relative to the documentation volume, potentially undermining credibility. The first verifiable output compensates, and the SDK and agent examples are credible, but the ratio is notable.",
+      "recommendation": "Before a full public visibility decision, consider whether exposing a minimal read-only verifier or lightweight CLI entrypoint would strengthen the code credibility signal. Not a blocker for entering the visibility decision gate."
+    },
+    {
+      "id": "F-004",
+      "severity": "low",
+      "status": "open",
+      "area": "README Next steps table",
+      "summary": "The README 'Next steps' section references GL-153, GL-154, GL-155, GL-156 as future items. All of these were completed many iterations ago (project is now at GL-174). An external reader sees a misleading impression of pending work.",
+      "recommendation": "Update or remove the 'Next steps' table. Replace with accurate status reflecting the current public-snapshot phase."
+    },
+    {
+      "id": "F-005",
+      "severity": "info",
+      "status": "pass",
+      "area": "Agent documentation",
+      "summary": "AGENTS.md, llms.txt, llms-full.txt, docs/agent_quickstart.md, and docs/agent_task_contract.md are all present, well-organized, and correctly referenced from README. The agent section does not overwhelm the primary human reader.",
+      "recommendation": "No action required."
+    },
+    {
+      "id": "F-006",
+      "severity": "info",
+      "status": "pass",
+      "area": "First verifiable output",
+      "summary": "The first verifiable output path is clearly discoverable from README via a dedicated quickstart section. The developer entry path table and docs/first_verifiable_output.md converge on examples/first_verifiable_output.py. The output is self-contained (stdlib only, no secrets, no backend). GL-173 confirmed it runs successfully and matches the committed reference JSON.",
+      "recommendation": "No action required."
+    },
+    {
+      "id": "F-007",
+      "severity": "info",
+      "status": "pass",
+      "area": "Private data and secret safety",
+      "summary": "Full scan found no real secrets, private keys, tokens, API keys, private email addresses, internal Forgejo hostnames, /paperclip paths, Paperclip references, customer data, or GitHub visibility-change instructions in the public snapshot.",
+      "recommendation": "No action required."
+    },
+    {
+      "id": "F-008",
+      "severity": "info",
+      "status": "pass",
+      "area": "Post-publish narrative coherence",
+      "summary": "GL-168 through GL-173 form a coherent public-surface story. CHANGELOG explains the clean snapshot model. README and SECURITY status tables are consistent with each other. The GL-170 deduplication is intact (no duplicate broad status blocks in non-canonical docs).",
+      "recommendation": "No action required."
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 3,
+    "info": 4,
+    "total": 8
+  },
+  "review_decision": "proceed_with_cautions_to_visibility_decision",
+  "confidence": "high",
+  "recommended_next_issue": "GL-175: Public Snapshot Visibility Decision Gate",
+  "public_code_surface_assessment": {
+    "python_files_visible": 9,
+    "markdown_files_in_docs": 62,
+    "files": [
+      "examples/first_verifiable_output.py",
+      "examples/agents/approval_guardrail_agent.py",
+      "examples/agents/audit_export_agent.py",
+      "examples/agents/evidence_review_agent.py",
+      "examples/agents/policy_check_agent.py",
+      "examples/langgraph_langchain/grantlayer_agent_example.py",
+      "sdk/python/grantlayer_client.py",
+      "scripts/verify_evidence_bundle.py",
+      "scripts/demo/gl061_api_smoke.py"
+    ],
+    "backend_excluded": true,
+    "backend_exclusion_documented": true,
+    "first_verifiable_output_standalone": true,
+    "sdk_present": true,
+    "agent_examples_present": true,
+    "assessment": "Credible developer preview surface. First verifiable output compensates for backend exclusion. Medium finding F-003 notes the ratio but does not block the visibility decision."
+  },
+  "audience_clarity_assessment": {
+    "external_backend_developer": "pass_with_minor_cautions",
+    "institutional_compliance_reviewer": "pass",
+    "ai_agent_workflow_developer": "pass",
+    "readme_canonical_status_source": true,
+    "security_canonical_caveat_source": true,
+    "gl170_deduplication_intact": true,
+    "notes": "Minor cautions: README footer noise (F-002) and stale Next steps table (F-004) add friction for external backend developers. These are polish items, not blockers."
+  },
+  "first_output_assessment": {
+    "path": "examples/first_verifiable_output.py",
+    "reference_output": "examples/first_verifiable_output.json",
+    "walkthrough_doc": "docs/first_verifiable_output.md",
+    "discoverable_from_readme": true,
+    "stdlib_only": true,
+    "no_secrets_required": true,
+    "no_backend_required": true,
+    "gl173_smoke_confirmed": true,
+    "gl173_diff_result": "exact_match",
+    "assessment": "pass"
+  },
+  "private_data_secret_safety": {
+    "no_real_secrets_found": true,
+    "no_private_keys_found": true,
+    "no_api_tokens_found": true,
+    "no_private_email_addresses_found": true,
+    "no_phone_numbers_found": true,
+    "no_internal_forgejo_hostnames_found": true,
+    "no_paperclip_paths_found": true,
+    "no_paperclip_references_found": true,
+    "no_private_absolute_paths_found": true,
+    "no_customer_data_found": true,
+    "no_github_visibility_change_instructions_found": true,
+    "no_internal_repo_push_instructions_found": true,
+    "assessment": "No critical private-data or secret-material found. Safe to proceed to visibility decision evaluation."
+  },
+  "safety_confirmations": {
+    "github_push_performed": false,
+    "visibility_changed": false,
+    "backend_src_changed": false,
+    "openapi_changed": false,
+    "migration_changed": false,
+    "db_schema_changed": false,
+    "dependencies_changed": false,
+    "sdk_implementation_changed": false,
+    "frontend_changed": false,
+    "snapshot_publish_script_changed": false,
+    "git_remotes_changed": false,
+    "force_push_performed": false,
+    "secret_handling_changed": false,
+    "paperclip_references_added": false
+  },
+  "non_goals": [
+    "No GitHub push performed",
+    "No visibility change performed",
+    "No backend/src changes",
+    "No OpenAPI or migration changes",
+    "No database-schema changes",
+    "No dependency changes",
+    "No SDK implementation changes",
+    "No frontend or design changes",
+    "No snapshot publish script behavior changes",
+    "No git remote changes",
+    "No force push",
+    "No secret handling changes",
+    "No Paperclip references or status updates"
+  ],
+  "changed_files": [
+    "docs/public_snapshot_human_review_gate.md",
+    "docs/examples/gl174/public_snapshot_human_review_gate.json",
+    "backend/tests/test_gl174_public_snapshot_human_review_gate.py"
+  ]
+}
