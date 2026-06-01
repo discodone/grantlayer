@@ -1,10 +1,10 @@
 # GL-173 Public Snapshot Post-Publish Smoke Review
 
-**Issue:** GL-173  
-**GitHub repo reviewed:** `https://github.com/discodone/grantlayer.git`  
-**Public commit reviewed:** `4b42f7f00b11a12413d4e4bdce99c4ea921dfa0d`  
-**Smoke clone path:** `/tmp/grantlayer-public-smoke-gl173`  
-**Reviewer:** GrantLayer Auto Public Snapshot Smoke Review Agent  
+**Issue:** GL-173
+**GitHub repo reviewed:** `https://github.com/discodone/grantlayer.git`
+**Public commit reviewed:** `4b42f7f00b11a12413d4e4bdce99c4ea921dfa0d`
+**Smoke clone path:** `/tmp/grantlayer-public-smoke-gl173`
+**Reviewer:** GrantLayer Auto Public Snapshot Smoke Review Agent
 
 ## Non-Goals
 
