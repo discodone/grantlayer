@@ -18,7 +18,7 @@ When AI agents prepare funding applications, evaluate eligibility, collect evide
 | Maturity | Local evaluation and controlled pilot only |
 | Production SaaS readiness | **Not claimed** |
 | Tenant/workspace isolation | **Not implemented** |
-| Public GitHub release | **Not performed** — requires explicit later approval |
+| Public GitHub release | **Not performed** — clean developer snapshot synced to `https://github.com/Discodone/grantlayer.git`; formal visibility decision pending (GL-175) |
 | Public snapshot | Clean developer-facing snapshot — no internal paths, no real secrets |
 | Source of truth | Internal Forgejo — public GitHub is a clean read-only snapshot |
 | Real customer data in examples | **No** — all examples use synthetic identifiers |
@@ -103,7 +103,7 @@ GrantLayer is local-first and agent-friendly. If you are an AI coding agent, sta
 - **No real secrets or customer data** anywhere in the repository.
 - **Not production SaaS** — do not deploy to shared multi-tenant infrastructure.
 - **Tenant isolation is not implemented** — data shares a single namespace.
-- **Public GitHub release has not happened** — explicit approval required (GL-160).
+- **Public GitHub release has not happened** — a clean snapshot is at `https://github.com/Discodone/grantlayer.git` for developer access; formal visibility decision is pending (GL-175).
 
 Runtime agent examples are planned for **GL-155 Agent Examples Pack**.
 
@@ -125,8 +125,8 @@ Runtime agent examples are planned for **GL-155 Agent Examples Pack**.
 - **Do not use real customer data** — all examples use synthetic identifiers (e.g. `gl146-demo-subject-001`).
 - **Production SaaS readiness is not claimed** — the backend has not completed all production-hardening gates required for a shared multi-tenant SaaS.
 - **Tenant isolation is not implemented** — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers.
-- **Public GitHub release/publication has not happened** — explicit human approval is still required before any public push.
-- **No GitHub push has been performed directly** — all internal development issues (through GL-172) are internal-only; public GitHub content is synced only via the explicit clean snapshot publish workflow and no repository visibility change has been made.
+- **Public GitHub release has not happened** — a clean developer snapshot has been synced to `https://github.com/Discodone/grantlayer.git` via the explicit snapshot workflow, but no formal public-visibility decision has been made yet (GL-175).
+- **No GitHub push has been performed directly** — public GitHub content is synced only via the explicit clean snapshot workflow; no repository visibility change has been made.
 - **Local evaluation only** — this repo is intended for developer exploration and controlled pilot discussion, not production deployment.
 
 ---
@@ -365,15 +365,17 @@ curl -s http://127.0.0.1:8765/audit-events | python3 -m json.tool
 
 ---
 
-## Next steps
+## Current status and next steps
 
-| Issue | Title | Purpose |
-|-------|-------|---------|
-| GL-153 | LICENSE / CONTRIBUTING / SECURITY Decision Pack | Add LICENSE, CONTRIBUTING.md, and SECURITY.md files. |
-| GL-154 | AGENTS.md + llms.txt + Agent Integration Manifest | Add agent entry points, task contracts, and integration manifest. |
-| GL-155 | Agent Examples Pack | Add ready-to-run agent examples and task contracts. |
-| GL-156 | GitHub Issue Templates / Feedback Templates | Create issue templates, PR template, and feedback templates if public publication is approved later. |
+The governance and readiness gates up to GL-174 are complete. The repository is in a
+developer-preview / controlled-pilot posture with a clean public snapshot synced to GitHub.
+
+| What | Status |
+|------|--------|
+| Public README polish and blocker fixes | Complete (GL-151 / GL-152) |
+| LICENSE, CONTRIBUTING, SECURITY | Added (GL-153) |
+| Agent entry points (AGENTS.md, llms.txt, agent examples) | Added (GL-154 / GL-155) |
+| Public snapshot hygiene and readiness review sequence | Complete (GL-168–GL-174) |
+| Formal public visibility decision | Pending (GL-175) |
 
 ---
-
-> This README was polished in **GL-151 Public README / Repo Metadata Polish**, completed blockers were fixed in **GL-152 Public Checklist Blocker Fixes**, and governance files were added in **GL-153 LICENSE / CONTRIBUTING / SECURITY Decision Pack**. It does **not** publish to GitHub, change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.

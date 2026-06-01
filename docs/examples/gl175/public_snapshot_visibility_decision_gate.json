@@ -1,0 +1,126 @@
+{
+  "issue_id": "GL-175",
+  "title": "Public Snapshot Visibility Decision Gate",
+  "public_repo": "https://github.com/discodone/grantlayer.git",
+  "public_commit_basis": "4b42f7f00b11a12413d4e4bdce99c4ea921dfa0d",
+  "internal_base_commit": "cb0902969a8adb4f9cc606e0cdb7a6f04bb29ad1",
+  "decision_date": "2026-06-01",
+  "gl174_review_decision": "proceed_with_cautions_to_visibility_decision",
+  "gl174_findings_addressed": [
+    {
+      "id": "F-001",
+      "severity": "low",
+      "description": "Stale 'Public GitHub release: Not performed' in README and SECURITY.md status tables",
+      "action": "Updated status rows in README.md, SECURITY.md, llms.txt, llms-full.txt",
+      "resolved": true
+    },
+    {
+      "id": "F-002",
+      "severity": "low",
+      "description": "README and SECURITY.md contained internal workflow methodology footnotes",
+      "action": "Removed internal workflow footer blockquotes from README.md and SECURITY.md",
+      "resolved": true
+    },
+    {
+      "id": "F-004",
+      "severity": "low",
+      "description": "README 'Next steps' table referenced already-completed issues GL-153 through GL-156",
+      "action": "Replaced stale next-steps table with current status table",
+      "resolved": true
+    },
+    {
+      "id": "F-003",
+      "severity": "medium",
+      "description": "Documentation-heavy code surface — backend excluded by design",
+      "action": "Carried forward as future improvement; not addressed in GL-175 (not a blocker)",
+      "resolved": false,
+      "deferred_to": "future improvement before broader promotion"
+    }
+  ],
+  "cleanup_changed_files": [
+    "README.md",
+    "SECURITY.md",
+    "llms.txt",
+    "llms-full.txt"
+  ],
+  "post_cleanup_checks": {
+    "readme_status_table_current": true,
+    "security_status_table_current": true,
+    "llms_txt_status_current": true,
+    "llms_full_txt_status_current": true,
+    "readme_footer_noise_removed": true,
+    "security_footer_noise_removed": true,
+    "readme_next_steps_current": true,
+    "no_new_private_data_introduced": true,
+    "no_production_saas_claim": true,
+    "tenant_isolation_still_disclaimed": true,
+    "clone_url_correct": true,
+    "first_output_path_unchanged": true
+  },
+  "evidence_chain": [
+    {"gate": "GL-168", "title": "First verifiable output", "result": "pass"},
+    {"gate": "GL-169", "title": "AGENTS.md / llms.txt / agent integration manifest", "result": "complete"},
+    {"gate": "GL-170", "title": "Status block deduplication", "result": "complete"},
+    {"gate": "GL-171", "title": "Pre-publish readiness review", "result": "proceed_with_cautions — all cautions addressed"},
+    {"gate": "GL-172", "title": "Clean snapshot publish to GitHub", "result": "complete — snapshot at 4b42f7f"},
+    {"gate": "GL-173", "title": "Post-publish smoke review", "result": "external developer readiness pass — 0 findings"},
+    {"gate": "GL-174", "title": "Human review gate", "result": "proceed_with_cautions_to_visibility_decision — 0 critical, 0 high"},
+    {"gate": "GL-175", "title": "Visibility decision gate", "result": "this issue"}
+  ],
+  "private_data_secret_safety": {
+    "no_real_secrets_found": true,
+    "no_private_keys_found": true,
+    "no_api_tokens_found": true,
+    "no_private_email_addresses_found": true,
+    "no_phone_numbers_found": true,
+    "no_internal_forgejo_hostnames_found": true,
+    "no_paperclip_paths_found": true,
+    "no_paperclip_references_found": true,
+    "no_private_absolute_paths_found": true,
+    "no_customer_data_found": true,
+    "no_github_visibility_change_instructions_added": true,
+    "no_internal_repo_push_instructions_added": true,
+    "assessment": "Clean. GL-174 finding carried forward. No new risk introduced by GL-175 cleanup changes."
+  },
+  "public_code_surface_assessment": {
+    "python_files_visible": 9,
+    "backend_excluded": true,
+    "f003_status": "future_improvement",
+    "f003_blocks_decision": false,
+    "assessment": "9 Python files visible (examples, SDK, agent examples, scripts). Backend excluded by design. F-003 carried forward as future improvement recommendation, not a blocker for this visibility decision."
+  },
+  "visibility_decision": "proceed_to_public_visibility_or_snapshot_publish",
+  "confidence": "high",
+  "safety_confirmations": {
+    "github_push_performed": false,
+    "visibility_changed": false,
+    "backend_src_changed": false,
+    "openapi_changed": false,
+    "migration_changed": false,
+    "db_schema_changed": false,
+    "dependencies_changed": false,
+    "sdk_implementation_changed": false,
+    "frontend_changed": false,
+    "snapshot_publish_script_changed": false,
+    "git_remotes_changed": false,
+    "force_push_performed": false,
+    "paperclip_references_added": false
+  },
+  "recommended_next_issue": "GL-176: Public GitHub Visibility Change",
+  "gl176_prerequisites": [
+    "Confirm GitHub repository settings (topics, description, website field)",
+    "Confirm SECURITY.md reporting channel ready",
+    "Consider F-003 code surface improvement timeline",
+    "Perform actual visibility change or publication action",
+    "Run post-publication smoke check"
+  ],
+  "changed_files": [
+    "README.md",
+    "SECURITY.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/public_snapshot_visibility_decision_gate.md",
+    "docs/examples/gl175/public_snapshot_visibility_decision_gate.json",
+    "backend/tests/test_gl175_public_snapshot_visibility_decision_gate.py"
+  ]
+}
