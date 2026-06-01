@@ -1,0 +1,116 @@
+{
+  "issue_id": "GL-176",
+  "title": "Public GitHub Visibility Change Report",
+  "review_date": "2026-06-01",
+  "source_internal_main_commit": "309c8b244a2413a94fa2575d36e807a5ac58e3f2",
+  "public_publish_worktree": "/tmp/grantlayer-public-publish",
+  "github_remote": "https://github.com/discodone/grantlayer.git",
+  "preflight_checks": {
+    "internal_main_clean": true,
+    "internal_origin_main_equals_local_main": true,
+    "gl175_merged_on_main": true,
+    "gl175_decision": "proceed_to_public_visibility_or_snapshot_publish",
+    "gl175_confidence": "high",
+    "no_blocking_private_data_secret_finding": true,
+    "public_publish_worktree_path_verified": "/tmp/grantlayer-public-publish",
+    "github_remote_verified": "https://github.com/discodone/grantlayer.git",
+    "no_internal_forgejo_remote_as_github_push_target": true,
+    "no_private_remote_pushed": true,
+    "public_worktree_clean_before_sync": true
+  },
+  "snapshot_build": {
+    "script": "scripts/build-clean-public-snapshot.sh",
+    "build_path": "/tmp/grantlayer-snapshot-gl176",
+    "file_count": 199,
+    "backend_excluded": true,
+    "dot_git_excluded": true,
+    "dot_claude_excluded": true,
+    "env_files_excluded": true,
+    "build_exit_code": 0
+  },
+  "private_data_public_snapshot_safety": {
+    "scanner": "scripts/public-secret-sensitive-scan.sh",
+    "scan_target": "/tmp/grantlayer-public-publish (staged git ls-files)",
+    "files_scanned": 190,
+    "meta_excluded": 9,
+    "blockers_found": 0,
+    "result": "clean",
+    "no_raw_tokens": true,
+    "no_api_keys": true,
+    "no_jwts": true,
+    "no_passwords": true,
+    "no_cookies": true,
+    "no_private_keys": true,
+    "no_ssh_keys": true,
+    "no_deploy_keys": true,
+    "no_private_email_addresses": true,
+    "no_private_phone_numbers": true,
+    "no_customer_user_data": true,
+    "no_internal_forgejo_hostnames": true,
+    "no_internal_terminal_urls": true,
+    "no_private_git_remotes": true,
+    "no_private_home_paths": true,
+    "no_screenshots_logs_with_private_infra": true,
+    "advisory_paperclip_path_label": {
+      "observation": "/paperclip/grantlayer-mvp appears as a checklist item in docs/public_snapshot_post_publish_smoke_review.md (absence check, not actual path exposure). Not flagged by scanner. Internal repo path name disclosed as governance artifact reference.",
+      "severity": "advisory",
+      "is_blocker": false
+    }
+  },
+  "publication_actions": {
+    "snapshot_refreshed_from_internal_main": true,
+    "sync_method": "build-clean-public-snapshot.sh to /tmp/grantlayer-snapshot-gl176, then cp into /tmp/grantlayer-public-publish",
+    "public_snapshot_pushed": true,
+    "push_source": "/tmp/grantlayer-public-publish",
+    "push_target": "https://github.com/discodone/grantlayer.git",
+    "push_commit": "8bf6c335af4f1229dd752e935ec5b0e5a6928bad",
+    "force_push": false,
+    "history_rewrite": false,
+    "internal_repo_pushed_directly_to_github": false
+  },
+  "visibility_change": {
+    "changed": false,
+    "prior_visibility": "public",
+    "current_visibility": "public",
+    "note": "Repository was already public. No visibility change action was required. Verified via git ls-remote https://github.com/discodone/grantlayer.git returning HEAD without authentication.",
+    "gh_cli_available": false,
+    "github_api_curl_used": false
+  },
+  "post_publication_checks": {
+    "github_remote_reachable": true,
+    "git_ls_remote_head": "8bf6c335af4f1229dd752e935ec5b0e5a6928bad",
+    "readme_present_in_worktree": true,
+    "security_md_present_in_worktree": true,
+    "license_present_in_worktree": true,
+    "agents_md_present_in_worktree": true,
+    "llms_txt_present_in_worktree": true,
+    "docs_examples_present_in_worktree": true,
+    "gl175_visibility_decision_doc_present": true,
+    "gl174_human_review_gate_doc_present": true,
+    "gl173_post_publish_smoke_review_doc_present": true,
+    "no_obvious_internal_leakage_in_scanner": true,
+    "clone_url": "https://github.com/Discodone/grantlayer.git"
+  },
+  "f003_status": {
+    "acknowledged": true,
+    "note": "F-003: 9 Python files visible in public snapshot surface (SDK and scripts). Backend excluded by design. F-003 is a future improvement — not a blocker for GL-176.",
+    "is_blocker": false
+  },
+  "remaining_cautions": [
+    "Repository is a Developer Preview — not production SaaS.",
+    "Tenant isolation is not implemented.",
+    "No real secrets or customer data required or present.",
+    "Local and demo use only.",
+    "F-003: Python files visible in public surface (SDK/scripts) — future improvement, not blocker.",
+    "Advisory: /paperclip/grantlayer-mvp appears as a checklist label in GL-173 smoke review doc — internal repo path name disclosed as governance artifact, not actual path leakage. Future improvement: consider whether gate docs referencing internal paths should be excluded from public snapshot.",
+    "gl CLI not available — visibility confirmed public via git ls-remote without auth. Manual visibility management via GitHub UI if ever needed."
+  ],
+  "internal_report_files": [
+    "docs/public_github_visibility_change_report.md",
+    "docs/examples/gl176/public_github_visibility_change_report.json",
+    "backend/tests/test_gl176_public_github_visibility_change_report.py"
+  ],
+  "internal_report_in_public_snapshot": false,
+  "next_recommended_step": "GL-176 complete. Public snapshot is pushed and repository is public. Next: monitor for community feedback, address F-003 (Python surface exposure) in a future issue, and consider whether GL-173/174/175 gate docs that reference internal path labels should be excluded from the public snapshot exclusion list.",
+  "final_disposition": "published_and_public"
+}
