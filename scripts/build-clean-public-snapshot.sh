@@ -230,9 +230,6 @@ PUBLIC_EXPORT_EXCLUDE=(
     # and are internal-only governance documents, same as other excluded gate/readiness docs.
     "docs/public_release_github_snapshot_readiness_review.md"
     "docs/examples/gl171/public_release_github_snapshot_readiness_review.json"
-    # GL-172: scanner meta-tool — intentionally lists internal path patterns as detection rules,
-    # same reasoning as docs/public_secret_sensitive_scan_gate.md exclusion.
-    "scripts/public-secret-sensitive-scan.sh"
 )
 
 TMPFILE=$(mktemp /tmp/gl161-file-list-XXXXXXXX.txt)

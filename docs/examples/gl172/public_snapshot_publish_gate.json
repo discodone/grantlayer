@@ -43,8 +43,7 @@
     "docs/examples/gl164a/public_repo_discovery_metadata.json",
     "docs/examples/gl165/public_changelog_version_anchors.json",
     "docs/public_release_github_snapshot_readiness_review.md",
-    "docs/examples/gl171/public_release_github_snapshot_readiness_review.json",
-    "scripts/public-secret-sensitive-scan.sh"
+    "docs/examples/gl171/public_release_github_snapshot_readiness_review.json"
   ],
   "scanner_result": "pass",
   "absence_checks": {

@@ -25,7 +25,6 @@ _REQUIRED_EXCLUSIONS = [
     "docs/examples/gl165/public_changelog_version_anchors.json",
     "docs/public_release_github_snapshot_readiness_review.md",
     "docs/examples/gl171/public_release_github_snapshot_readiness_review.json",
-    "scripts/public-secret-sensitive-scan.sh",
 ]
 
 _PRIVATE_PATTERNS = [
@@ -287,11 +286,11 @@ class TestGL172PublishWorktree(unittest.TestCase):
             "docs/examples/gl171/public_release_github_snapshot_readiness_review.json must be absent (internal gate artifact)",
         )
 
-    def test_scanner_script_absent_from_publish_worktree(self):
+    def test_scanner_script_present_in_publish_worktree(self):
         path = os.path.join(_PUBLISH_WORKTREE, "scripts", "public-secret-sensitive-scan.sh")
-        self.assertFalse(
+        self.assertTrue(
             os.path.exists(path),
-            "scripts/public-secret-sensitive-scan.sh must be absent (scanner meta-tool with detection patterns)",
+            "scripts/public-secret-sensitive-scan.sh must be present in publish worktree (self-excluding scanner)",
         )
 
     def test_first_verifiable_output_in_publish_worktree(self):
