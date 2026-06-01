@@ -12,7 +12,7 @@ with SQLite or PostgreSQL.
 - Not a production SaaS. Do not deploy to shared multi-tenant infrastructure.
 - Tenant isolation is not implemented.
 - No real secrets or customer data are used anywhere.
-- Public GitHub release has not happened.
+- Clean public snapshot synced to GitHub; formal visibility decision pending (GL-175).
 
 ---
 

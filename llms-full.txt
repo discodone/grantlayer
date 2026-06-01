@@ -26,14 +26,14 @@ tamper-evident, and independently auditable.
 | Maturity | Developer Preview — local evaluation and controlled pilot only |
 | Production SaaS readiness | Not claimed |
 | Tenant/workspace isolation | Not implemented |
-| Public GitHub release | Not performed |
+| Public snapshot on GitHub | Synced — formal visibility decision pending (GL-175) |
 | Real customer data | No — synthetic identifiers only |
 | Real secrets | No — placeholder tokens only |
 
 - This is **not a production SaaS**.
 - **Tenant isolation is not implemented** — data shares a single namespace.
 - **No real secrets or customer data** anywhere in the repository.
-- **Public GitHub release has not happened** — explicit go/no-go required (GL-160).
+- **Clean public snapshot synced to GitHub** — formal visibility decision pending (GL-175).
 
 ---
 

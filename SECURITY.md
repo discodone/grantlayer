@@ -17,7 +17,7 @@ GrantLayer is in **Developer Preview** with a controlled pilot posture.
 | Maturity | Developer Preview — local evaluation and controlled pilot only |
 | Production SaaS support guarantee | **Not provided** |
 | Tenant/workspace isolation | **Not implemented** |
-| Public GitHub release | **Not performed** — requires explicit later approval |
+| Public snapshot on GitHub | **Synced** — clean snapshot at `https://github.com/Discodone/grantlayer.git`; formal visibility decision pending (GL-175) |
 
 There is **no production SaaS support guarantee yet**. Do not deploy to shared multi-tenant infrastructure without completing the remaining hardening gates.
 
@@ -77,16 +77,13 @@ When reporting security issues, please follow these data-handling rules:
 
 ## 6. Current Caveats
 
-- **Public release not approved by GL-153** — this security policy is part of the pre-publication governance baseline. Public GitHub publication has not happened and requires explicit later approval.
+- **Formal visibility decision pending** — a clean public snapshot has been published via the snapshot workflow (GL-172); a formal public-visibility decision (GL-175) is still required before broader promotion.
 - **Production SaaS readiness not claimed** — the backend has not completed all production-hardening gates required for a shared multi-tenant SaaS.
 - **Tenant isolation not implemented** — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers.
 
 ---
 
-## 7. Next Steps
+## 7. Current status
 
-| Issue | Title | Purpose |
-|-------|-------|---------|
-| GL-154 | AGENTS.md + llms.txt + Agent Integration Manifest | Add agent entry points, task contracts, and integration manifest. |
-
-> This SECURITY.md was created in **GL-153 LICENSE / CONTRIBUTING / SECURITY Decision Pack**. It does **not** publish to GitHub, change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation.
+Agent entry points and governance files (GL-153–GL-155) are complete.
+A formal public-visibility decision is pending (GL-175).
