@@ -1,0 +1,140 @@
+{
+  "issue_id": "GL-180",
+  "title": "Public Docs Smoke Verification after GL-179 public snapshot correction push",
+  "internal_main_commit": "56128e11571c7c2719be5921293933f35e609b18",
+  "public_repository_url": "https://github.com/Discodone/grantlayer.git",
+  "expected_public_commit_prefix": "d10bb09",
+  "actual_public_clone_head": "d10bb09ea3fecf98aa82a1af93674b58c5e65a82",
+  "fresh_clone_path": "/tmp/grantlayer-public-docs-smoke-gl180",
+  "checks_performed": [
+    "Confirmed the GL-179 internal report is still pending on its own branch and not merged into main",
+    "Fresh clone from the public GitHub repository URL",
+    "Verified clone HEAD matched the expected d10bb09 public commit prefix",
+    "Inspected README.md for stale GL-175 wording and broken readiness-pack links",
+    "Inspected SECURITY.md for GitHub Security Advisories and public disclosure warnings",
+    "Confirmed first verifiable output files were present",
+    "Ran the first verifiable output example and compared it to the committed JSON reference",
+    "Ran grep-based smoke checks for private paths, secret material, internal workflow references, and private remotes",
+    "Confirmed the GL-177 internal-only follow-up docs are absent from the public clone"
+  ],
+  "readme_public_state": {
+    "readme_present": true,
+    "stale_gl175_wording_absent": true,
+    "broken_readiness_pack_link_absent": true,
+    "quickstart_or_first_output_referenced": true,
+    "caveats_present": true,
+    "notes": "README.md is present, still references the first verifiable output and the quickstart path, preserves Developer Preview / not production SaaS / tenant isolation not implemented / no real secrets or customer data caveats, and no longer contains stale GL-175 wording or the broken readiness-pack link."
+  },
+  "security_public_state": {
+    "security_present": true,
+    "advisory_channel_present": true,
+    "advisory_channel_url": "https://github.com/Discodone/grantlayer/security/advisories",
+    "public_disclosure_warning_present": true,
+    "stale_gl175_wording_absent": true,
+    "private_contact_details_added": false,
+    "caveats_present": true,
+    "notes": "SECURITY.md is present, includes GitHub Security Advisories, warns against public disclosure of exploit details or secrets, preserves the preview/non-production caveats, and does not add private contact details or private remotes."
+  },
+  "gl177_findings_closure": {
+    "F001_status": "closed",
+    "F002_status": "closed",
+    "F004_status": "closed",
+    "F003_context": "Internal-only report doc remains absent from the public repo and is not a blocker.",
+    "F005_context": "Scanner-pattern references remain present in expected documentation/script context and are not leakage."
+  },
+  "first_verifiable_output": {
+    "files_present": true,
+    "command_run": "python3 /tmp/grantlayer-public-docs-smoke-gl180/examples/first_verifiable_output.py --output /tmp/gl180_first_verifiable_output.json",
+    "exit_code": 0,
+    "deterministic_match": true,
+    "notes": "The generated output matched the committed reference JSON exactly."
+  },
+  "private_data_secret_smoke": {
+    "scan_scope": "Fresh public clone at /tmp/grantlayer-public-docs-smoke-gl180, scanned with targeted grep checks for private paths, secret material, internal workflow references, and internal remote indicators.",
+    "checks_performed": [
+      "README.md / SECURITY.md stale wording and advisory-channel checks",
+      "First verifiable output file presence checks",
+      "First verifiable output deterministic comparison",
+      "Grep scan for /home/adminuser, /paperclip/grantlayer-mvp, internal Forgejo wording, private remotes, secret keywords, and direct-push instructions"
+    ],
+    "private_data_found": false,
+    "secret_material_found": false,
+    "internal_infrastructure_found": false,
+    "paperclip_or_internal_workflow_found": true,
+    "blockers_found": false,
+    "notes": "Only expected documentation/script matches and descriptive public references were found. No raw secrets, customer data, private keys, SSH keys, deploy keys, private home paths, or private remotes were identified."
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "medium",
+      "area": "README / SECURITY stale wording",
+      "status": "closed",
+      "recommendation": "None; verified absent on the public surface.",
+      "blocking": false
+    },
+    {
+      "id": "F-002",
+      "severity": "high",
+      "area": "SECURITY reporting channel",
+      "status": "closed",
+      "recommendation": "None; GitHub Security Advisories is live and visible.",
+      "blocking": false
+    },
+    {
+      "id": "F-004",
+      "severity": "low",
+      "area": "README readiness-pack link",
+      "status": "closed",
+      "recommendation": "None; the broken link is removed from the public surface.",
+      "blocking": false
+    },
+    {
+      "id": "F-003",
+      "severity": "info",
+      "area": "internal-only report doc context",
+      "status": "context_only",
+      "recommendation": "None; the internal-only report doc is absent from the public repo and is not a blocker.",
+      "blocking": false
+    },
+    {
+      "id": "F-005",
+      "severity": "info",
+      "area": "scanner-pattern / public-surface noise",
+      "status": "context_only",
+      "recommendation": "Optional later cleanup: add the known governance docs to the public export exclusion list if scanner noise should be reduced.",
+      "blocking": false
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 1,
+    "medium": 1,
+    "low": 1,
+    "info": 2,
+    "total": 5
+  },
+  "smoke_decision": "public_docs_smoke_passed_with_cautions",
+  "next_recommended_step": "GL-181 build_clean_public_snapshot exclusion cleanup for GL-177/GL-178 governance docs",
+  "non_goals": [
+    "No GitHub push performed",
+    "No visibility change performed",
+    "Internal repo was not pushed directly to GitHub",
+    "No force push performed",
+    "No history rewrite performed",
+    "No production/backend/src changes",
+    "No OpenAPI, migration, DB/schema, or dependency changes",
+    "No SDK implementation changes",
+    "No frontend, website, or design changes",
+    "No GitHub workflow changes",
+    "No snapshot publish script behavior changes",
+    "No git remote changes",
+    "No Paperclip status updates",
+    "No public snapshot contents were changed"
+  ],
+  "changed_files": [
+    "docs/public_docs_smoke_verification.md",
+    "docs/examples/gl180/public_docs_smoke_verification.json",
+    "backend/tests/test_gl180_public_docs_smoke_verification.py"
+  ]
+}
