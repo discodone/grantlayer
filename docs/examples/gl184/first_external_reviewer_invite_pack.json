@@ -1,0 +1,187 @@
+{
+  "issue_id": "GL-184",
+  "title": "First External Reviewer Invite Pack",
+  "context": "GrantLayer is publicly readable on GitHub in a developer-preview / controlled-pilot posture following GL-176 through GL-183. GL-183 defined the triage model and decided templates_deferred. This artifact prepares the controlled invite package for 2-5 external reviewers. No outreach was sent. This is docs/test/artifact only.",
+  "public_repository_url": "https://github.com/Discodone/grantlayer.git",
+  "reviewer_profiles": [
+    {
+      "id": "external-backend-developer",
+      "name": "External Backend Developer",
+      "description": "Familiar with Python, REST APIs, and SQLite or PostgreSQL. Can clone a repo, install dependencies, and run tests in approximately 10 minutes. May or may not have a grant-domain background.",
+      "key_questions": [
+        "Is the quickstart clear and complete?",
+        "Does the API surface make sense?",
+        "Is the first verifiable output reproducible?"
+      ]
+    },
+    {
+      "id": "ai-agent-workflow-developer",
+      "name": "AI-Agent Workflow Developer",
+      "description": "Builds or evaluates AI-agent pipelines (LangGraph, LangChain, AutoGen, or similar). Interested in audit trails, verification layers, and agentic compliance patterns.",
+      "key_questions": [
+        "Does the GrantLayer integration story make sense for an AI-agent pipeline?",
+        "Is the LangGraph example legible and realistic?",
+        "Is the audit structure comprehensible?"
+      ]
+    },
+    {
+      "id": "grant-compliance-audit-reviewer",
+      "name": "Grant/Compliance or Audit-Minded Reviewer",
+      "description": "Works with grant management, institutional compliance, or audit processes. Does not need to be a developer. Evaluates whether evidence bundle and audit trail concepts map to real institutional needs.",
+      "key_questions": [
+        "Do the concepts (evidence bundles, audit trails, policy evaluation) reflect real institutional workflows?",
+        "Are the safety caveats about current limitations visible and appropriately cautious?"
+      ]
+    },
+    {
+      "id": "security-minded-technical-reviewer",
+      "name": "Security-Minded Technical Reviewer",
+      "description": "Reviews security posture of developer-preview software. Familiar with OWASP, API security basics, and responsible disclosure practices.",
+      "key_questions": [
+        "Are the security caveats visible?",
+        "Is the reporting channel obvious?",
+        "Does the repository appear free of real secrets or sensitive infrastructure paths?"
+      ]
+    }
+  ],
+  "invite_message_draft": "Subject: GrantLayer Developer Preview — Invitation to Review\n\nHello,\n\nWe are inviting a small, selected group of developers and reviewers to take an early look at GrantLayer, a technical preview / developer preview project for structured grant-application verification and AI-agent audit workflows.\n\nRepository: https://github.com/Discodone/grantlayer.git\n\nWhat GrantLayer is:\nGrantLayer is a Python backend with a REST API and SDK for creating structured, verifiable evidence bundles used in grant management and agentic compliance workflows. This is a developer preview only.\n\nWhat GrantLayer is not (please read before starting):\n- This is not a production SaaS platform. Do not treat it as a production service.\n- Tenant/workspace isolation is not yet implemented. Do not use shared or real institutional data.\n- No customer onboarding process is available.\n- No support SLA is offered for this developer preview.\n- This is not an invitation to a paid or commercial commitment of any kind.\n\nWhat we are asking of you:\n1. Read README.md — can you understand what GrantLayer is in 2 minutes?\n2. Read SECURITY.md — can you find the security reporting channel and current-limitations caveats?\n3. Run or inspect the first verifiable output: examples/first_verifiable_output.py\n4. Compare the generated output with examples/first_verifiable_output.json.\n5. Note what is confusing, missing, or unclear.\n6. Tell us whether the project purpose is clear in 2 minutes of reading.\n\nSafety rules — please read before posting any feedback:\n- Use synthetic/demo data only. Do not share real customer data, private grants, or institutional data in any public issue.\n- Do not share secrets, credentials, API tokens, or private keys in public issues.\n- Do not post exploit details publicly. If you find a potential security vulnerability, report it through GitHub Security Advisories (see SECURITY.md) — not in a public issue.\n- Do not share real customer data or personally identifiable information in any public channel.\n\nHow to share feedback:\nOpen a public GitHub issue on the repository with your observations. For security-sensitive reports, please use GitHub Security Advisories instead of public issues.\n\nWe appreciate your time. This is a controlled review window. No commercial commitment, customer onboarding, or support guarantee is implied or offered.",
+  "reviewer_task_list": [
+    "Read README.md — assess whether the project purpose is understandable within 2 minutes",
+    "Read SECURITY.md — confirm the security reporting channel and current-limitations caveats are visible and clear",
+    "Find the quickstart / first verifiable output — locate examples/first_verifiable_output.py and the quickstart instructions without guidance",
+    "Run or inspect examples/first_verifiable_output.py — attempt to run the first verifiable output example and observe whether it succeeds or fails",
+    "Compare generated output with examples/first_verifiable_output.json — determine whether the generated output matches the expected reference output",
+    "Note confusing setup steps — record any step that required guessing, searching elsewhere, or extra time",
+    "Identify broken links or stale wording — flag any hyperlink that returns 404 or documentation text that appears outdated or contradictory",
+    "Assess whether caveats are visible — evaluate whether 'not production SaaS' and 'tenant isolation not implemented' are easy to find and clearly worded",
+    "Assess whether the project purpose is understandable in 2 minutes — give a one-sentence summary of what GrantLayer does after reading only the README"
+  ],
+  "feedback_questions": [
+    "What did you think GrantLayer does after reading the README?",
+    "Could you find the first verifiable output quickly?",
+    "Could you run it, or at least understand what it proves without running it?",
+    "What felt confusing?",
+    "Which part of the README or documentation was hardest to follow?",
+    "Were any setup steps missing, unclear, or broken?",
+    "What felt trustworthy?",
+    "Are the non-production caveats clear? Were you able to find them without searching?",
+    "Are the security reporting instructions clear and easy to follow?",
+    "What felt missing?",
+    "What would make you try the SDK or API next?",
+    "What would make you trust this project more?",
+    "What is the smallest next example you would want to see added?"
+  ],
+  "reviewer_safety_instructions": [
+    "Use synthetic/demo data only. The repository uses synthetic demo data throughout. All examples and reproduction steps should use synthetic identifiers (e.g. demo-subject-001, test-grant-abc). Do not use real grant application data.",
+    "Do not share secrets. Do not include API tokens, private keys, passwords, session tokens, or any value that could grant system access in public issues. Use placeholder values only.",
+    "Do not share customer data. Do not paste real grant applications, institutional records, personally identifiable information, or beneficiary data into any public channel.",
+    "Do not share private grants or institutional data. Do not include real institutional funding records, award identifiers linked to real organizations, or any non-public grant data in public issues or pull requests.",
+    "Do not post exploit details publicly. If you discover a potential security vulnerability, report it through GitHub Security Advisories as described in SECURITY.md. Do not post exploit steps, proof-of-concept payloads, or sensitive system details in public issues.",
+    "Direct security-sensitive reports to GitHub Security Advisories. If GitHub Security Advisories are unavailable for any reason, open a minimal public issue without exploit details or secrets and explicitly request a private reporting path."
+  ],
+  "feedback_recording_model": {
+    "reviewer_profile": "string — archetype matched (e.g. external-backend-developer, ai-agent-workflow-developer, grant-compliance-audit-reviewer, security-minded-technical-reviewer)",
+    "review_date": "date — ISO 8601 (e.g. 2026-06-15)",
+    "public_commit_reviewed": "string — git commit hash at time of review",
+    "reviewer_tasks_attempted": "array of string — tasks the reviewer attempted from the task list",
+    "quickstart_result": "string — success / partial / failed / skipped",
+    "first_verifiable_output_result": "string — match / mismatch / not-run / error",
+    "docs_clarity_score": "integer 1-5 — self-reported clarity score (5 = very clear)",
+    "trust_score": "integer 1-5 — self-reported trust score (5 = high trust)",
+    "caveat_visibility": "string — visible / hard-to-find / missing",
+    "security_feedback": "string — any security-relevant observation (paraphrased, no exploit details)",
+    "broken_links": "array of string — links that returned 404 or were stale",
+    "confusing_claims": "array of string — claims that felt misleading or overclaiming",
+    "requested_examples": "array of string — examples the reviewer wanted",
+    "severity": "string — critical / high / medium / low / info",
+    "category": "string — GL-183 triage category (blocker, confusing-docs, broken-quickstart, missing-example, product-question, security-concern, production-readiness-concern, feature-request, non-scope-later)",
+    "next_action": "string — fix-now / clarify-docs / add-to-backlog / defer / close-as-non-scope / escalate-security",
+    "follow_up_needed": "boolean — true if follow-up action is required"
+  },
+  "triage_alignment": {
+    "reference": "GL-183 External Feedback Triage / Public Issue Hygiene",
+    "categories": [
+      "blocker",
+      "confusing-docs",
+      "broken-quickstart",
+      "missing-example",
+      "product-question",
+      "security-concern",
+      "production-readiness-concern",
+      "feature-request",
+      "non-scope-later"
+    ],
+    "severity_levels": [
+      {
+        "severity": "critical",
+        "criteria": "Immediate safety or trust failure"
+      },
+      {
+        "severity": "high",
+        "criteria": "Serious issue affecting safety or first-use trust"
+      },
+      {
+        "severity": "medium",
+        "criteria": "Important but not immediately blocking"
+      },
+      {
+        "severity": "low",
+        "criteria": "Small correctness or clarity issue"
+      },
+      {
+        "severity": "info",
+        "criteria": "Suggestion or non-blocking observation"
+      }
+    ]
+  },
+  "non_goals": [
+    "No production SaaS promise. GrantLayer is in developer-preview / controlled-pilot posture only.",
+    "No tenant/workspace isolation claim. Tenant isolation is not implemented.",
+    "No real customer data collection. Do not collect, store, or request real grant or customer data from reviewers.",
+    "No real grant/institutional data review. Reviewers must use synthetic data only.",
+    "No payment or treasury flow. Payment, wallet, and treasury features are not in current MVP scope.",
+    "No blockchain requirement in current MVP. Blockchain is planned as an optional Phase 3 layer.",
+    "No SLA or support promise. No SLA is offered for developer preview.",
+    "No public issue template creation in this issue. Templates were deferred by GL-183.",
+    "No GitHub label creation in this issue. Labels are documented only in GL-183; no API changes are made.",
+    "No reviewer outreach sent in this issue. The invite message is a draft only."
+  ],
+  "safety_confirmations": {
+    "no_outreach_sent": true,
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "production_saas_not_claimed": true,
+    "tenant_isolation_not_claimed": true,
+    "real_customer_data_not_requested": true,
+    "private_grant_data_not_requested": true,
+    "secrets_not_requested": true,
+    "exploit_details_not_requested_publicly": true,
+    "security_sensitive_reports_directed_to_advisories": true
+  },
+  "findings": [
+    {
+      "id": "F-184-001",
+      "severity": "info",
+      "status": "closed",
+      "recommendation": "Invite 2-5 reviewers manually using the invite message draft in this pack. Do not send bulk or automated invites.",
+      "blocking": false
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 1,
+    "total": 1
+  },
+  "next_recommended_step": "GL-185 First Reviewer Feedback Window / Feedback Capture",
+  "changed_files": [
+    "docs/first_external_reviewer_invite_pack.md",
+    "docs/examples/gl184/first_external_reviewer_invite_pack.json",
+    "backend/tests/test_gl184_first_external_reviewer_invite_pack.py"
+  ]
+}
