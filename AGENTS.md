@@ -24,7 +24,7 @@ GrantLayer repository.
 | Maturity | **Developer Preview** — local evaluation and controlled pilot only |
 | Production SaaS readiness | **Not claimed** |
 | Tenant/workspace isolation | **Not implemented** |
-| Public GitHub release | **Not performed** |
+| Public GitHub release | **Available** — `https://github.com/Discodone/grantlayer.git` (GL-176) |
 | Real customer data in examples | **No** — all examples use synthetic identifiers |
 | Real secrets in examples | **No** — all tokens and keys are placeholders |
 
@@ -119,7 +119,7 @@ Unless an issue explicitly overrides these boundaries, agents **must not**:
 - Add real customer data (names, addresses, identifiers, etc.)
 - Claim production SaaS readiness
 - Claim tenant isolation is implemented
-- Claim a public GitHub release has happened
+- Claim production readiness beyond the current developer-preview / controlled-pilot posture
 - Rewrite git history
 - Perform secret-history cleanup
 - Change git remotes
@@ -204,9 +204,9 @@ See `docs/agent_task_contract.md` for the complete contract and disposition rule
 - **No real customer data** — never commit real names, addresses, identifiers, or
   other personal/organizational data. All examples use synthetic identifiers
   like `gl146-demo-subject-001`.
-- **No overclaim** — do not claim production SaaS readiness, tenant isolation,
-  or public GitHub release status unless an explicit go/no-go issue
-  (e.g. GL-160) has been completed and validated.
+- **No overclaim** — do not claim production SaaS readiness or tenant isolation.
+  The repository is publicly available (GL-176). Do not claim production readiness
+  beyond the current developer-preview / controlled-pilot posture.
 - **Local-first** — all documentation assumes local evaluation with SQLite.
   PostgreSQL is optional.
 
@@ -223,11 +223,12 @@ compatibility:
 
 ---
 
-## Next Agent-Native Step
+## Current Public Status
 
-- **GL-155 Agent Examples Pack** — Add ready-to-run agent examples and extended
-  task contracts. This is the next planned issue after GL-154.
+The repository is publicly available at `https://github.com/Discodone/grantlayer.git` in a
+developer-preview / controlled-pilot posture (GL-176). Agent examples are available
+in `examples/langgraph_langchain/` and `examples/first_verifiable_output.py` (GL-155, GL-168).
 
 ---
 
-> This AGENTS.md was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest**. It does **not** publish to GitHub, change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
+> This AGENTS.md was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-187 Public Docs Stale Claim Cleanup**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.

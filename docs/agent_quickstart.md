@@ -36,7 +36,7 @@ GrantLayer is local-first. No cloud service is required.
 
 | Step | Command | Notes |
 |------|---------|-------|
-| Clone | `git clone <repo>` | Use approved internal source |
+| Clone | `git clone https://github.com/Discodone/grantlayer.git` | Public repository |
 | Install | `pip install -r requirements.txt` | Only `cryptography` + `psycopg2-binary` outside stdlib |
 | Start | `python3 -m backend` | Runs on `127.0.0.1:8765` |
 | Health | `curl -s http://127.0.0.1:8765/health` | Should return `{"status":"ok"}` |
@@ -109,15 +109,19 @@ Do **not** do these as a first contribution unless the issue explicitly allows i
 
 - GrantLayer is **developer preview**. Do not describe it as production-ready SaaS.
 - Tenant/workspace isolation is **not implemented**. Do not claim otherwise.
-- Public GitHub release is **not performed**. Do not claim otherwise.
+- The repository is publicly available at `https://github.com/Discodone/grantlayer.git` (GL-176).
+  Do not claim production readiness beyond the current developer-preview / controlled-pilot posture.
 
 ---
 
-## Next Step
+## Agent Examples
 
-- **GL-155 Agent Examples Pack** — ready-to-run agent examples and extended task
-  contracts. Read the issue when it is created.
+Agent examples are available:
+- `examples/first_verifiable_output.py` — first verifiable output, no install required (GL-168)
+- `examples/langgraph_langchain/grantlayer_agent_example.py` — LangGraph/LangChain integration example (GL-155)
+
+Upcoming: GL-188 (verify helper), GL-189 (second runnable example).
 
 ---
 
-> This agent_quickstart.md was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest**. It does **not** publish to GitHub, change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
+> This agent_quickstart.md was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-187 Public Docs Stale Claim Cleanup**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.

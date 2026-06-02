@@ -105,7 +105,7 @@ GrantLayer is local-first and agent-friendly. If you are an AI coding agent, sta
 - **Tenant isolation is not implemented** — data shares a single namespace.
 - **Public GitHub repository is available** — the repository is publicly accessible at `https://github.com/Discodone/grantlayer.git` (GL-176).
 
-Runtime agent examples are planned for **GL-155 Agent Examples Pack**.
+Runtime agent examples are available — see `docs/langgraph_langchain_integration_example.md` and `examples/langgraph_langchain/grantlayer_agent_example.py` (added in GL-155).
 
 ---
 
@@ -142,16 +142,16 @@ Runtime agent examples are planned for **GL-155 Agent Examples Pack**.
 
 ---
 
-## Suggested repository metadata
+## Repository metadata
 
-If and when public publication is approved, the following metadata is recommended:
+The public repository is available at `https://github.com/Discodone/grantlayer.git`.
 
-| Field | Suggested value |
-|-------|-----------------|
+| Field | Value |
+|-------|-------|
 | Short description | "Developer-preview verification and audit layer for agentic grant workflows." |
 | Topics | `grant-management`, `audit-trail`, `compliance`, `agentic-workflows`, `developer-preview`, `python` |
-| License | Apache-2.0 (after explicit decision and file addition) |
-| Website | None yet — no public landing page or marketing site exists |
+| License | Apache-2.0 |
+| Website | None — no public landing page or marketing site exists |
 
 ---
 
@@ -214,19 +214,31 @@ The current MVP and Product Core establish the technical foundation:
 
 ---
 
-## Setup
+## Choose your path
 
-No installation required. Python 3.10+ and stdlib are sufficient.
+**Path A — First verifiable output (no install, no backend, no network required):**
 
 ```bash
 git clone https://github.com/Discodone/grantlayer.git
 cd grantlayer
+python3 examples/first_verifiable_output.py --output /tmp/grantlayer_first_output.json
+```
+
+No virtualenv, no `pip install`, no running backend. Python stdlib only. See [docs/first_verifiable_output.md](docs/first_verifiable_output.md).
+
+**Path B — Backend quickstart (requires Python virtualenv and `pip install`):**
+
+```bash
+git clone https://github.com/Discodone/grantlayer.git
+cd grantlayer
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ## Start backend
 
 ```bash
-cd grantlayer-mvp
 python3 -m backend
 ```
 
@@ -250,7 +262,6 @@ The dashboard auto-refreshes every 10 seconds.
 ## Run tests
 
 ```bash
-cd grantlayer-mvp
 python3 -m unittest discover -s backend/tests -v
 ```
 
@@ -259,7 +270,8 @@ Or via script:
 ./scripts/test.sh
 ```
 
-Expected output: **1130 tests, 3 skipped, 0 failures.**
+Run `scripts/run-full-backend-suite.sh` for the current internal validation suite.
+The suite includes thousands of tests; known expected legacy scope-guard failures are pre-existing and documented.
 
 ## Configuration (GL-020 Product Hardening)
 
