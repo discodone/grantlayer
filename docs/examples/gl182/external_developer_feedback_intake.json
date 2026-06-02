@@ -1,0 +1,309 @@
+{
+  "issue_id": "GL-182",
+  "title": "External Developer Feedback Intake — Developer Preview",
+  "context": "GrantLayer is publicly available on GitHub in a developer-preview / controlled-pilot posture following GL-176 through GL-181. This artifact defines the structured plan for collecting early external developer feedback.",
+  "target_reviewer_profiles": [
+    {
+      "id": "external-backend-developer",
+      "label": "External Backend Developer",
+      "description": "Familiar with Python, REST APIs, SQLite or PostgreSQL. Can clone a repo, start a backend, and run tests in ~10 minutes.",
+      "key_questions": [
+        "Is the quickstart clear?",
+        "Does the API make sense?"
+      ]
+    },
+    {
+      "id": "ai-agent-workflow-developer",
+      "label": "AI-Agent Workflow Developer",
+      "description": "Builds or evaluates AI-agent pipelines (LangGraph, LangChain, or similar). Interested in audit trails, verification layers, and agentic compliance.",
+      "key_questions": [
+        "Does the GrantLayer integration story make sense?",
+        "Is the LangGraph example legible?"
+      ]
+    },
+    {
+      "id": "grant-compliance-audit-reviewer",
+      "label": "Grant / Compliance or Audit-Minded Reviewer",
+      "description": "Works with grant management, institutional compliance, or audit processes. Does not need to be a developer.",
+      "key_questions": [
+        "Do the concepts (evidence bundles, audit trails, policy evaluation) map to real institutional needs?",
+        "Are the caveats about current limitations visible?"
+      ]
+    },
+    {
+      "id": "security-minded-technical-reviewer",
+      "label": "Security-Minded Technical Reviewer",
+      "description": "Reviews security posture of developer-preview software. Familiar with OWASP, API security basics, responsible disclosure.",
+      "key_questions": [
+        "Are the security caveats clear?",
+        "Is the reporting channel obvious?",
+        "Does the repository look clean of secrets or sensitive paths?"
+      ]
+    }
+  ],
+  "reviewer_tasks": [
+    {
+      "step": 1,
+      "task": "Read README.md",
+      "goal": "Determine if reviewer can understand what GrantLayer is and does within 2 minutes"
+    },
+    {
+      "step": 2,
+      "task": "Read SECURITY.md",
+      "goal": "Confirm the security reporting channel and current-limitations caveats are visible"
+    },
+    {
+      "step": 3,
+      "task": "Run the first verifiable output example",
+      "command": "python3 examples/first_verifiable_output.py --output /tmp/grantlayer_first_output.json",
+      "goal": "Verify the zero-dependency first output path works from a clean clone"
+    },
+    {
+      "step": 4,
+      "task": "Inspect the expected output",
+      "goal": "Compare /tmp/grantlayer_first_output.json with examples/first_verifiable_output.json and confirm the record structure is understandable"
+    },
+    {
+      "step": 5,
+      "task": "Assess caveat clarity",
+      "goal": "Confirm 'not production SaaS' and 'tenant isolation not implemented' caveats are visible and understandable"
+    },
+    {
+      "step": 6,
+      "task": "Report broken links or confusing docs",
+      "goal": "Note any link that returns 404 or documentation that is unclear or contradictory"
+    },
+    {
+      "step": 7,
+      "task": "Report unclear claims or overclaims",
+      "goal": "Flag any claim that seems to promise production readiness, tenant isolation, or customer onboarding"
+    }
+  ],
+  "feedback_questions": [
+    {
+      "id": "FQ-001",
+      "category": "comprehension",
+      "question": "Can you understand what GrantLayer does in 2 minutes of reading the README?"
+    },
+    {
+      "id": "FQ-002",
+      "category": "comprehension",
+      "question": "What is your one-sentence summary of what GrantLayer is?"
+    },
+    {
+      "id": "FQ-003",
+      "category": "comprehension",
+      "question": "Which part of the README felt most confusing?"
+    },
+    {
+      "id": "FQ-004",
+      "category": "quickstart",
+      "question": "Can you run the first verifiable output in under 10 minutes?"
+    },
+    {
+      "id": "FQ-005",
+      "category": "quickstart",
+      "question": "Were any setup steps missing, unclear, or broken?"
+    },
+    {
+      "id": "FQ-006",
+      "category": "quickstart",
+      "question": "Is the expected output understandable? Does the record structure make sense?"
+    },
+    {
+      "id": "FQ-007",
+      "category": "caveat-visibility",
+      "question": "Are the safety caveats ('not production SaaS', 'tenant isolation not implemented') easy to find?"
+    },
+    {
+      "id": "FQ-008",
+      "category": "caveat-visibility",
+      "question": "Is it clear that this is a developer preview and not a production service?"
+    },
+    {
+      "id": "FQ-009",
+      "category": "blocking",
+      "question": "What would block you from trying the SDK or API next?"
+    },
+    {
+      "id": "FQ-010",
+      "category": "blocking",
+      "question": "Was anything missing that you expected to find?"
+    },
+    {
+      "id": "FQ-011",
+      "category": "credibility",
+      "question": "What would make the repository more credible or trustworthy?"
+    },
+    {
+      "id": "FQ-012",
+      "category": "credibility",
+      "question": "Which next example would you most want to see?"
+    },
+    {
+      "id": "FQ-013",
+      "category": "credibility",
+      "question": "Would you recommend this to a colleague? Why or why not?"
+    }
+  ],
+  "triage_categories": [
+    {
+      "id": "blocker",
+      "label": "Blocker",
+      "description": "Something that prevents the reviewer from completing any task"
+    },
+    {
+      "id": "confusing-docs",
+      "label": "Confusing Docs",
+      "description": "Documentation that is unclear, contradictory, or hard to follow"
+    },
+    {
+      "id": "broken-quickstart",
+      "label": "Broken Quickstart",
+      "description": "The first verifiable output or clone/run path does not work"
+    },
+    {
+      "id": "missing-example",
+      "label": "Missing Example",
+      "description": "A useful example is absent that would aid understanding"
+    },
+    {
+      "id": "product-question",
+      "label": "Product Question",
+      "description": "A question about what GrantLayer does or how it works"
+    },
+    {
+      "id": "security-concern",
+      "label": "Security Concern",
+      "description": "A report of a potential security issue — should also be filed via SECURITY.md channel"
+    },
+    {
+      "id": "production-readiness-concern",
+      "label": "Production Readiness Concern",
+      "description": "A question or concern about production suitability"
+    },
+    {
+      "id": "feature-request",
+      "label": "Feature Request",
+      "description": "A suggestion for new product functionality"
+    },
+    {
+      "id": "non-scope-later",
+      "label": "Non-Scope / Later",
+      "description": "Valid feedback that is out of scope for the current developer-preview posture"
+    }
+  ],
+  "severity_model": [
+    {
+      "level": "critical",
+      "description": "Public credential leak, secret material in repository, broken public clone URL, harmful overclaim of production readiness, or SECURITY.md reporting channel broken"
+    },
+    {
+      "level": "high",
+      "description": "Quickstart completely broken, security reporting channel unclear, misleading production SaaS claim, or important safety caveat missing"
+    },
+    {
+      "level": "medium",
+      "description": "Confusing setup instructions, unclear caveat placement, important broken link, or misleading but not harmful claim"
+    },
+    {
+      "level": "low",
+      "description": "Minor wording issue, formatting inconsistency, non-critical broken link, or cosmetic confusion"
+    },
+    {
+      "level": "info",
+      "description": "Suggestion, future idea, or neutral observation with no urgency"
+    }
+  ],
+  "reviewer_safety_instructions": [
+    "Do not include secrets or credentials in public issues — use synthetic placeholder values only",
+    "Do not include exploit details publicly — use GitHub Security Advisories for security-sensitive reports",
+    "Do not include customer data — no real grant applications, institutional records, or personally identifiable information in public issues",
+    "Do not include private grants or real institutional funding data — use synthetic identifiers only (e.g. demo-subject-001, test-grant-abc)",
+    "Use synthetic data only — all repository examples use synthetic demo data and reviewers should do the same",
+    "Security-sensitive reports must be filed via GitHub Security Advisories as described in SECURITY.md"
+  ],
+  "non_goals": [
+    {
+      "item": "no-production-saas-promise",
+      "description": "GrantLayer is in developer-preview / controlled-pilot posture — production SaaS readiness is not claimed"
+    },
+    {
+      "item": "no-tenant-isolation-claim",
+      "description": "Tenant/workspace isolation is not implemented — stated caveat in README.md and SECURITY.md"
+    },
+    {
+      "item": "no-customer-onboarding",
+      "description": "No production onboarding process exists yet — not a goal for this developer preview phase"
+    },
+    {
+      "item": "no-payment-treasury-flow",
+      "description": "Payment, treasury, and wallet flows are not in current MVP scope"
+    },
+    {
+      "item": "no-blockchain-dependency",
+      "description": "Blockchain integration is planned as optional Phase 3 — not in MVP"
+    },
+    {
+      "item": "no-support-sla",
+      "description": "No support SLA or uptime guarantee is offered for developer preview"
+    },
+    {
+      "item": "no-production-auth",
+      "description": "OAuth, JWT, and production authentication are not implemented — developer preview uses static admin token"
+    },
+    {
+      "item": "no-real-customer-data-collection",
+      "description": "Collection or storage of real grants or customer data is explicitly not claimed or supported in this posture"
+    }
+  ],
+  "feedback_recording_model": {
+    "triage_window": "48 hours from receipt",
+    "required_fields_per_item": [
+      "reviewer_profile_type",
+      "category",
+      "severity",
+      "quoted_concern",
+      "affected_scope",
+      "proposed_resolution_or_deferral"
+    ],
+    "escalation_rule": "Critical or high severity items must be addressed before inviting the next batch of reviewers",
+    "security_rule": "Security concerns filed publicly must be acknowledged and redirected to SECURITY.md channel immediately"
+  },
+  "next_recommended_step": {
+    "issue_id": "GL-183",
+    "title": "External Feedback Triage / Public Issue Hygiene",
+    "description": "Review all feedback received during the GL-182 intake window. Triage each item by category and severity. Identify critical or high-severity items. Establish public GitHub issue labels for ongoing feedback hygiene. Decide whether to add issue templates before widening the reviewer invite list.",
+    "alternative": "GL-183 Public Issue Template / Feedback Labels Readiness — create .github/ISSUE_TEMPLATE/ entries and GitHub issue labels matching the triage categories above"
+  },
+  "changed_files": [
+    "docs/external_developer_feedback_intake.md",
+    "docs/examples/gl182/external_developer_feedback_intake.json",
+    "backend/tests/test_gl182_external_developer_feedback_intake.py"
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "production_saas_not_claimed": true,
+    "tenant_isolation_not_claimed": true,
+    "real_customer_data_not_requested": true,
+    "secrets_not_requested": true,
+    "security_sensitive_reports_directed_to_advisories": true
+  },
+  "findings": [
+    {
+      "id": "F-182-001",
+      "severity": "info",
+      "description": "No external feedback has been collected yet — this is the intake plan. Actual findings will be recorded in GL-183 after the first reviewer window.",
+      "status": "open"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 1
+  }
+}
