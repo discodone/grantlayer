@@ -1,0 +1,523 @@
+{
+  "issue_id": "GL-186",
+  "title": "AI Reviewer Feedback Triage",
+  "context": "GrantLayer is publicly readable on GitHub at https://github.com/Discodone/grantlayer.git in a Developer Preview / Controlled Pilot posture following GL-176 through GL-185. GL-185 opened the first reviewer feedback window and defined the feedback capture model. No real human reviewer outreach has been sent yet. The user gathered three AI-simulated external reviewer reports. GL-186 triages these reports, normalizes findings into the GL-183 category/severity model, identifies repeated themes, separates blockers from non-blocking polish, and recommends next concrete GL issues.",
+  "base_commit": "f5a7fd8e47fbb80dfb1dc6a47da148a59665a7f3",
+  "branch": "gl-186-ai-reviewer-feedback-triage",
+  "date": "2026-06-02",
+  "scope": "docs/test/artifact only — no backend, no API, no DB, no runtime changes",
+  "public_repository_url": "https://github.com/Discodone/grantlayer.git",
+
+  "input_reviews": [
+    {
+      "reviewer_id": "codex-backend-dx",
+      "title": "Codex Backend/DX Review",
+      "persona": "external backend developer",
+      "review_type": "backend-developer-experience",
+      "positive_signals": [
+        "GrantLayer is understandable as a local-first verification/audit/compliance layer for agentic grant workflows",
+        "First verifiable output is discoverable and reproducible",
+        "First verifiable output ran successfully and matched committed reference JSON",
+        "Safety caveats are explicit and appropriately bounded"
+      ],
+      "major_concerns": [
+        "README says 'no installation required' but backend quickstart needs venv and requirements (GL-REV-01, medium)",
+        "Port inconsistency: backend quickstart references 8765, integration example uses 8000 (GL-REV-02, low)",
+        "README 'Source of truth | Internal Forgejo' wording is confusing in a public repo (GL-REV-03, low)"
+      ],
+      "would_recommend": true,
+      "would_recommend_caveats": "yes, with caveats",
+      "findings": [
+        {"id": "GL-REV-01", "severity": "medium", "category": "confusing-docs", "summary": "README 'no installation required' conflicts with backend quickstart venv/requirements setup"},
+        {"id": "GL-REV-02", "severity": "low", "category": "confusing-docs", "summary": "Port inconsistency: backend quickstart 8765 vs integration example 8000"},
+        {"id": "GL-REV-03", "severity": "low", "category": "confusing-docs", "summary": "Source of truth Forgejo wording confusing in a public repo"},
+        {"id": "GL-REV-04", "severity": "info", "category": "missing-example", "summary": "Next example requested: grant creation, audit trail query, verifiable evidence export"},
+        {"id": "GL-REV-05", "severity": "info", "category": "confusing-docs", "summary": "README lacks a clear 'choose your path' section"}
+      ]
+    },
+    {
+      "reviewer_id": "kimi-k2-agent-oss",
+      "title": "Kimi K2.6 Agent/OSS Review",
+      "persona": "AI-agent workflow developer and first-time open-source reviewer",
+      "review_type": "agent-oss-developer-experience",
+      "positive_signals": [
+        "README is clear enough to understand GrantLayer quickly",
+        "AGENTS.md, llms.txt, and llms-full.txt are unusually strong and useful for agent onboarding",
+        "First verifiable output is easy to locate and runs deterministically",
+        "Safety/caveats are clear"
+      ],
+      "major_concerns": [
+        "ten_minute_quickstart.md still uses placeholder/future public GitHub clone language (GL-REV-KIMI-01, medium)",
+        "agent_quickstart.md says 'approved internal source' for cloning, misleading in a public repo (GL-REV-KIMI-02, medium)",
+        "AGENTS.md and llms-full.txt contain stale 'Public GitHub release not performed' language (GL-REV-KIMI-03, low)",
+        "llms-full.txt Next Planned Issues table is stale (GL-REV-KIMI-04, low)",
+        "README clone command and cd path slightly inconsistent (GL-REV-KIMI-05, low)"
+      ],
+      "would_recommend": true,
+      "would_recommend_caveats": "yes, with caveats",
+      "findings": [
+        {"id": "GL-REV-KIMI-01", "severity": "medium", "category": "confusing-docs", "summary": "ten_minute_quickstart.md uses placeholder/future public GitHub clone language"},
+        {"id": "GL-REV-KIMI-02", "severity": "medium", "category": "confusing-docs", "summary": "agent_quickstart.md refers to 'approved internal source' for cloning"},
+        {"id": "GL-REV-KIMI-03", "severity": "low", "category": "confusing-docs", "summary": "AGENTS.md and llms-full.txt stale public-release language"},
+        {"id": "GL-REV-KIMI-04", "severity": "low", "category": "confusing-docs", "summary": "llms-full.txt Next Planned Issues table is stale"},
+        {"id": "GL-REV-KIMI-05", "severity": "low", "category": "confusing-docs", "summary": "README clone command and cd directory path slightly inconsistent"},
+        {"id": "GL-REV-KIMI-06", "severity": "info", "category": "feature-request", "summary": "Add verify-first-output helper script"},
+        {"id": "GL-REV-KIMI-07", "severity": "info", "category": "product-question", "summary": "Clarify SDK/API status: local import only vs published package"}
+      ]
+    },
+    {
+      "reviewer_id": "security-product-readiness",
+      "title": "Security/Product-Readiness Review",
+      "persona": "security-oriented senior technical reviewer with product-readiness awareness",
+      "review_type": "security-product-readiness",
+      "source": "uploaded external review PDF: grantlayer_external_review_2026-06-02.md",
+      "positive_signals": [
+        "GrantLayer is a clearly bounded Developer Preview / Controlled Pilot",
+        "First verifiable output is cryptographically reproducible and matches committed reference output exactly",
+        "Safety caveats are honest and repeated",
+        "No broken links among checked files",
+        "docs/security_boundaries.md praised explicitly",
+        "No real secrets or customer data found in the review"
+      ],
+      "major_concerns": [
+        "README test count claim is immediately falsifiable — actual runs show thousands of tests and known failures (F-001, high)",
+        "CONTRIBUTING.md states public GitHub release not performed but repository is already public (F-002, high)",
+        "README Suggested repository metadata speaks hypothetically about public publication approval (F-003, medium)",
+        "GL-155 described as both planned and completed in different places (F-004, medium)",
+        "ENABLE_DEMO_ENDPOINTS=true combined with non-localhost host may expose unauthenticated tamper endpoint — kept high-level only (F-005, medium, security-concern)",
+        "sourceOfTruth: internal-forgejo in public JSON files confuses external reviewers (F-006, low)"
+      ],
+      "would_recommend": true,
+      "would_recommend_caveats": "yes, with caveats",
+      "findings": [
+        {"id": "F-001", "severity": "high", "category": "stale-claim", "summary": "README test count is stale and immediately falsifiable"},
+        {"id": "F-002", "severity": "high", "category": "stale-claim", "summary": "CONTRIBUTING.md states public release not performed but repo is already public"},
+        {"id": "F-003", "severity": "medium", "category": "confusing-docs", "summary": "README metadata section uses hypothetical public publication framing"},
+        {"id": "F-004", "severity": "medium", "category": "confusing-docs", "summary": "GL-155 described as both planned and completed in different places"},
+        {"id": "F-005", "severity": "medium", "category": "security-concern", "summary": "ENABLE_DEMO_ENDPOINTS=true with non-localhost host may expose unauthenticated tamper endpoint — high-level only, routed to GitHub Security Advisories or later hardening issue"},
+        {"id": "F-006", "severity": "low", "category": "confusing-docs", "summary": "sourceOfTruth: internal-forgejo in public JSON files confuses external reviewers"}
+      ]
+    }
+  ],
+
+  "normalized_findings": [
+    {
+      "id": "NF-001",
+      "source_review_ids": ["F-001"],
+      "severity": "high",
+      "category": "stale-claim",
+      "summary": "README test count is stale and immediately falsifiable",
+      "evidence_summary": "README claims '1130 tests, 3 skipped, 0 failures'. Actual suites show thousands of tests and some known failures. A developer who runs the test suite will immediately see a contradiction.",
+      "recommendation": "Update the test count claim to reflect reality, or replace with a dynamic instruction such as 'run scripts/run-full-backend-suite.sh and check output'.",
+      "blocking": true,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-002",
+      "source_review_ids": ["F-002"],
+      "severity": "high",
+      "category": "stale-claim",
+      "summary": "CONTRIBUTING.md states public GitHub release not performed but repository is already public",
+      "evidence_summary": "CONTRIBUTING.md contains language requiring approval for public release and stating the release has not been performed. The repository is already publicly accessible at https://github.com/Discodone/grantlayer.git.",
+      "recommendation": "Update CONTRIBUTING.md to reflect actual public state. Remove or rewrite the approval-required / release-not-performed language.",
+      "blocking": true,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-003",
+      "source_review_ids": ["GL-REV-KIMI-01", "GL-REV-01"],
+      "severity": "medium",
+      "category": "confusing-docs",
+      "summary": "Clone instructions in quickstart docs use inconsistent or hypothetical language instead of actual public URL",
+      "evidence_summary": "ten_minute_quickstart.md uses placeholder/future public clone language. README clone command and cd directory name are slightly inconsistent. A developer following the quickstart encounters friction at the first step.",
+      "recommendation": "Update all clone commands to use the actual public repository URL. Align directory names in README clone example with actual checkout directory.",
+      "blocking": true,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-004",
+      "source_review_ids": ["GL-REV-KIMI-02"],
+      "severity": "medium",
+      "category": "confusing-docs",
+      "summary": "agent_quickstart.md refers to 'approved internal source' for cloning",
+      "evidence_summary": "agent_quickstart.md instructs cloning from an 'approved internal source'. This is misleading to external developers or AI agents reading the public repository.",
+      "recommendation": "Update agent_quickstart.md to use the actual public repository URL or add a clear explanation of the public vs internal source relationship.",
+      "blocking": true,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-005",
+      "source_review_ids": ["GL-REV-KIMI-03", "GL-REV-KIMI-04"],
+      "severity": "low",
+      "category": "confusing-docs",
+      "summary": "AGENTS.md and llms-full.txt contain stale public-release language and stale Next Planned Issues table",
+      "evidence_summary": "AGENTS.md contains 'Public GitHub release not performed' / 'formal visibility decision pending' language. llms-full.txt Next Planned Issues table does not reflect current state post GL-176 through GL-185.",
+      "recommendation": "Update AGENTS.md and llms-full.txt to reflect actual public state. Update or remove stale Next Planned Issues section.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-006",
+      "source_review_ids": ["F-003"],
+      "severity": "medium",
+      "category": "confusing-docs",
+      "summary": "README Suggested repository metadata section uses hypothetical public publication framing",
+      "evidence_summary": "The README metadata section still speaks as if public publication is a future hypothetical. The repository is already public.",
+      "recommendation": "Rewrite or remove the hypothetical framing. Update metadata section to reflect actual public state.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-007",
+      "source_review_ids": ["F-004"],
+      "severity": "medium",
+      "category": "confusing-docs",
+      "summary": "GL-155 described as both planned and completed in different places",
+      "evidence_summary": "One location describes GL-155 as a planned future issue while another location describes it as completed and added. Contradiction creates confusion about the actual state of examples.",
+      "recommendation": "Audit all references to GL-155 across docs and resolve to a single consistent description of its status.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-008",
+      "source_review_ids": ["GL-REV-03", "F-006"],
+      "severity": "low",
+      "category": "confusing-docs",
+      "summary": "Internal Forgejo / sourceOfTruth: internal-forgejo appears in public-facing docs and JSON files",
+      "evidence_summary": "Multiple public-facing files reference the internal Forgejo mirror without explanation. External reviewers not aware of the internal setup are confused by this wording.",
+      "recommendation": "Exclude these references from public snapshot exports or add a brief explanation of the Forgejo/GitHub mirror relationship in README or a dedicated doc.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-009",
+      "source_review_ids": ["GL-REV-02"],
+      "severity": "low",
+      "category": "confusing-docs",
+      "summary": "Port inconsistency between backend quickstart (8765) and integration example (8000)",
+      "evidence_summary": "Developer following backend quickstart expects port 8765 but integration example uses 8000. Minor friction but immediately visible.",
+      "recommendation": "Standardize port references across quickstart docs and integration examples, or add a clear note explaining the difference.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-010",
+      "source_review_ids": ["GL-REV-KIMI-05"],
+      "severity": "low",
+      "category": "confusing-docs",
+      "summary": "README clone command and cd directory path are slightly inconsistent",
+      "evidence_summary": "The cd directory name suggested in README does not exactly match the directory created by the clone command. Minor but creates friction on first use.",
+      "recommendation": "Align README clone command example with the actual checkout directory name.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-011",
+      "source_review_ids": ["GL-REV-KIMI-06"],
+      "severity": "info",
+      "category": "feature-request",
+      "summary": "Add a verify-first-output helper script",
+      "evidence_summary": "Currently a developer must manually compare the first verifiable output against the committed reference JSON. A small helper script would improve the DX and reduce friction for new developers and AI agents.",
+      "recommendation": "Create a small script or test in scripts/ or examples/ that runs the first verifiable output and compares against committed reference output.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-188"
+    },
+    {
+      "id": "NF-012",
+      "source_review_ids": ["GL-REV-04"],
+      "severity": "info",
+      "category": "missing-example",
+      "summary": "Add a second runnable example covering grant creation, audit trail query, and verifiable evidence export",
+      "evidence_summary": "Currently only one verifiable example is available. A second example demonstrating the core grant lifecycle would significantly improve the developer preview's coverage and usefulness.",
+      "recommendation": "Create a second runnable public example showing: grant creation, audit trail query, and verifiable evidence bundle export. Docs/examples only, no backend/src changes.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-189"
+    },
+    {
+      "id": "NF-013",
+      "source_review_ids": ["F-005"],
+      "severity": "medium",
+      "category": "security-concern",
+      "summary": "ENABLE_DEMO_ENDPOINTS=true with non-localhost host binding may expose unauthenticated tamper endpoint — high-level only",
+      "evidence_summary": "Configuration-level risk noted by security reviewer. Kept at description level only. No exploit details included in this document.",
+      "recommendation": "Create GL-190 as a separate higher-care backend hardening issue to add a startup warning or validation guard. Route security-sensitive details to GitHub Security Advisories per SECURITY.md.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-190",
+      "security_sensitive": true,
+      "security_handling_note": "Details kept high-level only. No exploit details. Routed to GitHub Security Advisories or GL-190 hardening issue."
+    },
+    {
+      "id": "NF-014",
+      "source_review_ids": ["GL-REV-05"],
+      "severity": "info",
+      "category": "confusing-docs",
+      "summary": "README lacks a clear 'choose your path' section to guide developers to the right starting point",
+      "evidence_summary": "Developers arriving at the README face multiple entry points without clear guidance on which path to take. A short 'choose your path' section would reduce initial friction.",
+      "recommendation": "Add a short 'choose your path' section near the top of README guiding developers to: first verifiable output, backend quickstart, or agent integration.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-187"
+    },
+    {
+      "id": "NF-015",
+      "source_review_ids": ["GL-REV-KIMI-07"],
+      "severity": "info",
+      "category": "product-question",
+      "summary": "SDK/API status not explicit: local import only vs published package",
+      "evidence_summary": "It is not clear from public docs whether the SDK is only available as a local import from the repository or whether a published package is planned. Agent builders and developers need this clarified.",
+      "recommendation": "Add a brief SDK/API status section clarifying that current state is local import only, and noting any plans for a published package.",
+      "blocking": false,
+      "proposed_follow_up_issue": "GL-187"
+    }
+  ],
+
+  "findings": {
+    "total": 15,
+    "blockers": 4,
+    "non_blockers": 11
+  },
+
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 2,
+    "medium": 5,
+    "low": 5,
+    "info": 3
+  },
+
+  "repeated_themes": [
+    {
+      "theme_id": "THEME-001",
+      "title": "Stale public-state docs",
+      "reviewer_count": 3,
+      "description": "All three reviewers independently flagged that various docs still reflect a pre-publication internal state. Affected files include README.md, CONTRIBUTING.md, AGENTS.md, llms-full.txt, ten_minute_quickstart.md, and agent_quickstart.md.",
+      "priority": "highest",
+      "normalized_finding_ids": ["NF-001", "NF-002", "NF-003", "NF-004", "NF-005", "NF-006", "NF-007"]
+    },
+    {
+      "theme_id": "THEME-002",
+      "title": "First verifiable output works well",
+      "reviewer_count": 3,
+      "description": "All three reviewers confirmed the first verifiable output ran successfully, deterministically, and matched the committed reference JSON. Strong positive signal.",
+      "priority": "positive-signal",
+      "normalized_finding_ids": []
+    },
+    {
+      "theme_id": "THEME-003",
+      "title": "Quickstart / clone-path inconsistency",
+      "reviewer_count": 2,
+      "description": "Both Codex and Kimi flagged inconsistent or hypothetical clone commands and directory names in quickstart docs.",
+      "priority": "high",
+      "normalized_finding_ids": ["NF-003", "NF-010"]
+    },
+    {
+      "theme_id": "THEME-004",
+      "title": "Agent docs strong but stale in places",
+      "reviewer_count": 1,
+      "description": "Kimi noted AGENTS.md, llms.txt, and llms-full.txt are unusually strong for agent onboarding but contain stale public-state language.",
+      "priority": "medium",
+      "normalized_finding_ids": ["NF-005"]
+    },
+    {
+      "theme_id": "THEME-005",
+      "title": "Test count / status claims need cleanup",
+      "reviewer_count": 1,
+      "description": "Security reviewer flagged the stale test count in README as immediately falsifiable and trust-damaging.",
+      "priority": "high",
+      "normalized_finding_ids": ["NF-001"]
+    },
+    {
+      "theme_id": "THEME-006",
+      "title": "Verify-first-output helper script requested",
+      "reviewer_count": 1,
+      "description": "Kimi requested a small helper script to run and compare the first verifiable output in one step.",
+      "priority": "low",
+      "normalized_finding_ids": ["NF-011"]
+    },
+    {
+      "theme_id": "THEME-007",
+      "title": "Second runnable example needed",
+      "reviewer_count": 1,
+      "description": "Codex requested a second example covering grant creation, audit trail query, and verifiable evidence export.",
+      "priority": "low",
+      "normalized_finding_ids": ["NF-012"]
+    },
+    {
+      "theme_id": "THEME-008",
+      "title": "Demo endpoint safety hardening warrants separate issue",
+      "reviewer_count": 1,
+      "description": "Security reviewer flagged a configuration-level risk around the demo tamper endpoint. Should be a separate higher-care issue (GL-190), not bundled with docs cleanup.",
+      "priority": "medium-separate",
+      "normalized_finding_ids": ["NF-013"]
+    }
+  ],
+
+  "priority_follow_up_plan": [
+    {
+      "issue_id": "GL-187",
+      "title": "Public Docs Post-Public Stale Claim Cleanup",
+      "priority": 1,
+      "severity_trigger": "NF-001 (high), NF-002 (high), NF-003 (medium), NF-004 (medium)",
+      "recommended_model": "Claude Code (Sonnet)",
+      "expected_scope": [
+        "README.md",
+        "CONTRIBUTING.md",
+        "AGENTS.md",
+        "llms-full.txt",
+        "ten_minute_quickstart.md",
+        "agent_quickstart.md",
+        "possibly public metadata JSON files containing sourceOfTruth: internal-forgejo"
+      ],
+      "expected_outcomes": [
+        "Remove or update stale test count claim",
+        "Update CONTRIBUTING.md to reflect actual public state",
+        "Update clone commands to real public URL",
+        "Update agent-facing state in AGENTS.md and llms-full.txt",
+        "Remove hypothetical framing from README metadata section",
+        "Resolve GL-155 contradiction",
+        "Align README clone command with cd directory name",
+        "Optionally address port inconsistency and Forgejo wording"
+      ],
+      "explicit_non_goals": [
+        "No backend/src changes",
+        "No OpenAPI changes",
+        "No migration or DB/schema changes",
+        "No dependency changes",
+        "No new examples (GL-188 and GL-189)",
+        "No security hardening (GL-190)",
+        "No GitHub push during this issue",
+        "No visibility changes"
+      ]
+    },
+    {
+      "issue_id": "GL-188",
+      "title": "First Output Verify Helper Script",
+      "priority": 2,
+      "severity_trigger": "NF-011 (info, feature-request)",
+      "recommended_model": "Claude Code (Sonnet)",
+      "expected_scope": [
+        "Small script or test helper in scripts/ or examples/ that runs the first verifiable output example and compares against committed reference JSON"
+      ],
+      "explicit_non_goals": [
+        "No backend/src changes",
+        "No new API surface"
+      ]
+    },
+    {
+      "issue_id": "GL-189",
+      "title": "Second Runnable Example / Grant Lifecycle Evidence Bundle",
+      "priority": 3,
+      "severity_trigger": "NF-012 (info, missing-example)",
+      "recommended_model": "Claude Code (Sonnet)",
+      "expected_scope": [
+        "New public example showing grant creation, audit trail query, and verifiable evidence export",
+        "Docs/examples only, no backend/src changes"
+      ],
+      "explicit_non_goals": [
+        "No backend implementation changes",
+        "No new API routes"
+      ]
+    },
+    {
+      "issue_id": "GL-190",
+      "title": "Demo Endpoint Safety Guard / Startup Warning",
+      "priority": 4,
+      "severity_trigger": "NF-013 (medium, security-concern)",
+      "recommended_model": "Claude Code (Sonnet or Opus for security judgment)",
+      "expected_scope": [
+        "Backend startup validation or warning when ENABLE_DEMO_ENDPOINTS=true and host is not localhost",
+        "Docs update to SECURITY.md or security_boundaries.md"
+      ],
+      "important_note": "This involves backend/src changes and requires higher review care. Do not bundle with GL-187 docs cleanup.",
+      "explicit_non_goals": [
+        "No exploit details in public artifacts",
+        "Security-sensitive details via GitHub Security Advisories only"
+      ]
+    }
+  ],
+
+  "immediate_next_issue": {
+    "issue_id": "GL-187",
+    "title": "Public Docs Post-Public Stale Claim Cleanup",
+    "rationale": "Three independent reviewers flagged stale public-state docs, broken clone instructions, and trust-damaging test-count/status claims. NF-001 and NF-002 are both high-severity and immediately falsifiable by any external developer who runs the test suite or reads CONTRIBUTING.md. These are more urgent than adding new features or helper scripts because they undermine the basic trust signal that the developer preview is meant to build.",
+    "recommended_model": "Claude Code (Sonnet)",
+    "expected_scope": [
+      "README.md",
+      "CONTRIBUTING.md",
+      "AGENTS.md",
+      "llms-full.txt",
+      "ten_minute_quickstart.md",
+      "agent_quickstart.md",
+      "possibly public metadata JSON files"
+    ],
+    "explicit_non_goals": [
+      "No backend/src changes",
+      "No OpenAPI changes",
+      "No migration or DB/schema changes",
+      "No dependency changes",
+      "No new examples (GL-188 and GL-189)",
+      "No security hardening (GL-190)",
+      "No GitHub push during this issue",
+      "No visibility changes"
+    ]
+  },
+
+  "security_sensitive_handling": {
+    "finding_id": "NF-013",
+    "source_finding_id": "F-005",
+    "summary": "Configuration-level risk around ENABLE_DEMO_ENDPOINTS=true with non-localhost host binding",
+    "handling": "Kept at description level only. No exploit details, no proof-of-concept, no specific attack paths included in this document or any artifact in this issue.",
+    "recommended_action": "Create GL-190 as a separate higher-care backend hardening issue. Route security-sensitive details to GitHub Security Advisories per SECURITY.md.",
+    "public_artifacts_contain_exploit_details": false,
+    "routed_to": "GitHub Security Advisories (per SECURITY.md) or GL-190 hardening issue"
+  },
+
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_outreach_sent": true,
+    "no_reviewer_private_data_included": true,
+    "no_secrets_included": true,
+    "no_exploit_details_included": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "production_saas_not_claimed": true,
+    "tenant_isolation_not_claimed": true,
+    "security_sensitive_reports_directed_to_advisories_or_later_hardening": true,
+    "no_backend_src_changes": true,
+    "no_openapi_changes": true,
+    "no_migration_changes": true,
+    "no_db_schema_changes": true,
+    "no_dependency_manifest_changes": true,
+    "no_sdk_implementation_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_git_remote_changes": true
+  },
+
+  "non_goals": [
+    "Implement any recommended fixes",
+    "Push to GitHub",
+    "Change GitHub visibility",
+    "Create GitHub issues or labels via API",
+    "Send reviewer outreach",
+    "Include reviewer private data",
+    "Include secrets or tokens",
+    "Include exploit details",
+    "Claim production SaaS readiness",
+    "Assert multi-tenant or workspace isolation as a completed feature",
+    "Change backend behavior",
+    "Change API contracts",
+    "Modify migrations or DB schema",
+    "Modify dependencies",
+    "Modify SDK implementation",
+    "Modify frontend or website"
+  ],
+
+  "changed_files": [
+    "docs/ai_reviewer_feedback_triage.md",
+    "docs/examples/gl186/ai_reviewer_feedback_triage.json",
+    "backend/tests/test_gl186_ai_reviewer_feedback_triage.py"
+  ]
+}
