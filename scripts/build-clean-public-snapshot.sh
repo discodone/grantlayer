@@ -233,6 +233,15 @@ PUBLIC_EXPORT_EXCLUDE=(
     # GL-176: internal publication report — internal governance doc, not developer-preview content.
     "docs/public_github_visibility_change_report.md"
     "docs/examples/gl176/public_github_visibility_change_report.json"
+    # GL-181: internal public-snapshot governance reports — exclude from public export.
+    "docs/public_repo_smoke_verification.md"
+    "docs/examples/gl177/public_repo_smoke_verification.json"
+    "docs/readme_security_post_public_state.md"
+    "docs/examples/gl178/readme_security_post_public_state.json"
+    "docs/public_snapshot_correction_push_gl179.md"
+    "docs/examples/gl179/public_snapshot_correction_push_gl179.json"
+    "docs/public_docs_smoke_verification.md"
+    "docs/examples/gl180/public_docs_smoke_verification.json"
 )
 
 TMPFILE=$(mktemp /tmp/gl161-file-list-XXXXXXXX.txt)
