@@ -72,7 +72,7 @@ REQUIRED_SAFETY_CONFIRMATIONS = {
 
 def _git_diff_files():
     result = subprocess.run(
-        ["git", "status", "--short", "--untracked-files=all"],
+        ["git", "diff", "--name-only", "HEAD^1..HEAD"],
         capture_output=True,
         text=True,
         cwd=REPO_ROOT,
@@ -82,11 +82,9 @@ def _git_diff_files():
         return []
     files = []
     for line in result.stdout.splitlines():
-        if not line.strip():
-            continue
-        parts = line.split(maxsplit=1)
-        if len(parts) == 2:
-            files.append(parts[1])
+        path = line.strip()
+        if path:
+            files.append(path)
     return files
 
 
