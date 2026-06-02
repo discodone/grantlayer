@@ -1,0 +1,255 @@
+{
+  "issue_id": "GL-183",
+  "title": "External Feedback Triage / Public Issue Hygiene",
+  "context": "GrantLayer is publicly readable on GitHub in a developer-preview / controlled-pilot posture following GL-176 through GL-182. This artifact defines the lightweight public triage model for early external feedback.",
+  "feedback_categories": [
+    {
+      "id": "blocker",
+      "description": "Something prevents the reviewer from completing any task",
+      "typical_handling": "fix now or route to urgent follow-up"
+    },
+    {
+      "id": "confusing-docs",
+      "description": "Documentation is unclear, contradictory, or hard to follow",
+      "typical_handling": "clarify docs"
+    },
+    {
+      "id": "broken-quickstart",
+      "description": "Clone/run path or first verifiable output does not work",
+      "typical_handling": "fix now"
+    },
+    {
+      "id": "missing-example",
+      "description": "A useful example is absent",
+      "typical_handling": "add to backlog or fix now if it blocks comprehension"
+    },
+    {
+      "id": "product-question",
+      "description": "The reviewer is asking what GrantLayer does or how it works",
+      "typical_handling": "answer publicly if safe and concise"
+    },
+    {
+      "id": "security-concern",
+      "description": "Potential security issue or sensitive reporting concern",
+      "typical_handling": "route to GitHub Security Advisories"
+    },
+    {
+      "id": "production-readiness-concern",
+      "description": "Concern about production suitability, support, or operational maturity",
+      "typical_handling": "clarify posture and avoid overpromising"
+    },
+    {
+      "id": "feature-request",
+      "description": "Suggestion for new functionality",
+      "typical_handling": "backlog"
+    },
+    {
+      "id": "non-scope-later",
+      "description": "Valid feedback that is out of scope for the current developer-preview posture",
+      "typical_handling": "defer and label clearly"
+    }
+  ],
+  "proposed_labels": [
+    {
+      "name": "feedback",
+      "purpose": "General public feedback bucket",
+      "when_to_use": "Any external reviewer feedback that is not a bug/security report",
+      "safety_notes": "Keep wording neutral; do not imply support commitment"
+    },
+    {
+      "name": "good-first-feedback",
+      "purpose": "Friendly entry point for low-risk reviewer input",
+      "when_to_use": "Small docs notes, simple quickstart comments, or minor wording suggestions",
+      "safety_notes": "Do not use for security issues or production commitments"
+    },
+    {
+      "name": "docs",
+      "purpose": "Documentation-related reports",
+      "when_to_use": "README, SECURITY, quickstart, examples, or guide clarity",
+      "safety_notes": "Keep examples synthetic only"
+    },
+    {
+      "name": "quickstart",
+      "purpose": "Clone/run/first-output issues",
+      "when_to_use": "Anything affecting the first verifiable output path",
+      "safety_notes": "Escalate broken paths promptly"
+    },
+    {
+      "name": "bug",
+      "purpose": "Reproducible non-security defect",
+      "when_to_use": "Actual broken behavior that is not a security concern",
+      "safety_notes": "If security-sensitive, do not use this label publicly"
+    },
+    {
+      "name": "security-review-needed",
+      "purpose": "Security-sensitive report requires private handling",
+      "when_to_use": "Any report that may involve secrets, exploit details, or exposure concerns",
+      "safety_notes": "Direct to GitHub Security Advisories; do not ask for exploit steps publicly"
+    },
+    {
+      "name": "production-readiness",
+      "purpose": "Feedback about production suitability or caveats",
+      "when_to_use": "Questions or concerns about production status, SLA, onboarding, or operational maturity",
+      "safety_notes": "Do not let this become a promise of production readiness"
+    },
+    {
+      "name": "question",
+      "purpose": "General product clarification",
+      "when_to_use": "Reviewer asks what GrantLayer is or how a documented feature works",
+      "safety_notes": "Keep responses brief and factual"
+    },
+    {
+      "name": "enhancement",
+      "purpose": "Feature request or improvement idea",
+      "when_to_use": "New capability request that is not a bug",
+      "safety_notes": "Non-blocking ideas belong here"
+    },
+    {
+      "name": "external-review",
+      "purpose": "Marks public reviewer-originated feedback",
+      "when_to_use": "Any issue that came from an invited external reviewer",
+      "safety_notes": "Tracking label only"
+    },
+    {
+      "name": "needs-triage",
+      "purpose": "Initial routing state",
+      "when_to_use": "New feedback that has not yet been categorized and severity-assigned",
+      "safety_notes": "Move off this label quickly"
+    },
+    {
+      "name": "blocked",
+      "purpose": "Feedback cannot be actioned yet",
+      "when_to_use": "Missing reproduction, unclear report, or awaiting safer handling",
+      "safety_notes": "Do not use to silence valid feedback"
+    },
+    {
+      "name": "non-scope-later",
+      "purpose": "Explicit deferral bucket",
+      "when_to_use": "Valid but out-of-scope developer-preview feedback",
+      "safety_notes": "Explain the deferral reason clearly"
+    }
+  ],
+  "severity_mapping": [
+    {
+      "severity": "critical",
+      "criteria": "Immediate safety or trust failure",
+      "examples": [
+        "Public leak",
+        "Real secret",
+        "Harmful overclaim",
+        "Broken public clone"
+      ]
+    },
+    {
+      "severity": "high",
+      "criteria": "Serious issue affecting safety or first-use trust",
+      "examples": [
+        "Security reporting broken",
+        "Quickstart broken",
+        "Misleading production claim"
+      ]
+    },
+    {
+      "severity": "medium",
+      "criteria": "Important but not immediately blocking",
+      "examples": [
+        "Confusing docs",
+        "Unclear caveat",
+        "Broken important link"
+      ]
+    },
+    {
+      "severity": "low",
+      "criteria": "Small correctness or clarity issue",
+      "examples": [
+        "Minor wording",
+        "Formatting",
+        "Small doc inconsistency"
+      ]
+    },
+    {
+      "severity": "info",
+      "criteria": "Suggestion or non-blocking observation",
+      "examples": [
+        "Future idea",
+        "Neutral question",
+        "Improvement request"
+      ]
+    }
+  ],
+  "intake_workflow": [
+    "intake received",
+    "classify category",
+    "assign severity",
+    "check safety constraints",
+    "decide public issue vs private security advisory",
+    "record source and date",
+    "decide next action: fix now, clarify docs, add to backlog, defer, close as non-scope, escalate security"
+  ],
+  "security_handling": {
+    "rules": [
+      "Do not post exploit details publicly.",
+      "Do not post secrets publicly.",
+      "Do not post customer data publicly.",
+      "Use GitHub Security Advisories for security-sensitive reports.",
+      "Public issues should use minimal reproduction with synthetic data only.",
+      "If a report includes a secret, treat it as an incident or rotation concern, not normal feedback.",
+      "If a report suggests a repository leak, handle it as a security and hygiene matter before any broader public response."
+    ]
+  },
+  "issue_template_decision": {
+    "decision": "templates_deferred",
+    "rationale": "The label and routing model is the higher priority for the first external review window, and existing public templates already cover basic bug and security pathways.",
+    "templates_added": false,
+    "templates_deferred_reason": "Early feedback should be observed before locking the repository into a more rigid public issue template taxonomy.",
+    "later_issue_recommendation": "Add a minimal feedback template after the first reviewer window confirms the category and label set."
+  },
+  "non_goals": [
+    "No production SaaS promise.",
+    "No tenant/workspace isolation claim.",
+    "No customer onboarding.",
+    "No payment or treasury flow.",
+    "No blockchain requirement.",
+    "No SLA or support commitment.",
+    "No collection of real grant or customer data.",
+    "No automated GitHub label creation in this issue.",
+    "No public GitHub push in this issue.",
+    "No visibility change in this issue.",
+    "No internal repo push directly to GitHub in this issue."
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_github_api_label_changes_performed": true,
+    "production_saas_not_claimed": true,
+    "tenant_isolation_not_claimed": true,
+    "real_customer_data_not_requested": true,
+    "secrets_not_requested": true,
+    "security_sensitive_reports_directed_to_advisories": true,
+    "no_exploit_details_requested_publicly": true
+  },
+  "findings": [
+    {
+      "id": "F-183-001",
+      "severity": "info",
+      "status": "closed",
+      "recommendation": "Keep GL-183 documentation-only and defer issue-template expansion until the first external review window is complete.",
+      "blocking": false
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 1,
+    "total": 1
+  },
+  "next_recommended_step": "GL-184 First External Reviewer Invite Pack",
+  "changed_files": [
+    "docs/external_feedback_triage_public_issue_hygiene.md",
+    "docs/examples/gl183/external_feedback_triage_public_issue_hygiene.json",
+    "backend/tests/test_gl183_external_feedback_triage_public_issue_hygiene.py"
+  ]
+}
