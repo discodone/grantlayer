@@ -1,0 +1,155 @@
+{
+  "issue_id": "GL-177",
+  "title": "Public Repo Smoke Verification",
+  "internal_main_commit": "07a1f2bfcc9ceef14535f673d2640f60743fad84",
+  "public_repository_url": "https://github.com/Discodone/grantlayer.git",
+  "expected_public_commit": "e4cd080df9d8da7d7cf4044e84eea4df8ac80cc6",
+  "previous_public_commit": "8bf6c335af4f1229dd752e939ec5b0e5a6928bad",
+  "actual_public_clone_head": "e4cd080df9d8da7d7cf4044e84eea4df8ac80cc6",
+  "fresh_clone_path": "/tmp/grantlayer-public-smoke-gl177",
+  "checks_performed": [
+    "public_reachability_and_clone",
+    "public_root_files",
+    "public_correction_verification",
+    "first_verifiable_output",
+    "public_caveats",
+    "private_data_secret_smoke",
+    "developer_first_impression"
+  ],
+  "public_correction_verification": {
+    "corrected_files_checked": [
+      "docs/public_snapshot_human_review_gate.md",
+      "docs/public_snapshot_post_publish_smoke_review.md"
+    ],
+    "corrected_files_present": {
+      "docs/public_snapshot_human_review_gate.md": true,
+      "docs/public_snapshot_post_publish_smoke_review.md": true,
+      "docs/public_github_visibility_change_report.md": false
+    },
+    "old_internal_labels_absent": true,
+    "expected_public_commit_verified": true,
+    "previous_public_commit_in_history": true,
+    "notes": "The GL-176 correction commit (e4cd080) touched exactly 2 files: docs/public_snapshot_human_review_gate.md and docs/public_snapshot_post_publish_smoke_review.md. Both are present in the public clone and contain no /home/adminuser or /paperclip/grantlayer-mvp references. docs/public_github_visibility_change_report.md was not part of the public correction commit and does not exist in the public repo; it is an internal-only document. This is a discrepancy from the stated task context (which listed 3 corrected files) but the actual public commit history confirms 2 files only."
+  },
+  "first_verifiable_output": {
+    "command": "python3 examples/first_verifiable_output.py --output /tmp/grantlayer_first_output_gl177.json",
+    "exit_code": 0,
+    "generated_output_path": "/tmp/grantlayer_first_output_gl177.json",
+    "expected_output_path": "examples/first_verifiable_output.json",
+    "deterministic_match": true,
+    "notes": "Run from fresh public clone /tmp/grantlayer-public-smoke-gl177. Command succeeded with exit code 0. Generated output at /tmp/grantlayer_first_output_gl177.json matched examples/first_verifiable_output.json exactly (diff produced no output). No real secrets or customer data required."
+  },
+  "private_data_secret_smoke": {
+    "scan_scope": "/tmp/grantlayer-public-smoke-gl177 (fresh public clone, all .md .py .json .txt .yaml .yml .sh files, excluding .git/)",
+    "checks_performed": [
+      "grep /home/adminuser across all file types",
+      "grep /paperclip/grantlayer-mvp across all file types",
+      "grep for GitHub tokens (ghp_, github_pat_), AWS keys (AKIA), Slack tokens, OpenAI keys (sk-)",
+      "grep for hardcoded credentials (password=, api_key=, secret= with values)",
+      "grep for internal infrastructure hostnames and IP addresses (forge.internal, terminal.internal, hofercloud, 192.168., Tailscale ranges)",
+      "grep for private identifiers (terminal.hofercloud, forge.private, forgejo hostnames, adminuser@, proxmox, tailscale)",
+      "grep for private email addresses and phone numbers",
+      "grep for instructions to push internal repo directly to GitHub"
+    ],
+    "private_data_found": false,
+    "secret_material_found": false,
+    "internal_infrastructure_found": false,
+    "paperclip_or_internal_workflow_found": false,
+    "blockers_found": false,
+    "notes": "Two minor items noted but both are non-blocking: (1) /home/adminuser appears in scripts/public-secret-sensitive-scan.sh at lines 31 and 202, but only as a scan pattern definition within the scanner's own pattern list — not as a path reference in any document or code. (2) The word 'Forgejo' appears in multiple docs (README, post_public_agent_intake_triage.md, public snapshot docs) as an architectural description ('Internal Forgejo remains the source of truth') without exposing any actual hostname, URL, credentials, or internal routing information. No raw tokens, API keys, JWTs, passwords, private keys, SSH keys, deploy keys, private email addresses, phone numbers, customer data, or internal URLs were found in the public clone surface."
+  },
+  "public_caveats": {
+    "technical_preview_stated": true,
+    "not_production_saas_stated": true,
+    "tenant_isolation_not_implemented_stated": true,
+    "no_real_secrets_required_stated": true,
+    "no_customer_data_required_stated": true,
+    "local_demo_use_only_stated": true,
+    "result": "pass",
+    "notes": "README.md and SECURITY.md both clearly state Developer Preview posture, no production SaaS readiness claim, tenant isolation not implemented, no real secrets or customer data in examples. Caveats are prominently displayed in status tables and repeated in narrative sections."
+  },
+  "developer_first_impression": {
+    "can_understand_what_grantlayer_is": true,
+    "can_find_runnable_example": true,
+    "caveats_visible_enough": true,
+    "stale_status_present": true,
+    "notes": "README clearly describes GrantLayer as a verification/audit layer for agentic grant workflows. First verifiable output quickstart is prominently shown. All caveats are present. However, the status table in README.md still reads 'Public GitHub release: Not performed' and 'formal visibility decision pending (GL-175)', which is stale now that GL-175 and GL-176 are complete and the repo is public. Same stale references appear in SECURITY.md. A security researcher visiting the repo will find no active reporting channel because SECURITY.md section 2 says the channel is pending pending public release approval. The repo is already public."
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "medium",
+      "area": "public_surface_status",
+      "status": "open",
+      "blocking": false,
+      "recommendation": "Create GL-178 to update README.md and SECURITY.md status tables: replace 'Public GitHub release: Not performed' and 'formal visibility decision pending (GL-175)' with accurate post-GL-176 state. Do not change in GL-177 (verification only).",
+      "detail": "README.md (lines 21, 106, 128, 379) and SECURITY.md (lines 20, 80, 89) contain stale status claims stating the public GitHub release has not happened and that GL-175 visibility decision is pending. These were accurate when written but are now stale: GL-175 is complete, GL-176 pushed the correction, and the repository is publicly accessible. An external developer will see contradictory signals."
+    },
+    {
+      "id": "F-002",
+      "severity": "high",
+      "area": "security_reporting",
+      "status": "open",
+      "blocking": false,
+      "recommendation": "Enable GitHub Security Advisories for the public repo and update SECURITY.md to provide an active reporting channel before any broader promotion of the public repository.",
+      "detail": "SECURITY.md section 2 ('After public release') states 'the reporting channel is pending and will be documented here after public release is approved.' The repository is now publicly accessible but no security reporting mechanism is documented or available. A security researcher who discovers a vulnerability has no safe disclosure channel. This does not block smoke (no data leakage) but is a high-priority gap for a public repository."
+    },
+    {
+      "id": "F-003",
+      "severity": "low",
+      "area": "public_correction_scope",
+      "status": "info",
+      "blocking": false,
+      "recommendation": "Confirm that docs/public_github_visibility_change_report.md is intentionally internal-only (not pushed to public). Update task context docs if needed to reflect that the GL-176 correction covered 2 files, not 3.",
+      "detail": "The GL-177 task context stated the GL-176 correction touched 3 files including docs/public_github_visibility_change_report.md. The actual public correction commit (e4cd080) shows only 2 changed files. The visibility change report exists in the internal repo but was never part of any public snapshot. This is consistent with it being an internal workflow document. Not a blocker."
+    },
+    {
+      "id": "F-004",
+      "severity": "low",
+      "area": "public_documentation",
+      "status": "open",
+      "blocking": false,
+      "recommendation": "Fix the broken README.md link to docs/public_github_readiness_pack.md in GL-178. The file exists in the internal repo but was not included in the public snapshot.",
+      "detail": "README.md line 115 links to docs/public_github_readiness_pack.md ('Readiness checklist, messaging rules, release blockers, and go/no-go criteria before any future public sharing'). This file is not present in the public clone. A developer following the link gets a 404. File exists in internal repo at docs/public_github_readiness_pack.md."
+    },
+    {
+      "id": "F-005",
+      "severity": "info",
+      "area": "private_data_scan",
+      "status": "accepted",
+      "blocking": false,
+      "recommendation": "No action required. The /home/adminuser string in scripts/public-secret-sensitive-scan.sh is a legitimate scan pattern definition.",
+      "detail": "scripts/public-secret-sensitive-scan.sh lines 31 and 202 contain '/home/adminuser' as a grep pattern within the scanner's own pattern definition table (the scanner checks for this pattern to detect leakage). This is the expected and correct behavior of a secret-scanning script. It does not represent actual path leakage."
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 1,
+    "medium": 1,
+    "low": 2,
+    "info": 1,
+    "total": 5
+  },
+  "smoke_decision": "public_repo_smoke_passed_with_cautions",
+  "next_recommended_step": "GL-178: Public snapshot status update — correct stale GL-175/GL-176 status claims in README.md and SECURITY.md, fix broken docs/public_github_readiness_pack.md link, and establish active security reporting channel (enable GitHub Security Advisories).",
+  "non_goals": [
+    "No GitHub push performed in GL-177.",
+    "No visibility change performed.",
+    "Internal repo was not pushed directly to GitHub.",
+    "No backend/src changes.",
+    "No OpenAPI, migration, database-schema, or dependency changes.",
+    "No SDK implementation changes.",
+    "No frontend, website, or design changes.",
+    "No snapshot publish script behavior changes.",
+    "No git remote changes.",
+    "No force push.",
+    "No public snapshot content changes.",
+    "No Paperclip references or status updates.",
+    "No GitHub repository settings changes."
+  ],
+  "changed_files": [
+    "docs/public_repo_smoke_verification.md",
+    "docs/examples/gl177/public_repo_smoke_verification.json",
+    "backend/tests/test_gl177_public_repo_smoke_verification.py"
+  ]
+}
