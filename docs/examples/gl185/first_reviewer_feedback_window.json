@@ -1,0 +1,261 @@
+{
+  "issue_id": "GL-185",
+  "title": "First Reviewer Feedback Window / Feedback Capture",
+  "context": "GrantLayer is publicly readable on GitHub in a developer-preview / controlled-pilot posture following GL-176 through GL-184. GL-184 produced the first external reviewer invite pack. GL-185 opens the controlled feedback window and defines the operational plan for manually inviting 2-5 reviewers and capturing responses. No outreach was sent by this issue.",
+  "public_repository_url": "https://github.com/Discodone/grantlayer.git",
+  "feedback_window": {
+    "purpose": "Collect controlled qualitative feedback from 2-5 carefully selected external reviewers on GrantLayer's developer preview. Identify blockers, confusing documentation, broken quickstart paths, or missing examples before widening the reviewer pool.",
+    "suggested_length": "5-10 business days from the date the first invite is sent",
+    "target_reviewer_count_min": 2,
+    "target_reviewer_count_max": 5,
+    "target_reviewer_count_description": "2-5 reviewers from GL-184 archetypes",
+    "review_source": "public GitHub repository at https://github.com/Discodone/grantlayer.git",
+    "feedback_capture": "manual/internal recording only — no automated collection, no public form, no webhook or API collection",
+    "automated_outreach_performed": false,
+    "window_open_signal": "When the user sends the first invite manually",
+    "window_close_signal": "When the window length expires or 2-5 responses have been captured, whichever comes first"
+  },
+  "reviewer_invitation_procedure": {
+    "method": "manual only — no automated outreach performed by this issue",
+    "invite_pack_reference": "GL-184 first external reviewer invite pack (docs/first_external_reviewer_invite_pack.md, section 2)",
+    "safety_reminder": "Verify before sending: no secrets requested, no customer data requested, no production SaaS claim, no tenant isolation claim, no exploit details requested, GitHub Security Advisories path included, technical preview caveat included.",
+    "steps": [
+      "Step 1: Select 2-5 individuals matching one or more GL-184 reviewer profiles (external-backend-developer, ai-agent-workflow-developer, grant-compliance-audit-reviewer, security-minded-technical-reviewer).",
+      "Step 2: Prepare the invite message using the GL-184 invite message draft. Verify all caveats and safety rules are present before sending.",
+      "Step 3: Send the invite message manually via a trusted private channel. Do not send via bulk email or automated tooling. Do not include in a public GitHub issue.",
+      "Step 4: Record the invite internally — reviewer profile archetype, invite sent date, and public commit hash at time of invite.",
+      "Step 5: Await response. Reviewers may submit via public GitHub issue or direct message. Direct security-sensitive feedback to GitHub Security Advisories.",
+      "Step 6: Capture each response using the feedback capture record model within 48 hours of receipt.",
+      "Step 7: Triage each response using the GL-183 category and severity model."
+    ],
+    "no_secrets_requested": true,
+    "no_customer_data_requested": true,
+    "no_exploit_details_requested": true,
+    "synthetic_data_only": true
+  },
+  "feedback_capture_record_model": {
+    "feedback_id": "string — unique ID for this feedback record (e.g. GL185-F001)",
+    "reviewer_profile": "string — archetype matched (e.g. external-backend-developer)",
+    "invite_sent_date": "date — ISO 8601 date the invite was sent (e.g. 2026-06-10)",
+    "response_received_date": "date — ISO 8601 date the response was received",
+    "public_commit_reviewed": "string — git commit hash at time of reviewer's review",
+    "tasks_attempted": "array of string — tasks the reviewer attempted from the GL-185 task list",
+    "first_verifiable_output_attempted": "boolean — whether the reviewer attempted the first verifiable output",
+    "first_verifiable_output_result": "string — match / mismatch / not-run / error",
+    "docs_clarity_score": "integer 1-5 — self-reported clarity score (5 = very clear)",
+    "trust_score": "integer 1-5 — self-reported trust score (5 = high trust)",
+    "caveat_visibility": "string — visible / hard-to-find / missing",
+    "quickstart_result": "string — success / partial / failed / skipped",
+    "security_reporting_clarity": "string — clear / unclear / not-checked",
+    "broken_links_reported": "array of string — links that returned 404 or were stale",
+    "confusing_claims": "array of string — claims that felt misleading or overclaiming",
+    "requested_examples": "array of string — examples the reviewer wanted",
+    "category": "string — GL-183 triage category (blocker, confusing-docs, broken-quickstart, missing-example, product-question, security-concern, production-readiness-concern, feature-request, non-scope-later)",
+    "severity": "string — critical / high / medium / low / info",
+    "blocking": "boolean — whether this item blocks future reviewer invites",
+    "security_sensitive": "boolean — whether the feedback contains security-sensitive content",
+    "private_follow_up_required": "boolean — whether a private follow-up channel is needed",
+    "next_action": "string — fix-now / clarify-docs / add-to-backlog / defer / close-as-non-scope / escalate-security",
+    "notes": "string — any additional context not captured in other fields"
+  },
+  "feedback_triage_flow": {
+    "reference": "GL-183 External Feedback Triage / Public Issue Hygiene",
+    "categories": [
+      {
+        "id": "blocker",
+        "use_when": "Something prevents the reviewer from completing any task",
+        "default_next_action": "fix-now"
+      },
+      {
+        "id": "confusing-docs",
+        "use_when": "Documentation is unclear, contradictory, or hard to follow",
+        "default_next_action": "clarify-docs"
+      },
+      {
+        "id": "broken-quickstart",
+        "use_when": "Clone/run path or first verifiable output does not work",
+        "default_next_action": "fix-now"
+      },
+      {
+        "id": "missing-example",
+        "use_when": "A useful example is absent",
+        "default_next_action": "add-to-backlog or fix-now if it blocks comprehension"
+      },
+      {
+        "id": "product-question",
+        "use_when": "The reviewer is asking what GrantLayer does or how it works",
+        "default_next_action": "answer publicly if safe and concise"
+      },
+      {
+        "id": "security-concern",
+        "use_when": "Potential security issue or sensitive reporting concern",
+        "default_next_action": "escalate-security"
+      },
+      {
+        "id": "production-readiness-concern",
+        "use_when": "Concern about production suitability, support, or operational maturity",
+        "default_next_action": "clarify docs — do not overpromise"
+      },
+      {
+        "id": "feature-request",
+        "use_when": "Suggestion for new functionality",
+        "default_next_action": "add-to-backlog"
+      },
+      {
+        "id": "non-scope-later",
+        "use_when": "Valid feedback out of scope for the current developer-preview posture",
+        "default_next_action": "defer and label clearly"
+      }
+    ],
+    "severity_levels": [
+      {
+        "severity": "critical",
+        "criteria": "Immediate safety or trust failure",
+        "typical_response_time": "Immediate — before next invite"
+      },
+      {
+        "severity": "high",
+        "criteria": "Serious issue affecting safety or first-use trust",
+        "typical_response_time": "Same day"
+      },
+      {
+        "severity": "medium",
+        "criteria": "Important but not immediately blocking",
+        "typical_response_time": "Within the window"
+      },
+      {
+        "severity": "low",
+        "criteria": "Small correctness or clarity issue",
+        "typical_response_time": "Next doc polish issue"
+      },
+      {
+        "severity": "info",
+        "criteria": "Suggestion or non-blocking observation",
+        "typical_response_time": "Backlog"
+      }
+    ],
+    "routing": [
+      "Critical/High + security-sensitive: Route immediately to GitHub Security Advisories. Do not discuss in public. Halt public engagement if a real secret or exploit detail was shared.",
+      "Broken quickstart (broken-quickstart, blocker): Treat as immediate fix candidate. Do not invite additional reviewers until the quickstart path is restored.",
+      "Confusing documentation (confusing-docs): Schedule a docs polish issue.",
+      "Feature request (feature-request): Backlog without commitment. Do not imply the feature will be built for developer-preview posture.",
+      "Production-readiness concern (production-readiness-concern): Clarify developer-preview posture. Do not promise production readiness, SLA, or onboarding.",
+      "Out of scope (non-scope-later): Close or defer politely. Explain the current posture.",
+      "Security advisory unavailable: If a reviewer cannot access GitHub Security Advisories, acknowledge publicly with a minimal non-revealing comment and open a private follow-up channel."
+    ]
+  },
+  "safety_checklist": {
+    "before_sending_any_invite": [
+      "No secrets are requested from reviewers in the invite message.",
+      "No customer data is requested from reviewers.",
+      "No private grant or institutional data is requested.",
+      "The invite message does not claim production SaaS readiness.",
+      "The invite message does not claim tenant/workspace isolation is implemented.",
+      "The invite message does not offer a support SLA.",
+      "No commercial commitment is implied.",
+      "GitHub Security Advisories path is clearly stated in the invite message.",
+      "Reviewers are told to use synthetic/demo data only."
+    ],
+    "during_feedback_window": [
+      "Do not ask reviewers to share real customer data in public issues.",
+      "Do not ask reviewers to share private grants or institutional records.",
+      "Do not post exploit details in public GitHub issues.",
+      "If a public issue contains secrets or exploit details, acknowledge and redirect immediately to GitHub Security Advisories. Do not quote or expand the sensitive content.",
+      "If a report includes a real secret, treat it as an incident or rotation concern before responding publicly.",
+      "Do not make production SaaS promises in public responses to feedback.",
+      "Do not make tenant isolation claims in public responses.",
+      "Do not make SLA or support commitments in public responses.",
+      "Record all feedback internally within 48 hours of receipt.",
+      "Triage all feedback using GL-183 category and severity model.",
+      "Stop the feedback window immediately if a critical-severity safety issue is found."
+    ]
+  },
+  "initial_reviewer_packet": {
+    "public_repository_url": "https://github.com/Discodone/grantlayer.git",
+    "project_description": "GrantLayer is a Python backend with a REST API and SDK for creating structured, verifiable evidence bundles used in grant management and agentic compliance workflows.",
+    "technical_preview_caveat": "This is a technical preview / developer preview only. It is not a production SaaS platform. Tenant/workspace isolation is not yet implemented. No support SLA is offered.",
+    "first_verifiable_output_task": "git clone https://github.com/Discodone/grantlayer.git && cd grantlayer && python3 examples/first_verifiable_output.py --output /tmp/gl_first_output.json — then compare /tmp/gl_first_output.json with examples/first_verifiable_output.json",
+    "feedback_questions": [
+      "What did you think GrantLayer does after reading the README?",
+      "Could you find the first verifiable output quickly?",
+      "Could you run it, or understand what it proves?",
+      "What felt confusing?",
+      "What felt trustworthy?",
+      "What felt missing?",
+      "Are the non-production caveats clear?",
+      "Are the security reporting instructions clear?",
+      "What would make you try the SDK or API next?",
+      "What would make you trust this project more?",
+      "What is the smallest next example you would want?"
+    ],
+    "safety_instructions": [
+      "Use synthetic/demo data only.",
+      "Do not share secrets, credentials, or private keys in public issues.",
+      "Do not share customer data or institutional records.",
+      "Do not post exploit details publicly.",
+      "Report security-sensitive issues via GitHub Security Advisories (see SECURITY.md)."
+    ],
+    "security_advisory_path": "See SECURITY.md in the repository for the GitHub Security Advisories reporting path."
+  },
+  "success_criteria": [
+    "2-5 reviewers invited manually using the GL-184 invite message draft",
+    "At least 1-3 reviewer responses captured in the feedback recording model within the feedback window",
+    "No secrets or customer data collected — all feedback uses synthetic/demo data only",
+    "No security-sensitive details posted publicly — any security concern routed to GitHub Security Advisories",
+    "Feedback categorized and severity-ranked using the GL-183 triage model for each captured response",
+    "Next issues proposed from the feedback — at minimum one follow-up issue identified from triage results"
+  ],
+  "non_goals": [
+    "No outreach sent by this issue. The invite message is defined in GL-184. This issue prepares the operational plan only.",
+    "No production SaaS promise. GrantLayer is in developer-preview / controlled-pilot posture only.",
+    "No tenant/workspace isolation claim. Tenant isolation is not implemented.",
+    "No real customer data collection. All feedback must use synthetic/demo data only.",
+    "No real grant/institutional data review. Reviewers must use synthetic identifiers.",
+    "No payment or treasury flow. Not in current MVP scope.",
+    "No blockchain requirement in current MVP. Planned as optional Phase 3 layer.",
+    "No SLA or support promise. No SLA is offered for developer preview.",
+    "No public issue template creation in this issue. Templates remain deferred.",
+    "No GitHub label creation in this issue. Labels are documented in GL-183; no API changes are made.",
+    "No GitHub issue creation in this issue. Issues are created by reviewers, not by this issue.",
+    "No automated collection of personal reviewer data. Do not collect names, email addresses, or contact details via any form, webhook, or API."
+  ],
+  "safety_confirmations": {
+    "no_outreach_sent": true,
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "production_saas_not_claimed": true,
+    "tenant_isolation_not_claimed": true,
+    "real_customer_data_not_requested": true,
+    "private_grant_data_not_requested": true,
+    "secrets_not_requested": true,
+    "exploit_details_not_requested_publicly": true,
+    "security_sensitive_reports_directed_to_advisories": true,
+    "automated_reviewer_contact_not_performed": true
+  },
+  "findings": [
+    {
+      "id": "F-185-001",
+      "severity": "info",
+      "status": "closed",
+      "recommendation": "Open the feedback window by sending 2-5 invites manually using the GL-184 invite pack. Record all responses using the feedback capture record model. Do not widen the reviewer pool until at least 1 response is triaged.",
+      "blocking": false
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 1,
+    "total": 1
+  },
+  "next_recommended_step": "GL-186 First Reviewer Feedback Triage",
+  "changed_files": [
+    "docs/first_reviewer_feedback_window.md",
+    "docs/examples/gl185/first_reviewer_feedback_window.json",
+    "backend/tests/test_gl185_first_reviewer_feedback_window.py"
+  ]
+}
