@@ -1,0 +1,123 @@
+{
+  "issue_id": "GL-178",
+  "title": "README / SECURITY Post-Public State Correction",
+  "base_commit": "e127a84be1095e415841e433edd33a7a808f33f5",
+  "addressed_findings": ["F-001", "F-002", "F-004"],
+  "changed_files": [
+    "README.md",
+    "SECURITY.md",
+    "docs/readme_security_post_public_state.md",
+    "docs/examples/gl178/readme_security_post_public_state.json",
+    "backend/tests/test_gl178_readme_security_post_public_state.py"
+  ],
+  "security_reporting_channel": {
+    "channel": "GitHub Security Advisories",
+    "url": "https://github.com/Discodone/grantlayer/security/advisories",
+    "fallback": "Open a minimal public issue that does not include exploit details or secrets and request a private reporting path.",
+    "private_email_added": false,
+    "private_phone_added": false,
+    "internal_hostname_added": false,
+    "internal_path_added": false
+  },
+  "readme_updates": {
+    "stale_gl175_pending_removed": true,
+    "public_available_stated": true,
+    "broken_link_public_github_readiness_pack_removed": true,
+    "status_table_updated": true,
+    "current_status_next_steps_table_updated": true,
+    "caveats_section_updated": true,
+    "for_ai_coding_agents_block_updated": true
+  },
+  "security_updates": {
+    "stale_gl175_pending_removed": true,
+    "status_table_updated": true,
+    "section2_reporting_channel_added": true,
+    "section2_no_public_disclosure_warning_added": true,
+    "section6_caveats_updated": true,
+    "section7_status_updated": true,
+    "public_available_stated": true
+  },
+  "broken_link_handling": {
+    "file": "docs/public_github_readiness_pack.md",
+    "action": "removed",
+    "reason": "File exists in internal repository but was not included in the public snapshot. Internal readiness checklist — not a public developer resource. Removing prevents broken reference for public consumers."
+  },
+  "caveats_preserved": {
+    "technical_preview_developer_preview": true,
+    "local_evaluation_controlled_pilot_only": true,
+    "production_saas_readiness_not_claimed": true,
+    "tenant_isolation_not_implemented": true,
+    "no_real_secrets_in_examples": true,
+    "no_real_customer_data_in_examples": true
+  },
+  "private_data_secret_safety": {
+    "private_data_found": false,
+    "secret_material_found": false,
+    "internal_infrastructure_found": false,
+    "private_contact_details_added": false,
+    "notes": "Only public GitHub URLs used. No private email, phone, internal hostname, internal path, or private remote added."
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "medium",
+      "description": "README.md and SECURITY.md contained stale 'visibility pending GL-175' / 'Public GitHub release has not happened' wording",
+      "status": "fixed",
+      "resolution": "All stale references removed; updated to state repository is publicly available (GL-176)"
+    },
+    {
+      "id": "F-002",
+      "severity": "high",
+      "description": "SECURITY.md had no active security reporting channel for the now-public repository",
+      "status": "fixed",
+      "resolution": "Added GitHub Security Advisories as active channel in Section 2; added explicit warning not to disclose exploit details or secrets publicly"
+    },
+    {
+      "id": "F-003",
+      "severity": "low",
+      "description": "Public code surface improvement — future work",
+      "status": "out_of_scope",
+      "resolution": "Not addressed in GL-178; deferred as future work"
+    },
+    {
+      "id": "F-004",
+      "severity": "low",
+      "description": "README.md had broken link to docs/public_github_readiness_pack.md (file not in public snapshot)",
+      "status": "fixed",
+      "resolution": "Link removed from README.md; file is internal-only"
+    },
+    {
+      "id": "F-005",
+      "severity": "info",
+      "description": "/home/adminuser in scanner script is a pattern definition, not leakage",
+      "status": "out_of_scope",
+      "resolution": "Confirmed not leakage; no action required"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "high": 1,
+    "medium": 1,
+    "low": 2,
+    "info": 1,
+    "fixed_in_gl178": 3,
+    "out_of_scope_in_gl178": 2
+  },
+  "result": "readme_security_post_public_state_fixed",
+  "next_recommended_step": "GL-179: Public snapshot correction push for GL-178 README/SECURITY fixes. Publish the GL-178 doc fixes to the public GitHub snapshot so the public-facing README.md and SECURITY.md reflect the corrected post-public state. Include public smoke follow-up verification after the push.",
+  "non_goals": [
+    "No GitHub push performed",
+    "No visibility change performed",
+    "No force push",
+    "Internal repo was not pushed directly to GitHub",
+    "No production/backend/src changes",
+    "No OpenAPI/migration/DB/schema/dependency changes",
+    "No SDK implementation changes",
+    "No frontend/website/design changes",
+    "No GitHub workflow changes",
+    "No snapshot publish script behavior changes",
+    "No git remote changes",
+    "No Paperclip references or status updates",
+    "F-003 (public code surface improvement) not addressed — future work",
+    "F-005 (/home/adminuser in scanner) not addressed — confirmed not leakage"
+  ]
+}

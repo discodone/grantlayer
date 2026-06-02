@@ -17,7 +17,7 @@ GrantLayer is in **Developer Preview** with a controlled pilot posture.
 | Maturity | Developer Preview — local evaluation and controlled pilot only |
 | Production SaaS support guarantee | **Not provided** |
 | Tenant/workspace isolation | **Not implemented** |
-| Public snapshot on GitHub | **Synced** — clean snapshot at `https://github.com/Discodone/grantlayer.git`; formal visibility decision pending (GL-175) |
+| Public GitHub repository | **Available** — publicly accessible at `https://github.com/Discodone/grantlayer.git` (GL-176) |
 
 There is **no production SaaS support guarantee yet**. Do not deploy to shared multi-tenant infrastructure without completing the remaining hardening gates.
 
@@ -25,19 +25,15 @@ There is **no production SaaS support guarantee yet**. Do not deploy to shared m
 
 ## 2. Reporting Guidance
 
-### Before public release
+The GrantLayer repository is publicly available on GitHub at `https://github.com/Discodone/grantlayer.git`.
 
-If you discover a security issue before the repository is publicly available on GitHub:
+**Active security reporting channel:** Please report security issues via **GitHub Security Advisories** for this repository (`https://github.com/Discodone/grantlayer/security/advisories`). If advisories are unavailable, open a minimal public issue that does not include exploit details or secrets and request a private reporting path.
 
-- **Avoid public disclosure** before maintainers can respond.
-- Contact the maintainers through the existing private channel.
+**Important:** Do not disclose exploit details, secrets, or sensitive reproduction steps publicly (e.g. in public issues, comments, or pull requests). Always use a private reporting path for vulnerability details.
+
+General guidance:
 - Provide a clear description, reproduction steps, and impact assessment.
-
-### After public release
-
-Once the repository is publicly available on GitHub, security issues should be reported through **GitHub Security Advisories** when that feature is enabled.
-
-Until then, the reporting channel is **pending** and will be documented here after public release is approved.
+- Follow the data-handling rules in Section 5 of this document.
 
 ---
 
@@ -77,13 +73,16 @@ When reporting security issues, please follow these data-handling rules:
 
 ## 6. Current Caveats
 
-- **Public GitHub publication has not happened** — a clean developer snapshot has been published via the snapshot workflow (GL-172), but a formal public-visibility decision (GL-175) is still required before broader promotion.
+- **Public GitHub repository is available** — the repository is publicly accessible at `https://github.com/Discodone/grantlayer.git` (GL-176). Public smoke verification completed (GL-177).
 - **Production SaaS readiness not claimed** — the backend has not completed all production-hardening gates required for a shared multi-tenant SaaS.
 - **Tenant isolation not implemented** — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers.
+- **Developer Preview posture** — intended for local evaluation and controlled pilot only. Do not deploy to shared multi-tenant infrastructure.
+- **No real secrets or customer data** — all examples and documentation use synthetic identifiers and placeholder tokens.
 
 ---
 
 ## 7. Current status
 
-Agent entry points and governance files (GL-153–GL-155) are complete.
-A formal public-visibility decision is pending (GL-175).
+The repository is publicly available on GitHub (GL-176). Agent entry points and governance files
+(GL-153–GL-155) are complete. Public smoke verification passed with cautions (GL-177).
+README and SECURITY post-public state correction complete (GL-178).
