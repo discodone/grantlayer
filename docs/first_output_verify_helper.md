@@ -56,12 +56,24 @@ GrantLayer-style record shape. This helper adds a lightweight comparison step
 so a developer can quickly confirm the committed reference artifact still
 matches the generator output.
 
+## What To Try Next
+
+This helper verifies only the first deterministic output.
+
+The next runnable example is the **Grant Lifecycle Evidence Bundle**, which demonstrates a full grant lifecycle with evidence hashes and a linked audit chain — still with no install, no backend, and no network required:
+
+```bash
+python3 examples/grant_lifecycle_evidence_bundle.py --output /tmp/grantlayer_grant_lifecycle_evidence_bundle.json
+diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_grant_lifecycle_evidence_bundle.json
+```
+
+See [docs/grant_lifecycle_evidence_bundle.md](grant_lifecycle_evidence_bundle.md) for the full explanation.
+
 ## Non-Goals
 
 - No publication workflow changes.
 - No GitHub repository setting changes.
 - No backend runtime changes.
-- No expansion to a second runnable example.
 
 ## Troubleshooting
 
@@ -71,6 +83,7 @@ matches the generator output.
   path.
 - If the example script fails, run the generator directly with the same output
   path to isolate the error.
+- For more troubleshooting cases see [docs/public_developer_experience_polish_pack.md](public_developer_experience_polish_pack.md).
 
 ## Safety Confirmations
 
@@ -81,4 +94,4 @@ matches the generator output.
 
 ## Next Recommended Issue
 
-GL-189 Second Runnable Example / Grant Lifecycle Evidence Bundle
+GL-191 Public Developer Experience Polish Pack

@@ -30,55 +30,66 @@ GrantLayer is in a **developer-preview / controlled-pilot posture**. The primary
 
 ## What you can do today
 
-- **Run the local quickstart** — clone the repo, start the backend, and run a minimal safe API smoke path in ~10 minutes.
 - **Generate the first verifiable output** — run one local Python example that writes a deterministic GrantLayer-style institutional record without starting the backend.
+- **Verify the first output matches the reference** — run the verify helper to confirm the committed artifact still matches the generator.
+- **Run the grant lifecycle evidence bundle** — run the second local example to see a full grant lifecycle with evidence hashes and an audit chain.
+- **Run the backend quickstart** — clone the repo, start the backend, and run a minimal safe API smoke path in ~10 minutes. *(Requires Python virtualenv and `pip install`.)*
 - **Use the minimal Python SDK** — import the SDK and make typed calls to health, readiness, grants, and audit endpoints.
 - **Inspect the LangGraph/LangChain-style example** — review how GrantLayer fits into an agentic workflow without installing LangGraph or LangChain.
-- **Review public readiness and feedback docs** — read the readiness pack, feedback log, key-hygiene rules, and dependency manifest.
 
 ---
 
-## First verifiable output quickstart
+## What to try first
 
-For the fastest public-repo entry point, run the GL-168 first verifiable output
-example from the repository root:
+**No install, no backend, no network required.** From the repository root:
 
 ```bash
 python3 examples/first_verifiable_output.py --output /tmp/grantlayer_first_output.json
 ```
 
-Expected output file:
+Verify it matches the committed reference:
 
-```text
-/tmp/grantlayer_first_output.json
+```bash
+scripts/verify-first-output.sh
 ```
 
-The committed deterministic reference output is:
+The committed reference artifact is [`examples/first_verifiable_output.json`](examples/first_verifiable_output.json).
 
-```text
-examples/first_verifiable_output.json
+Read the walkthrough in [docs/first_verifiable_output.md](docs/first_verifiable_output.md) and the verify-helper guide in [docs/first_output_verify_helper.md](docs/first_output_verify_helper.md).
+
+This path uses Python standard library modules only, requires no real secrets, requires no customer data, and is local/demo only. It does not claim production SaaS readiness, and tenant isolation is not implemented.
+
+## What to try next
+
+**Second runnable example — grant lifecycle with evidence and audit chain.** Still no install, no backend, no network required:
+
+```bash
+python3 examples/grant_lifecycle_evidence_bundle.py --output /tmp/grantlayer_grant_lifecycle_evidence_bundle.json
+diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_grant_lifecycle_evidence_bundle.json
 ```
 
-Read the walkthrough in
-[docs/first_verifiable_output.md](docs/first_verifiable_output.md). This path
-uses Python standard library modules only, requires no real secrets, requires no
-customer data, and is local/demo only. It prepares a first inspectable
-GrantLayer-style record; it does not claim production SaaS readiness, and tenant
-isolation is not implemented yet.
+The committed reference artifact is [`examples/grant_lifecycle_evidence_bundle.json`](examples/grant_lifecycle_evidence_bundle.json).
+
+Read the explanation in [docs/grant_lifecycle_evidence_bundle.md](docs/grant_lifecycle_evidence_bundle.md).
+
+For troubleshooting either example see [docs/public_developer_experience_polish_pack.md#troubleshooting](docs/public_developer_experience_polish_pack.md).
 
 ---
 
 ## Developer entry path
 
-| Step | Document | What it covers |
-|------|----------|----------------|
-| 1 | [docs/first_verifiable_output.md](docs/first_verifiable_output.md) | Run the deterministic first verifiable output example |
-| 2 | [docs/ten_minute_quickstart.md](docs/ten_minute_quickstart.md) | Clone, install, start backend, run smoke path |
-| 3 | [sdk/python/README.md](sdk/python/README.md) | Import the SDK, make typed calls, handle errors |
-| 4 | [docs/langgraph_langchain_integration_example.md](docs/langgraph_langchain_integration_example.md) | See how GrantLayer fits into an agent workflow |
-| 5 | [docs/first_developer_feedback_log.md](docs/first_developer_feedback_log.md) | Structured feedback intake after trying the above |
+| Step | What to do | Details |
+|------|-----------|---------|
+| 1 | First verifiable output (no install) | [docs/first_verifiable_output.md](docs/first_verifiable_output.md) |
+| 2 | Verify first output matches reference | [docs/first_output_verify_helper.md](docs/first_output_verify_helper.md) |
+| 3 | Grant lifecycle evidence bundle (no install) | [docs/grant_lifecycle_evidence_bundle.md](docs/grant_lifecycle_evidence_bundle.md) |
+| 4 | Backend quickstart *(requires pip install)* | [docs/ten_minute_quickstart.md](docs/ten_minute_quickstart.md) |
+| 5 | Python SDK | [sdk/python/README.md](sdk/python/README.md) |
+| 6 | Agent workflow integration example | [docs/langgraph_langchain_integration_example.md](docs/langgraph_langchain_integration_example.md) |
+| 7 | Structured feedback intake | [docs/first_developer_feedback_log.md](docs/first_developer_feedback_log.md) |
 
-> **Note:** All three steps work with SQLite and local Python only. No cloud service, database subscription, or third-party API is required for the baseline path.
+> **Steps 1–3 require no virtualenv, no `pip install`, and no running backend.** Python stdlib only. No cloud service, database subscription, or third-party API is required for these paths.
+> **Step 4 (backend quickstart) requires Python virtualenv and `pip install -r requirements.txt`** — see [docs/ten_minute_quickstart.md](docs/ten_minute_quickstart.md).
 
 ---
 
@@ -222,9 +233,21 @@ The current MVP and Product Core establish the technical foundation:
 git clone https://github.com/Discodone/grantlayer.git
 cd grantlayer
 python3 examples/first_verifiable_output.py --output /tmp/grantlayer_first_output.json
+scripts/verify-first-output.sh
 ```
 
-No virtualenv, no `pip install`, no running backend. Python stdlib only. See [docs/first_verifiable_output.md](docs/first_verifiable_output.md).
+No virtualenv, no `pip install`, no running backend. Python stdlib only.
+See [docs/first_verifiable_output.md](docs/first_verifiable_output.md) and [docs/first_output_verify_helper.md](docs/first_output_verify_helper.md).
+
+**Path A2 — Grant lifecycle evidence bundle (no install, no backend, no network required):**
+
+```bash
+python3 examples/grant_lifecycle_evidence_bundle.py --output /tmp/grantlayer_grant_lifecycle_evidence_bundle.json
+diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_grant_lifecycle_evidence_bundle.json
+```
+
+Extends the first verifiable output with a full lifecycle sequence, evidence hashes, and a linked audit chain.
+See [docs/grant_lifecycle_evidence_bundle.md](docs/grant_lifecycle_evidence_bundle.md).
 
 **Path B — Backend quickstart (requires Python virtualenv and `pip install`):**
 
@@ -377,7 +400,7 @@ curl -s http://127.0.0.1:8765/audit-events | python3 -m json.tool
 
 ## Current status and next steps
 
-The governance and readiness gates up to GL-177 are complete. The repository is publicly available
+The governance and readiness gates up to GL-190 are complete. The repository is publicly available
 on GitHub in a developer-preview / controlled-pilot posture.
 
 | What | Status |
@@ -390,5 +413,11 @@ on GitHub in a developer-preview / controlled-pilot posture.
 | Public GitHub visibility change and correction push | Complete (GL-176) |
 | Public repo smoke verification | Complete — passed with cautions (GL-177) |
 | README / SECURITY post-public state correction | Complete (GL-178) |
+| First output verify helper | Complete (GL-188) |
+| Second runnable example / grant lifecycle evidence bundle | Complete (GL-189) |
+| Demo endpoint safety guard | Complete (GL-190) |
+| Public developer experience polish pack | Complete (GL-191) |
+
+For troubleshooting and FAQ see [docs/public_developer_experience_polish_pack.md](docs/public_developer_experience_polish_pack.md).
 
 ---
