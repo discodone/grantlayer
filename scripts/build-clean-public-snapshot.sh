@@ -242,6 +242,11 @@ PUBLIC_EXPORT_EXCLUDE=(
     "docs/examples/gl179/public_snapshot_correction_push_gl179.json"
     "docs/public_docs_smoke_verification.md"
     "docs/examples/gl180/public_docs_smoke_verification.json"
+    # GL-188P: internal public-snapshot correction push governance reports — exclude from public export.
+    "docs/public_snapshot_correction_push_gl187.md"
+    "docs/examples/gl187p/public_snapshot_correction_push_gl187.json"
+    "docs/public_snapshot_correction_push_gl188.md"
+    "docs/examples/gl188p/public_snapshot_correction_push_gl188.json"
 )
 
 TMPFILE=$(mktemp /tmp/gl161-file-list-XXXXXXXX.txt)
