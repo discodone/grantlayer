@@ -1,11 +1,13 @@
-# GL-189 Grant Lifecycle Evidence Bundle
+# Grant Lifecycle Evidence Bundle
 
 ## Purpose
 
-This GL-189 example shows a deterministic, local-only grant lifecycle record
-with evidence hashes and an audit chain. It gives reviewers a second runnable
-public example after the first verifiable output by simulating a minimal grant
-flow end to end.
+This example shows a deterministic, local-only grant lifecycle record with
+evidence hashes and an audit chain. It is the second runnable public example
+after the first verifiable output. It simulates a minimal grant flow end to
+end so reviewers can see product-core concepts — evidence bundles, audit chain
+hashing, and bundle integrity — without needing any backend service, network,
+or secrets.
 
 The example writes one JSON file containing:
 
@@ -109,8 +111,15 @@ This example is safe for public preview:
 - It does not call any network service
 - It does not require a database
 - It does not use real grants or private institutional data
+- It does not simulate a real approval workflow or real grant decision
+- It does not implement or claim tenant/workspace isolation
 - It does not claim production SaaS readiness
-- It does not claim tenant/workspace isolation is implemented
+
+## Synthetic/Demo Data Only
+
+All identifiers, institution names, amounts, and grant IDs in this example
+are synthetic and are used for illustration only. No real customer data, no
+real institution data, and no private grants are used or required.
 
 ## Troubleshooting
 
@@ -137,4 +146,4 @@ value without needing any backend service.
 
 ## Next Recommended Issue
 
-GL-189P Public Snapshot Push for Second Runnable Example
+GL-191P Combined Merge-and-Publish for Public Developer Experience Polish Pack
