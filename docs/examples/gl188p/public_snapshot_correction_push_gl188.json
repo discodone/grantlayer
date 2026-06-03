@@ -1,0 +1,171 @@
+{
+  "issue_id": "GL-188P",
+  "title": "Public Snapshot Correction Push for GL-188 First Output Verify Helper Script",
+  "date": "2026-06-03",
+  "internal_main_commit": "64c3d084fa596730bda30ac7eba629272bcf4790",
+  "public_publish_worktree": "/tmp/grantlayer-public-publish",
+  "github_remote": "https://github.com/discodone/grantlayer.git",
+  "previous_public_commit": "11d3f16fd64b77a52561cb329780fd33affde0f8",
+  "new_public_commit": "527e943bc20a2213a47b27206340c5eeb9f26958",
+  "public_files_changed": [
+    "scripts/verify-first-output.sh",
+    "docs/first_output_verify_helper.md",
+    "docs/examples/gl188/first_output_verify_helper.json",
+    "scripts/build-clean-public-snapshot.sh"
+  ],
+  "gl188_helper_published": {
+    "script_path": "scripts/verify-first-output.sh",
+    "docs_path": "docs/first_output_verify_helper.md",
+    "artifact_path": "docs/examples/gl188/first_output_verify_helper.json",
+    "script_live_on_github": true,
+    "no_network_required": true,
+    "no_backend_required": true,
+    "no_secrets_required": true,
+    "no_customer_data_required": true
+  },
+  "helper_behavior_verification": {
+    "script_present": true,
+    "script_executable": true,
+    "bash_syntax_ok": true,
+    "default_output_match": true,
+    "custom_output_match": true,
+    "reference_artifact_unchanged": true,
+    "no_network_required": true,
+    "no_backend_required": true,
+    "no_secrets_required": true,
+    "no_customer_data_required": true,
+    "verified_pre_push": true,
+    "verified_post_push": true
+  },
+  "stale_phrase_verification": {
+    "checked_phrases": [
+      "1130 tests",
+      "3 skipped, 0 failures",
+      "Public GitHub release.*Not performed",
+      "If and when public publication is approved",
+      "visibility decision pending",
+      "formal visibility decision pending",
+      "approved internal source",
+      "public GitHub release has not happened",
+      "publication is pending"
+    ],
+    "files_checked": [
+      "README.md",
+      "CONTRIBUTING.md",
+      "AGENTS.md",
+      "llms-full.txt",
+      "llms.txt",
+      "docs/ten_minute_quickstart.md",
+      "docs/agent_quickstart.md"
+    ],
+    "result": "CLEAN",
+    "occurrences_found": 0
+  },
+  "caveats_preserved": {
+    "developer_preview": true,
+    "not_production_saas": true,
+    "tenant_isolation_not_implemented": true,
+    "no_real_secrets_or_customer_data": true,
+    "synthetic_demo_data_only": true,
+    "github_security_advisories_channel": true
+  },
+  "private_data_secret_safety": {
+    "private_data_found": false,
+    "secret_material_found": false,
+    "internal_infrastructure_found": false,
+    "blockers_found": false,
+    "scanner_result": {
+      "tool": "public-secret-sensitive-scan.sh",
+      "scanned_files": 207,
+      "meta_excluded": 9,
+      "blockers_found": 0,
+      "result": "CLEAN"
+    },
+    "notes": [
+      "secret appears only in no-secrets-required safety statements — not actual secret material",
+      "No /home/adminuser or private absolute paths found",
+      "No 192.168.*, Forgejo hostnames, hofercloud, or private tokens found",
+      "No private emails, phone numbers, SSH keys, JWTs, or API keys found",
+      "internal-forgejo appears only in exclusion list comment context — not a live URL"
+    ]
+  },
+  "publication_actions": {
+    "public_snapshot_pushed": true,
+    "push_source": "/tmp/grantlayer-public-publish",
+    "push_target": "https://github.com/discodone/grantlayer.git",
+    "push_type": "fast-forward",
+    "push_range": "11d3f16..527e943",
+    "force_push_used": false,
+    "history_rewrite": false,
+    "visibility_changed": false,
+    "internal_repo_pushed_directly_to_github": false
+  },
+  "post_push_checks": {
+    "github_remote_reachable_unauthenticated": true,
+    "public_head_updated": true,
+    "public_head_commit": "527e943bc20a2213a47b27206340c5eeb9f26958",
+    "local_main_equals_origin_main": true,
+    "working_tree_clean_in_publish_worktree": true,
+    "files_present": {
+      "scripts/verify-first-output.sh": true,
+      "docs/first_output_verify_helper.md": true,
+      "docs/examples/gl188/first_output_verify_helper.json": true,
+      "README.md": true,
+      "CONTRIBUTING.md": true,
+      "AGENTS.md": true,
+      "llms.txt": true,
+      "llms-full.txt": true,
+      "SECURITY.md": true,
+      "docs/first_verifiable_output.md": true,
+      "examples/first_verifiable_output.py": true,
+      "examples/first_verifiable_output.json": true
+    },
+    "stale_phrases_absent": true,
+    "public_clone_url_visible": true,
+    "developer_preview_caveat_visible": true,
+    "no_secrets_customer_data_caveat_visible": true,
+    "security_advisories_path_present": true,
+    "helper_works_from_public_worktree": true
+  },
+  "findings": [
+    {
+      "id": "F-188P-001",
+      "severity": "informational",
+      "description": "GL-187P correction-push governance docs were not in the build-clean-public-snapshot.sh exclusion list; appeared as new in first snapshot diff",
+      "resolution": "Added GL-187P and GL-188P governance docs to exclusion list; snapshot rebuilt (216 files); correct 4-file diff verified before push"
+    },
+    {
+      "id": "F-188P-002",
+      "severity": "informational",
+      "description": "GL-177/178 untracked docs remain in public worktree — never committed to GitHub",
+      "resolution": "No action needed — never pushed; correctly excluded from public snapshot"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "informational": 2
+  },
+  "final_disposition": "correction_pushed",
+  "next_recommended_step": "GL-189 Second Runnable Example / Grant Lifecycle Evidence Bundle",
+  "changed_files": {
+    "internal_report_files": [
+      "docs/public_snapshot_correction_push_gl188.md",
+      "docs/examples/gl188p/public_snapshot_correction_push_gl188.json",
+      "backend/tests/test_gl188p_public_snapshot_correction_push.py",
+      "scripts/build-clean-public-snapshot.sh"
+    ],
+    "no_backend_src_changes": true,
+    "no_openapi_changes": true,
+    "no_migration_changes": true,
+    "no_db_schema_changes": true,
+    "no_dependency_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_behavior_changes": true,
+    "no_git_remote_changes": true,
+    "no_paperclip_status_updates": true
+  }
+}
