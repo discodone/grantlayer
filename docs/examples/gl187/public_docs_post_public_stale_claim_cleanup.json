@@ -1,0 +1,176 @@
+{
+  "issue_id": "GL-187",
+  "title": "Public Docs Post-Public Stale Claim Cleanup",
+  "context": "GrantLayer is publicly available on GitHub at https://github.com/Discodone/grantlayer.git (GL-176). GL-186 synthesized three AI-simulated external reviewer reports into 15 normalized findings, identifying stale pre-publication language, clone inconsistencies, outdated test counts, and agent-facing docs that still reflected a pre-public state.",
+  "addressed_findings": [
+    {"id": "F-001", "severity": "high", "summary": "Stale test count in README (1130 tests, 0 failures)", "addressed": true},
+    {"id": "F-002", "severity": "high", "summary": "CONTRIBUTING stale public-release status (Not performed)", "addressed": true},
+    {"id": "F-003", "severity": "high", "summary": "README hypothetical metadata section (If and when public publication is approved)", "addressed": true},
+    {"id": "F-004", "severity": "medium", "summary": "ten_minute_quickstart stale placeholder clone URL", "addressed": true},
+    {"id": "F-005", "severity": "medium", "summary": "agent_quickstart tells agents to use approved internal source", "addressed": true},
+    {"id": "F-006", "severity": "low", "summary": "sourceOfTruth: internal-forgejo in public JSON files", "addressed": "handled_in_gl172_excluded_from_snapshot"},
+    {"id": "F-007", "severity": "medium", "summary": "README clone/cd path inconsistency (cd grantlayer-mvp after cd grantlayer)", "addressed": true},
+    {"id": "F-008", "severity": "medium", "summary": "First verifiable output vs backend quickstart prerequisites not separated", "addressed": true},
+    {"id": "F-009", "severity": "medium", "summary": "AGENTS.md and llms-full.txt stale public-state wording", "addressed": true},
+    {"id": "F-010", "severity": "low", "summary": "GL-155 planned vs completed contradiction", "addressed": true}
+  ],
+  "changed_files": [
+    "README.md",
+    "CONTRIBUTING.md",
+    "AGENTS.md",
+    "llms-full.txt",
+    "llms.txt",
+    "docs/ten_minute_quickstart.md",
+    "docs/agent_quickstart.md",
+    "docs/public_docs_post_public_stale_claim_cleanup.md",
+    "docs/examples/gl187/public_docs_post_public_stale_claim_cleanup.json",
+    "backend/tests/test_gl187_public_docs_post_public_stale_claim_cleanup.py"
+  ],
+  "stale_claims_removed": [
+    "README: hard-coded 1130 tests, 3 skipped, 0 failures",
+    "README: If and when public publication is approved (hypothetical metadata section)",
+    "README: cd grantlayer-mvp (inconsistent with cd grantlayer after clone)",
+    "README: Runtime agent examples are planned for GL-155 (GL-155 is complete)",
+    "CONTRIBUTING: Public GitHub release | Not performed — requires explicit later approval",
+    "CONTRIBUTING: Agent entry points are planned for GL-154 (GL-154 is complete)",
+    "CONTRIBUTING: Do not claim a public GitHub release has happened unless explicitly approved",
+    "AGENTS: Public GitHub release | Not performed",
+    "AGENTS: Claim a public GitHub release has happened (stale forbidden item)",
+    "AGENTS: do not claim public GitHub release status unless GL-160 is completed (GL-160 is done)",
+    "AGENTS: GL-155 Agent Examples Pack is the next planned issue (GL-155 is complete)",
+    "llms-full.txt: formal visibility decision pending (GL-175)",
+    "llms-full.txt: Do not claim a public GitHub release has happened",
+    "llms-full.txt: Next Planned Issues GL-155 through GL-160 (all complete)",
+    "llms.txt: formal visibility decision pending (GL-175)",
+    "llms.txt: GL-155 Agent Examples Pack as next step",
+    "ten_minute_quickstart: https://github.com/<ORG_OR_USER>/grantlayer-mvp.git placeholder",
+    "ten_minute_quickstart: Replace ORG_OR_USER after publication / use approved internal source",
+    "ten_minute_quickstart: No public GitHub release yet",
+    "agent_quickstart: Use approved internal source (clone row)",
+    "agent_quickstart: Public GitHub release is not performed"
+  ],
+  "clone_and_quickstart_corrections": {
+    "public_clone_url": "https://github.com/Discodone/grantlayer.git",
+    "consistent_cd_path": "cd grantlayer",
+    "readme_choose_your_path_added": true,
+    "path_a_first_verifiable_output": "No install, no backend, no network — Python stdlib only",
+    "path_b_backend_quickstart": "Requires Python virtualenv and pip install -r requirements.txt",
+    "ten_minute_quickstart_updated": true,
+    "agent_quickstart_updated": true
+  },
+  "agent_facing_state_corrections": {
+    "agents_md_status_table_updated": true,
+    "agents_md_forbidden_list_updated": true,
+    "agents_md_next_step_updated": true,
+    "llms_full_visibility_state_updated": true,
+    "llms_full_next_planned_issues_updated": true,
+    "llms_full_overclaim_rules_updated": true,
+    "llms_txt_visibility_state_updated": true,
+    "llms_txt_next_step_updated": true,
+    "agent_quickstart_clone_updated": true,
+    "agent_quickstart_publication_status_updated": true
+  },
+  "source_of_truth_handling": {
+    "files_with_internal_forgejo_label": [
+      "docs/examples/gl163/post_public_agent_intake_triage.json",
+      "docs/examples/gl164a/public_repo_discovery_metadata.json",
+      "docs/examples/gl165/public_changelog_version_anchors.json"
+    ],
+    "disposition": "All three files were added to PUBLIC_EXPORT_EXCLUDE in GL-172 and are not included in the public GitHub snapshot. No changes needed.",
+    "readme_source_of_truth_row": "Preserved as-is — accurately explains Internal Forgejo is development mirror; GitHub is public read-only snapshot.",
+    "llms_full_clarification_added": true
+  },
+  "caveats_preserved": [
+    "developer/technical preview posture",
+    "not production SaaS",
+    "tenant/workspace isolation not implemented",
+    "no real secrets",
+    "no real customer data",
+    "synthetic/demo data only",
+    "local evaluation and controlled pilot only",
+    "security-sensitive reports route to GitHub Security Advisories"
+  ],
+  "deferred_follow_ups": [
+    {
+      "issue": "GL-188",
+      "title": "First Output Verify Helper Script",
+      "reason": "Out of scope for doc-only GL-187; small helper script deferred"
+    },
+    {
+      "issue": "GL-189",
+      "title": "Second Runnable Example — Grant Lifecycle Evidence Bundle",
+      "reason": "Requires new example implementation; deferred"
+    },
+    {
+      "issue": "GL-190",
+      "title": "Demo Endpoint Safety Guard / Startup Warning",
+      "reason": "Requires backend/src change; scoped separately; no exploit details included"
+    }
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_outreach_sent": true,
+    "no_reviewer_private_data_included": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "production_saas_not_claimed": true,
+    "tenant_isolation_not_claimed": true,
+    "secrets_not_included": true,
+    "exploit_details_not_included": true,
+    "real_customer_data_not_requested": true,
+    "private_grant_data_not_requested": true
+  },
+  "findings": {
+    "stale_test_count_removed": true,
+    "contributing_public_release_stale_claim_removed": true,
+    "readme_hypothetical_metadata_wording_removed": true,
+    "ten_minute_quickstart_clone_corrected": true,
+    "agent_quickstart_internal_source_wording_corrected": true,
+    "readme_clone_cd_consistency_fixed": true,
+    "readme_first_output_vs_backend_path_clarified": true,
+    "agents_llms_full_stale_public_state_removed": true,
+    "gl155_planned_completed_contradiction_resolved": true,
+    "source_of_truth_internal_forgejo_handled": true,
+    "backend_src_not_modified": true,
+    "openapi_not_modified": true,
+    "migrations_not_modified": true,
+    "db_schema_not_modified": true,
+    "dependency_manifests_not_modified": true,
+    "sdk_implementation_not_modified": true,
+    "frontend_design_not_modified": true,
+    "github_workflows_not_modified": true,
+    "snapshot_publish_script_not_modified": true,
+    "git_remotes_not_modified": true
+  },
+  "finding_counts_by_severity": {
+    "high": 3,
+    "medium": 5,
+    "low": 2,
+    "total": 10,
+    "addressed": 9,
+    "handled_in_prior_issue": 1,
+    "deferred": 3
+  },
+  "result": "public_docs_stale_claim_cleanup_complete",
+  "next_recommended_step": "GL-188 First Output Verify Helper Script — small helper to run first_verifiable_output.py and compare JSON output against committed reference output",
+  "non_goals": [
+    "No backend/src changes",
+    "No OpenAPI changes",
+    "No migration changes",
+    "No DB/schema changes",
+    "No dependency manifest changes",
+    "No SDK implementation changes",
+    "No frontend/website/design changes",
+    "No GitHub workflow changes",
+    "No snapshot publish script behavior changes",
+    "No git remote changes",
+    "No public GitHub push",
+    "No visibility change",
+    "No Paperclip status updates",
+    "No verify-first-output helper script (deferred GL-188)",
+    "No second runnable example (deferred GL-189)",
+    "No demo endpoint safety hardening (deferred GL-190)"
+  ]
+}

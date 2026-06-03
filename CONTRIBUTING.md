@@ -17,7 +17,7 @@ GrantLayer is in **Developer Preview**.
 | Maturity | Developer Preview — local evaluation and controlled pilot only |
 | Production SaaS readiness | **Not claimed** |
 | Tenant/workspace isolation | **Not implemented** |
-| Public GitHub release | **Not performed** — requires explicit later approval |
+| Public GitHub release | **Available** — repository publicly accessible at `https://github.com/Discodone/grantlayer.git` (GL-176) |
 | Real customer data in examples | **No** — all examples use synthetic identifiers |
 | Real secrets in examples | **No** — all tokens and keys are placeholders |
 
@@ -91,7 +91,7 @@ GrantLayer is designed to be especially attractive for AI/coding agents. If you 
 3. **Do not stage `.claude/`** — the `.claude/` directory is ignored and must not be committed.
 4. **Do not add internal URLs or paths** — use relative paths and public-safe placeholders only.
 5. **Do not add real secrets or customer data** — all examples must use synthetic identifiers and placeholder tokens.
-6. **Agent entry points are planned for GL-154** — `AGENTS.md`, `llms.txt`, and the agent integration manifest are explicitly out of scope for this issue and will be handled in GL-154.
+6. **Agent entry points are available** — `AGENTS.md`, `llms.txt`, and the agent integration manifest are the primary agent-facing files (added in GL-154). Read them before starting work.
 
 ---
 
@@ -141,7 +141,7 @@ All contributions must preserve the following messaging:
 
 - Do **not** claim production SaaS readiness.
 - Do **not** claim tenant isolation is implemented.
-- Do **not** claim a public GitHub release has happened unless explicitly approved in writing.
+- Do **not** claim production readiness beyond the current developer-preview / controlled-pilot posture.
 - Do **not** claim external adoption or real customer usage.
 
 If you update public-facing documentation, ensure the caveats in Section 1 remain prominent.
@@ -150,8 +150,8 @@ If you update public-facing documentation, ensure the caveats in Section 1 remai
 
 ## 10. Next Steps
 
-| Issue | Title | Purpose |
-|-------|-------|---------|
-| GL-154 | AGENTS.md + llms.txt + Agent Integration Manifest | Add agent entry points, task contracts, and integration manifest. |
+The repository is publicly available on GitHub. Contributions follow the issue-first workflow described above.
 
-> This CONTRIBUTING.md was created in **GL-153 LICENSE / CONTRIBUTING / SECURITY Decision Pack**. It does **not** publish to GitHub, change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation.
+For security-sensitive reports, use [GitHub Security Advisories](https://github.com/Discodone/grantlayer/security/advisories/new) — do not open public issues for vulnerabilities.
+
+> This CONTRIBUTING.md was created in **GL-153 LICENSE / CONTRIBUTING / SECURITY Decision Pack** and updated in **GL-187 Public Docs Stale Claim Cleanup**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation.

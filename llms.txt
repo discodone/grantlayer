@@ -12,7 +12,7 @@ with SQLite or PostgreSQL.
 - Not a production SaaS. Do not deploy to shared multi-tenant infrastructure.
 - Tenant isolation is not implemented.
 - No real secrets or customer data are used anywhere.
-- Clean public snapshot synced to GitHub; formal visibility decision pending (GL-175).
+- Public GitHub repository available at `https://github.com/Discodone/grantlayer.git` (GL-176).
 
 ---
 
@@ -66,7 +66,8 @@ compatibility:
 
 ---
 
-## Next Step
+## Next Steps
 
-- `GL-155 Agent Examples Pack` — ready-to-run agent examples and extended task
-  contracts.
+Agent examples are available in `examples/langgraph_langchain/` and `examples/first_verifiable_output.py`.
+
+Upcoming issues: GL-188 (verify helper), GL-189 (second example), GL-190 (demo endpoint safety).

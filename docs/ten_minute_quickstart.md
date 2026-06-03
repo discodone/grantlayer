@@ -54,9 +54,9 @@ This is **NOT tenant/workspace implementation.**
   yourself.
 - **No tenant isolation** — GrantLayer does not enforce tenant/workspace
   boundaries. All data shares a single namespace.
-- **No SDK yet** — a minimal Python SDK is planned for GL-147.
-- **No LangGraph/LangChain yet** — an integration example is planned for GL-148.
-- **No public GitHub release yet** — public readiness work is planned for GL-149.
+- **Backend quickstart only** — this guide focuses on running the local backend and smoke path.
+- **No production deployment** — local evaluation and controlled pilot only.
+- **No tenant isolation** — all data shares a single namespace.
 
 ---
 
@@ -76,12 +76,9 @@ This is **NOT tenant/workspace implementation.**
 ### 5.1 Clone the repository
 
 ```bash
-git clone https://github.com/<ORG_OR_USER>/grantlayer-mvp.git
-cd grantlayer-mvp
+git clone https://github.com/Discodone/grantlayer.git
+cd grantlayer
 ```
-
-> Replace `<ORG_OR_USER>` with the future public GitHub owner after publication.
-> Until then, use the approved internal source.
 
 > If you already have the repo locally, `cd` into it instead.
 
@@ -319,7 +316,7 @@ pip install -r requirements.txt
 ### 10.3 Python import path
 
 If `python3 -m backend` fails with an import error, ensure you are in the repo
-root (`grantlayer-mvp`) and that the `backend/` directory is on the Python path.
+root (the directory containing `backend/`) and that the `backend/` directory is on the Python path.
 The `python3 -m backend` command handles this automatically when run from the
 repo root.
 

@@ -26,14 +26,14 @@ tamper-evident, and independently auditable.
 | Maturity | Developer Preview — local evaluation and controlled pilot only |
 | Production SaaS readiness | Not claimed |
 | Tenant/workspace isolation | Not implemented |
-| Public snapshot on GitHub | Synced — formal visibility decision pending (GL-175) |
+| Public snapshot on GitHub | **Available** — `https://github.com/Discodone/grantlayer.git` (GL-176) |
 | Real customer data | No — synthetic identifiers only |
 | Real secrets | No — placeholder tokens only |
 
 - This is **not a production SaaS**.
 - **Tenant isolation is not implemented** — data shares a single namespace.
 - **No real secrets or customer data** anywhere in the repository.
-- **Clean public snapshot synced to GitHub** — formal visibility decision pending (GL-175).
+- **Public GitHub repository is available** — `https://github.com/Discodone/grantlayer.git` (GL-176). Internal Forgejo remains the development mirror; GitHub is the public read-only snapshot.
 
 ---
 
@@ -173,23 +173,26 @@ Unless an issue explicitly overrides:
 
 - Do **not** claim production SaaS readiness.
 - Do **not** claim tenant isolation is implemented.
-- Do **not** claim a public GitHub release has happened.
+- Do **not** claim production readiness beyond the current developer-preview / controlled-pilot posture.
 - Do **not** use real secrets or real customer data.
 - Do **not** rewrite git history or perform secret-history cleanup.
 - Do **not** change git remotes or publish to GitHub.
 
 ---
 
-### 13. Next Planned Issues
+### 13. Public Status and Next Issues
+
+The repository is publicly available at `https://github.com/Discodone/grantlayer.git`
+in a developer-preview / controlled-pilot posture. Governance gates GL-155 through GL-186 are complete.
+
+Current next cleanup issues:
 
 | Issue | Title | Purpose |
 |-------|-------|---------|
-| GL-155 | Agent Examples Pack | Add ready-to-run agent examples and task contracts |
-| GL-156 | GitHub Issue Templates / Feedback Templates | Issue/PR templates if public publication approved |
-| GL-157 | Public Secret / Sensitive Data Scan Gate | Automated scan for secrets before public release |
-| GL-158 | Git History Exposure Review / Public Snapshot Decision | Decide whether to rewrite history or snapshot |
-| GL-159 | GitHub Private Mirror Dry Run | Test mirroring to a private GitHub repo first |
-| GL-160 | Public GitHub Go/No-Go + Publish | Explicit decision and publication |
+| GL-187 | Public Docs Stale Claim Cleanup | Remove stale pre-publication wording from public-facing docs |
+| GL-188 | First Output Verify Helper Script | Small helper to run first-output and compare JSON |
+| GL-189 | Second Runnable Example | Grant lifecycle evidence bundle example |
+| GL-190 | Demo Endpoint Safety Guard | Startup warning when ENABLE_DEMO_ENDPOINTS=true on non-localhost |
 
 ---
 
@@ -202,4 +205,4 @@ compatibility:
 
 ---
 
-> This llms-full.txt was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest**. It does **not** publish to GitHub, change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
+> This llms-full.txt was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-187 Public Docs Stale Claim Cleanup**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
