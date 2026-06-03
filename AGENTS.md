@@ -42,10 +42,11 @@ order:
 1. `README.md` — project overview, status, and developer entry path.
 2. `AGENTS.md` — this file: agent-specific rules, task boundaries, and safety.
 3. `docs/agent_quickstart.md` — 60-second orientation for first contributions.
-4. `docs/agent_task_contract.md` — how issues, branches, and final reports work.
-5. `docs/agent_integration_manifest.json` — machine-readable project metadata.
-6. `llms.txt` — concise project summary and entry-point links.
-7. `llms-full.txt` — detailed repository map, safe/forbidden areas, and next steps.
+4. `docs/public_agent_api_walkthrough_refresh.md` — public agent/API walkthrough for the no-install example path and backend handoff.
+5. `docs/agent_task_contract.md` — how issues, branches, and final reports work.
+6. `docs/agent_integration_manifest.json` — machine-readable project metadata.
+7. `llms.txt` — concise project summary and entry-point links.
+8. `llms-full.txt` — detailed repository map, safe/forbidden areas, and next steps.
 
 After the above, pick a task from `docs/agent_task_contract.md` or an open issue.
 
@@ -99,6 +100,7 @@ These areas are safe for agent contributions **by default**:
 
 These specific files are explicitly expected in agent-friendly issues:
 - `docs/ten_minute_quickstart.md`
+- `docs/public_agent_api_walkthrough_refresh.md`
 - `sdk/python/README.md`
 - `docs/langgraph_langchain_integration_example.md`
 
@@ -127,6 +129,10 @@ Unless an issue explicitly overrides these boundaries, agents **must not**:
 - Merge to `main` without Fast-Merge agent review
 
 ---
+
+For the public no-install walkthrough and agent/API handoff, start with
+`docs/public_agent_api_walkthrough_refresh.md`, then read the two runnable
+examples and the backend quickstart in order.
 
 ## Issue Workflow for Coding Agents
 
@@ -227,8 +233,14 @@ compatibility:
 
 The repository is publicly available at `https://github.com/Discodone/grantlayer.git` in a
 developer-preview / controlled-pilot posture (GL-176). Agent examples are available
-in `examples/langgraph_langchain/` and `examples/first_verifiable_output.py` (GL-155, GL-168).
+in `examples/langgraph_langchain/`, `examples/first_verifiable_output.py`, and
+`examples/grant_lifecycle_evidence_bundle.py` (GL-155, GL-168, GL-189).
+
+Public agent/API walkthroughs are documented in
+`docs/public_agent_api_walkthrough_refresh.md`, `docs/first_output_verify_helper.md`,
+`docs/grant_lifecycle_evidence_bundle.md`, and
+`docs/public_feedback_infrastructure_pack.md`.
 
 ---
 
-> This AGENTS.md was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-187 Public Docs Stale Claim Cleanup**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
+> This AGENTS.md was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-193 Public Agent/API Walkthrough Refresh**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.

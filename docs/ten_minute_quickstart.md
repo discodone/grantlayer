@@ -28,7 +28,8 @@ This is **NOT production deployment guidance.**
 This is **NOT managed SaaS setup.**
 This is **NOT SDK implementation.**
 This is **NOT LangGraph/LangChain integration implementation.**
-This is **NOT public GitHub release.**
+This is **not** a public GitHub release guide. The public repository is already
+available at `https://github.com/Discodone/grantlayer.git`.
 This is **NOT API behavior work.**
 This is **NOT auth redesign.**
 This is **NOT tenant/workspace implementation.**
@@ -54,6 +55,9 @@ This is **NOT tenant/workspace implementation.**
   yourself.
 - **No tenant isolation** — GrantLayer does not enforce tenant/workspace
   boundaries. All data shares a single namespace.
+- **Separate from the no-install examples** — use the README and
+  `docs/public_agent_api_walkthrough_refresh.md` for the first two runnable
+  examples before coming here for backend setup.
 - **Backend quickstart only** — this guide focuses on running the local backend and smoke path.
 - **No production deployment** — local evaluation and controlled pilot only.
 - **No tenant isolation** — all data shares a single namespace.

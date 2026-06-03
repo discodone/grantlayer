@@ -14,6 +14,8 @@ You are an AI coding agent starting on GrantLayer. Do this in 60 seconds:
 2. Read `llms.txt` — concise project summary and entry links.
 3. Check `docs/agent_task_contract.md` — understand how issues and final reports work.
 4. Check `docs/agent_integration_manifest.json` — machine-readable metadata.
+5. If you need the public walkthrough that connects the no-install examples to
+   the backend path, read `docs/public_agent_api_walkthrough_refresh.md`.
 
 Done. You are oriented.
 
@@ -111,6 +113,7 @@ Do **not** do these as a first contribution unless the issue explicitly allows i
 - Tenant/workspace isolation is **not implemented**. Do not claim otherwise.
 - The repository is publicly available at `https://github.com/Discodone/grantlayer.git` (GL-176).
   Do not claim production readiness beyond the current developer-preview / controlled-pilot posture.
+- Security-sensitive concerns belong in GitHub Security Advisories, not public issues.
 
 ---
 
@@ -118,10 +121,13 @@ Do **not** do these as a first contribution unless the issue explicitly allows i
 
 Agent examples are available:
 - `examples/first_verifiable_output.py` — first verifiable output, no install required (GL-168)
+- `examples/grant_lifecycle_evidence_bundle.py` — second runnable example, no install required (GL-189)
+- `docs/public_agent_api_walkthrough_refresh.md` — public agent/API walkthrough and safety guide (GL-193)
+- `docs/public_feedback_infrastructure_pack.md` — public feedback routing and Security Advisory guidance (GL-192)
 - `examples/langgraph_langchain/grantlayer_agent_example.py` — LangGraph/LangChain integration example (GL-155)
 
-Upcoming: GL-188 (verify helper), GL-189 (second runnable example).
+Current public walkthroughs: GL-188 (verify helper), GL-189 (second runnable example), GL-192 (feedback infrastructure), GL-193 (agent/API walkthrough refresh).
 
 ---
 
-> This agent_quickstart.md was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-187 Public Docs Stale Claim Cleanup**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
+> This agent_quickstart.md was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-193 Public Agent/API Walkthrough Refresh**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.

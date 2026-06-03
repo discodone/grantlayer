@@ -23,8 +23,10 @@ with SQLite or PostgreSQL.
 | `README.md` | Project overview, status, stack, API quick reference |
 | `AGENTS.md` | Primary entry point for AI coding agents: rules, boundaries, workflow |
 | `docs/agent_quickstart.md` | 60-second orientation for first agent contributions |
+| `docs/public_agent_api_walkthrough_refresh.md` | Public agent/API walkthrough, no-install examples, and backend handoff |
 | `docs/agent_task_contract.md` | Issue/task specification structure and final-report format |
 | `docs/ten_minute_quickstart.md` | Clone → install → start backend → smoke path |
+| `docs/public_feedback_infrastructure_pack.md` | Public feedback intake model, severity routing, and Security Advisory guidance |
 | `sdk/python/README.md` | Minimal Python SDK usage guide |
 | `docs/langgraph_langchain_integration_example.md` | How GrantLayer fits into an agentic workflow |
 
@@ -37,6 +39,7 @@ with SQLite or PostgreSQL.
 - Do not claim production SaaS readiness.
 - Do not claim tenant isolation is implemented.
 - Do not stage or commit `.claude/` files.
+- Do not request real secrets, real customer data, or private grants.
 
 ---
 
@@ -68,6 +71,8 @@ compatibility:
 
 ## Next Steps
 
-Agent examples are available in `examples/langgraph_langchain/` and `examples/first_verifiable_output.py`.
+Agent examples are available in `examples/langgraph_langchain/`,
+`examples/first_verifiable_output.py`, and
+`examples/grant_lifecycle_evidence_bundle.py`.
 
-Upcoming issues: GL-188 (verify helper), GL-189 (second example), GL-190 (demo endpoint safety).
+Upcoming issues: GL-193 (public agent/API walkthrough refresh).
