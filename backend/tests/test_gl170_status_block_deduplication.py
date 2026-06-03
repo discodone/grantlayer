@@ -110,7 +110,7 @@ class TestGL170CanonicalCaveats(unittest.TestCase):
             "tenant/workspace isolation",
             "not implemented",
             "public github release",
-            "not performed",
+            "available",
             "real customer data in examples",
             "real secrets in examples",
         ]:
@@ -121,7 +121,6 @@ class TestGL170CanonicalCaveats(unittest.TestCase):
         for phrase in [
             "production saas readiness is not claimed",
             "tenant isolation is not implemented",
-            "public github release has not happened",
             "no real secrets",
             "no real customer data",
         ]:
