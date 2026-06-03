@@ -56,10 +56,12 @@ grantlayer-mvp/
 │   └── __main__.py                # Backend entry point
 ├── docs/
 │   ├── agent_quickstart.md        # 60-second orientation for agents
+│   ├── public_agent_api_walkthrough_refresh.md # Public agent/API walkthrough
 │   ├── agent_task_contract.md     # Issue/task contract and final-report format
 │   ├── agent_integration_manifest.json # Machine-readable metadata
 │   ├── ten_minute_quickstart.md   # Developer quickstart
 │   ├── langgraph_langchain_integration_example.md # Agent workflow example docs
+│   ├── public_feedback_infrastructure_pack.md # Public feedback routing and security guidance
 │   ├── public_github_readiness_pack.md # Public-readiness checklist
 │   ├── first_developer_feedback_log.md # Developer feedback intake
 │   ├── examples/gl*/              # Issue-specific validation artifacts
@@ -80,11 +82,13 @@ grantlayer-mvp/
 |----------|----------------|
 | `AGENTS.md` | Agent rules, safe/forbidden areas, workflow, final report format |
 | `docs/agent_quickstart.md` | 60-second orientation for first agent contributions |
+| `docs/public_agent_api_walkthrough_refresh.md` | Public agent/API walkthrough, no-install examples, and backend handoff |
 | `docs/agent_task_contract.md` | Task specification structure, disposition values, validation policy |
 | `docs/agent_integration_manifest.json` | Machine-readable project metadata |
 | `README.md` | Project overview, status, developer entry path, API quick reference |
 | `CONTRIBUTING.md` | Contribution guidelines, DCO recommendation, coding-agent rules |
 | `SECURITY.md` | Security policy, vulnerability scope, reporting guidance |
+| `docs/public_feedback_infrastructure_pack.md` | Public feedback intake, severity routing, and Security Advisory guidance |
 
 ---
 
@@ -122,6 +126,8 @@ Every agent issue follows `docs/agent_task_contract.md`. Key concepts:
   release blockers, and go/no-go criteria before any future public sharing.
 - `docs/first_developer_feedback_log.md` — First structured feedback intake
   (internal dry-run only; no real external feedback claimed).
+- `examples/grant_lifecycle_evidence_bundle.py` — second runnable no-install
+  example that pairs with the first output helper.
 - LICENSE, CONTRIBUTING.md, SECURITY.md provide governance baseline.
 
 ---
@@ -175,6 +181,7 @@ Unless an issue explicitly overrides:
 - Do **not** claim tenant isolation is implemented.
 - Do **not** claim production readiness beyond the current developer-preview / controlled-pilot posture.
 - Do **not** use real secrets or real customer data.
+- Do **not** request private grant records or other non-public institutional data.
 - Do **not** rewrite git history or perform secret-history cleanup.
 - Do **not** change git remotes or publish to GitHub.
 
@@ -183,7 +190,7 @@ Unless an issue explicitly overrides:
 ### 13. Public Status and Next Issues
 
 The repository is publicly available at `https://github.com/Discodone/grantlayer.git`
-in a developer-preview / controlled-pilot posture. Governance gates GL-155 through GL-186 are complete.
+in a developer-preview / controlled-pilot posture. Governance gates GL-155 through GL-192 are complete.
 
 Current next cleanup issues:
 
@@ -193,6 +200,9 @@ Current next cleanup issues:
 | GL-188 | First Output Verify Helper Script | Small helper to run first-output and compare JSON |
 | GL-189 | Second Runnable Example | Grant lifecycle evidence bundle example |
 | GL-190 | Demo Endpoint Safety Guard | Startup warning when ENABLE_DEMO_ENDPOINTS=true on non-localhost |
+| GL-191 | Public Developer Experience Polish Pack | Cross-link the no-install examples, quickstart, and troubleshooting |
+| GL-192 | Public Feedback Infrastructure Pack | Document public feedback intake, severity routing, and Security Advisory guidance |
+| GL-193 | Public Agent/API Walkthrough Refresh | Connect the no-install examples, agent rules, and backend quickstart |
 
 ---
 
@@ -205,4 +215,4 @@ compatibility:
 
 ---
 
-> This llms-full.txt was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-187 Public Docs Stale Claim Cleanup**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
+> This llms-full.txt was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-193 Public Agent/API Walkthrough Refresh**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.

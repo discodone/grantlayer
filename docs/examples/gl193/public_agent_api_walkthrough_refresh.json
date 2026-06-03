@@ -1,0 +1,193 @@
+{
+  "issue_id": "GL-193",
+  "title": "Public Agent/API Walkthrough Refresh",
+  "context": "GrantLayer is publicly available on GitHub in Developer Preview / controlled pilot posture. GL-193 refreshes the public agent/API walkthrough so external developers and coding agents can see what GrantLayer is, what to run first, what to run next, how agent tasks should be handled, how the no-install examples relate to the backend/API path, what API walkthrough exists today, and what is intentionally not production-ready.",
+  "changed_files": [
+    "README.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/agent_quickstart.md",
+    "docs/ten_minute_quickstart.md",
+    "docs/public_agent_api_walkthrough_refresh.md",
+    "docs/examples/gl193/public_agent_api_walkthrough_refresh.json",
+    "backend/tests/test_gl193_public_agent_api_walkthrough_refresh.py"
+  ],
+  "public_developer_entry_points": [
+    {
+      "path": "README.md",
+      "role": "project overview, public entry path, and public no-install walkthrough links"
+    },
+    {
+      "path": "docs/first_output_verify_helper.md",
+      "role": "first deterministic output verification"
+    },
+    {
+      "path": "docs/grant_lifecycle_evidence_bundle.md",
+      "role": "second deterministic no-install example"
+    },
+    {
+      "path": "docs/ten_minute_quickstart.md",
+      "role": "backend quickstart after the no-install examples"
+    },
+    {
+      "path": "docs/public_feedback_infrastructure_pack.md",
+      "role": "public feedback intake and security routing"
+    }
+  ],
+  "coding_agent_entry_points": [
+    {
+      "path": "AGENTS.md",
+      "role": "rules, safe/forbidden areas, and final report format"
+    },
+    {
+      "path": "llms.txt",
+      "role": "concise agent map"
+    },
+    {
+      "path": "llms-full.txt",
+      "role": "expanded agent map and caveats"
+    },
+    {
+      "path": "docs/agent_quickstart.md",
+      "role": "60-second orientation"
+    },
+    {
+      "path": "docs/agent_task_contract.md",
+      "role": "issue contract and scope rules"
+    }
+  ],
+  "first_path": {
+    "command": "scripts/verify-first-output.sh",
+    "purpose": "verify the committed first deterministic output before touching backend or API work",
+    "properties": [
+      "no install required",
+      "offline",
+      "no secrets",
+      "no customer data"
+    ]
+  },
+  "second_path": {
+    "command": "python3 examples/grant_lifecycle_evidence_bundle.py",
+    "purpose": "run the second deterministic grant lifecycle example after the first helper",
+    "comparison_command": "diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_gl193_grant_lifecycle_check.json",
+    "properties": [
+      "no install required",
+      "offline",
+      "synthetic/demo data only"
+    ]
+  },
+  "api_server_path": {
+    "overview": "Use the backend quickstart only after the deterministic examples are clear. The backend path is documented in docs/ten_minute_quickstart.md and summarized in README.md.",
+    "prerequisites": [
+      "Python 3.10+ (Python 3.13 recommended)",
+      "Git and a local shell",
+      "A local checkout of the repository",
+      "A virtual environment and pip install -r requirements.txt for backend work"
+    ],
+    "docs": [
+      "README.md",
+      "docs/ten_minute_quickstart.md"
+    ]
+  },
+  "agent_workflow_guidance": [
+    "Read README.md, AGENTS.md, llms.txt, and llms-full.txt first.",
+    "Use synthetic or demo data only.",
+    "Do not request or paste secrets, real customer data, or private grants.",
+    "Do not modify forbidden files unless the issue explicitly allows them.",
+    "Run the relevant targeted tests before declaring the task complete.",
+    "Report scope, changed files, safety confirmations, and caveats honestly."
+  ],
+  "feedback_path": {
+    "public_feedback_doc": "docs/public_feedback_infrastructure_pack.md",
+    "security_sensitive_routing": "GitHub Security Advisories",
+    "security_doc": "SECURITY.md",
+    "url": "https://github.com/Discodone/grantlayer/security/advisories"
+  },
+  "caveats_preserved": [
+    "Developer Preview / controlled pilot only",
+    "not production SaaS",
+    "tenant/workspace isolation not implemented",
+    "synthetic/demo data only",
+    "no real secrets",
+    "no real customer data",
+    "no private grants"
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "no_reviewer_outreach_sent": true,
+    "no_backend_src_changes": true,
+    "no_openapi_changes": true,
+    "no_migration_db_dependency_changes": true,
+    "no_dependency_manifest_changes": true,
+    "no_sdk_implementation_changes": true,
+    "no_examples_runtime_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_behavior_changes": true,
+    "no_production_saas_claim": true,
+    "tenant_isolation_not_claimed": true,
+    "no_real_customer_data_requested": true,
+    "no_private_grant_data_requested": true,
+    "no_secrets_requested": true,
+    "no_exploit_details_included": true,
+    "security_sensitive_reports_routed_to_github_security_advisories": true
+  },
+  "tests": [
+    {
+      "command": "python3 -m py_compile backend/tests/test_gl193_public_agent_api_walkthrough_refresh.py",
+      "purpose": "syntax check"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl193_public_agent_api_walkthrough_refresh -v",
+      "purpose": "issue-specific validation"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl192_public_feedback_infrastructure_pack -v",
+      "purpose": "regression check for GL-192 feedback guidance"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl191_public_developer_experience_polish_pack -v",
+      "purpose": "regression check for GL-191 walkthrough polish"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_security_boundary_regression -v",
+      "purpose": "security boundary regression"
+    },
+    {
+      "command": "scripts/verify-first-output.sh",
+      "purpose": "smoke check for the first deterministic output"
+    },
+    {
+      "command": "python3 examples/grant_lifecycle_evidence_bundle.py --output /tmp/grantlayer_gl193_grant_lifecycle_check.json",
+      "purpose": "smoke check for the second deterministic example"
+    },
+    {
+      "command": "diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_gl193_grant_lifecycle_check.json",
+      "purpose": "compare the second example with the committed reference"
+    }
+  ],
+  "findings": [],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+  },
+  "result": "public_agent_api_walkthrough_refresh_complete",
+  "next_recommended_step": "GL-193 Combined Merge-and-Publish for Public Agent/API Walkthrough Refresh",
+  "non_goals": [
+    "No backend runtime behavior changes",
+    "No OpenAPI changes",
+    "No migrations, schema, dependency, SDK implementation, or frontend/design changes",
+    "No GitHub workflow changes",
+    "No publication or visibility changes",
+    "No GitHub API label or issue automation",
+    "No reviewer outreach"
+  ]
+}

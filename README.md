@@ -103,9 +103,11 @@ GrantLayer is local-first and agent-friendly. If you are an AI coding agent, sta
 | [`llms.txt`](llms.txt) | Concise project summary and agent entry links |
 | [`llms-full.txt`](llms-full.txt) | Detailed repository map, safe/forbidden areas, and next steps |
 | [`docs/agent_quickstart.md`](docs/agent_quickstart.md) | 60-second orientation for first contributions |
+| [`docs/public_agent_api_walkthrough_refresh.md`](docs/public_agent_api_walkthrough_refresh.md) | Public agent/API walkthrough, entry points, and safety boundaries |
 | [`docs/agent_task_contract.md`](docs/agent_task_contract.md) | Issue/task specification and final-report format |
 | [`docs/agent_integration_manifest.json`](docs/agent_integration_manifest.json) | Machine-readable project metadata |
 | [`docs/ten_minute_quickstart.md`](docs/ten_minute_quickstart.md) | Clone → install → start backend → smoke path |
+| [`docs/public_feedback_infrastructure_pack.md`](docs/public_feedback_infrastructure_pack.md) | Public feedback intake, severity routing, and security advisory guidance |
 | [`sdk/python/README.md`](sdk/python/README.md) | Minimal Python SDK usage guide |
 | [`docs/langgraph_langchain_integration_example.md`](docs/langgraph_langchain_integration_example.md) | How GrantLayer fits into an agentic workflow |
 
@@ -400,7 +402,7 @@ curl -s http://127.0.0.1:8765/audit-events | python3 -m json.tool
 
 ## Current status and next steps
 
-The governance and readiness gates up to GL-190 are complete. The repository is publicly available
+The governance and readiness gates up to GL-192 are complete. The repository is publicly available
 on GitHub in a developer-preview / controlled-pilot posture.
 
 | What | Status |
@@ -417,7 +419,9 @@ on GitHub in a developer-preview / controlled-pilot posture.
 | Second runnable example / grant lifecycle evidence bundle | Complete (GL-189) |
 | Demo endpoint safety guard | Complete (GL-190) |
 | Public developer experience polish pack | Complete (GL-191) |
+| Public feedback infrastructure pack | Complete (GL-192) |
 
 For troubleshooting and FAQ see [docs/public_developer_experience_polish_pack.md](docs/public_developer_experience_polish_pack.md).
+For the public agent/API walkthrough that connects the no-install examples to the backend path, see [docs/public_agent_api_walkthrough_refresh.md](docs/public_agent_api_walkthrough_refresh.md).
 
 ---
