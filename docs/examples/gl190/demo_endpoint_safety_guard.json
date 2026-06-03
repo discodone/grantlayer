@@ -1,0 +1,100 @@
+{
+  "issue_id": "GL-190",
+  "title": "Demo Endpoint Safety Guard / Startup Warning",
+  "context": "External security review flagged that GRANTLAYER_ENABLE_DEMO_ENDPOINTS=true combined with a non-local host binding (e.g. 0.0.0.0) could expose demo endpoints to non-local network interfaces without a startup-level block. The GL-089 startup gate only checks RUNTIME_MODE, not the actual host bind address. GL-190 adds a mode-independent guard based on host binding.",
+  "implemented_behavior": "config.demo_endpoint_public_exposure_errors(host) is called from server.run() before the server binds. If ENABLE_DEMO_ENDPOINTS is true, the effective host is non-local, and GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS is not set, startup is aborted with a safe deterministic error. The check runs regardless of RUNTIME_MODE.",
+  "config_flags": {
+    "GRANTLAYER_ENABLE_DEMO_ENDPOINTS": "bool, default false — enables demo-only endpoints",
+    "GRANTLAYER_HOST": "str, default 127.0.0.1 — server bind host",
+    "GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS": "bool, default false — explicit acknowledgement to allow demo endpoints on non-local host"
+  },
+  "local_allowed_hosts": [
+    "localhost",
+    "127.0.0.1",
+    "::1",
+    ""
+  ],
+  "unsafe_nonlocal_behavior": "startup aborted with SystemExit(1) and safe error message; server never binds",
+  "explicit_acknowledgement": {
+    "env_var": "GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS",
+    "accepted_truthy_values": ["true", "1", "yes", "on"],
+    "behavior": "allows demo endpoints on non-local host when deliberately set"
+  },
+  "startup_error": "demo_endpoints_public_exposure_blocked",
+  "safety_properties": {
+    "no_secret_exposure": true,
+    "no_exploit_details": true,
+    "safe_deterministic_startup_error": true,
+    "local_development_preserved": true,
+    "nonlocal_demo_exposure_guarded": true,
+    "production_saas_not_claimed": true,
+    "tenant_isolation_not_claimed": true,
+    "tenant_isolation_claimed": false,
+    "production_saas_claimed": false
+  },
+  "changed_files": [
+    "backend/src/config.py",
+    "backend/src/server.py",
+    "backend/tests/test_gl190_demo_endpoint_safety_guard.py",
+    "docs/demo_endpoint_safety_guard.md",
+    "docs/examples/gl190/demo_endpoint_safety_guard.json"
+  ],
+  "tests": {
+    "file": "backend/tests/test_gl190_demo_endpoint_safety_guard.py",
+    "test_count": 44,
+    "passed": 44,
+    "skipped": 0,
+    "failed": 0,
+    "covers": [
+      "demo endpoints disabled — always safe",
+      "demo endpoints enabled on localhost — allowed",
+      "demo endpoints enabled on 127.0.0.1 — allowed",
+      "demo endpoints enabled on ::1 — allowed",
+      "demo endpoints enabled on empty host — allowed",
+      "demo endpoints enabled on non-local host without ack — blocked",
+      "blocked error is safe and deterministic",
+      "blocked error contains no secrets tokens or exploit details",
+      "blocked error contains no endpoint paths",
+      "blocked error references acknowledgement env var",
+      "explicit ack (true/1/yes) allows non-local demo endpoints",
+      "arbitrary strings not accepted as ack",
+      "ack present but demo disabled — still safe",
+      "local mode with local host — not blocked",
+      "test mode with local host — not blocked",
+      "local mode with non-local host — still blocked (mode-independent)",
+      "startup_ok and startup_errors patterns preserved",
+      "health and readiness endpoints accessible",
+      "scope guard — allowed file set only",
+      "no migration files changed",
+      "no GitHub workflow files changed",
+      "no dependency manifest changes",
+      "no OpenAPI changes"
+    ]
+  },
+  "findings": [
+    {
+      "id": "F-190-001",
+      "severity": "high",
+      "description": "Demo endpoints enabled with non-local host binding exposed without block in local runtime mode",
+      "resolution": "Added demo_endpoint_public_exposure_errors() guard enforced in server.run() regardless of runtime mode",
+      "status": "resolved"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+  },
+  "result": "demo_endpoint_safety_guard_complete",
+  "next_recommended_step": "GL-191: Public Developer Experience Polish Pack",
+  "non_goals": [
+    "auth or authorization redesign",
+    "production deployment requirements change",
+    "OpenAPI contract modification",
+    "rate limiting or CORS changes",
+    "demo endpoint restriction beyond host binding",
+    "production SaaS readiness claim",
+    "tenant isolation claim"
+  ]
+}
