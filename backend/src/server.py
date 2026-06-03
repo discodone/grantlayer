@@ -1627,6 +1627,13 @@ def run(host: str = "127.0.0.1", port: int = 8765) -> None:
         print(warning, flush=True)
     for msg in config.startup_warnings():
         print(msg, flush=True)
+    # GL-190: demo endpoint public exposure guard (always enforced, mode-independent)
+    demo_errs = config.demo_endpoint_public_exposure_errors(host)
+    if demo_errs:
+        print("FATAL: Demo endpoint public exposure blocked. Server will not start.", flush=True)
+        for err in demo_errs:
+            print(err, flush=True)
+        raise SystemExit(1)
     # GL-089: fail-closed startup gate for non-local / production-like modes
     if config.RUNTIME_MODE not in ("local", "test"):
         if not config.startup_ok():

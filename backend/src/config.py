@@ -74,6 +74,12 @@ REQUIRE_CHALLENGE: bool = _env_bool("GRANTLAYER_REQUIRE_CHALLENGE", default=Fals
 # Default is False — product mode disables demo endpoints.
 ENABLE_DEMO_ENDPOINTS: bool = _env_bool("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", default=False)
 
+# Explicit acknowledgement required when demo endpoints are enabled on a
+# non-local host binding.  Must be exactly "true" (case-insensitive).
+GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS: bool = _env_bool(
+    "GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS", default=False
+)
+
 # ──────────────────────────────────────────────────────────────
 # Runtime Settings
 # ──────────────────────────────────────────────────────────────
@@ -145,6 +151,14 @@ GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: bool = _env_bool(
 
 GRANTLAYER_RATE_LIMIT_AUTH: int = max(1, _env_int("GRANTLAYER_RATE_LIMIT_AUTH", 10))
 GRANTLAYER_RATE_LIMIT_API: int = max(1, _env_int("GRANTLAYER_RATE_LIMIT_API", 120))
+
+# ──────────────────────────────────────────────────────────────
+# Demo Endpoint Host Safety
+# ──────────────────────────────────────────────────────────────
+
+# Canonical set of host values that are considered local/loopback.
+# Empty string is treated as local (default / unset context).
+_LOCAL_DEMO_HOSTS: frozenset = frozenset({"localhost", "127.0.0.1", "::1", ""})
 
 # ──────────────────────────────────────────────────────────────
 # Startup Warnings (explicit, not noisy)
@@ -236,3 +250,33 @@ def startup_errors() -> list[str]:
         )
 
     return errs
+
+
+def demo_endpoint_public_exposure_errors(host: str | None = None) -> list[str]:
+    """Return startup errors if demo endpoints are configured for non-local exposure.
+
+    This check is mode-independent: it applies regardless of RUNTIME_MODE
+    because host binding determines network exposure, not runtime mode.
+
+    Args:
+        host: The actual bind host the server will use.  Falls back to
+              GRANTLAYER_HOST when None.
+
+    Returns:
+        A list of safe, deterministic error strings.  Empty list means safe.
+    """
+    if not ENABLE_DEMO_ENDPOINTS:
+        return []
+
+    effective_host = (host if host is not None else GRANTLAYER_HOST).strip().lower()
+    if effective_host in _LOCAL_DEMO_HOSTS:
+        return []
+
+    if GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS:
+        return []
+
+    return [
+        "ERROR: demo_endpoints_public_exposure_blocked. "
+        "Demo endpoints are enabled with a non-local host binding. "
+        "Set GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS=true to explicitly acknowledge."
+    ]
