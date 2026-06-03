@@ -1,0 +1,406 @@
+{
+  "issue_id": "GL-195",
+  "title": "Public Safety / Scanner / Claim Consistency Gate",
+  "context": "GrantLayer is publicly available on GitHub at https://github.com/Discodone/grantlayer.git in a Developer Preview / controlled-pilot posture (GL-176). GL-195 creates a consolidated public safety, scanner, and claim consistency gate for the current public snapshot after GL-187 through GL-194. This is a review/docs/test artifact only.",
+  "input_sources_reviewed": [
+    "README.md",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/first_output_verify_helper.md",
+    "docs/grant_lifecycle_evidence_bundle.md",
+    "docs/public_developer_experience_polish_pack.md",
+    "docs/public_feedback_infrastructure_pack.md",
+    "docs/public_agent_api_walkthrough_refresh.md",
+    "docs/public_preview_review_feedback_triage_pack.md",
+    "docs/examples/gl191/public_developer_experience_polish_pack.json",
+    "docs/examples/gl192/public_feedback_infrastructure_pack.json",
+    "docs/examples/gl193/public_agent_api_walkthrough_refresh.json",
+    "docs/examples/gl194/public_preview_review_feedback_triage_pack.json",
+    "examples/first_verifiable_output.py",
+    "examples/first_verifiable_output.json",
+    "examples/grant_lifecycle_evidence_bundle.py",
+    "examples/grant_lifecycle_evidence_bundle.json",
+    "scripts/verify-first-output.sh"
+  ],
+  "scanner_rule_review": {
+    "description": "Review of scanner categories applicable to the GrantLayer public snapshot. Separates true blockers from expected non-blocking false positives.",
+    "blocker_evaluation": "No blocker findings identified in the current public snapshot.",
+    "false_positive_evaluation": "Five FP classes documented. All are expected and non-blocking."
+  },
+  "scanner_blocker_categories": [
+    "raw secrets or secret material (actual API keys, Bearer tokens, passwords, PEM private keys)",
+    "real API keys or tokens or passwords",
+    "private customer data (real names, addresses, identifiers, emails, phone numbers)",
+    "private grants or institutional data",
+    "private internal hostnames or remotes",
+    "private absolute paths in public-facing docs",
+    "exploit details in public docs or issues",
+    "instruction to push internal repo directly to GitHub",
+    "force-push requirement for public snapshot",
+    "public claim that production SaaS is ready",
+    "public claim that tenant isolation is implemented"
+  ],
+  "scanner_false_positive_categories": [
+    {
+      "class": "prohibition-text",
+      "description": "Safety rules containing keywords like 'do not include secrets' — contains the keyword but is not actual secret material.",
+      "why_non_blocking": "The text prohibits the material rather than including it.",
+      "how_to_record": "FP, document in scanner log.",
+      "becomes_blocking_if": "The surrounding context changes to include actual secret material."
+    },
+    {
+      "class": "safety-faq-answered-no",
+      "description": "FAQ questions like 'Is tenant isolation implemented?' answered 'No' or 'Not implemented'.",
+      "why_non_blocking": "The answer correctly states the caveat; the phrase is present as documentation of absence, not presence.",
+      "how_to_record": "FP, document in scanner log.",
+      "becomes_blocking_if": "The answer changes to 'Yes' or the caveat is removed."
+    },
+    {
+      "class": "scanner-pattern-definitions",
+      "description": "The gate document and JSON artifact contain the prohibited-phrase patterns as documentation. Scanners will match their own definitions.",
+      "why_non_blocking": "Meta-document containing definitions is not subject to the same rules as entry-point docs.",
+      "how_to_record": "FP, document in scanner log.",
+      "becomes_blocking_if": "Pattern definitions move into executable deployment code or config."
+    },
+    {
+      "class": "meta-excluded-governance-docs",
+      "description": "GL-177/178/179/180 governance docs contain historical pre-public phrases and are explicitly excluded from the public snapshot (GL-181).",
+      "why_non_blocking": "These files are not published to GitHub. The exclusion list is authoritative.",
+      "how_to_record": "FP, document in scanner log.",
+      "becomes_blocking_if": "Those docs are un-excluded from the public snapshot and published."
+    },
+    {
+      "class": "historical-scope-guard-tests",
+      "description": "Old scope-guard tests that fail because newer GL issue files exist (e.g. GL-186 scope-guard tests did not anticipate GL-195 files).",
+      "why_non_blocking": "Pre-existing known failures; the files being flagged are in the allowed scope.",
+      "how_to_record": "FP, pre-existing known issue. Record count in final report.",
+      "becomes_blocking_if": "A scope-guard test fails for a file in an actively prohibited scope."
+    }
+  ],
+  "stale_phrase_rules": [
+    {
+      "phrase": "publication pending",
+      "reason_stale": "Repository is already public (GL-176).",
+      "applies_to": "public entry-point docs"
+    },
+    {
+      "phrase": "public GitHub release has not happened",
+      "reason_stale": "Repository is already public (GL-176).",
+      "applies_to": "public entry-point docs"
+    },
+    {
+      "phrase": "visibility decision pending",
+      "reason_stale": "Visibility decision completed (GL-175).",
+      "applies_to": "public entry-point docs"
+    },
+    {
+      "phrase": "formal visibility decision pending",
+      "reason_stale": "Visibility decision completed (GL-175).",
+      "applies_to": "public entry-point docs"
+    },
+    {
+      "phrase": "approved internal source",
+      "reason_stale": "Repository is public; no approval required to access.",
+      "applies_to": "public entry-point docs"
+    },
+    {
+      "phrase": "if and when public publication is approved",
+      "reason_stale": "Publication has occurred; this condition is already satisfied.",
+      "applies_to": "public entry-point docs"
+    }
+  ],
+  "claim_consistency_rules": {
+    "required_public_caveats": [
+      "Developer Preview / technical preview posture",
+      "not production SaaS",
+      "tenant/workspace isolation not implemented",
+      "synthetic/demo data only — no real customer data",
+      "no real secrets — all tokens are placeholders",
+      "no real private grants or institutional data",
+      "security-sensitive reports route to GitHub Security Advisories"
+    ],
+    "prohibited_public_claims": [
+      "production-ready SaaS",
+      "tenant isolation implemented",
+      "safe for real customer data",
+      "safe for real grant or institutional data",
+      "full security or compliance guarantee",
+      "production deployment complete",
+      "official SDK or package published (if not actually published)",
+      "hidden or stale publication-pending claims after repo is public"
+    ]
+  },
+  "required_public_caveats": [
+    "Developer Preview / technical preview posture",
+    "not production SaaS",
+    "tenant/workspace isolation not implemented",
+    "synthetic/demo data only — no real customer data",
+    "no real secrets — all tokens are placeholders",
+    "no real private grants or institutional data",
+    "security-sensitive reports route to GitHub Security Advisories"
+  ],
+  "prohibited_public_claims": [
+    "production-ready SaaS",
+    "tenant isolation implemented",
+    "safe for real customer data",
+    "safe for real grant or institutional data",
+    "full security or compliance guarantee",
+    "production deployment complete",
+    "official SDK or package published (if not actually published)",
+    "hidden or stale publication-pending claims after repo is public"
+  ],
+  "public_snapshot_safety_assessment": [
+    {
+      "dimension": "private-data safety",
+      "status": "pass",
+      "severity": null,
+      "rationale": "No real customer names, addresses, identifiers, or PII found in reviewed files. All examples use synthetic identifiers.",
+      "recommended_follow_up": null
+    },
+    {
+      "dimension": "secret safety",
+      "status": "pass",
+      "severity": null,
+      "rationale": "No real API keys, tokens, passwords, or private keys found. All tokens are placeholders.",
+      "recommended_follow_up": null
+    },
+    {
+      "dimension": "internal infrastructure leakage",
+      "status": "pass",
+      "severity": null,
+      "rationale": "No internal hostnames, Forgejo URLs, internal VM IPs, or internal absolute paths found in public-facing entry docs.",
+      "recommended_follow_up": null
+    },
+    {
+      "dimension": "claim consistency",
+      "status": "pass",
+      "severity": null,
+      "rationale": "All four entry-point docs contain all required caveats. No prohibited claims found.",
+      "recommended_follow_up": null
+    },
+    {
+      "dimension": "stale phrase absence",
+      "status": "pass",
+      "severity": null,
+      "rationale": "No stale public-state phrases found in public entry docs. Historical governance docs containing stale phrases are excluded from the public snapshot (GL-181).",
+      "recommended_follow_up": null
+    },
+    {
+      "dimension": "scanner false-positive handling",
+      "status": "pass_with_cautions",
+      "severity": "low",
+      "rationale": "Pre-existing scope-guard FPs in the full test suite are documented. This gate doc itself contains scanner-pattern-definitions FPs. Both are expected and non-blocking.",
+      "recommended_follow_up": "Document per-FP class; monitor for new FP classes."
+    },
+    {
+      "dimension": "security-advisory routing",
+      "status": "pass",
+      "severity": null,
+      "rationale": "SECURITY.md section 2 routes security-sensitive reports to GitHub Security Advisories. GL-192 templates include explicit advisory routing.",
+      "recommended_follow_up": null
+    },
+    {
+      "dimension": "public push safety",
+      "status": "pass",
+      "severity": null,
+      "rationale": "GL-194 public publish used the clean snapshot workflow. No force push. No direct internal push to GitHub. No visibility change.",
+      "recommended_follow_up": null
+    },
+    {
+      "dimension": "public example determinism",
+      "status": "pass",
+      "severity": null,
+      "rationale": "scripts/verify-first-output.sh produced MATCH. diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_gl195_grant_lifecycle_check.json produced empty diff.",
+      "recommended_follow_up": null
+    },
+    {
+      "dimension": "developer preview caveats",
+      "status": "pass",
+      "severity": null,
+      "rationale": "Developer Preview, not production SaaS, tenant isolation not implemented appear in README.md, AGENTS.md, llms.txt, SECURITY.md, all issue templates.",
+      "recommended_follow_up": null
+    },
+    {
+      "dimension": "production readiness caveats",
+      "status": "pass",
+      "severity": null,
+      "rationale": "Not claimed / not provided for production SaaS in all entry docs. No production-ready claim present.",
+      "recommended_follow_up": "GL-199 will consolidate the gap report."
+    },
+    {
+      "dimension": "tenant isolation caveats",
+      "status": "pass",
+      "severity": null,
+      "rationale": "Not implemented for tenant isolation in all entry docs.",
+      "recommended_follow_up": "GL-199 will consolidate the isolation gap analysis."
+    }
+  ],
+  "findings": [
+    {
+      "id": "GL-195-F001",
+      "severity": "low",
+      "category": "scanner-false-positive",
+      "summary": "This gate document itself contains scanner-pattern-definition text that will trigger keyword scanner heuristics.",
+      "evidence": "The Stale Public-State Phrase Rules and Scanner Blocker Categories sections contain exact phrases that scanner heuristics search for.",
+      "blocking": false,
+      "false_positive_class": "scanner-pattern-definitions",
+      "recommended_action": "Mark as expected FP. Scanners processing this file should treat it as a meta-document and exclude it from blocker evaluation.",
+      "recommended_issue": "No new issue required — document in scanner log and test suite."
+    },
+    {
+      "id": "GL-195-F002",
+      "severity": "low",
+      "category": "scanner-false-positive",
+      "summary": "Pre-existing scope-guard test failures in the full test suite occur because older GL scope-guard tests did not anticipate newer GL issue files.",
+      "evidence": "Full suite historically shows 9–21 pre-existing scope-guard false-positive failures, documented in GL-162D, GL-181, GL-186, GL-191, GL-192, GL-193, GL-194 histories.",
+      "blocking": false,
+      "false_positive_class": "historical-scope-guard-tests",
+      "recommended_action": "Accept as pre-existing known FPs. Record in final report. Do not fix by modifying historic test files.",
+      "recommended_issue": "GL-199 or a dedicated housekeeping issue can revisit if FP count grows significantly."
+    },
+    {
+      "id": "GL-195-F003",
+      "severity": "low",
+      "category": "documentation-feedback",
+      "summary": "llms.txt Next Steps still references GL-193 as an upcoming issue, but GL-193 is complete.",
+      "evidence": "llms.txt line 79: 'Upcoming issues: GL-193 (public agent/API walkthrough refresh).' GL-193 was merged and published.",
+      "blocking": false,
+      "false_positive_class": null,
+      "recommended_action": "Update llms.txt Next Steps to reference GL-195–GL-199 roadmap items in a subsequent issue.",
+      "recommended_issue": "GL-196 or GL-197"
+    },
+    {
+      "id": "GL-195-F004",
+      "severity": "info",
+      "category": "product-question",
+      "summary": "No formal production readiness gap report v2 exists. Non-blocking for developer preview.",
+      "evidence": "README and SECURITY.md list individual caveats; no single consolidated production gap report v2 exists. GL-194 confirmed this gap.",
+      "blocking": false,
+      "false_positive_class": null,
+      "recommended_action": "GL-199 Production Readiness Gap Report v2 should document all remaining hardening gates.",
+      "recommended_issue": "GL-199"
+    },
+    {
+      "id": "GL-195-F005",
+      "severity": "info",
+      "category": "product-question",
+      "summary": "No formal tenant isolation gap analysis exists documenting what isolation work remains. Non-blocking.",
+      "evidence": "All four entry-point docs state tenant isolation is not implemented. No doc maps the isolation implementation path.",
+      "blocking": false,
+      "false_positive_class": null,
+      "recommended_action": "Include tenant isolation gap analysis in GL-199 Production Readiness Gap Report v2.",
+      "recommended_issue": "GL-199"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 3,
+    "info": 2,
+    "total": 5,
+    "blocking": 0
+  },
+  "decision": "public_safety_gate_passed_with_cautions",
+  "decision_rationale": "No blocker findings identified. No private data, secrets, or internal infrastructure found. No prohibited public claims. No stale public-state phrases in entry docs. No force-push or direct internal push. Security-sensitive reporting routed correctly. Both public examples match committed reference artifacts. Cautions: pre-existing scope-guard FPs are documented (GL-195-F002); this gate doc triggers scanner-pattern-definition FPs (GL-195-F001); llms.txt references a completed issue (GL-195-F003, low). Production readiness gap report v2 and tenant isolation gap analysis are planned for GL-199.",
+  "recommended_next_issues": [
+    {
+      "issue": "GL-195P",
+      "title": "GL-195 Combined Merge-and-Publish",
+      "priority": "high",
+      "rationale": "Merge GL-195 to main and publish public snapshot update."
+    },
+    {
+      "issue": "GL-196",
+      "title": "Public Safety Gate Activation",
+      "priority": "medium",
+      "rationale": "Operationalise this gate as a repeatable checkpoint in the publish workflow."
+    },
+    {
+      "issue": "GL-197",
+      "title": "API/SDK/Agent Value Decision Pack",
+      "priority": "medium",
+      "rationale": "Document SDK maturity, packaging decision, and agent integration value proposition."
+    },
+    {
+      "issue": "GL-198",
+      "title": "Controlled Preview Boundary Pack",
+      "priority": "medium",
+      "rationale": "Draft reviewer invite criteria, data policy summary, and onboarding/offboarding guidance."
+    },
+    {
+      "issue": "GL-199",
+      "title": "Production Readiness Gap Report v2",
+      "priority": "medium",
+      "rationale": "Consolidated production-vs-preview gap analysis, tenant isolation path, and remaining hardening gates."
+    }
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "no_reviewer_outreach_sent": true,
+    "no_backend_src_changes": true,
+    "no_openapi_changes": true,
+    "no_migration_db_dependency_changes": true,
+    "no_dependency_manifest_changes": true,
+    "no_sdk_implementation_changes": true,
+    "no_examples_runtime_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_behavior_changes": true,
+    "no_production_saas_claim": true,
+    "tenant_isolation_not_claimed": true,
+    "no_real_customer_data_requested": true,
+    "no_private_grant_data_requested": true,
+    "no_secrets_requested": true,
+    "no_exploit_details_included": true,
+    "security_sensitive_reports_routed_to_github_security_advisories": true
+  },
+  "changed_files": [
+    "docs/public_safety_scanner_claim_consistency_gate.md",
+    "docs/examples/gl195/public_safety_scanner_claim_consistency_gate.json",
+    "backend/tests/test_gl195_public_safety_scanner_claim_consistency_gate.py"
+  ],
+  "tests": {
+    "targeted": "backend/tests/test_gl195_public_safety_scanner_claim_consistency_gate.py",
+    "regression": "backend/tests/test_security_boundary_regression.py",
+    "also_run": [
+      "backend/tests/test_gl194_public_preview_review_feedback_triage_pack.py",
+      "backend/tests/test_gl193_public_agent_api_walkthrough_refresh.py"
+    ]
+  },
+  "smoke_checks": {
+    "verify_first_output": "MATCH",
+    "grant_lifecycle_diff": "empty — exact match with committed reference"
+  },
+  "result": "public_safety_scanner_claim_consistency_gate_complete",
+  "next_recommended_step": "GL-195P Combined Merge-and-Publish for Public Safety / Scanner / Claim Consistency Gate",
+  "non_goals": [
+    "implement backend features",
+    "change database schema or migrations",
+    "change OpenAPI contract",
+    "change dependency manifests",
+    "change SDK or examples runtime",
+    "change frontend or website or design",
+    "change GitHub workflow files",
+    "change snapshot publish script behavior",
+    "change git remotes",
+    "push to GitHub",
+    "change GitHub visibility",
+    "use force push",
+    "create or modify GitHub labels via API",
+    "create or modify GitHub issues via API",
+    "send reviewer outreach",
+    "claim production SaaS readiness",
+    "claim tenant isolation is implemented",
+    "request real customer data",
+    "request private grants or secrets",
+    "include exploit details"
+  ]
+}
