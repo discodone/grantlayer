@@ -1,0 +1,173 @@
+{
+  "audit_chain": [
+    {
+      "event_hash": "abf762895961cd0a5979590102f7c6db3540dc6e73e5be177fe1bf4520e6b812",
+      "event_index": 0,
+      "event_type": "submitted",
+      "previous_event_hash": null
+    },
+    {
+      "event_hash": "907a63fccd55edc40a48c48062c151f4119d7b02beb71d0ce6a3614e816e3f5c",
+      "event_index": 1,
+      "event_type": "evidence_attached",
+      "previous_event_hash": "abf762895961cd0a5979590102f7c6db3540dc6e73e5be177fe1bf4520e6b812"
+    },
+    {
+      "event_hash": "090f905e088be285a8843d077c5863edc1ee50f13f060b662de055629ed99d24",
+      "event_index": 2,
+      "event_type": "eligibility_checked",
+      "previous_event_hash": "907a63fccd55edc40a48c48062c151f4119d7b02beb71d0ce6a3614e816e3f5c"
+    },
+    {
+      "event_hash": "bedbabf5c2c4d8b720cd577e1bc3560a08370d1147778ffeeefb2bc8b2b4b1b4",
+      "event_index": 3,
+      "event_type": "approval_recommended",
+      "previous_event_hash": "090f905e088be285a8843d077c5863edc1ee50f13f060b662de055629ed99d24"
+    },
+    {
+      "event_hash": "74ae9f853d14f323e7ea52774f8d4b733883fbfe1865bb533a248e90f33e0636",
+      "event_index": 4,
+      "event_type": "bundle_generated",
+      "previous_event_hash": "bedbabf5c2c4d8b720cd577e1bc3560a08370d1147778ffeeefb2bc8b2b4b1b4"
+    }
+  ],
+  "bundle_sha256": "d239ea5b9c9c2f84c53f11a53e9af137e8ba2f54148129f5d5dbde0a122c33ca",
+  "evidence_bundle": {
+    "bundle_hash_algorithm": "sha256",
+    "bundle_id": "gl189-evidence-bundle-001",
+    "event_count": 5,
+    "evidence_count": 3,
+    "final_event_hash": "74ae9f853d14f323e7ea52774f8d4b733883fbfe1865bb533a248e90f33e0636",
+    "grant_id": "gl189-synthetic-grant-001"
+  },
+  "evidence_items": [
+    {
+      "content": {
+        "currency": "USD",
+        "grant_id": "gl189-synthetic-grant-001",
+        "line_items": [
+          {
+            "amount": 8500,
+            "category": "program_delivery"
+          },
+          {
+            "amount": 2500,
+            "category": "materials"
+          },
+          {
+            "amount": 1500,
+            "category": "community_outreach"
+          }
+        ],
+        "total_requested": 12500
+      },
+      "content_sha256": "17aad6786f048beb35a81b85d87a664707aa21b3ccf4d3fa1d4d64c14e912bfe",
+      "evidence_id": "gl189-evidence-001",
+      "evidence_type": "synthetic_budget_summary"
+    },
+    {
+      "content": {
+        "eligibility_rules": [
+          "synthetic-demo-entity-only",
+          "local-preview-only",
+          "no-network-required"
+        ],
+        "grant_id": "gl189-synthetic-grant-001",
+        "result": "eligible",
+        "reviewed_at": "2026-02-03T09:32:00Z"
+      },
+      "content_sha256": "d04f728e72d908fd146e05ee12277ec3901b5d7ab7010414bb2946489e60f8b3",
+      "evidence_id": "gl189-evidence-002",
+      "evidence_type": "synthetic_eligibility_statement"
+    },
+    {
+      "content": {
+        "grant_id": "gl189-synthetic-grant-001",
+        "note": "Synthetic reviewer recommends approval after deterministic checks.",
+        "recommended_action": "approve",
+        "reviewed_at": "2026-02-03T09:33:00Z"
+      },
+      "content_sha256": "b57bfce3f8444378edeb14b44946f78815465b3968d72ccc84adc28f25a182bd",
+      "evidence_id": "gl189-evidence-003",
+      "evidence_type": "synthetic_review_note"
+    }
+  ],
+  "example_id": "gl189-grant-lifecycle-evidence-bundle",
+  "generated_at": "2026-02-03T09:35:00Z",
+  "grant_request": {
+    "applicant_type": "synthetic-demo",
+    "currency": "USD",
+    "grant_id": "gl189-synthetic-grant-001",
+    "program": "synthetic-community-capacity-grant",
+    "purpose": "Demonstrate a deterministic grant lifecycle evidence bundle.",
+    "requested_amount": 12500,
+    "submitted_at": "2026-02-03T09:30:00Z"
+  },
+  "lifecycle_events": [
+    {
+      "event_at": "2026-02-03T09:30:00Z",
+      "event_index": 0,
+      "event_type": "submitted",
+      "evidence_ids": [],
+      "summary": "Synthetic grant request submitted for local preview."
+    },
+    {
+      "event_at": "2026-02-03T09:31:00Z",
+      "event_index": 1,
+      "event_type": "evidence_attached",
+      "evidence_ids": [
+        "gl189-evidence-001",
+        "gl189-evidence-002"
+      ],
+      "summary": "Synthetic budget and eligibility evidence attached."
+    },
+    {
+      "event_at": "2026-02-03T09:32:00Z",
+      "event_index": 2,
+      "event_type": "eligibility_checked",
+      "evidence_ids": [
+        "gl189-evidence-002"
+      ],
+      "summary": "Deterministic eligibility rule set passed."
+    },
+    {
+      "event_at": "2026-02-03T09:33:00Z",
+      "event_index": 3,
+      "event_type": "approval_recommended",
+      "evidence_ids": [
+        "gl189-evidence-003"
+      ],
+      "summary": "Synthetic reviewer note recommends approval."
+    },
+    {
+      "event_at": "2026-02-03T09:34:00Z",
+      "event_index": 4,
+      "event_type": "bundle_generated",
+      "evidence_ids": [
+        "gl189-evidence-001",
+        "gl189-evidence-002",
+        "gl189-evidence-003"
+      ],
+      "summary": "Evidence bundle sealed for deterministic verification."
+    }
+  ],
+  "non_goals": [
+    "No backend server startup is demonstrated.",
+    "No real grant, customer data, or private institutional record is used.",
+    "No production SaaS readiness claim is made.",
+    "Tenant/workspace isolation is not claimed as implemented."
+  ],
+  "preview_mode": true,
+  "record_type": "grantlayer_grant_lifecycle_evidence_bundle_example",
+  "record_version": "1.0",
+  "safety_notice": "Synthetic demo data only. No network, backend, secrets, customer data, or production SaaS assumptions are required.",
+  "verification_summary": {
+    "deterministic_output": true,
+    "exact_match_expected": true,
+    "no_backend_required": true,
+    "no_customer_data_required": true,
+    "no_network_required": true,
+    "no_secrets_required": true,
+    "reference_artifact": "examples/grant_lifecycle_evidence_bundle.json"
+  }
+}

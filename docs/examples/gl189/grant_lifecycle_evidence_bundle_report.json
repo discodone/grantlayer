@@ -1,0 +1,100 @@
+{
+  "changed_files": [
+    "backend/tests/test_gl189_grant_lifecycle_evidence_bundle.py",
+    "docs/examples/gl189/grant_lifecycle_evidence_bundle_report.json",
+    "docs/grant_lifecycle_evidence_bundle.md",
+    "examples/grant_lifecycle_evidence_bundle.json",
+    "examples/grant_lifecycle_evidence_bundle.py"
+  ],
+  "docs_path": "docs/grant_lifecycle_evidence_bundle.md",
+  "default_output_path": "/tmp/grantlayer_grant_lifecycle_evidence_bundle.json",
+  "deterministic_properties": {
+    "canonical_json_used": true,
+    "fixed_timestamps_used": true,
+    "no_current_time_or_randomness": true,
+    "repeated_runs_match": true
+  },
+  "example_script": "examples/grant_lifecycle_evidence_bundle.py",
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "low": 0,
+    "medium": 0
+  },
+  "findings": [],
+  "issue_id": "GL-189",
+  "next_recommended_step": "GL-189P Public Snapshot Push for Second Runnable Example",
+  "non_goals": [
+    "No backend server startup is demonstrated.",
+    "No OpenAPI, schema, migration, dependency, or runtime API change is included.",
+    "No production SaaS readiness claim is made.",
+    "Tenant/workspace isolation is not claimed as implemented."
+  ],
+  "output_schema_summary": {
+    "top_level_fields": [
+      "record_type",
+      "record_version",
+      "generated_at",
+      "example_id",
+      "preview_mode",
+      "safety_notice",
+      "grant_request",
+      "lifecycle_events",
+      "evidence_items",
+      "audit_chain",
+      "evidence_bundle",
+      "bundle_sha256",
+      "verification_summary",
+      "non_goals"
+    ],
+    "summary": "Deterministic grant lifecycle example with evidence hashes and chained audit records."
+  },
+  "reference_artifact": "examples/grant_lifecycle_evidence_bundle.json",
+  "result": "second_runnable_example_complete",
+  "safety_properties": {
+    "does_not_modify_reference_artifact": true,
+    "no_backend_required": true,
+    "no_customer_data_required": true,
+    "no_network_required": true,
+    "no_production_saas_claim": true,
+    "no_secrets_required": true,
+    "synthetic_demo_data_only": true,
+    "tenant_isolation_not_claimed": true,
+    "writes_only_to_requested_or_temp_output": true
+  },
+  "tests": [
+    {
+      "command": "python3 examples/grant_lifecycle_evidence_bundle.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 examples/grant_lifecycle_evidence_bundle.py --output /tmp/grantlayer_grant_lifecycle_evidence_bundle_custom.json",
+      "result": "passed"
+    },
+    {
+      "command": "diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_grant_lifecycle_evidence_bundle_custom.json",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m py_compile examples/grant_lifecycle_evidence_bundle.py backend/tests/test_gl189_grant_lifecycle_evidence_bundle.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl189_grant_lifecycle_evidence_bundle -v",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl188_first_output_verify_helper -v",
+      "result": "failed_unrelated_scope"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl187_public_docs_post_public_stale_claim_cleanup -v",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_security_boundary_regression -v",
+      "result": "passed"
+    }
+  ],
+  "title": "Second Runnable Example / Grant Lifecycle Evidence Bundle"
+}
