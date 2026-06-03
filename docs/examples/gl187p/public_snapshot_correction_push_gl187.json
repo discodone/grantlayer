@@ -1,0 +1,186 @@
+{
+  "issue_id": "GL-187P",
+  "title": "Public Snapshot Correction Push for GL-187 Public Docs Stale Claim Cleanup",
+  "date": "2026-06-03",
+  "internal_main_commit": "40c0449d90f2b781296d9089eb4e6ec0ff2b1dcd",
+  "public_publish_worktree": "/tmp/grantlayer-public-publish",
+  "github_remote": "https://github.com/discodone/grantlayer.git",
+  "previous_public_commit": "d10bb09ea3fecf98aa82a1af93674b58c5e65a82",
+  "new_public_commit": "11d3f16fd64b77a52561cb329780fd33affde0f8",
+  "public_files_changed": [
+    "README.md",
+    "CONTRIBUTING.md",
+    "AGENTS.md",
+    "docs/ten_minute_quickstart.md",
+    "docs/agent_quickstart.md",
+    "llms-full.txt",
+    "llms.txt",
+    "scripts/build-clean-public-snapshot.sh",
+    "docs/ai_reviewer_feedback_triage.md",
+    "docs/external_developer_feedback_intake.md",
+    "docs/external_feedback_triage_public_issue_hygiene.md",
+    "docs/first_external_reviewer_invite_pack.md",
+    "docs/first_reviewer_feedback_window.md",
+    "docs/public_docs_post_public_stale_claim_cleanup.md",
+    "docs/public_snapshot_exclusion_cleanup.md",
+    "docs/examples/gl181/public_snapshot_exclusion_cleanup.json",
+    "docs/examples/gl182/external_developer_feedback_intake.json",
+    "docs/examples/gl183/external_feedback_triage_public_issue_hygiene.json",
+    "docs/examples/gl184/first_external_reviewer_invite_pack.json",
+    "docs/examples/gl185/first_reviewer_feedback_window.json",
+    "docs/examples/gl186/ai_reviewer_feedback_triage.json",
+    "docs/examples/gl187/public_docs_post_public_stale_claim_cleanup.json"
+  ],
+  "gl187_fixes_published": {
+    "readme_stale_test_count_removed": true,
+    "contributing_public_release_stale_claim_removed": true,
+    "readme_hypothetical_metadata_wording_removed": true,
+    "ten_minute_quickstart_public_clone_corrected": true,
+    "agent_quickstart_public_clone_internal_source_corrected": true,
+    "readme_clone_cd_consistency_fixed": true,
+    "readme_first_output_path_clarified": true,
+    "agents_llms_full_stale_public_state_removed": true,
+    "gl155_contradiction_resolved": true,
+    "source_of_truth_internal_forgejo_handled": true,
+    "caveats_preserved": true
+  },
+  "stale_phrase_verification": {
+    "checked_phrases": [
+      "1130 tests",
+      "3 skipped, 0 failures",
+      "Public GitHub release.*Not performed",
+      "If and when public publication is approved",
+      "visibility decision pending",
+      "formal visibility decision pending",
+      "approved internal source",
+      "public GitHub release has not happened",
+      "publication is pending"
+    ],
+    "files_checked": [
+      "README.md",
+      "CONTRIBUTING.md",
+      "AGENTS.md",
+      "llms-full.txt",
+      "llms.txt",
+      "docs/ten_minute_quickstart.md",
+      "docs/agent_quickstart.md"
+    ],
+    "result": "CLEAN",
+    "occurrences_found": 0
+  },
+  "caveats_preserved": {
+    "developer_preview": true,
+    "not_production_saas": true,
+    "tenant_isolation_not_implemented": true,
+    "no_real_secrets_or_customer_data": true,
+    "synthetic_demo_data_only": true,
+    "github_security_advisories_channel": true
+  },
+  "private_data_secret_safety": {
+    "private_data_found": false,
+    "secret_material_found": false,
+    "internal_infrastructure_found": false,
+    "blockers_found": false,
+    "scanner_result": {
+      "tool": "public-secret-sensitive-scan.sh",
+      "scanned_files": 204,
+      "meta_excluded": 9,
+      "blockers_found": 0,
+      "result": "CLEAN"
+    },
+    "notes": [
+      "Paperclip appears only in forbidden-action scope guards — meta-reference only, not actual exposure",
+      "internal-forgejo appears only in context of describing a resolved finding — descriptive only",
+      "No private IPs, hostnames, tokens, paths, emails, or phone numbers found",
+      "No /home/adminuser or /paperclip/grantlayer-mvp paths found"
+    ]
+  },
+  "publication_actions": {
+    "public_snapshot_pushed": true,
+    "push_source": "/tmp/grantlayer-public-publish",
+    "push_target": "https://github.com/discodone/grantlayer.git",
+    "push_type": "fast-forward",
+    "push_range": "d10bb09..11d3f16",
+    "force_push_used": false,
+    "history_rewrite": false,
+    "visibility_changed": false,
+    "internal_repo_pushed_directly_to_github": false
+  },
+  "post_push_checks": {
+    "github_remote_reachable_unauthenticated": true,
+    "public_head_updated": true,
+    "public_head_commit": "11d3f16fd64b77a52561cb329780fd33affde0f8",
+    "local_main_equals_origin_main": true,
+    "working_tree_clean_in_publish_worktree": true,
+    "files_present": {
+      "README.md": true,
+      "CONTRIBUTING.md": true,
+      "AGENTS.md": true,
+      "llms.txt": true,
+      "llms-full.txt": true,
+      "SECURITY.md": true,
+      "docs/ten_minute_quickstart.md": true,
+      "docs/agent_quickstart.md": true,
+      "docs/first_verifiable_output.md": true,
+      "examples/first_verifiable_output.py": true,
+      "examples/first_verifiable_output.json": true
+    },
+    "stale_phrases_absent": true,
+    "public_clone_url_visible": true,
+    "developer_preview_caveat_visible": true,
+    "no_secrets_customer_data_caveat_visible": true,
+    "security_advisories_path_present": true
+  },
+  "findings": [
+    {
+      "id": "F-187P-001",
+      "severity": "informational",
+      "description": "Snapshot sync included accumulated GL-181–186 public docs since last push was GL-179P",
+      "resolution": "Expected — all docs passed scanner; all within allowed public scope; no private data found"
+    },
+    {
+      "id": "F-187P-002",
+      "severity": "informational",
+      "description": "AGENTS.md quick-validation section still says 'cd grantlayer-mvp' (internal clone path convention)",
+      "resolution": "Not GL-187 scope; acceptable for developer preview context; AGENTS.md serves internal agents"
+    },
+    {
+      "id": "F-187P-003",
+      "severity": "informational",
+      "description": "GL-177/178 governance docs exist as untracked files in publish worktree — never committed",
+      "resolution": "No action needed — never pushed to GitHub; correctly excluded from public snapshot"
+    },
+    {
+      "id": "F-187P-004",
+      "severity": "informational",
+      "description": "git init in snapshot dir caused .git/config to be inadvertently copied to public worktree, overwriting origin remote",
+      "resolution": "Recovered — git remote add origin restored correct remote before commit/push; recommend future improvement to snapshot copy workflow"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "informational": 4
+  },
+  "final_disposition": "correction_pushed",
+  "next_recommended_step": "GL-188 First Output Verify Helper Script",
+  "changed_files": {
+    "internal_report_files": [
+      "docs/public_snapshot_correction_push_gl187.md",
+      "docs/examples/gl187p/public_snapshot_correction_push_gl187.json",
+      "backend/tests/test_gl187p_public_snapshot_correction_push.py"
+    ],
+    "no_backend_src_changes": true,
+    "no_openapi_changes": true,
+    "no_migration_changes": true,
+    "no_db_schema_changes": true,
+    "no_dependency_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_behavior_changes": true,
+    "no_git_remote_changes": true,
+    "no_paperclip_status_updates": true
+  }
+}
