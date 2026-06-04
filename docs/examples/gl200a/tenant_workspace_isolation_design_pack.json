@@ -1,0 +1,764 @@
+{
+  "issue_id": "GL-200A",
+  "title": "Tenant/Workspace Isolation Design Pack",
+  "context": "GrantLayer is publicly available on GitHub at https://github.com/Discodone/grantlayer.git in a Developer Preview / controlled-pilot posture. GL-199 identified tenant/workspace isolation as the highest-priority production blocker (P0). GL-200A is the design pack only — it does not implement tenant/workspace isolation. It defines architecture, scope, risks, migration strategy, and the implementation plan for GL-200B and later issues.",
+  "input_sources_reviewed": [
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/production_readiness_gap_report_v2.md",
+    "docs/examples/gl199/production_readiness_gap_report_v2.json",
+    "docs/controlled_preview_boundary_pack.md",
+    "docs/examples/gl198/controlled_preview_boundary_pack.json",
+    "docs/api_sdk_agent_value_decision_pack.md",
+    "docs/examples/gl197/api_sdk_agent_value_decision_pack.json",
+    "docs/public_safety_scanner_claim_consistency_gate.md",
+    "docs/public_smoke_matrix_pack.md",
+    "docs/tenant_workspace_boundary_decision.md",
+    "docs/tenant_workspace_data_model_design.md",
+    "docs/production_auth_operator_access_design.md",
+    "docs/production_hardening_roadmap.md",
+    "backend/src/server.py",
+    "backend/src/auth.py",
+    "backend/src/grants.py",
+    "backend/src/grant_requests.py",
+    "backend/src/challenges.py",
+    "backend/src/audit_log.py",
+    "backend/src/db.py",
+    "backend/src/agent_permissions.py",
+    "backend/src/agent_permission_assignments.py",
+    "backend/src/models.py",
+    "backend/src/migrations/0001_gl032_baseline.py",
+    "backend/src/migrations/0005_gl102_audit_log_immutability.py",
+    "backend/src/migrations/0006_gl103_audit_hash_chain.py",
+    "backend/src/migrations/0007_gl107_operator_token_lookup.py",
+    "backend/tests/test_security_boundary_regression.py",
+    "backend/tests/test_gl199_production_readiness_gap_report_v2.py",
+    "backend/tests/test_gl198_controlled_preview_boundary_pack.py"
+  ],
+  "current_state_summary": "GrantLayer has no production tenant/workspace isolation implemented. All grants, grant requests, grant executions, challenges, evidence archives, provenance events, and audit events share a single namespace within any given deployment. There is no tenant_id, workspace_id, or any tenant/workspace entity in the data model, schema, or API. Auth provides admin-token mode (dev/demo) and operator-token mode (hardened). Neither mode carries tenant/workspace context. Agent permission scopes are globally-scoped within a deployment. The only boundary today is the operator-bounded workspace model from GL-132 Option B. This state is acceptable for Developer Preview and Controlled Preview under strict boundaries (GL-198). It is not acceptable for Production SaaS with unrelated customers on shared infrastructure.",
+  "terminology": {
+    "tenant": "The top-level logical isolation boundary in GrantLayer. Isolates one customer's or institution's data — grants, grant requests, grant executions, evidence, audit records, and operator identities — from all other customers. Maps to a university, foundation, corporation, or any institution that controls a bounded set of grants and operators.",
+    "workspace": "A scoped operating context within a tenant. Maps to a team, department, program office, or organizational unit inside the tenant that shares grants and evidence but remains isolated from other workspaces within the same tenant. Optional in the GL-200B minimum viable implementation.",
+    "actor": "Any entity — human operator, automated agent, or admin — that performs an action tracked by GrantLayer. Actors must be bound to a tenant at minimum; workspaces are optional in the GL-200B baseline.",
+    "operator": "An authenticated individual or service identity that performs actions within a tenant/workspace. Carries a role (owner, grant_admin, grant_reviewer, readonly, auditor) that constrains permitted actions within their tenant/workspace boundary.",
+    "admin": "An operator with elevated privileges (owner or grant_admin) who can manage tenant configuration, membership, and boundary policies. System-level admin actions crossing tenants must be explicitly marked and restricted.",
+    "agent": "An automated software entity (e.g., LangChain agent, Claude-powered AI) that performs grant workflow actions on behalf of an operator. Agents inherit their owner's tenant/workspace context via agent permission assignments.",
+    "grant": "A time-bounded authorization record permitting a subject to perform a specific action on a specific resource. In a tenant-aware model, every grant must carry a tenant_id and optionally a workspace_id.",
+    "grant_request": "A structured request for a grant submitted by an operator and subject to approval workflow. Must be scoped to the same tenant/workspace as the operator who submitted it.",
+    "challenge": "A cryptographic proof-of-intent token created during grant execution. Must be scoped to the same tenant/workspace as the actor and grant they are associated with.",
+    "execution": "A grant execution record of a protected action attempt — authorized, denied, or pending. Must carry the same tenant/workspace context as the grant that produced it.",
+    "evidence": "The collection of artifacts — files, verification records, attestations — that document the outcome of a grant execution. Must be scoped to the same workspace (and tenant) as the execution.",
+    "audit_event": "An immutable, hash-chained record of every authorization decision. Must carry tenant/workspace context. System-level events (migrations, health checks) are explicitly marked as scope: system."
+  },
+  "threat_model": [
+    {
+      "threat": "Cross-tenant data read",
+      "vector": "Operator A queries grant list; no tenant filter applied",
+      "current_risk": "critical",
+      "required_mitigation": "tenant_id filter on all queries"
+    },
+    {
+      "threat": "Cross-tenant data write",
+      "vector": "Operator A creates grant for tenant B resources",
+      "current_risk": "critical",
+      "required_mitigation": "tenant_id enforcement on create"
+    },
+    {
+      "threat": "Tenant impersonation via token",
+      "vector": "Attacker with valid operator token accesses other tenant",
+      "current_risk": "critical",
+      "required_mitigation": "Bind operator token to tenant_id at creation"
+    },
+    {
+      "threat": "Workspace boundary leak",
+      "vector": "Workspace A user reads workspace B grants",
+      "current_risk": "high",
+      "required_mitigation": "workspace_id filter where applicable (GL-200C)"
+    },
+    {
+      "threat": "Audit event leakage",
+      "vector": "Auditor reads another tenant's audit trail",
+      "current_risk": "critical",
+      "required_mitigation": "tenant_id on audit events + filtered queries"
+    },
+    {
+      "threat": "Agent over-privilege",
+      "vector": "Agent with grant:read scope reads all tenants",
+      "current_risk": "critical",
+      "required_mitigation": "Agent permissions must be tenant-scoped"
+    },
+    {
+      "threat": "Admin cross-tenant access",
+      "vector": "System admin reads any tenant data",
+      "current_risk": "acceptable_only_if_explicitly_marked",
+      "required_mitigation": "Explicit is_system_admin flag; logged"
+    },
+    {
+      "threat": "Demo endpoint data leak",
+      "vector": "Demo endpoint reveals real tenant data",
+      "current_risk": "high_if_real_data_exists",
+      "required_mitigation": "Demo endpoint serves only synthetic data (GL-190 guard maintained)"
+    },
+    {
+      "threat": "Migration data cross-contamination",
+      "vector": "Backfill assigns wrong tenant_id",
+      "current_risk": "high",
+      "required_mitigation": "Idempotent migration with explicit tenant assignment"
+    }
+  ],
+  "isolation_goals": [
+    "Every business resource (grant, grant_request, grant_execution, challenge, evidence, audit_event, agent_permission_assignment) must carry an explicit tenant_id in the database schema",
+    "Every API query or mutation involving business resources must filter by the requesting actor's tenant_id; cross-tenant access must be denied",
+    "Operators must be bound to a tenant_id at creation; operator tokens must carry tenant context in the auth layer",
+    "Agent permission scopes must be scoped to the operator's tenant context",
+    "Audit events must record tenant context; the audit chain must be tenant-aware",
+    "Demo, health, and readiness endpoints are public by design and remain outside tenant scope",
+    "System/admin operations requiring cross-tenant access must be explicitly marked, logged, and restricted to named admin roles",
+    "The design must support both SQLite (dev/test) and PostgreSQL (production) backends"
+  ],
+  "isolation_non_goals": [
+    "Full RBAC/policy engine (deferred to GL-200D or later)",
+    "Per-workspace row-level security at the DB layer (deferred)",
+    "Billing/subscription tenant model (not in scope)",
+    "Frontend tenant onboarding UI (not in scope)",
+    "Customer-facing tenant admin panel (not in scope)",
+    "Multi-region tenant isolation (not in scope)",
+    "Federated identity / SSO per tenant (not in scope)",
+    "Tenant-level rate limiting (not in scope for GL-200B)",
+    "Workspace sub-isolation as a hard requirement in the GL-200B baseline"
+  ],
+  "resource_scoping_matrix": [
+    {
+      "resource": "grants",
+      "current_scope_status": "global (unscoped)",
+      "required_future_scope": "tenant_and_workspace",
+      "production_risk": "critical",
+      "recommended_gl200b_action": "Add tenant_id column; filter all queries; workspace_id reserved nullable"
+    },
+    {
+      "resource": "grant_requests",
+      "current_scope_status": "global (unscoped)",
+      "required_future_scope": "tenant_and_workspace",
+      "production_risk": "critical",
+      "recommended_gl200b_action": "Add tenant_id column; filter all queries; workspace_id reserved nullable"
+    },
+    {
+      "resource": "challenges",
+      "current_scope_status": "global (unscoped)",
+      "required_future_scope": "tenant_and_workspace",
+      "production_risk": "critical",
+      "recommended_gl200b_action": "Add tenant_id column; filter queries; workspace_id reserved nullable"
+    },
+    {
+      "resource": "grant_executions",
+      "current_scope_status": "global (unscoped)",
+      "required_future_scope": "tenant_and_workspace",
+      "production_risk": "critical",
+      "recommended_gl200b_action": "Add tenant_id column; filter queries; workspace_id reserved nullable"
+    },
+    {
+      "resource": "evidence/executions",
+      "current_scope_status": "global (unscoped)",
+      "required_future_scope": "tenant_and_workspace",
+      "production_risk": "critical",
+      "recommended_gl200b_action": "Add tenant_id column; filter queries; workspace_id reserved nullable"
+    },
+    {
+      "resource": "audit_events",
+      "current_scope_status": "global (unscoped)",
+      "required_future_scope": "tenant (system events get scope: system)",
+      "production_risk": "critical",
+      "recommended_gl200b_action": "Add tenant_id column; system events get scope: system; update hash-chain canonical payload"
+    },
+    {
+      "resource": "operators",
+      "current_scope_status": "global (unscoped)",
+      "required_future_scope": "tenant",
+      "production_risk": "critical",
+      "recommended_gl200b_action": "Add tenant_id column; operator bound to tenant at creation"
+    },
+    {
+      "resource": "operator tokens / token_hash",
+      "current_scope_status": "implicitly scoped via operator",
+      "required_future_scope": "tenant (via operator)",
+      "production_risk": "critical",
+      "recommended_gl200b_action": "Ensure operator lookup enforces tenant context"
+    },
+    {
+      "resource": "agent_permissions (profiles)",
+      "current_scope_status": "global (unscoped)",
+      "required_future_scope": "tenant (assignments scoped; profiles may remain global templates)",
+      "production_risk": "high",
+      "recommended_gl200b_action": "Add tenant_id to assignments; profiles remain global scope-vocabulary templates"
+    },
+    {
+      "resource": "agent_permission_assignments",
+      "current_scope_status": "global (unscoped)",
+      "required_future_scope": "tenant",
+      "production_risk": "high",
+      "recommended_gl200b_action": "Add tenant_id column; enforce tenant context in assignment queries"
+    },
+    {
+      "resource": "demo endpoints (/demo/*)",
+      "current_scope_status": "global_public (intentional)",
+      "required_future_scope": "global_public (no change)",
+      "production_risk": "low",
+      "recommended_gl200b_action": "Document synthetic-data-only; maintain GL-190 guard; no tenant scoping"
+    },
+    {
+      "resource": "health endpoint (/health)",
+      "current_scope_status": "global_public (intentional)",
+      "required_future_scope": "global_public (no change)",
+      "production_risk": "none",
+      "recommended_gl200b_action": "No change required"
+    },
+    {
+      "resource": "readiness endpoint (/readiness)",
+      "current_scope_status": "global_public (intentional)",
+      "required_future_scope": "global_public (no change)",
+      "production_risk": "none",
+      "recommended_gl200b_action": "No change required"
+    },
+    {
+      "resource": "configuration / env vars",
+      "current_scope_status": "system_internal",
+      "required_future_scope": "system_internal",
+      "production_risk": "medium",
+      "recommended_gl200b_action": "No tenant-scoping needed; per-deployment config sufficient"
+    },
+    {
+      "resource": "migrations",
+      "current_scope_status": "system_internal",
+      "required_future_scope": "system_internal",
+      "production_risk": "medium",
+      "recommended_gl200b_action": "Migrations must add tenant columns safely; idempotent backfill strategy required"
+    }
+  ],
+  "design_options": [
+    {
+      "option_id": "A",
+      "name": "tenant_id only baseline",
+      "description": "Add a tenant_id column to all business resource tables. All API queries filter by the requesting operator's tenant_id. No workspace sub-boundary. Operator tokens are bound to a tenant_id at creation.",
+      "benefits": [
+        "Minimal schema change (one new column per table)",
+        "Straightforward migration with backfill",
+        "Fail-closed by design: missing tenant_id on operator → deny",
+        "Compatible with both SQLite and PostgreSQL",
+        "Unblocks production readiness assessment quickly"
+      ],
+      "risks": [
+        "No workspace sub-isolation; all operators in a tenant share access",
+        "Workspace isolation deferred — must not be claimed as implemented",
+        "Tenant creation/management API not included; tenants are pre-provisioned"
+      ],
+      "implementation_complexity": "low",
+      "migration_cost": "medium",
+      "test_burden": "medium",
+      "suitability_for_gl200b": "high — recommended as the baseline"
+    },
+    {
+      "option_id": "B",
+      "name": "tenant_id + workspace_id on all business resources",
+      "description": "Add both tenant_id and workspace_id to all business resource tables. Operators are bound to both a tenant and a workspace at creation. All API queries filter by both.",
+      "benefits": [
+        "Full two-level isolation from the start",
+        "Workspace-level export, audit, and evidence boundaries",
+        "No technical debt when workspace isolation is eventually required"
+      ],
+      "risks": [
+        "Significantly higher implementation complexity than Option A",
+        "Every query, model, and API endpoint must carry workspace context",
+        "Workspace creation/management API required upfront",
+        "Migration complexity doubles (two columns, two backfill dimensions)",
+        "Risk of shipping a partially-correct implementation under time pressure"
+      ],
+      "implementation_complexity": "high",
+      "migration_cost": "high",
+      "test_burden": "high",
+      "suitability_for_gl200b": "medium — recommended only if workspace isolation is required before controlled preview moves to production"
+    },
+    {
+      "option_id": "C",
+      "name": "request-context isolation layer with staged DB migration",
+      "description": "Add a middleware/request-context layer that extracts and validates tenant context from the auth token on every request. DB schema changes (adding tenant_id) are staged in a separate migration. Enforcement is applied at the query layer via a context object.",
+      "benefits": [
+        "Decouples schema migration from enforcement rollout",
+        "Context object is a clean seam for future workspace support",
+        "Enables incremental rollout: enforce at API layer first, then migrate schema"
+      ],
+      "risks": [
+        "Two-phase rollout creates a window where schema is migrated but enforcement is incomplete",
+        "Context object must be threaded through every resource function — high refactor surface area",
+        "Higher risk of incomplete enforcement if staging is not carefully managed"
+      ],
+      "implementation_complexity": "high",
+      "migration_cost": "medium",
+      "test_burden": "high",
+      "suitability_for_gl200b": "medium — valuable pattern but adds complexity"
+    },
+    {
+      "option_id": "D",
+      "name": "full RBAC/tenant/workspace policy engine",
+      "description": "Implement a complete policy engine with tenant, workspace, role, and resource-level access control. Operators, agents, and admins are assigned policies. The policy engine evaluates every access decision against the policy store.",
+      "benefits": [
+        "Maximum flexibility and granularity",
+        "Future-proof for complex institutional permission hierarchies",
+        "Enables attribute-based access control (ABAC) patterns"
+      ],
+      "risks": [
+        "Very high implementation complexity — likely 4-8x more work than Option A",
+        "Policy store becomes a critical dependency; misconfiguration = data breach",
+        "Cannot be completed in GL-200B scope; would require multiple issues",
+        "Premature for current scale; over-engineering risk is high"
+      ],
+      "implementation_complexity": "very_high",
+      "migration_cost": "very_high",
+      "test_burden": "very_high",
+      "suitability_for_gl200b": "low — deferred to GL-200D or later"
+    }
+  ],
+  "recommended_design": {
+    "option": "A with staged B readiness",
+    "summary": "GL-200B implements Option A: tenant_id on all business resource tables, operator tokens bound to tenant_id, API queries filtered by tenant_id, audit events include tenant_id, fail-closed enforcement on missing/ambiguous tenant context. workspace_id column is reserved nullable in the GL-200B migration to avoid a second disruptive schema change. workspace_id enforcement is staged to GL-200C.",
+    "rationale": "Unblocks production readiness fastest. Minimal schema change with clear migration path. Fail-closed by design. Leaves clean seam for workspace support in GL-200C. Does not over-engineer before scale requires it."
+  },
+  "api_boundary_model": {
+    "tenant_context_entry": "Tenant context must enter every API request through the authenticated operator identity. Tenant context is resolved server-side from the operator record — clients do not send a tenant header.",
+    "no_client_tenant_header": true,
+    "admin_context": "System-level admin operations that require cross-tenant access must use an explicit is_system_admin flag on the operator record and must be separately logged.",
+    "fail_closed_behavior": {
+      "missing_tenant_id_on_operator": "deny with 403 tenant_context_missing",
+      "resource_in_different_tenant": "deny with 404 (not 403) to avoid leaking tenant existence",
+      "ambiguous_tenant_context": "deny and require explicit clarification"
+    },
+    "cross_tenant_denial": {
+      "result": "denied",
+      "audit_event_written": true,
+      "response_code": 404,
+      "reason": "cross_tenant_access_denied"
+    },
+    "admin_system_exceptions": {
+      "requires_is_system_admin_flag": true,
+      "all_cross_tenant_accesses_logged": true,
+      "no_cross_tenant_write_without_explicit_intent_flag": true
+    },
+    "health_readiness_exceptions": {
+      "public_unauthenticated": true,
+      "no_tenant_context": true,
+      "must_not_return_tenant_scoped_data": true
+    },
+    "demo_endpoint_exceptions": {
+      "public_unauthenticated": true,
+      "synthetic_data_only": true,
+      "gl190_guard_maintained": true,
+      "must_not_expose_tenant_scoped_data": true
+    },
+    "error_response_safety": "Error responses must never include raw tenant_id values from other tenants, resource IDs from other tenants, operator tokens, or secrets. Generic error messages are used for cross-tenant denial."
+  },
+  "auth_operator_admin_model": {
+    "current_state": {
+      "admin_token_mode": "GRANTLAYER_ADMIN_TOKEN env var; no tenant context",
+      "operator_token_mode": "operator record has id, name, role, token_hash, expires_at; no tenant_id",
+      "agent_permission_scopes": "globally-scoped within deployment"
+    },
+    "required_for_gl200b": [
+      "Operator table gains tenant_id — a non-null column binding each operator to exactly one tenant",
+      "Operator auth returns tenant context — authenticate_operator() returns the operator's tenant_id alongside their role",
+      "Admin token mode in GL-200B remains a dev/demo fallback bound to a single dev tenant context; must not be used in production multi-tenant deployments",
+      "Agent permission assignments gain tenant_id — assignments are scoped to the operator's tenant"
+    ],
+    "minimum_gl200b_enforcement": [
+      "authenticate_operator() resolves tenant_id from operator record",
+      "Auth guard injects tenant_id into request context",
+      "All business resource queries include WHERE tenant_id = ? clause",
+      "Operator creation requires tenant_id parameter"
+    ],
+    "deferred": [
+      "OAuth 2.0 / JWT / SSO per tenant — deferred to production auth issue",
+      "Workspace-level operator membership — deferred to GL-200C",
+      "Per-tenant rate limits — deferred",
+      "Tenant provisioning API — deferred (tenants are pre-provisioned in GL-200B)"
+    ]
+  },
+  "database_data_model_strategy": {
+    "columns_required": {
+      "all_business_resource_tables": [
+        "tenant_id TEXT NOT NULL DEFAULT 'unassigned'",
+        "workspace_id TEXT DEFAULT NULL (reserved for GL-200C)"
+      ],
+      "operators_table": [
+        "tenant_id TEXT NOT NULL DEFAULT 'unassigned'"
+      ]
+    },
+    "backfill_strategy": "Existing demo/dev data must be backfilled to tenant_id = 'demo'. Migration steps: (1) Add tenant_id TEXT DEFAULT 'unassigned' to each table; (2) UPDATE <table> SET tenant_id = 'demo' WHERE tenant_id = 'unassigned'; (3) Add workspace_id TEXT DEFAULT NULL (reserved); (4) Add index on tenant_id per table.",
+    "migration_safety": "Migrations must be idempotent (re-run does not fail). No data is deleted during migration. SQLite: check PRAGMA table_info before ALTER TABLE. PostgreSQL: ALTER TABLE ADD COLUMN IF NOT EXISTS. No new UNIQUE constraints on tenant_id alone.",
+    "sqlite_postgresql_implications": "SQLite: ALTER TABLE ADD COLUMN supported without IF NOT EXISTS; must check PRAGMA table_info first. PostgreSQL: ALTER TABLE ADD COLUMN IF NOT EXISTS supported (v9.6+). Both backends produce identical query behaviour via existing _translate_placeholders layer in db.py.",
+    "indexes": [
+      "CREATE INDEX idx_grants_tenant_id ON grants(tenant_id)",
+      "CREATE INDEX idx_grants_tenant_subject ON grants(tenant_id, subject_id)",
+      "Similar indexes for each scoped table"
+    ],
+    "uniqueness_constraints": "No new UNIQUE constraints needed in GL-200B (IDs remain globally unique UUIDs). Composite uniqueness constraints (if any) would be (tenant_id, id) but UUIDs are globally unique so this is not required.",
+    "cascading_behavior": "No cascade deletes in GL-200B. Tenant deactivation is a future concern.",
+    "audit_immutability": "The hash-chain in audit_events covers a canonical JSON payload. Adding tenant_id to the payload breaks the existing chain unless handled carefully. Recommended: new events after migration include tenant_id in canonical hash payload; historical events retain original row_hash; migration boundary marker event appended to chain.",
+    "rollback_compatibility": "Rollback of tenant_id migration is low-risk (column drop) as long as no non-demo data has been written under tenant context. Pre-migration clients continue to work via admin-token/operator-token path (which resolves tenant context server-side)."
+  },
+  "audit_design": {
+    "tenant_context_in_events": "Every audit event written after GL-200B implementation must include: tenant_id (the tenant context of the action), workspace_id (nullable in GL-200B), scope (one of: tenant, tenant_admin, system, system_admin, public).",
+    "system_events": "System-level events (migration completion, health probes) use scope: system, tenant_id: null.",
+    "cross_tenant_denial_events": {
+      "action": "cross_tenant_access_denied",
+      "approved": false,
+      "reason": "cross_tenant_access_denied",
+      "scope": "tenant"
+    },
+    "immutable_audit_behavior": "Audit events remain append-only and tamper-evident after GL-200B. Hash-chain mechanism is preserved. Migration boundary marker event handles the transition. tenant_id is included in canonical hash payload for post-migration events.",
+    "no_sensitive_data_in_audit": "Raw token values must never appear in audit events. Raw grant payloads must not be embedded. No PII beyond what is already logged.",
+    "tenant_workspace_context_propagation": "All business resource mutations write audit events with tenant_id. System operations write audit events with scope: system and tenant_id: null. Cross-tenant denial events are always written regardless of deny outcome."
+  },
+  "permission_model_implications": {
+    "agent_permission_scopes": "Current scopes (evidence:read, grant_request:read, etc.) are globally-scoped within a deployment. After GL-200B: agent permission assignments carry the operator's tenant_id; scope evaluation must receive tenant context and verify that the requested resource belongs to the same tenant as the assignment. Scope vocabulary does not change. Wildcard scopes (*:*) remain valid but are tenant-bounded.",
+    "operator_role_model": "Operator roles (owner, grant_admin, grant_reviewer, readonly, auditor) remain unchanged. Roles are enforced within the tenant context. Cross-tenant role elevation is forbidden.",
+    "admin_token_mode": "In GL-200B, admin token mode may remain as a dev/demo fallback bound to a single dev tenant. Must not be used in production multi-tenant deployments. Must be clearly documented as not production-safe."
+  },
+  "testing_strategy": {
+    "cross_tenant_isolation_tests": [
+      {"id": "T-001", "description": "Operator A (tenant_1) cannot read grants belonging to tenant_2"},
+      {"id": "T-002", "description": "Operator A (tenant_1) cannot write grants to tenant_2"},
+      {"id": "T-003", "description": "Operator A (tenant_1) cannot read audit events from tenant_2"},
+      {"id": "T-004", "description": "Operator A (tenant_1) cannot read evidence from tenant_2"},
+      {"id": "T-005", "description": "Operator A (tenant_1) cannot read grant requests from tenant_2"},
+      {"id": "T-006", "description": "Cross-tenant access denial is auditable (audit event written)"},
+      {"id": "T-007", "description": "Cross-tenant denial returns 404 (not 403) for resource endpoints"}
+    ],
+    "workspace_isolation_tests": [
+      {"id": "W-001", "description": "Workspace A operator cannot read grants from workspace B within same tenant (GL-200C)"},
+      {"id": "W-002", "description": "Workspace A operator cannot write grants to workspace B (GL-200C)"},
+      {"id": "W-003", "description": "Cross-workspace denial is auditable (GL-200C)"}
+    ],
+    "auth_context_tests": [
+      {"id": "A-001", "description": "Missing operator token → 401 (unchanged)"},
+      {"id": "A-002", "description": "Invalid operator token → 401 (unchanged)"},
+      {"id": "A-003", "description": "Operator with no tenant_id → 403 tenant_context_missing"},
+      {"id": "A-004", "description": "Admin token mode resolves to dev tenant context"}
+    ],
+    "audit_context_tests": [
+      {"id": "AU-001", "description": "Post-migration audit events include tenant_id"},
+      {"id": "AU-002", "description": "System-level events carry scope: system"},
+      {"id": "AU-003", "description": "Cross-tenant denial events are written to audit log"},
+      {"id": "AU-004", "description": "Audit chain verification handles pre/post-migration events"}
+    ],
+    "demo_endpoint_safety_tests": [
+      {"id": "D-001", "description": "/demo/* endpoints remain accessible without auth (GL-190 guard)"},
+      {"id": "D-002", "description": "/demo/* endpoints serve only synthetic data"},
+      {"id": "D-003", "description": "/demo/* endpoints do not expose tenant-scoped data"}
+    ],
+    "health_readiness_tests": [
+      {"id": "H-001", "description": "/health returns 200 without auth (unchanged)"},
+      {"id": "H-002", "description": "/readiness returns 200 without auth (unchanged)"},
+      {"id": "H-003", "description": "Health/readiness responses contain no tenant-scoped data"}
+    ],
+    "migration_tests": [
+      {"id": "M-001", "description": "Migration adds tenant_id to all business resource tables"},
+      {"id": "M-002", "description": "Migration backfill sets existing rows to tenant_id = demo"},
+      {"id": "M-003", "description": "Migration is idempotent (re-run does not fail)"},
+      {"id": "M-004", "description": "Existing test fixtures continue to pass post-migration"}
+    ],
+    "examples_determinism_tests": [
+      {"id": "E-001", "description": "examples/grant_lifecycle_evidence_bundle.py output matches fixture"},
+      {"id": "E-002", "description": "scripts/verify-first-output.sh passes"},
+      {"id": "E-003", "description": "Public examples remain deterministic after implementation"}
+    ],
+    "security_boundary_regression_tests": [
+      {"id": "S-001", "description": "Anonymous access remains denied where expected"},
+      {"id": "S-002", "description": "No raw token/secret leakage in any API response"},
+      {"id": "S-003", "description": "Security boundary regression suite passes with no new failures"}
+    ]
+  },
+  "rollout_plan": {
+    "phase_1_gl200b": "Add tenant_id (non-null, backfilled) and workspace_id (nullable, reserved) columns to all business resource tables via new migration. Update operators table. Update authenticate_operator() to return tenant_id. Inject tenant context into all business resource queries. Add fail-closed guard: missing tenant_id → 403. Update audit event writer to include tenant_id. Update hash-chain canonical payload for post-migration events. Write and pass all T-xxx, A-xxx, AU-xxx, M-xxx tests. Update docs after merge.",
+    "phase_2_gl200c": "Activate workspace_id enforcement on all business resources. Add workspace membership model. Write and pass all W-xxx tests.",
+    "phase_3_gl200d": "Implement full RBAC/tenant/workspace policy engine. Replace per-query tenant filter with policy evaluation layer.",
+    "phase_4_gl201": "Update docs/openapi.yaml to reflect tenant context in API contract.",
+    "phase_5_gl202": "Harden audit event tenant context; add workspace_id to audit. Verify chain integrity across migrations.",
+    "phase_6_gl203": "Add cross-tenant and workspace isolation to public smoke matrix. Verify all T-xxx, W-xxx, AU-xxx tests in CI."
+  },
+  "compatibility_strategy": {
+    "no_breaking_api_change_in_gl200b": "Tenant context is resolved server-side from the operator record; clients do not need to change.",
+    "existing_examples_remain_deterministic": "Examples use a single operator/tenant (demo); no change needed.",
+    "existing_test_fixtures_continue": "Test DB is initialized fresh per test; migration runs as part of init_db(); all existing tests remain valid.",
+    "sqlite_postgresql_parity": "Migration must work on both backends.",
+    "admin_token_dev_demo_mode": "Remains available as a single-tenant fallback for development; must not be used in multi-tenant production."
+  },
+  "production_readiness_criteria": [
+    "DB schema scoped — tenant_id column exists on all business resource tables in production schema",
+    "Request context enforced — every API request that accesses business resources reads and enforces the operator's tenant_id",
+    "All sensitive resources scoped — grants, grant_requests, challenges, grant_executions, evidence/executions, audit_events, operators, agent_permission_assignments all have tenant_id enforced",
+    "Cross-tenant tests pass — all T-xxx tests pass in CI",
+    "Audit context propagated — all AU-xxx tests pass; audit events include tenant_id",
+    "Migration verified — all M-xxx tests pass; migration is idempotent",
+    "Examples deterministic — all E-xxx tests pass",
+    "Security boundary regression passes — all S-xxx tests pass with no new failures",
+    "Public docs updated — docs updated only after GL-200B is merged and verified, not before",
+    "Security review complete — security-sensitive findings routed to GitHub Security Advisories before public disclosure"
+  ],
+  "implementation_split": {
+    "gl200b": {
+      "title": "Tenant/Workspace Isolation Implementation Baseline",
+      "scope": "Implement tenant_id on all business resource tables, operator binding, auth context injection, query filtering, and audit context. Write all T-xxx, A-xxx, AU-xxx, M-xxx tests.",
+      "deliverables": [
+        "New DB migration adding tenant_id, workspace_id (nullable) to all tables",
+        "Updated operators table with tenant_id",
+        "Updated authenticate_operator() returning tenant context",
+        "Updated resource query functions with tenant_id filter",
+        "Updated audit event writer with tenant_id",
+        "Updated hash-chain canonical payload",
+        "Full test suite for isolation"
+      ]
+    },
+    "gl200c": {
+      "title": "Workspace Isolation Baseline",
+      "scope": "Activate workspace_id enforcement; add workspace membership model; write W-xxx tests."
+    },
+    "gl200d": {
+      "title": "Tenant/Workspace Policy Engine",
+      "scope": "Implement full RBAC/policy engine replacing per-query tenant filter."
+    },
+    "gl201": {
+      "title": "Tenant/Workspace Isolation API Contract Update",
+      "scope": "Update docs/openapi.yaml to reflect tenant context."
+    },
+    "gl202": {
+      "title": "Tenant/Workspace Isolation Audit Propagation",
+      "scope": "Harden audit chain tenant context; dual-mode chain verification; workspace_id in audit canonical payload."
+    },
+    "gl203": {
+      "title": "Tenant/Workspace Isolation Regression/Smoke Matrix",
+      "scope": "Add cross-tenant and workspace isolation to CI smoke matrix."
+    }
+  },
+  "findings": [
+    {
+      "id": "GL-200A-F001",
+      "severity": "critical",
+      "category": "tenant-isolation",
+      "summary": "No tenant_id column exists on any business resource table",
+      "evidence": "backend/src/migrations/0001_gl032_baseline.py: grants, grant_requests, grant_executions, challenges, audit_events, operators tables have no tenant_id column. Zero occurrences of tenant_id in backend/src/.",
+      "blocking_for_design": false,
+      "blocking_for_gl200b_implementation": true,
+      "blocking_for_production": true,
+      "recommended_action": "Add tenant_id column to all business resource tables in a new GL-200B migration. Backfill existing data to demo tenant.",
+      "recommended_issue": "GL-200B"
+    },
+    {
+      "id": "GL-200A-F002",
+      "severity": "critical",
+      "category": "auth-context",
+      "summary": "Operator token carries no tenant_id; auth layer returns no tenant context",
+      "evidence": "backend/src/auth.py: check_auth() returns operator dict with no tenant_id field. Operator model has no tenant_id column. Auth context cannot enforce tenant scope.",
+      "blocking_for_design": false,
+      "blocking_for_gl200b_implementation": true,
+      "blocking_for_production": true,
+      "recommended_action": "Add tenant_id to operator table and record; update authenticate_operator() to return tenant_id; inject into request context.",
+      "recommended_issue": "GL-200B"
+    },
+    {
+      "id": "GL-200A-F003",
+      "severity": "critical",
+      "category": "API-boundary",
+      "summary": "All API queries are globally-scoped; no WHERE tenant_id = ? clause exists in any resource query",
+      "evidence": "backend/src/grants.py: list_grants() = SELECT * FROM grants ORDER BY created_at DESC — no tenant filter. Similar pattern in grant_requests.py, challenges.py, grant_executions.py.",
+      "blocking_for_design": false,
+      "blocking_for_gl200b_implementation": true,
+      "blocking_for_production": true,
+      "recommended_action": "Update all list/get/create/update/delete query functions to accept and apply tenant_id parameter.",
+      "recommended_issue": "GL-200B"
+    },
+    {
+      "id": "GL-200A-F004",
+      "severity": "critical",
+      "category": "audit-context",
+      "summary": "Audit events carry no tenant_id; audit trail is a single global namespace",
+      "evidence": "backend/src/audit_log.py: AuditEvent dataclass and hash-chain payload include no tenant_id. audit_events table schema (migration 0001) has no tenant_id column.",
+      "blocking_for_design": false,
+      "blocking_for_gl200b_implementation": true,
+      "blocking_for_production": true,
+      "recommended_action": "Add tenant_id to audit_events table; update AuditEvent model; update hash-chain canonical payload to include tenant_id for post-migration events; handle dual-mode verification.",
+      "recommended_issue": "GL-200B + GL-202"
+    },
+    {
+      "id": "GL-200A-F005",
+      "severity": "high",
+      "category": "permission-model",
+      "summary": "Agent permission assignments are globally-scoped; no tenant binding exists",
+      "evidence": "backend/src/agent_permission_assignments.py: assignments table has no tenant_id column. Scope evaluation does not check tenant context.",
+      "blocking_for_design": false,
+      "blocking_for_gl200b_implementation": true,
+      "blocking_for_production": true,
+      "recommended_action": "Add tenant_id to agent_permission_assignments table; update scope evaluation to verify tenant context.",
+      "recommended_issue": "GL-200B"
+    },
+    {
+      "id": "GL-200A-F006",
+      "severity": "high",
+      "category": "database-migration",
+      "summary": "Hash-chain canonical payload does not include tenant_id; adding it post-migration will break existing chain verification unless handled carefully",
+      "evidence": "backend/src/audit_log.py: _hash_payload() computes a canonical JSON payload with no tenant_id. Adding tenant_id post-hoc breaks row_hash values for historical events.",
+      "blocking_for_design": false,
+      "blocking_for_gl200b_implementation": false,
+      "blocking_for_production": true,
+      "recommended_action": "Use dual-mode chain verification: historical events (no tenant_id in hash) verified with old canonical payload; new events verified with tenant_id-inclusive payload. Migration boundary marker event appended.",
+      "recommended_issue": "GL-200B + GL-202"
+    },
+    {
+      "id": "GL-200A-F007",
+      "severity": "medium",
+      "category": "testing",
+      "summary": "No cross-tenant isolation tests exist in the current test suite",
+      "evidence": "backend/tests/: no test file contains cross_tenant or tenant_id assertions. Security boundary tests check auth but not tenant data isolation.",
+      "blocking_for_design": false,
+      "blocking_for_gl200b_implementation": true,
+      "blocking_for_production": true,
+      "recommended_action": "Write T-001 through T-007 tests as part of GL-200B. Add to CI smoke matrix in GL-203.",
+      "recommended_issue": "GL-200B + GL-203"
+    },
+    {
+      "id": "GL-200A-F008",
+      "severity": "medium",
+      "category": "production-readiness",
+      "summary": "Public documentation correctly states tenant isolation is not implemented; must remain accurate until GL-200B is merged and verified",
+      "evidence": "docs/tenant_workspace_boundary_decision.md (GL-132): 'No multi-tenant isolation implemented.' SECURITY.md section 6 notes same. docs/production_readiness_gap_report_v2.md confirms not ready.",
+      "blocking_for_design": false,
+      "blocking_for_gl200b_implementation": false,
+      "blocking_for_production": true,
+      "recommended_action": "Do not update public docs to claim tenant isolation until GL-200B is merged, tested, and verified. Then update in GL-200B PR.",
+      "recommended_issue": "GL-200B"
+    },
+    {
+      "id": "GL-200A-F009",
+      "severity": "low",
+      "category": "workspace-isolation",
+      "summary": "workspace_id not in current schema; design must reserve it to avoid a second disruptive migration",
+      "evidence": "No workspace_id in any migration file. GL-144 design doc proposed workspace model but was never implemented.",
+      "blocking_for_design": false,
+      "blocking_for_gl200b_implementation": false,
+      "blocking_for_production": false,
+      "recommended_action": "Add workspace_id TEXT DEFAULT NULL to all tables in the GL-200B migration to reserve the column. Do not enforce it in GL-200B.",
+      "recommended_issue": "GL-200B (column reservation) + GL-200C (enforcement)"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 4,
+    "high": 2,
+    "medium": 2,
+    "low": 1,
+    "total": 9
+  },
+  "decision": "tenant_workspace_design_ready_for_implementation",
+  "decision_rationale": "The design pack is complete. The recommended implementation plan is: GL-200B implements Option A baseline (tenant_id on all business resource tables, operator binding, auth context injection, API query filtering, audit context, fail-closed enforcement). workspace_id column is reserved (nullable) in the GL-200B migration to avoid a second disruptive schema change. Workspace enforcement is staged to GL-200C. The design is compatible with both SQLite and PostgreSQL backends. The hash-chain audit integrity concern (GL-200A-F006) is addressed via dual-mode verification and a migration boundary marker event. All nine findings are actionable and assigned to concrete follow-up issues. No production SaaS claim is made.",
+  "recommended_next_issues": [
+    {
+      "issue_id": "GL-200A-Merge",
+      "title": "GL-200A Combined Merge-and-Publish for Tenant/Workspace Isolation Design Pack",
+      "purpose": "Merge GL-200A to main and push public snapshot if appropriate"
+    },
+    {
+      "issue_id": "GL-200B",
+      "title": "Tenant/Workspace Isolation Implementation Baseline",
+      "purpose": "Implement tenant_id on all business resource tables; operator binding; auth context injection; query filtering; audit context; fail-closed enforcement; migration; full T-xxx/A-xxx/AU-xxx/M-xxx test suite"
+    },
+    {
+      "issue_id": "GL-200C",
+      "title": "Workspace Isolation Baseline",
+      "purpose": "Activate workspace_id enforcement; workspace membership model; W-xxx tests"
+    },
+    {
+      "issue_id": "GL-200D",
+      "title": "Tenant/Workspace Policy Engine",
+      "purpose": "Full RBAC/policy engine replacing per-query tenant filter"
+    },
+    {
+      "issue_id": "GL-201",
+      "title": "Tenant/Workspace Isolation API Contract Update",
+      "purpose": "Update docs/openapi.yaml to reflect tenant context"
+    },
+    {
+      "issue_id": "GL-202",
+      "title": "Tenant/Workspace Isolation Audit Propagation",
+      "purpose": "Harden audit chain tenant context; dual-mode chain verification; workspace_id in audit"
+    },
+    {
+      "issue_id": "GL-203",
+      "title": "Tenant/Workspace Isolation Regression/Smoke Matrix",
+      "purpose": "Add cross-tenant and workspace isolation to CI smoke matrix"
+    }
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "no_reviewer_outreach_sent": true,
+    "no_backend_src_changes": true,
+    "no_openapi_changes": true,
+    "no_migration_db_dependency_changes": true,
+    "no_dependency_manifest_changes": true,
+    "no_sdk_implementation_changes": true,
+    "no_package_publishing_changes": true,
+    "no_examples_runtime_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_behavior_changes": true,
+    "no_production_saas_claim": true,
+    "tenant_workspace_isolation_not_claimed_as_implemented": true,
+    "no_real_customer_data_requested": true,
+    "no_private_grant_data_requested": true,
+    "no_secrets_requested": true,
+    "no_exploit_details_included": true,
+    "security_sensitive_reports_routed_to_github_security_advisories": true
+  },
+  "changed_files": [
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "backend/tests/test_gl200a_tenant_workspace_isolation_design_pack.py"
+  ],
+  "tests": {
+    "file": "backend/tests/test_gl200a_tenant_workspace_isolation_design_pack.py",
+    "count_expected": 60
+  },
+  "result": "tenant_workspace_isolation_design_pack_complete",
+  "next_recommended_step": "GL-200A Combined Merge-and-Publish for Tenant/Workspace Isolation Design Pack, then GL-200B Tenant/Workspace Isolation Implementation Baseline",
+  "non_goals": [
+    "implement tenant/workspace isolation",
+    "modify backend/src/*",
+    "modify runtime API behavior",
+    "modify docs/openapi.yaml",
+    "modify migrations or DB/schema",
+    "modify dependency manifests",
+    "create SDK implementation",
+    "publish packages",
+    "modify examples runtime behavior",
+    "modify frontend/website/design",
+    "change GitHub workflows",
+    "change snapshot publish script behavior",
+    "push to GitHub",
+    "change GitHub visibility",
+    "force push or rewrite history",
+    "change GitHub repository settings",
+    "create or modify GitHub labels/issues",
+    "send reviewer outreach",
+    "contact reviewers",
+    "push internal repo directly to GitHub",
+    "claim tenant/workspace isolation is implemented",
+    "claim production SaaS readiness",
+    "claim real customer/private grant data readiness",
+    "request real customer data",
+    "request private grants",
+    "request secrets",
+    "include exploit details"
+  ]
+}
