@@ -751,9 +751,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not config.ENABLE_OPERATOR_MODEL:
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            tenant_id = self._get_tenant_id(auth_ctx)
             qs = parse_qs(urlparse(self.path).query)
             try:
                 limit = self._parse_int_query_param(qs, "limit", default=200)
@@ -765,6 +766,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 grant_id=grant_id,
                 operator_id=operator_id,
                 limit=limit,
+                tenant_id=tenant_id,
             )
             self._send_json(200, [e.to_dict() for e in executions])
 
@@ -774,11 +776,12 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not config.ENABLE_OPERATOR_MODEL:
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            tenant_id = self._get_tenant_id(auth_ctx)
             execution_id = m.group(1)
-            execution = execs.get_grant_execution(execution_id)
+            execution = execs.get_grant_execution(execution_id, tenant_id=tenant_id)
             if execution is None:
                 self._send_json(404, self._gl030_error("Grant execution not found", "grant_execution_not_found", "The requested grant execution does not exist."))
                 return
@@ -790,11 +793,12 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not config.ENABLE_OPERATOR_MODEL:
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            tenant_id = self._get_tenant_id(auth_ctx)
             grant_id = m.group(1)
-            if get_grant(grant_id) is None:
+            if get_grant(grant_id, tenant_id=tenant_id) is None:
                 self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
                 return
             qs = parse_qs(urlparse(self.path).query)
@@ -802,7 +806,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 limit = self._parse_int_query_param(qs, "limit", default=200)
             except _QueryParamError:
                 return
-            executions = execs.list_grant_executions_for_grant(grant_id, limit=limit)
+            executions = execs.list_grant_executions_for_grant(grant_id, limit=limit, tenant_id=tenant_id)
             self._send_json(200, [e.to_dict() for e in executions])
 
         elif m := re.fullmatch(r"/evidence/executions/([^/]+)", path):
@@ -1148,6 +1152,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 return
             if config.ENABLE_OPERATOR_MODEL:
                 caller_operator_id = payload.get("operator", {}).get("operatorId")
+            tenant_id = self._get_tenant_id(payload)
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError) as e:
@@ -1189,6 +1194,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 resource=data["resource"],
                 challenge_id=data.get("challengeId"),
                 operator_id=caller_operator_id,
+                tenant_id=tenant_id,
             )
             self._send_json(200 if result["approved"] else 403, result)
             

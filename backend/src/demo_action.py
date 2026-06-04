@@ -31,8 +31,10 @@ def handle_demo_action(
     resource: str,
     challenge_id: Optional[str] = None,
     operator_id: Optional[str] = None,
+    tenant_id: Optional[str] = None,
 ) -> dict:
     require_challenge = _get_env_bool("GRANTLAYER_REQUIRE_CHALLENGE")
+    effective_tenant = tenant_id or "demo"
 
     # Pre-allocate execution record for every attempt
     execution = GrantExecution(
@@ -49,7 +51,7 @@ def handle_demo_action(
             execution.policy_result = "denied"
             execution.result = "denied"
             execution.error_code = "challenge_required"
-            execution = create_grant_execution(execution)
+            execution = create_grant_execution(execution, tenant_id=effective_tenant)
 
             event = AuditEvent(
                 subject_id=subject_id,
@@ -61,6 +63,8 @@ def handle_demo_action(
                 challenge_present=False,
                 challenge_result="required_missing",
                 grant_signature_result="not_checked",
+                tenant_id=effective_tenant,
+                scope="tenant",
             )
             append_event(event)
             update_grant_execution_audit_event_id(execution.id, event.id)
@@ -80,7 +84,7 @@ def handle_demo_action(
             resource=resource,
         )
 
-        grants = list_grants()
+        grants = list_grants(tenant_id=effective_tenant)
         now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
         result: PolicyResult = evaluate_access(request, grants, now)
 
@@ -140,7 +144,7 @@ def handle_demo_action(
         execution.policy_result = result.reason
         execution.result = "succeeded" if result.approved else "denied"
         execution.error_code = None if result.approved else result.reason
-        execution = create_grant_execution(execution)
+        execution = create_grant_execution(execution, tenant_id=effective_tenant)
 
         event = AuditEvent(
             subject_id=subject_id,
@@ -154,6 +158,8 @@ def handle_demo_action(
             challenge_present=challenge_present,
             challenge_result=challenge_result,
             grant_signature_result=grant_signature_result,
+            tenant_id=effective_tenant,
+            scope="tenant",
         )
         append_event(event)
         update_grant_execution_audit_event_id(execution.id, event.id)
@@ -188,7 +194,7 @@ def handle_demo_action(
         execution.policy_result = "error"
         execution.result = "failed"
         execution.error_code = "internal_handler_error"
-        execution = create_grant_execution(execution)
+        execution = create_grant_execution(execution, tenant_id=effective_tenant)
         return {
             "approved": False,
             "reason": "internal_handler_error",
