@@ -74,6 +74,11 @@ def _reload_all(db_path: str):
     os.environ["GRANTLAYER_DB"] = db_path
     os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
+    # Reload config first so env-driven module-level constants (ENABLE_OPERATOR_MODEL etc.)
+    # are fresh before dependent modules (auth, server) re-import it.
+    import src.config as config_mod
+    importlib.reload(config_mod)
+
     import src.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
