@@ -42,19 +42,22 @@ ALLOWED_GRANT_ROLES: frozenset[str] = frozenset({
 })
 
 
-def create_grant_request(request: GrantRequest) -> GrantRequest:
+def create_grant_request(
+    request: GrantRequest, tenant_id: Optional[str] = None
+) -> GrantRequest:
     """Create a new grant request in the 'requested' state."""
     validate_string_length(request.subject_id, "subject_id", MAX_SHORT_ID_LENGTH)
     validate_string_length(request.role, "role", MAX_ROLE_LENGTH)
     validate_string_length(request.action, "action", MAX_NAME_LENGTH)
     validate_string_length(request.resource, "resource", MAX_NAME_LENGTH)
     validate_string_length(request.reason, "reason", MAX_REASON_LENGTH)
+    effective_tenant = tenant_id or "demo"
     db.execute(
         """
         INSERT INTO grant_requests (
             id, subject_id, role, action, resource, valid_from, valid_until,
-            requested_by, reason, status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            requested_by, reason, status, created_at, updated_at, tenant_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             request.id,
@@ -69,22 +72,43 @@ def create_grant_request(request: GrantRequest) -> GrantRequest:
             request.status,
             request.created_at,
             request.updated_at,
+            effective_tenant,
         ),
     )
     return request
 
 
-def get_grant_request(request_id: str) -> Optional[GrantRequest]:
+def get_grant_request(
+    request_id: str, tenant_id: Optional[str] = None
+) -> Optional[GrantRequest]:
     """Get a single grant request by ID."""
-    row = db.query_one("SELECT * FROM grant_requests WHERE id = ?", (request_id,))
+    if tenant_id is not None:
+        row = db.query_one(
+            "SELECT * FROM grant_requests WHERE id = ? AND tenant_id = ?",
+            (request_id, tenant_id),
+        )
+    else:
+        row = db.query_one("SELECT * FROM grant_requests WHERE id = ?", (request_id,))
     if not row:
         return None
     return _row_to_grant_request(row)
 
 
-def list_grant_requests(status_filter: Optional[str] = None) -> List[GrantRequest]:
-    """List all grant requests, optionally filtered by status."""
-    if status_filter:
+def list_grant_requests(
+    status_filter: Optional[str] = None, tenant_id: Optional[str] = None
+) -> List[GrantRequest]:
+    """List grant requests, optionally filtered by status and/or tenant."""
+    if tenant_id is not None and status_filter:
+        rows = db.query_all(
+            "SELECT * FROM grant_requests WHERE status = ? AND tenant_id = ? ORDER BY created_at DESC",
+            (status_filter, tenant_id),
+        )
+    elif tenant_id is not None:
+        rows = db.query_all(
+            "SELECT * FROM grant_requests WHERE tenant_id = ? ORDER BY created_at DESC",
+            (tenant_id,),
+        )
+    elif status_filter:
         rows = db.query_all(
             "SELECT * FROM grant_requests WHERE status = ? ORDER BY created_at DESC",
             (status_filter,),
@@ -104,16 +128,16 @@ def _is_request_expired(request: GrantRequest) -> bool:
 
 
 def approve_grant_request(
-    request_id: str, operator_id: str
+    request_id: str, operator_id: str, tenant_id: Optional[str] = None
 ) -> Tuple[GrantRequest, Grant]:
     """Approve a grant request, creating the actual grant.
-    
+
     Returns both the updated request and the newly created grant.
     """
     conn = db.get_conn()
     try:
-        # Get the request
-        request = get_grant_request(request_id)
+        # Get the request (scoped to tenant if provided)
+        request = get_grant_request(request_id, tenant_id=tenant_id)
         if not request:
             raise ValueError(f"Grant request {request_id} not found")
 
@@ -134,6 +158,8 @@ def approve_grant_request(
         # Start transaction
         conn.execute("BEGIN TRANSACTION")
 
+        effective_tenant = tenant_id or "demo"
+
         # Create the actual grant from the request
         grant = Grant(
             subject_id=request.subject_id,
@@ -147,7 +173,7 @@ def approve_grant_request(
         )
 
         # Save the grant using the shared transaction connection
-        grants.create_grant(grant, conn=conn)
+        grants.create_grant(grant, conn=conn, tenant_id=effective_tenant)
 
         # Update the request to approved state
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
@@ -169,6 +195,8 @@ def approve_grant_request(
                 resource=f"grant_request/{request_id}",
                 approved=True,
                 reason=f"Grant request {request_id} approved",
+                tenant_id=effective_tenant,
+                scope="tenant",
             ),
             conn=conn,
         )
@@ -187,13 +215,13 @@ def approve_grant_request(
 
 
 def deny_grant_request(
-    request_id: str, operator_id: str, reason: str
+    request_id: str, operator_id: str, reason: str, tenant_id: Optional[str] = None
 ) -> GrantRequest:
     """Deny a grant request without creating a grant."""
     conn = db.get_conn()
     try:
-        # Get the request
-        request = get_grant_request(request_id)
+        # Get the request (scoped to tenant if provided)
+        request = get_grant_request(request_id, tenant_id=tenant_id)
         if not request:
             raise ValueError(f"Grant request {request_id} not found")
 
@@ -209,6 +237,8 @@ def deny_grant_request(
                 f"Denial reason exceeds maximum length of {MAX_DENIAL_REASON_LENGTH} characters"
             )
 
+        effective_tenant = tenant_id or "demo"
+
         # Start transaction
         conn.execute("BEGIN TRANSACTION")
 
@@ -222,7 +252,7 @@ def deny_grant_request(
             """,
             ("denied", operator_id, now, reason, now, request_id),
         )
-        
+
         # Log an audit event for the denial inside the same transaction
         audit_log.append_event(
             AuditEvent(
@@ -232,12 +262,14 @@ def deny_grant_request(
                 resource=f"grant_request/{request_id}",
                 approved=False,
                 reason=f"Grant request {request_id} denied: {reason}",
+                tenant_id=effective_tenant,
+                scope="tenant",
             ),
             conn=conn,
         )
-        
+
         conn.commit()
-        
+
         # Return the updated request
         updated_request = get_grant_request(request_id)
         return updated_request
@@ -249,14 +281,14 @@ def deny_grant_request(
 
 
 def revoke_grant_request(
-    request_id: str, operator_id: str, reason: str
+    request_id: str, operator_id: str, reason: str, tenant_id: Optional[str] = None
 ) -> GrantRequest:
     """Revoke a previously approved grant request."""
     validate_string_length(reason, "reason", MAX_REASON_LENGTH)
     conn = db.get_conn()
     try:
-        # Get the request
-        request = get_grant_request(request_id)
+        # Get the request (scoped to tenant if provided)
+        request = get_grant_request(request_id, tenant_id=tenant_id)
         if not request:
             raise ValueError(f"Grant request {request_id} not found")
 
@@ -266,13 +298,17 @@ def revoke_grant_request(
                 f"Cannot revoke grant request {request_id} with status {request.status}"
             )
 
+        effective_tenant = tenant_id or "demo"
+
         # Start transaction
         conn.execute("BEGIN TRANSACTION")
 
         # If there's an associated grant, revoke it too
         if request.grant_id:
             grants.revoke_grant(
-                request.grant_id, operator_id, f"Revoked from request: {reason}", conn=conn
+                request.grant_id, operator_id,
+                f"Revoked from request: {reason}", conn=conn,
+                tenant_id=effective_tenant,
             )
 
         # Update the request to revoked state
@@ -295,6 +331,8 @@ def revoke_grant_request(
                 resource=f"grant_request/{request_id}",
                 approved=False,
                 reason=f"Grant request {request_id} revoked: {reason}",
+                tenant_id=effective_tenant,
+                scope="tenant",
             ),
             conn=conn,
         )

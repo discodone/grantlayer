@@ -43,6 +43,10 @@ def _hash_payload(event: AuditEvent, prev_hash: Optional[str]) -> str:
 
     Includes all stable audit fields plus prev_hash.
     Excludes row_hash itself.
+
+    GL-200B dual-mode: tenant_id is included in the canonical payload only
+    when it is explicitly set (non-None). Pre-migration events (tenant_id=None)
+    use the original payload format so their stored row_hash values remain valid.
     """
     payload = {
         "id": event.id,
@@ -60,6 +64,8 @@ def _hash_payload(event: AuditEvent, prev_hash: Optional[str]) -> str:
         "grant_signature_result": event.grant_signature_result,
         "prev_hash": prev_hash,
     }
+    if event.tenant_id is not None:
+        payload["tenant_id"] = event.tenant_id
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 
@@ -87,6 +93,9 @@ def _row_to_audit_event(row: dict) -> AuditEvent:
         grant_signature_result=row["grant_signature_result"] or "not_checked",
         row_hash=row.get("row_hash"),
         prev_hash=row.get("prev_hash"),
+        tenant_id=row.get("tenant_id"),
+        workspace_id=row.get("workspace_id"),
+        scope=row.get("scope"),
     )
 
 
@@ -284,8 +293,9 @@ def append_event(event: AuditEvent, conn=None) -> None:
                (id, timestamp, subject_id, role, action, resource,
                 approved, reason, matched_grant_id,
                 challenge_id, challenge_present, challenge_result,
-                grant_signature_result, row_hash, prev_hash)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+                grant_signature_result, row_hash, prev_hash,
+                tenant_id, workspace_id, scope)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
         params = (
             event.id, event.timestamp, event.subject_id, event.role,
             event.action, event.resource, int(event.approved),
@@ -293,6 +303,7 @@ def append_event(event: AuditEvent, conn=None) -> None:
             event.challenge_id, int(event.challenge_present), event.challenge_result,
             event.grant_signature_result,
             row_hash, prev_hash,
+            event.tenant_id, event.workspace_id, event.scope,
         )
         if conn is not None:
             conn.execute(sql, params)
@@ -310,11 +321,17 @@ def get_event(event_id: str) -> Optional[AuditEvent]:
     return _row_to_audit_event(row)
 
 
-def list_events(limit: int = 200) -> List[AuditEvent]:
-    rows = query_all(
-        "SELECT * FROM audit_events ORDER BY timestamp DESC LIMIT ?",
-        (limit,),
-    )
+def list_events(limit: int = 200, tenant_id: Optional[str] = None) -> List[AuditEvent]:
+    if tenant_id is not None:
+        rows = query_all(
+            "SELECT * FROM audit_events WHERE tenant_id = ? ORDER BY timestamp DESC LIMIT ?",
+            (tenant_id, limit),
+        )
+    else:
+        rows = query_all(
+            "SELECT * FROM audit_events ORDER BY timestamp DESC LIMIT ?",
+            (limit,),
+        )
     return [_row_to_audit_event(r) for r in rows]
 
 

@@ -31,34 +31,48 @@ def _row_to_grant(row: dict) -> Grant:
     )
 
 
-def list_grants() -> List[Grant]:
-    rows = query_all("SELECT * FROM grants ORDER BY created_at DESC")
+def list_grants(tenant_id: Optional[str] = None) -> List[Grant]:
+    if tenant_id is not None:
+        rows = query_all(
+            "SELECT * FROM grants WHERE tenant_id = ? ORDER BY created_at DESC",
+            (tenant_id,),
+        )
+    else:
+        rows = query_all("SELECT * FROM grants ORDER BY created_at DESC")
     return [_row_to_grant(r) for r in rows]
 
 
-def get_grant(grant_id: str) -> Optional[Grant]:
-    row = query_one("SELECT * FROM grants WHERE id = ?", (grant_id,))
+def get_grant(grant_id: str, tenant_id: Optional[str] = None) -> Optional[Grant]:
+    if tenant_id is not None:
+        row = query_one(
+            "SELECT * FROM grants WHERE id = ? AND tenant_id = ?",
+            (grant_id, tenant_id),
+        )
+    else:
+        row = query_one("SELECT * FROM grants WHERE id = ?", (grant_id,))
     return _row_to_grant(row) if row else None
 
 
-def create_grant(grant: Grant, conn=None) -> Grant:
+def create_grant(grant: Grant, conn=None, tenant_id: Optional[str] = None) -> Grant:
     # Generate signature before inserting to ensure atomic creation
     sig_hex, hash_hex, key_id = _sign_grant(grant)
     grant.signature = sig_hex
     grant.payload_hash = hash_hex
     grant.signing_key_id = key_id
 
+    effective_tenant = tenant_id or "demo"
+
     sql = """INSERT INTO grants
            (id, subject_id, role, action, resource, valid_from, valid_until,
             created_by, reason, revoked, created_at, max_uses, use_count,
-            signature, signing_key_id, payload_hash)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)"""
+            signature, signing_key_id, payload_hash, tenant_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)"""
     params = (
         grant.id, grant.subject_id, grant.role, grant.action,
         grant.resource, grant.valid_from, grant.valid_until,
         grant.created_by, grant.reason, grant.created_at,
         grant.max_uses, grant.use_count,
-        sig_hex, key_id, hash_hex,
+        sig_hex, key_id, hash_hex, effective_tenant,
     )
 
     if conn is not None:
@@ -89,12 +103,24 @@ def tamper_grant(grant_id: str) -> Optional[dict]:
     }
 
 
-def revoke_grant(grant_id: str, revoked_by: str, reason: str, conn=None) -> bool:
+def revoke_grant(
+    grant_id: str,
+    revoked_by: str,
+    reason: str,
+    conn=None,
+    tenant_id: Optional[str] = None,
+) -> bool:
     revoked_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-    sql = """UPDATE grants
-           SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?
-           WHERE id = ? AND revoked = 0"""
-    params = (revoked_by, reason, revoked_at, grant_id)
+    if tenant_id is not None:
+        sql = """UPDATE grants
+               SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?
+               WHERE id = ? AND tenant_id = ? AND revoked = 0"""
+        params = (revoked_by, reason, revoked_at, grant_id, tenant_id)
+    else:
+        sql = """UPDATE grants
+               SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?
+               WHERE id = ? AND revoked = 0"""
+        params = (revoked_by, reason, revoked_at, grant_id)
     if conn is not None:
         cur = conn.execute(sql, params)
         return (cur.rowcount or 0) > 0
