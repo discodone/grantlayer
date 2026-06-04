@@ -362,21 +362,21 @@ def expire_old_requests() -> int:
             datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=24)
         ).isoformat().replace("+00:00", "Z")
         
-        # Find requests to expire
+        # Find requests to expire (include tenant_id for audit propagation)
         to_expire = conn.execute(
             """
-            SELECT id FROM grant_requests 
+            SELECT id, tenant_id FROM grant_requests
             WHERE status = 'requested' AND created_at < ?
             """,
             (cutoff,),
         ).fetchall()
-        
+
         if not to_expire:
             return 0
-        
+
         # Start transaction
         conn.execute("BEGIN TRANSACTION")
-        
+
         # Update requests to expired state
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
         conn.executemany(
@@ -387,9 +387,11 @@ def expire_old_requests() -> int:
             """,
             [(now, row["id"]) for row in to_expire],
         )
-        
-        # GL-098: Create expiry audit events for each expired request
+
+        # GL-098 / GL-200C: Create expiry audit events for each expired request,
+        # propagating tenant_id so audit events are tenant-scoped.
         for row in to_expire:
+            row_tenant = row["tenant_id"] if hasattr(row, "__getitem__") else None
             audit_log.append_event(
                 AuditEvent(
                     subject_id="system",
@@ -398,6 +400,8 @@ def expire_old_requests() -> int:
                     resource=f"grant_request/{row['id']}",
                     approved=False,
                     reason=f"Grant request {row['id']} expired after 24 hours",
+                    tenant_id=row_tenant,
+                    scope="tenant" if row_tenant else None,
                 ),
                 conn=conn,
             )

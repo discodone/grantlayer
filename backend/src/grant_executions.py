@@ -30,15 +30,19 @@ def _row_to_grant_execution(row: dict | None) -> Optional[GrantExecution]:
     )
 
 
-def create_grant_execution(execution: GrantExecution) -> GrantExecution:
+def create_grant_execution(
+    execution: GrantExecution,
+    tenant_id: Optional[str] = None,
+) -> GrantExecution:
     """Insert a new grant execution record."""
+    effective_tenant = tenant_id or "demo"
     execute(
         """
         INSERT INTO grant_executions (
             id, grant_id, grant_request_id, operator_id, action, resource,
             challenge_id, challenge_result, policy_result, result, error_code,
-            executed_at, audit_event_id, metadata_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            executed_at, audit_event_id, metadata_json, tenant_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             execution.id,
@@ -55,14 +59,24 @@ def create_grant_execution(execution: GrantExecution) -> GrantExecution:
             execution.executed_at,
             execution.audit_event_id,
             execution.metadata_json,
+            effective_tenant,
         ),
     )
     return execution
 
 
-def get_grant_execution(execution_id: str) -> Optional[GrantExecution]:
-    """Get a single grant execution by ID."""
-    row = query_one("SELECT * FROM grant_executions WHERE id = ?", (execution_id,))
+def get_grant_execution(
+    execution_id: str,
+    tenant_id: Optional[str] = None,
+) -> Optional[GrantExecution]:
+    """Get a single grant execution by ID, optionally scoped to tenant."""
+    if tenant_id is not None:
+        row = query_one(
+            "SELECT * FROM grant_executions WHERE id = ? AND tenant_id = ?",
+            (execution_id, tenant_id),
+        )
+    else:
+        row = query_one("SELECT * FROM grant_executions WHERE id = ?", (execution_id,))
     return _row_to_grant_execution(row)
 
 
@@ -71,10 +85,14 @@ def list_grant_executions(
     grant_request_id: Optional[str] = None,
     operator_id: Optional[str] = None,
     limit: int = 200,
+    tenant_id: Optional[str] = None,
 ) -> List[GrantExecution]:
-    """List grant executions, optionally filtered."""
+    """List grant executions, optionally filtered by tenant and other fields."""
     conditions: list[str] = []
     params: list = []
+    if tenant_id is not None:
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
     if grant_id is not None:
         conditions.append("grant_id = ?")
         params.append(grant_id)
@@ -95,9 +113,13 @@ def list_grant_executions(
     return [_row_to_grant_execution(r) for r in rows]
 
 
-def list_grant_executions_for_grant(grant_id: str, limit: int = 200) -> List[GrantExecution]:
-    """List executions for a specific grant."""
-    return list_grant_executions(grant_id=grant_id, limit=limit)
+def list_grant_executions_for_grant(
+    grant_id: str,
+    limit: int = 200,
+    tenant_id: Optional[str] = None,
+) -> List[GrantExecution]:
+    """List executions for a specific grant, optionally scoped to tenant."""
+    return list_grant_executions(grant_id=grant_id, limit=limit, tenant_id=tenant_id)
 
 
 def update_grant_execution_audit_event_id(
