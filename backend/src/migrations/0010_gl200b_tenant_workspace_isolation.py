@@ -116,11 +116,15 @@ def _add_tenant_columns(conn, table: str, default_tenant: str, nullable: bool = 
             conn.execute(
                 f"ALTER TABLE {table} ADD COLUMN tenant_id TEXT DEFAULT NULL"
             )
-            # Backfill existing rows so they appear under the right tenant
-            conn.execute(
-                f"UPDATE {table} SET tenant_id = ? WHERE tenant_id IS NULL",
-                (default_tenant,),
-            )
+            # No backfill for the nullable path (audit_events).
+            # Pre-migration events keep tenant_id=NULL intentionally:
+            # (a) NULL preserves the hash-chain canonical payload format so
+            #     stored row_hash values remain verifiable (GL-103/GL-202).
+            # (b) The audit immutability trigger (GL-102) blocks UPDATE, so
+            #     a blanket backfill would fail on any DB that already contains
+            #     audit events.
+            # Legacy events with NULL tenant_id are handled fail-closed by
+            # list_events() and do not appear in per-tenant filtered queries.
         else:
             # Use default_tenant directly as the SQLite DEFAULT so future inserts
             # without an explicit tenant_id also land in the correct tenant.

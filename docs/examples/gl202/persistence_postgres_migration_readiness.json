@@ -1,0 +1,267 @@
+{
+  "issue_id": "GL-202",
+  "title": "Persistence / PostgreSQL / Migration Readiness",
+  "branch": "gl-202-persistence-postgres-migration-readiness",
+  "base_commit": "0e23f79",
+  "context": "GL-202 follows GL-200A/B/C tenant/workspace isolation and GL-201 auth/secrets/config hardening. Hardens persistence, migration runner, PostgreSQL readiness, and migration-operational safety. GrantLayer remains Developer Preview / Controlled Preview — not production SaaS.",
+  "scope": [
+    "Migration runner error context and dry-run API",
+    "PostgreSQL executescript comment-handling bug fix",
+    "Audit events backfill incompatibility fix (migration 0010 vs immutability trigger)",
+    "Migration ordering, idempotency, and failure-safety verification",
+    "GL-200B tenant/workspace schema assessment",
+    "Audit hash-chain integrity across migration paths",
+    "Remaining gap documentation",
+    "GL-202 regression test suite",
+    "Documentation artifacts"
+  ],
+  "non_goals": [
+    "Production SaaS readiness declaration",
+    "Public GitHub push",
+    "Broad ORM or persistence rewrite",
+    "Real backup/restore against production-like data",
+    "New auth provider or broad CORS redesign",
+    "API redesign",
+    "Frontend/website/design changes",
+    "Public marketing claims",
+    "Live PostgreSQL test infrastructure (not available locally)"
+  ],
+  "input_sources_reviewed": {
+    "docs/production_auth_secrets_config_hardening.md": true,
+    "docs/tenant_workspace_api_audit_regression_completion.md": true,
+    "docs/tenant_workspace_isolation_implementation_baseline.md": true,
+    "docs/tenant_workspace_isolation_design_pack.md": true,
+    "docs/production_readiness_gap_report_v2.md": true,
+    "docs/controlled_preview_boundary_pack.md": true,
+    "backend/src/db.py": true,
+    "backend/src/config.py": true,
+    "backend/src/audit_log.py": true,
+    "backend/src/migrations/all_10_files": true,
+    "backend/tests/selected": true,
+    "README.md": true,
+    "SECURITY.md": true,
+    "AGENTS.md": true
+  },
+  "current_persistence_summary": {
+    "backend": "SQLite (default) / PostgreSQL (via GRANTLAYER_DATABASE_URL)",
+    "migration_runner": "File-based, no ORM, 10 migrations 0001-0010",
+    "connection_wrapper": "_ConnectionWrapper with ? to %s placeholder translation for PostgreSQL",
+    "connection_pool": "psycopg2 SimpleConnectionPool with bounded retry for PostgreSQL",
+    "audit_immutability": "SQLite triggers (0005) + PostgreSQL triggers (0008)"
+  },
+  "migration_runner_assessment": {
+    "ordering_verified": true,
+    "ordering_method": "sorted(os.listdir()) on numeric-prefixed filenames",
+    "idempotency_verified": true,
+    "idempotency_method": "IF NOT EXISTS DDL + _column_exists/_table_exists/_index_exists guards",
+    "failure_behavior_verified": true,
+    "failure_behavior_hardened": true,
+    "failure_behavior_note": "apply_fn wrapped in RuntimeError with version context; failed migration not marked applied",
+    "dry_run_added": true,
+    "dry_run_function": "list_pending_migrations(conn) in runner.py and __init__.py",
+    "legacy_db_behavior": "Marks all migrations applied without re-running; intentional for pre-migration-runner developer DBs",
+    "fresh_db_path_verified": true,
+    "existing_db_upgrade_path_verified": true
+  },
+  "sqlite_readiness_assessment": {
+    "verdict": "READY for controlled Developer Preview usage",
+    "wal_mode": true,
+    "foreign_keys": true,
+    "immutability_triggers": true,
+    "all_tables_created": true,
+    "all_columns_present": true,
+    "all_indexes_present": true
+  },
+  "postgresql_readiness_assessment": {
+    "verdict": "Substantially hardened; NOT live-validated without PostgreSQL instance",
+    "connection_factory_reviewed": true,
+    "placeholder_translation_verified": true,
+    "executescript_bug_fixed": true,
+    "executescript_bug_description": "PostgreSQL executescript skipped SQL statements with leading line comments — fixed by stripping comments before executing",
+    "immutability_triggers_present": true,
+    "live_test_infrastructure_available": false,
+    "live_test_limitation_documented": true,
+    "remaining_gaps": [
+      "No live end-to-end PostgreSQL integration test",
+      "Connection pool live validation deferred",
+      "pg_stat_activity privilege may need pg_monitor role in hardened environments"
+    ]
+  },
+  "gl200_tenant_schema_assessment": {
+    "tenant_id_column_verified": true,
+    "workspace_id_column_verified": true,
+    "scope_column_on_audit_events_verified": true,
+    "migration_0010_idempotent": true,
+    "backfill_bug_found": true,
+    "backfill_bug_fixed": true,
+    "backfill_bug_description": "Migration 0010 attempted UPDATE audit_events SET tenant_id='demo' WHERE tenant_id IS NULL. This conflicts with the audit immutability trigger (migration 0005) on any DB with existing audit events. Fixed by removing the UPDATE from the nullable path; pre-migration events keep tenant_id=NULL (fail-closed).",
+    "legacy_rows_fail_closed": true,
+    "gl200_route_enforcement_preserved": true
+  },
+  "audit_immutability_assessment": {
+    "hash_chain_verified_on_fresh_db": true,
+    "pre_chain_events_skippable": true,
+    "post_migration_events_verifiable": true,
+    "mixed_events_verifiable": true,
+    "migration_does_not_rewrite_hashes": true,
+    "immutability_trigger_active": true,
+    "hash_payload_dual_mode_preserved": true,
+    "hash_payload_dual_mode_description": "tenant_id included in canonical payload only when non-None, matching the format used at write time for both pre-migration (None) and post-migration (set) events"
+  },
+  "constraints_indexes_assessment": {
+    "reviewed": true,
+    "existing_indexes": [
+      "idx_grants_tenant_id",
+      "idx_grants_tenant_subject",
+      "idx_audit_events_tenant_id",
+      "idx_grant_requests_tenant_id",
+      "idx_challenges_tenant_id",
+      "idx_grant_executions_tenant_id",
+      "idx_evidence_archives_tenant_id",
+      "idx_operators_token_lookup_hash",
+      "idx_grant_executions_grant_id",
+      "idx_grant_executions_grant_request_id",
+      "idx_grant_executions_operator_id",
+      "idx_grant_executions_executed_at"
+    ],
+    "new_indexes_added": false,
+    "deferred_indexes": [
+      "idx_audit_events_timestamp",
+      "idx_audit_events_subject_id",
+      "idx_grants_subject_id",
+      "idx_operators_active"
+    ],
+    "deferred_reason": "Deferred to dedicated controlled migration issue; not needed at Developer Preview scale"
+  },
+  "backfill_rollback_dryryn_strategy": {
+    "documented": true,
+    "forward_migration_deterministic": true,
+    "backfill_assumptions_documented": true,
+    "rollback_limitations_documented": true,
+    "dry_run_helper_added": true,
+    "dry_run_function": "list_pending_migrations(conn)",
+    "production_safety_gates_documented": true
+  },
+  "implemented_changes": [
+    {
+      "file": "backend/src/db.py",
+      "change": "Fix executescript PostgreSQL path to strip leading line comments before executing SQL chunks"
+    },
+    {
+      "file": "backend/src/migrations/runner.py",
+      "change": "Wrap apply_fn in RuntimeError with migration version context; add list_pending_migrations()"
+    },
+    {
+      "file": "backend/src/migrations/__init__.py",
+      "change": "Export list_pending_migrations"
+    },
+    {
+      "file": "backend/src/migrations/0010_gl200b_tenant_workspace_isolation.py",
+      "change": "Remove backfill UPDATE from nullable (audit_events) path; add explanatory comment"
+    },
+    {
+      "file": "backend/tests/test_gl202_persistence_postgres_migration_readiness.py",
+      "change": "New GL-202 test suite (12 test classes, ~40 test methods)"
+    },
+    {
+      "file": "docs/persistence_postgres_migration_readiness.md",
+      "change": "New GL-202 documentation"
+    },
+    {
+      "file": "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+      "change": "New GL-202 JSON artifact"
+    }
+  ],
+  "tests_added": {
+    "file": "backend/tests/test_gl202_persistence_postgres_migration_readiness.py",
+    "classes": 12,
+    "coverage": [
+      "Migration ordering deterministic",
+      "All migrations have apply(conn)",
+      "Runner raises on missing apply",
+      "Runner raises with context on apply failure",
+      "Failed migration not marked applied",
+      "Fresh DB has all tables",
+      "Fresh DB has GL-200B columns",
+      "Tenant lookup indexes present",
+      "Migration 0010 idempotent",
+      "Legacy GL-032 DB detection",
+      "Tenant backfill for business tables",
+      "Audit events NULL tenant_id not backfilled",
+      "Empty DB chain verification valid",
+      "Pre-chain events skipped",
+      "Post-migration events verify",
+      "Mixed events verify",
+      "Tampered event fails",
+      "Immutability trigger blocks UPDATE",
+      "list_pending_migrations empty after init_db",
+      "list_pending_migrations shows pending before init_db",
+      "PostgreSQL executescript comment stripping (mock)",
+      "Placeholder translation preserved",
+      "IF NOT EXISTS / existence guards in migrations",
+      "DB URL password not in error messages",
+      "GL-201 config fail-closed preserved",
+      "Documentation artifacts present and valid"
+    ]
+  },
+  "remaining_gaps": [
+    {
+      "id": "GAP-001",
+      "description": "No live PostgreSQL integration test infrastructure",
+      "risk": "medium",
+      "resolution": "Deferred; requires PostgreSQL instance not available locally"
+    },
+    {
+      "id": "GAP-002",
+      "description": "Legacy DB detection marks all migrations applied without running them",
+      "risk": "low",
+      "resolution": "Documented; only affects developer environments pre-dating the migration runner; these DBs are assumed to have the full schema"
+    },
+    {
+      "id": "GAP-003",
+      "description": "Production-grade indexes (audit_events.timestamp, subject_id, etc.) not added",
+      "risk": "low",
+      "resolution": "Deferred to dedicated controlled migration issue"
+    },
+    {
+      "id": "GAP-004",
+      "description": "Connection pool live validation",
+      "risk": "medium",
+      "resolution": "Requires live PostgreSQL; deferred to PostgreSQL deployment readiness gate"
+    },
+    {
+      "id": "GAP-005",
+      "description": "pg_stat_activity health probe privilege requirement",
+      "risk": "low",
+      "resolution": "Use pg_monitor role in hardened PostgreSQL environments; documented"
+    }
+  ],
+  "production_readiness_impact": "GL-202 hardens the migration path for Developer Preview. Migration errors are more diagnostic, PostgreSQL executescript is correct for commented SQL, audit hash-chain integrity is preserved, and dry-run inspection is available. GrantLayer remains not production-SaaS-ready. PostgreSQL deployment requires live integration testing before any real data.",
+  "decision": "PROCEED",
+  "decision_rationale": "Concrete bugs found and fixed (executescript comment skip, audit_events backfill vs immutability trigger). Gaps are documented. GL-201 and GL-200 behavior preserved. No regressions introduced.",
+  "safety_confirmations": {
+    "production_saas_claim": false,
+    "tenant_workspace_isolation_overclaimed": false,
+    "real_customer_data_ready": false,
+    "security_reports_routed_to_advisories": true,
+    "exploit_details_included": false,
+    "real_secrets_included": false,
+    "gl201_auth_secrets_config_preserved": true,
+    "gl200_tenant_workspace_preserved": true,
+    "audit_immutability_preserved": true,
+    "frontend_website_design_unchanged": true,
+    "github_workflow_unchanged": true,
+    "public_push": false,
+    "visibility_change": false
+  },
+  "recommended_next_issues": [
+    {
+      "id": "GL-202-Merge",
+      "description": "Merge gl-202-persistence-postgres-migration-readiness to internal main after validation"
+    },
+    {
+      "id": "GL-203",
+      "description": "API Contract / SDK Packaging Decision after GL-202 is merged"
+    }
+  ]
+}
