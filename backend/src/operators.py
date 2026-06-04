@@ -104,6 +104,7 @@ class Operator:
         created_at: Optional[str] = None,
         expires_at: Optional[str] = None,
         rotated_at: Optional[str] = None,
+        tenant_id: str = "demo",
     ):
         self.operator_id = operator_id
         self.name = name
@@ -112,6 +113,7 @@ class Operator:
         self.created_at = created_at or _now_utc_iso()
         self.expires_at = expires_at
         self.rotated_at = rotated_at
+        self.tenant_id = tenant_id
 
     def to_dict(self) -> dict:
         return {
@@ -119,6 +121,7 @@ class Operator:
             "name": self.name,
             "role": self.role,
             "active": self.active,
+            "tenantId": self.tenant_id,
         }
 
 
@@ -140,7 +143,9 @@ def _init_operators_table() -> None:
                 active            INTEGER NOT NULL DEFAULT 1,
                 created_at        TEXT NOT NULL,
                 expires_at        TEXT,
-                rotated_at        TEXT
+                rotated_at        TEXT,
+                tenant_id         TEXT NOT NULL DEFAULT 'demo',
+                workspace_id      TEXT DEFAULT NULL
             );
             """
         )
@@ -160,6 +165,7 @@ def _row_to_operator(row: dict | None) -> Operator | None:
         created_at=row["created_at"],
         expires_at=row.get("expires_at"),
         rotated_at=row.get("rotated_at"),
+        tenant_id=row.get("tenant_id") or "demo",
     )
 
 
@@ -179,6 +185,53 @@ def _get_operator_row_by_token_hash(token_hash: str) -> dict | None:
 def list_operators() -> list[Operator]:
     rows = query_all("SELECT * FROM operators ORDER BY created_at DESC")
     return [_row_to_operator(r) for r in rows if r is not None]
+
+
+def create_operator(
+    name: str,
+    role: str,
+    token: str,
+    tenant_id: str = "dev",
+    ttl_days: int = DEFAULT_TOKEN_TTL_DAYS,
+) -> tuple[Operator, str]:
+    """Create a new operator and return (operator, raw_token).
+
+    The raw_token is returned exactly once; store it securely.
+    tenant_id defaults to 'demo' for dev/demo deployments.
+    """
+    op_id = str(uuid.uuid4())
+    token_hash = hash_token(token)
+    lookup = derive_token_lookup_hash(token)
+    now = _now_utc_iso()
+    expires = (
+        datetime.datetime.now(datetime.timezone.utc)
+        + datetime.timedelta(days=ttl_days)
+    ).isoformat().replace("+00:00", "Z")
+
+    conn = get_conn()
+    try:
+        conn.execute(
+            """
+            INSERT INTO operators
+                (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at, tenant_id)
+            VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
+            """,
+            (op_id, name, role, token_hash, lookup, now, expires, tenant_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    op = Operator(
+        operator_id=op_id,
+        name=name,
+        role=role,
+        active=True,
+        created_at=now,
+        expires_at=expires,
+        tenant_id=tenant_id,
+    )
+    return op, token
 
 
 def is_operator_token_expired(operator_id: str) -> bool | None:
@@ -319,8 +372,8 @@ def bootstrap_operator_if_needed() -> None:
 
         conn.execute(
             """
-            INSERT INTO operators (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at)
-            VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+            INSERT INTO operators (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at, tenant_id)
+            VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
             """,
             (
                 config.GRANTLAYER_BOOTSTRAP_OPERATOR_ID,
@@ -330,6 +383,7 @@ def bootstrap_operator_if_needed() -> None:
                 derive_token_lookup_hash(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
                 _now_utc_iso(),
                 expires,
+                "demo",
             ),
         )
         conn.commit()

@@ -483,7 +483,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(status, payload)
                 self._log_event("auth_failed", status, reason_code=payload.get("errorCode", "unknown"))
                 return False, {}
-            return True, {}
+            return True, {"tenant_id": "demo"}
         ok, status, payload = check_admin_token(auth_header)
         if not hasattr(self, "_auth_cache"):
             self._auth_cache = {}
@@ -492,7 +492,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             self._send_json(status, payload)
             self._log_event("auth_failed", status, reason_code=payload.get("errorCode", "unknown"))
             return False, {}
-        return True, {}
+        return True, {"tenant_id": "demo"}
+
+    def _get_tenant_id(self, auth_payload: dict) -> str:
+        """Extract tenant_id from auth payload; falls back to 'demo'."""
+        return auth_payload.get("tenant_id") or "demo"
 
     def _require_operator(self, roles: list[str]) -> tuple[bool, dict]:
         auth_header = self.headers.get("Authorization")
@@ -636,10 +640,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif path == "/grants":
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-            grants = list_grants()
+            tenant_id = self._get_tenant_id(auth_ctx)
+            grants = list_grants(tenant_id=tenant_id)
             result = []
             for g in grants:
                 d = g.to_dict()
@@ -655,33 +660,36 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif path == "/audit-events":
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            tenant_id = self._get_tenant_id(auth_ctx)
             qs = parse_qs(urlparse(self.path).query)
             try:
                 limit = self._parse_int_query_param(qs, "limit", default=200)
             except _QueryParamError:
                 return
-            events = list_events(limit=limit)
+            events = list_events(limit=limit, tenant_id=tenant_id)
             self._send_json(200, [e.to_dict() for e in events])
 
         elif path == "/challenges":
             if not self._check_rate_limit("auth"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-            self._send_json(200, [c.to_dict() for c in list_challenges()])
+            tenant_id = self._get_tenant_id(auth_ctx)
+            self._send_json(200, [c.to_dict() for c in list_challenges(tenant_id=tenant_id)])
 
         elif m := re.fullmatch(r"/grants/([^/]+)", path):
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
             grant_id = m.group(1)
-            g = get_grant(grant_id)
+            tenant_id = self._get_tenant_id(auth_ctx)
+            g = get_grant(grant_id, tenant_id=tenant_id)
             if g is None:
                 self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
             else:
@@ -707,27 +715,31 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif path == "/grant-requests":
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
 
+            tenant_id = self._get_tenant_id(auth_ctx)
             qs = parse_qs(urlparse(self.path).query)
             status_filter = None
             if "status" in qs and qs["status"]:
                 status_filter = qs["status"][0]
 
-            requests = grant_requests.list_grant_requests(status_filter=status_filter)
+            requests = grant_requests.list_grant_requests(
+                status_filter=status_filter, tenant_id=tenant_id
+            )
             self._send_json(200, [r.to_dict() for r in requests])
 
         elif m := re.fullmatch(r"/grant-requests/([^/]+)", path):
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
 
+            tenant_id = self._get_tenant_id(auth_ctx)
             request_id = m.group(1)
-            request = grant_requests.get_grant_request(request_id)
+            request = grant_requests.get_grant_request(request_id, tenant_id=tenant_id)
             if request is None:
                 self._send_json(404, self._gl030_error("Grant request not found", "grant_request_not_found", "The requested grant request does not exist."))
             else:
@@ -966,6 +978,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not ok:
                 return
             operator_id = payload.get("operator", {}).get("operatorId") if config.ENABLE_OPERATOR_MODEL else None
+            tenant_id = self._get_tenant_id(payload)
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError) as e:
@@ -1024,7 +1037,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 reason=data["reason"],
                 max_uses=data.get("maxUses"),
             )
-            create_grant(grant)
+            create_grant(grant, tenant_id=tenant_id)
             self._send_json(201, {
                 **grant.to_dict(),
                 "signaturePresent": grant.signature is not None,
@@ -1036,10 +1049,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif m := re.fullmatch(r"/grants/([^/]+)/revoke", path):
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
             grant_id = m.group(1)
+            tenant_id = self._get_tenant_id(auth_ctx)
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError) as e:
@@ -1060,10 +1074,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                     str(e),
                 ))
                 return
-            if get_grant(grant_id) is None:
+            if get_grant(grant_id, tenant_id=tenant_id) is None:
                 self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
                 return
-            ok = revoke_grant(grant_id, data["revokedBy"], data["reason"])
+            ok = revoke_grant(grant_id, data["revokedBy"], data["reason"], tenant_id=tenant_id)
             if ok:
                 self._send_json(200, {"ok": True, "grantId": grant_id})
             else:
@@ -1072,9 +1086,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif path == "/challenges":
             if not self._check_rate_limit("auth"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            tenant_id = self._get_tenant_id(auth_ctx)
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError) as e:
@@ -1099,7 +1114,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                         str(e),
                     ))
                     return
-            challenge = create_challenge(data["subjectId"], data["action"], data["resource"])
+            challenge = create_challenge(data["subjectId"], data["action"], data["resource"], tenant_id=tenant_id)
             self._send_json(201, {
                 "challengeId": challenge.id,
                 "subjectId": challenge.subject_id,
@@ -1189,6 +1204,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not ok:
                 return
             operator_id = payload.get("operator", {}).get("operatorId")
+            tenant_id = self._get_tenant_id(payload)
             
             try:
                 data = self._read_json()
@@ -1251,7 +1267,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 reason=data["reason"],
             )
             
-            created_request = grant_requests.create_grant_request(request)
+            created_request = grant_requests.create_grant_request(request, tenant_id=tenant_id)
             self._send_json(201, created_request.to_dict())
             
         elif m := re.fullmatch(r"/grant-requests/([^/]+)/approve", path):
@@ -1265,14 +1281,15 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not ok:
                 return
             operator_id = payload.get("operator", {}).get("operatorId")
-            
+            tenant_id = self._get_tenant_id(payload)
+
             request_id = m.group(1)
-            request = grant_requests.get_grant_request(request_id)
-            
+            request = grant_requests.get_grant_request(request_id, tenant_id=tenant_id)
+
             if request is None:
                 self._send_json(404, self._gl030_error("Grant request not found", "grant_request_not_found", "The requested grant request does not exist."))
                 return
-                
+
             # Don't allow approving your own requests
             if request.requested_by == operator_id:
                 self._send_json(403, {
@@ -1281,9 +1298,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                     "approverId": operator_id
                 })
                 return
-                
+
             try:
-                updated_request, new_grant = grant_requests.approve_grant_request(request_id, operator_id)
+                updated_request, new_grant = grant_requests.approve_grant_request(
+                    request_id, operator_id, tenant_id=tenant_id
+                )
                 self._send_json(200, {
                     "ok": True,
                     "request": updated_request.to_dict(),
@@ -1291,7 +1310,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 })
             except ValueError as e:
                 self._send_json(400, self._gl030_error(str(e), "invalid_request", str(e)))
-                
+
         elif m := re.fullmatch(r"/grant-requests/([^/]+)/deny", path):
             if not self._check_rate_limit("api"):
                 return
@@ -1303,20 +1322,21 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not ok:
                 return
             operator_id = payload.get("operator", {}).get("operatorId")
-            
+            tenant_id = self._get_tenant_id(payload)
+
             request_id = m.group(1)
-            request = grant_requests.get_grant_request(request_id)
-            
+            request = grant_requests.get_grant_request(request_id, tenant_id=tenant_id)
+
             if request is None:
                 self._send_json(404, self._gl030_error("Grant request not found", "grant_request_not_found", "The requested grant request does not exist."))
                 return
-                
+
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError) as e:
                 self._handle_json_error(e)
                 return
-                
+
             if "reason" not in data or not data["reason"]:
                 self._send_json(400, self._gl030_error("Denial reason is required", "missing_denial_reason", "A reason is required when denying a grant request."))
                 return
@@ -1332,7 +1352,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 return
             try:
                 updated_request = grant_requests.deny_grant_request(
-                    request_id, operator_id, data["reason"]
+                    request_id, operator_id, data["reason"], tenant_id=tenant_id
                 )
                 self._send_json(200, {"ok": True, "request": updated_request.to_dict()})
             except ValueError as e:

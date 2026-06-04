@@ -150,6 +150,10 @@ class AuditEvent:
     timestamp: str = field(default_factory=_now_iso)
     row_hash: Optional[str] = None
     prev_hash: Optional[str] = None
+    # GL-200B: tenant/workspace context (None = pre-migration or system-scope event)
+    tenant_id: Optional[str] = None
+    workspace_id: Optional[str] = None
+    scope: Optional[str] = None  # 'tenant', 'tenant_admin', 'system', 'public'
 
     def to_dict(self) -> dict:
         return asdict(self)

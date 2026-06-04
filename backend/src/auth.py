@@ -51,10 +51,14 @@ def check_auth(
             return False, 401, {"error": "operator_auth_required", "errorCode": "operator_auth_required", "reason": "Operator authentication is required."}
         if required_roles is not None and not ops.check_role(op, required_roles):
             return False, 403, {"error": "operator_role_forbidden", "errorCode": "operator_role_forbidden", "reason": "Operator role is not authorized for this action."}
-        return True, 200, {"operator": op.to_dict()}
+        return True, 200, {"operator": op.to_dict(), "tenant_id": op.tenant_id}
 
-    # Legacy admin-token mode
-    return check_admin_token(auth_header)
+    # Legacy admin-token mode: bind to 'demo' tenant (backward compat with legacy resources)
+    ok, status, payload = check_admin_token(auth_header)
+    if ok:
+        payload = dict(payload)
+        payload["tenant_id"] = "demo"
+    return ok, status, payload
 
 
 def check_admin_token(auth_header: str | None) -> tuple[bool, int, dict]:
