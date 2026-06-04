@@ -7,6 +7,7 @@ Security rules:
 - No secrets are logged.
 - No secrets are written to disk.
 - Presence of a token is reported; its value is NOT.
+- Placeholder/demo/weak tokens are rejected in production-like modes.
 """
 
 from __future__ import annotations
@@ -14,7 +15,24 @@ from __future__ import annotations
 import os
 import warnings
 
-from .runtime_config import get_runtime_mode
+from .runtime_config import get_runtime_mode, PRODUCTION_LIKE_MODES
+
+# ──────────────────────────────────────────────────────────────
+# GL-201: Placeholder/weak token detection constants
+# ──────────────────────────────────────────────────────────────
+
+_UNSAFE_PLACEHOLDER_TOKENS: frozenset = frozenset({
+    "admin", "token", "secret", "demo", "changeme", "password", "test",
+    "placeholder", "default", "example", "sample", "foobar", "foo", "bar",
+    "unsafe", "insecure", "dev", "local", "replace-me", "replace_me",
+    "your-secret-here", "your_secret_here", "my-secret", "my_secret",
+    "supersecret", "super-secret", "super_secret", "secretkey", "secret-key",
+    "secret_key", "admintoken", "admin-token", "admin_token", "testtoken",
+    "test-token", "test_token", "demotoken", "demo-token", "demo_token",
+    "bootstrap", "bootstrap-token", "bootstrap_token",
+})
+
+_PROD_MIN_ADMIN_TOKEN_LENGTH: int = 16
 
 _LOG_LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR"}
 
@@ -165,6 +183,19 @@ _LOCAL_DEMO_HOSTS: frozenset = frozenset({"localhost", "127.0.0.1", "::1", ""})
 # ──────────────────────────────────────────────────────────────
 
 
+def _token_is_unsafe_placeholder(token: str) -> bool:
+    """Return True if token matches a known unsafe placeholder or is too short.
+
+    Used only in production-like mode startup checks.
+    The raw token value is never logged or exposed — only the verdict.
+    """
+    if not token:
+        return True
+    if len(token) < _PROD_MIN_ADMIN_TOKEN_LENGTH:
+        return True
+    return token.strip().lower() in _UNSAFE_PLACEHOLDER_TOKENS
+
+
 def startup_warnings() -> list[str]:
     """Return a list of human-readable warning strings for unsafe defaults.
 
@@ -206,6 +237,16 @@ def startup_warnings() -> list[str]:
                 "token is available but not mandatory."
             )
 
+    # GL-201: Warn if CORS defaults include localhost origins in production-like mode.
+    _localhost_cors = {"http://127.0.0.1:8765", "http://localhost:8765"}
+    if RUNTIME_MODE in PRODUCTION_LIKE_MODES and CORS_ALLOWED_ORIGINS:
+        if set(CORS_ALLOWED_ORIGINS) & _localhost_cors:
+            msgs.append(
+                "WARNING: GRANTLAYER_CORS_ALLOWED_ORIGINS includes localhost origins "
+                "in a production-like runtime mode. Set to your actual public origin(s) "
+                "or leave empty to disable CORS."
+            )
+
     return msgs
 
 
@@ -222,6 +263,7 @@ def startup_errors() -> list[str]:
     """Return a list of human-readable fatal config errors.
 
     Messages are deterministic and safe (no secrets).
+    Raw secret values are never included in error messages.
     """
     errs: list[str] = []
 
@@ -236,6 +278,13 @@ def startup_errors() -> list[str]:
             "ERROR: GRANTLAYER_ADMIN_TOKEN is not set. "
             "A configured admin token is mandatory when admin token enforcement is on."
         )
+    elif RUNTIME_MODE in PRODUCTION_LIKE_MODES and _token_is_unsafe_placeholder(GRANTLAYER_ADMIN_TOKEN):
+        # GL-201: Reject placeholder, demo, or short admin tokens in production-like modes only.
+        errs.append(
+            "ERROR: GRANTLAYER_ADMIN_TOKEN is a known placeholder, demo value, or "
+            f"shorter than the required {_PROD_MIN_ADMIN_TOKEN_LENGTH} characters. "
+            "Set a strong, unique admin token for production-like modes."
+        )
 
     if not REQUIRE_CHALLENGE:
         errs.append(
@@ -248,6 +297,16 @@ def startup_errors() -> list[str]:
             "ERROR: GRANTLAYER_ENABLE_DEMO_ENDPOINTS is enabled. "
             "Demo endpoints must be disabled in non-local / production-like modes."
         )
+
+    # GL-201: Reject placeholder bootstrap operator tokens in production-like modes.
+    if RUNTIME_MODE in PRODUCTION_LIKE_MODES and GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN:
+        if _token_is_unsafe_placeholder(GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN):
+            errs.append(
+                "ERROR: GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN is a known placeholder, "
+                f"demo value, or shorter than {_PROD_MIN_ADMIN_TOKEN_LENGTH} characters. "
+                "Set a strong, unique bootstrap operator token or leave it unset in "
+                "production-like modes to disable automatic bootstrapping."
+            )
 
     return errs
 
