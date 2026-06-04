@@ -216,12 +216,13 @@ def run_migrations(conn: Any) -> None:
 
     applied = set(_applied_versions(conn))
 
-    # Detect legacy GL-032 DB without migration tracker
+    # Detect legacy GL-032 DB without migration tracker.
+    # Such a DB already contains the full schema from before the migration
+    # runner was introduced; mark all known migrations applied so incremental
+    # runs can proceed from a clean state.
     if not applied and _table_exists(conn, "grants"):
-        # This is an existing DB that predates the migration table.
         _validate_gl032_baseline(conn)
-        # Mark every known migration as applied so far
-        for version, filepath in _discovery():
+        for version, _filepath in _discovery():
             _mark_applied(conn, version)
         return
 
@@ -232,8 +233,24 @@ def run_migrations(conn: Any) -> None:
         apply_fn = getattr(mod, "apply", None)
         if apply_fn is None:
             raise RuntimeError(f"Migration {version} missing apply(conn) function")
-        apply_fn(conn)
+        try:
+            apply_fn(conn)
+        except Exception as exc:
+            raise RuntimeError(
+                f"Migration {version} failed during apply: {exc}"
+            ) from exc
         _mark_applied(conn, version)
+
+
+def list_pending_migrations(conn: Any) -> List[Tuple[str, str]]:
+    """Return (version, filepath) pairs for migrations not yet applied.
+
+    Safe to call at any point; does not modify the database.
+    Intended for dry-run and readiness checks.
+    """
+    _ensure_migrations_table(conn)
+    applied = set(_applied_versions(conn))
+    return [(v, fp) for v, fp in _discovery() if v not in applied]
 
 
 def get_applied_versions(conn: Any) -> List[str]:

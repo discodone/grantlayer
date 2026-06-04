@@ -219,9 +219,18 @@ class _ConnectionWrapper:
         if self.backend == "postgres":
             for stmt in sql.split(";"):
                 stmt = stmt.strip()
-                if stmt and not stmt.startswith("--"):
+                if not stmt:
+                    continue
+                # Strip leading line comments so a statement like
+                # "-- comment\nCREATE TABLE ..." is not mistakenly skipped.
+                non_comment_lines = [
+                    line for line in stmt.splitlines()
+                    if not line.strip().startswith("--")
+                ]
+                actual = "\n".join(non_comment_lines).strip()
+                if actual:
                     cur = self._conn.cursor()
-                    cur.execute(stmt)
+                    cur.execute(actual)
                     cur.close()
         else:
             self._conn.executescript(sql)
