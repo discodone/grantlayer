@@ -1,8 +1,8 @@
 # GL-200B: Tenant/Workspace Isolation Implementation Baseline
 
-**Issue:** GL-200B  
-**Status:** Baseline complete — GL-200C (workspace enforcement) and GL-200D (admin-plane) are pending  
-**Branch:** `gl-200b-tenant-workspace-isolation-implementation-baseline`  
+**Issue:** GL-200B
+**Status:** Baseline complete — GL-200C (workspace enforcement) and GL-200D (admin-plane) are pending
+**Branch:** `gl-200b-tenant-workspace-isolation-implementation-baseline`
 **Prerequisite:** GL-200A (design pack, merged)
 
 ## Summary
