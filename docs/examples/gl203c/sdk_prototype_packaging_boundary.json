@@ -1,0 +1,303 @@
+{
+  "issue_id": "GL-203C",
+  "title": "SDK Prototype / Packaging Boundary",
+  "result": "ready_for_merge",
+  "decision": "sdk_prototype_feasible_internal_prototype_created_proceed_to_gl204",
+  "decision_rationale": "The GL-203B cleaned OpenAPI contract (version 0.203b.0-developer-preview) is sufficient for SDK prototype work. A minimal Python stdlib prototype with injectable transport was created at examples/sdk_prototype/python/grantlayer_client.py. The auth model, tenant context model, and error contract are all cleanly representable. No package publishing metadata was created. No official SDK is claimed. Remaining blockers (workspace enforcement, admin-plane isolation, PostgreSQL validation) are server-side and do not block SDK prototype exploration. GL-204 is the required next step before any external pilot.",
+  "input_sources_reviewed": [
+    "docs/openapi_api_contract_cleanup.md",
+    "docs/examples/gl203b/openapi_api_contract_cleanup.json",
+    "docs/openapi.yaml",
+    "docs/api_contract_sdk_packaging_decision.md",
+    "docs/examples/gl203/api_contract_sdk_packaging_decision.json",
+    "docs/persistence_postgres_migration_readiness.md",
+    "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/tenant_workspace_api_audit_regression_completion.md",
+    "docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json",
+    "docs/tenant_workspace_isolation_implementation_baseline.md",
+    "docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json",
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "docs/production_readiness_gap_report_v2.md",
+    "docs/examples/gl199/production_readiness_gap_report_v2.json",
+    "docs/controlled_preview_boundary_pack.md",
+    "docs/examples/gl198/controlled_preview_boundary_pack.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "sdk/python/grantlayer_client.py",
+    "sdk/python/README.md",
+    "backend/src/server.py",
+    "backend/src/auth.py"
+  ],
+  "sdk_feasibility_assessment": {
+    "verdict": "FEASIBLE",
+    "openapi_quality": "Sufficient for SDK prototype. 36 documented paths, clear public/protected distinction, explicit auth schemes, server-derived tenant context documented, consistent GL-030 error contract, all schemas defined.",
+    "auth_model_clarity": "Two bearer token schemes (LegacyAdminToken, OperatorToken) representable as single token parameter. Both use Authorization: Bearer header. Documented in security schemes.",
+    "tenant_context_model": "Server-derived from authentication. Client does NOT need to supply or derive tenant_id. No override header needed or supported.",
+    "error_response_clarity": "GL-030 additive shape {error, errorCode, reason} consistently documented across all endpoints.",
+    "deterministic_examples": "FakeTransport enables deterministic tests without network. Existing examples (grant_lifecycle_evidence_bundle.py) unaffected.",
+    "endpoint_coverage": "Health, readiness, grants (CRUD, revoke), audit events, challenges, operator profile, grant requests, grant executions, evidence bundles, agent permissions. 24 named methods covering 30+ endpoint/method combinations.",
+    "sdk_readiness_gaps": [
+      "workspace_id not enforced server-side (deferred)",
+      "Admin-plane tenant isolation (GL-200D) deferred",
+      "PostgreSQL not live-validated (GL-204)",
+      "Stale tenant isolation claim in public docs (GL-203B deferred)",
+      "No semantic versioning commitment made"
+    ],
+    "existing_sdk_comparison": {
+      "existing_path": "sdk/python/grantlayer_client.py",
+      "existing_lines": 114,
+      "existing_coverage": "health, readiness, generic request_json only",
+      "existing_gaps": [
+        "No injectable transport (network always required for tests)",
+        "No __repr__ token exclusion",
+        "Limited endpoint coverage",
+        "Stale Developer Preview caveats"
+      ],
+      "prototype_improvements": [
+        "Injectable FakeTransport for deterministic testing",
+        "Token excluded from __repr__ and errors",
+        "24 named endpoint methods",
+        "GL-203B compliant caveats",
+        "Explicit tenant override header absence"
+      ]
+    }
+  },
+  "openapi_dependency_assessment": {
+    "openapi_version": "0.203b.0-developer-preview",
+    "openapi_path": "docs/openapi.yaml",
+    "security_schemes_used": ["LegacyAdminToken", "OperatorToken"],
+    "auth_header_format": "Authorization: Bearer <token>",
+    "tenant_context": "Server-derived; prototype sends NO tenant override header",
+    "error_contract": "GL-030 additive shape {error, errorCode, reason}",
+    "openapi_changes_required": false,
+    "openapi_changed": false,
+    "openapi_change_reason": "None — GL-203B contract is sufficient as-is"
+  },
+  "prototype_boundary": {
+    "implemented": true,
+    "path": "examples/sdk_prototype/python/grantlayer_client.py",
+    "readme_path": "examples/sdk_prototype/python/README.md",
+    "language": "Python",
+    "stdlib_only": true,
+    "external_dependencies": [],
+    "package_metadata": false,
+    "official_sdk": false,
+    "published": false,
+    "injectable_transport": true,
+    "fake_transport_class": "FakeTransport",
+    "named_methods": 24,
+    "endpoint_groups": [
+      "public (health, readiness)",
+      "grants (list, get, create, revoke)",
+      "audit events",
+      "challenges",
+      "operator profile",
+      "grant requests (list, get, create, approve, deny)",
+      "grant executions (list, get, per-grant)",
+      "evidence bundles (get, verify)",
+      "agent permissions (profiles, evaluate)"
+    ],
+    "token_safety": {
+      "token_in_repr": false,
+      "token_in_errors": false,
+      "token_logged": false,
+      "token_excluded_from": ["__repr__", "error messages", "GrantLayerHTTPError", "GrantLayerConnectionError"]
+    },
+    "tenant_override_header": false,
+    "hardcoded_base_url": false,
+    "hardcoded_token": false,
+    "network_at_import": false
+  },
+  "packaging_boundary": {
+    "forbidden_now": [
+      "PyPI publication",
+      "npm publication",
+      "Official SDK claim",
+      "setup.py",
+      "pyproject.toml for SDK",
+      "package.json",
+      "Release workflow",
+      "Generated SDK (OpenAPI codegen)",
+      "Semantic version tag for SDK",
+      "Enterprise/production SDK claim",
+      "Breaking-change-free guarantee"
+    ],
+    "allowed_now": [
+      "Internal prototype source file at examples/sdk_prototype/python/",
+      "Prototype README with explicit caveats",
+      "Deterministic tests via FakeTransport (no network)",
+      "Documentation of packaging boundary",
+      "Claiming internal prototype for evaluation",
+      "Claiming examples-first approach",
+      "Claiming API-first Developer Preview",
+      "Future GL issue for SDK packaging"
+    ]
+  },
+  "prototype_implementation_summary": {
+    "file": "examples/sdk_prototype/python/grantlayer_client.py",
+    "readme": "examples/sdk_prototype/python/README.md",
+    "classes": [
+      "GrantLayerClientError",
+      "GrantLayerHTTPError",
+      "GrantLayerJSONError",
+      "GrantLayerConnectionError",
+      "GrantLayerResponse",
+      "FakeTransport",
+      "GrantLayerClient"
+    ],
+    "method_count": 24,
+    "fake_transport_included": true,
+    "deterministic_tests": true,
+    "network_required_for_tests": false
+  },
+  "token_secret_safety_model": {
+    "token_storage": "Private attribute _token; never public",
+    "token_in_repr": false,
+    "token_in_error_messages": false,
+    "token_logged": false,
+    "token_transmission": "Authorization: Bearer header only, over caller's network",
+    "token_on_public_endpoints": "Not sent — auth header skipped when token is None",
+    "placeholder_tokens_in_tests": true,
+    "real_tokens_in_test_files": false,
+    "token_in_GrantLayerHTTPError": false
+  },
+  "tenant_workspace_sdk_boundary": {
+    "tenant_context": "Server-derived from authentication — NOT a client-supplied parameter",
+    "tenant_override_header_supported": false,
+    "workspace_id_exposed": false,
+    "workspace_id_status": "Reserved/deferred server-side; SDK reflects this by not exposing it",
+    "cross_tenant_isolation": "Enforced server-side; SDK sees 404/empty list",
+    "multi_tenant_sdk_claim": false,
+    "admin_plane_isolation_exposed": false
+  },
+  "allowed_public_claims": [
+    "Developer Preview / Controlled Preview",
+    "API-first — no SDK required to integrate",
+    "Internal SDK prototype for evaluation (GL-203C)",
+    "Examples-first approach",
+    "No official SDK yet — prototype is experimental",
+    "SDK packaging under evaluation for future issue"
+  ],
+  "prohibited_public_claims": [
+    "Official SDK available",
+    "Installable production package",
+    "Production-ready SDK",
+    "Real customer data readiness",
+    "Private grant/institutional data readiness",
+    "Production SaaS readiness",
+    "Complete tenant/workspace production guarantee",
+    "Enterprise SDK",
+    "Semantic versioned stable SDK",
+    "Breaking-change-free SDK API"
+  ],
+  "tests_added": [
+    "backend/tests/test_gl203c_sdk_prototype_packaging_boundary.py"
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "category": "sdk_feasibility",
+      "summary": "GL-203B cleaned OpenAPI is sufficient for SDK prototype work — all schemas defined, auth models documented, tenant context model documented",
+      "severity": "informational",
+      "action": "Proceed with internal prototype"
+    },
+    {
+      "id": "F2",
+      "category": "prototype_gap",
+      "summary": "Existing sdk/python/grantlayer_client.py lacks injectable transport and has stale caveats — GL-203C prototype improves both",
+      "severity": "low",
+      "action": "GL-203C prototype coexists with existing SDK; both remain as developer evaluation resources"
+    },
+    {
+      "id": "F3",
+      "category": "packaging_gap",
+      "summary": "No package publishing pipeline exists — correct posture for Developer Preview; packaging deferred to GL-203D/GL-205 after GL-204",
+      "severity": "informational",
+      "action": "Document as deferred; block on GL-204"
+    },
+    {
+      "id": "F4",
+      "category": "tenant_gap",
+      "summary": "workspace_id enforcement deferred — SDK reflects this by not exposing workspace parameters",
+      "severity": "low",
+      "action": "Document as remaining gap; no SDK change needed"
+    },
+    {
+      "id": "F5",
+      "category": "stale_claim",
+      "summary": "sdk/python/README.md still says 'Tenant isolation is not implemented' — inaccurate since GL-200A/B/C",
+      "severity": "low",
+      "action": "Deferred — requires coordinated test changes per GL-203B precedent"
+    }
+  ],
+  "remaining_gaps": [
+    "Stale tenant isolation claim in AGENTS.md, llms.txt, llms-full.txt, README.md, SECURITY.md, sdk/python/README.md (requires coordinated test changes)",
+    "workspace_id enforcement not implemented (deferred)",
+    "Admin-plane tenant isolation (GL-200D) deferred",
+    "PostgreSQL not live-validated until GL-204",
+    "Package publishing pipeline not established",
+    "Generated SDK (OpenAPI codegen) not explored",
+    "Semantic versioning commitment not made",
+    "sdk/python/grantlayer_client.py stale caveat update deferred"
+  ],
+  "production_readiness_impact": {
+    "gl203c_changes_production_readiness": false,
+    "current_posture": "Developer Preview / Controlled Preview with strict boundaries",
+    "api_contract": "GL-203B aligned",
+    "sdk_package": "Internal prototype created; not published; not official",
+    "follow_up_needed": ["GL-204", "GL-203D (conditional on GL-204)"]
+  },
+  "safety_confirmations": {
+    "no_production_saas_claim": true,
+    "tenant_workspace_isolation_not_overclaimed": true,
+    "no_real_customer_private_grant_data_readiness_claimed": true,
+    "security_reports_route_to_github_security_advisories": true,
+    "no_exploit_details_included": true,
+    "no_real_secrets_included": true,
+    "no_official_sdk_claimed": true,
+    "no_package_publishing": true,
+    "no_package_publishing_metadata": true,
+    "no_setup_py": true,
+    "no_pyproject_toml_for_sdk": true,
+    "no_package_json": true,
+    "no_backend_src_changes": true,
+    "no_api_behavior_changes": true,
+    "openapi_changed": false,
+    "no_migrations_db_schema_changes": true,
+    "no_dependency_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "no_force_push": true,
+    "no_paperclip_references": true,
+    "developer_preview_controlled_preview_posture_preserved": true,
+    "website_untracked_files_excluded": true
+  },
+  "recommended_next_issues": [
+    {
+      "issue": "GL-203C Merge",
+      "priority": 1,
+      "description": "Merge gl-203c-sdk-prototype-packaging-boundary to internal main after validation"
+    },
+    {
+      "issue": "GL-204",
+      "priority": 2,
+      "description": "Production Ops / Go-No-Go v3 — live PostgreSQL validation, backup/restore minimum drill, observability baseline, go/no-go decision for first external controlled pilot. Required before any external pilot or public SDK release."
+    },
+    {
+      "issue": "GL-203D",
+      "priority": 3,
+      "conditional": true,
+      "condition": "Only after GL-204 passes production ops gate",
+      "description": "Experimental Public SDK / Packaging — design packaging pipeline, semantic versioning, and experimental public release. Do not proceed before GL-204."
+    }
+  ]
+}
