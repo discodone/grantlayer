@@ -2,21 +2,49 @@ openapi: 3.0.3
 info:
   title: GrantLayer MVP API
   description: |
-    GrantLayer MVP — Release Candidate Contract Baseline (GL-031).
+    GrantLayer MVP — API Contract Baseline (GL-203B).
 
-    This document describes the existing HTTP surface as of GL-030.
-    No new endpoints, no response-shape changes, no schema migrations.
+    **Status: Developer Preview / Controlled Preview with strict boundaries.**
+    This is not a production SaaS. Not ready for real customer data, private
+    grant data, or institutional data. Tenant/workspace isolation baseline is
+    implemented but not production-complete. No official SDK/package is claimed
+    or published.
 
-    Known implementation gaps (security hardening deferred to GL-032+):
-    - The Grant response object duplicates several fields in both snake_case
-      and camelCase. Both shapes are present in the JSON for backward
-      compatibility.
+    This document describes the HTTP surface as of GL-203B, aligned with the
+    actual implementation after GL-200 through GL-203.
 
-    Auth modes:
+    **Auth modes:**
     - Legacy mode (`ENABLE_OPERATOR_MODEL=false`): `Authorization: Bearer <admin-token>`
+      via constant-time HMAC comparison. Tenant context is bound to `"demo"`.
     - Operator mode (`ENABLE_OPERATOR_MODEL=true`): `Authorization: Bearer <operator-token>`
+      via PBKDF2-HMAC-SHA256 (600,000 iterations). Tenant context is derived
+      server-side from the authenticated operator record.
 
-    All error responses follow the GL-030 additive contract when applicable:
+    **Tenant context:**
+    `tenant_id` is always derived server-side from authentication. Clients cannot
+    supply or override `tenant_id` via headers, path parameters, or request bodies.
+    Cross-tenant ID lookups return HTTP 404; cross-tenant list endpoints return
+    an empty list. No existence of cross-tenant resources is leaked.
+
+    **workspace_id:**
+    `workspace_id` is reserved, nullable, and not currently enforced. It is present
+    in the data model but workspace-level isolation is deferred to a future release.
+
+    **Correlation ID:**
+    Clients may send `X-Correlation-ID` (or `X-Request-ID` as fallback) on any
+    request. The server echoes or generates a safe correlation ID in the
+    `X-Correlation-ID` response header.
+
+    **Security headers:**
+    All responses include: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+    `Cache-Control: no-store`, `Content-Security-Policy`.
+
+    **Production-mode startup:**
+    In `staging` or `production` runtime mode, placeholder/weak admin tokens are
+    rejected at startup and the server will not start (GL-201 fail-closed behavior).
+
+    **Error contract:**
+    All error responses follow the GL-030 additive shape:
     ```json
     {
       "error": "human-readable summary",
@@ -24,7 +52,14 @@ info:
       "reason": "detailed explanation"
     }
     ```
-  version: "0.31.0-rc"
+
+    **Backward compatibility note:**
+    Grant responses include both snake_case and camelCase signature fields
+    (`signing_key_id`/`signingKeyId`, `payload_hash`/`payloadHash`) for
+    backward compatibility.
+
+    Security-sensitive reports must be routed to GitHub Security Advisories.
+  version: "0.203b.0-developer-preview"
 
 servers:
   - url: http://localhost:8765
@@ -280,7 +315,11 @@ paths:
   /grant-requests:
     get:
       summary: List grant requests
-      description: Returns all grant requests, optionally filtered by status. Operator mode only.
+      description: |
+        Returns all grant requests, optionally filtered by status.
+        Tenant context is server-derived from authentication; clients cannot
+        supply or override it. Cross-tenant requests return an empty list.
+        Grant requests only carry meaningful data when operator model is enabled.
       operationId: listGrantRequests
       parameters:
         - name: status
@@ -288,6 +327,7 @@ paths:
           required: false
           schema: { type: string, enum: [requested, approved, denied, revoked, expired] }
       security:
+        - LegacyAdminToken: []
         - OperatorToken: []
       responses:
         "200":
@@ -770,7 +810,10 @@ paths:
   /operators/me:
     get:
       summary: Get current operator profile
-      description: Returns the authenticated operator's own profile. Operator mode only.
+      description: |
+        Returns the authenticated operator's own profile. Operator mode only;
+        returns 404 if operator model is disabled. The `tenantId` field reflects
+        the server-derived tenant context for this operator.
       operationId: getOperatorMe
       security:
         - LegacyAdminToken: []
@@ -786,6 +829,8 @@ paths:
                   operatorId: { type: string }
                   name: { type: string }
                   role: { type: string }
+                  active: { type: boolean }
+                  tenantId: { type: string, description: "Server-derived tenant context for this operator. Not client-supplied." }
         "401":
           description: Authentication required
           content:
@@ -2175,14 +2220,21 @@ components:
       name: Authorization
       description: |
         Legacy admin token mode. Send `Authorization: Bearer <admin-token>`.
-        Used when `ENABLE_OPERATOR_MODEL=false`.
+        Used when `ENABLE_OPERATOR_MODEL=false`. Validated via constant-time
+        HMAC comparison (GL-201). Tenant context is bound to `"demo"` server-side.
+        Clients cannot supply or override tenant_id. In production-like runtime
+        mode, placeholder/weak tokens are rejected at startup.
     OperatorToken:
       type: apiKey
       in: header
       name: Authorization
       description: |
         Operator bearer token mode. Send `Authorization: Bearer <operator-token>`.
-        Used when `ENABLE_OPERATOR_MODEL=true`.
+        Used when `ENABLE_OPERATOR_MODEL=true`. Validated via PBKDF2-HMAC-SHA256
+        (600,000 iterations) with SHA-256 lookup-hash pre-filter. Tenant context
+        is derived server-side from the authenticated operator record. Clients
+        cannot supply or override tenant_id. Tokens are issued once at operator
+        creation and are not retrievable afterward.
 
   schemas:
     ErrorResponse:
@@ -2290,6 +2342,11 @@ components:
         challenge_present: { type: boolean }
         challenge_result: { type: string }
         grant_signature_result: { type: string }
+        row_hash: { type: string, nullable: true, description: "SHA-256 hash of this audit event row for tamper-evidence chain (GL-103)." }
+        prev_hash: { type: string, nullable: true, description: "Hash of the previous audit event, forming the tamper-evidence chain." }
+        tenant_id: { type: string, nullable: true, description: "Server-derived tenant context. Null for pre-migration or system-scope events (GL-200B)." }
+        workspace_id: { type: string, nullable: true, description: "Reserved, nullable. workspace_id enforcement is deferred." }
+        scope: { type: string, nullable: true, description: "Audit event scope: tenant, tenant_admin, system, or public." }
 
     Challenge:
       type: object
@@ -3273,6 +3330,111 @@ components:
           nullable: true
         auditorExport:
           type: object
+          nullable: true
+        context:
+          type: object
+          nullable: true
+
+    ComplianceReadinessSummary:
+      type: object
+      required:
+        - recordType
+        - recordVersion
+        - createdAt
+        - readinessStatus
+        - readinessScore
+        - evidenceStatus
+        - complianceStatus
+        - permissionStatus
+        - approvalStatus
+        - provenanceStatus
+        - auditorExportStatus
+        - policyStatus
+        - blockers
+        - warnings
+        - missingInputs
+        - recommendedActions
+      properties:
+        recordType:
+          type: string
+          enum: [compliance_readiness_summary]
+        recordVersion:
+          type: string
+          enum: [gl-compliance-readiness-v1]
+        executionId:
+          type: string
+          nullable: true
+        grantId:
+          type: string
+          nullable: true
+        subjectId:
+          type: string
+          nullable: true
+        workflowId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        readinessStatus:
+          type: string
+          enum: [ready, needs_review, blocked, insufficient_data]
+        readinessScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        evidenceStatus:
+          type: string
+        complianceStatus:
+          type: string
+        permissionStatus:
+          type: string
+        approvalStatus:
+          type: string
+        provenanceStatus:
+          type: string
+        auditorExportStatus:
+          type: string
+        policyStatus:
+          type: string
+        blockers:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        missingInputs:
+          type: array
+          items:
+            type: string
+        recommendedActions:
+          type: array
+          items:
+            type: string
+        evidenceCompleteness:
+          type: object
+          nullable: true
+        complianceGapReport:
+          type: object
+          nullable: true
+        permissionResult:
+          type: object
+          nullable: true
+        approval:
+          type: object
+          nullable: true
+        provenance:
+          type: object
+          nullable: true
+        auditorReport:
+          type: object
+          nullable: true
+        policy:
+          type: array
+          items:
+            type: object
           nullable: true
         context:
           type: object
