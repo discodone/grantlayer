@@ -10,7 +10,7 @@ with SQLite or PostgreSQL.
 
 **Important caveats:**
 - Not a production SaaS. Do not deploy to shared multi-tenant infrastructure.
-- Tenant isolation is not implemented.
+- Tenant/workspace isolation baseline is implemented (GL-200–GL-206) but not production-complete.
 - No real secrets or customer data are used anywhere.
 - Public GitHub repository available at `https://github.com/Discodone/grantlayer.git` (GL-176).
 
@@ -37,7 +37,7 @@ with SQLite or PostgreSQL.
 - Do not use real secrets — all documentation uses placeholder tokens.
 - Do not use real customer data — all examples use synthetic identifiers.
 - Do not claim production SaaS readiness.
-- Do not claim tenant isolation is implemented.
+- Do not claim production-complete or production-grade tenant isolation.
 - Do not stage or commit `.claude/` files.
 - Do not request real secrets, real customer data, or private grants.
 
@@ -65,7 +65,7 @@ The following lowercase phrases are intentionally included for agent and test
 compatibility:
 
 - not a production SaaS
-- tenant isolation is not implemented
+- tenant/workspace isolation is not production-complete
 
 ---
 
@@ -75,4 +75,4 @@ Agent examples are available in `examples/langgraph_langchain/`,
 `examples/first_verifiable_output.py`, and
 `examples/grant_lifecycle_evidence_bundle.py`.
 
-Upcoming issues: GL-193 (public agent/API walkthrough refresh).
+GL-193 through GL-207 are complete. Upcoming issues: GL-208 (Production IAM Baseline).

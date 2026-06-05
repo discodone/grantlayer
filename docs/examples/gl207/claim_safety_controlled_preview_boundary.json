@@ -1,0 +1,529 @@
+{
+  "issue_id": "GL-207",
+  "title": "Claim Safety & Controlled Preview Boundary",
+  "result": "claim_safety_corrections_approved_controlled_preview_confirmed",
+  "decision": "claim_safety_corrections_approved_controlled_preview_confirmed",
+  "decision_rationale": "The claim 'Tenant/workspace isolation: Not implemented' in README, SECURITY, AGENTS, llms.txt, and llms-full.txt is stale after GL-200 through GL-206 implemented the isolation baseline. The accurate claim is 'Baseline implemented, not production-complete.' The controlled preview boundary after GL-200 through GL-206 is well-defined: Developer Preview and Controlled Preview continue with strict boundaries; Production SaaS remains NO-GO; real customer/private grant data remains NO-GO. The admin/operator control-plane baseline (GL-206) does not constitute a production tenant-management UI. The OpenAPI contract (version 0.203b.0-developer-preview) is accurate — the public contract did not change from GL-204 through GL-206. The SDK prototype (GL-203C) is correctly labeled 'NOT an official SDK'. All claim corrections are conservative and accurate.",
+  "input_sources_reviewed": [
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/live_postgres_backup_observability_baseline.md",
+    "docs/examples/gl205/live_postgres_backup_observability_baseline.json",
+    "docs/production_ops_go_no_go_v3.md",
+    "docs/examples/gl204/production_ops_go_no_go_v3.json",
+    "docs/sdk_prototype_packaging_boundary.md",
+    "docs/examples/gl203c/sdk_prototype_packaging_boundary.json",
+    "docs/openapi_api_contract_cleanup.md",
+    "docs/examples/gl203b/openapi_api_contract_cleanup.json",
+    "docs/api_contract_sdk_packaging_decision.md",
+    "docs/examples/gl203/api_contract_sdk_packaging_decision.json",
+    "docs/persistence_postgres_migration_readiness.md",
+    "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/tenant_workspace_api_audit_regression_completion.md",
+    "docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json",
+    "docs/tenant_workspace_isolation_implementation_baseline.md",
+    "docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json",
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "docs/controlled_preview_boundary_pack.md",
+    "docs/examples/gl198/controlled_preview_boundary_pack.json",
+    "docs/production_readiness_gap_report_v2.md",
+    "docs/examples/gl199/production_readiness_gap_report_v2.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/openapi.yaml",
+    "backend/src/server.py",
+    "backend/src/auth.py",
+    "backend/src/operators.py",
+    "backend/src/config.py",
+    "backend/src/db.py",
+    "backend/src/audit_log.py",
+    "backend/src/migrations/",
+    "examples/sdk_prototype/python/grantlayer_client.py",
+    "scripts/ops/gl205_live_postgres_validation.py",
+    "scripts/ops/gl205_backup_restore_drill.py"
+  ],
+  "claim_inventory_summary": {
+    "readme_md": {
+      "stale": [
+        "Tenant/workspace isolation: Not implemented (corrected to baseline implemented, not production-complete)",
+        "Tenant isolation is not implemented — data shares a single namespace (corrected)",
+        "Current status table ends at GL-192 (updated to GL-207)"
+      ],
+      "allowed": [
+        "Release label: GL-0.1 / Developer Preview",
+        "Maturity: local evaluation and controlled pilot only",
+        "Production SaaS readiness: Not claimed",
+        "Real customer data in examples: No",
+        "Real secrets in examples: No",
+        "not production SaaS"
+      ]
+    },
+    "security_md": {
+      "stale": [
+        "Tenant/workspace isolation: Not implemented (corrected)",
+        "Tenant isolation not implemented in caveats (corrected)"
+      ],
+      "allowed": [
+        "Maturity: Developer Preview",
+        "Production SaaS support guarantee: Not provided",
+        "Security advisory routing"
+      ]
+    },
+    "agents_md": {
+      "stale": [
+        "Tenant/workspace isolation: Not implemented (corrected)",
+        "Tenant isolation is not implemented in body (corrected)",
+        "Forbidden rule: Claim tenant isolation is implemented (updated to prohibit production-complete claim)",
+        "Safety phrase: tenant isolation is not implemented (updated)"
+      ],
+      "allowed": [
+        "Maturity: Developer Preview",
+        "Production SaaS readiness: Not claimed"
+      ]
+    },
+    "llms_txt": {
+      "stale": [
+        "Tenant isolation is not implemented (corrected)",
+        "Do not claim tenant isolation is implemented (updated)",
+        "Safety phrase: tenant isolation is not implemented (updated)"
+      ],
+      "allowed": [
+        "Status: Developer Preview",
+        "not a production SaaS"
+      ]
+    },
+    "llms_full_txt": {
+      "stale": [
+        "Tenant/workspace isolation: Not implemented (corrected)",
+        "Tenant isolation is not implemented in body (corrected)",
+        "No-overclaim rule: Do not claim tenant isolation is implemented (updated)"
+      ],
+      "allowed": [
+        "Maturity: Developer Preview",
+        "Production SaaS readiness: Not claimed"
+      ]
+    },
+    "openapi_yaml": {
+      "allowed": [
+        "Status: Developer Preview / Controlled Preview with strict boundaries",
+        "not a production SaaS",
+        "No official SDK/package is claimed or published",
+        "Tenant context server-derived",
+        "workspace_id reserved/deferred",
+        "Security advisories routing note"
+      ],
+      "allowed_with_caveat": [
+        "Version 0.203b.0-developer-preview: public contract unchanged since GL-203B; GL-206 admin routes are internal-only and intentionally excluded"
+      ]
+    },
+    "sdk_prototype": {
+      "allowed": [
+        "NOT an official SDK",
+        "No package is published",
+        "Tenant/workspace isolation is baseline-implemented but not production-complete (already correct)"
+      ]
+    }
+  },
+  "controlled_preview_boundary": {
+    "allowed": [
+      "Developer Preview (local evaluation)",
+      "Controlled Preview with strict boundaries",
+      "Controlled Preview expansion conditional on synthetic/demo data only",
+      "First external controlled pilot conditional on synthetic/demo data only",
+      "Internal development and testing",
+      "Synthetic/demo data in all paths"
+    ],
+    "no_go": [
+      "Production SaaS",
+      "Real customer data",
+      "Private grant/institutional data",
+      "Official SDK/package",
+      "Live PostgreSQL production deployment",
+      "Public website/marketing expansion (deferred until website claim gate)",
+      "Production multi-tenant deployment"
+    ]
+  },
+  "allowed_claims": [
+    "Developer Preview posture",
+    "Controlled Preview with strict boundaries",
+    "API-first grant-layer prototype",
+    "Tenant/workspace isolation baseline implemented, not production-complete",
+    "Auth/secrets/config hardening improved (fail-closed, PBKDF2, structured logging)",
+    "Migration/PostgreSQL readiness improved; live validation incomplete",
+    "OpenAPI contract cleaned and stable as of GL-203B",
+    "Internal SDK prototype exists; not an official SDK",
+    "Backup/restore baseline exists for synthetic/demo SQLite drill",
+    "Observability baseline documented",
+    "Admin/operator tenant control-plane baseline exists; not a production tenant-management UI",
+    "Controlled preview expansion conditional on synthetic/demo data",
+    "No real secrets or customer data in examples",
+    "Security-sensitive reports route to GitHub Security Advisories"
+  ],
+  "prohibited_claims": [
+    "Production SaaS ready",
+    "Enterprise ready",
+    "Compliance ready",
+    "Ready for real customer data",
+    "Ready for private grant/institutional data",
+    "Official SDK/package available",
+    "Production-ready SDK",
+    "Public SDK package available",
+    "Live PostgreSQL production ready",
+    "Complete tenant/workspace production guarantee",
+    "Complete admin/operator tenant-management plane",
+    "Production DR ready",
+    "Production observability stack complete",
+    "Security/compliance certified",
+    "First external pilot has started"
+  ],
+  "stale_claim_corrections": [
+    {
+      "file": "README.md",
+      "claim": "Tenant/workspace isolation | Not implemented",
+      "correction": "Tenant/workspace isolation | Baseline implemented — not production-complete (GL-200–GL-206)",
+      "reason": "GL-200A–GL-206 implemented tenant_id server-derivation, cross-tenant data isolation, operator model with tenant assignment, and admin control-plane"
+    },
+    {
+      "file": "README.md",
+      "claim": "Tenant isolation is not implemented — data shares a single namespace.",
+      "correction": "Tenant/workspace isolation baseline is implemented (GL-200–GL-206) but not production-complete. Full multi-tenant RBAC, workspace enforcement, and production IAM remain deferred.",
+      "reason": "Stale after GL-200 through GL-206"
+    },
+    {
+      "file": "README.md",
+      "claim": "Current status table ends at GL-192",
+      "correction": "Updated to include GL-193 through GL-207",
+      "reason": "Stale — GL-193 through GL-207 are merged"
+    },
+    {
+      "file": "SECURITY.md",
+      "claim": "Tenant/workspace isolation | Not implemented",
+      "correction": "Tenant/workspace isolation | Baseline implemented, not production-complete (GL-200–GL-206)",
+      "reason": "Stale after GL-200 through GL-206"
+    },
+    {
+      "file": "SECURITY.md",
+      "claim": "Tenant isolation not implemented in caveats",
+      "correction": "Tenant/workspace isolation baseline is implemented (GL-200–GL-206) but not production-complete",
+      "reason": "Stale after GL-200 through GL-206"
+    },
+    {
+      "file": "AGENTS.md",
+      "claim": "Tenant/workspace isolation | Not implemented",
+      "correction": "Tenant/workspace isolation | Baseline implemented, not production-complete (GL-200–GL-206)",
+      "reason": "Stale after GL-200 through GL-206"
+    },
+    {
+      "file": "AGENTS.md",
+      "claim": "Tenant isolation is not implemented.",
+      "correction": "Tenant/workspace isolation baseline is implemented (GL-200–GL-206) but not production-complete.",
+      "reason": "Stale after GL-200 through GL-206"
+    },
+    {
+      "file": "AGENTS.md",
+      "claim": "Forbidden: Claim tenant isolation is implemented",
+      "correction": "Forbidden: Claim production-complete or production-grade tenant isolation",
+      "reason": "Misleading after GL-200 through GL-206 implemented the baseline"
+    },
+    {
+      "file": "AGENTS.md",
+      "claim": "Safety phrase: tenant isolation is not implemented",
+      "correction": "Safety phrase: tenant/workspace isolation is not production-complete",
+      "reason": "Updated to reflect accurate post-GL-206 state"
+    },
+    {
+      "file": "llms.txt",
+      "claim": "Tenant isolation is not implemented.",
+      "correction": "Tenant/workspace isolation baseline is implemented (GL-200–GL-206) but not production-complete.",
+      "reason": "Stale after GL-200 through GL-206"
+    },
+    {
+      "file": "llms.txt",
+      "claim": "Do not claim tenant isolation is implemented.",
+      "correction": "Do not claim production-complete or production-grade tenant isolation.",
+      "reason": "Misleading after GL-200 through GL-206"
+    },
+    {
+      "file": "llms.txt",
+      "claim": "Safety phrase: tenant isolation is not implemented",
+      "correction": "Safety phrase: tenant/workspace isolation is not production-complete",
+      "reason": "Updated to reflect accurate post-GL-206 state"
+    },
+    {
+      "file": "llms-full.txt",
+      "claim": "Tenant/workspace isolation | Not implemented",
+      "correction": "Tenant/workspace isolation | Baseline implemented, not production-complete (GL-200–GL-206)",
+      "reason": "Stale after GL-200 through GL-206"
+    },
+    {
+      "file": "llms-full.txt",
+      "claim": "Tenant isolation is not implemented — data shares a single namespace.",
+      "correction": "Tenant/workspace isolation baseline is implemented (GL-200–GL-206) but not production-complete.",
+      "reason": "Stale after GL-200 through GL-206"
+    },
+    {
+      "file": "llms-full.txt",
+      "claim": "Do not claim tenant isolation is implemented.",
+      "correction": "Do not claim production-complete or production-grade tenant isolation.",
+      "reason": "Misleading after GL-200 through GL-206"
+    }
+  ],
+  "public_docs_impact": {
+    "readme_md": "Stale tenant isolation claim corrected; status table updated to GL-207",
+    "security_md": "Stale tenant isolation claim corrected",
+    "agents_md": "Stale tenant isolation claim corrected; forbidden rule updated; safety phrase updated",
+    "llms_txt": "Stale tenant isolation claim corrected; safety rules and phrases updated",
+    "llms_full_txt": "Stale tenant isolation claim corrected; no-overclaim rules updated",
+    "openapi_yaml": "No update required — existing claims are accurate",
+    "prior_decision_docs": "Historical records — no change",
+    "sdk_python_readme": "Out of GL-207 scope (stale claim noted for follow-up in GL-211)"
+  },
+  "openapi_claim_impact": {
+    "version": "0.203b.0-developer-preview",
+    "status": "accurate",
+    "notes": "Public API contract unchanged since GL-203B. GL-206 admin routes are internal-only and intentionally excluded from public OpenAPI spec. No update required.",
+    "admin_routes_excluded": true,
+    "admin_routes_reason": "Admin routes (POST /admin/operators, GET /admin/operators, GET /admin/operators/{id}, POST /admin/operators/{id}/revoke) are internal/admin-only and are not part of the public API contract."
+  },
+  "sdk_claim_boundary": {
+    "internal_prototype_exists": true,
+    "official_sdk": false,
+    "package_published": false,
+    "gl203d_deferred": true,
+    "sdk_prototype_claim_language_correct": true,
+    "sdk_python_readme_stale": true,
+    "sdk_python_readme_correction": "deferred to GL-211"
+  },
+  "tenant_workspace_claim_boundary": {
+    "baseline_implemented": true,
+    "tenant_id_server_derived": true,
+    "cross_tenant_data_boundaries": true,
+    "workspace_id_not_enforced": true,
+    "production_multi_tenant": false,
+    "production_rbac_iam": false,
+    "workspace_enforcement": false
+  },
+  "admin_operator_claim_boundary": {
+    "baseline_exists": true,
+    "admin_routes_internal_only": true,
+    "tenant_id_server_assigned": true,
+    "structured_audit_events": true,
+    "production_admin_plane": false,
+    "production_tenant_management_ui": false,
+    "full_production_rbac": false,
+    "production_iam": false
+  },
+  "live_postgres_claim_boundary": {
+    "validation_script_exists": true,
+    "dry_run_plan_passed": true,
+    "live_validation_executed": false,
+    "production_postgres_ready": false
+  },
+  "backup_restore_dr_claim_boundary": {
+    "sqlite_synthetic_drill_passed": true,
+    "postgres_manual_checklist_documented": true,
+    "dry_run_plan_validated": true,
+    "production_dr_ready": false,
+    "production_backup_restore_automation": false
+  },
+  "observability_claim_boundary": {
+    "baseline_documented": true,
+    "structured_log_events": true,
+    "correlation_ids": true,
+    "signal_categories_documented": true,
+    "secret_safety_in_logging": true,
+    "production_observability_stack": false,
+    "external_metrics_alerting_tracing": false
+  },
+  "first_external_controlled_pilot_boundary": {
+    "conditional": true,
+    "synthetic_demo_data_only": true,
+    "no_real_customer_data": true,
+    "no_private_grant_data": true,
+    "controlled_reviewer_pool": true,
+    "pilot_started": false
+  },
+  "website_marketing_deferral": {
+    "public_marketing_website": "deferred",
+    "marketing_landing_page": "deferred",
+    "website_claim_gate": "pending",
+    "external_marketing_copy": "deferred",
+    "unrelated_website_files_excluded": true,
+    "unrelated_website_files": [
+      "website-design/",
+      "docs/website_design_workspace_import_report.md",
+      "docs/website_design_workspace_import_report_dirty_stop.md"
+    ]
+  },
+  "production_readiness_impact": {
+    "developer_preview": "CONFIRMED",
+    "controlled_preview_strict_boundaries": "CONFIRMED",
+    "production_saas": "NO-GO",
+    "real_customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO",
+    "official_sdk_package": "NO-GO",
+    "live_postgresql_production": "NO-GO",
+    "full_multi_tenant_production_isolation": "NO-GO",
+    "production_observability_stack": "NO-GO",
+    "production_dr": "NO-GO"
+  },
+  "remaining_gaps": [
+    "Production IAM (OAuth/JWT/SSO) not implemented — P0 production blocker",
+    "Live PostgreSQL validation not executed — P0 ops blocker",
+    "workspace_id enforcement deferred — P1 isolation gap",
+    "Full multi-tenant RBAC not implemented — P0 production blocker",
+    "Production observability stack (external metrics, alerting, tracing) — P0 production blocker",
+    "Production backup/restore automation — P0 production blocker",
+    "Key management (demo Ed25519 keypair in repo) — P0 production blocker",
+    "CORS origin hardening for production — P1",
+    "sdk/python/README.md stale tenant isolation claim — Low claim drift",
+    "Public marketing website deferred"
+  ],
+  "risk_register": [
+    {
+      "id": "RR-207-01",
+      "description": "Old tests checking for exact phrase 'tenant isolation is not implemented' in AGENTS.md, llms.txt, README.md will fail on GL-207 branch",
+      "category": "scope-guard false positive",
+      "severity": "Low",
+      "mitigation": "Classified as branch-only scope-guard false positives; GL-207 tests check new correct phrase"
+    },
+    {
+      "id": "RR-207-02",
+      "description": "sdk/python/README.md retains stale 'Tenant isolation is not implemented'",
+      "category": "claim drift",
+      "severity": "Low",
+      "mitigation": "Out of GL-207 scope; documented for follow-up in GL-211"
+    },
+    {
+      "id": "RR-207-03",
+      "description": "Prior historical decision docs (GL-198, GL-199) retain old phrasing",
+      "category": "expected",
+      "severity": "Low",
+      "mitigation": "Historical docs are accurate for their time; not updated"
+    },
+    {
+      "id": "RR-207-04",
+      "description": "First external controlled pilot expansion could trigger data safety risk if boundary not enforced",
+      "category": "data safety",
+      "severity": "High",
+      "mitigation": "Boundary documented; synthetic/demo data only; pilot remains conditional"
+    },
+    {
+      "id": "RR-207-05",
+      "description": "Production SaaS claim drift if future contributors miss claim boundary",
+      "category": "claim drift",
+      "severity": "Medium",
+      "mitigation": "GL-207 tests added; AGENTS.md/llms.txt rules updated"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-207-01",
+      "category": "stale-claim",
+      "file": "README.md",
+      "finding": "Status table and body text state 'Tenant/workspace isolation: Not implemented' — stale after GL-200 through GL-206",
+      "action": "Corrected to 'Baseline implemented, not production-complete'"
+    },
+    {
+      "id": "F-207-02",
+      "category": "stale-claim",
+      "file": "SECURITY.md",
+      "finding": "Supported Status table states 'Tenant/workspace isolation: Not implemented' — stale",
+      "action": "Corrected"
+    },
+    {
+      "id": "F-207-03",
+      "category": "stale-claim",
+      "file": "AGENTS.md",
+      "finding": "Status table, body text, forbidden rule, and safety phrase are stale",
+      "action": "All corrected"
+    },
+    {
+      "id": "F-207-04",
+      "category": "stale-claim",
+      "file": "llms.txt",
+      "finding": "Caveats, safety rules, and exact safety phrases are stale",
+      "action": "All corrected"
+    },
+    {
+      "id": "F-207-05",
+      "category": "stale-claim",
+      "file": "llms-full.txt",
+      "finding": "Status table, body text, and no-overclaim rules are stale",
+      "action": "All corrected"
+    },
+    {
+      "id": "F-207-06",
+      "category": "stale-status",
+      "file": "README.md",
+      "finding": "Current status table ends at GL-192 — GL-193 through GL-207 missing",
+      "action": "Updated"
+    },
+    {
+      "id": "F-207-07",
+      "category": "allowed",
+      "file": "docs/openapi.yaml",
+      "finding": "All claims accurate; version reflects last public contract change (GL-203B); admin routes correctly excluded",
+      "action": "No change required"
+    },
+    {
+      "id": "F-207-08",
+      "category": "out-of-scope",
+      "file": "sdk/python/README.md",
+      "finding": "Contains stale 'Tenant isolation is not implemented' claim",
+      "action": "Out of GL-207 scope; deferred to GL-211"
+    }
+  ],
+  "safety_confirmations": {
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_data": true,
+    "no_private_grant_institutional_data": true,
+    "security_advisories_routing_confirmed": true,
+    "production_saas_not_claimed": true,
+    "real_customer_data_not_claimed_ready": true,
+    "private_grant_data_not_claimed_ready": true,
+    "official_sdk_not_claimed": true,
+    "live_postgres_production_not_claimed": true,
+    "tenant_isolation_not_overclaimed": true,
+    "admin_operator_not_overclaimed": true,
+    "no_backend_src_changes": true,
+    "no_api_behavior_changes": true,
+    "no_migrations_db_schema_dependency_changes": true,
+    "no_sdk_implementation_changes": true,
+    "no_package_publishing_metadata": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_public_github_push": true,
+    "no_visibility_change": true,
+    "unrelated_website_files_excluded": true
+  },
+  "recommended_next_issues": [
+    {
+      "issue": "GL-208",
+      "title": "Production IAM Baseline",
+      "purpose": "OAuth/JWT/SSO baseline — P0 production blocker"
+    },
+    {
+      "issue": "GL-209",
+      "title": "Live PostgreSQL Validation Execution",
+      "purpose": "Execute GL-205 validation against real database"
+    },
+    {
+      "issue": "GL-210",
+      "title": "workspace_id Enforcement Baseline",
+      "purpose": "Implement workspace-level isolation"
+    },
+    {
+      "issue": "GL-211",
+      "title": "SDK README Claim Correction",
+      "purpose": "Update sdk/python/README.md stale tenant isolation claim"
+    }
+  ]
+}

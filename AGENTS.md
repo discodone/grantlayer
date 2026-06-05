@@ -23,14 +23,14 @@ GrantLayer repository.
 |---------|-------|
 | Maturity | **Developer Preview** — local evaluation and controlled pilot only |
 | Production SaaS readiness | **Not claimed** |
-| Tenant/workspace isolation | **Not implemented** |
+| Tenant/workspace isolation | **Baseline implemented, not production-complete** (GL-200–GL-206) |
 | Public GitHub release | **Available** — `https://github.com/Discodone/grantlayer.git` (GL-176) |
 | Real customer data in examples | **No** — all examples use synthetic identifiers |
 | Real secrets in examples | **No** — all tokens and keys are placeholders |
 
-GrantLayer is **not a production SaaS**. Tenant isolation is not implemented.
-Do not deploy to shared multi-tenant infrastructure without completing the
-remaining hardening gates.
+GrantLayer is **not a production SaaS**. Tenant/workspace isolation baseline is implemented
+(GL-200–GL-206) but not production-complete. Do not deploy to shared multi-tenant
+infrastructure without completing the remaining hardening gates.
 
 ---
 
@@ -120,7 +120,7 @@ Unless an issue explicitly overrides these boundaries, agents **must not**:
 - Add real secrets, API keys, tokens, or passwords
 - Add real customer data (names, addresses, identifiers, etc.)
 - Claim production SaaS readiness
-- Claim tenant isolation is implemented
+- Claim production-complete or production-grade tenant isolation
 - Claim production readiness beyond the current developer-preview / controlled-pilot posture
 - Rewrite git history
 - Perform secret-history cleanup
@@ -210,9 +210,10 @@ See `docs/agent_task_contract.md` for the complete contract and disposition rule
 - **No real customer data** — never commit real names, addresses, identifiers, or
   other personal/organizational data. All examples use synthetic identifiers
   like `gl146-demo-subject-001`.
-- **No overclaim** — do not claim production SaaS readiness or tenant isolation.
+- **No overclaim** — do not claim production SaaS readiness or production-complete tenant isolation.
   The repository is publicly available (GL-176). Do not claim production readiness
   beyond the current developer-preview / controlled-pilot posture.
+  Tenant/workspace isolation is not production-complete. This is not a production SaaS.
 - **Local-first** — all documentation assumes local evaluation with SQLite.
   PostgreSQL is optional.
 
@@ -223,7 +224,7 @@ See `docs/agent_task_contract.md` for the complete contract and disposition rule
 The following lowercase phrases are intentionally included for agent and test
 compatibility:
 
-- tenant isolation is not implemented
+- tenant/workspace isolation is not production-complete
 - no real secrets
 - no real customer data
 

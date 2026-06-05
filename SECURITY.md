@@ -16,7 +16,7 @@ GrantLayer is in **Developer Preview** with a controlled pilot posture.
 |---------|-------|
 | Maturity | Developer Preview — local evaluation and controlled pilot only |
 | Production SaaS support guarantee | **Not provided** |
-| Tenant/workspace isolation | **Not implemented** |
+| Tenant/workspace isolation | **Baseline implemented, not production-complete** (GL-200–GL-206) |
 | Public GitHub repository | **Available** — publicly accessible at `https://github.com/Discodone/grantlayer.git` (GL-176) |
 
 There is **no production SaaS support guarantee yet**. Do not deploy to shared multi-tenant infrastructure without completing the remaining hardening gates.
@@ -75,7 +75,7 @@ When reporting security issues, please follow these data-handling rules:
 
 - **Public GitHub repository is available** — the repository is publicly accessible at `https://github.com/Discodone/grantlayer.git` (GL-176). Public smoke verification completed (GL-177).
 - **Production SaaS readiness not claimed** — the backend has not completed all production-hardening gates required for a shared multi-tenant SaaS.
-- **Tenant isolation not implemented** — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers.
+- **Tenant/workspace isolation baseline is implemented** (GL-200–GL-206) but not production-complete. The backend enforces tenant context server-side. Full multi-tenant production isolation, workspace enforcement, and production IAM remain deferred. Tenant/workspace isolation is not production-complete.
 - **Developer Preview posture** — intended for local evaluation and controlled pilot only. Do not deploy to shared multi-tenant infrastructure.
 - **No real secrets or customer data** — all examples and documentation use synthetic identifiers and placeholder tokens.
 
@@ -86,3 +86,5 @@ When reporting security issues, please follow these data-handling rules:
 The repository is publicly available on GitHub (GL-176). Agent entry points and governance files
 (GL-153–GL-155) are complete. Public smoke verification passed with cautions (GL-177).
 README and SECURITY post-public state correction complete (GL-178).
+Tenant/workspace isolation baseline implemented (GL-200–GL-206). Admin/operator control-plane
+baseline implemented (GL-206). Claim safety and controlled preview boundary documented (GL-207).
