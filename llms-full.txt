@@ -25,13 +25,13 @@ tamper-evident, and independently auditable.
 |---------|-------|
 | Maturity | Developer Preview — local evaluation and controlled pilot only |
 | Production SaaS readiness | Not claimed |
-| Tenant/workspace isolation | Not implemented |
+| Tenant/workspace isolation | Baseline implemented, not production-complete (GL-200–GL-206) |
 | Public snapshot on GitHub | **Available** — `https://github.com/Discodone/grantlayer.git` (GL-176) |
 | Real customer data | No — synthetic identifiers only |
 | Real secrets | No — placeholder tokens only |
 
 - This is **not a production SaaS**.
-- **Tenant isolation is not implemented** — data shares a single namespace.
+- **Tenant/workspace isolation baseline is implemented** (GL-200–GL-206) but not production-complete. Full multi-tenant RBAC, workspace enforcement, and production IAM remain deferred. Tenant/workspace isolation is not production-complete.
 - **No real secrets or customer data** anywhere in the repository.
 - **Public GitHub repository is available** — `https://github.com/Discodone/grantlayer.git` (GL-176). Internal Forgejo remains the development mirror; GitHub is the public read-only snapshot.
 
@@ -178,7 +178,7 @@ Unless an issue explicitly overrides:
 ### 12. No-Overclaim Rules
 
 - Do **not** claim production SaaS readiness.
-- Do **not** claim tenant isolation is implemented.
+- Do **not** claim production-complete or production-grade tenant isolation.
 - Do **not** claim production readiness beyond the current developer-preview / controlled-pilot posture.
 - Do **not** use real secrets or real customer data.
 - Do **not** request private grant records or other non-public institutional data.
@@ -190,19 +190,25 @@ Unless an issue explicitly overrides:
 ### 13. Public Status and Next Issues
 
 The repository is publicly available at `https://github.com/Discodone/grantlayer.git`
-in a developer-preview / controlled-pilot posture. Governance gates GL-155 through GL-192 are complete.
+in a developer-preview / controlled-pilot posture. Governance gates GL-155 through GL-207 are complete.
 
-Current next cleanup issues:
+Completed internal hardening gates (GL-193–GL-207):
 
-| Issue | Title | Purpose |
-|-------|-------|---------|
-| GL-187 | Public Docs Stale Claim Cleanup | Remove stale pre-publication wording from public-facing docs |
-| GL-188 | First Output Verify Helper Script | Small helper to run first-output and compare JSON |
-| GL-189 | Second Runnable Example | Grant lifecycle evidence bundle example |
-| GL-190 | Demo Endpoint Safety Guard | Startup warning when ENABLE_DEMO_ENDPOINTS=true on non-localhost |
-| GL-191 | Public Developer Experience Polish Pack | Cross-link the no-install examples, quickstart, and troubleshooting |
-| GL-192 | Public Feedback Infrastructure Pack | Document public feedback intake, severity routing, and Security Advisory guidance |
-| GL-193 | Public Agent/API Walkthrough Refresh | Connect the no-install examples, agent rules, and backend quickstart |
+| Issue | Title | Status |
+|-------|-------|--------|
+| GL-193 | Public Agent/API Walkthrough Refresh | Complete |
+| GL-198 | Controlled Preview Boundary Pack | Complete |
+| GL-199 | Production Readiness Gap Report v2 | Complete |
+| GL-200A–GL-200C | Tenant/Workspace Isolation Design + Implementation + Regression | Complete |
+| GL-201 | Production Auth/Secrets/Config Hardening | Complete |
+| GL-202 | Persistence/PostgreSQL/Migration Readiness | Complete |
+| GL-203–GL-203C | API Contract + OpenAPI Cleanup + SDK Prototype Boundary | Complete |
+| GL-204 | Production Ops / Go-No-Go v3 | Complete — NO-GO production SaaS |
+| GL-205 | Live PostgreSQL / Backup-Restore / Observability Baseline | Complete — dry-run/plan only |
+| GL-206 | Admin/Operator Tenant Control-Plane Baseline | Complete |
+| GL-207 | Claim Safety & Controlled Preview Boundary | Complete |
+
+Upcoming issues: GL-208 (Production IAM Baseline), GL-209 (Live PostgreSQL Validation Execution).
 
 ---
 
@@ -211,8 +217,8 @@ Current next cleanup issues:
 The following lowercase phrases are intentionally included for agent and test
 compatibility:
 
-- tenant isolation is not implemented
+- tenant/workspace isolation is not production-complete
 
 ---
 
-> This llms-full.txt was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-193 Public Agent/API Walkthrough Refresh**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or tenant isolation implementation. All examples use synthetic identifiers and placeholder tokens only.
+> This llms-full.txt was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-193 Public Agent/API Walkthrough Refresh** and **GL-207 Claim Safety & Controlled Preview Boundary**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or production-complete tenant isolation. All examples use synthetic identifiers and placeholder tokens only.

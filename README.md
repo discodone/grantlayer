@@ -17,7 +17,7 @@ When AI agents prepare funding applications, evaluate eligibility, collect evide
 | Release label | **GL-0.1 / Developer Preview** |
 | Maturity | Local evaluation and controlled pilot only |
 | Production SaaS readiness | **Not claimed** |
-| Tenant/workspace isolation | **Not implemented** |
+| Tenant/workspace isolation | **Baseline implemented — not production-complete** (GL-200–GL-206) |
 | Public GitHub release | **Available** — repository publicly available at `https://github.com/Discodone/grantlayer.git` (GL-176) |
 | Public snapshot | Clean developer-facing snapshot — no internal paths, no real secrets |
 | Source of truth | Internal Forgejo — public GitHub is a clean read-only snapshot |
@@ -115,7 +115,7 @@ GrantLayer is local-first and agent-friendly. If you are an AI coding agent, sta
 - GrantLayer is in **Developer Preview** — local evaluation and controlled pilot only.
 - **No real secrets or customer data** anywhere in the repository.
 - **Not production SaaS** — do not deploy to shared multi-tenant infrastructure.
-- **Tenant isolation is not implemented** — data shares a single namespace.
+- **Tenant/workspace isolation baseline is implemented** (GL-200–GL-206) but not production-complete. Full multi-tenant RBAC, workspace enforcement, and production IAM remain deferred.
 - **Public GitHub repository is available** — the repository is publicly accessible at `https://github.com/Discodone/grantlayer.git` (GL-176).
 
 Runtime agent examples are available — see `docs/langgraph_langchain_integration_example.md` and `examples/langgraph_langchain/grantlayer_agent_example.py` (added in GL-155).
@@ -136,7 +136,7 @@ Runtime agent examples are available — see `docs/langgraph_langchain_integrati
 - **Do not use real secrets** — all documentation uses placeholder tokens (e.g. `demo-admin-token-gl146`).
 - **Do not use real customer data** — all examples use synthetic identifiers (e.g. `gl146-demo-subject-001`).
 - **Production SaaS readiness is not claimed** — the backend has not completed all production-hardening gates required for a shared multi-tenant SaaS.
-- **Tenant isolation is not implemented** — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers.
+- **Tenant/workspace isolation baseline is implemented** (GL-200–GL-206) — the backend derives tenant context server-side and enforces cross-tenant data boundaries. Full multi-tenant production isolation, workspace enforcement, and production IAM remain deferred. Tenant/workspace isolation is not production-complete.
 - **Public GitHub repository is available** — the repository is publicly accessible at `https://github.com/Discodone/grantlayer.git` (GL-176). All public content was synced via the explicit clean snapshot workflow; the internal Forgejo repo was not pushed directly to GitHub.
 - **Local evaluation only** — this repo is intended for developer exploration and controlled pilot discussion, not production deployment.
 
@@ -402,7 +402,7 @@ curl -s http://127.0.0.1:8765/audit-events | python3 -m json.tool
 
 ## Current status and next steps
 
-The governance and readiness gates up to GL-192 are complete. The repository is publicly available
+The governance and readiness gates up to GL-207 are complete. The repository is publicly available
 on GitHub in a developer-preview / controlled-pilot posture.
 
 | What | Status |
@@ -420,6 +420,17 @@ on GitHub in a developer-preview / controlled-pilot posture.
 | Demo endpoint safety guard | Complete (GL-190) |
 | Public developer experience polish pack | Complete (GL-191) |
 | Public feedback infrastructure pack | Complete (GL-192) |
+| Public agent/API walkthrough refresh | Complete (GL-193) |
+| Controlled preview boundary pack | Complete (GL-198) |
+| Production readiness gap report v2 | Complete (GL-199) |
+| Tenant/workspace isolation design + implementation + regression | Complete (GL-200A–GL-200C) |
+| Production auth/secrets/config hardening | Complete (GL-201) |
+| Persistence/PostgreSQL/migration readiness | Complete (GL-202) |
+| API contract/SDK packaging decision + OpenAPI cleanup + SDK prototype boundary | Complete (GL-203–GL-203C) |
+| Production Ops / Go-No-Go v3 | Complete — NO-GO production SaaS (GL-204) |
+| Live PostgreSQL / Backup-Restore / Observability baseline | Complete — dry-run/plan only (GL-205) |
+| Admin/operator tenant control-plane baseline | Complete (GL-206) |
+| Claim safety & controlled preview boundary | Complete (GL-207) |
 
 For troubleshooting and FAQ see [docs/public_developer_experience_polish_pack.md](docs/public_developer_experience_polish_pack.md).
 For the public agent/API walkthrough that connects the no-install examples to the backend path, see [docs/public_agent_api_walkthrough_refresh.md](docs/public_agent_api_walkthrough_refresh.md).
