@@ -43,6 +43,7 @@ from .runtime_config import describe_runtime_config, get_runtime_mode
 from .rate_limiter import RateLimiter
 from .logging_utils import get_logger, safe_log
 from .structured_logging import normalize_correlation_id
+import secrets as _secrets_mod
 from .validation import (
     MAX_SHORT_ID_LENGTH,
     MAX_ROLE_LENGTH,
@@ -158,6 +159,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             return "/agent-permissions/profiles/{name}"
         if re.fullmatch(r"/demo/tamper-grant/[^/]+", path):
             return "/demo/tamper-grant/{id}"
+        if re.fullmatch(r"/admin/operators/[^/]+", path):
+            return "/admin/operators/{id}"
+        if re.fullmatch(r"/admin/operators/[^/]+/revoke", path):
+            return "/admin/operators/{id}/revoke"
         return path
 
     def _ensure_correlation_id(self) -> None:
@@ -968,6 +973,34 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 return
             self._send_json(200, profile)
 
+        # ── GL-206: Admin control-plane operator management ───────────────────
+
+        elif path == "/admin/operators":
+            # Admin-only: list all operators (safe fields only, no token hashes)
+            if not self._check_rate_limit("api"):
+                return
+            ok, _ = self._require_admin()
+            if not ok:
+                return
+            operators = ops.list_operators_for_admin()
+            self._send_json(200, operators)
+            self._log_event("request_completed", 200)
+
+        elif m := re.fullmatch(r"/admin/operators/([^/]+)", path):
+            # Admin-only: read single operator (safe fields only, no token hashes)
+            if not self._check_rate_limit("api"):
+                return
+            ok, _ = self._require_admin()
+            if not ok:
+                return
+            operator_id = m.group(1)
+            op_safe = ops.get_operator_safe(operator_id)
+            if op_safe is None:
+                self._send_json(404, self._gl030_error("Operator not found", "operator_not_found", "The requested operator does not exist."))
+                return
+            self._send_json(200, op_safe)
+            self._log_event("request_completed", 200)
+
         else:
             self._send_json(404, self._gl030_error("Not found", "not_found", "The requested endpoint or resource does not exist."))
 
@@ -1640,6 +1673,87 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 else:
                     summary["policyRequirementEvaluation"] = None
             self._send_json(200, summary)
+
+        # ── GL-206: Admin control-plane operator management ───────────────────
+
+        elif path == "/admin/operators":
+            # Admin-only: create operator with explicit tenant_id
+            if not self._check_rate_limit("api"):
+                return
+            ok, _ = self._require_admin()
+            if not ok:
+                return
+            try:
+                data = self._read_json()
+            except (json.JSONDecodeError, ValueError) as e:
+                self._handle_json_error(e)
+                return
+            missing = self._missing(data, ["name", "role", "tenantId"])
+            if missing:
+                self._send_json(400, self._gl030_error(
+                    f"Missing fields: {missing}",
+                    "missing_required_fields",
+                    f"The following required fields are missing: {missing}. "
+                    "tenant_id must be provided explicitly for operator creation.",
+                ))
+                return
+            name = data["name"]
+            role = data["role"]
+            tenant_id = data["tenantId"]
+            if not isinstance(name, str) or not name.strip():
+                self._send_json(400, self._gl030_error("Invalid field: name", "invalid_field", "name must be a non-empty string."))
+                return
+            if not isinstance(role, str) or not role.strip():
+                self._send_json(400, self._gl030_error("Invalid field: role", "invalid_field", "role must be a non-empty string."))
+                return
+            if not isinstance(tenant_id, str) or not tenant_id.strip():
+                self._send_json(400, self._gl030_error("Invalid field: tenantId", "invalid_field", "tenantId must be a non-empty string."))
+                return
+            # GL-206: tenant_id is server-assigned from request body (admin-provided).
+            # The operator cannot later override their own tenant_id.
+            raw_token = _secrets_mod.token_urlsafe(32)
+            try:
+                op, returned_token = ops.create_operator(
+                    name=name.strip(),
+                    role=role.strip(),
+                    token=raw_token,
+                    tenant_id=tenant_id.strip(),
+                )
+            except Exception:
+                self._send_json(500, self._gl030_error("Operator creation failed", "operator_create_failed", "Failed to create operator."))
+                return
+            # GL-206 audit event: operator_created (no raw token in event)
+            safe_log(_server_logger, "info", "operator_action", action="operator_created", operator_id=op.operator_id, tenant_id=op.tenant_id)
+            # Return safe fields + one-time raw token (acceptable on create only)
+            response = {
+                "operatorId": op.operator_id,
+                "name": op.name,
+                "role": op.role,
+                "active": op.active,
+                "tenantId": op.tenant_id,
+                "createdAt": op.created_at,
+                "expiresAt": op.expires_at,
+                "token": returned_token,  # one-time; store securely
+            }
+            self._send_json(201, response)
+            self._log_event("request_completed", 201)
+
+        elif m := re.fullmatch(r"/admin/operators/([^/]+)/revoke", path):
+            # Admin-only: revoke/deactivate an operator
+            if not self._check_rate_limit("api"):
+                return
+            ok, _ = self._require_admin()
+            if not ok:
+                return
+            operator_id = m.group(1)
+            revoked = ops.revoke_operator(operator_id)
+            if not revoked:
+                self._send_json(404, self._gl030_error("Operator not found", "operator_not_found", "The requested operator does not exist."))
+                return
+            # GL-206 audit event: operator_revoked (no raw token in event)
+            safe_log(_server_logger, "info", "operator_action", action="operator_revoked", operator_id=operator_id)
+            self._send_json(200, {"ok": True, "operatorId": operator_id, "revoked": True})
+            self._log_event("request_completed", 200)
 
         else:
             self._send_json(404, self._gl030_error("Not found", "not_found", "The requested endpoint or resource does not exist."))
