@@ -57,7 +57,7 @@ The committed reference artifact is [`examples/first_verifiable_output.json`](ex
 
 Read the walkthrough in [docs/first_verifiable_output.md](docs/first_verifiable_output.md) and the verify-helper guide in [docs/first_output_verify_helper.md](docs/first_output_verify_helper.md).
 
-This path uses Python standard library modules only, requires no real secrets, requires no customer data, and is local/demo only. It does not claim production SaaS readiness, and tenant isolation is not implemented.
+This path uses Python standard library modules only, requires no real secrets, requires no customer data, and is local/demo only. It does not claim production SaaS readiness, and tenant/workspace isolation is not production-complete.
 
 ## What to try next
 
