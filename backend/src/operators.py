@@ -1,7 +1,15 @@
-"""GrantLayer MVP — Operator model (GL-021).
+"""GrantLayer MVP — Operator model (GL-021, GL-206).
 
 Minimal operator identity, role-based authorization, and bootstrap logic.
 Not production IAM — still local-only demo-quality.
+
+GL-206: Admin/Operator Tenant Control Plane hardening:
+- Explicit tenant_id required for create_operator (no silent global/None default)
+- revoke_operator() added for admin-only operator revocation
+- list_operators_for_admin() returns safe dict (no token/hash fields)
+- get_operator_safe() returns safe dict (no token/hash fields)
+- Audit events emitted for operator create/revoke (no raw token in events)
+- Operator cannot self-escalate: tenant_id is server-assigned, not client-supplied
 """
 
 from __future__ import annotations
@@ -187,17 +195,80 @@ def list_operators() -> list[Operator]:
     return [_row_to_operator(r) for r in rows if r is not None]
 
 
+# ──────────────────────────────────────────────────────────────
+# GL-206: Admin control-plane safe-field helpers
+# ──────────────────────────────────────────────────────────────
+
+def _operator_to_safe_dict(op: Operator) -> dict:
+    """Return safe operator dict for admin list/read responses.
+
+    Excludes: token_hash, token_lookup_hash, lookup_hash, any raw token.
+    Includes: operatorId, name, role, active, tenantId, createdAt, expiresAt.
+    """
+    return {
+        "operatorId": op.operator_id,
+        "name": op.name,
+        "role": op.role,
+        "active": op.active,
+        "tenantId": op.tenant_id,
+        "createdAt": op.created_at,
+        "expiresAt": op.expires_at,
+    }
+
+
+def list_operators_for_admin() -> list[dict]:
+    """List all operators with safe fields only (no token_hash/lookup_hash/raw token).
+
+    GL-206: Used by admin control-plane. Never returns internal hash fields.
+    """
+    operators = list_operators()
+    return [_operator_to_safe_dict(op) for op in operators]
+
+
+def get_operator_safe(operator_id: str) -> dict | None:
+    """Get operator safe dict by ID (active or inactive).
+
+    GL-206: Used by admin control-plane. Never returns internal hash fields.
+    """
+    row = query_one("SELECT * FROM operators WHERE id = ?", (operator_id,))
+    if row is None:
+        return None
+    op = _row_to_operator(row)
+    return _operator_to_safe_dict(op)
+
+
+def revoke_operator(operator_id: str) -> bool:
+    """Deactivate an operator (set active=0).
+
+    GL-206: Admin-only revocation. Returns True if updated, False if not found.
+    Revoked operators fail closed on authentication.
+    """
+    conn = get_conn()
+    try:
+        cursor = conn.execute(
+            "UPDATE operators SET active = 0 WHERE id = ?",
+            (operator_id,),
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+    finally:
+        conn.close()
+
+
 def create_operator(
     name: str,
     role: str,
     token: str,
-    tenant_id: str = "dev",
+    tenant_id: str,
     ttl_days: int = DEFAULT_TOKEN_TTL_DAYS,
 ) -> tuple[Operator, str]:
     """Create a new operator and return (operator, raw_token).
 
     The raw_token is returned exactly once; store it securely.
-    tenant_id defaults to 'demo' for dev/demo deployments.
+
+    GL-206: tenant_id is now a required positional argument — no silent global
+    or None default in the public API. For demo/bootstrap usage, pass
+    tenant_id='demo' explicitly.
     """
     op_id = str(uuid.uuid4())
     token_hash = hash_token(token)
