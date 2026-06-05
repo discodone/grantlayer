@@ -1,0 +1,432 @@
+{
+  "issue_id": "GL-205",
+  "title": "Live PostgreSQL Validation / Backup-Restore Drill / Observability Baseline",
+  "result": "ready_for_merge",
+  "decision": "operational_readiness_baseline_proceed_with_documented_gaps",
+  "decision_rationale": "GL-205 adds a gated live PostgreSQL validation script, a deterministic SQLite backup/restore drill, a PostgreSQL manual drill checklist, and a comprehensive observability baseline. Live PostgreSQL execution was not possible (no safe ephemeral service). The script is complete and gated. SQLite drill executes successfully with synthetic data. No production SaaS, real customer data, or official SDK claims are made. All GL-200 through GL-204 constraints are preserved. Remaining P0 blockers (live PostgreSQL, automated backup, production observability) are documented.",
+  "input_sources_reviewed": [
+    "docs/production_ops_go_no_go_v3.md",
+    "docs/examples/gl204/production_ops_go_no_go_v3.json",
+    "docs/sdk_prototype_packaging_boundary.md",
+    "docs/examples/gl203c/sdk_prototype_packaging_boundary.json",
+    "docs/openapi_api_contract_cleanup.md",
+    "docs/examples/gl203b/openapi_api_contract_cleanup.json",
+    "docs/api_contract_sdk_packaging_decision.md",
+    "docs/examples/gl203/api_contract_sdk_packaging_decision.json",
+    "docs/persistence_postgres_migration_readiness.md",
+    "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/tenant_workspace_api_audit_regression_completion.md",
+    "docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json",
+    "docs/tenant_workspace_isolation_implementation_baseline.md",
+    "docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json",
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "docs/production_readiness_gap_report_v2.md",
+    "docs/examples/gl199/production_readiness_gap_report_v2.json",
+    "docs/controlled_preview_boundary_pack.md",
+    "docs/examples/gl198/controlled_preview_boundary_pack.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "backend/src/db.py",
+    "backend/src/config.py",
+    "backend/src/audit_log.py",
+    "backend/src/auth.py",
+    "backend/src/operators.py",
+    "backend/src/grants.py",
+    "backend/src/grant_requests.py",
+    "backend/src/challenges.py",
+    "backend/src/models.py",
+    "backend/src/migrations",
+    "backend/src/structured_logging.py",
+    "backend/src/logging_utils.py",
+    "docs/backup_restore_minimum_drill.md",
+    "scripts/run-backup-restore-drill.sh"
+  ],
+  "current_state_summary": {
+    "achieved": [
+      "Tenant/workspace isolation baseline (GL-200A/B/C)",
+      "Production auth/secrets/config hardening (GL-201)",
+      "Migration runner hardening (GL-202)",
+      "OpenAPI contract cleanup (GL-203B)",
+      "Internal SDK prototype: examples/sdk_prototype/python/ (GL-203C)",
+      "In-process structured logging baseline with correlation ID",
+      "Audit hash-chain with dual-mode",
+      "Basic backup/restore procedures documented for SQLite (GL-127)",
+      "GL-205: Gated live PostgreSQL validation script added",
+      "GL-205: SQLite backup/restore drill script added (executable)",
+      "GL-205: PostgreSQL manual drill checklist documented",
+      "GL-205: Observability baseline signal catalog documented"
+    ],
+    "remaining_p0_blockers": [
+      "RB-001: No live PostgreSQL validation executed",
+      "RB-002: No automated backup system or DR runbooks",
+      "RB-003: No production observability stack",
+      "RB-004: Admin-plane tenant isolation (GL-200D) deferred",
+      "RB-005: No production deployment hardening (TLS, container)",
+      "RB-006: No production IAM (OAuth/JWT/SSO)"
+    ]
+  },
+  "live_postgres_validation_plan": {
+    "script": "scripts/ops/gl205_live_postgres_validation.py",
+    "steps": [
+      "step_01: Verify explicit environment gate (GRANTLAYER_GL205_ENABLE_LIVE_POSTGRES=1)",
+      "step_02: Verify explicit DSN is provided (GRANTLAYER_GL205_POSTGRES_DSN)",
+      "step_03: Validate DSN safety (no SQLite, no placeholder, no production hostname)",
+      "step_04: Connect to ephemeral/synthetic PostgreSQL instance",
+      "step_05: Verify PostgreSQL version is reachable",
+      "step_06: Apply migrations (synthetic schema only, idempotency check)",
+      "step_07: Verify migration idempotency",
+      "step_08: Verify GL-200B tenant_id isolation columns on grants and audit_events tables",
+      "step_09: Verify audit_events table and hash-chain columns",
+      "step_10: Verify no unsafe legacy audit backfill triggers",
+      "step_11: Insert synthetic tenant + workspace records",
+      "step_12: Verify tenant-scoped synthetic CRUD",
+      "step_13: Insert synthetic audit event and verify hash-chain",
+      "step_14: Clean up synthetic objects",
+      "step_15: Report results"
+    ]
+  },
+  "live_postgres_gating_model": {
+    "enable_env_var": "GRANTLAYER_GL205_ENABLE_LIVE_POSTGRES",
+    "required_value": "1",
+    "dsn_env_var": "GRANTLAYER_GL205_POSTGRES_DSN",
+    "fail_closed": true,
+    "rejects_sqlite_dsns": true,
+    "rejects_empty_dsns": true,
+    "rejects_placeholder_dsns": true,
+    "rejects_production_hostname_dsns": true,
+    "never_logs_raw_dsn_or_password": true,
+    "supports_dry_run": true,
+    "supports_plan_mode": true
+  },
+  "live_postgres_execution_status": "not_executed",
+  "live_postgres_execution_reason": "No safe ephemeral PostgreSQL instance available at GL-205 implementation time. Script is ready; live run requires explicit ephemeral service.",
+  "live_postgres_remaining_blocker": "RB-001: Live PostgreSQL validation not executed — remains a P0 blocker for production SaaS readiness.",
+  "backup_restore_drill_plan": {
+    "script": "scripts/ops/gl205_backup_restore_drill.py",
+    "sqlite_steps": [
+      "step_01: Create temporary synthetic SQLite database",
+      "step_02: Apply GrantLayer migrations",
+      "step_03: Insert synthetic tenant and workspace records",
+      "step_04: Insert synthetic grant record",
+      "step_05: Insert synthetic audit events",
+      "step_06: Verify audit hash-chain integrity BEFORE backup",
+      "step_07: Perform backup (copy to temp backup path)",
+      "step_08: Restore (copy backup to new temp restore path)",
+      "step_09: Verify schema in restored DB",
+      "step_10: Verify tenant/workspace data separation in restored DB",
+      "step_11: Verify audit hash-chain integrity AFTER restore",
+      "step_12: Clean up temp files",
+      "step_13: Report results"
+    ],
+    "postgres_approach": "Manual checklist only (no live service available)",
+    "postgres_checklist_location": "scripts/ops/gl205_backup_restore_drill.py --plan"
+  },
+  "backup_restore_execution_status": "sqlite_drill_executable_postgres_documented_only",
+  "backup_restore_synthetic_data_only": true,
+  "observability_baseline": {
+    "structured_log_event_types": [
+      "api_request",
+      "api_error",
+      "auth_event",
+      "permission_decision",
+      "evidence_verification",
+      "approval_transition",
+      "policy_evaluation",
+      "persistence_operation",
+      "configuration_event",
+      "operator_action",
+      "health_check",
+      "readiness_check"
+    ],
+    "correlation_id_required": true,
+    "correlation_id_propagated_through_request": true,
+    "startup_config_failure_signals": [
+      "placeholder/empty operator token",
+      "database connection failure on startup",
+      "migration failure on startup",
+      "insecure CORS origin",
+      "non-production runtime mode"
+    ],
+    "migration_signals": [
+      "migration run start",
+      "migration applied per version",
+      "idempotency confirmed",
+      "migration failure"
+    ],
+    "live_postgres_validation_signals": [
+      "gate not set (skipped)",
+      "gate set and DSN valid",
+      "DSN validation failed",
+      "connection established/failed",
+      "schema verification passed/failed",
+      "synthetic cleanup complete"
+    ],
+    "backup_restore_signals": [
+      "drill start",
+      "backup created/failed",
+      "restore created/failed",
+      "hash-chain verified before/after",
+      "hash-chain mismatch",
+      "cleanup complete"
+    ],
+    "auth_failure_signals": [
+      "missing or invalid token",
+      "placeholder/empty token",
+      "token hash mismatch",
+      "operator not found",
+      "rate limit exceeded"
+    ],
+    "tenant_workspace_denial_signals": [
+      "cross-tenant access attempt",
+      "cross-workspace access attempt",
+      "missing tenant context",
+      "workspace not found for tenant"
+    ],
+    "audit_verification_signals": [
+      "hash-chain verified",
+      "hash-chain gap detected",
+      "audit event tamper detected",
+      "backfill attempt rejected"
+    ],
+    "external_backend_available": false,
+    "production_observability_ready": false,
+    "remaining_gaps": [
+      "No external metrics backend",
+      "No distributed tracing",
+      "No alerting integration",
+      "No log aggregation",
+      "No production dashboard"
+    ]
+  },
+  "logging_secret_safety_model": {
+    "never_log": [
+      "raw operator tokens",
+      "raw API keys or secrets",
+      "database DSNs with passwords",
+      "private keys or signing keys",
+      "evidence payload bodies",
+      "request bodies with customer/private data",
+      "correlation IDs derived from secrets",
+      "raw customer identifiers",
+      "private grant data",
+      "institutional data fields"
+    ],
+    "redacted_key_substrings": [
+      "password",
+      "secret",
+      "token",
+      "api_key",
+      "private_key",
+      "authorization",
+      "cookie",
+      "database_url",
+      "db_url",
+      "operator_token"
+    ],
+    "masked_dsn_format": "scheme://user:***@host:port/db"
+  },
+  "tenant_workspace_preservation_assessment": {
+    "gl200a_preserved": true,
+    "gl200b_preserved": true,
+    "gl200c_preserved": true,
+    "test_suites_pass": true,
+    "admin_plane_isolation_gl200d": "deferred",
+    "overclaimed": false
+  },
+  "audit_immutability_preservation_assessment": {
+    "audit_log_py_modified": false,
+    "hash_chain_logic_unchanged": true,
+    "dual_mode_payload_preserved": true,
+    "genesis_hash_convention_preserved": true,
+    "no_backfill_triggers_introduced": true,
+    "preserved": true
+  },
+  "gl201_auth_secrets_config_preservation_assessment": {
+    "auth_py_modified": false,
+    "config_py_modified": false,
+    "fail_closed_startup_preserved": true,
+    "placeholder_token_rejection_preserved": true,
+    "cors_security_preserved": true,
+    "no_new_secrets_introduced": true,
+    "preserved": true
+  },
+  "gl203c_sdk_package_boundary_preservation_assessment": {
+    "no_package_publishing_metadata": true,
+    "no_setup_py_changes": true,
+    "no_sdk_pyproject_toml": true,
+    "no_package_json_changes": true,
+    "sdk_prototype_remains_examples_only": true,
+    "no_official_sdk_claimed": true,
+    "gl203d_deferred": true,
+    "preserved": true
+  },
+  "production_readiness_impact": {
+    "live_postgres_validation": "gated_script_added_live_run_not_executed",
+    "backup_restore_drill": "sqlite_drill_executable_postgres_manual_checklist",
+    "observability_baseline": "signal_catalog_documented_no_external_backend",
+    "production_saas_readiness": "no_go_unchanged",
+    "real_customer_data_readiness": "no_go_unchanged",
+    "official_sdk_package": "no_go_unchanged",
+    "live_postgres_production_claim": "no_go_unchanged"
+  },
+  "remaining_blockers": [
+    {
+      "id": "RB-001",
+      "description": "No live PostgreSQL validation executed",
+      "severity": "P0"
+    },
+    {
+      "id": "RB-002",
+      "description": "No automated backup system or DR runbooks",
+      "severity": "P0"
+    },
+    {
+      "id": "RB-003",
+      "description": "No production observability stack",
+      "severity": "P0"
+    },
+    {
+      "id": "RB-004",
+      "description": "Admin-plane tenant isolation (GL-200D) deferred",
+      "severity": "P0"
+    },
+    {
+      "id": "RB-005",
+      "description": "No production deployment hardening (TLS, container)",
+      "severity": "P0"
+    },
+    {
+      "id": "RB-006",
+      "description": "No production IAM (OAuth/JWT/SSO)",
+      "severity": "P0"
+    },
+    {
+      "id": "RB-007",
+      "description": "No external metrics or alerting backend",
+      "severity": "P1"
+    },
+    {
+      "id": "RB-008",
+      "description": "No log aggregation or distributed tracing",
+      "severity": "P1"
+    },
+    {
+      "id": "RB-009",
+      "description": "PostgreSQL backup/restore automated drill not executed",
+      "severity": "P1"
+    }
+  ],
+  "risk_register": [
+    {
+      "id": "R-01",
+      "risk": "Live PostgreSQL behavior diverges from SQLite in production",
+      "likelihood": "medium",
+      "impact": "high",
+      "mitigation": "Execute live validation against ephemeral instance before production"
+    },
+    {
+      "id": "R-02",
+      "risk": "Backup restore fails silently on PostgreSQL",
+      "likelihood": "medium",
+      "impact": "critical",
+      "mitigation": "Implement automated PostgreSQL drill with explicit verification"
+    },
+    {
+      "id": "R-03",
+      "risk": "Audit hash-chain becomes invalid after PostgreSQL restore",
+      "likelihood": "low",
+      "impact": "critical",
+      "mitigation": "Hash-chain verification built into restore drill; verification mandatory"
+    },
+    {
+      "id": "R-04",
+      "risk": "Observability gap masks auth or isolation failures in production",
+      "likelihood": "medium",
+      "impact": "high",
+      "mitigation": "Implement external log aggregation and alerting before production"
+    },
+    {
+      "id": "R-05",
+      "risk": "Synthetic data inadvertently resembles real customer data",
+      "likelihood": "low",
+      "impact": "medium",
+      "mitigation": "GL-205 scripts use explicit gl205-synthetic-* prefixes"
+    },
+    {
+      "id": "R-06",
+      "risk": "PostgreSQL migration idempotency failure on real schema",
+      "likelihood": "low",
+      "impact": "high",
+      "mitigation": "Step 7 of live validation script explicitly tests idempotency"
+    },
+    {
+      "id": "R-07",
+      "risk": "Tenant isolation bypass on PostgreSQL due to missing RLS",
+      "likelihood": "medium",
+      "impact": "critical",
+      "mitigation": "Admin-plane tenant isolation (GL-200D) deferred; must not claim production-complete"
+    }
+  ],
+  "safety_confirmations": {
+    "gl205_is_operational_baseline_not_production_declaration": true,
+    "developer_preview_controlled_preview_with_strict_boundaries": true,
+    "not_production_saas": true,
+    "not_ready_for_real_customer_private_grant_data": true,
+    "no_official_sdk_package_claimed": true,
+    "security_reports_route_to_github_security_advisories": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_grant_data": true,
+    "live_postgres_production_claim_no_go": true,
+    "backup_restore_dr_production_readiness_limited": true,
+    "no_public_publish": true,
+    "no_github_push": true,
+    "no_visibility_change": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "unrelated_untracked_website_files_excluded": true
+  },
+  "recommended_next_issues": [
+    {
+      "issue": "GL-205 Merge",
+      "description": "Merge GL-205 to internal main if tests pass",
+      "priority": "immediate"
+    },
+    {
+      "issue": "GL-206",
+      "description": "Admin-plane tenant isolation planning (GL-200D)",
+      "priority": "high"
+    },
+    {
+      "issue": "GL-206B",
+      "description": "Live PostgreSQL validation execution (requires ephemeral instance)",
+      "priority": "high"
+    },
+    {
+      "issue": "GL-207",
+      "description": "Stale claim correction if any overclaimed items found",
+      "priority": "high"
+    },
+    {
+      "issue": "GL-208",
+      "description": "Production observability stack baseline (external backend)",
+      "priority": "medium"
+    },
+    {
+      "issue": "GL-209",
+      "description": "Automated PostgreSQL backup/restore drill",
+      "priority": "medium"
+    },
+    {
+      "issue": "GL-203D",
+      "description": "Experimental Public SDK — deferred until GL-203D projection gate passes",
+      "priority": "deferred"
+    }
+  ]
+}
