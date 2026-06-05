@@ -1,0 +1,463 @@
+{
+  "issue_id": "GL-203",
+  "title": "API Contract / SDK Packaging Decision",
+  "result": "ready_for_merge",
+  "decision": "defer_sdk_proceed_to_gl203b",
+  "decision_rationale": "The API contract is functional and auth boundary is sound for Developer Preview. The OpenAPI document is substantially incomplete (at GL-031 state; implementation is at GL-202+). No SDK/package should be published or claimed as official until after GL-203B closes the contract gap. All allowed public claims are bounded and safe. GL-203B is the required next step before any SDK or packaging work.",
+  "input_sources_reviewed": [
+    "docs/persistence_postgres_migration_readiness.md",
+    "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/tenant_workspace_api_audit_regression_completion.md",
+    "docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json",
+    "docs/tenant_workspace_isolation_implementation_baseline.md",
+    "docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json",
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "docs/production_readiness_gap_report_v2.md",
+    "docs/examples/gl199/production_readiness_gap_report_v2.json",
+    "docs/api_sdk_agent_value_decision_pack.md",
+    "docs/examples/gl197/api_sdk_agent_value_decision_pack.json",
+    "docs/controlled_preview_boundary_pack.md",
+    "docs/examples/gl198/controlled_preview_boundary_pack.json",
+    "docs/public_safety_scanner_claim_consistency_gate.md",
+    "docs/public_smoke_matrix_pack.md",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/openapi.yaml",
+    "backend/src/server.py",
+    "backend/src/auth.py",
+    "backend/src/operators.py",
+    "backend/src/grants.py",
+    "backend/src/grant_requests.py",
+    "backend/src/challenges.py",
+    "backend/src/audit_log.py",
+    "backend/src/db.py",
+    "backend/src/models.py",
+    "backend/src/agent_permissions.py",
+    "backend/src/agent_permission_assignments.py",
+    "backend/src/migrations",
+    "sdk/python/grantlayer_client.py",
+    "sdk/python/README.md"
+  ],
+  "current_api_contract_summary": {
+    "server": "stdlib HTTPServer (BaseHTTPRequestHandler), no framework dependency",
+    "auth_modes": [
+      {
+        "mode": "legacy",
+        "description": "Authorization: Bearer <admin-token> via hmac.compare_digest (constant-time)",
+        "env": "ENABLE_OPERATOR_MODEL=false"
+      },
+      {
+        "mode": "operator",
+        "description": "Authorization: Bearer <operator-token> via PBKDF2-HMAC-SHA256 (600000 iterations) with SHA-256 lookup-hash pre-filter",
+        "env": "ENABLE_OPERATOR_MODEL=true"
+      }
+    ],
+    "tenant_context": "Always server-derived. Operator mode: tenant_id from operator record. Admin-token mode: tenant_id bound to 'demo'. Clients cannot supply or override tenant_id.",
+    "endpoint_categories": [
+      {
+        "category": "public",
+        "endpoints": ["GET /health", "GET /readiness", "GET /"],
+        "auth": "none"
+      },
+      {
+        "category": "core_resource",
+        "endpoints": ["GET /grants", "POST /grants", "GET /grants/{id}", "POST /grants/{id}/revoke", "GET /audit-events", "GET /challenges", "POST /challenges"],
+        "auth": "LegacyAdminToken or OperatorToken"
+      },
+      {
+        "category": "operator_mode_only",
+        "endpoints": ["GET /grant-requests", "POST /grant-requests", "GET /grant-requests/{id}", "POST /grant-requests/{id}/approve", "POST /grant-requests/{id}/deny", "POST /grant-requests/{id}/revoke", "GET /grant-executions", "POST /grant-executions", "GET /grant-executions/{id}", "GET /grants/{id}/executions", "GET /operators", "POST /operators", "GET /operators/me"],
+        "auth": "OperatorToken only"
+      },
+      {
+        "category": "evidence_provenance",
+        "endpoints": ["GET /evidence/executions/{id}", "GET /evidence/executions/{id}/export", "GET /evidence/executions/{id}/verify", "GET /evidence/executions/{id}/completeness", "GET /provenance/executions/{id}/summary", "GET /auditor/reports/executions/{id}", "GET /compliance/gaps/executions/{id}"],
+        "auth": "LegacyAdminToken or OperatorToken"
+      },
+      {
+        "category": "agent_permissions",
+        "endpoints": ["GET /agent-permissions/evaluate", "GET /agent-permissions/profiles", "GET /agent-permissions/profiles/{name}", "GET /agent-permissions/assignments"],
+        "auth": "LegacyAdminToken or OperatorToken"
+      },
+      {
+        "category": "demo",
+        "endpoints": ["POST /demo/tamper-grant/{id}"],
+        "auth": "Returns 403 unless ENABLE_DEMO_ENDPOINTS=true; auth still required"
+      },
+      {
+        "category": "demo_action",
+        "endpoints": ["POST /demo-action"],
+        "auth": "Auth required regardless of demo flag"
+      }
+    ],
+    "error_contract": "GL-030 additive shape: {error, errorCode, reason}",
+    "security_headers": ["X-Content-Type-Options", "X-Frame-Options", "Cache-Control: no-store", "Content-Security-Policy"],
+    "cors": "Exact-match whitelist only. No wildcard. No reflection of arbitrary origins.",
+    "rate_limiting": "Separate auth and API rate limiters configurable via env vars"
+  },
+  "openapi_alignment_assessment": {
+    "openapi_version": "0.31.0-rc",
+    "actual_implementation_state": "GL-202+",
+    "version_lag": "OpenAPI is at GL-031; implementation is at GL-202",
+    "correctly_documented": [
+      "GET /health, GET /readiness (public, no auth)",
+      "GET / (dashboard)",
+      "GET/POST /grants, GET /grants/{id}, POST /grants/{id}/revoke",
+      "GET /audit-events",
+      "GET/POST /grant-requests and lifecycle endpoints",
+      "GET /grant-executions, POST /grant-executions, GET /grant-executions/{id}",
+      "GET /grants/{id}/executions",
+      "GET/POST /operators, GET /operators/me",
+      "GET /evidence/executions/{id} and sub-paths",
+      "GET/POST /challenges",
+      "SecuritySchemes (LegacyAdminToken, OperatorToken)",
+      "Error response shape (GL-030 additive contract)"
+    ],
+    "gaps_to_address_in_gl203b": [
+      "Implicit tenant context not documented (server-derived from auth, not client-supplied)",
+      "workspace_id reserved/nullable not documented in any schema",
+      "Cross-tenant denial semantics (404/empty without existence leak) not described",
+      "Production-mode startup fail-closed behavior not reflected",
+      "Many newer endpoints not in OpenAPI (agent permissions, approval lifecycle, compliance readiness, provenance v2, institutional auditor export, policy requirements)",
+      "Demo tamper endpoint guard behavior (403 when flag is off) not documented",
+      "Version mismatch: 0.31.0-rc vs actual GL-202+ state",
+      "X-Correlation-ID request/response header not documented",
+      "Grant execution tenant isolation (GL-200C) not reflected"
+    ],
+    "severity": "Incomplete but not severely misleading about auth requirements or response shapes for documented endpoints",
+    "recommendation": "Defer comprehensive OpenAPI cleanup to GL-203B. Do not change docs/openapi.yaml in GL-203."
+  },
+  "endpoint_auth_boundary_assessment": {
+    "public_endpoints_no_auth": "VERIFIED",
+    "mutating_endpoints_require_auth": "VERIFIED",
+    "admin_token_fails_closed": "VERIFIED — GL-201 hardening; startup rejects placeholder tokens in production-like mode",
+    "operator_auth_pbkdf2": "VERIFIED — 600000 PBKDF2 iterations, SHA-256 lookup hash pre-filter",
+    "tenant_id_server_derived": "VERIFIED — extracted from operator record or bound to 'demo' for admin-token; clients cannot supply",
+    "cross_tenant_denial": "VERIFIED — returns None/404 for ID lookups, empty list for list endpoints",
+    "demo_tamper_blocked_by_default": "VERIFIED — returns 403 unless ENABLE_DEMO_ENDPOINTS=true",
+    "demo_action_requires_auth": "VERIFIED — auth check runs regardless of demo flag",
+    "rate_limiting": "VERIFIED",
+    "security_headers": "VERIFIED",
+    "assessment": "Auth boundary is sound for Developer Preview. No auth bypass gap found."
+  },
+  "tenant_workspace_contract_implications": {
+    "current_state": "tenant_id present on all business resource tables; always server-derived; all list/lookup endpoints filter by tenant_id; workspace_id reserved/nullable",
+    "client_tenant_override": "NOT SUPPORTED — tenant_id is never client-supplied",
+    "cross_tenant_denial_semantics": "404/None for ID lookups; empty list for list endpoints; no existence leak",
+    "workspace_id_status": "Reserved, nullable, not enforced — deferred to future issue",
+    "openapi_documentation_needed": [
+      "Document tenant_id as implicit from auth",
+      "Document workspace_id as reserved/nullable",
+      "Document cross-tenant denial semantics"
+    ],
+    "stale_claims_found": "README.md, AGENTS.md, SECURITY.md, llms.txt state 'Tenant isolation is not implemented' — now inaccurate; baseline implemented in GL-200A/B/C",
+    "stale_claims_action": "Document in GL-203; correct in GL-203B or narrow companion task",
+    "remaining_gaps": [
+      "workspace_id enforcement (deferred)",
+      "Admin-plane tenant isolation (GL-200D deferred)",
+      "Secondary-path tenant enforcement for evidence/provenance routes (deferred)",
+      "Database-level row security (deferred, requires major architectural work)"
+    ]
+  },
+  "auth_config_contract_implications": {
+    "production_mode_fail_closed": "VERIFIED — placeholder/weak admin tokens rejected at startup in staging/production mode",
+    "admin_token_safety": "VERIFIED — hmac.compare_digest, never leaked in responses/logs",
+    "operator_token_safety": "VERIFIED — PBKDF2-HMAC-SHA256, single issuance, to_dict() exposes only safe fields",
+    "cors_safety": "VERIFIED — exact-match whitelist only, no wildcard",
+    "secret_leakage": "VERIFIED — no raw token values in error messages, startup output, or responses",
+    "openapi_additions_needed": [
+      "Document placeholder/weak token rejection in production-like mode",
+      "Document operator token single-issuance lifecycle",
+      "Confirm no secret values in OpenAPI examples (currently clean)"
+    ],
+    "assessment": "Auth/config contract is sound. No changes needed in GL-203."
+  },
+  "persistence_migration_contract_implications": {
+    "sqlite_readiness": "READY for controlled SQLite usage within Developer Preview",
+    "postgres_readiness": "Code paths hardened but NOT live-validated; not production-ready for PostgreSQL without live integration testing",
+    "migration_count": 10,
+    "migration_ordering": "Deterministic (sorted by numeric prefix)",
+    "migration_idempotency": "VERIFIED — IF NOT EXISTS guards throughout",
+    "dry_run_available": "VERIFIED — list_pending_migrations() added in GL-202",
+    "audit_immutability": "VERIFIED — SQLite and PostgreSQL triggers protect audit_events",
+    "hash_chain": "VERIFIED — compatible across pre-migration and post-migration events",
+    "backup_restore": "NOT IMPLEMENTED — no automated rollback; manual DB snapshot required before migrations",
+    "api_claims_impact": [
+      "Live PostgreSQL support cannot be claimed as production-ready without live validation",
+      "SQLite mode suitable for Developer Preview",
+      "Backup/restore/DR not implemented"
+    ]
+  },
+  "sdk_package_options": [
+    {
+      "option": "A",
+      "label": "No SDK/package; examples only",
+      "pros": ["Zero commitment overhead", "No breaking change burden", "Fits current API contract gap"],
+      "cons": ["Limited developer experience", "No typed interface"],
+      "when_appropriate": "If API contract is still unstable or OpenAPI cleanup not done"
+    },
+    {
+      "option": "B",
+      "label": "Experimental local SDK prototype later, not published",
+      "pros": ["Improves developer experience", "Allows safe packaging boundary testing"],
+      "cons": ["Requires GL-203B contract work first", "Engineering time investment"],
+      "when_appropriate": "After GL-203B delivers stable documented API contract"
+    },
+    {
+      "option": "C",
+      "label": "Public experimental SDK/package later with clear preview caveats",
+      "pros": ["Increases discoverability and developer adoption"],
+      "cons": ["Premature before contract stability", "Requires GL-203B AND GL-203C first", "Creates maintenance burden"],
+      "when_appropriate": "After GL-203B AND GL-203C packaging boundary verification"
+    },
+    {
+      "option": "D",
+      "label": "Official SDK/package now",
+      "pros": ["Strong signal of maturity"],
+      "cons": ["API contract undocumented (OpenAPI at GL-031, state at GL-202+)", "Creates untenable maintenance burden", "False maturity signal", "Explicitly prohibited by GL-203 scope"],
+      "assessment": "REJECTED — not appropriate now"
+    },
+    {
+      "option": "E",
+      "label": "Defer SDK until OpenAPI/contract cleanup and packaging tests",
+      "pros": ["Responsible sequencing", "Protects against premature commitment", "Aligns with GL-197 API-first conclusion"],
+      "cons": ["Delays SDK-related developer experience improvements"],
+      "assessment": "SELECTED — correct sequencing"
+    }
+  ],
+  "selected_sdk_package_recommendation": {
+    "selected_option": "E",
+    "label": "Defer SDK until OpenAPI/contract cleanup (GL-203B), then assess Option B",
+    "no_official_sdk_claimed": true,
+    "no_package_publishing": true,
+    "current_sdk_status": "sdk/python/grantlayer_client.py is 113-line developer-preview adjacent code; not published; not official",
+    "rationale": [
+      "OpenAPI at GL-031 state; implementation at GL-202+ — contract gap is too large for SDK publication",
+      "GL-197 concluded api_first_agent_examples_now_sdk_later — reinforced by GL-203 contract analysis",
+      "Existing sdk/python covers health/readiness/grants/audit for Developer Preview adequately",
+      "After GL-203B: revisit Option B (experimental local SDK prototype) as GL-203C",
+      "Only proceed to Option C (public experimental SDK) after GL-203C verifies packaging boundaries",
+      "Only consider Option D (official SDK) after production-ready API contract is verified"
+    ]
+  },
+  "agent_integration_implications": {
+    "agents_md_status": "Safe and accurate for Developer Preview caveats; stale tenant isolation claim noted",
+    "llms_txt_status": "Safe, concise, accurate caveats",
+    "llms_full_txt_status": "Safe, detailed repository map with forbidden areas documented",
+    "agent_permission_endpoints": "Stateless evaluators, no DB access, no cross-tenant risk",
+    "stale_claim": "AGENTS.md and llms.txt state 'Tenant isolation is not implemented' — now inaccurate as of GL-200A/B/C baseline",
+    "stale_claim_action": "Document in GL-203; correct in GL-203B or narrow companion task; no security boundary issue",
+    "assessment": "Agent integration boundaries are safe as-is for GL-203. No changes to AGENTS.md required in GL-203."
+  },
+  "allowed_public_claims": [
+    "Developer Preview",
+    "Controlled Preview with strict boundaries",
+    "API-first (REST/HTTP, no SDK required to integrate)",
+    "Deterministic local examples (first_verifiable_output, grant_lifecycle_evidence_bundle)",
+    "Grant lifecycle evidence bundle with cryptographic audit chain",
+    "Tenant/workspace isolation baseline improved (not production-complete)",
+    "Production auth/secrets/config hardening improved (not production SaaS)",
+    "Persistence/migration readiness improved (not production data readiness)",
+    "Open source (Apache 2.0)",
+    "Agent-friendly API surface with permission evaluation and evidence bundles",
+    "Audit tamper-evidence with hash-chain verification and immutability triggers",
+    "Minimal SDK available for developer evaluation (not published, not official)"
+  ],
+  "prohibited_public_claims": [
+    "Production SaaS ready",
+    "Ready for real customer data",
+    "Ready for private grant or institutional data",
+    "Official SDK/package available",
+    "Complete tenant/workspace isolation production guarantee",
+    "Live PostgreSQL production readiness (not live-validated)",
+    "Enterprise-ready platform",
+    "Compliance-ready platform",
+    "Workspace enforcement complete",
+    "Admin-plane multi-tenant isolation complete"
+  ],
+  "follow_up_implementation_split": [
+    {
+      "issue": "GL-203 Merge",
+      "description": "Merge gl-203-api-contract-sdk-packaging-decision to internal main after validation"
+    },
+    {
+      "issue": "GL-203B",
+      "description": "OpenAPI / API Contract Cleanup — update version, document tenant context as implicit, add missing endpoints, correct stale tenant isolation claims in README/AGENTS/llms"
+    },
+    {
+      "issue": "GL-203C",
+      "description": "SDK Prototype / Packaging Boundary — only after GL-203B; design internal SDK prototype against aligned contract; define packaging boundary tests"
+    },
+    {
+      "issue": "GL-204",
+      "description": "Production Ops / Go-No-Go v3 — live PostgreSQL validation, backup/restore minimum drill, observability baseline, go/no-go decision"
+    },
+    {
+      "issue": "GL-205+",
+      "description": "Deployment / Runtime / Backup / Observability / Admin-Plane — workspace_id enforcement, admin-plane isolation, production-grade indexes, incident response"
+    }
+  ],
+  "production_readiness_impact": {
+    "gl203_changes_production_readiness": false,
+    "current_posture": "Developer Preview / Controlled Preview with strict boundaries",
+    "api_contract": "Functional; OpenAPI documentation substantially behind (GL-203B needed)",
+    "auth_secrets_config": "Hardened for Developer Preview (GL-201); not full production SaaS",
+    "persistence_migration": "SQLite ready for Developer Preview; PostgreSQL not live-validated",
+    "tenant_workspace": "Baseline implemented (GL-200A/B/C); not production-complete",
+    "sdk_package": "Developer-preview adjacent; not published; not official",
+    "follow_up_needed": ["GL-203B", "GL-204", "GL-205+"]
+  },
+  "risk_register": [
+    {
+      "id": "R1",
+      "risk": "Stale 'not implemented' tenant isolation claims in README/AGENTS/llms mislead developers about actual baseline",
+      "severity": "low-medium",
+      "mitigation": "Document in GL-203; correct in GL-203B or narrow companion task"
+    },
+    {
+      "id": "R2",
+      "risk": "OpenAPI version '0.31.0-rc' vs actual GL-202+ state creates contract confusion",
+      "severity": "medium",
+      "mitigation": "Document gap; defer correction to GL-203B"
+    },
+    {
+      "id": "R3",
+      "risk": "PostgreSQL not live-validated; deployment risk if used in production without testing",
+      "severity": "high",
+      "mitigation": "Document; block PostgreSQL production deployment until GL-204 live validation"
+    },
+    {
+      "id": "R4",
+      "risk": "Premature SDK publication before contract stability creates breaking-change burden",
+      "severity": "high",
+      "mitigation": "Defer all SDK publication to after GL-203B; Option E selected"
+    },
+    {
+      "id": "R5",
+      "risk": "workspace_id deferred enforcement creates future migration complexity",
+      "severity": "low-medium",
+      "mitigation": "Tracked in GL-200C/GL-203B; column reserved and nullable"
+    },
+    {
+      "id": "R6",
+      "risk": "Secondary-path tenant enforcement for evidence/provenance deferred",
+      "severity": "low-medium",
+      "mitigation": "Execution IDs are tenant-scoped at create; direct access requires known ID"
+    },
+    {
+      "id": "R7",
+      "risk": "Admin-plane isolation (cross-tenant operator management) deferred",
+      "severity": "medium",
+      "mitigation": "Documented; do not promote to production multi-tenant use until GL-200D"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "category": "openapi_gap",
+      "summary": "OpenAPI version 0.31.0-rc is substantially behind actual implementation state (GL-202+)",
+      "severity": "medium",
+      "action": "GL-203B"
+    },
+    {
+      "id": "F2",
+      "category": "openapi_gap",
+      "summary": "Implicit tenant context from auth not documented in OpenAPI",
+      "severity": "medium",
+      "action": "GL-203B"
+    },
+    {
+      "id": "F3",
+      "category": "openapi_gap",
+      "summary": "workspace_id reserved/nullable not documented in any OpenAPI schema",
+      "severity": "low",
+      "action": "GL-203B"
+    },
+    {
+      "id": "F4",
+      "category": "openapi_gap",
+      "summary": "Many endpoints added after GL-031 are absent from OpenAPI (agent permissions, approval lifecycle, compliance readiness, provenance v2, institutional auditor export, policy requirements)",
+      "severity": "medium",
+      "action": "GL-203B"
+    },
+    {
+      "id": "F5",
+      "category": "stale_claim",
+      "summary": "README.md, AGENTS.md, SECURITY.md, llms.txt state 'Tenant isolation is not implemented' — now inaccurate; baseline implemented in GL-200A/B/C",
+      "severity": "low-medium",
+      "action": "GL-203B or narrow companion task"
+    },
+    {
+      "id": "F6",
+      "category": "sdk_gap",
+      "summary": "sdk/python/grantlayer_client.py is developer-preview adjacent code; not published; not official; adequate for current Developer Preview posture",
+      "severity": "informational",
+      "action": "GL-203C after GL-203B"
+    },
+    {
+      "id": "F7",
+      "category": "persistence_gap",
+      "summary": "PostgreSQL code paths substantially hardened but not live-validated; production PostgreSQL deployment blocked until GL-204",
+      "severity": "high",
+      "action": "GL-204"
+    },
+    {
+      "id": "F8",
+      "category": "auth_contract",
+      "summary": "Auth boundary verified sound: tenant context server-derived, constant-time comparison, PBKDF2 operator tokens, no secret leakage",
+      "severity": "informational",
+      "action": "No action needed in GL-203"
+    }
+  ],
+  "safety_confirmations": {
+    "no_production_saas_claim": true,
+    "tenant_workspace_isolation_not_overclaimed": true,
+    "no_real_customer_private_grant_data_readiness_claimed": true,
+    "security_reports_route_to_github_security_advisories": true,
+    "no_exploit_details_included": true,
+    "no_real_secrets_included": true,
+    "gl201_auth_hardening_preserved": true,
+    "gl200_tenant_workspace_preserved": true,
+    "gl202_migration_persistence_preserved": true,
+    "no_official_sdk_claimed": true,
+    "no_package_publishing": true,
+    "no_backend_src_changes": true,
+    "no_api_behavior_changes": true,
+    "no_openapi_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "no_force_push": true,
+    "no_paperclip_references": true,
+    "developer_preview_controlled_preview_posture_preserved": true
+  },
+  "recommended_next_issues": [
+    {
+      "issue": "GL-203 Merge",
+      "priority": 1,
+      "description": "Merge gl-203-api-contract-sdk-packaging-decision to internal main"
+    },
+    {
+      "issue": "GL-203B",
+      "priority": 2,
+      "description": "OpenAPI / API Contract Cleanup — required before any SDK work"
+    },
+    {
+      "issue": "GL-203C",
+      "priority": 3,
+      "description": "SDK Prototype / Packaging Boundary — only after GL-203B"
+    },
+    {
+      "issue": "GL-204",
+      "priority": 4,
+      "description": "Production Ops / Go-No-Go v3"
+    }
+  ]
+}
