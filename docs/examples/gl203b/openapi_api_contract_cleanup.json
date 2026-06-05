@@ -1,0 +1,310 @@
+{
+  "issue_id": "GL-203B",
+  "title": "OpenAPI / API Contract Cleanup",
+  "result": "ready_for_merge",
+  "decision": "openapi_contract_cleanup_complete_proceed_to_gl203c",
+  "decision_rationale": "The OpenAPI drift assessment confirmed significant but non-critical gaps. The documented endpoints were functionally accurate; what was missing was cross-cutting behavior documentation (tenant context, workspace_id, newer schema fields, ComplianceReadinessSummary schema). All identified gaps have been corrected within GL-203B scope. Stale tenant isolation claims in AGENTS.md/llms.txt require coordinated test updates and are deferred. No API behavior was changed. No backend/src files were modified. The OpenAPI is now suitable as a basis for GL-203C SDK prototype work.",
+  "input_sources_reviewed": [
+    "docs/api_contract_sdk_packaging_decision.md",
+    "docs/examples/gl203/api_contract_sdk_packaging_decision.json",
+    "docs/openapi.yaml",
+    "docs/persistence_postgres_migration_readiness.md",
+    "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/tenant_workspace_api_audit_regression_completion.md",
+    "docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json",
+    "docs/tenant_workspace_isolation_implementation_baseline.md",
+    "docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json",
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "docs/production_readiness_gap_report_v2.md",
+    "docs/examples/gl199/production_readiness_gap_report_v2.json",
+    "docs/api_sdk_agent_value_decision_pack.md",
+    "docs/examples/gl197/api_sdk_agent_value_decision_pack.json",
+    "docs/controlled_preview_boundary_pack.md",
+    "docs/examples/gl198/controlled_preview_boundary_pack.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "backend/src/server.py",
+    "backend/src/auth.py",
+    "backend/src/operators.py",
+    "backend/src/grants.py",
+    "backend/src/grant_requests.py",
+    "backend/src/challenges.py",
+    "backend/src/audit_log.py",
+    "backend/src/db.py",
+    "backend/src/models.py",
+    "backend/src/agent_permissions.py",
+    "backend/src/agent_permission_assignments.py",
+    "backend/src/compliance_readiness.py"
+  ],
+  "openapi_drift_summary": {
+    "pre_gl203b_version": "0.31.0-rc",
+    "post_gl203b_version": "0.203b.0-developer-preview",
+    "implementation_state_at_gl203b": "GL-202+",
+    "drift_items": [
+      {
+        "id": "D1",
+        "area": "Version",
+        "severity": "medium",
+        "description": "OpenAPI version was '0.31.0-rc' (GL-031 state) while implementation is at GL-202+",
+        "resolution": "Updated version to '0.203b.0-developer-preview'"
+      },
+      {
+        "id": "D2",
+        "area": "Info description",
+        "severity": "medium",
+        "description": "Info description referenced GL-031 and GL-030 baseline; stale wording",
+        "resolution": "Updated with GL-203B Developer Preview caveats, tenant context, workspace_id, X-Correlation-ID, security headers, and production-mode behavior"
+      },
+      {
+        "id": "D3",
+        "area": "Tenant context documentation",
+        "severity": "medium",
+        "description": "No documentation that tenant_id is server-derived and not client-supplied",
+        "resolution": "Added to info description and security scheme descriptions"
+      },
+      {
+        "id": "D4",
+        "area": "workspace_id documentation",
+        "severity": "low",
+        "description": "workspace_id not documented anywhere in OpenAPI",
+        "resolution": "Added to info description and AuditEvent schema"
+      },
+      {
+        "id": "D5",
+        "area": "X-Correlation-ID header",
+        "severity": "low",
+        "description": "X-Correlation-ID request/response header not documented",
+        "resolution": "Added to info description"
+      },
+      {
+        "id": "D6",
+        "area": "Cross-tenant denial semantics",
+        "severity": "medium",
+        "description": "404/empty list behavior for cross-tenant access not documented",
+        "resolution": "Added to info description and GET /grant-requests description"
+      },
+      {
+        "id": "D7",
+        "area": "GET /grant-requests auth mode",
+        "severity": "low",
+        "description": "OpenAPI showed OperatorToken only; implementation allows both LegacyAdminToken and OperatorToken",
+        "resolution": "Updated security to include both LegacyAdminToken and OperatorToken"
+      },
+      {
+        "id": "D8",
+        "area": "/operators/me response schema",
+        "severity": "low",
+        "description": "Response schema missing 'active' and 'tenantId' fields returned by implementation",
+        "resolution": "Added both fields to response schema"
+      },
+      {
+        "id": "D9",
+        "area": "AuditEvent schema GL-200B fields",
+        "severity": "medium",
+        "description": "AuditEvent schema missing tenant_id, workspace_id, scope, row_hash, prev_hash fields added in GL-200B",
+        "resolution": "Added all five fields with appropriate documentation"
+      },
+      {
+        "id": "D10",
+        "area": "ComplianceReadinessSummary schema",
+        "severity": "high",
+        "description": "ComplianceReadinessSummary schema referenced at /compliance/readiness/build but not defined in components/schemas",
+        "resolution": "Added complete ComplianceReadinessSummary schema definition"
+      },
+      {
+        "id": "D11",
+        "area": "Security scheme descriptions",
+        "severity": "low",
+        "description": "Security scheme descriptions did not mention tenant context derivation or auth safety details",
+        "resolution": "Updated both LegacyAdminToken and OperatorToken descriptions"
+      }
+    ]
+  },
+  "endpoint_auth_boundary_cleanup": {
+    "health_readiness_public": "VERIFIED — GET /health, GET /readiness require no auth (unchanged)",
+    "protected_business_endpoints": "VERIFIED — all mutating and business endpoints require auth (unchanged)",
+    "demo_action_auth_required": "VERIFIED — POST /demo-action requires auth regardless of demo flag (unchanged)",
+    "demo_tamper_guarded": "VERIFIED — POST /demo/tamper-grant/{id} returns 403 if ENABLE_DEMO_ENDPOINTS=false (unchanged)",
+    "grant_requests_get_fixed": "FIXED — GET /grant-requests now documents both LegacyAdminToken and OperatorToken",
+    "operator_me_schema_updated": "UPDATED — /operators/me response now includes active and tenantId fields",
+    "no_tenant_override_header": "CONFIRMED — no arbitrary tenant override header documented (tenant is always server-derived)"
+  },
+  "tenant_workspace_contract_cleanup": {
+    "tenant_context_documented": "DONE — info description states tenant_id is server-derived from auth, not client-supplied",
+    "workspace_id_documented": "DONE — info description and AuditEvent schema document workspace_id as reserved/nullable/deferred",
+    "cross_tenant_denial_documented": "DONE — info description and GET /grant-requests describe 404/empty list behavior",
+    "security_schemes_updated": "DONE — both auth scheme descriptions state how tenant context is derived",
+    "audit_event_tenant_fields": "DONE — tenant_id, workspace_id, scope added to AuditEvent schema (GL-200B)",
+    "stale_claim_in_agents_md_llms": "NOT_UPDATED — AGENTS.md, llms.txt, llms-full.txt still say 'Tenant isolation is not implemented'; updating would break many existing tests; deferred",
+    "production_complete_not_claimed": "CONFIRMED — no claim that tenant/workspace isolation is production-complete"
+  },
+  "auth_config_contract_cleanup": {
+    "production_mode_fail_closed": "DOCUMENTED — info description notes startup fail-closed for placeholder tokens in staging/production",
+    "admin_token_safety": "DOCUMENTED — constant-time HMAC, tenant bound to demo, fail-closed notes",
+    "operator_token_safety": "DOCUMENTED — PBKDF2-HMAC-SHA256 600000 iterations, single issuance, tenant from operator record",
+    "security_headers_documented": "DOCUMENTED — X-Content-Type-Options, X-Frame-Options, Cache-Control, CSP listed in info",
+    "no_secrets_in_openapi": "CONFIRMED — no real token values or placeholder secrets in OpenAPI examples"
+  },
+  "audit_error_response_contract_cleanup": {
+    "audit_event_schema_updated": "DONE — added row_hash, prev_hash, tenant_id, workspace_id, scope fields",
+    "gl030_error_contract_retained": "DONE — error shape documented in info description",
+    "error_refs_consistent": "VERIFIED — all error responses reference ErrorResponse schema",
+    "no_exploit_details": "CONFIRMED — no cross-tenant existence leak details or exploit guidance",
+    "compliance_readiness_summary_added": "DONE — missing schema definition added"
+  },
+  "sdk_readiness_impact": {
+    "sdk_implemented": false,
+    "sdk_claimed": false,
+    "package_publishing": false,
+    "gl203b_enables_gl203c": true,
+    "remaining_blockers_before_sdk_prototype": [
+      "workspace_id enforcement not yet implemented (deferred)",
+      "Admin-plane tenant isolation (GL-200D) deferred",
+      "PostgreSQL not live-validated (GL-204)",
+      "Stale tenant isolation claims in AGENTS.md/llms.txt require coordinated correction"
+    ],
+    "sdk_readiness_assessment": "OpenAPI is now suitable as a basis for GL-203C SDK prototype work. No SDK code created in GL-203B."
+  },
+  "files_changed": [
+    {
+      "file": "docs/openapi.yaml",
+      "change": "Updated version, info description, GET /grant-requests security, /operators/me schema, AuditEvent schema, ComplianceReadinessSummary schema, security scheme descriptions"
+    },
+    {
+      "file": "docs/openapi_api_contract_cleanup.md",
+      "change": "Created — GL-203B cleanup report"
+    },
+    {
+      "file": "docs/examples/gl203b/openapi_api_contract_cleanup.json",
+      "change": "Created — GL-203B JSON artifact"
+    },
+    {
+      "file": "backend/tests/test_gl203b_openapi_api_contract_cleanup.py",
+      "change": "Created — contract tests"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "category": "openapi_schema_gap",
+      "summary": "ComplianceReadinessSummary schema referenced in /compliance/readiness/build but not defined in components/schemas",
+      "severity": "high",
+      "action": "Added complete schema definition in GL-203B"
+    },
+    {
+      "id": "F2",
+      "category": "openapi_gap",
+      "summary": "AuditEvent schema missing GL-200B fields: tenant_id, workspace_id, scope, row_hash, prev_hash",
+      "severity": "medium",
+      "action": "Added all fields to AuditEvent schema in GL-203B"
+    },
+    {
+      "id": "F3",
+      "category": "openapi_gap",
+      "summary": "OpenAPI info description stale (GL-031 reference); missing Developer Preview caveat, tenant context, workspace_id, X-Correlation-ID",
+      "severity": "medium",
+      "action": "Updated info description in GL-203B"
+    },
+    {
+      "id": "F4",
+      "category": "openapi_auth_mismatch",
+      "summary": "GET /grant-requests security showed OperatorToken only; implementation allows both LegacyAdminToken and OperatorToken",
+      "severity": "low",
+      "action": "Fixed to include both in GL-203B"
+    },
+    {
+      "id": "F5",
+      "category": "openapi_schema_gap",
+      "summary": "/operators/me response schema missing active and tenantId fields returned by implementation",
+      "severity": "low",
+      "action": "Added both fields in GL-203B"
+    },
+    {
+      "id": "F6",
+      "category": "stale_claim",
+      "summary": "AGENTS.md, llms.txt, llms-full.txt, README.md state 'Tenant isolation is not implemented' — baseline implemented in GL-200A/B/C",
+      "severity": "low-medium",
+      "action": "Deferred — updating requires coordinated test changes beyond GL-203B scope"
+    },
+    {
+      "id": "F7",
+      "category": "openapi_gap",
+      "summary": "No cross-tenant denial semantics documented (404/empty list without existence leak)",
+      "severity": "medium",
+      "action": "Added to info description and GET /grant-requests description in GL-203B"
+    },
+    {
+      "id": "F8",
+      "category": "openapi_gap",
+      "summary": "Security scheme descriptions did not mention tenant context derivation details",
+      "severity": "low",
+      "action": "Updated both scheme descriptions in GL-203B"
+    }
+  ],
+  "remaining_gaps": [
+    "Stale tenant isolation claim in AGENTS.md, llms.txt, llms-full.txt, README.md, SECURITY.md requires coordinated test update (deferred)",
+    "workspace_id enforcement not implemented (deferred to future issue)",
+    "Admin-plane tenant isolation (GL-200D) deferred",
+    "PostgreSQL not live-validated until GL-204",
+    "X-Correlation-ID documented in description only; not a formal OpenAPI header parameter on each endpoint",
+    "Secondary-path tenant enforcement for evidence/provenance routes deferred"
+  ],
+  "production_readiness_impact": {
+    "gl203b_changes_production_readiness": false,
+    "current_posture": "Developer Preview / Controlled Preview with strict boundaries",
+    "api_contract": "Aligned with GL-202+ implementation after GL-203B",
+    "auth_secrets_config": "Hardened for Developer Preview (GL-201); not full production SaaS",
+    "persistence_migration": "SQLite ready for Developer Preview; PostgreSQL not live-validated",
+    "tenant_workspace": "Baseline implemented (GL-200A/B/C); not production-complete",
+    "sdk_package": "Developer-preview adjacent; not published; not official"
+  },
+  "safety_confirmations": {
+    "no_production_saas_claim": true,
+    "tenant_workspace_isolation_not_overclaimed": true,
+    "no_real_customer_private_grant_data_readiness_claimed": true,
+    "security_reports_route_to_github_security_advisories": true,
+    "no_exploit_details_included": true,
+    "no_real_secrets_included": true,
+    "no_official_sdk_claimed": true,
+    "no_package_publishing": true,
+    "no_backend_src_changes": true,
+    "no_api_behavior_changes": true,
+    "no_migrations_db_schema_changes": true,
+    "no_dependency_changes": true,
+    "no_sdk_implementation": true,
+    "no_package_publishing_metadata": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "no_force_push": true,
+    "no_paperclip_references": true,
+    "developer_preview_controlled_preview_posture_preserved": true
+  },
+  "recommended_next_issues": [
+    {
+      "issue": "GL-203B Merge",
+      "priority": 1,
+      "description": "Merge gl-203b-openapi-api-contract-cleanup to internal main after validation"
+    },
+    {
+      "issue": "GL-203C",
+      "priority": 2,
+      "conditional": true,
+      "condition": "Only after GL-203B merge",
+      "description": "SDK Prototype / Packaging Boundary — design internal SDK prototype against the aligned contract; define packaging boundary tests; decide on experimental public SDK timeline"
+    },
+    {
+      "issue": "GL-204",
+      "priority": 3,
+      "description": "Production Ops / Go-No-Go v3 — live PostgreSQL validation, backup/restore minimum drill, observability baseline, go/no-go decision for first external controlled pilot"
+    }
+  ]
+}
