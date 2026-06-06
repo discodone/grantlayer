@@ -268,10 +268,13 @@ def _run_live() -> int:
 
         # step_06: Apply migrations
         print("[GL-205] step_06: Applying migrations...")
+        migration_conn = None
         try:
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "backend"))
+            from src.db import _ConnectionWrapper  # type: ignore
             from src.migrations.runner import run_migrations  # type: ignore
-            run_migrations(conn)
+            migration_conn = _ConnectionWrapper(conn, "postgres")
+            run_migrations(migration_conn)
             print("[GL-205] step_06: Migrations applied.")
             results.append("step_06: PASS")
         except Exception as exc:
@@ -281,7 +284,9 @@ def _run_live() -> int:
         # step_07: Idempotency — re-run migrations
         print("[GL-205] step_07: Verifying migration idempotency...")
         try:
-            run_migrations(conn)
+            if migration_conn is None:
+                raise RuntimeError("migration connection wrapper was not initialized")
+            run_migrations(migration_conn)
             print("[GL-205] step_07: Idempotency confirmed.")
             results.append("step_07: PASS")
         except Exception as exc:
@@ -434,7 +439,7 @@ def _run_live() -> int:
                         "synthetic",
                         "gl205_validation_test",
                         "synthetic",
-                        True,
+                        1,
                         "GL-205 synthetic validation",
                         "gl205-synthetic-tenant-001",
                         "0" * 64,
