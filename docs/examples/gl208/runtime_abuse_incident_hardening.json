@@ -1,0 +1,324 @@
+{
+  "issue_id": "GL-208",
+  "title": "Runtime / Abuse / Incident Hardening - Production IAM Baseline",
+  "result": "approved_with_gaps",
+  "decision": "runtime_abuse_incident_hardening_baseline_approved_with_gaps",
+  "decision_rationale": "GL-208 documents and tests the runtime, IAM, abuse, incident, and security-event baseline without broad rewrites. Existing controls already provide production-like fail-closed config checks, admin/operator bearer-token separation, server-derived tenant context, safe admin operator responses, deterministic in-memory rate limiting, correlation IDs, and secret-safe structured logging for Developer Preview / Controlled Preview. These controls are not complete production IAM, production-grade DDoS protection, a complete incident program, or a complete production observability stack. Production SaaS and real/private data remain no-go.",
+  "input_sources_reviewed": [
+    "docs/claim_safety_controlled_preview_boundary.md",
+    "docs/examples/gl207/claim_safety_controlled_preview_boundary.json",
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/live_postgres_backup_observability_baseline.md",
+    "docs/examples/gl205/live_postgres_backup_observability_baseline.json",
+    "docs/production_ops_go_no_go_v3.md",
+    "docs/examples/gl204/production_ops_go_no_go_v3.json",
+    "docs/sdk_prototype_packaging_boundary.md",
+    "docs/examples/gl203c/sdk_prototype_packaging_boundary.json",
+    "docs/openapi_api_contract_cleanup.md",
+    "docs/examples/gl203b/openapi_api_contract_cleanup.json",
+    "docs/api_contract_sdk_packaging_decision.md",
+    "docs/examples/gl203/api_contract_sdk_packaging_decision.json",
+    "docs/persistence_postgres_migration_readiness.md",
+    "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/tenant_workspace_api_audit_regression_completion.md",
+    "docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json",
+    "docs/tenant_workspace_isolation_implementation_baseline.md",
+    "docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json",
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "docs/controlled_preview_boundary_pack.md",
+    "docs/examples/gl198/controlled_preview_boundary_pack.json",
+    "docs/production_readiness_gap_report_v2.md",
+    "docs/examples/gl199/production_readiness_gap_report_v2.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/openapi.yaml",
+    "backend/src/server.py",
+    "backend/src/auth.py",
+    "backend/src/config.py",
+    "backend/src/operators.py",
+    "backend/src/audit_log.py",
+    "backend/src/structured_logging.py",
+    "backend/src/db.py",
+    "backend/src/models.py",
+    "backend/src/migrations",
+    "backend/tests",
+    "scripts",
+    "examples"
+  ],
+  "current_state_summary": {
+    "posture": "Developer Preview / Controlled Preview with strict boundaries",
+    "production_saas": "NO-GO",
+    "real_customer_private_grant_institutional_data": "NO-GO",
+    "official_sdk_package": "NO-GO",
+    "live_postgres_production_claim": "NO-GO",
+    "existing_controls": [
+      "Production-like config fail-closed checks",
+      "Admin bearer-token boundary",
+      "Operator bearer-token boundary with PBKDF2 and lookup hash",
+      "Admin/operator route distinction",
+      "Server-derived tenant context",
+      "Safe admin operator list/read response fields",
+      "In-process deterministic rate limiter",
+      "Structured logging with correlation IDs and redaction"
+    ]
+  },
+  "runtime_mode_assessment": {
+    "local": "developer defaults allowed; not production-like",
+    "test": "deterministic tests and local tokens allowed",
+    "demo": "requires admin token by default; not production",
+    "staging": "production-like; unsafe config fails closed",
+    "production": "production-like; unsafe config fails closed",
+    "controlled_preview": "bounded operational posture using synthetic/demo data only; not production SaaS"
+  },
+  "runtime_hardening_summary": {
+    "implemented": "No new backend runtime code was needed; existing GL-201 fail-closed checks are verified by GL-208 tests.",
+    "fail_closed_controls": [
+      "missing admin-token enforcement rejected",
+      "missing admin token rejected",
+      "missing challenge enforcement rejected",
+      "enabled demo endpoints rejected",
+      "placeholder/short admin token rejected in production-like modes",
+      "placeholder/short bootstrap operator token rejected in production-like modes"
+    ],
+    "public_routes": "Health/readiness remain public by design.",
+    "protected_routes": "Resource, demo-action, demo tamper, and admin/operator routes remain protected.",
+    "cors": "Exact-match allowlist only; no wildcard and no arbitrary origin reflection."
+  },
+  "production_iam_baseline_assessment": {
+    "status": "baseline_only_not_complete_production_iam",
+    "admin": "Bearer token with constant-time comparison; fail-closed when required.",
+    "operator": "PBKDF2-SHA256 token hash, SHA-256 lookup hash, active-row filtering, expiry handling.",
+    "not_included": [
+      "OAuth",
+      "JWT/SSO",
+      "central identity provider",
+      "complete RBAC engine",
+      "full rotation workflow",
+      "production IAM governance"
+    ]
+  },
+  "admin_operator_iam_boundary": {
+    "admin_routes": [
+      "GET /admin/operators",
+      "GET /admin/operators/{id}",
+      "POST /admin/operators",
+      "POST /admin/operators/{id}/revoke"
+    ],
+    "admin_only": true,
+    "operator_token_denied_from_admin_routes": true,
+    "revoked_inactive_operator_denied": true,
+    "safe_response_fields": true,
+    "raw_token_hash_lookup_hash_not_returned_in_list_read": true,
+    "one_time_create_token": "Raw operator token may be returned only on create; it is not persisted or returned in list/read/revoke responses."
+  },
+  "tenant_workspace_preservation_assessment": {
+    "tenant_context": "server-derived from operator row or admin demo binding",
+    "arbitrary_tenant_override_header": "unsupported",
+    "workspace_enforcement": "reserved/deferred",
+    "tenant_workspace_isolation_claim": "baseline implemented, not production-complete",
+    "gl200_preserved": true
+  },
+  "abuse_rate_limit_boundary_assessment": {
+    "helper": "backend/src/rate_limiter.py",
+    "implemented": true,
+    "model": "deterministic in-process sliding-window limiter",
+    "route_groups": [
+      "auth",
+      "api"
+    ],
+    "applies_to": [
+      "auth-sensitive paths",
+      "demo-action/demo routes",
+      "protected resource paths",
+      "admin/operator control-plane paths"
+    ],
+    "not_production_grade_ddos_protection": true,
+    "remaining_gaps": [
+      "No cross-process coordination",
+      "No edge rate limiting",
+      "No WAF",
+      "No production abuse analytics"
+    ]
+  },
+  "incident_security_reporting_baseline": {
+    "private_reporting_path": "GitHub Security Advisories",
+    "no_exploit_details_in_public_docs": true,
+    "severity_classes": {
+      "P0": "credential exposure, audit/evidence integrity compromise, startup bypass, or controlled-preview real/private data use",
+      "P1": "repeated auth failures, rate-limit events, migration failure, or backup/restore drill failure",
+      "P2": "documentation drift, stale claim, or non-sensitive controlled-preview process issue"
+    },
+    "categories": [
+      "admin auth failure",
+      "operator auth failure",
+      "suspicious invalid token attempts",
+      "rate-limit/abuse event",
+      "runtime config failure",
+      "migration failure",
+      "backup/restore incident",
+      "audit/evidence integrity anomaly",
+      "controlled-preview boundary violation"
+    ],
+    "not_complete_production_incident_program": true
+  },
+  "observability_security_event_baseline": {
+    "existing_support": [
+      "correlation IDs",
+      "safe structured logs",
+      "auth_failed events",
+      "request_rejected events",
+      "rate_limit_exceeded events",
+      "admin/operator control-plane events"
+    ],
+    "migration_backup_restore_signals": "Documented in GL-205; no external backend added.",
+    "not_complete_production_observability_stack": true,
+    "remaining_gaps": [
+      "No external metrics backend",
+      "No alerting",
+      "No distributed tracing",
+      "No SIEM integration",
+      "No production log-retention controls"
+    ]
+  },
+  "logging_secret_safety_model": {
+    "never_log_or_return": [
+      "raw Authorization headers",
+      "raw admin tokens",
+      "raw operator tokens",
+      "token_hash",
+      "token_lookup_hash",
+      "lookup_hash",
+      "DSNs",
+      "passwords",
+      "passphrases",
+      "private keys",
+      "signing keys",
+      "API keys",
+      "raw request bodies",
+      "evidence payloads",
+      "real customer data",
+      "private grant data",
+      "institutional data"
+    ],
+    "safe_fields": [
+      "event",
+      "method",
+      "normalized path",
+      "status_code",
+      "reason_code",
+      "correlation_id",
+      "request_id"
+    ]
+  },
+  "implementation_summary": {
+    "docs_added": [
+      "docs/runtime_abuse_incident_hardening.md",
+      "docs/examples/gl208/runtime_abuse_incident_hardening.json"
+    ],
+    "tests_added": [
+      "backend/tests/test_gl208_runtime_abuse_incident_hardening.py"
+    ],
+    "backend_source_changed": false,
+    "rate_limit_helper_implemented": false,
+    "rate_limit_helper_reason": "Existing backend/src/rate_limiter.py is deterministic and already wired into server route groups; GL-208 tests preserve it."
+  },
+  "controlled_preview_impact": {
+    "status": "continues_with_strict_boundaries",
+    "data_scope": "synthetic/demo data only",
+    "expansion": "no expansion to real customer/private grant/institutional data"
+  },
+  "production_readiness_impact": {
+    "production_saas": "NO-GO",
+    "real_customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO",
+    "official_sdk_package": "NO-GO",
+    "live_postgres_production_claim": "NO-GO",
+    "production_iam": "baseline only, incomplete",
+    "abuse_protection": "baseline only, not production-grade DDoS protection",
+    "incident_response": "baseline only, not complete production incident program",
+    "observability": "baseline only, not complete production observability stack"
+  },
+  "remaining_blockers": [
+    "Production IAM with OAuth/JWT/SSO and rotation workflows",
+    "Workspace enforcement",
+    "Live PostgreSQL validation execution",
+    "Production deployment hardening",
+    "Production observability, alerting, tracing, and retention",
+    "Production backup/DR automation",
+    "Production-grade abuse controls and edge protection",
+    "Complete incident-management process"
+  ],
+  "risk_register": [
+    {
+      "id": "R-001",
+      "risk": "Admin token exposure grants broad control-plane access",
+      "mitigation": "Keep tokens out of logs/responses; rotate by environment change; replace with production IAM later"
+    },
+    {
+      "id": "R-002",
+      "risk": "In-memory rate limiter is not sufficient for production abuse",
+      "mitigation": "Document as baseline only; add edge and distributed controls later"
+    },
+    {
+      "id": "R-003",
+      "risk": "Operator tenant misassignment requires revoke/recreate",
+      "mitigation": "Admin can revoke and recreate; production tenant admin workflow remains deferred"
+    },
+    {
+      "id": "R-004",
+      "risk": "Incident baseline is too lightweight for production",
+      "mitigation": "Treat as controlled-preview baseline and create production incident program later"
+    },
+    {
+      "id": "R-005",
+      "risk": "No external observability backend means no production alerting",
+      "mitigation": "Keep production SaaS no-go until observability stack exists"
+    }
+  ],
+  "findings": [
+    "Existing rate limiter/helper is deterministic and tested.",
+    "Admin/operator routes remain protected.",
+    "Operator tokens cannot access admin-only routes.",
+    "Revoked/inactive operators remain denied.",
+    "Tenant context remains server-derived.",
+    "Arbitrary tenant override headers remain unsupported.",
+    "Raw token/hash leakage is prevented in safe admin list/read responses.",
+    "No OpenAPI, migration, frontend, workflow, SDK package, or website/design change was required."
+  ],
+  "safety_confirmations": {
+    "production_saas_not_claimed": true,
+    "developer_preview_controlled_preview_only": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "live_postgres_production_claim_no_go": true,
+    "security_reports_to_github_security_advisories": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_data": true,
+    "production_iam_not_complete": true,
+    "abuse_rate_limit_not_production_grade_ddos": true,
+    "incident_response_not_complete_program": true,
+    "observability_not_complete_stack": true,
+    "tenant_workspace_isolation_not_overclaimed": true,
+    "admin_operator_control_plane_not_overclaimed": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_public_github_push": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "package_publishing_avoided": true,
+    "unrelated_website_files_excluded": true
+  },
+  "recommended_next_issues": [
+    "GL-208 Merge if ready",
+    "GL-209 Data Governance & Audit Operations",
+    "GL-206B Live PostgreSQL Validation Execution when ephemeral PostgreSQL is available"
+  ]
+}
