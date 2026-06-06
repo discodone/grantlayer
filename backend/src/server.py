@@ -10,9 +10,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 from .db import init_db
-from .models import Grant, GrantRequest
+from .models import AuditEvent, Grant, GrantRequest
 from .grants import list_grants, create_grant, revoke_grant, get_grant, tamper_grant
-from .audit_log import list_events
+from .audit_log import append_event, list_events
 from .demo_action import handle_demo_action
 from .challenges import create_challenge, list_challenges
 from .auth import check_auth, check_admin_token, admin_token_warning
@@ -64,6 +64,8 @@ _rate_limiter = RateLimiter(
 )
 
 _server_logger = get_logger("grantlayer.server")
+
+_ADMIN_OPERATOR_CREATE_ROLES = frozenset({"owner", "grant_admin", "auditor"})
 
 def _cors_headers_for(origin: str | None) -> dict[str, str]:
     """Return CORS headers only for explicitly allowed origins.
@@ -1706,6 +1708,14 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not isinstance(role, str) or not role.strip():
                 self._send_json(400, self._gl030_error("Invalid field: role", "invalid_field", "role must be a non-empty string."))
                 return
+            role = role.strip()
+            if role not in _ADMIN_OPERATOR_CREATE_ROLES:
+                self._send_json(400, self._gl030_error(
+                    "Invalid field: role",
+                    "invalid_operator_role",
+                    "role must be one of: owner, grant_admin, auditor.",
+                ))
+                return
             if not isinstance(tenant_id, str) or not tenant_id.strip():
                 self._send_json(400, self._gl030_error("Invalid field: tenantId", "invalid_field", "tenantId must be a non-empty string."))
                 return
@@ -1715,7 +1725,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             try:
                 op, returned_token = ops.create_operator(
                     name=name.strip(),
-                    role=role.strip(),
+                    role=role,
                     token=raw_token,
                     tenant_id=tenant_id.strip(),
                 )
@@ -1724,6 +1734,16 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 return
             # GL-206 audit event: operator_created (no raw token in event)
             safe_log(_server_logger, "info", "operator_action", action="operator_created", operator_id=op.operator_id, tenant_id=op.tenant_id)
+            append_event(AuditEvent(
+                subject_id="admin",
+                role="admin",
+                action="operator_created",
+                resource=f"operator/{op.operator_id}",
+                approved=True,
+                reason="Admin created operator.",
+                tenant_id=op.tenant_id,
+                scope="tenant_admin",
+            ))
             # Return safe fields + one-time raw token (acceptable on create only)
             response = {
                 "operatorId": op.operator_id,
@@ -1752,6 +1772,17 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 return
             # GL-206 audit event: operator_revoked (no raw token in event)
             safe_log(_server_logger, "info", "operator_action", action="operator_revoked", operator_id=operator_id)
+            op_safe = ops.get_operator_safe(operator_id) or {}
+            append_event(AuditEvent(
+                subject_id="admin",
+                role="admin",
+                action="operator_revoked",
+                resource=f"operator/{operator_id}",
+                approved=True,
+                reason="Admin revoked operator.",
+                tenant_id=op_safe.get("tenantId"),
+                scope="tenant_admin",
+            ))
             self._send_json(200, {"ok": True, "operatorId": operator_id, "revoked": True})
             self._log_event("request_completed", 200)
 
