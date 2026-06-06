@@ -1,0 +1,666 @@
+{
+  "issue_id": "GL-217",
+  "title": "Production Go/No-Go v5",
+  "result": "approved_with_blockers",
+  "final_decision": "ready_for_merge",
+  "decision_rationale": "GL-217 consolidates the post-GL-214/215/216 production-readiness posture, updates the blocker matrix and risk register, and provides conservative go/no-go decisions. GL-214 made narrow IAM improvements (role vocabulary constraint, operator create/revoke audit events). GL-215 made narrow tenant improvements (secondary route hardening, cross-tenant mutation denial). GL-216 consolidated operations posture documentation and added a local-only gate script. The GL-216 post-merge suite shows 0 real regressions. Multiple P0 blockers remain. No production SaaS readiness is claimed. All prior safety boundaries are preserved.",
+  "input_sources_reviewed": [
+    "docs/production_operations_hardening_pack.md",
+    "docs/examples/gl216/production_operations_hardening_pack.json",
+    "docs/tenant_workspace_production_guarantee.md",
+    "docs/examples/gl215/tenant_workspace_production_guarantee.json",
+    "docs/production_iam_operator_control_completion.md",
+    "docs/examples/gl214/production_iam_operator_control_completion.json",
+    "docs/production_readiness_gap_report_v4.md",
+    "docs/examples/gl213/production_readiness_gap_report_v4.json",
+    "docs/public_external_review_readiness_gate_pack.md",
+    "docs/examples/gl212/public_external_review_readiness_gate_pack.json",
+    "docs/sdk_pilot_production_gate.md",
+    "docs/examples/gl211/sdk_pilot_production_gate.json",
+    "docs/live_postgres_validation_execution_gl206b.md",
+    "docs/examples/gl206b/live_postgres_validation_execution_gl206b.json",
+    "docs/live_postgres_backup_observability_baseline.md",
+    "docs/examples/gl205/live_postgres_backup_observability_baseline.json",
+    "docs/production_ops_go_no_go_v3.md",
+    "docs/examples/gl204/production_ops_go_no_go_v3.json",
+    "docs/data_governance_audit_operations.md",
+    "docs/runtime_abuse_incident_hardening.md",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/openapi.yaml"
+  ],
+  "current_state_summary": {
+    "developer_preview_controlled_preview": "GrantLayer is Developer Preview / Controlled Preview with strict boundaries and synthetic/demo data only.",
+    "baseline_controls": [
+      "fail-closed production-like config checks (GL-201)",
+      "operator token hashing PBKDF2-HMAC-SHA256 and tenant binding (GL-206)",
+      "admin token constant-time comparison and fail-closed route guards (GL-201, GL-206)",
+      "operator role vocabulary constrained to owner/grant_admin/auditor (GL-214)",
+      "durable audit-chain events for operator create/revoke (GL-214)",
+      "tenant-filtered primary and secondary execution-derived routes (GL-215)",
+      "cross-tenant direct-ID mutation denied on demo path (GL-215)",
+      "append-only hash-chained audit events (GL-209)",
+      "safe synthetic backup/restore and audit export check scripts (GL-205, GL-209)",
+      "ephemeral live PostgreSQL validation passed with synthetic/demo data (GL-206B)",
+      "structured logging, correlation IDs, redaction helpers (GL-208)",
+      "runtime abuse and rate-limit baseline (GL-208)",
+      "production operations posture documentation (GL-216)",
+      "local-only dry-run gate script (GL-216)"
+    ],
+    "not_production_complete": true,
+    "suite_baseline_after_gl216": {
+      "tests": 8794,
+      "failures": 43,
+      "errors": 3,
+      "skipped": 253,
+      "real_regressions": 0
+    }
+  },
+  "progress_since_gl213": {
+    "gl214_impact": {
+      "role_vocabulary_constrained": true,
+      "operator_create_revoke_audit_events_added": true,
+      "oidc_saml_sso_mfa_added": false,
+      "static_admin_token_resolved": false,
+      "pb001_status": "partially_reduced__core_gap_remains"
+    },
+    "gl215_impact": {
+      "secondary_route_tenant_pre_checks_added": true,
+      "cross_tenant_mutation_denied_on_demo_path": true,
+      "workspace_enforcement_added": false,
+      "database_rls_added": false,
+      "tenant_provisioning_api_added": false,
+      "pb002_status": "partially_reduced__workspace_rls_lifecycle_gaps_remain"
+    },
+    "gl216_impact": {
+      "operations_posture_documented": true,
+      "local_dry_run_gate_script_added": true,
+      "production_platform_added": false,
+      "external_services_added": false,
+      "operations_gaps_resolved": 0,
+      "operations_gaps_documented": 11
+    }
+  },
+  "readiness_tier_decision_matrix": {
+    "developer_preview": {
+      "decision": "GO_CONTINUE",
+      "rationale": "Clean baseline; examples deterministic; feedback routing established; GL-214/215/216 merged without real regressions"
+    },
+    "controlled_external_technical_review": {
+      "decision": "GO_with_strict_boundaries",
+      "rationale": "GL-212 gate valid; synthetic/demo data only; no real customer/grant/institutional data; security reports via GitHub Security Advisories; NDA required"
+    },
+    "synthetic_demo_controlled_pilot": {
+      "decision": "CONDITIONAL",
+      "rationale": "Allowed if synthetic/demo data only, agreement in place, no real data, no public publish, no production access"
+    },
+    "public_snapshot_preparation": {
+      "decision": "CONDITIONAL_separate_explicit_approval_required",
+      "rationale": "GL-212 gate confirmed proceed-with-cautions; requires separate export/safety issue and explicit human approval before any public action"
+    },
+    "public_website_publish": {
+      "decision": "DEFER_NO-GO",
+      "rationale": "No separate public publish gate has been opened or completed; must be a separate explicit approval"
+    },
+    "official_sdk_package": {
+      "decision": "NO-GO",
+      "rationale": "GL-203C boundary preserved; no package publishing metadata; no PyPI/npm publish"
+    },
+    "real_customer_data": {
+      "decision": "NO-GO",
+      "rationale": "PB-001, PB-002, PB-003, PB-006, PB-009, PB-011, PB-012 unresolved"
+    },
+    "private_grant_institutional_data": {
+      "decision": "NO-GO",
+      "rationale": "Same blockers as real customer data; no data governance or legal readiness"
+    },
+    "production_saas": {
+      "decision": "NO-GO",
+      "rationale": "Multiple P0 blockers unresolved across IAM, tenant/workspace, PostgreSQL, backup/DR, observability, incident response, deployment, compliance, and data governance"
+    },
+    "compliance_certification": {
+      "decision": "NO-GO",
+      "rationale": "No compliance assessment, DPA, or certification process started; GDPR/SOC2/ISO/enterprise readiness not claimed"
+    },
+    "live_postgres_production_readiness": {
+      "decision": "NO-GO",
+      "rationale": "GL-206B ephemeral validation passed with synthetic/demo data only; production DB topology, pooling, permissions, failover, backup automation, and DR not established"
+    }
+  },
+  "production_saas_decision": {
+    "decision": "NO-GO",
+    "rationale": "Multiple unresolved P0 blockers across IAM, tenant/workspace, PostgreSQL operations, backup/DR, observability, incident response, deployment, compliance, and data governance prevent Production SaaS readiness",
+    "remaining_p0_blockers": [
+      "PB-001: Production IAM incomplete",
+      "PB-002: Tenant/workspace production isolation not complete",
+      "PB-003: Production PostgreSQL operations not established",
+      "PB-004: Backup/restore/DR not automated",
+      "PB-005: Production observability/alerting absent",
+      "PB-006: Retention/deletion/redaction not implemented",
+      "PB-007: Incident response maturity incomplete",
+      "PB-008: Security review/external validation absent",
+      "PB-009: TLS/container hardening/orchestration absent",
+      "PB-010: Rate limiting/abuse protection not production-grade",
+      "PB-011: Compliance/legal readiness not assessed",
+      "PB-012: Real-data governance not ready"
+    ]
+  },
+  "real_customer_data_decision": {
+    "decision": "NO-GO",
+    "rationale": "PB-001, PB-002, PB-003, PB-006, PB-009, PB-011, and PB-012 unresolved; no production IAM, RLS, compliance, or legal readiness"
+  },
+  "private_grant_institutional_data_decision": {
+    "decision": "NO-GO",
+    "rationale": "Same blockers as real customer data; additional data governance, legal, and audit readiness not present"
+  },
+  "controlled_external_review_decision": {
+    "decision": "GO_with_strict_boundaries",
+    "conditions": [
+      "synthetic/demo data only",
+      "no real customer, private grant, or institutional data",
+      "reviewers bound by NDA or equivalent agreement",
+      "security-sensitive findings routed to GitHub Security Advisories only",
+      "no real production secrets, credentials, or external hostnames shared",
+      "no public publish of reviewer findings or exported artifacts without separate explicit approval gate"
+    ]
+  },
+  "public_snapshot_public_publish_decision": {
+    "public_snapshot_preparation": "CONDITIONAL_separate_explicit_approval_required",
+    "public_website_publish": "DEFER_NO-GO",
+    "rationale": "Public snapshot preparation requires a separate export/safety issue and explicit human approval. Public publish has no open gate in GL-217 and remains no-go."
+  },
+  "official_sdk_package_decision": {
+    "decision": "NO-GO",
+    "rationale": "GL-203C SDK prototype packaging boundary preserved; no package publishing metadata, PyPI, npm, or official SDK/package release added or claimed"
+  },
+  "live_postgres_readiness_decision": {
+    "decision": "NO-GO_for_production",
+    "ephemeral_validation_passed": true,
+    "ephemeral_validation_synthetic_demo_only": true,
+    "production_topology_established": false,
+    "production_pooling_established": false,
+    "production_permissions_established": false,
+    "production_failover_established": false,
+    "production_backup_automation_established": false,
+    "production_dr_established": false,
+    "rationale": "GL-206B ephemeral validation passed with synthetic/demo data only; production database operating model not established"
+  },
+  "iam_operator_readiness_assessment": {
+    "admin_token_validation": "fail-closed, constant-time, GL-201 baseline",
+    "operator_token_storage": "PBKDF2-HMAC-SHA256, tenant-bound, GL-206 baseline",
+    "operator_role_vocabulary": "constrained to owner/grant_admin/auditor (GL-214)",
+    "operator_create_revoke_audit": "durable tenant_admin chain events (GL-214)",
+    "revoked_inactive_exclusion": "implemented",
+    "production_status": "baseline_exists_not_production_complete",
+    "remaining_p0_gap": "single static admin token; no OAuth/JWT/OIDC/SSO/MFA; no external IAM provider; no automated token lifecycle",
+    "remaining_p1_gaps": ["secret/key rotation automation", "CORS production allowlist"]
+  },
+  "tenant_workspace_readiness_assessment": {
+    "tenant_derivation": "server-derived from operator row or demo admin-token context",
+    "primary_route_tenant_filtering": "implemented",
+    "secondary_execution_route_tenant_pre_checks": "implemented (GL-215)",
+    "cross_tenant_mutation_denial_demo_path": "implemented (GL-215)",
+    "workspace_enforcement": "deferred",
+    "database_rls": "not_implemented",
+    "tenant_provisioning_api": "not_implemented",
+    "adversarial_multi_tenant_validation": "not_performed",
+    "production_status": "baseline_hardened_not_production_complete",
+    "remaining_p0_gaps": [
+      "workspace enforcement deferred",
+      "database row-level security not implemented",
+      "tenant provisioning API not implemented",
+      "admin tenant lifecycle not production-complete",
+      "adversarial multi-tenant operations not validated"
+    ]
+  },
+  "production_operations_readiness_assessment": {
+    "posture_documented": true,
+    "local_gate_script_added": true,
+    "production_gaps_resolved": 0,
+    "remaining_operations_blockers": [
+      "production PostgreSQL operating model (topology, pooling, permissions, failover)",
+      "migration rollback/forward strategy and rehearsal",
+      "automated backup scheduling, restore RTO/RPO, DR failover",
+      "external observability, alerting, paging, dashboards, SLOs, log retention",
+      "staffed incident response program, exercises, playbooks",
+      "distributed abuse/rate-limit controls and operational tuning",
+      "secret/key rotation automation, KMS/HSM lifecycle, break-glass controls",
+      "workspace enforcement and full tenant lifecycle operations",
+      "admin/operator emergency dual-control and recertification",
+      "retention/deletion/redaction, legal hold, audit export approval workflows",
+      "release/versioning/rollback ownership and production change-management"
+    ]
+  },
+  "backup_restore_dr_readiness_assessment": {
+    "synthetic_sqlite_drill": "exists (GL-205)",
+    "ephemeral_postgres_manual_checklist": "exists (GL-205)",
+    "safe_plan_dry_run_modes": "exists (GL-205, GL-216)",
+    "automated_production_postgres_backups": "not_implemented",
+    "encrypted_offsite_retention": "not_implemented",
+    "restore_rto_rpo_validation": "not_performed",
+    "dr_failover_exercise": "not_performed",
+    "production_restore_ownership": "not_defined",
+    "production_readiness": "NO-GO",
+    "overclaimed": false
+  },
+  "observability_incident_readiness_assessment": {
+    "structured_logging": "exists (GL-208)",
+    "correlation_ids": "exists (GL-208)",
+    "redaction_helpers": "exists (GL-208)",
+    "security_event_categories": "exists (GL-208)",
+    "github_security_advisory_routing": "established",
+    "external_log_aggregation": "not_implemented",
+    "metrics_pipeline": "not_implemented",
+    "tracing_pipeline": "not_implemented",
+    "log_retention": "not_implemented",
+    "dashboards": "not_implemented",
+    "slos": "not_defined",
+    "alert_rules": "not_implemented",
+    "pager_siem_integration": "not_implemented",
+    "staffed_incident_rota": "not_established",
+    "production_readiness": "NO-GO",
+    "overclaimed": false
+  },
+  "audit_data_governance_readiness_assessment": {
+    "append_only_hash_chained_audit_events": "exists (GL-209)",
+    "audit_export_dry_run_check_script": "exists (GL-209)",
+    "data_governance_posture_documented": "exists (GL-209)",
+    "production_export_approvals": "not_implemented",
+    "tenant_scoped_real_data_export_workflow": "not_implemented",
+    "export_encryption": "not_implemented",
+    "retention_schedules": "not_implemented",
+    "legal_holds": "not_implemented",
+    "deletion_workflows": "not_implemented",
+    "redaction_approvals": "not_implemented",
+    "destruction_evidence": "not_implemented",
+    "production_readiness": "NO-GO",
+    "overclaimed": false
+  },
+  "security_compliance_readiness_assessment": {
+    "fail_closed_startup_checks": "exists (GL-201)",
+    "placeholder_token_rejection": "exists (GL-201)",
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_data": true,
+    "security_reports_route": "GitHub Security Advisories",
+    "external_security_review": "not_performed",
+    "third_party_penetration_test": "not_performed",
+    "compliance_assessment": "not_performed",
+    "dpa_legal_review": "not_performed",
+    "gdpr_readiness": "not_assessed",
+    "soc2_readiness": "not_assessed",
+    "iso_readiness": "not_assessed",
+    "enterprise_readiness": "not_assessed",
+    "production_readiness": "NO-GO",
+    "overclaimed": false
+  },
+  "remaining_blockers": {
+    "p0_production_blockers": [
+      {
+        "id": "PB-001",
+        "title": "Production IAM incomplete",
+        "area": "auth",
+        "severity": "critical",
+        "status": "partially_reduced_core_gap_remains",
+        "gl214_progress": "role vocabulary constrained; operator audit events added",
+        "remaining": "single static admin token; no OAuth/JWT/OIDC/SSO/MFA"
+      },
+      {
+        "id": "PB-002",
+        "title": "Tenant/workspace production isolation not complete",
+        "area": "tenant",
+        "severity": "critical",
+        "status": "partially_reduced_workspace_rls_lifecycle_gaps_remain",
+        "gl215_progress": "secondary route pre-checks added; cross-tenant mutation denied",
+        "remaining": "workspace enforcement; database RLS; tenant provisioning API"
+      },
+      {
+        "id": "PB-003",
+        "title": "Production PostgreSQL operations not established",
+        "area": "persistence",
+        "severity": "critical",
+        "status": "open",
+        "remaining": "production DB topology, pooling, permissions, capacity, failover"
+      },
+      {
+        "id": "PB-004",
+        "title": "Backup/restore/DR not automated",
+        "area": "backup_dr",
+        "severity": "critical",
+        "status": "open",
+        "remaining": "automated backups, encrypted offsite retention, RTO/RPO, DR failover"
+      },
+      {
+        "id": "PB-005",
+        "title": "Production observability/alerting absent",
+        "area": "observability",
+        "severity": "critical",
+        "status": "open",
+        "remaining": "external metrics, tracing, log retention, SIEM, dashboards, SLOs, alert routing"
+      },
+      {
+        "id": "PB-006",
+        "title": "Retention/deletion/redaction not implemented",
+        "area": "data_governance",
+        "severity": "critical",
+        "status": "open",
+        "remaining": "production retention schedules, legal holds, deletion workflows, destruction evidence"
+      },
+      {
+        "id": "PB-007",
+        "title": "Incident response maturity incomplete",
+        "area": "incident_response",
+        "severity": "high",
+        "status": "open",
+        "remaining": "staffed incident rota, exercises, playbooks, customer notification process"
+      },
+      {
+        "id": "PB-008",
+        "title": "Security review/external validation absent",
+        "area": "security",
+        "severity": "high",
+        "status": "open",
+        "remaining": "external security review; third-party penetration test"
+      },
+      {
+        "id": "PB-009",
+        "title": "TLS/container hardening/orchestration absent",
+        "area": "deployment",
+        "severity": "critical",
+        "status": "open",
+        "remaining": "TLS termination, container hardening, orchestration, CORS production allowlist"
+      },
+      {
+        "id": "PB-010",
+        "title": "Rate limiting/abuse protection not production-grade",
+        "area": "abuse_protection",
+        "severity": "medium",
+        "status": "open",
+        "remaining": "edge/WAF, distributed limiter, abuse dashboards, blocklist workflow"
+      },
+      {
+        "id": "PB-011",
+        "title": "Compliance/legal readiness not assessed",
+        "area": "compliance",
+        "severity": "high",
+        "status": "open",
+        "remaining": "compliance assessment, DPA, legal review, GDPR/SOC2/ISO gap analysis"
+      },
+      {
+        "id": "PB-012",
+        "title": "Real-data governance not ready",
+        "area": "data_governance",
+        "severity": "critical",
+        "status": "open",
+        "remaining": "production data governance framework, legal hold, destruction evidence"
+      }
+    ],
+    "p1_hardening_blockers": [
+      {
+        "id": "PH-001",
+        "title": "workspace_id enforcement deferred",
+        "area": "tenant",
+        "status": "open"
+      },
+      {
+        "id": "PH-002",
+        "title": "Secondary helper-level tenant parameters remain future work",
+        "area": "tenant",
+        "status": "partially_reduced_by_gl215"
+      },
+      {
+        "id": "PH-003",
+        "title": "Secrets/key rotation lifecycle not automated",
+        "area": "auth",
+        "status": "open"
+      },
+      {
+        "id": "PH-004",
+        "title": "Production CORS origin allowlist undefined",
+        "area": "deployment",
+        "status": "open"
+      },
+      {
+        "id": "PH-005",
+        "title": "Migration rollback/forward strategy not CI-validated with PostgreSQL",
+        "area": "persistence",
+        "status": "open"
+      },
+      {
+        "id": "PH-006",
+        "title": "Support/release/versioning policy undefined",
+        "area": "operations",
+        "status": "open"
+      }
+    ],
+    "p2_maturity_blockers": [
+      {
+        "id": "PM-001",
+        "title": "Test suite scope-guard false positives (43 baseline failures, 3 errors)",
+        "area": "test_health",
+        "status": "managed"
+      },
+      {
+        "id": "PM-002",
+        "title": "SDK/package release process undefined",
+        "area": "sdk",
+        "status": "open"
+      },
+      {
+        "id": "PM-003",
+        "title": "OpenAPI external stability commitment undefined",
+        "area": "api_contract",
+        "status": "open"
+      },
+      {
+        "id": "PM-004",
+        "title": "Public snapshot export candidate not yet prepared",
+        "area": "public_snapshot",
+        "status": "conditional_gate_available_not_executed"
+      }
+    ]
+  },
+  "risk_register_v5": [
+    {
+      "id": "R-001",
+      "risk": "Production IAM absent / single static admin token",
+      "severity": "P0_critical",
+      "status": "open",
+      "mitigation_completed": "fail-closed startup (GL-201); placeholder rejection; role vocabulary constrained (GL-214); operator create/revoke audit events (GL-214)",
+      "remaining_work": "OAuth/JWT/OIDC/SSO/MFA implementation; external secret storage; automated lifecycle"
+    },
+    {
+      "id": "R-002",
+      "risk": "Tenant/workspace isolation not production-complete",
+      "severity": "P0_critical",
+      "status": "open",
+      "mitigation_completed": "primary route tenant filtering; operator tenant derivation; GL-215 secondary route pre-checks; cross-tenant mutation denial",
+      "remaining_work": "workspace enforcement; database RLS; tenant provisioning API; adversarial multi-tenant validation"
+    },
+    {
+      "id": "R-003",
+      "risk": "Production PostgreSQL posture overclaimed from ephemeral validation",
+      "severity": "P0_critical",
+      "status": "open",
+      "mitigation_completed": "explicit no-go wording; GL-205/GL-206B/GL-216 documentation; synthetic-only data enforced",
+      "remaining_work": "production DB topology, pooling, permissions, capacity, failover, managed-service validation"
+    },
+    {
+      "id": "R-004",
+      "risk": "Backup/restore/DR assumptions not rehearsed against real PostgreSQL",
+      "severity": "P0_critical",
+      "status": "open",
+      "mitigation_completed": "real-data no-go preserved; synthetic drill scripts exist",
+      "remaining_work": "automated production PostgreSQL backups; encrypted offsite retention; restore RTO/RPO; DR failover"
+    },
+    {
+      "id": "R-005",
+      "risk": "Observability gaps hide production-like failures",
+      "severity": "P0_critical",
+      "status": "open",
+      "mitigation_completed": "structured logging baseline; correlation IDs; security event routing",
+      "remaining_work": "external log aggregation; metrics; traces; log retention; dashboards; SLOs; alert rules"
+    },
+    {
+      "id": "R-006",
+      "risk": "Secret/key lifecycle remains manual",
+      "severity": "P0_critical",
+      "status": "open",
+      "mitigation_completed": "placeholder rejection; hashed storage",
+      "remaining_work": "KMS/HSM; rotation schedule; dual-key rollover; break-glass vaulting; automated deprovisioning"
+    },
+    {
+      "id": "R-007",
+      "risk": "Tenant/workspace baseline mistaken for production-complete isolation",
+      "severity": "P0_critical",
+      "status": "open",
+      "mitigation_completed": "GL-215 caveats preserved; no overclaim in GL-217",
+      "remaining_work": "workspace/tenant operations gate; RLS; tenant lifecycle"
+    },
+    {
+      "id": "R-008",
+      "risk": "Compliance/legal readiness not assessed",
+      "severity": "P0_high",
+      "status": "open",
+      "mitigation_completed": "no compliance claims made",
+      "remaining_work": "compliance assessment; DPA; legal review; GDPR/SOC2/ISO gap analysis"
+    },
+    {
+      "id": "R-009",
+      "risk": "TLS/container/deployment hardening absent",
+      "severity": "P0_critical",
+      "status": "open",
+      "mitigation_completed": "no production deployment claims made",
+      "remaining_work": "TLS termination; container hardening; orchestration; CORS production allowlist"
+    },
+    {
+      "id": "R-010",
+      "risk": "Retention/deletion/redaction operations not implemented",
+      "severity": "P0_critical",
+      "status": "open",
+      "mitigation_completed": "policy baseline documented (GL-209)",
+      "remaining_work": "production retention schedules; legal holds; deletion workflows; destruction evidence"
+    },
+    {
+      "id": "R-011",
+      "risk": "Public snapshot published without separate approval gate",
+      "severity": "P1_high",
+      "status": "controlled",
+      "mitigation_completed": "GL-212 gate: conditional-proceed-with-cautions; no public push or publish in GL-217",
+      "remaining_work": "separate export/safety issue and explicit human approval required"
+    },
+    {
+      "id": "R-012",
+      "risk": "Test suite false positives mask regressions",
+      "severity": "P2_medium",
+      "status": "managed",
+      "mitigation_completed": "43 baseline failures/3 errors known and classified; 0 real regressions",
+      "remaining_work": "resolve scope-guard test infrastructure false positives"
+    },
+    {
+      "id": "R-013",
+      "risk": "Release rollback ownership and change-management undefined",
+      "severity": "P1_high",
+      "status": "open",
+      "mitigation_completed": "operations posture documented (GL-216)",
+      "remaining_work": "production release train; rollback authority; artifact signing; customer-impact procedure"
+    },
+    {
+      "id": "R-014",
+      "risk": "Incident response not exercised",
+      "severity": "P1_high",
+      "status": "open",
+      "mitigation_completed": "GitHub Security Advisory routing; security event categories",
+      "remaining_work": "staffed incident rota; severity-specific playbooks; communication templates; post-incident review"
+    }
+  ],
+  "compact_next_roadmap": {
+    "track_a_external_review_public_snapshot": {
+      "goal": "Enable bounded external review and prepare a future public snapshot candidate safely",
+      "steps": [
+        "A1: Public Export Candidate Safety Scan — draft export candidate + full safety scan + explicit human approval",
+        "A2: Reviewer Handoff Pack — claim-safe reviewer instructions; synthetic/demo data only; security reports routing confirmed",
+        "A3: No-Real-Data Enforcement — runtime check before any non-demo path"
+      ]
+    },
+    "track_b_production_iam": {
+      "goal": "Resolve PB-001 Production IAM gap",
+      "steps": [
+        "B1: OAuth/JWT/OIDC Token Validation — replace static admin token; audit; fail-closed",
+        "B2: Secret Rotation Lifecycle — KMS/HSM or equivalent rotation design; break-glass",
+        "B3: External IAM Integration Baseline — SAML/SSO design (design only)"
+      ]
+    },
+    "track_c_production_infrastructure": {
+      "goal": "Resolve PB-003, PB-004, PB-005, PB-009 infrastructure gaps",
+      "steps": [
+        "C1: TLS/Container Hardening — TLS termination, container hardening, production CORS allowlist",
+        "C2: External Observability Stack — external log aggregation, metrics, alerting, dashboards, SLOs",
+        "C3: Backup/Restore/DR Automation — automated backup scheduling, restore RTO/RPO, DR failover exercise",
+        "C4: Production PostgreSQL Operating Model — topology, pooling, permissions, capacity, failover"
+      ]
+    },
+    "track_d_tenant_workspace_production": {
+      "goal": "Resolve PB-002 tenant/workspace isolation gap",
+      "steps": [
+        "D1: Workspace Enforcement — workspace_id enforcement, workspace-scoped queries",
+        "D2: Database Row-Level Security — PostgreSQL RLS implementation",
+        "D3: Tenant Provisioning API — tenant lifecycle management and operations"
+      ]
+    },
+    "track_e_compliance_legal": {
+      "goal": "Resolve PB-011, PB-012, PB-006 compliance and data governance gaps",
+      "steps": [
+        "E1: Compliance Gap Assessment — GDPR, SOC2, ISO gap analysis (assessment only)",
+        "E2: Legal / DPA — data processing agreement, legal review, retention/deletion policy",
+        "E3: Retention/Deletion/Redaction — production retention schedules, legal holds, deletion workflows"
+      ]
+    }
+  },
+  "findings": [
+    "GL-214 narrowly reduced PB-001 by constraining operator role vocabulary and adding durable operator audit events; the core static admin token P0 gap remains.",
+    "GL-215 narrowly reduced PB-002 by hardening secondary route tenant derivation and denying cross-tenant mutation on the demo path; workspace enforcement, RLS, and tenant lifecycle gaps remain.",
+    "GL-216 documented eleven production operations gaps without resolving any; all remain open P0/P1 blockers.",
+    "GL-216 post-merge suite shows 0 real regressions; 43 failures and 3 errors are known baseline scope-guard false positives.",
+    "Developer Preview and controlled external technical review (with strict boundaries) remain the correct operating tier.",
+    "Production SaaS, real customer data, private grant/institutional data, official SDK/package, compliance certification, and live PostgreSQL production readiness remain NO-GO.",
+    "Public snapshot preparation requires a separate gate and explicit human approval; public publish is DEFER/NO-GO."
+  ],
+  "safety_confirmations": {
+    "developer_preview_controlled_preview_with_strict_boundaries": true,
+    "controlled_preview_synthetic_demo_data_only": true,
+    "not_production_saas": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "compliance_certification_no_go": true,
+    "gdpr_soc2_iso_enterprise_readiness_not_claimed": true,
+    "ephemeral_live_postgres_not_production_postgres_readiness": true,
+    "backup_restore_dr_not_overclaimed": true,
+    "observability_incident_not_overclaimed": true,
+    "security_reports_route_to_github_security_advisories": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_data": true,
+    "no_public_publish": true,
+    "no_public_snapshot_export": true,
+    "no_package_publishing": true,
+    "no_package_metadata": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_backend_src_changes": true,
+    "no_migration_db_schema_dependency_changes": true,
+    "no_public_github_push": true,
+    "no_visibility_change": true,
+    "unrelated_website_design_import_files_excluded": true
+  },
+  "recommended_next_issues": [
+    "GL-218: Track A1 — Public Export Candidate Safety Scan (conditional; separate explicit approval required)",
+    "GL-219: Track B1 — Production IAM / OAuth/JWT Token Validation",
+    "GL-220: Track C1 — TLS/Container Hardening",
+    "GL-221: Track C2 — External Observability Stack",
+    "GL-222: Track D1 — Workspace Enforcement"
+  ]
+}
