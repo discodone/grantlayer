@@ -1,0 +1,312 @@
+{
+  "issue_id": "GL-211",
+  "title": "SDK / Pilot / Production Gate",
+  "result": "approved_with_gaps",
+  "decision": "sdk_pilot_production_gate_approved_with_gaps",
+  "decision_rationale": "GL-211 allows continued Developer Preview and conditional controlled external review or first external controlled pilot with synthetic/demo data only. It keeps official SDK/package availability no-go, keeps experimental public SDK/package work deferred unless a future projection gate passes, keeps Production SaaS and real/private data no-go, and defers public snapshot or website publish work to separate explicit gates.",
+  "input_sources_reviewed": [
+    "docs/website_track.md",
+    "docs/examples/gl210/website_track.json",
+    "docs/data_governance_audit_operations.md",
+    "docs/examples/gl209/data_governance_audit_operations.json",
+    "docs/runtime_abuse_incident_hardening.md",
+    "docs/examples/gl208/runtime_abuse_incident_hardening.json",
+    "docs/claim_safety_controlled_preview_boundary.md",
+    "docs/examples/gl207/claim_safety_controlled_preview_boundary.json",
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/live_postgres_backup_observability_baseline.md",
+    "docs/examples/gl205/live_postgres_backup_observability_baseline.json",
+    "docs/production_ops_go_no_go_v3.md",
+    "docs/examples/gl204/production_ops_go_no_go_v3.json",
+    "docs/sdk_prototype_packaging_boundary.md",
+    "docs/examples/gl203c/sdk_prototype_packaging_boundary.json",
+    "docs/openapi_api_contract_cleanup.md",
+    "docs/examples/gl203b/openapi_api_contract_cleanup.json",
+    "docs/api_contract_sdk_packaging_decision.md",
+    "docs/examples/gl203/api_contract_sdk_packaging_decision.json",
+    "docs/persistence_postgres_migration_readiness.md",
+    "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/tenant_workspace_api_audit_regression_completion.md",
+    "docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json",
+    "docs/tenant_workspace_isolation_implementation_baseline.md",
+    "docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json",
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/openapi.yaml",
+    "website/index.html",
+    "website/styles.css",
+    "website/README.md",
+    "examples/sdk_prototype/python/grantlayer_client.py",
+    "scripts/ops/gl205_live_postgres_validation.py",
+    "scripts/ops/gl205_backup_restore_drill.py",
+    "scripts/ops/gl209_audit_export_check.py"
+  ],
+  "current_state_summary": {
+    "posture": "Developer Preview / Controlled Preview with strict boundaries",
+    "production_saas": "NO-GO",
+    "real_customer_private_grant_institutional_data": "NO-GO",
+    "official_sdk_package": "NO-GO",
+    "experimental_public_sdk_package": "DEFERRED",
+    "internal_sdk_prototype": "allowed as internal prototype only",
+    "live_postgres_production_claim": "NO-GO",
+    "compliance_certification": "NO-GO",
+    "public_website_publish": "NO-GO in GL-211"
+  },
+  "sdk_gate_decision": {
+    "decision": "NO-GO for official SDK/package; DEFER for experimental public SDK/package; internal prototype remains internal-only",
+    "result": "approved_with_gaps"
+  },
+  "official_sdk_package_decision": {
+    "decision": "NO-GO",
+    "package_registry_release": "NO-GO",
+    "official_availability_claim": "NO-GO",
+    "support_commitment": "NO-GO"
+  },
+  "experimental_sdk_package_decision": {
+    "decision": "DEFERRED / CONDITIONAL NO-GO",
+    "gl203d_status": "deferred unless a future projection gate explicitly passes",
+    "implementation_in_gl211": false
+  },
+  "internal_sdk_prototype_boundary": {
+    "allowed": true,
+    "status": "internal prototype only",
+    "not_official": true,
+    "not_published": true,
+    "not_production_ready": true,
+    "docs_may_reference": "prototype status only"
+  },
+  "package_publishing_boundary": {
+    "package_publishing": "NO-GO",
+    "package_metadata": "NO-GO",
+    "setup_py": "NO-GO",
+    "sdk_pyproject_toml": "NO-GO",
+    "package_json": "NO-GO",
+    "package_lock_json": "NO-GO",
+    "release_metadata": "NO-GO"
+  },
+  "pilot_gate_decision": {
+    "first_external_controlled_pilot": "CONDITIONAL",
+    "data_boundary": "synthetic/demo data only",
+    "real_data_pilot": "NO-GO",
+    "production_pilot": "NO-GO",
+    "public_publish_required": false
+  },
+  "pilot_tier_matrix": [
+    {
+      "tier": "Internal demo",
+      "decision": "allowed",
+      "data_boundary": "synthetic/demo only"
+    },
+    {
+      "tier": "Developer preview review",
+      "decision": "allowed",
+      "data_boundary": "synthetic/demo only"
+    },
+    {
+      "tier": "Controlled external technical review",
+      "decision": "conditional",
+      "data_boundary": "synthetic/demo only"
+    },
+    {
+      "tier": "First external controlled pilot",
+      "decision": "conditional",
+      "data_boundary": "synthetic/demo only"
+    },
+    {
+      "tier": "Controlled preview expansion",
+      "decision": "conditional",
+      "data_boundary": "synthetic/demo only"
+    },
+    {
+      "tier": "Real data pilot",
+      "decision": "NO-GO",
+      "data_boundary": "real customer/private grant/institutional data forbidden"
+    },
+    {
+      "tier": "Production pilot",
+      "decision": "NO-GO",
+      "data_boundary": "production-like data import forbidden"
+    }
+  ],
+  "controlled_external_review_boundary": {
+    "decision": "conditional",
+    "data_boundary": "synthetic/demo only",
+    "prohibit_secrets": true,
+    "prohibit_private_data": true,
+    "prohibit_exploit_details_public_channels": true,
+    "security_reporting": "GitHub Security Advisories"
+  },
+  "first_external_controlled_pilot_boundary": {
+    "decision": "conditional",
+    "data_boundary": "synthetic/demo only",
+    "no_real_customer_data": true,
+    "no_private_grant_institutional_data": true,
+    "no_production_like_data_import": true,
+    "no_production_saas_claim": true,
+    "no_compliance_readiness_claim": true,
+    "no_official_sdk_claim": true,
+    "no_public_website_publish_required": true
+  },
+  "production_gate_decision": {
+    "production_saas": "NO-GO",
+    "real_customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO",
+    "compliance_certification": "NO-GO",
+    "enterprise_readiness": "NO-GO",
+    "live_postgres_production_claim": "NO-GO",
+    "complete_dr_backup_restore_claim": "NO-GO",
+    "complete_observability_claim": "NO-GO",
+    "complete_tenant_isolation_claim": "NO-GO",
+    "complete_production_iam_claim": "NO-GO"
+  },
+  "production_no_go_rationale": [
+    "Live PostgreSQL validation has not been executed.",
+    "Production backup/restore automation is incomplete.",
+    "Production observability/alerting stack is incomplete.",
+    "Production IAM is incomplete.",
+    "Admin/operator production controls are incomplete.",
+    "Tenant/workspace production guarantees are incomplete.",
+    "Data retention/deletion/redaction implementation is not production-complete.",
+    "Security review and external validation are incomplete.",
+    "Support and incident processes are not mature enough for Production SaaS claims."
+  ],
+  "real_data_no_go_rationale": [
+    "Data governance is not production-complete.",
+    "Retention, deletion, redaction, backup, restore, incident response, access control, and tenant/workspace guarantees are not production-complete.",
+    "Legal review and external validation are incomplete.",
+    "Production-like data import is not allowed under GL-211."
+  ],
+  "live_postgres_blocker_status": {
+    "gl206b_status": "pending until an ephemeral PostgreSQL instance is available",
+    "started_in_gl211": false,
+    "production_claim": "NO-GO"
+  },
+  "website_public_snapshot_gate": {
+    "public_github_push": "NO in GL-211",
+    "public_publish": "NO in GL-211",
+    "website_public_deployment": "NO in GL-211",
+    "public_snapshot_update": "deferred to a separate issue if explicitly approved",
+    "static_website_baseline": "internal until separate publish gate"
+  },
+  "public_claim_boundary_preservation": {
+    "developer_preview_controlled_preview_only": true,
+    "controlled_preview_synthetic_demo_only": true,
+    "production_saas_no_go": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "experimental_public_sdk_package_deferred": true,
+    "live_postgres_production_claim_no_go": true,
+    "compliance_certification_not_claimed": true,
+    "tenant_workspace_isolation_not_production_complete": true,
+    "admin_operator_control_plane_not_production_complete": true,
+    "runtime_iam_abuse_incident_not_production_complete": true,
+    "data_governance_audit_operations_not_production_complete": true
+  },
+  "remaining_blockers": [
+    "GL-206B Live PostgreSQL Validation Execution",
+    "production backup/restore automation",
+    "production observability/alerting stack",
+    "production IAM completion",
+    "admin/operator production controls",
+    "tenant/workspace production guarantees",
+    "data retention/deletion/redaction implementation",
+    "security review / external validation",
+    "support/incident process maturity",
+    "SDK/package release gate if pursued",
+    "public publish gate if pursued",
+    "no official support policy",
+    "no packaging security review",
+    "no external compatibility matrix",
+    "no release/versioning policy"
+  ],
+  "risk_register": [
+    {
+      "risk": "SDK prototype is mistaken for official SDK/package",
+      "status": "open",
+      "mitigation": "Keep official SDK/package no-go and reject package metadata."
+    },
+    {
+      "risk": "Experimental SDK is published before projection gate",
+      "status": "open",
+      "mitigation": "Keep GL-203D deferred unless a future gate passes."
+    },
+    {
+      "risk": "Controlled pilot drifts into real/private data",
+      "status": "open",
+      "mitigation": "Limit all controlled review and pilot tiers to synthetic/demo data."
+    },
+    {
+      "risk": "Pilot copy implies production or compliance readiness",
+      "status": "controlled",
+      "mitigation": "GL-211 documents explicit no-go claims and adds regression tests."
+    },
+    {
+      "risk": "Public website or snapshot is published without gate",
+      "status": "open",
+      "mitigation": "Public publish and public snapshot remain deferred to a separate issue."
+    },
+    {
+      "risk": "Security-sensitive details are disclosed publicly",
+      "status": "controlled",
+      "mitigation": "Security-sensitive reports route to GitHub Security Advisories; exploit details are prohibited in public channels."
+    }
+  ],
+  "findings": [
+    "Official SDK/package is not allowed now.",
+    "Experimental public SDK/package remains deferred unless a future projection gate explicitly passes.",
+    "Internal SDK prototype remains allowed only as an internal prototype.",
+    "First external controlled pilot is conditional and synthetic/demo data only.",
+    "Production SaaS and real customer/private grant/institutional data remain no-go.",
+    "Public GitHub push, public publish, website deployment, and public snapshot update are out of scope for GL-211.",
+    "Unrelated website-design files remain excluded from GL-211."
+  ],
+  "safety_confirmations": {
+    "gate_decision_baseline_not_production_saas_readiness": true,
+    "developer_preview_controlled_preview_only": true,
+    "production_saas_not_claimed": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "experimental_public_sdk_package_deferred_or_no_go": true,
+    "internal_sdk_prototype_boundary_documented": true,
+    "package_publishing_boundary_documented": true,
+    "live_postgres_production_claim_no_go": true,
+    "public_website_publish_no_go_in_gl211": true,
+    "compliance_certification_not_claimed": true,
+    "gdpr_soc2_iso_readiness_not_claimed": true,
+    "enterprise_readiness_not_claimed": true,
+    "tenant_workspace_isolation_not_overclaimed": true,
+    "admin_operator_control_plane_not_overclaimed": true,
+    "runtime_iam_abuse_incident_not_overclaimed": true,
+    "data_governance_audit_operations_not_overclaimed": true,
+    "website_public_publish_not_overclaimed": true,
+    "controlled_preview_synthetic_demo_only": true,
+    "package_publishing_avoided": true,
+    "no_package_publishing_metadata": true,
+    "security_reports_to_github_security_advisories": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_data": true,
+    "no_backend_src_changes": true,
+    "no_api_behavior_changes": true,
+    "no_migrations_db_schema_dependency_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_public_github_push": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "unrelated_website_design_files_excluded": true
+  },
+  "recommended_next_issues": [
+    "GL-211 Merge if ready",
+    "GL-206B Live PostgreSQL Validation Execution when ephemeral PostgreSQL is available",
+    "GL-212 Public Snapshot / External Review Gate only if explicitly approved later"
+  ]
+}
