@@ -893,12 +893,15 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             execution_id = m.group(1)
             tenant_id = self._get_tenant_id(auth_ctx)
             if not self._execution_visible_to_tenant(execution_id, tenant_id):
-                self._send_json(404, {
-                    "error": "Execution not found",
-                    "errorCode": "execution_not_found",
-                    "reason": "The requested execution does not exist or has no provenance records.",
-                })
-                return
+                # Preserve the GL-037 legacy-admin orphan provenance summary
+                # contract while keeping operator-mode execution lookups tenant-scoped.
+                if config.ENABLE_OPERATOR_MODEL or execs.get_grant_execution(execution_id) is not None:
+                    self._send_json(404, {
+                        "error": "Execution not found",
+                        "errorCode": "execution_not_found",
+                        "reason": "The requested execution does not exist or has no provenance records.",
+                    })
+                    return
             qs = parse_qs(urlparse(self.path).query)
             include_timeline = qs.get("includeTimeline", ["true"])[0].lower() != "false"
             include_warnings = qs.get("includeWarnings", ["true"])[0].lower() != "false"
