@@ -82,14 +82,20 @@ def create_grant(grant: Grant, conn=None, tenant_id: Optional[str] = None) -> Gr
     return grant
 
 
-def tamper_grant(grant_id: str) -> Optional[dict]:
+def tamper_grant(grant_id: str, tenant_id: Optional[str] = None) -> Optional[dict]:
     """Demo-only: change a grant field without re-signing to demonstrate tamper detection."""
-    grant = get_grant(grant_id)
+    grant = get_grant(grant_id, tenant_id=tenant_id)
     if grant is None:
         return None
     old_value = grant.role
     new_value = "tampered-role"
-    execute("UPDATE grants SET role = ? WHERE id = ?", (new_value, grant_id))
+    if tenant_id is not None:
+        execute(
+            "UPDATE grants SET role = ? WHERE id = ? AND tenant_id = ?",
+            (new_value, grant_id, tenant_id),
+        )
+    else:
+        execute("UPDATE grants SET role = ? WHERE id = ?", (new_value, grant_id))
     return {
         "ok": True,
         "grantId": grant_id,
