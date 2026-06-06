@@ -61,6 +61,30 @@ def _branch_diff_files() -> set[str]:
         check=False,
     )
     files = {line for line in result.stdout.splitlines() if line.strip()}
+    if not files:
+        branch = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        ).stdout.strip()
+        merge_commit = subprocess.run(
+            ["git", "log", "--merges", "--grep", "Merge GL-210", "-n", "1", "--format=%H"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        ).stdout.strip()
+        if branch == "main" and merge_commit:
+            merged = subprocess.run(
+                ["git", "diff", "--name-only", f"{merge_commit}^1...{merge_commit}"],
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            files = {line for line in merged.stdout.splitlines() if line.strip()}
     untracked = subprocess.run(
         ["git", "ls-files", "--others", "--exclude-standard"],
         cwd=REPO_ROOT,
