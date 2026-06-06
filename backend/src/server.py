@@ -537,6 +537,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             return self._require_operator(roles)
         return self._require_admin()
 
+    def _execution_visible_to_tenant(self, execution_id: str, tenant_id: str) -> bool:
+        """Return True only when an execution ID belongs to the caller tenant."""
+        return execs.get_grant_execution(execution_id, tenant_id=tenant_id) is not None
+
     def _resolve_client_ip(self) -> str | None:
         """Resolve the real client IP with safe reverse-proxy header support.
 
@@ -819,10 +823,14 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif m := re.fullmatch(r"/evidence/executions/([^/]+)", path):
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
             execution_id = m.group(1)
+            tenant_id = self._get_tenant_id(auth_ctx)
+            if not self._execution_visible_to_tenant(execution_id, tenant_id):
+                self._send_json(404, self._gl030_error("Execution not found", "execution_not_found", "The requested execution does not exist."))
+                return
             bundle = build_evidence_bundle(execution_id)
             if bundle is None:
                 self._send_json(404, self._gl030_error("Execution not found", "execution_not_found", "The requested execution does not exist."))
@@ -832,10 +840,14 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif m := re.fullmatch(r"/evidence/executions/([^/]+)/export", path):
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
             execution_id = m.group(1)
+            tenant_id = self._get_tenant_id(auth_ctx)
+            if not self._execution_visible_to_tenant(execution_id, tenant_id):
+                self._send_json(404, self._gl030_error("Execution not found", "execution_not_found", "The requested execution does not exist."))
+                return
             bundle = build_evidence_bundle(execution_id)
             if bundle is None:
                 self._send_json(404, self._gl030_error("Execution not found", "execution_not_found", "The requested execution does not exist."))
@@ -861,20 +873,32 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif m := re.fullmatch(r"/evidence/executions/([^/]+)/verify", path):
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
             execution_id = m.group(1)
+            tenant_id = self._get_tenant_id(auth_ctx)
+            if not self._execution_visible_to_tenant(execution_id, tenant_id):
+                self._send_json(404, self._gl030_error("Execution not found", "execution_not_found", "The requested execution does not exist."))
+                return
             result = verify_execution(execution_id)
             self._send_json(200, result)
 
         elif m := re.fullmatch(r"/provenance/executions/([^/]+)/summary", path):
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
             execution_id = m.group(1)
+            tenant_id = self._get_tenant_id(auth_ctx)
+            if not self._execution_visible_to_tenant(execution_id, tenant_id):
+                self._send_json(404, {
+                    "error": "Execution not found",
+                    "errorCode": "execution_not_found",
+                    "reason": "The requested execution does not exist or has no provenance records.",
+                })
+                return
             qs = parse_qs(urlparse(self.path).query)
             include_timeline = qs.get("includeTimeline", ["true"])[0].lower() != "false"
             include_warnings = qs.get("includeWarnings", ["true"])[0].lower() != "false"
@@ -897,10 +921,18 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif m := re.fullmatch(r"/auditor/reports/executions/([^/]+)", path):
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
             execution_id = m.group(1)
+            tenant_id = self._get_tenant_id(auth_ctx)
+            if not self._execution_visible_to_tenant(execution_id, tenant_id):
+                self._send_json(404, {
+                    "error": "Execution not found",
+                    "errorCode": "execution_not_found",
+                    "reason": "The requested execution does not exist or has no linked provenance records.",
+                })
+                return
             qs = parse_qs(urlparse(self.path).query)
             include_raw_evidence = qs.get("includeRawEvidence", ["false"])[0].lower() == "true"
             report = build_auditor_report_for_execution(
@@ -919,10 +951,18 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif m := re.fullmatch(r"/evidence/executions/([^/]+)/completeness", path):
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
             execution_id = m.group(1)
+            tenant_id = self._get_tenant_id(auth_ctx)
+            if not self._execution_visible_to_tenant(execution_id, tenant_id):
+                self._send_json(404, {
+                    "error": "Execution not found",
+                    "errorCode": "execution_not_found",
+                    "reason": "The requested execution does not exist or has no linked provenance records.",
+                })
+                return
             qs = parse_qs(urlparse(self.path).query)
             include_details = qs.get("includeDetails", ["true"])[0].lower() != "false"
             report = build_evidence_completeness_for_execution(execution_id, include_details=include_details)
@@ -938,10 +978,18 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         elif m := re.fullmatch(r"/compliance/gaps/executions/([^/]+)", path):
             if not self._check_rate_limit("api"):
                 return
-            ok, _ = self._require_auth(["owner", "grant_admin", "auditor"])
+            ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
             execution_id = m.group(1)
+            tenant_id = self._get_tenant_id(auth_ctx)
+            if not self._execution_visible_to_tenant(execution_id, tenant_id):
+                self._send_json(404, {
+                    "error": "Execution not found",
+                    "errorCode": "execution_not_found",
+                    "reason": "The requested execution does not exist or has no linked provenance records.",
+                })
+                return
             qs = parse_qs(urlparse(self.path).query)
             include_details = qs.get("includeDetails", ["true"])[0].lower() != "false"
             report = build_compliance_gap_report_for_execution(execution_id, include_details=include_details)
@@ -1168,11 +1216,12 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not config.ENABLE_DEMO_ENDPOINTS:
                 self._send_json(403, self._gl030_error("Demo endpoints are disabled", "demo_endpoints_disabled", "Demo endpoints are not enabled on this instance."))
                 return
-            ok, _ = self._require_auth(["owner", "demo_operator"])
+            ok, auth_ctx = self._require_auth(["owner", "demo_operator"])
             if not ok:
                 return
+            tenant_id = self._get_tenant_id(auth_ctx)
             grant_id = m.group(1)
-            result = tamper_grant(grant_id)
+            result = tamper_grant(grant_id, tenant_id=tenant_id)
             if result is None:
                 self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
             else:
