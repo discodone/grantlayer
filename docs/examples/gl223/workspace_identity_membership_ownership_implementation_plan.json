@@ -1,0 +1,464 @@
+{
+  "issue_id": "GL-223",
+  "title": "Workspace Identity / Membership / Ownership Implementation Plan",
+  "result": "APPROVED",
+  "decision": "plan_accepted_implementation_deferred_to_GL224_through_GL231",
+  "decision_rationale": "The implementation plan is complete, internally consistent, and safe to proceed. The current workspace_id = NULL posture is explicitly documented and tracked since GL-144. A structured phased plan is required before workspace enforcement can be safely implemented without risking audit integrity, tenant isolation regression, or demo-flow breakage. No production-readiness tier changes. No real data enabled. No migrations added. No backend/src changes. Post-enforcement go/no-go gate (GL-231) required before any NO-GO tier reassessment.",
+  "input_sources_reviewed": [
+    "docs/controlled_external_review_handoff_pack.md",
+    "docs/examples/gl222/controlled_external_review_handoff_pack.json",
+    "docs/workspace_enforcement_final_go_no_go_v6.md",
+    "docs/examples/gl221/workspace_enforcement_final_go_no_go_v6.json",
+    "docs/production_runtime_infrastructure_hardening_pack.md",
+    "docs/examples/gl220/production_runtime_infrastructure_hardening_pack.json",
+    "docs/production_identity_access_hardening_pack.md",
+    "docs/examples/gl219/production_identity_access_hardening_pack.json",
+    "docs/public_external_review_export_safety_pack.md",
+    "docs/examples/gl218/public_external_review_export_safety_pack.json",
+    "docs/production_go_no_go_v5.md",
+    "docs/examples/gl217/production_go_no_go_v5.json",
+    "docs/tenant_workspace_production_guarantee.md",
+    "docs/examples/gl215/tenant_workspace_production_guarantee.json",
+    "docs/tenant_workspace_data_model_design.md",
+    "docs/examples/gl144/tenant_workspace_data_model_design.json",
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/production_iam_operator_control_completion.md",
+    "docs/examples/gl214/production_iam_operator_control_completion.json",
+    "docs/data_governance_audit_operations.md",
+    "docs/examples/gl209/data_governance_audit_operations.json",
+    "docs/openapi.yaml",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "backend/src/server.py",
+    "backend/src/config.py",
+    "backend/src/auth.py",
+    "backend/src/identity_access.py",
+    "backend/src/operators.py",
+    "backend/src/audit_log.py",
+    "backend/src/db.py",
+    "backend/src/models.py",
+    "backend/src/grants.py",
+    "backend/src/grant_requests.py"
+  ],
+  "current_tenant_workspace_state_summary": {
+    "tenant_id_enforced": true,
+    "tenant_id_server_derived": true,
+    "workspace_id_present_in_schema": true,
+    "workspace_id_enforced": false,
+    "workspace_id_value_on_all_records": null,
+    "workspaces_table_exists": false,
+    "workspace_members_table_exists": false,
+    "workspace_scoped_routes": false,
+    "workspace_membership_verification": false,
+    "cross_workspace_denial_guard": false,
+    "operator_workspace_assignment": false,
+    "workspace_audit_propagation": false,
+    "description": "tenant_id is server-derived and enforced on all business resource routes. workspace_id column exists on all resource tables (added by migration 0010) but is NULL for all records. No workspaces or workspace_members tables exist. No workspace membership verification in any route handler. No cross-workspace denial guards. Audit events carry workspace_id = null throughout. Operator model is tenant-aware but not workspace-aware."
+  },
+  "current_workspace_trust_gaps": [
+    {"gap_id": "WG-001", "gap": "workspace_id is nullable/unset on all resources — no workspace enforcement", "severity": "P0"},
+    {"gap_id": "WG-002", "gap": "No workspaces entity — a workspace cannot be created or looked up", "severity": "P0"},
+    {"gap_id": "WG-003", "gap": "No workspace_members entity — no operator/workspace association", "severity": "P0"},
+    {"gap_id": "WG-004", "gap": "No workspace-scoped authorization in server routes", "severity": "P0"},
+    {"gap_id": "WG-005", "gap": "No workspace ownership model on resources", "severity": "P1"},
+    {"gap_id": "WG-006", "gap": "No workspace-level role/scope assignment", "severity": "P1"},
+    {"gap_id": "WG-007", "gap": "No workspace invitation/join/leave lifecycle", "severity": "P1"},
+    {"gap_id": "WG-008", "gap": "Audit events carry workspace_id = null — no workspace audit trail", "severity": "P1"},
+    {"gap_id": "WG-009", "gap": "No cross-workspace lookup denial guard", "severity": "P1"},
+    {"gap_id": "WG-010", "gap": "No cross-workspace mutation denial guard", "severity": "P1"},
+    {"gap_id": "WG-011", "gap": "No workspace provenance propagation", "severity": "P2"},
+    {"gap_id": "WG-012", "gap": "No workspace-scoped API endpoints", "severity": "P2"},
+    {"gap_id": "WG-013", "gap": "No OpenAPI workspace path/parameter documentation", "severity": "P2"},
+    {"gap_id": "WG-014", "gap": "No workspace migration/backfill plan for existing null records", "severity": "P2"}
+  ],
+  "workspace_identity_model": {
+    "description": "A workspace is a named, scoped operating context within a tenant with a stable UUID, human-readable name, tenant_id (immutable), owner_operator_id, active boolean, and created_at timestamp.",
+    "trust_model": "workspace_id is server-assigned. Clients cannot supply or override workspace_id on any resource write. workspace_id is derived from the authenticated operator context, not from request body parameters.",
+    "planned_schema_entity": "workspaces table: id, tenant_id, name, description, owner_id, active, created_at, updated_at, UNIQUE(tenant_id, name)",
+    "implementation_issue": "GL-224"
+  },
+  "membership_model": {
+    "description": "A workspace membership is an explicit record binding one operator to one workspace with a defined role. Operators are not automatically members of any workspace. Membership must be granted explicitly by a workspace owner or admin.",
+    "planned_schema_entity": "workspace_members table: id, workspace_id, operator_id, workspace_role, invited_by, joined_at, active, UNIQUE(workspace_id, operator_id)",
+    "roles": ["workspace_owner", "workspace_admin", "workspace_member", "workspace_readonly"],
+    "invariants": [
+      "Membership is unique per (workspace_id, operator_id)",
+      "Deactivated membership denies access fail-closed",
+      "Operator must belong to tenant before joining workspace",
+      "Membership revocation is audited",
+      "Cross-workspace resource lookups return 404 to prevent enumeration"
+    ],
+    "implementation_issue": "GL-224 and GL-225"
+  },
+  "ownership_model": {
+    "description": "Each workspace has exactly one owner_id. Resources carry both tenant_id and workspace_id. workspace_id is immutable after creation. Resources cannot be moved between workspaces.",
+    "workspace_ownership_rules": [
+      "Each workspace has exactly one owner_id",
+      "Owner may transfer ownership to another active member with owner or admin role",
+      "Ownership transfer is audited",
+      "Last owner cannot leave without transferring or deactivating workspace"
+    ],
+    "resource_ownership_rules": [
+      "Every business resource must carry both tenant_id and workspace_id after enforcement",
+      "workspace_id = NULL acceptable only in developer_preview and demo modes",
+      "workspace_id is immutable after creation",
+      "Resources cannot be shared across workspace boundaries"
+    ],
+    "implementation_issue": "GL-224 and GL-227"
+  },
+  "role_scope_model": {
+    "tenant_level_roles": [
+      {"role": "owner", "permissions": "Full tenant control, operator create/revoke"},
+      {"role": "grant_admin", "permissions": "Create/revoke grants within tenant"},
+      {"role": "approver", "permissions": "Approve/deny grant requests"},
+      {"role": "agent", "permissions": "Submit grant requests, execute grants"},
+      {"role": "readonly", "permissions": "Read-only access to tenant resources"}
+    ],
+    "workspace_level_roles": [
+      {"role": "workspace_owner", "permissions": "Full workspace control, membership management, ownership transfer"},
+      {"role": "workspace_admin", "permissions": "Add/remove members, manage workspace settings"},
+      {"role": "workspace_member", "permissions": "Create/read resources within workspace"},
+      {"role": "workspace_readonly", "permissions": "Read-only access within workspace"}
+    ],
+    "composition_rule": "Effective permission is the intersection of tenant-level role and workspace-level role. Workspace role cannot exceed tenant role ceiling.",
+    "authorization_check_order": [
+      "1. Is the operator authenticated?",
+      "2. Does the operator belong to the resource tenant? (enforced)",
+      "3. Is the operator an active member of the resource workspace? (new)",
+      "4. Does the operator workspace role permit the requested operation? (new)"
+    ],
+    "implementation_issue": "GL-225 and GL-227"
+  },
+  "workspace_lifecycle_model": {
+    "creation": "POST /workspaces by tenant admin or owner role. Server assigns workspace_id, tenant_id, owner_id. Creating operator auto-added as workspace_owner member. workspace_created audit event emitted.",
+    "member_invitation": "POST /workspaces/{id}/members by workspace owner/admin. Verifies inviting operator is active owner/admin. Verifies invited operator is in same tenant. workspace_member_added audit event emitted.",
+    "member_removal_leave": "DELETE /workspaces/{id}/members/{operator_id} or POST /workspaces/{id}/leave. Last owner blocked from leaving. Membership set active=0. workspace_member_removed audit event emitted.",
+    "deactivation": "POST /admin/workspaces/{id}/deactivate by tenant admin. Workspace active=0. All member access denied fail-closed. workspace_deactivated audit event emitted.",
+    "deletion": "Deferred — audit immutability requires resource references remain accessible for audit review. Hard deletion requires separate data retention/erasure policy design.",
+    "implementation_issue": "GL-225"
+  },
+  "admin_operator_ownership_boundary": {
+    "tenant_admin_can": [
+      "Create workspaces",
+      "Deactivate workspaces",
+      "List workspaces within tenant",
+      "View workspace membership lists",
+      "Forcibly remove members (break-glass, audited)",
+      "Transfer workspace ownership"
+    ],
+    "tenant_admin_cannot": [
+      "Read workspace-owned grant/request/execution resources unless also a workspace member"
+    ],
+    "workspace_owner_can": [
+      "Invite/remove workspace members",
+      "Transfer workspace ownership",
+      "Read/write all resources within workspace (subject to tenant-level role)"
+    ],
+    "workspace_member_can": [
+      "Read/write resources within their workspace per tenant+workspace role",
+      "Leave workspace"
+    ],
+    "workspace_member_cannot": [
+      "Access other workspaces",
+      "Modify workspace membership"
+    ],
+    "invariant": "Operator tenant_id and workspace membership are server-assigned and server-enforced. No client-supplied tenant_id or workspace_id value can override the server-derived workspace context.",
+    "implementation_issue": "GL-225 and GL-227"
+  },
+  "server_derived_workspace_context_model": {
+    "derivation_order": [
+      "1. Authenticate operator from Authorization header",
+      "2. Extract tenant_id from operator record (server-assigned)",
+      "3a. Resolve workspace_id from X-Workspace-ID header if present and operator is active member",
+      "3b. Or use operator default workspace if single-workspace operator",
+      "3c. Or deny with 400 workspace_context_required if multi-workspace and no header",
+      "4. Verify operator is active member of resolved workspace",
+      "5. Propagate (tenant_id, workspace_id) to all resource reads/writes"
+    ],
+    "injection_rules": [
+      "All route handlers must receive (tenant_id, workspace_id) from server context",
+      "No route handler may accept workspace_id from request body for authorization",
+      "Only X-Workspace-ID header is trusted for workspace context selection",
+      "Data layer must validate workspace_id belongs to tenant_id before any operation"
+    ],
+    "implementation_issue": "GL-226"
+  },
+  "unsafe_workspace_override_prevention_model": {
+    "prevented_vectors": [
+      "Request body workspace_id injection — ignored for authorization decisions",
+      "Request body tenant_id injection — always ignored",
+      "Non-workspace header tenant_id injection — always rejected",
+      "Token elevation — operator token carries tenant_id and operator_id only; workspace resolved at request time with membership verification",
+      "Cross-workspace resource address — query requires AND workspace_id = ? after enforcement",
+      "Null workspace bypass — workspace_id = NULL not a magic cross-workspace value; rejected in production-like modes"
+    ],
+    "required_server_checks": [
+      "1. Authenticate",
+      "2. Derive tenant_id (existing)",
+      "3. Derive workspace_id (new)",
+      "4. Verify workspace membership and role",
+      "5. Filter all DB queries by (tenant_id, workspace_id)",
+      "6. Deny 403 if workspace membership check fails"
+    ],
+    "implementation_issue": "GL-226 and GL-227"
+  },
+  "cross_workspace_lookup_denial_model": {
+    "read_route_filters": [
+      "GET /grants: filter by tenant_id = ? AND workspace_id = ?",
+      "GET /grants/{id}: verify tenant_id AND workspace_id match; return 404 otherwise",
+      "GET /grant-requests: filter by tenant_id = ? AND workspace_id = ?",
+      "GET /grant-requests/{id}: workspace match required",
+      "GET /executions/{id}: workspace match required",
+      "GET /audit-events: filter by tenant_id = ? AND workspace_id = ?",
+      "GET /provenance: filter by tenant_id = ? AND workspace_id = ?"
+    ],
+    "response_code": "Cross-workspace resource lookups return 404 (not 403) to prevent workspace enumeration",
+    "admin_exception": "Tenant admin read via /admin/workspaces/{id}/resources; emits workspace_admin_access audit event",
+    "implementation_issue": "GL-227"
+  },
+  "cross_workspace_mutation_denial_model": {
+    "write_route_rules": [
+      "POST /grants: workspace_id assigned from operator context; client-supplied workspace_id in body rejected",
+      "POST /grant-requests: same",
+      "POST /grant-requests/{id}/approve: operator must be workspace member with workspace role permitting approval",
+      "POST /grant-requests/{id}/deny: same",
+      "POST /grant-requests/{id}/execute: same",
+      "POST /grants/{id}/revoke: must match tenant_id AND workspace_id of operator current context"
+    ],
+    "mutation_denial_invariant": "Any mutation that would assign workspace_id from client input or modify a resource whose workspace_id does not match the operator current workspace context must be denied fail-closed with 403 and a logged audit event.",
+    "implementation_issue": "GL-227"
+  },
+  "audit_evidence_provenance_compliance_propagation_model": {
+    "audit_event_propagation": "Every AuditEvent must carry non-null workspace_id in production-like modes. workspace_id derived from operator context at event-write time. Null workspace_id in production-like mode rejected by audit writer.",
+    "provenance_event_propagation": "Every ProvenanceEvent must carry non-null workspace_id after enforcement. Provenance event workspace attribution must match resource workspace_id.",
+    "evidence_archive": "Evidence archive records must carry workspace_id. Evidence queried for a workspace filtered by workspace_id.",
+    "hash_chain_impact": "Audit hash chain (GL-103/104/105) must incorporate workspace_id as chain input field after enforcement. This is a breaking audit-chain change. Pre-enforcement records with workspace_id = null remain valid as legacy/developer-preview chain.",
+    "compliance_gate": "Future compliance-gate must verify all audit events in compliance window carry non-null workspace_id before compliance readiness is claimed.",
+    "retention_erasure": "Data retention and erasure policies must be workspace-scoped. Deferred beyond GL-223.",
+    "implementation_issue": "GL-228"
+  },
+  "database_schema_plan": {
+    "new_tables": [
+      {
+        "table": "workspaces",
+        "columns": ["id TEXT PRIMARY KEY", "tenant_id TEXT NOT NULL", "name TEXT NOT NULL", "description TEXT", "owner_id TEXT NOT NULL", "active INTEGER NOT NULL DEFAULT 1", "created_at TEXT NOT NULL", "updated_at TEXT NOT NULL"],
+        "constraints": ["UNIQUE(tenant_id, name)"],
+        "indexes": ["idx_workspaces_tenant_id ON workspaces(tenant_id)"]
+      },
+      {
+        "table": "workspace_members",
+        "columns": ["id TEXT PRIMARY KEY", "workspace_id TEXT NOT NULL REFERENCES workspaces(id)", "operator_id TEXT NOT NULL REFERENCES operators(id)", "workspace_role TEXT NOT NULL", "invited_by TEXT", "joined_at TEXT NOT NULL", "active INTEGER NOT NULL DEFAULT 1"],
+        "constraints": ["UNIQUE(workspace_id, operator_id)"],
+        "indexes": ["idx_workspace_members_workspace_id ON workspace_members(workspace_id)", "idx_workspace_members_operator_id ON workspace_members(operator_id)"]
+      }
+    ],
+    "existing_table_changes": [
+      "FK constraint from resource tables to workspaces(id) — deferred to implementation migration",
+      "Index on (tenant_id, workspace_id) for all resource tables — confirm existing coverage",
+      "workspace_role validation against allowlist: workspace_owner, workspace_admin, workspace_member, workspace_readonly"
+    ],
+    "note": "No schema changes are made in GL-223. All changes are planned for GL-224."
+  },
+  "migration_backfill_plan": {
+    "migration_id": "0012_gl224_workspace_enforcement (or next available number at implementation time)",
+    "steps": [
+      "1. Create workspaces table",
+      "2. Create workspace_members table",
+      "3. Insert default/legacy workspace {id: default, tenant_id: demo, name: default}",
+      "4. Update resource records with workspace_id = NULL to workspace_id = default within tenant_id = demo"
+    ],
+    "backfill_rules": [
+      "Backfill only in developer_preview and demo runtime modes",
+      "Production-like mode must never backfill",
+      "Backfill is idempotent",
+      "Backfill must not touch records with non-null workspace_id"
+    ],
+    "rollback": "Drop workspace_members, drop workspaces, set workspace_id = NULL on backfilled resources",
+    "note": "No migration is added in GL-223."
+  },
+  "api_server_plan": {
+    "new_endpoints": [
+      {"method": "POST", "path": "/workspaces", "purpose": "Create workspace", "issue": "GL-225"},
+      {"method": "GET", "path": "/workspaces", "purpose": "List operator workspaces", "issue": "GL-225"},
+      {"method": "GET", "path": "/workspaces/{workspace_id}", "purpose": "Get workspace details", "issue": "GL-225"},
+      {"method": "POST", "path": "/workspaces/{workspace_id}/members", "purpose": "Add member", "issue": "GL-225"},
+      {"method": "DELETE", "path": "/workspaces/{workspace_id}/members/{operator_id}", "purpose": "Remove member", "issue": "GL-225"},
+      {"method": "POST", "path": "/workspaces/{workspace_id}/leave", "purpose": "Leave workspace", "issue": "GL-225"},
+      {"method": "POST", "path": "/workspaces/{workspace_id}/transfer-ownership", "purpose": "Transfer ownership", "issue": "GL-225"},
+      {"method": "POST", "path": "/admin/workspaces/{workspace_id}/deactivate", "purpose": "Deactivate workspace", "issue": "GL-225"},
+      {"method": "GET", "path": "/admin/workspaces", "purpose": "List all workspaces (admin)", "issue": "GL-225"}
+    ],
+    "modified_endpoints": "All existing resource endpoints updated to accept X-Workspace-ID header, derive workspace_id server-side, filter by (tenant_id, workspace_id), reject unresolvable workspace context.",
+    "auth_changes": "check_auth() returns workspace_id in addition to tenant_id after GL-226. _get_workspace_context() helper added.",
+    "backward_compatibility": "Developer_preview and demo modes continue to function with null workspace during transition phases.",
+    "note": "No API changes are made in GL-223."
+  },
+  "openapi_impact_plan": {
+    "new_path_groups": [
+      "/workspaces/* paths with schemas for WorkspaceCreateRequest, WorkspaceResponse, WorkspaceMemberAddRequest, WorkspaceMemberResponse, WorkspaceOwnershipTransferRequest"
+    ],
+    "modified_components": [
+      "All resource response schemas (GrantResponse, GrantRequestResponse, ExecutionResponse, AuditEventResponse) include non-nullable workspace_id after enforcement",
+      "X-Workspace-ID header documented as required on workspace-aware endpoints",
+      "operatorToken security scheme documented to require workspace membership verification"
+    ],
+    "note": "No OpenAPI changes are made in GL-223."
+  },
+  "testing_strategy": {
+    "unit_tests": [
+      "test_workspace_create_assigns_server_id",
+      "test_workspace_create_client_id_rejected",
+      "test_workspace_member_add",
+      "test_workspace_member_remove",
+      "test_workspace_last_owner_cannot_leave",
+      "test_cross_workspace_lookup_denied",
+      "test_cross_workspace_mutation_denied",
+      "test_workspace_deactivate_blocks_access",
+      "test_null_workspace_id_rejected_in_production_mode",
+      "test_workspace_audit_event_carries_workspace_id",
+      "test_workspace_context_derived_from_header",
+      "test_workspace_context_client_body_override_denied",
+      "test_workspace_role_scope_composition",
+      "test_workspace_ownership_transfer",
+      "test_workspace_member_not_in_tenant_rejected"
+    ],
+    "integration_tests": [
+      "Full workspace lifecycle: create → add member → write grant → read grant → remove member → verify denied access",
+      "Cross-tenant workspace isolation: two tenants with same workspace name do not interfere",
+      "Audit event workspace propagation: all events in workspace have matching workspace_id",
+      "Backfill idempotency: running migration twice produces identical state"
+    ],
+    "security_regression_tests": [
+      "Cross-workspace resource address returns 404",
+      "Body workspace_id injection does not change resource ownership",
+      "Token-derived workspace context cannot be overridden by request headers for tenant_id"
+    ],
+    "gate_tests": [
+      "All resource tables have non-null workspace_id in production-like mode",
+      "All audit events in compliance window have non-null workspace_id",
+      "No cross-workspace reads pass membership check"
+    ],
+    "implementation_issue": "GL-229"
+  },
+  "rollout_strategy": {
+    "phase_1": {"title": "Schema migration, no behavior change", "issue": "GL-224"},
+    "phase_2": {"title": "Workspace CRUD API", "issue": "GL-225"},
+    "phase_3": {"title": "Workspace context derivation and header support", "issue": "GL-226"},
+    "phase_4": {"title": "Workspace enforcement on resource routes", "issue": "GL-227"},
+    "phase_5": {"title": "Audit event and provenance enforcement", "issue": "GL-228"},
+    "note": "Each phase is a separate commit/issue and can be reverted independently."
+  },
+  "rollback_strategy": {
+    "phase_1": "Drop workspace tables, nullify backfilled workspace_id values",
+    "phase_2": "Remove workspace endpoint handlers",
+    "phase_3": "Remove X-Workspace-ID header processing",
+    "phase_4": "Remove workspace filters from resource queries, revert to tenant-only filtering",
+    "phase_5": "Revert audit writer to accept null workspace_id; hash chain break-point coordination required"
+  },
+  "demo_synthetic_compatibility": {
+    "current_demo_state": "Demo and synthetic flows use tenant_id = demo and workspace_id = NULL",
+    "after_phase_1_backfill": "Demo records will have workspace_id = default. Demo operator tokens assigned to default workspace via membership backfill.",
+    "after_phase_3": "X-Workspace-ID: default header will be required in demo mode if operator is member of multiple workspaces (auto-selected for single-workspace operators).",
+    "required_update": "grant_lifecycle_evidence_bundle.py example must be updated in implementation phase to send X-Workspace-ID if required.",
+    "compatibility_verdict": "All existing demo API smoke tests and quickstart flows must continue to pass through Phase 4 by targeting the default workspace."
+  },
+  "production_readiness_impact": {
+    "developer_preview": "GO / CONTINUE — unchanged",
+    "controlled_external_technical_review": "GO with strict boundaries — unchanged",
+    "synthetic_demo_controlled_pilot": "CONDITIONAL — unchanged",
+    "public_snapshot_preparation": "CONDITIONAL, separate explicit gate required — unchanged",
+    "public_website_publish": "DEFER / NO-GO — unchanged",
+    "official_sdk_package": "NO-GO — unchanged",
+    "real_customer_data": "NO-GO — unchanged",
+    "private_grant_institutional_data": "NO-GO — unchanged",
+    "production_saas": "NO-GO — unchanged",
+    "compliance_certification": "NO-GO — unchanged",
+    "live_postgresql_production_readiness": "NO-GO — unchanged",
+    "note": "GL-223 does not change any production-readiness tier."
+  },
+  "controlled_preview_impact": "GL-223 does not change the Controlled External Technical Review posture. Review materials remain synthetic/demo only.",
+  "real_data_impact": "GL-223 does not enable real customer, private grant, or institutional data. These tiers remain NO-GO.",
+  "remaining_blockers": [
+    {"blocker_id": "RD-001", "description": "workspace_id not enforced on any resource routes", "blocking_tier": "Production SaaS, Real Customer Data"},
+    {"blocker_id": "RD-002", "description": "No workspaces or workspace_members tables", "blocking_tier": "Production SaaS, Real Customer Data"},
+    {"blocker_id": "RD-003", "description": "No workspace membership verification in auth/route layer", "blocking_tier": "Production SaaS, Real Customer Data"},
+    {"blocker_id": "RD-004", "description": "No workspace-scoped authorization", "blocking_tier": "Production SaaS, Real Customer Data"},
+    {"blocker_id": "RD-005", "description": "Audit events carry workspace_id = null", "blocking_tier": "Compliance Certification"},
+    {"blocker_id": "RD-006", "description": "No cross-workspace denial guards", "blocking_tier": "Production SaaS, Real Customer Data"},
+    {"blocker_id": "RD-007", "description": "No workspace lifecycle API", "blocking_tier": "Production SaaS"},
+    {"blocker_id": "RD-008", "description": "No production OAuth/OIDC/JWT identity provider", "blocking_tier": "Production SaaS, Real Customer Data"},
+    {"blocker_id": "RD-009", "description": "No production PostgreSQL deployment", "blocking_tier": "Live PostgreSQL Production Readiness"},
+    {"blocker_id": "RD-010", "description": "No GDPR/data-retention workspace erasure policy", "blocking_tier": "Compliance Certification"}
+  ],
+  "proposed_implementation_issue_breakdown": [
+    {"issue": "GL-224", "title": "Workspace Schema Migration and Entity Layer", "phase": 1, "priority": "P0"},
+    {"issue": "GL-225", "title": "Workspace CRUD API and Admin Control Plane", "phase": 2, "priority": "P0"},
+    {"issue": "GL-226", "title": "Workspace Context Derivation and Header Support", "phase": 3, "priority": "P0"},
+    {"issue": "GL-227", "title": "Workspace Enforcement on Resource Routes", "phase": 4, "priority": "P0"},
+    {"issue": "GL-228", "title": "Workspace Audit Event and Provenance Enforcement", "phase": 5, "priority": "P1"},
+    {"issue": "GL-229", "title": "Workspace Security Regression Test Suite", "phase": "4/5", "priority": "P0"},
+    {"issue": "GL-230", "title": "Workspace Enforcement Gate Script", "phase": "4/5", "priority": "P0"},
+    {"issue": "GL-231", "title": "Production Go/No-Go v7 (post-workspace enforcement)", "phase": "post-5", "priority": "P1"}
+  ],
+  "risk_register": [
+    {"risk_id": "R-001", "risk": "Backfill corrupts existing demo data", "probability": "Low", "impact": "High", "mitigation": "Idempotent backfill with transaction rollback; test in demo mode before schema merge"},
+    {"risk_id": "R-002", "risk": "Workspace enforcement breaks existing demo/quickstart flows", "probability": "Medium", "impact": "Medium", "mitigation": "Backwards-compatible phase approach; demo mode auto-selects default workspace"},
+    {"risk_id": "R-003", "risk": "Audit hash chain incompatibility after workspace_id addition", "probability": "Medium", "impact": "High", "mitigation": "Treat pre-enforcement chain as legacy; start new chain segment at enforcement boundary"},
+    {"risk_id": "R-004", "risk": "Cross-workspace 404 leaks timing side channel", "probability": "Low", "impact": "Medium", "mitigation": "Constant-time membership check before query"},
+    {"risk_id": "R-005", "risk": "Workspace owner cannot leave — operational dead-end", "probability": "Low", "impact": "Medium", "mitigation": "Ownership transfer flow required before leave; admin break-glass documented"},
+    {"risk_id": "R-006", "risk": "Workspace context header spoofing", "probability": "Low", "impact": "High", "mitigation": "Membership verification gates all workspace context claims before trust"},
+    {"risk_id": "R-007", "risk": "Null workspace_id bypass in production", "probability": "Medium", "impact": "High", "mitigation": "Null-workspace rejection gate in production-like mode; gate script verification"},
+    {"risk_id": "R-008", "risk": "Migration rollback complexity increases with phases", "probability": "Medium", "impact": "Medium", "mitigation": "Each phase independently reversible; rollback procedures documented per phase"}
+  ],
+  "findings": [
+    {"finding_id": "F-001", "finding": "workspace_id column exists on all resource tables but is null for all existing records"},
+    {"finding_id": "F-002", "finding": "No workspaces or workspace_members tables exist"},
+    {"finding_id": "F-003", "finding": "No workspace membership verification in any route handler"},
+    {"finding_id": "F-004", "finding": "All cross-tenant lookup denial is enforced; cross-workspace denial is not"},
+    {"finding_id": "F-005", "finding": "Audit events carry workspace_id = null throughout"},
+    {"finding_id": "F-006", "finding": "Operator model is tenant-aware but not workspace-aware"},
+    {"finding_id": "F-007", "finding": "Server-derived tenant_id model is sound and can be extended to workspace"},
+    {"finding_id": "F-008", "finding": "The phased rollout plan preserves all existing GL-214 through GL-222 boundaries"},
+    {"finding_id": "F-009", "finding": "Demo/synthetic flows are compatible with the planned default-workspace backfill"},
+    {"finding_id": "F-010", "finding": "The audit hash chain will require a defined break-point at workspace enforcement boundary"}
+  ],
+  "safety_confirmations": {
+    "is_planning_only": true,
+    "no_migrations_added": true,
+    "no_real_data_enabled": true,
+    "production_saas_no_go": true,
+    "real_customer_data_no_go": true,
+    "private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "compliance_certification_no_go": true,
+    "live_postgresql_production_no_go": true,
+    "no_public_export_publish_visibility_change": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_package_metadata": true,
+    "no_deployment_cloud_k8s_terraform_helm": true,
+    "no_tls_cert_private_key_files": true,
+    "no_backend_src_changes": true,
+    "no_dependency_changes": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_data": true,
+    "website_design_import_files_excluded": true,
+    "gl214_through_gl222_boundaries_preserved": true,
+    "security_sensitive_reports_route_to_github_security_advisories": true
+  },
+  "recommended_next_issues": [
+    {"issue": "GL-224", "title": "Workspace Schema Migration and Entity Layer"},
+    {"issue": "GL-225", "title": "Workspace CRUD API and Admin Control Plane"},
+    {"issue": "GL-226", "title": "Workspace Context Derivation and Header Support"},
+    {"issue": "GL-227", "title": "Workspace Enforcement on Resource Routes"},
+    {"issue": "GL-228", "title": "Workspace Audit Event and Provenance Enforcement"},
+    {"issue": "GL-229", "title": "Workspace Security Regression Test Suite"},
+    {"issue": "GL-230", "title": "Workspace Enforcement Gate Script"},
+    {"issue": "GL-231", "title": "Production Go/No-Go v7 (post-workspace enforcement)"}
+  ]
+}
