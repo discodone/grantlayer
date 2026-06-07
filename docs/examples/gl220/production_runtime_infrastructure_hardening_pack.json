@@ -1,0 +1,425 @@
+{
+  "issue_id": "GL-220",
+  "title": "Production Runtime & Infrastructure Hardening Pack",
+  "result": "ready_for_merge_with_blockers",
+  "decision": "production_runtime_infrastructure_hardening_pack_ready_for_merge_with_blockers",
+  "decision_rationale": "GL-220 adds conservative runtime/infrastructure documentation, a machine-readable artifact, a local-only dry-run/plan gate, and focused tests. It does not implement real production deployment, cloud integration, TLS termination, external monitoring, production secret rollout, package publishing, migrations, or production SaaS readiness.",
+  "input_sources_reviewed": [
+    "docs/production_go_no_go_v5.md",
+    "docs/examples/gl217/production_go_no_go_v5.json",
+    "docs/production_identity_access_hardening_pack.md",
+    "docs/examples/gl219/production_identity_access_hardening_pack.json",
+    "docs/public_external_review_export_safety_pack.md",
+    "docs/examples/gl218/public_external_review_export_safety_pack.json",
+    "docs/production_operations_hardening_pack.md",
+    "docs/examples/gl216/production_operations_hardening_pack.json",
+    "docs/tenant_workspace_production_guarantee.md",
+    "docs/examples/gl215/tenant_workspace_production_guarantee.json",
+    "docs/production_iam_operator_control_completion.md",
+    "docs/examples/gl214/production_iam_operator_control_completion.json",
+    "docs/runtime_abuse_incident_hardening.md",
+    "docs/examples/gl208/runtime_abuse_incident_hardening.json",
+    "docs/live_postgres_backup_observability_baseline.md",
+    "docs/examples/gl205/live_postgres_backup_observability_baseline.json",
+    "docs/production_ops_go_no_go_v3.md",
+    "docs/examples/gl204/production_ops_go_no_go_v3.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/openapi.yaml",
+    "backend/src/server.py",
+    "backend/src/config.py",
+    "backend/src/auth.py",
+    "backend/src/identity_access.py",
+    "backend/src/operators.py",
+    "backend/src/audit_log.py",
+    "backend/src/db.py",
+    "backend/src/models.py",
+    "backend/tests/",
+    "scripts/ops/gl216_production_operations_gate.py",
+    "scripts/ops/gl218_public_export_safety_scan.py",
+    "scripts/ops/gl219_identity_access_gate.py",
+    "scripts/ops/gl205_live_postgres_validation.py",
+    "scripts/ops/gl205_backup_restore_drill.py",
+    "scripts/ops/gl209_audit_export_check.py",
+    "scripts/run-full-backend-suite.sh",
+    "examples/grant_lifecycle_evidence_bundle.py"
+  ],
+  "current_runtime_infrastructure_state_summary": {
+    "runtime_model": "Local Python HTTP service using ThreadingHTTPServer.",
+    "persistence": "SQLite default; PostgreSQL optional and not production-ready.",
+    "implemented_baselines": [
+      "health and readiness endpoints with safe minimal output",
+      "exact-match CORS allowlist",
+      "security headers on responses",
+      "one-megabyte JSON request body limit",
+      "in-process auth and API rate limits",
+      "structured safe logging and correlation ID propagation",
+      "admin/operator auth guards",
+      "server-derived tenant context",
+      "production-like startup checks for unsafe local/demo configuration",
+      "fail-closed checks for unsupported external identity configuration"
+    ],
+    "production_status": "developer_preview_controlled_preview_only_not_production_saas"
+  },
+  "production_runtime_infrastructure_gap_assessment": {
+    "tls_reverse_proxy": "No real TLS termination, certificate lifecycle, HSTS, trusted proxy policy, or live hostname model.",
+    "container_runtime": "No production non-root/read-only/capability/seccomp policy, image provenance gate, registry control, or orchestration runtime policy.",
+    "process_service": "ThreadingHTTPServer direct start remains a Developer Preview model; no supervisor, graceful drain, worker sizing, restart policy, or resource quotas.",
+    "runtime_secrets": "Env-based config exists; no managed secret store, KMS/HSM integration, rotation automation, or lease lifecycle.",
+    "request_limits": "Body and in-process rate limits exist; no production timeout, slow-client, concurrency, queue, backpressure, or edge rate-limit model.",
+    "network_exposure": "Localhost default and demo endpoint public exposure guard exist; no production ingress, egress, firewall, allowlist, or segmentation model.",
+    "observability": "Structured logs and correlation IDs exist; no external metrics, tracing, alerting, pager, SIEM/SOC, or SLO stack.",
+    "backup_dr": "Synthetic drills and plan scripts exist; no scheduled production backup, restore RTO/RPO evidence, failover, PITR, or DR runtime integration.",
+    "postgres": "Optional support and ephemeral validation history exist; no production topology, pooling validation, permissions, failover, or production readiness.",
+    "release_recovery": "Documentation baseline only; no deploy rings, rollback automation, artifact provenance, or emergency runtime recovery procedure."
+  },
+  "implemented_hardening_summary": [
+    "Added docs/production_runtime_infrastructure_hardening_pack.md.",
+    "Added docs/examples/gl220/production_runtime_infrastructure_hardening_pack.json.",
+    "Added scripts/ops/gl220_runtime_infrastructure_gate.py as a local-only dry-run/plan runtime infrastructure gate.",
+    "Added backend/tests/test_gl220_production_runtime_infrastructure_hardening_pack.py."
+  ],
+  "tls_https_reverse_proxy_posture": {
+    "current_state": "No in-app TLS termination and no production reverse proxy rollout.",
+    "required_before_production": [
+      "TLS termination boundary",
+      "certificate lifecycle",
+      "HSTS policy",
+      "trusted proxy header model",
+      "client IP handling",
+      "host allowlisting",
+      "request buffering and timeout alignment"
+    ],
+    "gl220_rollout_performed": false
+  },
+  "container_runtime_hardening_posture": {
+    "current_state": "Local Docker artifacts are not a production hardening model.",
+    "required_before_production": [
+      "non-root runtime",
+      "read-only filesystem policy",
+      "dropped capabilities",
+      "minimal writable paths",
+      "seccomp/AppArmor or equivalent policy",
+      "image provenance and scanning",
+      "registry access control"
+    ],
+    "production_container_deployment_added": false
+  },
+  "process_supervisor_service_model_posture": {
+    "current_state": "Direct ThreadingHTTPServer service model.",
+    "required_before_production": [
+      "process supervisor",
+      "restart and health policy",
+      "graceful shutdown and drain",
+      "worker sizing",
+      "CPU and memory limits",
+      "file descriptor limits",
+      "backlog handling"
+    ],
+    "production_service_model_added": false
+  },
+  "runtime_environment_secret_handling_posture": {
+    "current_state": "Environment-variable configuration with safe startup checks and redaction posture.",
+    "required_before_production": [
+      "managed secret store",
+      "rotation automation",
+      "break-glass handling",
+      "least-privilege secret injection",
+      "audit of secret access",
+      "emergency revocation"
+    ],
+    "production_secret_rollout_performed": false
+  },
+  "production_config_fail_closed_posture": {
+    "implemented": [
+      "missing admin-token enforcement fails closed in production-like modes",
+      "missing or placeholder admin token fails closed in production-like modes",
+      "disabled challenge enforcement fails closed in production-like modes",
+      "enabled demo endpoints fail closed in production-like modes",
+      "unsafe bootstrap operator token fails closed in production-like modes",
+      "unsupported OAuth/OIDC/JWT configuration fails closed in production-like modes"
+    ],
+    "remaining_gaps": [
+      "TLS/proxy assumptions",
+      "trusted ingress",
+      "external monitoring failure modes",
+      "production database topology checks",
+      "backup/restore readiness checks",
+      "secret-store lifecycle checks"
+    ]
+  },
+  "request_size_timeout_concurrency_posture": {
+    "implemented": [
+      "one-megabyte JSON body limit",
+      "malformed, empty, and oversized JSON rejection",
+      "in-process auth and API rate limits"
+    ],
+    "remaining_gaps": [
+      "production timeout budget",
+      "slow-client mitigation",
+      "edge request cap",
+      "per-route concurrency limit",
+      "worker pool sizing",
+      "queue/backpressure model",
+      "load-balancer timeout alignment"
+    ]
+  },
+  "rate_limit_runtime_abuse_posture": {
+    "current_state": "GL-208 baseline with in-process limits, safe logging, and correlation signals.",
+    "remaining_gaps": [
+      "edge enforcement",
+      "tenant-aware quotas",
+      "alerting on abuse signals",
+      "lockout and recovery policy",
+      "runbook ownership",
+      "validation under realistic traffic patterns"
+    ],
+    "production_grade_abuse_protection": false
+  },
+  "network_exposure_ingress_posture": {
+    "current_state": "Local loopback default and demo endpoint public exposure guard.",
+    "remaining_gaps": [
+      "production ingress topology",
+      "firewall/allowlist model",
+      "public reverse proxy",
+      "trusted proxy header policy",
+      "egress control",
+      "private network segmentation",
+      "administrative network boundary"
+    ],
+    "public_publish_performed": false
+  },
+  "health_readiness_runtime_posture": {
+    "current_state": "Public /health and /readiness return safe minimal status without raw env, secrets, tokens, or tenant data.",
+    "remaining_gaps": [
+      "deployment-specific readiness semantics",
+      "database dependency checks",
+      "dependency timeout budgets",
+      "load balancer integration",
+      "probe authentication or segmentation decision",
+      "alert routing"
+    ],
+    "endpoint_behavior_changed": false
+  },
+  "logging_correlation_observability_posture": {
+    "implemented": [
+      "structured logging",
+      "safe redaction helpers",
+      "normalized correlation IDs",
+      "X-Correlation-ID response propagation",
+      "dynamic path segment normalization"
+    ],
+    "remaining_gaps": [
+      "external log aggregation",
+      "metrics",
+      "tracing",
+      "dashboard ownership",
+      "alert thresholds",
+      "retention policy",
+      "SIEM/SOC integration"
+    ]
+  },
+  "external_monitoring_alerting_requirements": [
+    "availability, latency, error-rate, auth-denial, rate-limit, database, migration, backup, restore, and audit-chain signals",
+    "alert thresholds and escalation ownership",
+    "dashboard and runbook links",
+    "synthetic checks using synthetic/demo data only until real-data gates change",
+    "log retention and access control",
+    "secret-safe redaction verification",
+    "incident correlation across API, database, backup, and identity layers"
+  ],
+  "backup_restore_dr_runtime_integration_posture": {
+    "current_state": "GL-205 and GL-216 provide synthetic drills and planning artifacts.",
+    "remaining_gaps": [
+      "scheduled backups",
+      "restore drills with documented RTO/RPO",
+      "failover testing",
+      "offsite/encrypted retention",
+      "PITR or approved alternative for PostgreSQL",
+      "backup access control",
+      "recovery ownership",
+      "audit-chain verification after restore"
+    ],
+    "backup_automation_added": false
+  },
+  "postgres_runtime_connectivity_posture": {
+    "current_state": "PostgreSQL optional, not production-ready.",
+    "remaining_gaps": [
+      "connection pooling under load",
+      "least-privilege roles",
+      "database TLS policy where applicable",
+      "schema migration rollout and rollback procedure",
+      "failover behavior",
+      "PITR",
+      "observability",
+      "operational ownership"
+    ],
+    "live_postgres_production_readiness": "NO-GO"
+  },
+  "identity_access_runtime_dependency_posture": {
+    "current_state": "GL-219 fail-closed external identity config checks; controlled-preview bearer-token model.",
+    "remaining_gaps": [
+      "real validated provider path",
+      "named admins",
+      "SSO/MFA or approved equivalent",
+      "lifecycle automation",
+      "emergency access governance",
+      "tenant and workspace mapping integration"
+    ],
+    "identity_provider_added": false
+  },
+  "tenant_workspace_runtime_enforcement_posture": {
+    "current_state": "GL-215 hardened selected tenant-visible routes; tenant context is server-derived.",
+    "remaining_gaps": [
+      "workspace enforcement",
+      "database row-level security",
+      "tenant provisioning and lifecycle",
+      "adversarial multi-tenant production validation"
+    ],
+    "tenant_workspace_isolation_production_complete": false
+  },
+  "release_rollback_runtime_recovery_posture": {
+    "current_state": "Documentation baseline only.",
+    "remaining_gaps": [
+      "versioned deploy artifacts",
+      "config freeze/review",
+      "rollback criteria",
+      "migration rollback and forward-fix policy",
+      "emergency restart and drain procedures",
+      "runtime state recovery",
+      "backup restore decision authority",
+      "post-incident review requirements"
+    ],
+    "release_metadata_added": false
+  },
+  "optional_runtime_gate_script_summary": {
+    "script": "scripts/ops/gl220_runtime_infrastructure_gate.py",
+    "added": true,
+    "local_only": true,
+    "dry_run_plan_only": true,
+    "external_services_contacted": false,
+    "network_required": false,
+    "credentials_required": false,
+    "destructive_operations": false,
+    "deployment_artifacts_created": false,
+    "cloud_resources_created": false,
+    "tls_certificates_or_private_keys_written": false,
+    "github_workflows_modified": false,
+    "redacts_secret_like_values": true,
+    "not_production_infrastructure_certification": true
+  },
+  "production_readiness_impact": {
+    "summary": "Runtime/infrastructure ambiguity is reduced through documentation, artifact, gate, and tests.",
+    "production_saas": "NO-GO",
+    "real_customer_private_grant_institutional_data": "NO-GO",
+    "compliance_certification": "NO-GO",
+    "live_postgres_production_readiness": "NO-GO",
+    "production_infrastructure_ready": false
+  },
+  "controlled_preview_impact": {
+    "summary": "Improves reviewer clarity for strict-boundary controlled preview with synthetic/demo data only.",
+    "data_boundary_expanded": false,
+    "deployment_boundary_expanded": false,
+    "public_publish_boundary_expanded": false,
+    "sdk_package_boundary_expanded": false
+  },
+  "remaining_runtime_infrastructure_blockers": [
+    "No real TLS termination, certificate lifecycle, HSTS, reverse proxy trust boundary, or live external hostname model.",
+    "No production container hardening policy, image provenance gate, registry control, or orchestration baseline.",
+    "No production process supervisor/service model, graceful drain, worker sizing, restart policy, or resource quota model.",
+    "No production network ingress/egress topology, firewall/allowlist model, or trusted proxy policy.",
+    "No production timeout, concurrency, backpressure, or edge rate-limit model.",
+    "No external metrics, tracing, log aggregation, alerting, pager, SIEM/SOC, or SLO ownership.",
+    "No production secret-store/KMS/HSM integration or rotation automation.",
+    "No scheduled backup automation, restore RTO/RPO evidence, failover, PITR, or DR runtime integration.",
+    "No production PostgreSQL topology, pooling, least-privilege runtime role, or live production validation.",
+    "No production identity provider, SSO/MFA, named admin lifecycle, or external JWT/OIDC validator.",
+    "Workspace enforcement, database RLS, tenant lifecycle, and adversarial multi-tenant validation remain incomplete."
+  ],
+  "risk_register": [
+    {
+      "risk": "TLS/reverse proxy assumptions are undefined",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "Future TLS/proxy hardening gate"
+    },
+    {
+      "risk": "Runtime container/process model is not production-grade",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "Future service model and container hardening gate"
+    },
+    {
+      "risk": "Network exposure could be misconfigured outside local preview",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "Keep public deployment NO-GO; require ingress design before production"
+    },
+    {
+      "risk": "External observability and alerting are absent",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "Future monitoring/alerting implementation gate"
+    },
+    {
+      "risk": "Backup/restore/DR is not automated or production-tested",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "Future backup/DR runtime execution gate"
+    },
+    {
+      "risk": "Secrets lifecycle remains manual/environment-based",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "Future managed secrets and rotation gate"
+    }
+  ],
+  "findings": [
+    "Runtime/infrastructure posture is clearer and locally checkable after GL-220.",
+    "Production infrastructure readiness remains blocked by TLS/proxy, container/runtime, process, network, observability, backup/DR, PostgreSQL, identity, and tenant/workspace gaps.",
+    "No real production deployment or credential-bearing integration was added."
+  ],
+  "safety_confirmations": {
+    "developer_preview_controlled_preview_with_strict_boundaries": true,
+    "controlled_preview_synthetic_demo_data_only": true,
+    "gl220_runtime_infrastructure_hardening_not_production_saas_readiness": true,
+    "production_saas_no_go": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "compliance_certification_no_go": true,
+    "live_postgresql_production_no_go": true,
+    "no_real_cloud_deployment_tls_external_hostname_monitoring_or_production_secret_rollout": true,
+    "security_reports_route_to_github_security_advisories": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_data": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_public_github_push": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "no_migrations_db_schema_dependency_changes": true,
+    "no_package_publishing_metadata": true,
+    "no_setup_py": true,
+    "no_sdk_pyproject": true,
+    "no_package_json_or_lock": true,
+    "no_public_snapshot_export_directory": true,
+    "no_production_deployment_config_cloud_kubernetes_terraform_helm": true,
+    "no_tls_certificate_or_private_key_files": true,
+    "gl216_operations_behavior_preserved": true,
+    "gl218_public_export_safety_behavior_preserved": true,
+    "gl219_identity_access_behavior_preserved": true,
+    "unrelated_website_design_import_files_excluded": true
+  },
+  "recommended_next_issues": [
+    "GL-220 Merge if ready",
+    "GL-221 Workspace Enforcement & Final Go/No-Go v6",
+    "Future TLS/reverse proxy and network ingress hardening gate",
+    "Future container/process supervisor and runtime resource limit gate",
+    "Future external observability/alerting and incident integration gate",
+    "Future backup/restore/DR runtime execution gate"
+  ]
+}
