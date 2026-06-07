@@ -1,0 +1,172 @@
+{
+  "issue_id": "GL-219",
+  "title": "Production Identity & Access Hardening Pack",
+  "result": "ready_for_internal_review_with_blockers",
+  "decision": "production_identity_access_hardening_pack_ready_for_internal_review_with_blockers",
+  "decision_rationale": "GL-219 adds narrow identity/access posture helpers, fail-closed production-like startup checks for unsupported external identity settings, a local-only dry-run gate, documentation, and tests. It does not add a real identity provider or claim production readiness.",
+  "input_sources_reviewed": [
+    "docs/production_go_no_go_v5.md",
+    "docs/examples/gl217/production_go_no_go_v5.json",
+    "docs/production_iam_operator_control_completion.md",
+    "docs/examples/gl214/production_iam_operator_control_completion.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/production_operations_hardening_pack.md",
+    "docs/examples/gl216/production_operations_hardening_pack.json",
+    "docs/tenant_workspace_production_guarantee.md",
+    "docs/examples/gl215/tenant_workspace_production_guarantee.json",
+    "docs/public_external_review_export_safety_pack.md",
+    "docs/examples/gl218/public_external_review_export_safety_pack.json",
+    "docs/runtime_abuse_incident_hardening.md",
+    "docs/examples/gl208/runtime_abuse_incident_hardening.json",
+    "docs/data_governance_audit_operations.md",
+    "docs/examples/gl209/data_governance_audit_operations.json",
+    "docs/openapi.yaml",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "backend/src/auth.py",
+    "backend/src/config.py",
+    "backend/src/operators.py",
+    "backend/src/server.py",
+    "backend/src/audit_log.py",
+    "backend/src/db.py",
+    "backend/src/models.py",
+    "backend/tests/",
+    "scripts/ops/gl216_production_operations_gate.py",
+    "scripts/ops/gl218_public_export_safety_scan.py",
+    "scripts/verify-first-output.sh",
+    "examples/grant_lifecycle_evidence_bundle.py"
+  ],
+  "current_admin_operator_auth_model": {
+    "admin_auth": "GRANTLAYER_ADMIN_TOKEN Bearer token with constant-time comparison and fail-closed admin route guards.",
+    "operator_auth": "PBKDF2-HMAC-SHA256 hashed bearer tokens with lookup hash narrowing, active-row filtering, expiry handling, and tenant binding.",
+    "tenant_context": "Server-derived from operator row or demo admin-token context; request headers cannot override it.",
+    "external_identity_provider": "not_implemented",
+    "production_status": "controlled_preview_bearer_token_baseline_not_production_identity_management"
+  },
+  "identity_access_gap_assessment": {
+    "static_admin_token": "P0 blocker remains.",
+    "provider_backed_identity": "Not implemented.",
+    "oauth_oidc_jwt_validation": "Not implemented.",
+    "issuer_audience_expiry_key_rotation": "Represented as required posture only.",
+    "sso_mfa_named_admins": "Absent.",
+    "operator_lifecycle_automation": "Manual and incomplete.",
+    "workspace_rls_tenant_lifecycle": "Remaining blockers.",
+    "real_data_boundary": "Real customer/private grant/institutional data remains no-go."
+  },
+  "implemented_hardening_summary": [
+    "Added backend/src/identity_access.py with safe posture helpers and JWT validation requirements.",
+    "Added config.startup_errors() fail-closed checks for unsupported OAuth/OIDC/JWT enablement and provider config in production-like modes.",
+    "Added scripts/ops/gl219_identity_access_gate.py as a local-only dry-run/plan identity/access gate.",
+    "Added GL-219 documentation, JSON artifact, and tests."
+  ],
+  "oauth_oidc_jwt_validation_posture": [
+    "signature validation before claim trust",
+    "explicit issuer allowlist with exact issuer match",
+    "explicit audience allowlist with exact audience match",
+    "expiration, not-before, and issued-at validation with bounded clock skew",
+    "algorithm allowlist that rejects none and unexpected algorithms",
+    "JWKS or key material selection by key id with unknown-key denial",
+    "key rotation and retired-key handling with a documented overlap window",
+    "tenant/workspace mapping from trusted claims only",
+    "revocation/deprovisioning lifecycle for operators and admin access",
+    "safe logging that omits raw tokens, token hashes, auth headers, and keys",
+    "provider outage and metadata-fetch failures deny protected access"
+  ],
+  "issuer_audience_expiry_key_rotation_expectations": {
+    "issuer": "exact-match allowlist required before token acceptance",
+    "audience": "exact-match allowlist required before token acceptance",
+    "expiry": "exp, nbf, iat, and bounded clock skew required before claim use",
+    "key_rotation": "kid selection, unknown-key denial, retired-key denial, overlap window, cache invalidation, and emergency retirement required",
+    "current_state": "requirements only; no live provider config"
+  },
+  "static_admin_operator_token_safety": {
+    "developer_preview_controlled_preview_only": true,
+    "admin_token_constant_time_compare": true,
+    "production_like_placeholder_rejection": true,
+    "operator_tokens_hashed": true,
+    "operator_tokens_tenant_bound": true,
+    "raw_token_returned_once_on_create": true,
+    "list_read_revoke_do_not_return_token_material": true
+  },
+  "fail_closed_behavior": {
+    "unsupported_external_identity_enablement_in_production_like_mode": "startup_error",
+    "external_identity_config_without_validator_in_production_like_mode": "startup_error",
+    "missing_admin_token_in_production_like_mode": "startup_error",
+    "placeholder_admin_token_in_production_like_mode": "startup_error",
+    "missing_admin_auth_on_admin_route": "denied",
+    "invalid_admin_auth_on_admin_route": "denied",
+    "revoked_inactive_expired_operator_token": "denied",
+    "unknown_external_identity_token": "not_accepted_by_any_external_identity_path"
+  },
+  "production_readiness_impact": {
+    "summary": "Identity/access blocker is materially reduced by explicit posture and fail-closed misconfiguration checks, but production IAM remains incomplete.",
+    "production_saas": "NO-GO",
+    "real_customer_private_grant_institutional_data": "NO-GO",
+    "production_identity_complete": false
+  },
+  "controlled_preview_impact": {
+    "summary": "Improves local misconfiguration safety and reviewer clarity.",
+    "data_boundary": "synthetic/demo data only",
+    "tier_expansion": false
+  },
+  "remaining_identity_access_blockers": [
+    "Production OAuth/OIDC/JWT validator is not implemented.",
+    "Static admin token remains a production blocker.",
+    "SSO, MFA, named admin identities, and account lifecycle are absent.",
+    "Dual-control break-glass, access review, and emergency governance are absent.",
+    "Automated operator deprovisioning and rotation workflows are absent.",
+    "Workspace enforcement, database row-level security, and tenant lifecycle remain blockers.",
+    "Production monitoring, alerting, SIEM/SOC, incident rota, and access anomaly response remain incomplete.",
+    "Real customer/private grant/institutional data remains blocked."
+  ],
+  "risk_register": [
+    {"id": "GL219-R1", "risk": "Single static admin token remains.", "severity": "P0", "status": "open"},
+    {"id": "GL219-R2", "risk": "External identity tokens could be misconfigured before validator exists.", "severity": "P0", "status": "reduced"},
+    {"id": "GL219-R3", "risk": "JWT issuer/audience/expiry/key rotation requirements are not implemented.", "severity": "P0", "status": "open"},
+    {"id": "GL219-R4", "risk": "Operator lifecycle automation remains manual.", "severity": "P1", "status": "open"},
+    {"id": "GL219-R5", "risk": "Workspace and tenant lifecycle remain incomplete.", "severity": "P0", "status": "open"}
+  ],
+  "findings": [
+    "Current admin/operator model remains a controlled-preview bearer-token baseline.",
+    "No OAuth/OIDC/JWT validator exists today.",
+    "Production-like runtime now fails closed if unsupported external identity settings are configured.",
+    "Local GL-219 gate reports required identity artifacts and remaining blockers without network calls or raw token handling."
+  ],
+  "safety_confirmations": {
+    "developer_preview_controlled_preview_with_strict_boundaries": true,
+    "controlled_preview_synthetic_demo_data_only": true,
+    "production_saas_no_go": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "live_postgresql_production_no_go": true,
+    "compliance_certification_no_go": true,
+    "gdpr_soc2_iso_enterprise_readiness_not_claimed": true,
+    "no_real_external_identity_provider_added": true,
+    "no_oauth_oidc_saml_sso_mfa_user_account_ui_added": true,
+    "no_third_party_dependencies_added": true,
+    "no_migrations_added": true,
+    "no_deployment_cloud_kubernetes_terraform_helm_added": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_public_export_created": true,
+    "no_public_github_push": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "no_package_metadata_added": true,
+    "no_official_sdk_package_claim": true,
+    "no_raw_tokens_hashes_auth_headers_dsns_private_keys_credentials_included": true,
+    "unrelated_website_design_import_files_excluded": true
+  },
+  "recommended_next_issues": [
+    "Dedicated production identity-provider design gate for OAuth/OIDC/JWT validation without live vendor configuration.",
+    "Operator/admin lifecycle and rotation workflow hardening.",
+    "Workspace enforcement, tenant lifecycle, and RLS hardening.",
+    "Production access governance, break-glass, alerting, and incident ownership gate."
+  ]
+}

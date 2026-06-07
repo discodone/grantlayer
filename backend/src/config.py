@@ -16,6 +16,7 @@ import os
 import warnings
 
 from .runtime_config import get_runtime_mode, PRODUCTION_LIKE_MODES
+from .identity_access import external_identity_startup_errors
 
 # ──────────────────────────────────────────────────────────────
 # GL-201: Placeholder/weak token detection constants
@@ -307,6 +308,8 @@ def startup_errors() -> list[str]:
                 "Set a strong, unique bootstrap operator token or leave it unset in "
                 "production-like modes to disable automatic bootstrapping."
             )
+
+    errs.extend(external_identity_startup_errors(os.environ, RUNTIME_MODE))
 
     return errs
 
