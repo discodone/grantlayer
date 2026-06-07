@@ -1,0 +1,666 @@
+{
+  "issue_id": "GL-222",
+  "title": "Controlled External Technical Review Handoff Pack",
+  "result": "handoff_pack_complete",
+  "decision": "controlled_external_review_handoff_pack_ready_for_merge",
+  "decision_rationale": "GL-222 answers all ten required handoff questions. It documents the current allowed review posture, eligible and prohibited materials, allowed and prohibited claims, known limitations, known false-positive classes, reviewer-safe reproduction commands, security-sensitive report routing, the public/export/publish approval boundary, and the next roadmap. All NO-GO decisions from GL-221 remain unchanged. No backend source, migrations, schema, dependencies, GitHub workflows, snapshot publish scripts, or production deployment config are modified. No public export is created. No reviewer is contacted.",
+  "input_sources_reviewed": [
+    "docs/workspace_enforcement_final_go_no_go_v6.md",
+    "docs/examples/gl221/workspace_enforcement_final_go_no_go_v6.json",
+    "docs/production_runtime_infrastructure_hardening_pack.md",
+    "docs/examples/gl220/production_runtime_infrastructure_hardening_pack.json",
+    "docs/production_identity_access_hardening_pack.md",
+    "docs/examples/gl219/production_identity_access_hardening_pack.json",
+    "docs/public_external_review_export_safety_pack.md",
+    "docs/examples/gl218/public_external_review_export_safety_pack.json",
+    "docs/production_go_no_go_v5.md",
+    "docs/examples/gl217/production_go_no_go_v5.json",
+    "docs/production_operations_hardening_pack.md",
+    "docs/examples/gl216/production_operations_hardening_pack.json",
+    "docs/tenant_workspace_production_guarantee.md",
+    "docs/examples/gl215/tenant_workspace_production_guarantee.json",
+    "docs/production_iam_operator_control_completion.md",
+    "docs/examples/gl214/production_iam_operator_control_completion.json",
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/runtime_abuse_incident_hardening.md",
+    "docs/examples/gl208/runtime_abuse_incident_hardening.json",
+    "docs/data_governance_audit_operations.md",
+    "docs/examples/gl209/data_governance_audit_operations.json",
+    "docs/openapi.yaml",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "backend/src/server.py",
+    "backend/src/config.py",
+    "backend/src/auth.py",
+    "backend/src/identity_access.py",
+    "backend/src/operators.py",
+    "backend/src/audit_log.py",
+    "backend/src/db.py",
+    "backend/src/models.py",
+    "backend/src/grants.py",
+    "backend/src/grant_requests.py",
+    "backend/tests/",
+    "scripts/ops/gl216_production_operations_gate.py",
+    "scripts/ops/gl218_public_export_safety_scan.py",
+    "scripts/ops/gl219_identity_access_gate.py",
+    "scripts/ops/gl220_runtime_infrastructure_gate.py",
+    "scripts/ops/gl221_workspace_go_no_go_gate.py",
+    "scripts/ops/gl205_live_postgres_validation.py",
+    "scripts/ops/gl205_backup_restore_drill.py",
+    "scripts/ops/gl209_audit_export_check.py",
+    "scripts/run-full-backend-suite.sh",
+    "examples/grant_lifecycle_evidence_bundle.py",
+    "examples/grant_lifecycle_evidence_bundle.json",
+    "examples/first_verifiable_output.json"
+  ],
+  "current_controlled_external_review_posture": {
+    "posture": "Developer Preview / Controlled Preview with strict boundaries",
+    "developer_preview": "GO / CONTINUE",
+    "controlled_external_technical_review": "GO with strict boundaries",
+    "synthetic_demo_controlled_pilot": "CONDITIONAL",
+    "public_snapshot_preparation": "CONDITIONAL — separate explicit gate required",
+    "public_website_publish": "DEFER / NO-GO",
+    "official_sdk_package": "NO-GO",
+    "real_customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO",
+    "production_saas": "NO-GO",
+    "compliance_certification": "NO-GO",
+    "live_postgres_production_readiness": "NO-GO",
+    "base_main_commit_after_gl221": "382ac17",
+    "full_suite_baseline": {
+      "tests": 9004,
+      "failures": 43,
+      "errors": 3,
+      "skipped": 253,
+      "real_regressions": 0
+    }
+  },
+  "handoff_package_purpose": "Internal documentation answering the ten required questions for a future controlled external technical review. Does not initiate reviewer outreach, create a public export, publish to public GitHub, or change visibility.",
+  "reviewer_scope": [
+    "Auth baseline: fail-closed startup, operator token hashing, tenant binding, challenge-response, token expiry and rotation model",
+    "Audit log baseline: append-only hash-chain, tamper-evidence, immutability triggers, hash-chain verification helper",
+    "Tenant isolation baseline: server-derived tenant context, application-layer tenant-scoped routing, absence of cross-tenant leakage in test suite",
+    "API contract: docs/openapi.yaml endpoints, request/response shapes, error semantics",
+    "Grant lifecycle: create/approve/deny/revoke flows with synthetic/demo data",
+    "Rate-limit baseline: request rate limiting, structured logging, correlation ID",
+    "Runtime hardening: JSON body enforcement, query parameter validation, CORS origin hardening, private key file permissions",
+    "Identity/access posture: static admin token baseline, absence of production OAuth/OIDC/JWT, identity gap documentation (GL-219)",
+    "Infrastructure posture: ephemeral/local-only SQLite and optional PostgreSQL, dry-run backup/restore, no production infrastructure (GL-220)",
+    "Workspace posture: workspace_id reserved/nullable, not production-enforced, gap documentation (GL-221)",
+    "Test suite: full backend test suite structure, known false-positive classes, absence of real regressions",
+    "Verification scripts: local-only dry-run/plan gate scripts, grant lifecycle evidence bundle, first verifiable output helper"
+  ],
+  "excluded_scope": [
+    "Real customer data, real grant applications, real institutional data",
+    "Real credentials, tokens, DSNs, private keys, auth headers",
+    "Internal Forgejo URLs, private IP addresses, private hostnames, private filesystem paths",
+    "Internal CI/CD configuration referencing private services",
+    "website-design/ directory and website-design import/report files",
+    "setup.py, SDK pyproject.toml, package.json, package-lock.json, package publishing metadata",
+    "Production deployment configuration (Kubernetes, Terraform, Helm, cloud provider)",
+    "TLS certificates or private key files",
+    "GitHub workflow files without separate review gate",
+    "Snapshot publish scripts without separate review and approval",
+    "Public release branches, public release tags, public export directories",
+    "Database dumps, backup files, operational logs with real data",
+    ".git/ directory, venvs, __pycache__, build artifacts"
+  ],
+  "eligible_review_materials": [
+    "README.md (claim-safe after GL-207)",
+    "SECURITY.md (routes to GitHub Security Advisories)",
+    "AGENTS.md (claim-safe)",
+    "llms.txt (claim-safe)",
+    "llms-full.txt (claim-safe)",
+    "docs/openapi.yaml (API contract, no real credentials)",
+    "Reviewed docs/ artifacts for resolved issues (no internal-infrastructure references)",
+    "examples/first_verifiable_output.py (local-only, synthetic only)",
+    "examples/first_verifiable_output.json (synthetic reference artifact)",
+    "examples/grant_lifecycle_evidence_bundle.py (local-only, synthetic/demo only)",
+    "examples/grant_lifecycle_evidence_bundle.json (synthetic evidence bundle)",
+    "scripts/verify-first-output.sh (local-only verification helper)",
+    "scripts/ops/gl205_live_postgres_validation.py (dry-run/plan only, no real credentials)",
+    "scripts/ops/gl205_backup_restore_drill.py (dry-run/plan only, no real credentials)",
+    "scripts/ops/gl209_audit_export_check.py (dry-run/plan only, no real credentials)",
+    "scripts/ops/gl216_production_operations_gate.py (dry-run/plan only, local-only)",
+    "scripts/ops/gl218_public_export_safety_scan.py (scan-only, local-only)",
+    "scripts/ops/gl219_identity_access_gate.py (dry-run/plan only, local-only)",
+    "scripts/ops/gl220_runtime_infrastructure_gate.py (dry-run/plan only, local-only)",
+    "scripts/ops/gl221_workspace_go_no_go_gate.py (dry-run/plan only, local-only)",
+    "scripts/ops/gl222_controlled_review_handoff_gate.py (dry-run/plan only, local-only)",
+    "backend/src/ reviewed source files (no real secrets, subject to per-file scan)",
+    "backend/tests/ (synthetic/demo data only, known false-positive classes disclosed)"
+  ],
+  "prohibited_materials": [
+    ".env* files with real credentials",
+    "Raw PostgreSQL DSNs with real hostnames or passwords",
+    "Raw tokens, auth headers, or Bearer tokens",
+    "PEM private key blocks (RSA, OPENSSH, EC, DSA)",
+    "Real admin tokens or operator tokens",
+    "Real SMTP, S3, or cloud credentials",
+    "Real customer data, real grant applications, real institutional data, real PII",
+    "Real private grant data or private attachments",
+    "Database dumps, backup files, or logs containing real data",
+    "Internal Forgejo URLs, private IPs, private hostnames, internal filesystem paths",
+    "website-design/ directory and all contents",
+    "docs/website_design_workspace_import_report.md and similarly named files",
+    "setup.py, SDK pyproject.toml, package.json, package-lock.json",
+    "Analytics/tracking integrations or data collection forms",
+    ".github/workflows/ files without separate review",
+    "Snapshot publish scripts unless separately reviewed",
+    "Production deployment config (Kubernetes, Terraform, Helm, cloud)",
+    "Release metadata, public release branches, public release tags",
+    "Data directories with real operational data",
+    ".git/, caches, venvs, __pycache__/"
+  ],
+  "allowed_claims": [
+    "GrantLayer is Developer Preview / Controlled Preview with strict boundaries",
+    "Local evaluation and controlled pilot with synthetic/demo data only",
+    "Tenant/workspace isolation: baseline implemented, not production-complete",
+    "Ephemeral live PostgreSQL validation passed with synthetic/demo data (GL-206B)",
+    "Fail-closed auth baseline implemented; not production-grade IAM",
+    "Append-only hash-chained audit baseline implemented",
+    "Operator token hashing and tenant binding implemented",
+    "Structured logging and rate-limit baseline implemented",
+    "Controlled external technical review allowed only with strict boundaries and synthetic/demo data",
+    "All examples use synthetic identifiers only",
+    "All tokens and keys in examples are placeholders",
+    "Security-sensitive reports route to GitHub Security Advisories",
+    "Production SaaS is not claimed and not supported",
+    "Real customer/private grant/institutional data is not ready",
+    "Official SDK/package is not published",
+    "workspace_id is reserved/nullable and not production-enforced",
+    "Identity/access posture: static admin token baseline; no OIDC/SAML/SSO/MFA",
+    "Runtime/infrastructure: ephemeral/local-only; no production infrastructure",
+    "Public snapshot/export requires a later explicit approval gate"
+  ],
+  "prohibited_claims": [
+    "Production SaaS ready / production-grade / enterprise ready",
+    "Ready for real customer data / private grant data / institutional data",
+    "Compliance certification achieved (GDPR, SOC2, ISO, or any other)",
+    "Official SDK available / official package published",
+    "Live PostgreSQL production ready",
+    "Independent security audit completed / penetration test passed",
+    "Multi-tenant production isolation guaranteed / database RLS enforced",
+    "OIDC / SAML / SSO / MFA implemented",
+    "Public website is a production marketing launch",
+    "Any claim implying a support SLA or uptime guarantee",
+    "Any claim that implies real customer deployments are running",
+    "workspace_id enforcement is production-complete"
+  ],
+  "data_boundary_synthetic_demo_only": {
+    "synthetic_demo_only": true,
+    "no_real_applicant_records": true,
+    "no_real_grant_applications": true,
+    "no_real_funding_decisions": true,
+    "no_real_institutional_records": true,
+    "no_real_personal_data": true,
+    "no_real_private_grant_data": true,
+    "no_real_attachments": true,
+    "test_suite_uses_synthetic_identifiers_only": true,
+    "reviewer_must_not_supply_real_data": true
+  },
+  "real_customer_private_grant_institutional_data_boundary": {
+    "status": "NO-GO",
+    "rationale": "No production-grade security controls, no data governance/legal approval, no compliance certification",
+    "requirements_before_change": [
+      "Separate data governance and legal approval",
+      "Production-grade security controls (not yet implemented)",
+      "Compliance certification relevant to jurisdiction and data type (not yet achieved)",
+      "Explicit owner sign-off beyond GL-222"
+    ]
+  },
+  "production_saas_boundary": {
+    "status": "NO-GO",
+    "no_live_customer_operations": true,
+    "no_production_sla": true,
+    "no_production_incident_response": true,
+    "no_production_scaling": true,
+    "no_production_saas_claim": true
+  },
+  "public_snapshot_export_publish_boundary": {
+    "status": "CONDITIONAL — separate explicit gate required",
+    "gl222_does_not_approve": true,
+    "gl222_does_not_initiate": true,
+    "requirements_before_any_export": [
+      "Separate explicit gate issue (not GL-222)",
+      "All GL-218 safety scan checklist items pass",
+      "Per-file secret scanning and claim-safety scanning of export candidate",
+      "Explicit owner approval for the specific export candidate",
+      "No forbidden files in the export candidate",
+      "Manual human review before any push"
+    ]
+  },
+  "official_sdk_package_boundary": {
+    "status": "NO-GO",
+    "internal_sdk_prototype_is_local_reference_only": true,
+    "not_published_to_pypi_npm_or_any_registry": true,
+    "no_setup_py": true,
+    "no_sdk_pyproject": true,
+    "no_package_json": true,
+    "no_package_lock_json": true,
+    "no_official_sdk_package_claim": true
+  },
+  "compliance_certification_boundary": {
+    "status": "NO-GO",
+    "gdpr": "not achieved",
+    "soc2": "not achieved",
+    "iso": "not achieved",
+    "security_reports_route_to_github_security_advisories": true,
+    "no_compliance_body_contact": true
+  },
+  "live_postgres_production_readiness_boundary": {
+    "status": "NO-GO",
+    "gl206b_ephemeral_validation": "passed with synthetic/demo data only",
+    "production_postgresql_deployment": "not in place",
+    "no_production_db_credentials_in_review_materials": true,
+    "no_live_postgres_production_claim": true
+  },
+  "identity_access_status_after_gl219": {
+    "static_admin_token_baseline": "implemented",
+    "operator_token_hashing_and_tenant_binding": "implemented",
+    "token_expiry_and_rotation_model": "implemented",
+    "oidc_saml_sso_mfa": "not implemented — NO-GO for production",
+    "external_identity_provider_integration": "not implemented",
+    "production_grade_iam": "not achieved",
+    "reviewer_briefing": "Developer Preview baseline only; not production-grade identity"
+  },
+  "runtime_infrastructure_status_after_gl220": {
+    "sqlite_ephemeral_dev": "default runtime backend",
+    "postgresql_optional": "validated with synthetic/demo data in ephemeral mode only",
+    "production_infrastructure": "not in place",
+    "production_database": "not in place",
+    "production_cloud_provider": "not in place",
+    "kubernetes_terraform_helm": "not in place",
+    "structured_logging": "baseline only",
+    "rate_limiting": "baseline only",
+    "health_readiness_endpoints": "baseline only",
+    "production_observability_stack": "not in place",
+    "production_backup_restore_automation": "not in place",
+    "reviewer_briefing": "Local/ephemeral baseline only"
+  },
+  "workspace_status_after_gl221": {
+    "workspace_id": "reserved/nullable — not production-enforced",
+    "tenant_context": "server-derived and application-layer enforced",
+    "cross_workspace_lookup_denial": "not claimed",
+    "cross_workspace_mutation_denial": "not claimed",
+    "trusted_workspace_context_derivation": "not implemented",
+    "workspace_identity_membership_ownership": "not implemented",
+    "reviewer_briefing": "workspace enforcement is a known gap — explicitly NOT production-complete"
+  },
+  "public_export_safety_status_after_gl218": {
+    "public_export_directory_created": false,
+    "public_snapshot_worktree_created": false,
+    "public_github_push_performed": false,
+    "repository_visibility_change_performed": false,
+    "safety_scan_helper_is_local_only": true,
+    "future_export_requires_all_gl218_checklist_items": true,
+    "future_export_requires_explicit_approval": true
+  },
+  "known_limitations": [
+    {
+      "limitation": "workspace_id reserved/nullable — not production-enforced",
+      "severity": "P1",
+      "status": "open"
+    },
+    {
+      "limitation": "Cross-workspace lookup/mutation denial not implemented",
+      "severity": "P1",
+      "status": "open"
+    },
+    {
+      "limitation": "Static admin token — no OIDC/SAML/SSO/MFA",
+      "severity": "P1",
+      "status": "open (Developer Preview acceptable)"
+    },
+    {
+      "limitation": "No production database RLS or row-level isolation",
+      "severity": "P1",
+      "status": "open"
+    },
+    {
+      "limitation": "No production infrastructure (PostgreSQL, cloud, Kubernetes)",
+      "severity": "P1",
+      "status": "open"
+    },
+    {
+      "limitation": "No production observability stack",
+      "severity": "P1",
+      "status": "open"
+    },
+    {
+      "limitation": "No production backup/restore automation",
+      "severity": "P1",
+      "status": "open"
+    },
+    {
+      "limitation": "Tenant lifecycle (suspend/terminate/archive) not implemented",
+      "severity": "P1",
+      "status": "open"
+    },
+    {
+      "limitation": "Workspace propagation for audit/evidence/provenance not complete",
+      "severity": "P1",
+      "status": "open"
+    },
+    {
+      "limitation": "No compliance certification (GDPR, SOC2, ISO)",
+      "severity": "P0",
+      "status": "open"
+    },
+    {
+      "limitation": "No independent security audit",
+      "severity": "P1",
+      "status": "open"
+    },
+    {
+      "limitation": "No official SDK/package",
+      "severity": "P0",
+      "status": "open"
+    }
+  ],
+  "known_full_suite_false_positive_classes": [
+    {
+      "class": "stale_branch_only_scope_guards",
+      "description": "Tests checking that branch-only changes are absent from main; trigger on branches introducing new docs/scripts",
+      "real_regression": false
+    },
+    {
+      "class": "scanner_meta_path_false_positives",
+      "description": "Tests scanning for forbidden file patterns that match legitimate test or script names",
+      "real_regression": false
+    },
+    {
+      "class": "public_readiness_stale_wording_false_positives",
+      "description": "Tests checking for stale readiness language that match updated documentation wording",
+      "real_regression": false
+    },
+    {
+      "class": "stale_migration_count_guards",
+      "description": "Tests asserting a specific migration count that becomes stale when new migrations are added",
+      "real_regression": false
+    },
+    {
+      "class": "pre_existing_gl172_publish_worktree_errors",
+      "description": "Errors from the publish-worktree path that pre-date GL-214 and are unresolved pre-existing issues",
+      "real_regression": false
+    },
+    {
+      "class": "unrelated_pre_existing_website_design_import_false_positives",
+      "description": "Failures from unrelated website-design/ import test scope that existed before GL-214",
+      "real_regression": false
+    },
+    {
+      "class": "pre_existing_grantlayer_env_errors",
+      "description": "Errors triggered by missing GRANTLAYER_* environment variables in bare test runs",
+      "real_regression": false
+    },
+    {
+      "class": "gl222_new_branch_only_scope_guard_false_positives",
+      "description": "Branch-only scope-guard false positives for GL-222 docs/artifacts/scripts/tests added in this issue",
+      "real_regression": false,
+      "expected": true
+    }
+  ],
+  "reviewer_safe_verification_commands": [
+    "python3 -m unittest backend.tests.test_gl222_controlled_external_review_handoff_pack -v",
+    "python3 -m unittest backend.tests.test_gl221_workspace_enforcement_final_go_no_go_v6 -v",
+    "python3 -m unittest backend.tests.test_gl220_production_runtime_infrastructure_hardening_pack -v",
+    "python3 -m unittest backend.tests.test_gl219_production_identity_access_hardening_pack -v",
+    "python3 -m unittest backend.tests.test_gl218_public_external_review_export_safety_pack -v",
+    "python3 -m unittest backend.tests.test_gl217_production_go_no_go_v5 -v",
+    "python3 -m unittest backend.tests.test_gl216_production_operations_hardening_pack -v",
+    "python3 -m unittest backend.tests.test_gl215_tenant_workspace_production_guarantee -v",
+    "python3 -m unittest backend.tests.test_gl214_production_iam_operator_control_completion -v",
+    "python3 -m unittest backend.tests.test_security_boundary_regression -v",
+    "python3 -m unittest backend.tests.test_gl089_auth_default_fail_closed_startup -v",
+    "scripts/verify-first-output.sh",
+    "python3 examples/grant_lifecycle_evidence_bundle.py --output /tmp/grantlayer_review_grant_lifecycle_check.json",
+    "diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_review_grant_lifecycle_check.json",
+    "python3 scripts/ops/gl205_live_postgres_validation.py --dry-run",
+    "python3 scripts/ops/gl205_live_postgres_validation.py --plan",
+    "python3 scripts/ops/gl205_backup_restore_drill.py --dry-run",
+    "python3 scripts/ops/gl205_backup_restore_drill.py --plan",
+    "python3 scripts/ops/gl209_audit_export_check.py --dry-run",
+    "python3 scripts/ops/gl209_audit_export_check.py --plan",
+    "python3 scripts/ops/gl216_production_operations_gate.py --dry-run",
+    "python3 scripts/ops/gl216_production_operations_gate.py --plan",
+    "python3 scripts/ops/gl218_public_export_safety_scan.py --plan",
+    "python3 scripts/ops/gl219_identity_access_gate.py --dry-run",
+    "python3 scripts/ops/gl219_identity_access_gate.py --plan",
+    "python3 scripts/ops/gl220_runtime_infrastructure_gate.py --dry-run",
+    "python3 scripts/ops/gl220_runtime_infrastructure_gate.py --plan",
+    "python3 scripts/ops/gl221_workspace_go_no_go_gate.py --dry-run",
+    "python3 scripts/ops/gl221_workspace_go_no_go_gate.py --plan",
+    "python3 scripts/ops/gl222_controlled_review_handoff_gate.py --dry-run",
+    "python3 scripts/ops/gl222_controlled_review_handoff_gate.py --plan",
+    "scripts/run-full-backend-suite.sh"
+  ],
+  "security_sensitive_reporting_instructions": {
+    "route_to": "GitHub Security Advisories (private security disclosure mechanism)",
+    "do_not_use_public_issues": true,
+    "do_not_share_exploit_details_publicly": true,
+    "do_not_include_real_credentials_in_reports": true,
+    "no_exploit_details_in_gl222_materials": true,
+    "policy_in_place_since": "GL-153 / SECURITY.md"
+  },
+  "optional_handoff_gate_script_summary": {
+    "script": "scripts/ops/gl222_controlled_review_handoff_gate.py",
+    "added": true,
+    "local_only": true,
+    "dry_run_plan_only": true,
+    "checks": [
+      "docs/controlled_external_review_handoff_pack.md exists",
+      "docs/examples/gl222/controlled_external_review_handoff_pack.json exists and is valid JSON",
+      "JSON contains issue_id: GL-222",
+      "Forbidden file patterns absent (public export dirs, snapshot worktrees, setup.py, SDK pyproject.toml, package.json, deployment/cloud/Kubernetes files, TLS cert/key files, GitHub workflow changes for GL-222)",
+      "GL-222 docs/artifact content scanned for obvious secret-like text patterns (redacted in output)",
+      "Output explicitly states: not approval to publish, not a full security audit"
+    ],
+    "does_not": [
+      "Create public export directories",
+      "Copy files to a public snapshot",
+      "Contact external services",
+      "Require credentials",
+      "Run destructive commands",
+      "Modify repository files"
+    ]
+  },
+  "production_readiness_impact": "None. GL-222 is documentation and tooling only. All NO-GO decisions from GL-221 remain in force.",
+  "controlled_preview_impact": "Confirms Controlled External Technical Review posture remains GO with strict boundaries per GL-221. Provides internal handoff documentation for a future review. Does not change controlled preview scope or synthetic/demo-only data boundary.",
+  "remaining_blockers": [
+    {
+      "id": "P0-production-saas",
+      "severity": "P0",
+      "category": "Production SaaS",
+      "description": "No production SaaS readiness",
+      "status": "open",
+      "mitigation": "Keep Developer Preview / Controlled Preview only",
+      "remaining_work": "Complete production IAM, workspace, DB, ops, compliance gates"
+    },
+    {
+      "id": "P0-real-data",
+      "severity": "P0",
+      "category": "Data",
+      "description": "No real customer/private/institutional data readiness",
+      "status": "open",
+      "mitigation": "Synthetic/demo-only boundary",
+      "remaining_work": "Data governance, legal/security approval, production controls"
+    },
+    {
+      "id": "P0-compliance",
+      "severity": "P0",
+      "category": "Compliance",
+      "description": "No compliance certification achieved",
+      "status": "open",
+      "mitigation": "No compliance claim made",
+      "remaining_work": "Compliance readiness assessment, external audit"
+    },
+    {
+      "id": "P1-workspace",
+      "severity": "P1",
+      "category": "Workspace",
+      "description": "workspace_id not production-enforced",
+      "status": "open",
+      "mitigation": "Tenant-scoped app controls preserved",
+      "remaining_work": "workspace identity, membership, ownership, query/mutation enforcement"
+    },
+    {
+      "id": "P1-iam",
+      "severity": "P1",
+      "category": "IAM",
+      "description": "No OIDC/SAML/SSO/MFA; static admin token only",
+      "status": "open (Developer Preview acceptable)",
+      "mitigation": "Token is dev-only; never in production",
+      "remaining_work": "Production IAM implementation"
+    },
+    {
+      "id": "P1-infra",
+      "severity": "P1",
+      "category": "Infrastructure",
+      "description": "No production database or cloud infrastructure",
+      "status": "open",
+      "mitigation": "Ephemeral/local-only runtime",
+      "remaining_work": "Production DB isolation, cloud/Kubernetes readiness"
+    },
+    {
+      "id": "P1-audit-workspace",
+      "severity": "P1",
+      "category": "Audit",
+      "description": "Workspace propagation in audit/evidence not complete",
+      "status": "open",
+      "mitigation": "Tenant-scoped audit preserved",
+      "remaining_work": "Workspace propagation for evidence/provenance/audit/compliance/export"
+    },
+    {
+      "id": "P1-cross-workspace",
+      "severity": "P1",
+      "category": "Isolation",
+      "description": "Cross-workspace lookup/mutation denial not implemented",
+      "status": "open",
+      "mitigation": "Tenant-scoped route checks remain",
+      "remaining_work": "Add workspace ownership predicates and tests"
+    }
+  ],
+  "risk_register": [
+    {
+      "risk": "Workspace boundary overclaim",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "Explicit NO-GO language and tests",
+      "remaining_work": "Implement and verify workspace model"
+    },
+    {
+      "risk": "Real-data misuse in preview",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "Synthetic/demo-only boundary enforced",
+      "remaining_work": "Legal/security/data-governance approval"
+    },
+    {
+      "risk": "Public/export leakage",
+      "severity": "P1",
+      "status": "controlled",
+      "mitigation": "GL-218 separate gate and scans",
+      "remaining_work": "Manual export candidate review"
+    },
+    {
+      "risk": "Static admin token in production context",
+      "severity": "P1",
+      "status": "open (Developer Preview acceptable)",
+      "mitigation": "Token is dev-only; never in production",
+      "remaining_work": "Production IAM implementation"
+    },
+    {
+      "risk": "Missing database RLS",
+      "severity": "P1",
+      "status": "open",
+      "mitigation": "Tenant-scoped app controls preserved",
+      "remaining_work": "Production DB isolation implementation"
+    },
+    {
+      "risk": "Review boundary drift",
+      "severity": "P1",
+      "status": "controlled",
+      "mitigation": "GL-222 handoff pack documents boundaries",
+      "remaining_work": "Periodic boundary review"
+    },
+    {
+      "risk": "Reviewer receives prohibited materials",
+      "severity": "P1",
+      "status": "controlled",
+      "mitigation": "GL-222 prohibited materials list; pre-handoff export scan required",
+      "remaining_work": "Pre-handoff export scan before any actual reviewer handoff"
+    },
+    {
+      "risk": "Security-sensitive finding disclosed publicly",
+      "severity": "P1",
+      "status": "controlled",
+      "mitigation": "GitHub Security Advisories routing documented",
+      "remaining_work": "Reviewer briefing before any actual review"
+    }
+  ],
+  "findings": [
+    "Controlled External Technical Review is GO with strict boundaries per GL-221 final readiness matrix v6",
+    "All ten required handoff questions are answered in this pack",
+    "No backend source changes were made in GL-222",
+    "No migrations, schema, dependency, GitHub workflow, or publish script changes were made",
+    "No public export, publish, or reviewer outreach was initiated",
+    "Unrelated website-design/import files are excluded from GL-222",
+    "The GL-222 handoff gate script is local-only, dry-run/plan-only, and non-destructive",
+    "All NO-GO decisions from GL-221 remain unchanged"
+  ],
+  "safety_confirmations": {
+    "gl222_is_internal_handoff_pack_not_reviewer_outreach": true,
+    "gl222_does_not_create_public_export": true,
+    "gl222_does_not_publish_to_public_github": true,
+    "gl222_does_not_change_repository_visibility": true,
+    "gl222_does_not_approve_public_snapshot_export_publish": true,
+    "controlled_external_technical_review_go_with_strict_boundaries_only": true,
+    "review_materials_synthetic_demo_only": true,
+    "production_saas_no_go": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "compliance_certification_no_go": true,
+    "live_postgresql_production_readiness_no_go": true,
+    "security_reports_route_to_github_security_advisories": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_data": true,
+    "no_backend_src_changes": true,
+    "no_migrations_db_schema_dependency_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_package_publishing_metadata": true,
+    "no_setup_py": true,
+    "no_sdk_pyproject": true,
+    "no_package_json_or_lock": true,
+    "no_public_snapshot_export_directory": true,
+    "no_public_snapshot_worktree": true,
+    "no_force_push": true,
+    "no_deployment_cloud_kubernetes_terraform_helm_changes": true,
+    "no_tls_certificate_or_private_key_files": true,
+    "unrelated_website_design_import_files_excluded": true,
+    "gl214_iam_operator_control_hardening_preserved": true,
+    "gl215_tenant_workspace_guarantees_preserved": true,
+    "gl216_production_operations_hardening_preserved": true,
+    "gl217_go_no_go_v5_decisions_preserved": true,
+    "gl218_public_export_safety_boundaries_preserved": true,
+    "gl219_identity_access_hardening_preserved": true,
+    "gl220_runtime_infrastructure_hardening_preserved": true,
+    "gl221_final_go_no_go_v6_decisions_preserved": true
+  },
+  "recommended_next_issues": [
+    "GL-223: Workspace Identity / Membership / Ownership Implementation Plan",
+    "GL-224: Workspace-Scoped Lookup and Mutation Enforcement",
+    "GL-225: Workspace Propagation for Evidence / Provenance / Audit / Compliance / Export",
+    "GL-226: Production Identity Provider Readiness Gate (OIDC/SAML/SSO/MFA)",
+    "GL-227: Live PostgreSQL Production Readiness Gate",
+    "GL-228: Production Backup / Restore Automation",
+    "GL-229: Production Observability Stack Baseline",
+    "GL-230: Compliance Certification Readiness Assessment"
+  ]
+}
