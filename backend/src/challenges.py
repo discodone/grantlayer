@@ -75,13 +75,15 @@ def validate_challenge(
     subject_id: str,
     action: str,
     resource: str,
+    tenant_id: Optional[str] = None,
 ) -> Tuple[ChallengeResult, Optional[str]]:
     """Validate a challenge and mark it used if valid.
 
     Returns (result_code, challenge_id_or_None).
     Fail-closed: any problem returns a non-'valid' code.
+    tenant_id is required to prevent cross-tenant challenge reuse.
     """
-    challenge = get_challenge(challenge_id)
+    challenge = get_challenge(challenge_id, tenant_id=tenant_id)
     if challenge is None:
         return "not_found", None
 

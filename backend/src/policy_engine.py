@@ -23,6 +23,11 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
     4. Resource matches
     5. Now is within [valid_from, valid_until]
     6. Grant is not revoked
+
+    All matching grants (role+action+resource) are evaluated. If the first
+    candidate is expired/revoked/exhausted the engine continues to the next
+    candidate — a later valid grant can still approve access.  The best
+    (most specific) denial reason is returned if no grant approves.
     """
     candidates = [g for g in grants if g.subject_id == request.subject_id]
 
@@ -31,6 +36,8 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
             approved=False,
             reason=f"No grant found for subject '{request.subject_id}'",
         )
+
+    best_denial: PolicyResult | None = None
 
     for grant in candidates:
         if grant.role != request.role:
@@ -49,38 +56,49 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
             continue
 
         if now < valid_from:
-            return PolicyResult(
-                approved=False,
-                reason=f"Grant '{grant.id}' is not yet valid (starts {grant.valid_from})",
-                matched_grant_id=grant.id,
-            )
+            if best_denial is None:
+                best_denial = PolicyResult(
+                    approved=False,
+                    reason=f"Grant '{grant.id}' is not yet valid (starts {grant.valid_from})",
+                    matched_grant_id=grant.id,
+                )
+            continue
 
         if now > valid_until:
-            return PolicyResult(
-                approved=False,
-                reason=f"Grant '{grant.id}' has expired (expired {grant.valid_until})",
-                matched_grant_id=grant.id,
-            )
+            if best_denial is None:
+                best_denial = PolicyResult(
+                    approved=False,
+                    reason=f"Grant '{grant.id}' has expired (expired {grant.valid_until})",
+                    matched_grant_id=grant.id,
+                )
+            continue
 
         if grant.revoked:
-            return PolicyResult(
-                approved=False,
-                reason=f"Grant '{grant.id}' has been revoked",
-                matched_grant_id=grant.id,
-            )
+            if best_denial is None:
+                best_denial = PolicyResult(
+                    approved=False,
+                    reason=f"Grant '{grant.id}' has been revoked",
+                    matched_grant_id=grant.id,
+                )
+            continue
 
         if grant.max_uses is not None and grant.use_count >= grant.max_uses:
-            return PolicyResult(
-                approved=False,
-                reason="grant_usage_exhausted",
-                matched_grant_id=grant.id,
-            )
+            if best_denial is None:
+                best_denial = PolicyResult(
+                    approved=False,
+                    reason="grant_usage_exhausted",
+                    matched_grant_id=grant.id,
+                )
+            continue
 
         return PolicyResult(
             approved=True,
             reason="Access granted",
             matched_grant_id=grant.id,
         )
+
+    if best_denial is not None:
+        return best_denial
 
     return PolicyResult(
         approved=False,

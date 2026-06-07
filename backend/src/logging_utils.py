@@ -25,6 +25,8 @@ _SAFE_FIELDS: set[str] = {
     "request_id",
     "exception_type",
     "reason_code",
+    "operator_id",
+    "tenant_id",
 }
 
 _SENSITIVE_FIELDS: set[str] = {

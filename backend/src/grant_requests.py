@@ -26,8 +26,11 @@ from .validation import (
 )
 
 
-# GL-097: Maximum length for denial reasons to prevent abuse
-MAX_DENIAL_REASON_LENGTH = 1000
+MAX_DENIAL_REASON_LENGTH = MAX_REASON_LENGTH  # single source of truth; alias kept for tests
+
+VALID_REQUEST_STATUSES: frozenset[str] = frozenset({
+    "requested", "approved", "denied", "revoked", "expired",
+})
 
 # GL-162A: Explicit allowlist of permitted grant roles for the public API (developer preview).
 # Enforced at the HTTP layer (server.py) to validate user input without breaking internal
@@ -232,10 +235,7 @@ def deny_grant_request(
             )
 
         # GL-097: Denial reason length guard
-        if len(reason) > MAX_DENIAL_REASON_LENGTH:
-            raise ValueError(
-                f"Denial reason exceeds maximum length of {MAX_DENIAL_REASON_LENGTH} characters"
-            )
+        validate_string_length(reason, "reason", MAX_REASON_LENGTH)
 
         effective_tenant = tenant_id or "demo"
 

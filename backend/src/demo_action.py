@@ -114,7 +114,7 @@ def handle_demo_action(
         resolved_challenge_id: Optional[str] = None
 
         if challenge_present:
-            c_result, c_id = validate_challenge(challenge_id, subject_id, action, resource)
+            c_result, c_id = validate_challenge(challenge_id, subject_id, action, resource, tenant_id=effective_tenant)
             challenge_result = c_result
             resolved_challenge_id = c_id
             # Fail-closed: invalid challenge blocks even a valid grant

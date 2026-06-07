@@ -7,7 +7,7 @@ import json
 import re
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, quote as _urlquote
 
 from .db import init_db
 from .models import AuditEvent, Grant, GrantRequest
@@ -735,6 +735,13 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             status_filter = None
             if "status" in qs and qs["status"]:
                 status_filter = qs["status"][0]
+                if status_filter not in grant_requests.VALID_REQUEST_STATUSES:
+                    self._send_json(400, self._gl030_error(
+                        "Invalid query parameter: status",
+                        "invalid_query_parameter",
+                        f"status must be one of: {sorted(grant_requests.VALID_REQUEST_STATUSES)}",
+                    ))
+                    return
 
             requests = grant_requests.list_grant_requests(
                 status_filter=status_filter, tenant_id=tenant_id
@@ -856,7 +863,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             body = export_bundle_json(bundle).encode("utf-8")
             evidence_hash = bundle.get("evidenceHash", "")
             short_hash = evidence_hash[:8] if evidence_hash else ""
-            filename = f"evidence-{execution_id}-{short_hash}.json"
+            filename = _urlquote(f"evidence-{execution_id}-{short_hash}.json", safe="-_.")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
