@@ -1,0 +1,558 @@
+{
+  "issue_id": "GL-218",
+  "title": "Public / External Review Export Safety Pack",
+  "result": "safety_pack_complete",
+  "decision": "ready_for_merge",
+  "decision_rationale": "GL-218 documents the safety boundaries for a possible future public/external review export without creating the export. It answers all six required questions (eligible files, excluded files, allowed/prohibited claims, required checks, required approvals, remaining blockers). A local-only dry-run safety scan helper is added. No production, real-data, compliance, official-SDK, or live-PostgreSQL-production claims are made. All hard rules and prior safety boundaries from GL-207 through GL-217 are preserved.",
+  "input_sources_reviewed": [
+    "docs/production_go_no_go_v5.md",
+    "docs/examples/gl217/production_go_no_go_v5.json",
+    "docs/production_operations_hardening_pack.md",
+    "docs/examples/gl216/production_operations_hardening_pack.json",
+    "docs/tenant_workspace_production_guarantee.md",
+    "docs/examples/gl215/tenant_workspace_production_guarantee.json",
+    "docs/production_iam_operator_control_completion.md",
+    "docs/examples/gl214/production_iam_operator_control_completion.json",
+    "docs/production_readiness_gap_report_v4.md",
+    "docs/examples/gl213/production_readiness_gap_report_v4.json",
+    "docs/public_external_review_readiness_gate_pack.md",
+    "docs/examples/gl212/public_external_review_readiness_gate_pack.json",
+    "docs/public_snapshot_external_review_checklist.md",
+    "docs/sdk_pilot_production_gate.md",
+    "docs/examples/gl211/sdk_pilot_production_gate.json",
+    "docs/website_track.md",
+    "docs/examples/gl210/website_track.json",
+    "docs/data_governance_audit_operations.md",
+    "docs/examples/gl209/data_governance_audit_operations.json",
+    "docs/runtime_abuse_incident_hardening.md",
+    "docs/examples/gl208/runtime_abuse_incident_hardening.json",
+    "docs/claim_safety_controlled_preview_boundary.md",
+    "docs/examples/gl207/claim_safety_controlled_preview_boundary.json",
+    "docs/live_postgres_validation_execution_gl206b.md",
+    "docs/examples/gl206b/live_postgres_validation_execution_gl206b.json",
+    "docs/live_postgres_backup_observability_baseline.md",
+    "docs/examples/gl205/live_postgres_backup_observability_baseline.json",
+    "docs/production_ops_go_no_go_v3.md",
+    "docs/examples/gl204/production_ops_go_no_go_v3.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/openapi.yaml",
+    "website/index.html",
+    "examples/first_verifiable_output.json",
+    "examples/grant_lifecycle_evidence_bundle.json",
+    "examples/grant_lifecycle_evidence_bundle.py",
+    "scripts/verify-first-output.sh",
+    "scripts/ops/gl216_production_operations_gate.py",
+    "scripts/ops/gl205_live_postgres_validation.py",
+    "scripts/ops/gl205_backup_restore_drill.py",
+    "scripts/ops/gl209_audit_export_check.py"
+  ],
+  "current_public_external_review_posture": {
+    "posture": "Developer Preview / Controlled Preview with strict boundaries",
+    "developer_preview": "GO / CONTINUE",
+    "controlled_external_technical_review": "GO with strict boundaries",
+    "synthetic_demo_controlled_pilot": "CONDITIONAL",
+    "public_snapshot_preparation": "CONDITIONAL — separate gate required",
+    "public_website_publish": "DEFER / NO-GO",
+    "official_sdk_package": "NO-GO",
+    "real_customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO",
+    "production_saas": "NO-GO",
+    "compliance_certification": "NO-GO",
+    "live_postgres_production_readiness": "NO-GO",
+    "suite_baseline_after_gl217": {
+      "tests": 8847,
+      "failures": 43,
+      "errors": 3,
+      "skipped": 253,
+      "real_regressions": 0
+    }
+  },
+  "export_candidate_safety_assessment": {
+    "export_candidate_created_by_gl218": false,
+    "export_candidate_requires_later_issue": true,
+    "export_candidate_requires_explicit_owner_approval": true,
+    "export_candidate_must_pass_all_scans": true,
+    "scans_required": [
+      "forbidden_file_scan",
+      "secret_pattern_scan",
+      "real_data_scan",
+      "overclaim_scan",
+      "internal_path_scan",
+      "package_metadata_scan",
+      "workflow_snapshot_publish_scan",
+      "deployment_config_scan"
+    ],
+    "synthetic_demo_data_only": true,
+    "no_production_claims_permitted": true
+  },
+  "eligible_public_external_review_materials": [
+    "README.md (reviewed, claim-safe after GL-207)",
+    "SECURITY.md (reviewed, routes to GitHub Security Advisories)",
+    "AGENTS.md (reviewed, claim-safe)",
+    "llms.txt (reviewed, claim-safe)",
+    "llms-full.txt (reviewed, claim-safe)",
+    "docs/openapi.yaml (API contract only, no real credentials)",
+    "website/index.html (static baseline only, no production hosting implied)",
+    "examples/first_verifiable_output.py (local-only, synthetic only)",
+    "examples/first_verifiable_output.json (synthetic reference artifact)",
+    "examples/grant_lifecycle_evidence_bundle.py (local-only, synthetic/demo only)",
+    "examples/grant_lifecycle_evidence_bundle.json (synthetic evidence bundle)",
+    "scripts/verify-first-output.sh (local-only verification helper)",
+    "scripts/ops/gl205_live_postgres_validation.py (dry-run/plan only, no real credentials)",
+    "scripts/ops/gl205_backup_restore_drill.py (dry-run/plan only, no real credentials)",
+    "scripts/ops/gl209_audit_export_check.py (dry-run/plan only, no real credentials)",
+    "scripts/ops/gl216_production_operations_gate.py (dry-run/plan only, local-only)",
+    "scripts/ops/gl218_public_export_safety_scan.py (scan-only, local-only)",
+    "Reviewed backend source files (no real secrets, subject to per-file scan)",
+    "Reviewed test files using only synthetic/demo data",
+    "Reviewed docs/ artifacts for resolved issues (not internal-infrastructure references)"
+  ],
+  "excluded_materials": {
+    "secrets_and_credentials": [
+      ".env* files with real credentials",
+      "Raw PostgreSQL DSNs with real hostnames or passwords",
+      "Raw tokens, auth headers, or Bearer tokens",
+      "PEM private key blocks (RSA, OPENSSH, EC, DSA)",
+      "Real admin tokens or operator tokens",
+      "Real SMTP, S3, or cloud credentials"
+    ],
+    "real_data": [
+      "Real customer data or grant applications",
+      "Real institutional data or personal data (PII)",
+      "Real private grant data or private attachments",
+      "Database dumps, backup files, or logs with real data"
+    ],
+    "internal_infrastructure": [
+      "Internal Forgejo URLs",
+      "Private IP addresses or hostnames",
+      "Internal filesystem paths",
+      "Private operator usernames or workspace IDs",
+      "Internal CI/CD config referencing private services"
+    ],
+    "forbidden_files_and_paths": [
+      "website-design/ directory and all contents",
+      "docs/website_design_workspace_import_report.md",
+      "docs/website_design_workspace_import_report_dirty_stop.md",
+      "Any docs/website_design_* or docs/website-design-* import/report files",
+      "setup.py",
+      "SDK pyproject.toml",
+      "package.json / package-lock.json",
+      "Package publishing config or registry metadata",
+      "Analytics/tracking integrations or data collection forms",
+      ".github/workflows/ files without separate review",
+      "Snapshot publish scripts unless separately reviewed",
+      "Production deployment config (Kubernetes, Terraform, Helm, cloud)",
+      "Release metadata, release tags, public release branches",
+      "data/ directory with real operational data",
+      ".git/ directory, caches, venvs, __pycache__/"
+    ]
+  },
+  "allowed_public_claims": [
+    "Developer Preview / Controlled Preview with strict boundaries",
+    "Local evaluation and controlled pilot only",
+    "Tenant/workspace isolation: baseline implemented, not production-complete",
+    "Ephemeral live PostgreSQL validation passed with synthetic/demo data (GL-206B)",
+    "Fail-closed auth baseline implemented (not production-grade IAM)",
+    "Append-only hash-chained audit baseline implemented",
+    "Operator token hashing and tenant binding implemented",
+    "Structured logging and rate-limit baseline implemented",
+    "Controlled external technical review allowed only with strict boundaries and synthetic/demo data",
+    "All examples use synthetic identifiers only",
+    "All tokens and keys in examples are placeholders",
+    "Security-sensitive reports route to GitHub Security Advisories",
+    "Production SaaS not claimed and not supported",
+    "Real customer/private grant/institutional data not ready",
+    "Official SDK/package not published"
+  ],
+  "prohibited_public_claims": [
+    "Production SaaS ready / production-grade / enterprise ready",
+    "Ready for real customer data / private grant data / institutional data",
+    "Claimed compliance certification, GDPR certification, SOC2 certification, or ISO certification",
+    "Official SDK available / official package published",
+    "Live PostgreSQL production ready",
+    "Independent security audit completed / penetration test passed",
+    "Multi-tenant production isolation guaranteed / database RLS enforced",
+    "OIDC / SAML / SSO / MFA implemented",
+    "Public website is a production marketing launch",
+    "Any claim implying a support SLA or uptime guarantee",
+    "Any claim that implies real customer deployments are running"
+  ],
+  "no_real_data_safety_assessment": {
+    "all_examples_use_synthetic_identifiers": true,
+    "no_real_customer_data_in_tracked_files": true,
+    "no_real_private_grant_institutional_data_in_tracked_files": true,
+    "no_real_personal_data_in_tracked_files": true,
+    "database_dump_or_backup_not_in_tracked_files": true,
+    "data_directory_scan_required_before_export": true,
+    "per_file_real_data_scan_required_before_export": true,
+    "assessment": "No real data present in currently reviewed candidate files. Per-file real-data scan required before any export candidate is created."
+  },
+  "no_secret_safety_assessment": {
+    "no_raw_dsns_with_real_credentials": true,
+    "no_raw_tokens_auth_headers_bearer_tokens": true,
+    "no_pem_private_key_blocks": true,
+    "no_real_admin_operator_tokens": true,
+    "no_env_files_with_real_credentials_tracked": true,
+    "no_smtp_s3_cloud_credentials": true,
+    "secret_pattern_scan_required_before_export": true,
+    "assessment": "No obvious secret patterns detected in reviewed candidate files. A dedicated secret-pattern scan must pass before any export candidate is created or pushed."
+  },
+  "internal_infrastructure_leakage_assessment": {
+    "no_internal_forgejo_urls_in_export_files": true,
+    "no_private_ip_addresses_in_export_files": true,
+    "no_internal_filesystem_paths_in_export_files": true,
+    "no_private_operator_usernames_workspace_ids": true,
+    "security_md_references_public_github_url_only": true,
+    "readme_references_public_github_url_in_public_sections": true,
+    "internal_path_scan_required_before_export": true,
+    "assessment": "Reviewed candidate files do not contain detected internal infrastructure references. Internal-path scan required before any export."
+  },
+  "package_publish_metadata_assessment": {
+    "no_setup_py": true,
+    "no_sdk_pyproject_toml": true,
+    "no_package_json_or_lock": true,
+    "no_package_registry_metadata": true,
+    "no_publish_or_release_script_found": true,
+    "no_github_workflow_changes_in_gl218": true,
+    "no_snapshot_publish_script_changes_in_gl218": true,
+    "assessment": "No package/publish/deployment/cloud metadata is present in tracked candidate files or added by GL-218."
+  },
+  "public_snapshot_export_boundary": {
+    "public_snapshot_created_by_gl218": false,
+    "public_snapshot_preparation_decision": "CONDITIONAL — separate gate required",
+    "prerequisites_before_any_export": [
+      "Dedicated later issue creates and scans the export candidate",
+      "Explicit approval from repository owner obtained",
+      "All forbidden-file, secret, real-data, overclaim, internal-path, and package-metadata scans pass with zero findings",
+      "Candidate preserves all Developer Preview / Controlled Preview claim boundaries",
+      "No prohibited claims present"
+    ]
+  },
+  "public_website_publish_boundary": {
+    "public_website_publish_decision": "DEFER / NO-GO",
+    "website_index_is_static_baseline_only": true,
+    "not_production_marketing_site": true,
+    "no_production_hosting_cdn_analytics_tracking_added": true
+  },
+  "controlled_external_review_boundary": {
+    "controlled_external_technical_review_decision": "GO with strict boundaries",
+    "synthetic_demo_data_only": true,
+    "no_real_customer_data": true,
+    "no_private_grant_institutional_data": true,
+    "reviewer_must_be_informed_of_developer_preview_status": true,
+    "no_production_saas_implication": true,
+    "security_findings_route_to_github_security_advisories": true,
+    "no_compliance_implication": true,
+    "no_official_sdk_package_implication": true,
+    "no_live_postgres_production_implication": true,
+    "review_materials_must_pass_export_safety_scan": true
+  },
+  "synthetic_demo_data_only_boundary": {
+    "applies_to": [
+      "All examples (examples/)",
+      "All test fixtures and test data",
+      "All scripts run in dry-run or plan mode",
+      "Any export candidate prepared for external review"
+    ],
+    "synthetic_identifiers_only": true,
+    "placeholder_tokens_and_keys_only": true,
+    "no_real_grant_application_or_funding_record": true,
+    "no_connection_to_real_postgres_with_production_data": true,
+    "no_transmission_of_real_data_to_external_services": true
+  },
+  "official_sdk_package_boundary": {
+    "decision": "NO-GO",
+    "sdk_prototype_exists_as_local_aid_only": true,
+    "not_an_official_sdk": true,
+    "not_a_published_package": true,
+    "not_a_supported_library": true,
+    "no_setup_py_sdk_pyproject_toml_package_json": true
+  },
+  "production_saas_boundary": {
+    "decision": "NO-GO",
+    "p0_blockers_remain": true,
+    "no_shared_multi_tenant_deployment_permitted": true,
+    "no_real_user_data_may_be_processed": true
+  },
+  "compliance_certification_boundary": {
+    "decision": "NO-GO",
+    "gdpr_assessment": "not_performed",
+    "soc2_assessment": "not_performed",
+    "iso_assessment": "not_performed",
+    "independent_security_audit": "not_completed",
+    "penetration_test": "not_completed"
+  },
+  "live_postgres_production_readiness_boundary": {
+    "decision": "NO-GO",
+    "ephemeral_validation_passed_gl206b": true,
+    "ephemeral_validation_with_synthetic_demo_data_only": true,
+    "production_postgresql_deployment_not_supported": true,
+    "production_postgresql_not_claimed": true
+  },
+  "optional_scan_helper_summary": {
+    "added": true,
+    "path": "scripts/ops/gl218_public_export_safety_scan.py",
+    "local_only": true,
+    "dry_run_scan_only_by_default": true,
+    "does_not_create_public_export_directory": true,
+    "does_not_copy_files_to_public_snapshot": true,
+    "does_not_push_anywhere": true,
+    "does_not_contact_external_services": true,
+    "does_not_require_credentials": true,
+    "does_not_run_destructive_commands": true,
+    "does_not_modify_repository_files": true,
+    "supports_dry_run": true,
+    "supports_plan": true,
+    "scans_for_forbidden_paths": true,
+    "scans_for_secret_patterns": true,
+    "scans_for_overclaims": true,
+    "scans_for_package_metadata": true,
+    "scans_for_internal_path_leakage": true,
+    "redacts_secret_like_values_in_output": true,
+    "states_not_complete_security_audit": true,
+    "states_not_approval_to_publish": true
+  },
+  "production_readiness_impact": {
+    "backend_src_changes": false,
+    "migration_schema_dependency_changes": false,
+    "new_production_controls_added": false,
+    "production_blockers_resolved": false,
+    "p0_p1_p2_blocker_status": "unchanged_from_gl217",
+    "impact": "none — safety pack only"
+  },
+  "controlled_preview_impact": {
+    "controlled_external_technical_review": "GO with strict boundaries (unchanged)",
+    "synthetic_demo_controlled_pilot": "CONDITIONAL (unchanged)",
+    "developer_preview": "GO / CONTINUE (unchanged)",
+    "public_snapshot_preparation": "CONDITIONAL — separate gate required (unchanged)",
+    "impact": "none — documentation only"
+  },
+  "remaining_blockers": [
+    {
+      "id": "PB-001",
+      "category": "IAM",
+      "description": "Static admin token in auth baseline; no OIDC/SAML/SSO/MFA"
+    },
+    {
+      "id": "PB-002",
+      "category": "Tenant/Workspace",
+      "description": "No workspace-level enforcement; no database RLS"
+    },
+    {
+      "id": "PB-003",
+      "category": "Tenant Lifecycle",
+      "description": "No tenant provisioning API; no deprovision/offboarding flow"
+    },
+    {
+      "id": "PB-004",
+      "category": "Data Governance",
+      "description": "No production data retention/deletion pipeline; no DSAR"
+    },
+    {
+      "id": "PB-005",
+      "category": "Operations",
+      "description": "No production runbook; no SLO definition; no DR playbook"
+    },
+    {
+      "id": "PB-006",
+      "category": "Observability",
+      "description": "No production alerting, on-call rotation, or SLO dashboards"
+    },
+    {
+      "id": "PB-007",
+      "category": "Security Audit",
+      "description": "No independent security audit or penetration test"
+    },
+    {
+      "id": "PB-008",
+      "category": "Compliance",
+      "description": "No GDPR, SOC2, ISO, or enterprise compliance assessment"
+    },
+    {
+      "id": "PB-009",
+      "category": "PostgreSQL",
+      "description": "No persistent multi-tenant PostgreSQL deployment"
+    },
+    {
+      "id": "PB-010",
+      "category": "Export Safety",
+      "description": "No vetted export candidate; public snapshot requires separate gate"
+    }
+  ],
+  "risk_register": [
+    {
+      "id": "RR-001",
+      "category": "Secret Leakage",
+      "description": "Future export candidate may inadvertently include real secrets",
+      "severity": "critical",
+      "mitigation": "Run gl218_public_export_safety_scan.py before any export; require explicit approval"
+    },
+    {
+      "id": "RR-002",
+      "category": "Real Data Exposure",
+      "description": "Future export may include real customer/grant/institutional data",
+      "severity": "critical",
+      "mitigation": "Enforce synthetic/demo data only boundary; scan before export"
+    },
+    {
+      "id": "RR-003",
+      "category": "Overclaim Drift",
+      "description": "Future materials may drift to overclaim production/compliance readiness",
+      "severity": "high",
+      "mitigation": "Prohibited-claim list; automated scan; claim review gate required"
+    },
+    {
+      "id": "RR-004",
+      "category": "Infrastructure Leakage",
+      "description": "Export may include internal Forgejo URLs, private IPs, or internal paths",
+      "severity": "high",
+      "mitigation": "Internal-path scan required; review all new docs before export"
+    },
+    {
+      "id": "RR-005",
+      "category": "Package Metadata",
+      "description": "A contributor may add setup.py, pyproject.toml, or package.json",
+      "severity": "high",
+      "mitigation": "Scope guard tests block forbidden package files in GL-218 branch"
+    },
+    {
+      "id": "RR-006",
+      "category": "Workflow Change",
+      "description": "A contributor may change GitHub workflows or snapshot publish scripts",
+      "severity": "high",
+      "mitigation": "Scope guard tests block workflow changes in GL-218 branch"
+    },
+    {
+      "id": "RR-007",
+      "category": "Premature Export",
+      "description": "An export is created before a separate gate approves it",
+      "severity": "high",
+      "mitigation": "GL-218 explicitly does not create an export; requires a later issue"
+    },
+    {
+      "id": "RR-008",
+      "category": "Controlled Review Misuse",
+      "description": "An external reviewer uses real data or deploys to shared infrastructure",
+      "severity": "medium",
+      "mitigation": "Reviewer briefing required; strict boundary documented"
+    },
+    {
+      "id": "RR-009",
+      "category": "SDK/Package Claim",
+      "description": "SDK prototype is presented as an official published package",
+      "severity": "medium",
+      "mitigation": "Prohibited-claim list; scope guards block SDK package metadata"
+    },
+    {
+      "id": "RR-010",
+      "category": "Compliance Claim",
+      "description": "Developer Preview materials are interpreted as compliance certification",
+      "severity": "medium",
+      "mitigation": "Prohibited-claim list; SECURITY.md explicit non-claim language"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-001",
+      "category": "posture",
+      "finding": "GrantLayer is Developer Preview / Controlled Preview with strict boundaries after GL-217.",
+      "severity": "info"
+    },
+    {
+      "id": "F-002",
+      "category": "export_readiness",
+      "finding": "No vetted export candidate exists. A dedicated later issue and explicit owner approval are required before any export.",
+      "severity": "info"
+    },
+    {
+      "id": "F-003",
+      "category": "claim_safety",
+      "finding": "Reviewed candidate files preserve claim boundaries after GL-207 corrections. No prohibited claims detected.",
+      "severity": "info"
+    },
+    {
+      "id": "F-004",
+      "category": "secret_safety",
+      "finding": "No obvious secret patterns detected in reviewed candidate files. Secret scan required before export.",
+      "severity": "info"
+    },
+    {
+      "id": "F-005",
+      "category": "real_data_safety",
+      "finding": "No real customer/grant/institutional data detected in reviewed candidate files.",
+      "severity": "info"
+    },
+    {
+      "id": "F-006",
+      "category": "internal_infrastructure",
+      "finding": "No internal Forgejo URLs, private IPs, or private paths detected in reviewed candidate files.",
+      "severity": "info"
+    },
+    {
+      "id": "F-007",
+      "category": "package_metadata",
+      "finding": "No setup.py, SDK pyproject.toml, package.json, or package-lock.json in tracked files.",
+      "severity": "info"
+    },
+    {
+      "id": "F-008",
+      "category": "unrelated_files",
+      "finding": "website-design/ directory and docs/website_design_* import/report files are present as untracked files and are excluded from GL-218.",
+      "severity": "info"
+    }
+  ],
+  "safety_confirmations": {
+    "gl218_does_not_create_public_export": true,
+    "gl218_does_not_push_to_public_github": true,
+    "gl218_does_not_change_visibility": true,
+    "gl218_does_not_merge_to_main": true,
+    "production_saas_is_no_go": true,
+    "real_customer_private_grant_institutional_data_is_no_go": true,
+    "official_sdk_package_is_no_go": true,
+    "compliance_certification_is_no_go": true,
+    "live_postgres_production_readiness_is_no_go": true,
+    "controlled_external_review_requires_strict_boundaries_and_synthetic_demo_data": true,
+    "public_snapshot_export_requires_later_explicit_gate_and_approval": true,
+    "public_website_publish_is_deferred_no_go": true,
+    "no_exploit_details_included": true,
+    "no_real_secrets_included": true,
+    "no_real_customer_private_data_included": true,
+    "no_backend_src_changes": true,
+    "no_migration_db_schema_dependency_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_package_publishing_metadata_added": true,
+    "no_production_deployment_cloud_files_added": true,
+    "unrelated_website_design_import_files_excluded": true,
+    "security_sensitive_reports_route_to_github_security_advisories": true
+  },
+  "recommended_next_issues": [
+    {
+      "issue": "GL-218 Merge",
+      "title": "Merge GL-218 to internal main",
+      "priority": "immediate"
+    },
+    {
+      "issue": "GL-219",
+      "title": "Production Identity & Access Hardening Pack",
+      "priority": "high",
+      "resolves": "PB-001"
+    },
+    {
+      "issue": "GL-220",
+      "title": "Production Runtime & Infrastructure Hardening Pack",
+      "priority": "high",
+      "resolves": "PB-005, PB-006"
+    },
+    {
+      "issue": "GL-221",
+      "title": "Workspace Enforcement & Final Go/No-Go v6",
+      "priority": "high",
+      "resolves": "PB-002, PB-003"
+    }
+  ]
+}
