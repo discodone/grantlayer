@@ -1,0 +1,222 @@
+{
+  "issue_id": "GL-221",
+  "title": "Workspace Enforcement & Final Go/No-Go v6",
+  "result": "ready_for_merge_with_blockers",
+  "decision": "workspace_enforcement_final_go_no_go_v6_ready_for_merge_with_blockers",
+  "decision_rationale": "GL-221 confirms tenant-scoped Developer Preview and controlled synthetic/demo review may continue, but workspace enforcement is reserved/nullable and not production-enforced. Production SaaS, real customer data, private grant/institutional data, official SDK/package, compliance certification, and live PostgreSQL production readiness remain NO-GO.",
+  "input_sources_reviewed": [
+    "docs/production_go_no_go_v5.md",
+    "docs/examples/gl217/production_go_no_go_v5.json",
+    "docs/production_runtime_infrastructure_hardening_pack.md",
+    "docs/examples/gl220/production_runtime_infrastructure_hardening_pack.json",
+    "docs/production_identity_access_hardening_pack.md",
+    "docs/examples/gl219/production_identity_access_hardening_pack.json",
+    "docs/public_external_review_export_safety_pack.md",
+    "docs/examples/gl218/public_external_review_export_safety_pack.json",
+    "docs/production_operations_hardening_pack.md",
+    "docs/examples/gl216/production_operations_hardening_pack.json",
+    "docs/tenant_workspace_production_guarantee.md",
+    "docs/examples/gl215/tenant_workspace_production_guarantee.json",
+    "docs/production_iam_operator_control_completion.md",
+    "docs/examples/gl214/production_iam_operator_control_completion.json",
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/tenant_workspace_data_model_design.md",
+    "docs/examples/gl144/tenant_workspace_data_model_design.json",
+    "docs/runtime_abuse_incident_hardening.md",
+    "docs/examples/gl208/runtime_abuse_incident_hardening.json",
+    "docs/data_governance_audit_operations.md",
+    "docs/examples/gl209/data_governance_audit_operations.json",
+    "docs/openapi.yaml",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "backend/src/server.py",
+    "backend/src/config.py",
+    "backend/src/auth.py",
+    "backend/src/identity_access.py",
+    "backend/src/operators.py",
+    "backend/src/audit_log.py",
+    "backend/src/db.py",
+    "backend/src/models.py",
+    "backend/src/grants.py",
+    "backend/src/grant_requests.py",
+    "backend/tests/",
+    "scripts/ops/gl216_production_operations_gate.py",
+    "scripts/ops/gl218_public_export_safety_scan.py",
+    "scripts/ops/gl219_identity_access_gate.py",
+    "scripts/ops/gl220_runtime_infrastructure_gate.py",
+    "scripts/ops/gl205_live_postgres_validation.py",
+    "scripts/ops/gl205_backup_restore_drill.py",
+    "scripts/ops/gl209_audit_export_check.py",
+    "scripts/run-full-backend-suite.sh",
+    "examples/grant_lifecycle_evidence_bundle.py"
+  ],
+  "current_workspace_enforcement_state_summary": {
+    "tenant_id": "server-derived and application-layer enforced for primary and GL-215 secondary routes",
+    "workspace_id": "reserved_nullable_not_production_enforced",
+    "trusted_workspace_context": "not_implemented",
+    "preview_boundary": "synthetic_demo_only"
+  },
+  "workspace_enforcement_gap_assessment": [
+    {
+      "area": "workspace_id_derivation",
+      "severity": "P1",
+      "status": "open",
+      "mitigation": "do not trust client workspace values",
+      "remaining_work": "derive workspace from authenticated membership or trusted validated provider claim"
+    },
+    {
+      "area": "cross_workspace_lookup_mutation_denial",
+      "severity": "P1",
+      "status": "open",
+      "mitigation": "tenant-scoped route checks remain",
+      "remaining_work": "add workspace ownership predicates and tests"
+    },
+    {
+      "area": "evidence_provenance_audit_compliance_workspace_propagation",
+      "severity": "P1",
+      "status": "open",
+      "mitigation": "tenant-visible execution prechecks protect HTTP entry points",
+      "remaining_work": "persist and enforce workspace ownership across derived records"
+    }
+  ],
+  "implemented_hardening_summary": "No backend source hardening was implemented. GL-221 adds conservative documentation, JSON artifact, local-only gate, and tests because real workspace enforcement requires broader schema, membership, and authorization work.",
+  "workspace_id_derivation_trust_model": "No trusted workspace_id derivation exists. Future workspace context must be server-derived from operator membership or trusted validated IdP claims, never arbitrary headers or request bodies.",
+  "tenant_workspace_relationship_model": "Tenant is the current enforced boundary. Workspace is reserved nullable metadata. Production requires each workspace to belong to exactly one tenant and each customer-owned resource to carry tenant plus workspace ownership.",
+  "unsafe_workspace_override_prevention": "Current business route resource ownership ignores caller-supplied tenantId/workspaceId. No partial workspace override mechanism was added.",
+  "cross_workspace_lookup_denial_posture": "Not claimed. Cross-tenant lookup denial exists; cross-workspace denial requires future workspace-scoped filtering.",
+  "cross_workspace_mutation_denial_posture": "Not claimed. Cross-tenant mutation denial exists; cross-workspace mutation denial requires future workspace ownership predicates.",
+  "workspace_propagation_audit_evidence_provenance_compliance": "Audit has nullable workspace_id storage, but current trusted propagation is tenant-focused. Evidence, provenance, auditor, and compliance routes are tenant-prechecked by execution visibility but not independently workspace-enforced.",
+  "admin_operator_workspace_boundary": "Admin/operator control plane preserves tenant assignment and safe audit events but does not implement workspace membership or workspace admin workflow.",
+  "demo_synthetic_workspace_boundary": "Demo and synthetic flows remain bounded to Developer Preview / Controlled Preview and are not approved for real data.",
+  "controlled_external_review_workspace_boundary": "Controlled external technical review remains GO with strict boundaries, synthetic/demo data only, no public export unless a separate gate approves it.",
+  "production_readiness_impact": "Workspace enforcement remains a blocker before Production SaaS, real customer data, private grant/institutional data, and production multi-tenant claims.",
+  "controlled_preview_impact": "Developer Preview and controlled synthetic/demo review can continue under existing tenant-derived controls and safety boundaries.",
+  "final_readiness_matrix_v6": {
+    "developer_preview": "GO / CONTINUE",
+    "controlled_external_technical_review": "GO with strict boundaries",
+    "synthetic_demo_controlled_pilot": "CONDITIONAL",
+    "public_snapshot_preparation": "CONDITIONAL - separate explicit gate required",
+    "public_website_publish": "DEFER / NO-GO",
+    "official_sdk_package": "NO-GO",
+    "real_customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO",
+    "production_saas": "NO-GO",
+    "compliance_certification": "NO-GO",
+    "live_postgresql_production_readiness": "NO-GO"
+  },
+  "production_saas_decision": "NO-GO",
+  "real_customer_data_decision": "NO-GO",
+  "private_grant_institutional_data_decision": "NO-GO",
+  "controlled_external_review_decision": "GO with strict boundaries",
+  "public_snapshot_public_publish_decision": {
+    "public_snapshot_preparation": "CONDITIONAL - separate explicit gate required",
+    "public_website_publish": "DEFER / NO-GO"
+  },
+  "official_sdk_package_decision": "NO-GO",
+  "live_postgres_production_readiness_decision": "NO-GO",
+  "iam_identity_decision_after_gl219": "Improved controlled-preview posture; external IdP/OAuth/OIDC/JWT production readiness is not claimed.",
+  "runtime_infrastructure_decision_after_gl220": "Improved documentation and local gates; real production infrastructure readiness is not claimed.",
+  "public_export_decision_after_gl218": "Separate-gate only; no export, public push, public publish, or visibility change is authorized by GL-221.",
+  "remaining_blockers": [
+    {
+      "id": "P0-production-saas",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "keep Developer Preview / Controlled Preview only",
+      "remaining_work": "complete production IAM, workspace, DB, ops, compliance gates"
+    },
+    {
+      "id": "P0-real-private-institutional-data",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "synthetic/demo-only boundary",
+      "remaining_work": "data governance, legal/security approval, production controls"
+    },
+    {
+      "id": "P1-workspace-enforcement",
+      "severity": "P1",
+      "status": "open",
+      "mitigation": "tenant-scoped app controls preserved",
+      "remaining_work": "workspace identity, membership, ownership, query/mutation enforcement"
+    }
+  ],
+  "risk_register_v6": [
+    {
+      "risk": "workspace boundary overclaim",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "explicit NO-GO language and tests",
+      "remaining_work": "implement and verify workspace model"
+    },
+    {
+      "risk": "real-data misuse in preview",
+      "severity": "P0",
+      "status": "open",
+      "mitigation": "synthetic/demo-only boundary",
+      "remaining_work": "legal/security/data-governance approval"
+    },
+    {
+      "risk": "public/export leakage",
+      "severity": "P1",
+      "status": "controlled",
+      "mitigation": "GL-218 separate gate and scans",
+      "remaining_work": "manual export candidate review"
+    }
+  ],
+  "compact_next_roadmap": [
+    "GL-222 workspace identity, membership, and ownership plan",
+    "GL-223 workspace-scoped lookup and mutation enforcement",
+    "GL-224 evidence/provenance/audit/compliance workspace propagation",
+    "GL-225 production identity provider readiness gate",
+    "GL-226 live PostgreSQL production readiness gate"
+  ],
+  "findings": [
+    "workspace_id remains reserved/nullable and not production-enforced",
+    "tenant-derived controls are preserved",
+    "cross-workspace lookup and mutation denial are not claimed",
+    "no backend source change was safe within GL-221 scope"
+  ],
+  "safety_confirmations": {
+    "gl221_not_automatic_production_release": true,
+    "developer_preview_controlled_preview_with_strict_boundaries": true,
+    "production_saas_no_go": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "compliance_certification_no_go": true,
+    "live_postgresql_production_no_go": true,
+    "public_snapshot_export_separate_gate_only": true,
+    "public_website_publish_separate_gate_only": true,
+    "security_reports_route_to_github_security_advisories": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_data": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_public_github_push": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "no_migrations_db_schema_dependency_changes": true,
+    "no_package_publishing_metadata": true,
+    "no_setup_py": true,
+    "no_sdk_pyproject": true,
+    "no_package_json_or_lock": true,
+    "no_public_snapshot_export_directory": true,
+    "no_production_deployment_config_cloud_kubernetes_terraform_helm": true,
+    "no_tls_certificate_or_private_key_files": true,
+    "unrelated_website_design_import_files_excluded": true,
+    "gl215_tenant_workspace_behavior_preserved": true,
+    "gl219_identity_access_behavior_preserved": true,
+    "gl220_runtime_infrastructure_behavior_preserved": true
+  },
+  "recommended_next_issues": [
+    "GL-222 Workspace identity/membership/ownership implementation plan",
+    "GL-223 Workspace-scoped lookup and mutation enforcement",
+    "GL-224 Workspace propagation for evidence/provenance/audit/compliance/export",
+    "GL-225 Production identity provider readiness gate",
+    "GL-226 Live PostgreSQL production readiness gate"
+  ]
+}
