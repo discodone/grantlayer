@@ -1,17 +1,33 @@
+# GL-230: GrantLayer full-stack compose (FastAPI + PostgreSQL + Nginx/TLS)
+#
+# Quick start:
+#   1. cp .env.example .env && edit .env
+#   2. ./nginx/generate-certs.sh
+#   3. docker compose up -d
+#   4. curl -k https://localhost/health
+#
+# SQLite-only (no Postgres, no Nginx):
+#   docker compose up -d api
+
 services:
-  # ── Production-like stack (SQLite default) ────────────────────
+  # ── FastAPI backend ───────────────────────────────────────────
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: backend/Dockerfile
     container_name: grantlayer-api
-    ports:
-      - "127.0.0.1:8765:8765"
+    expose:
+      - "8765"
     environment:
       - GRANTLAYER_HOST=0.0.0.0
       - GRANTLAYER_PORT=8765
       - GRANTLAYER_ADMIN_TOKEN=${GRANTLAYER_ADMIN_TOKEN:-}
-      - GRANTLAYER_DB=/app/data/grantlayer.db
+      - GRANTLAYER_REQUIRE_ADMIN_TOKEN=${GRANTLAYER_REQUIRE_ADMIN_TOKEN:-false}
+      - GRANTLAYER_JWT_SECRET=${GRANTLAYER_JWT_SECRET:-}
+      - GRANTLAYER_DB=${GRANTLAYER_DB:-/app/data/grantlayer.db}
+      - GRANTLAYER_DATABASE_URL=${GRANTLAYER_DATABASE_URL:-}
+      - GRANTLAYER_LOG_LEVEL=${GRANTLAYER_LOG_LEVEL:-INFO}
+      - GRANTLAYER_ENABLE_OPERATOR_MODEL=${GRANTLAYER_ENABLE_OPERATOR_MODEL:-false}
     volumes:
       - grantlayer-data:/app/data
     healthcheck:
@@ -19,13 +35,64 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 10s
     restart: unless-stopped
+    networks:
+      - grantlayer
 
-  # ── PostgreSQL backend (opt-in) ───────────────────────────────
-  # To use PostgreSQL instead of SQLite:
-  #   docker compose -f docker-compose.yml -f docker-compose.postgres.yml up -d
-  #
-  # Or set COMPOSE_FILE=docker-compose.yml:docker-compose.postgres.yml
+  # ── Nginx TLS reverse proxy ───────────────────────────────────
+  # Requires certs in nginx/certs/ — run ./nginx/generate-certs.sh first.
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: grantlayer-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/health", "||", "true"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - grantlayer
+
+  # ── PostgreSQL (optional, replaces SQLite) ─────────────────────
+  # To activate: set GRANTLAYER_DATABASE_URL in .env and add 'db' to
+  # api.depends_on, or use docker-compose.postgres.yml override.
+  db:
+    image: postgres:16-alpine
+    container_name: grantlayer-postgres
+    environment:
+      - POSTGRES_USER=${GRANTLAYER_POSTGRES_USER:-grantlayer}
+      - POSTGRES_PASSWORD=${GRANTLAYER_POSTGRES_PASSWORD:-changeme_in_env}
+      - POSTGRES_DB=${GRANTLAYER_POSTGRES_DB:-grantlayer}
+    volumes:
+      - grantlayer-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "pg_isready -U ${GRANTLAYER_POSTGRES_USER:-grantlayer} -d ${GRANTLAYER_POSTGRES_DB:-grantlayer}"
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - grantlayer
+    profiles:
+      - postgres
 
 volumes:
   grantlayer-data:
+  grantlayer-postgres-data:
+
+networks:
+  grantlayer:
+    driver: bridge

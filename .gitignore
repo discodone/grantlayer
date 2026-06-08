@@ -33,6 +33,8 @@ secrets/
 private/
 keys/
 certs/
+!nginx/certs/
+!nginx/certs/.gitkeep
 
 # OS
 .DS_Store

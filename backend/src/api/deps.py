@@ -1,4 +1,4 @@
-"""GL-229: Shared FastAPI dependency helpers."""
+"""GL-229/GL-230: Shared FastAPI dependency helpers."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from fastapi import HTTPException
 
 from .. import config
 from ..auth import check_auth, check_admin_token, resolve_workspace_context, check_workspace_resource_access
+from .auth_jwt import validate_jwt_header
 
 
 def resolve_auth_and_workspace(
@@ -17,13 +18,22 @@ def resolve_auth_and_workspace(
 ) -> tuple[dict, dict]:
     """Authenticate and resolve workspace context.
 
+    GL-230: tries JWT first when GRANTLAYER_JWT_SECRET is set; falls back to
+    the existing static-token / operator-model path when JWT is not configured.
+
     Returns (auth_ctx, ws_ctx).  Raises HTTPException on failure.
-    Mirrors server.py _require_operator + _resolve_workspace logic exactly,
-    including the pre-workspace-enforcement backward-compat fallback.
     """
-    ok, http_status, payload = check_auth(authorization, required_roles=required_roles)
-    if not ok:
-        raise HTTPException(status_code=http_status, detail=payload)
+    jwt_ok, jwt_status, jwt_result = validate_jwt_header(authorization)
+    if jwt_ok is not None:
+        # JWT auth is configured — use JWT result, do not fall through to legacy.
+        if not jwt_ok:
+            raise HTTPException(status_code=jwt_status, detail=jwt_result)
+        payload = jwt_result
+    else:
+        # JWT not configured — use legacy static-token / operator-model auth.
+        ok, http_status, payload = check_auth(authorization, required_roles=required_roles)
+        if not ok:
+            raise HTTPException(status_code=http_status, detail=payload)
 
     ws_id, ws_status, ws_ctx = resolve_workspace_context(payload, workspace_id)
 
