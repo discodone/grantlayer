@@ -147,7 +147,45 @@ curl -k -s https://localhost/grants \
 
 ---
 
-## 7. Export an Audit Log
+## 7. Submit a Grant Request (Operator Mode)
+
+The `/grant-requests` endpoint is part of the operator model — a request/approval workflow on top of direct grant creation.
+
+> **Required:** `GRANTLAYER_ENABLE_OPERATOR_MODEL=true` must be set in `.env` (it is the default). If not set, the endpoint returns `operator_model_disabled`.
+
+```bash
+# Add to .env if not already present:
+# GRANTLAYER_ENABLE_OPERATOR_MODEL=true
+```
+
+Create a grant request:
+
+```bash
+curl -k -s -X POST https://localhost/grant-requests \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "subjectId": "agent-007",
+    "role": "reader",
+    "action": "read",
+    "resource": "reports",
+    "validFrom": "2025-01-01T00:00:00Z",
+    "validUntil": "2025-12-31T23:59:59Z",
+    "reason": "Requested access for Q4 reporting"
+  }' | python3 -m json.tool
+```
+
+Response includes a `requestId` you can use to approve or deny:
+
+```bash
+# Approve the request (replace <requestId> with the id from the response above):
+curl -k -s -X POST https://localhost/grant-requests/<requestId>/approve \
+  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+```
+
+---
+
+## 8. Export an Audit Log
 
 ```bash
 curl -k -s "https://localhost/audit-events?limit=20" \
@@ -156,7 +194,7 @@ curl -k -s "https://localhost/audit-events?limit=20" \
 
 ---
 
-## 8. Stop the stack
+## 9. Stop the stack
 
 ```bash
 docker compose down
@@ -233,6 +271,26 @@ ports:
 ```
 
 Then use `curl -k https://localhost:8443/health`.
+
+### Upgrading from an older version
+
+If you pulled a newer version of the image, always rebuild before starting to avoid stale layers:
+
+```bash
+docker compose build --no-cache
+docker compose up -d
+```
+
+### Schema error at startup (`missing column` / `OperationalError`)
+
+If the database volume was created by an older version, the schema may be out of date:
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+> **Warning:** `-v` deletes all Docker volumes including the database. All stored grants and audit events are lost. Only use this for a fresh start or local dev reset.
 
 ---
 
