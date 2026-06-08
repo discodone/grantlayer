@@ -317,7 +317,7 @@ class TestFreshDbSchema(unittest.TestCase):
                 self.assertIn(t, tables)
 
     def test_all_migrations_marked_applied_on_fresh_db(self):
-        """All 10 migrations are recorded in schema_migrations after init_db."""
+        """All migrations are recorded in schema_migrations after init_db."""
         from src.migrations import runner
         conn = self._db_mod.get_conn()
         try:
@@ -326,7 +326,8 @@ class TestFreshDbSchema(unittest.TestCase):
             conn.close()
         self.assertIn("0001_gl032_baseline", applied)
         self.assertIn("0010_gl200b_tenant_workspace_isolation", applied)
-        self.assertEqual(len(applied), 10)
+        self.assertIn("0011_gl224_workspace_schema_membership_baseline", applied)
+        self.assertGreaterEqual(len(applied), 11)
 
     def test_fresh_db_grants_has_tenant_id(self):
         """grants table has tenant_id column after migration."""
@@ -560,8 +561,8 @@ class TestLegacyDbPath(unittest.TestCase):
             applied = runner._applied_versions(conn)
         finally:
             conn.close()
-        # All 10 migrations should be marked applied
-        self.assertEqual(len(applied), 10)
+        # All known migrations should be marked applied (count grows with each sprint)
+        self.assertGreaterEqual(len(applied), 11)
 
     def test_legacy_db_no_pending_after_init(self):
         """list_pending_migrations returns empty after init_db on legacy DB."""
