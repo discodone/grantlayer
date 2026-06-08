@@ -304,6 +304,15 @@ def resolve_workspace_context(
     active = [m for m in memberships if m.get("status") == "active"]
 
     if not active:
+        if tenant_id == _DEMO_TENANT_ID:
+            ctx = {
+                "workspace_id": _DEMO_WORKSPACE_ID,
+                "tenant_id": _DEMO_TENANT_ID,
+                "workspace_member_role": None,
+                "cross_workspace_access": False,
+                "resolution_mode": "demo_tenant_fallback",
+            }
+            return _DEMO_WORKSPACE_ID, 200, ctx
         return None, 403, {
             "error": "no_workspace_membership",
             "errorCode": "no_workspace_membership",
@@ -381,7 +390,13 @@ def check_workspace_resource_access(
     # Normalize: None resource_workspace_id is treated as same-workspace for backward compat
     # (pre-GL-224 rows may lack workspace_id).
     if resource_workspace_id is None:
-        # Treat unscoped resources as belonging to the caller's workspace.
+        # Treat unscoped resources as same-workspace — still enforce role check for mutations.
+        if require_mutation and workspace_member_role == "workspace_readonly":
+            return False, 403, {
+                "error": "workspace_role_insufficient",
+                "errorCode": "workspace_role_insufficient",
+                "reason": "Your workspace role does not permit write operations.",
+            }
         return True, 200, {}
 
     # Same-workspace: always allowed (subject to role checks below).

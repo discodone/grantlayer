@@ -15,7 +15,13 @@ from .grants import list_grants, create_grant, revoke_grant, get_grant, tamper_g
 from .audit_log import append_event, list_events
 from .demo_action import handle_demo_action
 from .challenges import create_challenge, list_challenges
-from .auth import check_auth, check_admin_token, admin_token_warning
+from .auth import (
+    check_auth,
+    check_admin_token,
+    admin_token_warning,
+    resolve_workspace_context,
+    check_workspace_resource_access,
+)
 from .crypto_signing import ensure_demo_keypair, verify_grant_signature
 from . import config
 from . import operators as ops
@@ -505,6 +511,50 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         """Extract tenant_id from auth payload; falls back to 'demo'."""
         return auth_payload.get("tenant_id") or "demo"
 
+    def _resolve_workspace(
+        self,
+        auth_payload: dict,
+        client_workspace_id: str | None = None,
+    ) -> tuple[dict | None, bool]:
+        """Resolve workspace context. On failure the error is sent; returns (None, False).
+
+        GL-227: All tenant/workspace-scoped endpoints use this instead of _get_tenant_id.
+        Fail-closed: operators with no active workspace membership receive 403 when the
+        tenant has workspaces configured. Pre-workspace tenants (no workspaces in DB for
+        this tenant) fall back to demo workspace for backward compatibility.
+        """
+        ws_id, status, ctx = resolve_workspace_context(auth_payload, client_workspace_id)
+        if status != 200:
+            error_code = ctx.get("errorCode", "")
+            # Pre-workspace-enforcement backward compat: if the resolver fails because
+            # the operator has no membership or a cross-workspace role requires explicit
+            # workspace_id, check whether the tenant has ANY workspaces configured.
+            # If the tenant has none, fall back to demo workspace (pre-GL-224 compat).
+            if error_code in ("no_workspace_membership", "workspace_id_required"):
+                tenant_id = auth_payload.get("tenant_id") or "demo"
+                if tenant_id != "demo":
+                    from .db import query_all as _qa
+                    tenant_has_ws = _qa(
+                        "SELECT id FROM workspaces WHERE tenant_id = ? AND status = 'active' LIMIT 1",
+                        (tenant_id,),
+                    )
+                    if not tenant_has_ws:
+                        ctx = {
+                            "workspace_id": "default",
+                            "tenant_id": tenant_id,
+                            "workspace_member_role": None,
+                            "cross_workspace_access": False,
+                            "resolution_mode": "no_tenant_workspaces_fallback",
+                        }
+                        return ctx, True
+            self._send_json(status, ctx)
+            self._log_event(
+                "request_rejected", status,
+                reason_code=error_code or "workspace_error",
+            )
+            return None, False
+        return ctx, True
+
     def _require_operator(self, roles: list[str]) -> tuple[bool, dict]:
         auth_header = self.headers.get("Authorization")
         cache_key = ("operator", tuple(roles), hashlib.sha256(auth_header.encode("utf-8")).hexdigest() if auth_header else None)
@@ -654,7 +704,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-            tenant_id = self._get_tenant_id(auth_ctx)
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             grants = list_grants(tenant_id=tenant_id)
             result = []
             for g in grants:
@@ -674,7 +727,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-            tenant_id = self._get_tenant_id(auth_ctx)
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             qs = parse_qs(urlparse(self.path).query)
             try:
                 limit = self._parse_int_query_param(qs, "limit", default=200)
@@ -689,7 +745,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-            tenant_id = self._get_tenant_id(auth_ctx)
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             self._send_json(200, [c.to_dict() for c in list_challenges(tenant_id=tenant_id)])
 
         elif m := re.fullmatch(r"/grants/([^/]+)", path):
@@ -698,8 +757,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
             grant_id = m.group(1)
-            tenant_id = self._get_tenant_id(auth_ctx)
+            tenant_id = ws_ctx["tenant_id"]
             g = get_grant(grant_id, tenant_id=tenant_id)
             if g is None:
                 self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
@@ -729,8 +791,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-
-            tenant_id = self._get_tenant_id(auth_ctx)
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             qs = parse_qs(urlparse(self.path).query)
             status_filter = None
             if "status" in qs and qs["status"]:
@@ -754,8 +818,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-
-            tenant_id = self._get_tenant_id(auth_ctx)
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             request_id = m.group(1)
             request = grant_requests.get_grant_request(request_id, tenant_id=tenant_id)
             if request is None:
@@ -772,7 +838,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-            tenant_id = self._get_tenant_id(auth_ctx)
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             qs = parse_qs(urlparse(self.path).query)
             try:
                 limit = self._parse_int_query_param(qs, "limit", default=200)
@@ -797,7 +866,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-            tenant_id = self._get_tenant_id(auth_ctx)
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             execution_id = m.group(1)
             execution = execs.get_grant_execution(execution_id, tenant_id=tenant_id)
             if execution is None:
@@ -814,7 +886,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-            tenant_id = self._get_tenant_id(auth_ctx)
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             grant_id = m.group(1)
             if get_grant(grant_id, tenant_id=tenant_id) is None:
                 self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
@@ -833,8 +908,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
             execution_id = m.group(1)
-            tenant_id = self._get_tenant_id(auth_ctx)
+            tenant_id = ws_ctx["tenant_id"]
             if not self._execution_visible_to_tenant(execution_id, tenant_id):
                 self._send_json(404, self._gl030_error("Execution not found", "execution_not_found", "The requested execution does not exist."))
                 return
@@ -850,8 +928,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
             execution_id = m.group(1)
-            tenant_id = self._get_tenant_id(auth_ctx)
+            tenant_id = ws_ctx["tenant_id"]
             if not self._execution_visible_to_tenant(execution_id, tenant_id):
                 self._send_json(404, self._gl030_error("Execution not found", "execution_not_found", "The requested execution does not exist."))
                 return
@@ -883,8 +964,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
             execution_id = m.group(1)
-            tenant_id = self._get_tenant_id(auth_ctx)
+            tenant_id = ws_ctx["tenant_id"]
             if not self._execution_visible_to_tenant(execution_id, tenant_id):
                 self._send_json(404, self._gl030_error("Execution not found", "execution_not_found", "The requested execution does not exist."))
                 return
@@ -897,8 +981,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
             execution_id = m.group(1)
-            tenant_id = self._get_tenant_id(auth_ctx)
+            tenant_id = ws_ctx["tenant_id"]
             if not self._execution_visible_to_tenant(execution_id, tenant_id):
                 # Preserve the GL-037 legacy-admin orphan provenance summary
                 # contract while keeping operator-mode execution lookups tenant-scoped.
@@ -934,8 +1021,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
             execution_id = m.group(1)
-            tenant_id = self._get_tenant_id(auth_ctx)
+            tenant_id = ws_ctx["tenant_id"]
             if not self._execution_visible_to_tenant(execution_id, tenant_id):
                 self._send_json(404, {
                     "error": "Execution not found",
@@ -964,8 +1054,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
             execution_id = m.group(1)
-            tenant_id = self._get_tenant_id(auth_ctx)
+            tenant_id = ws_ctx["tenant_id"]
             if not self._execution_visible_to_tenant(execution_id, tenant_id):
                 self._send_json(404, {
                     "error": "Execution not found",
@@ -991,8 +1084,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
             execution_id = m.group(1)
-            tenant_id = self._get_tenant_id(auth_ctx)
+            tenant_id = ws_ctx["tenant_id"]
             if not self._execution_visible_to_tenant(execution_id, tenant_id):
                 self._send_json(404, {
                     "error": "Execution not found",
@@ -1075,7 +1171,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not ok:
                 return
             operator_id = payload.get("operator", {}).get("operatorId") if config.ENABLE_OPERATOR_MODEL else None
-            tenant_id = self._get_tenant_id(payload)
+            ws_ctx, ws_ok = self._resolve_workspace(payload)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError) as e:
@@ -1149,8 +1248,11 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin"])
             if not ok:
                 return
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
             grant_id = m.group(1)
-            tenant_id = self._get_tenant_id(auth_ctx)
+            tenant_id = ws_ctx["tenant_id"]
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError) as e:
@@ -1171,8 +1273,22 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                     str(e),
                 ))
                 return
-            if get_grant(grant_id, tenant_id=tenant_id) is None:
+            g = get_grant(grant_id, tenant_id=tenant_id)
+            if g is None:
                 self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
+                return
+            # GL-227: workspace boundary enforcement for mutation
+            access_ok, access_status, access_err = check_workspace_resource_access(
+                resource_workspace_id=None,
+                caller_workspace_id=ws_ctx["workspace_id"],
+                caller_tenant_id=ws_ctx["tenant_id"],
+                resource_tenant_id=ws_ctx["tenant_id"],
+                cross_workspace_access=ws_ctx.get("cross_workspace_access", False),
+                require_mutation=True,
+                workspace_member_role=ws_ctx.get("workspace_member_role"),
+            )
+            if not access_ok:
+                self._send_json(access_status, access_err)
                 return
             ok = revoke_grant(grant_id, data["revokedBy"], data["reason"], tenant_id=tenant_id)
             if ok:
@@ -1186,7 +1302,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "grant_admin", "auditor"])
             if not ok:
                 return
-            tenant_id = self._get_tenant_id(auth_ctx)
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError) as e:
@@ -1229,7 +1348,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             ok, auth_ctx = self._require_auth(["owner", "demo_operator"])
             if not ok:
                 return
-            tenant_id = self._get_tenant_id(auth_ctx)
+            ws_ctx, ws_ok = self._resolve_workspace(auth_ctx)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             grant_id = m.group(1)
             result = tamper_grant(grant_id, tenant_id=tenant_id)
             if result is None:
@@ -1246,7 +1368,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 return
             if config.ENABLE_OPERATOR_MODEL:
                 caller_operator_id = payload.get("operator", {}).get("operatorId")
-            tenant_id = self._get_tenant_id(payload)
+            ws_ctx, ws_ok = self._resolve_workspace(payload)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError) as e:
@@ -1304,14 +1429,17 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not ok:
                 return
             operator_id = payload.get("operator", {}).get("operatorId")
-            tenant_id = self._get_tenant_id(payload)
-            
+            ws_ctx, ws_ok = self._resolve_workspace(payload)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
+
             try:
                 data = self._read_json()
             except (json.JSONDecodeError, ValueError) as e:
                 self._handle_json_error(e)
                 return
-                
+
             missing = self._missing(data, [
                 "subjectId", "role", "action", "resource",
                 "validFrom", "validUntil", "reason",
@@ -1381,7 +1509,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not ok:
                 return
             operator_id = payload.get("operator", {}).get("operatorId")
-            tenant_id = self._get_tenant_id(payload)
+            ws_ctx, ws_ok = self._resolve_workspace(payload)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
 
             request_id = m.group(1)
             request = grant_requests.get_grant_request(request_id, tenant_id=tenant_id)
@@ -1397,6 +1528,20 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                     "requestedBy": request.requested_by,
                     "approverId": operator_id
                 })
+                return
+
+            # GL-227: workspace boundary enforcement for mutation
+            access_ok, access_status, access_err = check_workspace_resource_access(
+                resource_workspace_id=None,
+                caller_workspace_id=ws_ctx["workspace_id"],
+                caller_tenant_id=ws_ctx["tenant_id"],
+                resource_tenant_id=ws_ctx["tenant_id"],
+                cross_workspace_access=ws_ctx.get("cross_workspace_access", False),
+                require_mutation=True,
+                workspace_member_role=ws_ctx.get("workspace_member_role"),
+            )
+            if not access_ok:
+                self._send_json(access_status, access_err)
                 return
 
             try:
@@ -1422,7 +1567,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not ok:
                 return
             operator_id = payload.get("operator", {}).get("operatorId")
-            tenant_id = self._get_tenant_id(payload)
+            ws_ctx, ws_ok = self._resolve_workspace(payload)
+            if not ws_ok:
+                return
+            tenant_id = ws_ctx["tenant_id"]
 
             request_id = m.group(1)
             request = grant_requests.get_grant_request(request_id, tenant_id=tenant_id)
@@ -1449,6 +1597,19 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                     "invalid_field",
                     str(e),
                 ))
+                return
+            # GL-227: workspace boundary enforcement for mutation
+            access_ok, access_status, access_err = check_workspace_resource_access(
+                resource_workspace_id=None,
+                caller_workspace_id=ws_ctx["workspace_id"],
+                caller_tenant_id=ws_ctx["tenant_id"],
+                resource_tenant_id=ws_ctx["tenant_id"],
+                cross_workspace_access=ws_ctx.get("cross_workspace_access", False),
+                require_mutation=True,
+                workspace_member_role=ws_ctx.get("workspace_member_role"),
+            )
+            if not access_ok:
+                self._send_json(access_status, access_err)
                 return
             try:
                 updated_request = grant_requests.deny_grant_request(
