@@ -111,3 +111,37 @@ class ErrorResponse(BaseModel):
     reason: str
 
     model_config = {"populate_by_name": True}
+
+
+# ── Shared validators ──────────────────────────────────────────────────────
+
+import datetime as _dt
+from fastapi import HTTPException as _HTTPException
+
+
+def _validate_iso_timestamp(value: str, field_name: str) -> None:
+    if not isinstance(value, str) or not value.strip():
+        raise _HTTPException(
+            status_code=400,
+            detail={"error": f"Invalid {field_name}", "errorCode": "invalid_timestamp", "reason": f"{field_name} must be a valid ISO-8601 timestamp."},
+        )
+    try:
+        v = value.replace("Z", "+00:00") if value.endswith("Z") else value
+        _dt.datetime.fromisoformat(v)
+    except ValueError:
+        raise _HTTPException(
+            status_code=400,
+            detail={"error": f"Invalid {field_name}", "errorCode": "invalid_timestamp", "reason": f"{field_name} must be a valid ISO-8601 timestamp."},
+        )
+
+
+def _validate_grant_dates(valid_from: str, valid_until: str) -> None:
+    _validate_iso_timestamp(valid_from, "validFrom")
+    _validate_iso_timestamp(valid_until, "validUntil")
+    vf = _dt.datetime.fromisoformat(valid_from.replace("Z", "+00:00") if valid_from.endswith("Z") else valid_from)
+    vu = _dt.datetime.fromisoformat(valid_until.replace("Z", "+00:00") if valid_until.endswith("Z") else valid_until)
+    if vf >= vu:
+        raise _HTTPException(
+            status_code=400,
+            detail={"error": "Invalid date range", "errorCode": "invalid_date_range", "reason": "validFrom must be strictly before validUntil."},
+        )
