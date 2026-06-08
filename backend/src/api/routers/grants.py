@@ -9,12 +9,8 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from ... import config
-from ...auth import (
-    check_auth,
-    resolve_workspace_context,
-    check_workspace_resource_access,
-)
 from ...crypto_signing import verify_grant_signature
+from ..deps import resolve_auth_and_workspace
 from ...grants import create_grant, get_grant, list_grants
 from ...models import Grant
 from ...validation import (
@@ -73,46 +69,6 @@ def _validate_grant_dates(valid_from: str, valid_until: str) -> None:
         )
 
 
-def _resolve_auth_and_workspace(
-    authorization: Optional[str],
-    required_roles: list[str],
-    workspace_id: Optional[str] = None,
-):
-    """Authenticate the request and resolve workspace context.
-
-    Returns (auth_ctx, ws_ctx).  Raises HTTPException on any failure.
-    """
-    ok, http_status, payload = check_auth(authorization, required_roles=required_roles)
-    if not ok:
-        raise HTTPException(status_code=http_status, detail=payload)
-
-    ws_id, ws_status, ws_ctx = resolve_workspace_context(payload, workspace_id)
-
-    if ws_status != 200:
-        error_code = ws_ctx.get("errorCode", "")
-        # Pre-workspace-enforcement backward compat (mirrors server.py _resolve_workspace)
-        if error_code in ("no_workspace_membership", "workspace_id_required"):
-            tenant_id = payload.get("tenant_id") or "demo"
-            if tenant_id != "demo":
-                from ...db import query_all as _qa
-                tenant_has_ws = _qa(
-                    "SELECT id FROM workspaces WHERE tenant_id = ? AND status = 'active' LIMIT 1",
-                    (tenant_id,),
-                )
-                if not tenant_has_ws:
-                    ws_ctx = {
-                        "workspace_id": "default",
-                        "tenant_id": tenant_id,
-                        "workspace_member_role": None,
-                        "cross_workspace_access": False,
-                        "resolution_mode": "no_tenant_workspaces_fallback",
-                    }
-                    return payload, ws_ctx
-        raise HTTPException(status_code=ws_status, detail=ws_ctx)
-
-    return payload, ws_ctx
-
-
 def _grant_to_response(grant: Grant) -> GrantResponse:
     sig_result = verify_grant_signature(grant)
     return GrantResponse.from_grant(grant, signature_valid=(sig_result == "valid"))
@@ -127,7 +83,7 @@ def list_grants_endpoint(
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ):
     """List all grants visible to the authenticated operator."""
-    _, ws_ctx = _resolve_auth_and_workspace(
+    _, ws_ctx = resolve_auth_and_workspace(
         authorization,
         required_roles=["owner", "grant_admin", "auditor"],
         workspace_id=x_workspace_id,
@@ -144,7 +100,7 @@ def get_grant_endpoint(
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ):
     """Retrieve a single grant by ID."""
-    _, ws_ctx = _resolve_auth_and_workspace(
+    _, ws_ctx = resolve_auth_and_workspace(
         authorization,
         required_roles=["owner", "grant_admin", "auditor"],
         workspace_id=x_workspace_id,
@@ -175,7 +131,7 @@ def create_grant_endpoint(
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ):
     """Create a new grant."""
-    auth_ctx, ws_ctx = _resolve_auth_and_workspace(
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(
         authorization,
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,

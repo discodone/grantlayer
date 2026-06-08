@@ -29,6 +29,11 @@ Open `.env` and set `GRANTLAYER_JWT_SECRET` to a random secret:
 python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 
+> **Required:** If `GRANTLAYER_JWT_SECRET` is not set, the stack starts in legacy
+> admin-token mode. Steps 4–7 (token generation and all authenticated API calls)
+> will fail with `admin_token_required` or `admin_token_invalid`. Set the secret
+> before running `docker compose up`.
+
 ---
 
 ## 2. Generate TLS certs (self-signed, local dev only)
@@ -97,8 +102,14 @@ curl -k -s -X POST https://localhost/grants \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "agentId": "agent-001",
-    "resource": "read:reports",
+    "subjectId": "agent-001",
+    "role": "reader",
+    "action": "read",
+    "resource": "reports",
+    "validFrom": "2025-01-01T00:00:00Z",
+    "validUntil": "2025-12-31T23:59:59Z",
+    "createdBy": "dev-operator",
+    "reason": "quickstart test grant",
     "maxUses": 10
   }' | python3 -m json.tool
 ```
@@ -107,12 +118,21 @@ Response:
 
 ```json
 {
-  "grantId": "g_...",
-  "agentId": "agent-001",
-  "resource": "read:reports",
-  "status": "active",
+  "id": "g_...",
+  "subjectId": "agent-001",
+  "role": "reader",
+  "action": "read",
+  "resource": "reports",
+  "validFrom": "2025-01-01T00:00:00Z",
+  "validUntil": "2025-12-31T23:59:59Z",
+  "createdBy": "dev-operator",
+  "reason": "quickstart test grant",
   "maxUses": 10,
-  "usageCount": 0
+  "useCount": 0,
+  "revoked": false,
+  "createdAt": "...",
+  "signaturePresent": true,
+  "signatureValid": true
 }
 ```
 
@@ -130,7 +150,7 @@ curl -k -s https://localhost/grants \
 ## 7. Export an Audit Log
 
 ```bash
-curl -k -s "https://localhost/audit/events?limit=20" \
+curl -k -s "https://localhost/audit-events?limit=20" \
   -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
 ```
 
