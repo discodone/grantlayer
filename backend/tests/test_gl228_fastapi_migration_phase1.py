@@ -7,6 +7,7 @@ Install with: sudo apt-get install -y python3-fastapi python3-uvicorn python3-py
 """
 
 import os
+import tempfile
 import unittest
 
 # ── FastAPI availability guard ─────────────────────────────────────────────
@@ -20,18 +21,45 @@ _SKIP = unittest.skipUnless(_FASTAPI_AVAILABLE, "FastAPI not installed (apt inst
 
 # ── Test-environment isolation ────────────────────────────────────────────
 os.environ.setdefault("GRANTLAYER_RUNTIME_MODE", "demo")
-os.environ.setdefault("GRANTLAYER_DB_PATH", ":memory:")
-
+# Force legacy/demo auth mode: operator model is not configured in tests.
+# config.ENABLE_OPERATOR_MODEL is cached at import time, so we patch the
+# env var AND the live attribute so setUp patches in each class take effect.
+os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+os.environ["GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"] = "true"
 
 if _FASTAPI_AVAILABLE:
+    import backend.src.config as _gl228_config  # noqa: E402
+    import backend.src.db as _gl228_db          # noqa: E402
+    _gl228_config.ENABLE_OPERATOR_MODEL = False
+    _gl228_config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
     from fastapi.testclient import TestClient
     from backend.src.api.app import create_app
 
 
-def _make_client() -> "TestClient":
-    """Return a TestClient backed by a fresh in-memory DB."""
+def _make_client(db_path: str) -> "TestClient":
+    """Return a TestClient backed by an isolated temp-file DB."""
+    _gl228_db.DB_PATH_OR_URL = db_path
+    _gl228_db.DB_PATH = db_path
+    _gl228_db.init_db()
     app = create_app()
     return TestClient(app, raise_server_exceptions=True)
+
+
+def _setup_db() -> tuple:
+    """Create a fresh temp DB file, patch db module, return (path, file_obj)."""
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp.close()
+    _gl228_db.DB_PATH_OR_URL = tmp.name
+    _gl228_db.DB_PATH = tmp.name
+    _gl228_db.init_db()
+    return tmp.name
+
+
+def _teardown_db(db_path: str) -> None:
+    try:
+        os.unlink(db_path)
+    except OSError:
+        pass
 
 
 # ── Health / Readiness ─────────────────────────────────────────────────────
@@ -40,7 +68,11 @@ def _make_client() -> "TestClient":
 class TestHealthEndpoint(unittest.TestCase):
 
     def setUp(self):
-        self.client = _make_client()
+        self._db_path = _setup_db()
+        self.client = _make_client(self._db_path)
+
+    def tearDown(self):
+        _teardown_db(self._db_path)
 
     def test_health_200(self):
         resp = self.client.get("/health")
@@ -74,7 +106,11 @@ class TestHealthEndpoint(unittest.TestCase):
 class TestReadinessEndpoint(unittest.TestCase):
 
     def setUp(self):
-        self.client = _make_client()
+        self._db_path = _setup_db()
+        self.client = _make_client(self._db_path)
+
+    def tearDown(self):
+        _teardown_db(self._db_path)
 
     def test_readiness_200_in_demo_mode(self):
         resp = self.client.get("/readiness")
@@ -101,8 +137,17 @@ class TestGrantsAuthGuard(unittest.TestCase):
     def setUp(self):
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
-        os.environ.pop("ENABLE_OPERATOR_MODEL", None)
-        self.client = _make_client()
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        _gl228_config.ENABLE_OPERATOR_MODEL = False
+        _gl228_config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
+        self._db_path = _setup_db()
+        self.client = _make_client(self._db_path)
+
+    def tearDown(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        _gl228_config.ENABLE_OPERATOR_MODEL = False
+        _gl228_config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
+        _teardown_db(self._db_path)
 
     def test_list_grants_no_auth_demo_mode(self):
         """In demo mode (no token required) list should return 200."""
@@ -113,7 +158,7 @@ class TestGrantsAuthGuard(unittest.TestCase):
     def test_list_grants_requires_token_when_configured(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "test-secret-token-16x"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
-        client = _make_client()
+        client = _make_client(self._db_path)
         resp = client.get("/grants")
         self.assertIn(resp.status_code, (401, 403))
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN")
@@ -145,8 +190,17 @@ class TestGrantsCRUDDemoMode(unittest.TestCase):
     def setUp(self):
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
-        os.environ.pop("ENABLE_OPERATOR_MODEL", None)
-        self.client = _make_client()
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        _gl228_config.ENABLE_OPERATOR_MODEL = False
+        _gl228_config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
+        self._db_path = _setup_db()
+        self.client = _make_client(self._db_path)
+
+    def tearDown(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        _gl228_config.ENABLE_OPERATOR_MODEL = False
+        _gl228_config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
+        _teardown_db(self._db_path)
 
     def test_create_grant_201(self):
         resp = self.client.post("/grants", json=self.VALID_BODY)
@@ -216,8 +270,17 @@ class TestGrantsValidation(unittest.TestCase):
     def setUp(self):
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
-        os.environ.pop("ENABLE_OPERATOR_MODEL", None)
-        self.client = _make_client()
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        _gl228_config.ENABLE_OPERATOR_MODEL = False
+        _gl228_config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
+        self._db_path = _setup_db()
+        self.client = _make_client(self._db_path)
+
+    def tearDown(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        _gl228_config.ENABLE_OPERATOR_MODEL = False
+        _gl228_config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
+        _teardown_db(self._db_path)
 
     def _post(self, body: dict):
         return self.client.post("/grants", json=body)
@@ -291,8 +354,17 @@ class TestGrantsWorkspaceHeader(unittest.TestCase):
     def setUp(self):
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
-        os.environ.pop("ENABLE_OPERATOR_MODEL", None)
-        self.client = _make_client()
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        _gl228_config.ENABLE_OPERATOR_MODEL = False
+        _gl228_config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
+        self._db_path = _setup_db()
+        self.client = _make_client(self._db_path)
+
+    def tearDown(self):
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        _gl228_config.ENABLE_OPERATOR_MODEL = False
+        _gl228_config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
+        _teardown_db(self._db_path)
 
     def test_list_with_workspace_header_no_server_error(self):
         resp = self.client.get("/grants", headers={"X-Workspace-Id": "default"})
