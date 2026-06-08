@@ -242,6 +242,66 @@ class GrantRequest:
 # GL-036 Evidence Persistence model
 # ──────────────────────────────────────────────
 
+# ──────────────────────────────────────────────
+# GL-224 Workspace Identity / Membership / Invites
+# ──────────────────────────────────────────────
+
+WorkspaceStatus = Literal["active", "inactive", "suspended"]
+WorkspaceMemberStatus = Literal["active", "removed", "suspended"]
+WorkspaceInviteStatus = Literal["pending", "accepted", "expired", "revoked"]
+WorkspaceMemberRole = Literal[
+    "workspace_owner", "workspace_admin", "workspace_member", "workspace_readonly"
+]
+
+
+@dataclass
+class Workspace:
+    """A workspace entity scoped to a tenant."""
+    id: str
+    tenant_id: str
+    name: str
+    slug: str
+    owner_id: str
+    created_at: str
+    updated_at: str
+    status: WorkspaceStatus = "active"
+    description: Optional[str] = None
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class WorkspaceMember:
+    """Membership record linking an operator to a workspace."""
+    id: str
+    workspace_id: str
+    operator_id: str
+    role: WorkspaceMemberRole
+    joined_at: str
+    status: WorkspaceMemberStatus = "active"
+    invited_by: Optional[str] = None
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class WorkspaceInvite:
+    """Pending invite for a new workspace member (email stored as hash)."""
+    id: str
+    workspace_id: str
+    invited_by: str
+    email_hash: str
+    role: WorkspaceMemberRole
+    expires_at: str
+    created_at: str
+    status: WorkspaceInviteStatus = "pending"
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
 @dataclass
 class EvidenceBundle:
     """Immutable persisted evidence bundle record."""
