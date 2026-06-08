@@ -20,18 +20,12 @@ except ImportError:
 _SKIP = unittest.skipUnless(_FASTAPI_AVAILABLE, "FastAPI not installed (apt install python3-fastapi python3-uvicorn python3-pydantic python3-starlette)")
 
 # ── Test-environment isolation ────────────────────────────────────────────
-os.environ.setdefault("GRANTLAYER_RUNTIME_MODE", "demo")
-# Force legacy/demo auth mode: operator model is not configured in tests.
-# config.ENABLE_OPERATOR_MODEL is cached at import time, so we patch the
-# env var AND the live attribute so setUp patches in each class take effect.
-os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
-os.environ["GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"] = "true"
+# Note: env vars and config attributes are patched per-test via _GL228TestBase.setUp/tearDown
+# to avoid polluting other test modules.  No module-level config mutations here.
 
 if _FASTAPI_AVAILABLE:
     import backend.src.config as _gl228_config  # noqa: E402
     import backend.src.db as _gl228_db          # noqa: E402
-    _gl228_config.ENABLE_OPERATOR_MODEL = False
-    _gl228_config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
     from fastapi.testclient import TestClient
     from backend.src.api.app import create_app
 
