@@ -1,0 +1,101 @@
+{
+  "issue_id": "GL-224",
+  "title": "Workspace Schema / Membership Baseline",
+  "result": "implemented",
+  "summary": "Introduces workspaces, workspace_members, and workspace_invites tables via migration 0011_gl224_workspace_schema_membership_baseline. Backfills existing demo-tenant resource rows to the canonical default workspace.",
+  "new_tables": [
+    "workspaces",
+    "workspace_members",
+    "workspace_invites"
+  ],
+  "indexes_created": [
+    "idx_workspaces_tenant_id",
+    "idx_workspaces_tenant_slug",
+    "idx_workspace_members_workspace_id",
+    "idx_workspace_members_operator_id",
+    "idx_workspace_members_workspace_operator",
+    "idx_workspace_invites_workspace_id",
+    "idx_workspace_invites_email_hash"
+  ],
+  "migration_file": "backend/src/migrations/0011_gl224_workspace_schema_membership_baseline.py",
+  "migration_version": "0011_gl224_workspace_schema_membership_baseline",
+  "backfill_strategy": {
+    "description": "A canonical workspace (id='default', tenant_id='demo') is inserted if not present. All existing resource rows in the demo tenant with workspace_id=NULL are updated to workspace_id='default'. Non-demo tenants are not touched. The backfill is idempotent.",
+    "demo_workspace_id": "default",
+    "demo_tenant_id": "demo",
+    "tables_backfilled": [
+      "grants",
+      "grant_requests",
+      "challenges",
+      "grant_executions",
+      "evidence_archives"
+    ],
+    "idempotent": true
+  },
+  "schema_additions": {
+    "workspaces": {
+      "columns": ["id", "tenant_id", "name", "slug", "owner_id", "status", "description", "created_at", "updated_at"],
+      "constraints": ["PRIMARY KEY (id)", "UNIQUE INDEX (tenant_id, slug)"],
+      "notes": "status defaults to 'active'. slug is URL-friendly name, unique per tenant."
+    },
+    "workspace_members": {
+      "columns": ["id", "workspace_id", "operator_id", "role", "invited_by", "joined_at", "status"],
+      "constraints": ["PRIMARY KEY (id)", "UNIQUE INDEX (workspace_id, operator_id)"],
+      "notes": "role defaults to 'workspace_member'. Unique per (workspace, operator) pair."
+    },
+    "workspace_invites": {
+      "columns": ["id", "workspace_id", "invited_by", "email_hash", "role", "status", "expires_at", "created_at"],
+      "constraints": ["PRIMARY KEY (id)"],
+      "notes": "email stored as hash only (privacy). status defaults to 'pending'."
+    }
+  },
+  "models_added": [
+    "Workspace",
+    "WorkspaceMember",
+    "WorkspaceInvite",
+    "WorkspaceStatus",
+    "WorkspaceMemberStatus",
+    "WorkspaceInviteStatus",
+    "WorkspaceMemberRole"
+  ],
+  "rollback_strategy": {
+    "steps": [
+      "DROP TABLE workspace_invites",
+      "DROP TABLE workspace_members",
+      "DROP TABLE workspaces",
+      "UPDATE resource tables SET workspace_id = NULL WHERE workspace_id = 'default'"
+    ],
+    "note": "Rollback is manual. No automated rollback script in this baseline sprint."
+  },
+  "production_readiness_impact": {
+    "production_saas": "NO-GO — workspace schema is a prerequisite but does not itself enable Production SaaS",
+    "real_customer_data": "NO-GO — no real customer data introduced or enabled",
+    "live_postgresql_production_readiness": "NO-GO — migration tested against SQLite in-memory; PostgreSQL path is supported by the runner but not gate-tested in this sprint",
+    "official_sdk_package": "NO-GO",
+    "compliance_certification": "NO-GO",
+    "private_grant_institutional_data": "NO-GO"
+  },
+  "safety_confirmations": {
+    "production_saas_no_go": true,
+    "no_real_customer_data": true,
+    "no_real_secrets": true,
+    "no_network_calls": true,
+    "no_destructive_ops": true,
+    "local_only": true,
+    "no_exploit_details": true,
+    "no_public_push": true,
+    "no_deployment_cloud_k8s_terraform_helm": true,
+    "no_tls_cert_private_key_files": true,
+    "no_package_metadata_changes": true,
+    "migration_idempotent": true,
+    "no_forbidden_src_files_modified": true,
+    "gl214_through_gl223_boundaries_preserved": true
+  },
+  "test_file": "backend/tests/test_gl224_workspace_schema_membership_baseline.py",
+  "gate_script": "scripts/ops/gl224_workspace_schema_gate.py",
+  "next_issues": [
+    "GL-225: Workspace API — POST /workspaces, GET /workspaces, POST /workspaces/{id}/members",
+    "GL-226: Workspace enforcement in policy engine and resource CRUD",
+    "GL-227: Cross-workspace isolation enforcement and audit propagation"
+  ]
+}
