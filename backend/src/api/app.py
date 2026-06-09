@@ -16,6 +16,7 @@ from .. import config
 from ..db import init_db
 from ..logging_utils import get_logger
 from .routers import (
+    auth,
     health,
     grants,
     grant_requests,
@@ -98,6 +99,15 @@ def create_app() -> FastAPI:
         )
 
     # Pass through dict details for other 4xx/5xx HTTPExceptions too
+    @app.exception_handler(401)
+    async def _unauthorized(request: Request, exc):
+        if isinstance(getattr(exc, "detail", None), dict):
+            return JSONResponse(status_code=401, content=exc.detail)
+        return JSONResponse(
+            status_code=401,
+            content={"error": "Unauthorized", "errorCode": "unauthorized", "reason": "Authentication required."},
+        )
+
     @app.exception_handler(403)
     async def _forbidden(request: Request, exc):
         if isinstance(getattr(exc, "detail", None), dict):
@@ -107,7 +117,17 @@ def create_app() -> FastAPI:
             content={"error": "Forbidden", "errorCode": "forbidden", "reason": "Access denied."},
         )
 
+    @app.exception_handler(501)
+    async def _not_implemented(request: Request, exc):
+        if isinstance(getattr(exc, "detail", None), dict):
+            return JSONResponse(status_code=501, content=exc.detail)
+        return JSONResponse(
+            status_code=501,
+            content={"error": "Not Implemented", "errorCode": "not_implemented", "reason": "Feature not available."},
+        )
+
     # Routers
+    app.include_router(auth.router)
     app.include_router(health.router)
     app.include_router(grants.router)
     app.include_router(grant_requests.router)
