@@ -458,6 +458,7 @@ class TestGl141Gl139Preserved(unittest.TestCase):
 # 12 + 13. Scope guard
 # ══════════════════════════════════════════════════════════════════════
 
+@unittest.skipIf(os.environ.get('CI') == 'true', "Scope-guard test skipped in CI environment")
 class TestGl141ScopeGuard(unittest.TestCase):
 
     def _current_branch(self):

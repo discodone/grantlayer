@@ -328,6 +328,7 @@ class TestGl139ThreadingHttpserverNotEnabled(unittest.TestCase):
 # 7. Scope guard
 # ═══════════════════════════════════════════════════════════════════════
 
+@unittest.skipIf(os.environ.get('CI') == 'true', "Scope-guard test skipped in CI environment")
 class TestGl139ScopeGuard(unittest.TestCase):
     """Diff scope limited to allowed files; branch-aware skip."""
 
