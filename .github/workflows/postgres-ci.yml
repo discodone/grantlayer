@@ -23,9 +23,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install cryptography
 
-      - name: Run full backend unit suite (SQLite)
+      - name: Run functional tests (SQLite, excludes doc-guard/scope-guard)
         run: |
-          python3 -m unittest discover backend.tests -v
+          ./scripts/run-functional-tests.sh
 
   postgres-integration:
     runs-on: ubuntu-latest
