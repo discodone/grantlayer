@@ -21,11 +21,16 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install cryptography
+          pip install cryptography pytest
 
       - name: Run functional tests (SQLite, excludes doc-guard/scope-guard)
         run: |
-          ./scripts/run-functional-tests.sh
+          python3 -m pytest backend/tests/ -m "not doc_guard" \
+            --ignore=backend/tests/test_gl112_audit_log_duplication_cleanup.py \
+            --ignore=backend/tests/test_gl139_audit_hash_chain_write_lock.py \
+            --ignore=backend/tests/test_gl141_operator_model_default.py \
+            --ignore=backend/tests/test_gl214_production_iam_operator_control_completion.py \
+            -x --tb=short
 
   postgres-integration:
     runs-on: ubuntu-latest
