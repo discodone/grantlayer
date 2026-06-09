@@ -380,7 +380,7 @@ class TestGl139ScopeGuard(unittest.TestCase):
         repo_root = pathlib.Path(__file__).with_suffix("").parent.parent.parent
         migrations_dir = repo_root / "backend" / "src" / "migrations"
         scripts = sorted(migrations_dir.glob("0*.py"))
-        self.assertEqual(len(scripts), 9, f"Expected 9 migration scripts, got {len(scripts)}")
+        self.assertEqual(len(scripts), 11, f"Expected 11 migration scripts, got {len(scripts)}")
 
     def test_no_dependency_files_changed(self):
         repo_root = pathlib.Path(__file__).with_suffix("").parent.parent.parent

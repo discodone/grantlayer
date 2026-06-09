@@ -129,6 +129,7 @@ DOC_GUARD_MODULES: frozenset[str] = frozenset(
         "test_gl211_sdk_pilot_production_gate",
         "test_gl212_public_external_review_readiness_gate_pack",
         "test_gl213_production_readiness_gap_report_v4",
+        "test_gl214_production_iam_operator_control_completion",
         "test_gl216_production_operations_hardening_pack",
         "test_gl217_production_go_no_go_v5",
         "test_gl218_public_external_review_export_safety_pack",

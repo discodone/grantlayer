@@ -602,7 +602,7 @@ class TestGl112ScopeGuard(unittest.TestCase):
     def test_migration_count_unchanged(self):
         migrations_dir = pathlib.Path(__file__).parent.parent / "src" / "migrations"
         scripts = sorted(migrations_dir.glob("0*.py"))
-        self.assertEqual(len(scripts), 9, f"Expected 9 migration scripts, got {len(scripts)}: {scripts}")
+        self.assertEqual(len(scripts), 11, f"Expected 11 migration scripts, got {len(scripts)}: {scripts}")
 
     def test_no_audit_chain_endpoint_in_openapi(self):
         openapi_path = pathlib.Path(__file__).parent.parent.parent / "docs" / "openapi.yaml"

@@ -485,8 +485,8 @@ class TestGl141ScopeGuard(unittest.TestCase):
         migrations_dir = _repo_root() / "backend" / "src" / "migrations"
         scripts = sorted(migrations_dir.glob("0*.py"))
         self.assertEqual(
-            len(scripts), 9,
-            f"GL-141 must not add migrations (expected 9, got {len(scripts)})",
+            len(scripts), 11,
+            f"GL-141 must not add migrations (expected 11, got {len(scripts)})",
         )
 
     def test_no_dependency_files_changed(self):
