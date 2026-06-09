@@ -53,3 +53,9 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Website design workspace import artefacts (not for public repo)
+docs/website_design_workspace_import_report*.md
+docs/website_design_workspace_import_dirty_stop*.md
+docs/website-design-workspace-import-report*.md
+website-design/
