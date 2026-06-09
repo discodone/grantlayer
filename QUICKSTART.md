@@ -15,8 +15,8 @@ Get GrantLayer running locally in under 5 minutes.
 ## 1. Clone and configure
 
 ```bash
-git clone https://github.com/grantlayer/grantlayer-mvp.git
-cd grantlayer-mvp
+git clone https://github.com/discodone/grantlayer.git
+cd grantlayer
 
 # Copy and fill in your env file
 cp .env.example .env
