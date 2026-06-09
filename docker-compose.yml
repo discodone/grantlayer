@@ -16,8 +16,8 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: grantlayer-api
-    expose:
-      - "8765"
+    ports:
+      - "8765:8765"
     environment:
       - GRANTLAYER_HOST=0.0.0.0
       - GRANTLAYER_PORT=8765
@@ -27,7 +27,7 @@ services:
       - GRANTLAYER_DB=${GRANTLAYER_DB:-/app/data/grantlayer.db}
       - GRANTLAYER_DATABASE_URL=${GRANTLAYER_DATABASE_URL:-}
       - GRANTLAYER_LOG_LEVEL=${GRANTLAYER_LOG_LEVEL:-INFO}
-      - GRANTLAYER_ENABLE_OPERATOR_MODEL=${GRANTLAYER_ENABLE_OPERATOR_MODEL:-false}
+      - GRANTLAYER_ENABLE_OPERATOR_MODEL=${GRANTLAYER_ENABLE_OPERATOR_MODEL:-true}
     volumes:
       - grantlayer-data:/app/data
     healthcheck:

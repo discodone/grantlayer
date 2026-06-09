@@ -62,7 +62,12 @@ Services started:
 Check the stack is healthy:
 
 ```bash
+# Via Nginx (TLS)
 curl -k https://localhost/health
+# → {"status": "ok", ...}
+
+# Direct API port (no TLS)
+curl http://localhost:8765/health
 # → {"status": "ok", ...}
 ```
 
@@ -72,6 +77,29 @@ curl -k https://localhost/health
 ---
 
 ## 4. Get a JWT token
+
+### Option A — API endpoint (recommended)
+
+```bash
+# Use your GRANTLAYER_ADMIN_TOKEN from .env as the secret
+export TOKEN=$(curl -s -X POST http://localhost:8765/auth/token \
+  -H "Content-Type: application/json" \
+  -d "{\"operator_id\": \"dev\", \"secret\": \"$(grep GRANTLAYER_ADMIN_TOKEN .env | cut -d= -f2-)\"}" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+echo "Token acquired."
+```
+
+Response shape:
+
+```json
+{
+  "access_token": "eyJ...",
+  "token_type": "bearer",
+  "expires_in": 3600
+}
+```
+
+### Option B — Python helper (local dev only)
 
 ```bash
 # Export your JWT secret (must match .env)
@@ -151,7 +179,7 @@ curl -k -s https://localhost/grants \
 
 The `/grant-requests` endpoint is part of the operator model — a request/approval workflow on top of direct grant creation.
 
-> **Required:** `GRANTLAYER_ENABLE_OPERATOR_MODEL=true` must be set in `.env` (it is the default). If not set, the endpoint returns `operator_model_disabled`.
+> **Required:** `GRANTLAYER_ENABLE_OPERATOR_MODEL=true` must be set in `.env` (enabled by default in `docker-compose.yml`). If disabled, the endpoint returns `operator_model_disabled`.
 
 ```bash
 # Add to .env if not already present:

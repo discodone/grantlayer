@@ -12,7 +12,8 @@ from ... import config
 from ...crypto_signing import verify_grant_signature
 from ..deps import resolve_auth_and_workspace
 from ...grants import create_grant, get_grant, list_grants
-from ...models import Grant
+from ...models import AuditEvent, Grant
+from ... import audit_log as _audit_log
 from ...validation import (
     MAX_NAME_LENGTH,
     MAX_REASON_LENGTH,
@@ -194,4 +195,17 @@ def create_grant_endpoint(
         max_uses=body.max_uses,
     )
     create_grant(grant, tenant_id=tenant_id)
+    _audit_log.append_event(
+        AuditEvent(
+            subject_id=grant.subject_id,
+            role=grant.role,
+            action=grant.action,
+            resource=grant.resource,
+            approved=True,
+            reason=f"grant_created: {grant.reason}",
+            matched_grant_id=grant.id,
+            grant_signature_result="valid",
+            tenant_id=tenant_id,
+        )
+    )
     return _grant_to_response(grant)
