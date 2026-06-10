@@ -14,13 +14,10 @@ Covers:
 """
 
 import os
-import sys
 import json
 import unittest
 import tempfile
 import importlib
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestSecurityBoundaryRegression(unittest.TestCase):
@@ -37,43 +34,43 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         self._orig_admin_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import src.challenges as ch_mod
+        import backend.src.challenges as ch_mod
         importlib.reload(ch_mod)
         self.ch_mod = ch_mod
 
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import src.evidence_bundle as eb_mod
+        import backend.src.evidence_bundle as eb_mod
         importlib.reload(eb_mod)
         self.eb_mod = eb_mod
 
@@ -111,7 +108,7 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
             conn.close()
 
     def _make_grant(self):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -172,11 +169,11 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         # Must reload config first so auth sees the new flag
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.operators as fresh_ops
+        import backend.src.operators as fresh_ops
         importlib.reload(fresh_ops)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         ok, status, payload = fresh_auth.check_auth(None, required_roles=["owner"])
         self.assertFalse(ok)
@@ -190,11 +187,11 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         self._insert_operator("aud-01", "Auditor", "auditor", "token-aud")
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.operators as fresh_ops
+        import backend.src.operators as fresh_ops
         importlib.reload(fresh_ops)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         ok, status, payload = fresh_auth.check_auth(
             "Bearer token-aud", required_roles=["owner"]
@@ -270,7 +267,7 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         self.assertFalse(result["approved"])
         # Direct signature verification should fail
         fresh_grant = self.grants_mod.get_grant(g.id)
-        import src.crypto_signing as cs
+        import backend.src.crypto_signing as cs
         importlib.reload(cs)
         sig_result = cs.verify_grant_signature(fresh_grant)
         self.assertNotEqual(sig_result, "valid")

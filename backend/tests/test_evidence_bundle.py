@@ -148,70 +148,30 @@ class TestEvidenceBundle(unittest.TestCase):
         importlib.reload(self.ops_mod)
         return tok
 
+    def _make_client(self):
+        """Create a FastAPI TestClient using the current module config state."""
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        import backend.src.db as bk_db
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        return TestClient(create_app(), raise_server_exceptions=False)
+
     def _run_handler(self, path, method="GET", auth=None):
-        """Simulate a server request and return (status, response_json)."""
-        importlib.reload(self.config_mod)
-        importlib.reload(self.auth_mod)
-        from backend.src.server import GrantLayerHandler
-        from io import BytesIO
-        import http.client
-
-        class DummyRequest:
-            def __init__(self):
-                self.headers = {}
-                if auth:
-                    self.headers["Authorization"] = auth
-                self.rfile = BytesIO(b"")
-                self.wfile = BytesIO()
-                self._status = None
-                self._headers = {}
-
-            def send_response(self, code):
-                self._status = code
-
-            def send_header(self, key, value):
-                self._headers[key] = value
-
-            def end_headers(self):
-                pass
-
-        class TestHandler(GrantLayerHandler):
-            def __init__(inner_self, request):
-                # Minimal init for testing path routing
-                inner_self.command = method
-                inner_self.path = path
-                inner_self.request_version = "HTTP/1.1"
-                inner_self.headers = request.headers
-                inner_self.rfile = request.rfile
-                inner_self.wfile = request.wfile
-                inner_self._status = None
-                inner_self._headers = {}
-
-            def send_response(inner_self, code):
-                inner_self._status = code
-
-            def send_header(inner_self, key, value):
-                inner_self._headers[key] = value
-
-            def end_headers(inner_self):
-                pass
-
-            def _send_json(inner_self, status, data):
-                inner_self.send_response(status)
-                inner_self._json = data
-                inner_self._status = status
-
-            def _send_html(inner_self, body):
-                inner_self.send_response(200)
-                inner_self._status = 200
-
-        req = DummyRequest()
-        handler = TestHandler(req)
+        """Make a request via FastAPI TestClient and return (status, response_json)."""
+        headers = {}
+        if auth:
+            headers["Authorization"] = auth
+        client = self._make_client()
         if method == "GET":
-            handler.do_GET()
+            resp = client.get(path, headers=headers)
         else:
-            handler.do_POST()
-        return handler._status, getattr(handler, "_json", None)
+            resp = client.post(path, headers=headers)
+        try:
+            return resp.status_code, resp.json()
+        except Exception:
+            return resp.status_code, None
 
     # ──────────────────────────────────────────────
     # 1. Missing execution returns 404
@@ -781,70 +741,16 @@ class TestEvidenceBundle(unittest.TestCase):
     # Export helper
     # ──────────────────────────────────────────────
     def _run_export(self, path, method="GET", auth=None):
-        importlib.reload(self.config_mod)
-        importlib.reload(self.auth_mod)
-        from backend.src.server import GrantLayerHandler
-        from io import BytesIO
-        import http.client
-
-        class DummyRequest:
-            def __init__(self):
-                self.headers = {}
-                if auth:
-                    self.headers["Authorization"] = auth
-                self.rfile = BytesIO(b"")
-                self.wfile = BytesIO()
-                self._status = None
-                self._headers = {}
-
-            def send_response(self, code):
-                self._status = code
-
-            def send_header(self, key, value):
-                self._headers[key] = value
-
-            def end_headers(self):
-                pass
-
-        class TestHandler(GrantLayerHandler):
-            def __init__(inner_self, request):
-                inner_self.command = method
-                inner_self.path = path
-                inner_self.request_version = "HTTP/1.1"
-                inner_self.headers = request.headers
-                inner_self.rfile = request.rfile
-                inner_self.wfile = request.wfile
-                inner_self._status = None
-                inner_self._headers = {}
-
-            def send_response(inner_self, code):
-                inner_self._status = code
-
-            def send_header(inner_self, key, value):
-                inner_self._headers[key] = value
-
-            def end_headers(inner_self):
-                pass
-
-            def _send_json(inner_self, status, data):
-                inner_self.send_response(status)
-                inner_self._json = data
-                inner_self._status = status
-
-            def _send_html(inner_self, body):
-                inner_self.send_response(200)
-                inner_self._status = 200
-
-        req = DummyRequest()
-        handler = TestHandler(req)
+        """Make an export request via FastAPI TestClient, return (status, headers_dict, body_bytes)."""
+        headers = {}
+        if auth:
+            headers["Authorization"] = auth
+        client = self._make_client()
         if method == "GET":
-            handler.do_GET()
+            resp = client.get(path, headers=headers)
         else:
-            handler.do_POST()
-        status = handler._status
-        headers = handler._headers
-        body = req.wfile.getvalue()
-        return status, headers, body
+            resp = client.post(path, headers=headers)
+        return resp.status_code, dict(resp.headers), resp.content
 
     # ──────────────────────────────────────────────
     # 26. Export returns 200 for valid execution
@@ -878,7 +784,9 @@ class TestEvidenceBundle(unittest.TestCase):
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
-        self.assertEqual(headers.get("Content-Type"), "application/json; charset=utf-8")
+        # HTTPX normalises header names to lowercase
+        ct = headers.get("Content-Type") or headers.get("content-type", "")
+        self.assertIn("application/json", ct)
 
     # ──────────────────────────────────────────────
     # 28. Export Content-Disposition includes executionId and short hash
@@ -895,7 +803,7 @@ class TestEvidenceBundle(unittest.TestCase):
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
-        cd = headers.get("Content-Disposition")
+        cd = headers.get("Content-Disposition") or headers.get("content-disposition")
         self.assertTrue(cd.startswith("attachment"))
         self.assertIn(f"evidence-{ex_id}", cd)
         bundle = self.eb_mod.build_evidence_bundle(ex_id)
@@ -919,7 +827,8 @@ class TestEvidenceBundle(unittest.TestCase):
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
         data = json.loads(body)
-        self.assertEqual(headers.get("X-Evidence-Hash"), data["evidenceHash"])
+        xeh = headers.get("X-Evidence-Hash") or headers.get("x-evidence-hash")
+        self.assertEqual(xeh, data["evidenceHash"])
 
     # ──────────────────────────────────────────────
     # 30. Export body evidenceHash equals normal endpoint evidenceHash

@@ -8,13 +8,10 @@ Covers:
 """
 
 import os
-import sys
 import json
 import unittest
 import importlib
 import tempfile
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestGrantExecutionModel(unittest.TestCase):
@@ -27,31 +24,31 @@ class TestGrantExecutionModel(unittest.TestCase):
 
         self._orig_req_challenge = os.environ.get("GRANTLAYER_REQUIRE_CHALLENGE")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import src.challenges as ch_mod
+        import backend.src.challenges as ch_mod
         importlib.reload(ch_mod)
         self.ch_mod = ch_mod
 
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import src.grant_executions as exec_mod
+        import backend.src.grant_executions as exec_mod
         importlib.reload(exec_mod)
         self.exec_mod = exec_mod
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
@@ -69,7 +66,7 @@ class TestGrantExecutionModel(unittest.TestCase):
             os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
 
     def _make_grant(self, **kwargs):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -198,9 +195,9 @@ class TestGrantExecutionModel(unittest.TestCase):
     # 6. Execution links to grant_request_id
     # ──────────────────────────────────────────────
     def test_execution_links_grant_request_id(self):
-        import src.grant_requests as gr_mod
+        import backend.src.grant_requests as gr_mod
         importlib.reload(gr_mod)
-        from src.models import GrantRequest
+        from backend.src.models import GrantRequest
 
         req = GrantRequest(
             subject_id="tech-01",
@@ -267,38 +264,46 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.grant_executions as exec_mod
+        import backend.src.grant_executions as exec_mod
         importlib.reload(exec_mod)
         self.exec_mod = exec_mod
 
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import src.server as server_mod
-        importlib.reload(server_mod)
-        self.server_mod = server_mod
-        self.handler_class = server_mod.GrantLayerHandler
-
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
+
+        # Patch backend.src.db so TestClient uses the same temp DB
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
+        self._bk_db = db_mod
+
+        # Create TestClient with operator model enabled
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        import backend.src.config as bk_cfg
+        bk_cfg.ENABLE_OPERATOR_MODEL = True
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -312,8 +317,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             os.environ.pop("GRANTLAYER_ENABLE_OPERATOR_MODEL", None)
 
     def _insert_operator(self, op_id, name, role, token):
-        import src.db as db_mod
-        conn = db_mod.get_conn()
+        conn = self._bk_db.get_conn()
         try:
             conn.execute(
                 """INSERT INTO operators (id, name, role, token_hash, active, created_at)
@@ -325,7 +329,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             conn.close()
 
     def _make_grant(self):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -340,25 +344,12 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         return g
 
     def _http_get(self, path, auth_token=None):
-        from io import BytesIO
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO()
-        handler.wfile = BytesIO()
+        """Helper: GET request via TestClient."""
         headers = {}
         if auth_token:
             headers["Authorization"] = f"Bearer {auth_token}"
-        handler.headers = headers
-        handler.path = path
-        handler.command = "GET"
-        handler.requestline = f"GET {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        handler.do_GET()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        return parts[0], json.loads(parts[1]) if len(parts) > 1 else {}
+        resp = self.client.get(path, headers=headers)
+        return resp.status_code, resp.json()
 
     # ──────────────────────────────────────────────
     # 8. GET /grant-executions returns list
@@ -370,8 +361,8 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
 
-        status_line, data = self._http_get("/grant-executions", auth_token="auditor-token")
-        self.assertIn(b"200", status_line)
+        status, data = self._http_get("/grant-executions", auth_token="auditor-token")
+        self.assertEqual(status, 200)
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["grantId"], g.id)
         self.assertEqual(data[0]["result"], "succeeded")
@@ -387,10 +378,10 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         )
         execution_id = result["executionId"]
 
-        status_line, data = self._http_get(
+        status, data = self._http_get(
             f"/grant-executions/{execution_id}", auth_token="auditor-token"
         )
-        self.assertIn(b"200", status_line)
+        self.assertEqual(status, 200)
         self.assertEqual(data["id"], execution_id)
 
     # ──────────────────────────────────────────────
@@ -403,10 +394,10 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
 
-        status_line, data = self._http_get(
+        status, data = self._http_get(
             f"/grants/{g.id}/executions", auth_token="auditor-token"
         )
-        self.assertIn(b"200", status_line)
+        self.assertEqual(status, 200)
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["grantId"], g.id)
 
@@ -420,10 +411,10 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
 
-        status_line, data = self._http_get(
+        status, data = self._http_get(
             f"/grant-executions?grantId={g1.id}", auth_token="auditor-token"
         )
-        self.assertIn(b"200", status_line)
+        self.assertEqual(status, 200)
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["grantId"], g1.id)
 
@@ -442,10 +433,10 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             operator_id="op-456",
         )
 
-        status_line, data = self._http_get(
+        status, data = self._http_get(
             "/grant-executions?operatorId=op-123", auth_token="auditor-token"
         )
-        self.assertIn(b"200", status_line)
+        self.assertEqual(status, 200)
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["operatorId"], "op-123")
 
@@ -456,18 +447,18 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self._insert_operator("viewer-1", "Viewer", "grant_admin", "viewer-token")
         # grant_admin is allowed, so use a different role
         self._insert_operator("nobody-1", "Nobody", "demo_operator", "nobody-token")
-        status_line, data = self._http_get("/grant-executions", auth_token="nobody-token")
-        self.assertIn(b"403", status_line)
+        status, data = self._http_get("/grant-executions", auth_token="nobody-token")
+        self.assertEqual(status, 403)
 
     # ──────────────────────────────────────────────
     # 12. Non-existent execution returns 404
     # ──────────────────────────────────────────────
     def test_get_nonexistent_execution_returns_404(self):
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
-        status_line, data = self._http_get(
+        status, data = self._http_get(
             "/grant-executions/nonexistent-id", auth_token="auditor-token"
         )
-        self.assertIn(b"404", status_line)
+        self.assertEqual(status, 404)
         self.assertEqual(data["error"], "Grant execution not found")
         self.assertEqual(data["errorCode"], "grant_execution_not_found")
         self.assertEqual(data["reason"], "The requested grant execution does not exist.")
@@ -477,22 +468,26 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_get_executions_for_nonexistent_grant_returns_404(self):
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
-        status_line, data = self._http_get(
+        status, data = self._http_get(
             "/grants/nonexistent-id/executions", auth_token="auditor-token"
         )
-        self.assertIn(b"404", status_line)
+        self.assertEqual(status, 404)
 
     # ──────────────────────────────────────────────
     # 14. Operator model disabled returns 404
     # ──────────────────────────────────────────────
     def test_executions_disabled_without_operator_model(self):
-        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
-        importlib.reload(self.config_mod)
-        importlib.reload(self.server_mod)
-        self.handler_class = self.server_mod.GrantLayerHandler
-
-        status_line, data = self._http_get("/grant-executions")
-        self.assertIn(b"404", status_line)
+        import backend.src.config as bk_cfg
+        orig = bk_cfg.ENABLE_OPERATOR_MODEL
+        try:
+            bk_cfg.ENABLE_OPERATOR_MODEL = False
+            from fastapi.testclient import TestClient
+            from backend.src.api.app import create_app
+            client_no_op = TestClient(create_app(), raise_server_exceptions=False)
+            resp = client_no_op.get("/grant-executions")
+            self.assertEqual(resp.status_code, 404)
+        finally:
+            bk_cfg.ENABLE_OPERATOR_MODEL = orig
 
 
 if __name__ == "__main__":

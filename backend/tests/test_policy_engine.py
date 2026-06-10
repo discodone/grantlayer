@@ -11,15 +11,12 @@ Tests:
   8. Wildcard action grant allows action
 """
 
-import sys
 import os
 import datetime
 import unittest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-from src.models import Grant, AccessRequest
-from src.policy_engine import evaluate_access
+from backend.src.models import Grant, AccessRequest
+from backend.src.policy_engine import evaluate_access
 
 
 def _make_grant(**kwargs) -> Grant:
@@ -128,14 +125,14 @@ class TestAuditEvents(unittest.TestCase):
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
         # Re-import after env var is set
         import importlib
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
         self.grants_mod = grants_mod
@@ -175,16 +172,16 @@ class TestChallengeFlow(unittest.TestCase):
         self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
         import importlib
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
-        import src.challenges as ch_mod
+        import backend.src.challenges as ch_mod
         importlib.reload(ch_mod)
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.db_mod = db_mod
         self.demo_mod = demo_mod
@@ -325,16 +322,16 @@ class TestGrantSignatures(unittest.TestCase):
         self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
         import importlib
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
         self.db_mod = db_mod
@@ -495,16 +492,16 @@ class TestTamperAndVerify(unittest.TestCase):
         self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
         import importlib
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
         self.db_mod = db_mod

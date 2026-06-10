@@ -12,10 +12,7 @@ Covers:
 """
 
 import os
-import sys
 import unittest
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestProductCoreHardening(unittest.TestCase):
@@ -34,31 +31,31 @@ class TestProductCoreHardening(unittest.TestCase):
 
         # Reset modules for clean state
         import importlib
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import src.challenges as ch_mod
+        import backend.src.challenges as ch_mod
         importlib.reload(ch_mod)
         self.ch_mod = ch_mod
 
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
@@ -82,7 +79,7 @@ class TestProductCoreHardening(unittest.TestCase):
                 os.environ[key] = orig
 
     def _make_grant(self):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -156,7 +153,7 @@ class TestProductCoreHardening(unittest.TestCase):
     def test_admin_token_required_missing_fails(self):
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
-        from src.auth import check_admin_token
+        from backend.src.auth import check_admin_token
         ok, status, payload = check_admin_token(None)
         self.assertFalse(ok)
         self.assertEqual(status, 403)
@@ -170,7 +167,7 @@ class TestProductCoreHardening(unittest.TestCase):
     def test_admin_token_required_valid_allows(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "prod-token"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
-        from src.auth import check_admin_token
+        from backend.src.auth import check_admin_token
         ok, status, payload = check_admin_token("Bearer prod-token")
         self.assertTrue(ok)
         self.assertEqual(status, 200)

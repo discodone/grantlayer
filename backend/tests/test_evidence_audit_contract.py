@@ -14,14 +14,11 @@ Covers:
 """
 
 import os
-import sys
 import json
 import hashlib
 import unittest
 import tempfile
 import importlib
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestEvidenceAuditContract(unittest.TestCase):
@@ -39,43 +36,43 @@ class TestEvidenceAuditContract(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ["GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN"] = "bootstrap-token"
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import src.challenges as ch_mod
+        import backend.src.challenges as ch_mod
         importlib.reload(ch_mod)
         self.ch_mod = ch_mod
 
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.grant_executions as execs_mod
+        import backend.src.grant_executions as execs_mod
         importlib.reload(execs_mod)
         self.execs_mod = execs_mod
 
-        import src.evidence_bundle as eb_mod
+        import backend.src.evidence_bundle as eb_mod
         importlib.reload(eb_mod)
         self.eb_mod = eb_mod
 
@@ -111,7 +108,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
             conn.close()
 
     def _make_grant(self):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -274,7 +271,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
     # 10. Usage limits affectedOutcome consistency
     # ──────────────────────────────────────────────
     def test_usage_limits_affected_outcome_consistency(self):
-        from src.models import Grant
+        from backend.src.models import Grant
 
         # Grant with max_uses=1
         g = Grant(

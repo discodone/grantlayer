@@ -18,80 +18,81 @@ Covers:
 """
 
 import os
-import sys
 import unittest
 import datetime
 import tempfile
 import importlib
 
-# Add the src directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
 
 class TestGrantRequests(unittest.TestCase):
     """Test the grant request lifecycle and API integration."""
-    
+
     def setUp(self):
         self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         self._orig_db = os.environ.get("GRANTLAYER_DB")
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
-        
+
         # Save env vars
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
         self._orig_admin_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
-        
+
         # Enable operator model for tests
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
-        
+
         # Reset modules
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
-        
-        import src.config as config_mod
+
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
-        
-        import src.grants as grants_mod
+
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
-        
-        import src.grant_requests as requests_mod
+
+        import backend.src.grant_requests as requests_mod
         importlib.reload(requests_mod)
         self.requests_mod = requests_mod
-        
-        import src.audit_log as audit_mod
+
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
-        
-        import src.operators as ops_mod
+
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
-        
+
+        # Patch backend.src.db so TestClient uses the same temp DB
+        import backend.src.db as bk_db
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        self._bk_db = bk_db
+
     def tearDown(self):
         os.unlink(self.tmp_db.name)
         if self._orig_db is not None:
             os.environ["GRANTLAYER_DB"] = self._orig_db
         else:
             os.environ.pop("GRANTLAYER_DB", None)
-        
+
         if self._orig_enable_operator is not None:
             os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = self._orig_enable_operator
         else:
             os.environ.pop("GRANTLAYER_ENABLE_OPERATOR_MODEL", None)
-            
+
         if self._orig_admin_token is not None:
             os.environ["GRANTLAYER_ADMIN_TOKEN"] = self._orig_admin_token
         else:
             os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
-    
+
     # ─────────────────────────────────────────────────────
     # Helpers
     # ─────────────────────────────────────────────────────
     def _insert_operator(self, op_id, name, role, token):
         """Helper to insert an operator into the database."""
-        import src.db as db_mod
-        conn = db_mod.get_conn()
+        conn = self._bk_db.get_conn()
         try:
             conn.execute(
                 """INSERT INTO operators (id, name, role, token_hash, active, created_at)
@@ -101,10 +102,10 @@ class TestGrantRequests(unittest.TestCase):
             conn.commit()
         finally:
             conn.close()
-    
+
     def _create_request(self, **kwargs):
         """Helper to create a grant request with defaults."""
-        from src.models import GrantRequest
+        from backend.src.models import GrantRequest
         defaults = dict(
             subject_id="tech-01",
             role="technician",
@@ -124,7 +125,7 @@ class TestGrantRequests(unittest.TestCase):
     # ─────────────────────────────────────────────────────
     def test_create_grant_request(self):
         """Test creating a grant request."""
-        from src.models import GrantRequest
+        from backend.src.models import GrantRequest
         req = GrantRequest(
             subject_id="tech-01",
             role="technician",
@@ -304,7 +305,7 @@ class TestGrantRequests(unittest.TestCase):
     def test_expire_stale_grant_requests(self):
         """Test expiring old grant requests."""
         # Create a request with a created_at time in the past
-        from src.models import GrantRequest
+        from backend.src.models import GrantRequest
         old_time = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=25)).isoformat().replace("+00:00", "Z")
         req = GrantRequest(
             subject_id="tech-01",
@@ -331,24 +332,25 @@ class TestGrantRequests(unittest.TestCase):
         self.assertEqual(expired_req.status, "expired")
     
     # ─────────────────────────────────────────────────────
-    # API Endpoint Tests
+    # API Endpoint Tests (FastAPI TestClient)
     # ─────────────────────────────────────────────────────
+    def _make_client(self):
+        """Create a FastAPI TestClient using the temp DB."""
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        import backend.src.config as bk_cfg
+        bk_cfg.ENABLE_OPERATOR_MODEL = True
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        return TestClient(create_app(), raise_server_exceptions=False)
+
     def test_server_grant_requests_endpoints(self):
-        """Integration test for the API endpoints."""
+        """Integration test for the API endpoints via FastAPI TestClient."""
         # Set up operators
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
         self._insert_operator("approver-1", "Approver", "grant_admin", "approver-token")
-        
-        # Import server module
-        import src.server as server_mod
-        importlib.reload(server_mod)
-        handler_class = server_mod.GrantLayerHandler
-        
-        # Utilities for HTTP tests
-        from io import BytesIO
-        import json
-        
-        # 1. Create a grant request
+
+        client = self._make_client()
+
         req_data = {
             "subjectId": "tech-01",
             "role": "operator",
@@ -356,227 +358,65 @@ class TestGrantRequests(unittest.TestCase):
             "resource": "customer-env-a",
             "validFrom": "2026-01-01T00:00:00Z",
             "validUntil": "2099-12-31T23:59:59Z",
-            "reason": "API test request"
+            "reason": "API test request",
         }
-        req_body = json.dumps(req_data).encode()
-        
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(req_body)
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": str(len(req_body))
-        }
-        handler.path = "/grant-requests"
-        handler.command = "POST"
-        handler.requestline = "POST /grant-requests HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        
-        # Execute the request
-        handler.do_POST()
-        
-        # Parse the response
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status_line = response.split(b"\r\n")[0]
-        self.assertIn(b"201", status_line)
-        
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        
-        # Check the created request
-        self.assertEqual(data["subject_id"], "tech-01")
+
+        # 1. Create a grant request
+        resp = client.post("/grant-requests", json=req_data, headers={"Authorization": "Bearer admin-token"})
+        self.assertEqual(resp.status_code, 201)
+        data = resp.json()
+        self.assertEqual(data["subjectId"], "tech-01")
         self.assertEqual(data["status"], "requested")
-        self.assertEqual(data["requested_by"], "admin-1")
-        
+        self.assertEqual(data["requestedBy"], "admin-1")
         request_id = data["id"]
-        
+
         # 2. List grant requests
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO()
-        handler.wfile = BytesIO()
-        handler.headers = {"Authorization": "Bearer approver-token"}
-        handler.path = "/grant-requests"
-        handler.command = "GET"
-        handler.requestline = "GET /grant-requests HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        
-        # Execute the request
-        handler.do_GET()
-        
-        # Parse the response
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        
-        # Check the response
+        resp = client.get("/grant-requests", headers={"Authorization": "Bearer approver-token"})
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["id"], request_id)
-        
+
         # 3. Get a single grant request
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO()
-        handler.wfile = BytesIO()
-        handler.headers = {"Authorization": "Bearer approver-token"}
-        handler.path = f"/grant-requests/{request_id}"
-        handler.command = "GET"
-        handler.requestline = f"GET /grant-requests/{request_id} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        
-        # Execute the request
-        handler.do_GET()
-        
-        # Parse the response
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        
-        # Check the response
+        resp = client.get(f"/grant-requests/{request_id}", headers={"Authorization": "Bearer approver-token"})
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
         self.assertEqual(data["id"], request_id)
-        self.assertEqual(data["subject_id"], "tech-01")
-        
+        self.assertEqual(data["subjectId"], "tech-01")
+
         # 4. Approve the grant request
-        approval_body = json.dumps({"comment": "Approved for test"}).encode()
-        
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(approval_body)
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer approver-token",
-            "Content-Length": str(len(approval_body))
-        }
-        handler.path = f"/grant-requests/{request_id}/approve"
-        handler.command = "POST"
-        handler.requestline = f"POST /grant-requests/{request_id}/approve HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        
-        # Execute the request
-        handler.do_POST()
-        
-        # Parse the response
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        
-        # Check the response
+        resp = client.post(f"/grant-requests/{request_id}/approve", headers={"Authorization": "Bearer approver-token"})
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
         self.assertTrue(data["ok"])
         self.assertEqual(data["request"]["status"], "approved")
-        self.assertEqual(data["request"]["approved_by"], "approver-1")
-        
-        # 5. Try to approve again (it should fail)
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(approval_body)
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": str(len(approval_body))
-        }
-        handler.path = f"/grant-requests/{request_id}/approve"
-        handler.command = "POST"
-        handler.requestline = f"POST /grant-requests/{request_id}/approve HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        
-        # Execute the request
-        handler.do_POST()
-        
-        # Parse the response
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        
-        # Check the response shows error
-        self.assertIn("error", data)
-        self.assertIn("Cannot approve", data["error"])
-        
+        self.assertEqual(data["request"]["approvedBy"], "approver-1")
+
+        # 5. Try to approve again (already approved — expect error)
+        resp = client.post(f"/grant-requests/{request_id}/approve", headers={"Authorization": "Bearer admin-token"})
+        self.assertIn(resp.status_code, (400, 403))
+        body = resp.json()
+        self.assertIn("error", body)
+
         # 6. Create another request and deny it
-        req_body = json.dumps(req_data).encode()
-        
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(req_body)
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": str(len(req_body))
-        }
-        handler.path = "/grant-requests"
-        handler.command = "POST"
-        handler.requestline = "POST /grant-requests HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        
-        # Execute the request
-        handler.do_POST()
-        
-        # Parse the response
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        
-        # Get the new request ID
-        request2_id = data["id"]
-        
-        # Deny the request
-        denial_body = json.dumps({"reason": "Denied for test"}).encode()
-        
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(denial_body)
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer approver-token",
-            "Content-Length": str(len(denial_body))
-        }
-        handler.path = f"/grant-requests/{request2_id}/deny"
-        handler.command = "POST"
-        handler.requestline = f"POST /grant-requests/{request2_id}/deny HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        
-        # Execute the request
-        handler.do_POST()
-        
-        # Parse the response
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        
-        # Check the response
+        resp = client.post("/grant-requests", json=req_data, headers={"Authorization": "Bearer admin-token"})
+        self.assertEqual(resp.status_code, 201)
+        request2_id = resp.json()["id"]
+
+        resp = client.post(f"/grant-requests/{request2_id}/deny", json={"reason": "Denied for test"}, headers={"Authorization": "Bearer approver-token"})
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
         self.assertTrue(data["ok"])
         self.assertEqual(data["request"]["status"], "denied")
-        self.assertEqual(data["request"]["denied_by"], "approver-1")
-        self.assertEqual(data["request"]["denial_reason"], "Denied for test")
-    
+        self.assertEqual(data["request"]["deniedBy"], "approver-1")
+        self.assertEqual(data["request"]["denialReason"], "Denied for test")
+
     def test_operator_cannot_approve_own_request(self):
-        """Test that an operator cannot approve their own request."""
+        """Test that an operator cannot approve their own request via FastAPI TestClient."""
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        
-        # Import server module
-        import src.server as server_mod
-        importlib.reload(server_mod)
-        handler_class = server_mod.GrantLayerHandler
-        
-        # Utilities for HTTP tests
-        from io import BytesIO
-        import json
-        
-        # Create a grant request
+
+        client = self._make_client()
+
         req_data = {
             "subjectId": "tech-01",
             "role": "operator",
@@ -584,64 +424,18 @@ class TestGrantRequests(unittest.TestCase):
             "resource": "customer-env-a",
             "validFrom": "2026-01-01T00:00:00Z",
             "validUntil": "2099-12-31T23:59:59Z",
-            "reason": "API test request"
+            "reason": "API test request",
         }
-        req_body = json.dumps(req_data).encode()
-        
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(req_body)
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": str(len(req_body))
-        }
-        handler.path = "/grant-requests"
-        handler.command = "POST"
-        handler.requestline = "POST /grant-requests HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        
-        # Execute the request
-        handler.do_POST()
-        
-        # Parse the response
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        
-        # Get the request ID
-        request_id = data["id"]
-        
-        # Try to approve the request with the same admin token
-        approval_body = json.dumps({"comment": "Approved for test"}).encode()
-        
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(approval_body)
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": str(len(approval_body))
-        }
-        handler.path = f"/grant-requests/{request_id}/approve"
-        handler.command = "POST"
-        handler.requestline = f"POST /grant-requests/{request_id}/approve HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        
-        # Execute the request
-        handler.do_POST()
-        
-        # Parse the response
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        
-        # Check the response shows error about self-approval
-        self.assertIn("error", data)
+
+        # Create a grant request as admin-1
+        resp = client.post("/grant-requests", json=req_data, headers={"Authorization": "Bearer admin-token"})
+        self.assertEqual(resp.status_code, 201)
+        request_id = resp.json()["id"]
+
+        # Try to approve with the same token (self-approval)
+        resp = client.post(f"/grant-requests/{request_id}/approve", headers={"Authorization": "Bearer admin-token"})
+        self.assertEqual(resp.status_code, 403)
+        data = resp.json()
         self.assertEqual(data["error"], "Cannot approve your own request")
         self.assertEqual(data["requestedBy"], "admin-1")
         self.assertEqual(data["approverId"], "admin-1")

@@ -13,12 +13,9 @@ Covers:
 """
 
 import os
-import sys
 import unittest
 import tempfile
 import importlib
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestGrantUsageLimits(unittest.TestCase):
@@ -29,27 +26,27 @@ class TestGrantUsageLimits(unittest.TestCase):
         self._orig_db = os.environ.get("GRANTLAYER_DB")
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import src.grant_executions as exec_mod
+        import backend.src.grant_executions as exec_mod
         importlib.reload(exec_mod)
         self.exec_mod = exec_mod
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
@@ -63,7 +60,7 @@ class TestGrantUsageLimits(unittest.TestCase):
             os.environ.pop("GRANTLAYER_DB", None)
 
     def _make_grant(self, max_uses=None, **kwargs):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -270,8 +267,8 @@ class TestGrantUsageLimits(unittest.TestCase):
     # 13. Policy engine pre-check catches exhausted grant
     # ──────────────────────────────────────────────
     def test_policy_engine_pre_check_exhausted(self):
-        from src.models import AccessRequest, Grant
-        from src.policy_engine import evaluate_access
+        from backend.src.models import AccessRequest, Grant
+        from backend.src.policy_engine import evaluate_access
         import datetime
 
         grant = Grant(
@@ -301,8 +298,8 @@ class TestGrantUsageLimits(unittest.TestCase):
     # 14. Policy engine allows non-exhausted grant
     # ──────────────────────────────────────────────
     def test_policy_engine_allows_non_exhausted(self):
-        from src.models import AccessRequest, Grant
-        from src.policy_engine import evaluate_access
+        from backend.src.models import AccessRequest, Grant
+        from backend.src.policy_engine import evaluate_access
         import datetime
 
         grant = Grant(
@@ -331,7 +328,7 @@ class TestGrantUsageLimits(unittest.TestCase):
     # 15. Expired grant does not consume usage
     # ──────────────────────────────────────────────
     def test_expired_grant_does_not_consume(self):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",

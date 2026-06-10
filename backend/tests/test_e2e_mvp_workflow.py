@@ -9,13 +9,10 @@ Covers:
 """
 
 import os
-import sys
 import json
 import unittest
 import tempfile
 import importlib
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestE2EMvpWorkflow(unittest.TestCase):
@@ -36,47 +33,47 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         os.environ["GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN"] = "bootstrap-token"
         os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import src.challenges as ch_mod
+        import backend.src.challenges as ch_mod
         importlib.reload(ch_mod)
         self.ch_mod = ch_mod
 
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.grant_requests as greps_mod
+        import backend.src.grant_requests as greps_mod
         importlib.reload(greps_mod)
         self.greps_mod = greps_mod
 
-        import src.grant_executions as execs_mod
+        import backend.src.grant_executions as execs_mod
         importlib.reload(execs_mod)
         self.execs_mod = execs_mod
 
-        import src.evidence_bundle as eb_mod
+        import backend.src.evidence_bundle as eb_mod
         importlib.reload(eb_mod)
         self.eb_mod = eb_mod
 
@@ -117,7 +114,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_full_approval_workflow(self):
         """request -> approve -> execute -> evidence bundle is complete."""
-        from src.models import GrantRequest
+        from backend.src.models import GrantRequest
 
         # Insert two operators: requester and approver
         self._insert_operator("req-01", "Requester", "grant_admin", "token-req")
@@ -185,7 +182,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_full_denial_workflow(self):
         """request -> deny -> no grant created -> execution denied."""
-        from src.models import GrantRequest
+        from backend.src.models import GrantRequest
 
         self._insert_operator("req-01", "Requester", "grant_admin", "token-req")
         self._insert_operator("den-01", "Denier", "owner", "token-den")
@@ -227,7 +224,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_grant_lifecycle_create_execute_revoke(self):
         """create grant -> execute -> revoke -> execution denied."""
-        from src.models import Grant
+        from backend.src.models import Grant
 
         self._insert_operator("owner-01", "Owner", "owner", "token-owner")
 
@@ -265,7 +262,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_challenge_restricted_execution_succeeds(self):
         """Grant exists, valid challenge, execution succeeds."""
-        from src.models import Grant
+        from backend.src.models import Grant
 
         self._insert_operator("owner-01", "Owner", "owner", "token-owner")
 
@@ -294,7 +291,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_challenge_restricted_execution_fails_without_challenge(self):
         """REQUIRE_CHALLENGE=true without challenge -> denied."""
-        from src.models import Grant
+        from backend.src.models import Grant
 
         self._insert_operator("owner-01", "Owner", "owner", "token-owner")
 

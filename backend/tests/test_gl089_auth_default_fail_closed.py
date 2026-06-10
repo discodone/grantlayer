@@ -14,12 +14,9 @@ import json
 import os
 import pathlib
 import subprocess
-import sys
 import tempfile
 import unittest
 import importlib
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class _BaseGl089(unittest.TestCase):
@@ -37,19 +34,19 @@ class _BaseGl089(unittest.TestCase):
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
         self._orig_runtime_mode = os.environ.get("GRANTLAYER_RUNTIME_MODE")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         self.server_mod = server_mod
 
@@ -75,34 +72,26 @@ class _BaseGl089(unittest.TestCase):
         importlib.reload(self.config_mod)
 
     def _run_handler(self, path, method="GET", auth_header=None, body=b""):
-        from io import BytesIO
-        handler_class = self.server_mod.GrantLayerHandler
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
+        """Make an HTTP request via FastAPI TestClient."""
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        import backend.src.db as bk_db
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        client = TestClient(create_app(), raise_server_exceptions=False)
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
-        if body:
-            headers["Content-Length"] = str(len(body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        if handler.command == "GET":
-            handler.do_GET()
-        elif handler.command == "POST":
-            handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status_line = response.split(b"\r\n")[0]
-        status = int(status_line.split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        body_out = json.loads(parts[1]) if len(parts) > 1 else {}
-        return status, body_out
+        if method == "GET":
+            resp = client.get(path, headers=headers)
+        else:
+            resp = client.post(path, content=body, headers=headers)
+        try:
+            body_out = resp.json()
+        except Exception:
+            body_out = {}
+        return resp.status_code, body_out
 
 
 class TestGl089ConfigDefaults(_BaseGl089):
@@ -346,10 +335,10 @@ class TestGl089LegacyEndpointProtections(_BaseGl089):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = ""
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         self._reload_config()
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
 
@@ -395,7 +384,7 @@ class TestGl089LocalExplicitBehavior(_BaseGl089):
         os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
         os.environ.pop("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", None)
         self._reload_config()
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.assertTrue(self.config_mod.RUNTIME_MODE in ("local", "test"))
