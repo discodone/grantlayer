@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-023 Grant Execution ledger.
+"""GrantLayer MVP — Grant Execution ledger.
 
 One row per protected action attempt.
 """

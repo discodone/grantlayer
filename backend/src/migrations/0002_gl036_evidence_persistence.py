@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-036 Evidence Persistence Schema Migration.
+"""GrantLayer MVP — Evidence Persistence Schema Migration.
 
 Adds evidence_archives and evidence_hashes tables for durable bundle storage.
 Supports both SQLite and PostgreSQL via the _ConnectionWrapper interface.

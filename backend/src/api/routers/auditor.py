@@ -1,4 +1,4 @@
-"""GL-229: Auditor report and export endpoints (FastAPI)."""
+"""Auditor report and export endpoints (FastAPI)."""
 
 from __future__ import annotations
 

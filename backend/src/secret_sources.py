@@ -1,4 +1,4 @@
-"""GrantLayer secret source boundary hardening helpers (GL-079).
+"""GrantLayer secret source boundary hardening helpers.
 
 This module provides isolated, dependency-free helpers for safe secret lookup
 and validation. It does not integrate with vault/KMS/cloud secret managers,

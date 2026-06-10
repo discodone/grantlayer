@@ -9,14 +9,14 @@ from .models import AuditEvent
 
 
 # ──────────────────────────────────────────────────────────────
-# Process-local write lock for hash-chain critical section (GL-139)
+# Process-local write lock for hash-chain critical section
 # ──────────────────────────────────────────────────────────────
 
 _AUDIT_HASH_CHAIN_WRITE_LOCK = RLock()
 
 
 # ──────────────────────────────────────────────────────────────
-# Hash-chain helpers (GL-103)
+# Hash-chain helpers
 # ──────────────────────────────────────────────────────────────
 
 _Genesis_PREV_HASH = "0" * 64  # fixed genesis for first event when no prior hash exists
@@ -44,7 +44,7 @@ def _hash_payload(event: AuditEvent, prev_hash: Optional[str]) -> str:
     Includes all stable audit fields plus prev_hash.
     Excludes row_hash itself.
 
-    GL-200B dual-mode: tenant_id is included in the canonical payload only
+    dual-mode: tenant_id is included in the canonical payload only
     when it is explicitly set (non-None). Pre-migration events (tenant_id=None)
     use the original payload format so their stored row_hash values remain valid.
     """
@@ -233,7 +233,7 @@ def _build_report_recommendations(
 
 
 # ──────────────────────────────────────────────────────────────
-# Chain verification (GL-104)
+# Chain verification
 # ──────────────────────────────────────────────────────────────
 
 def verify_audit_hash_chain() -> dict:
@@ -282,9 +282,9 @@ def verify_audit_hash_chain() -> dict:
 # ──────────────────────────────────────────────────────────────
 
 def append_event(event: AuditEvent, conn=None) -> None:
-    # GL-139: serialize hash-chain append critical section
+    # serialize hash-chain append critical section
     with _AUDIT_HASH_CHAIN_WRITE_LOCK:
-        # GL-103: compute hash-chain linkage
+        # compute hash-chain linkage
         latest = _get_latest_row_hash(conn)
         prev_hash = latest if latest is not None else None
         row_hash = _compute_row_hash(event, prev_hash)
@@ -345,11 +345,11 @@ def list_events_by_grant(grant_id: str, limit: int = 50) -> List[AuditEvent]:
 
 
 # ──────────────────────────────────────────────────────────────
-# Chain verification report builder (GL-105)
+# Chain verification report builder
 # ──────────────────────────────────────────────────────────────
 
 def build_audit_chain_verification_report() -> dict:
-    """Build a stable auditor-readable structured report from GL-104 verification.
+    """Build a stable auditor-readable structured report from verification.
 
     Uses verify_audit_hash_chain() internally and produces a deterministic,
     read-only structured report object suitable for auditor review.

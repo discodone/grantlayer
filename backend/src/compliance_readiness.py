@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-044-A Compliance Readiness Summary Builder.
+"""GrantLayer MVP — Compliance Readiness Summary Builder.
 
 Pure / read-only function that builds a compliance readiness summary from
 structured GrantLayer signals.
@@ -351,14 +351,14 @@ def build_compliance_readiness_summary(
         grant_id: Optional grant identifier.
         subject_id: Optional subject identifier (preferred over grant_id).
         workflow_id: Optional workflow identifier.
-        evidence_completeness: Evidence completeness dict (e.g. from GL-038-A1).
-        compliance_gap_report: Compliance gap report dict (e.g. from GL-038-B1).
-        permission_result: Permission result dict (e.g. from GL-039-A1).
-        approval_requirement: Approval requirement dict (e.g. from GL-040-A1).
-        approval_lifecycle: Approval lifecycle dict (e.g. from GL-040-B).
-        provenance_summary: Provenance summary dict (e.g. from GL-037-B).
-        auditor_report: Auditor report dict (e.g. from GL-037-C1).
-        policy_results: List of policy result dicts (e.g. from GL-043-A).
+        evidence_completeness: Evidence completeness dict (e.g. from ).
+        compliance_gap_report: Compliance gap report dict (e.g. from ).
+        permission_result: Permission result dict (e.g. from ).
+        approval_requirement: Approval requirement dict (e.g. from ).
+        approval_lifecycle: Approval lifecycle dict (e.g. from ).
+        provenance_summary: Provenance summary dict (e.g. from ).
+        auditor_report: Auditor report dict (e.g. from ).
+        policy_results: List of policy result dicts (e.g. from ).
         context: Optional context dict (redacted if secrets are present).
         created_at: Optional ISO timestamp; defaults to now.
         include_details: When True, include detail objects for each dimension.

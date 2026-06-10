@@ -1,4 +1,4 @@
-"""Agent Permission Scope Profiles Builder (GL-039-B1).
+"""Agent Permission Scope Profiles Builder.
 
 Provides reusable named scope profiles for agent integrations.
 Read-only. No persistence. No network. No secrets.

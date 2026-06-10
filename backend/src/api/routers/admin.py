@@ -1,4 +1,4 @@
-"""GL-229: Admin control-plane operator management endpoints (FastAPI)."""
+"""Admin control-plane operator management endpoints (FastAPI)."""
 
 from __future__ import annotations
 

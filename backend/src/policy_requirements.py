@@ -1,4 +1,4 @@
-"""GrantLayer MVP — Policy Requirement / Grant Rule Pack Evaluator (GL-043-A).
+"""GrantLayer MVP — Policy Requirement / Grant Rule Pack Evaluator.
 
 Pure / read-only evaluator that checks a machine-readable grant/funding policy
 pack against structured GrantLayer signals.

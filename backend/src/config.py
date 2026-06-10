@@ -19,7 +19,7 @@ from .runtime_config import get_runtime_mode, PRODUCTION_LIKE_MODES
 from .identity_access import external_identity_startup_errors
 
 # ──────────────────────────────────────────────────────────────
-# GL-201: Placeholder/weak token detection constants
+# Placeholder/weak token detection constants
 # ──────────────────────────────────────────────────────────────
 
 _UNSAFE_PLACEHOLDER_TOKENS: frozenset = frozenset({
@@ -122,7 +122,7 @@ GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS: int = _env_int("GRANTLAYER_HEALTH_PROBE_D
 GRANTLAYER_ADMIN_TOKEN: str = _env_str("GRANTLAYER_ADMIN_TOKEN", "")
 
 # ──────────────────────────────────────────────────────────────
-# Operator Model (GL-021)
+# Operator Model
 # ──────────────────────────────────────────────────────────────
 
 ENABLE_OPERATOR_MODEL: bool = _env_bool("GRANTLAYER_ENABLE_OPERATOR_MODEL", default=True)
@@ -133,7 +133,7 @@ GRANTLAYER_BOOTSTRAP_OPERATOR_NAME: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATO
 GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE", "owner")
 
 # ──────────────────────────────────────────────────────────────
-# CORS Origin Allowlist (GL-095)
+# CORS Origin Allowlist
 # ──────────────────────────────────────────────────────────────
 
 # Comma-separated list of allowed origins for CORS.
@@ -145,7 +145,7 @@ CORS_ALLOWED_ORIGINS: list[str] = _env_list(
 )
 
 # ──────────────────────────────────────────────────────────────
-# Private Key Configuration (GL-110)
+# Private Key Configuration
 # ──────────────────────────────────────────────────────────────
 
 # Externalized private key material (PEM string). Takes precedence over file.
@@ -165,7 +165,7 @@ GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: bool = _env_bool(
 )
 
 # ──────────────────────────────────────────────────────────────
-# Rate Limiting (GL-106)
+# Rate Limiting
 # ──────────────────────────────────────────────────────────────
 
 GRANTLAYER_RATE_LIMIT_AUTH: int = max(1, _env_int("GRANTLAYER_RATE_LIMIT_AUTH", 10))
@@ -238,7 +238,7 @@ def startup_warnings() -> list[str]:
                 "token is available but not mandatory."
             )
 
-    # GL-201: Warn if CORS defaults include localhost origins in production-like mode.
+    # Warn if CORS defaults include localhost origins in production-like mode.
     _localhost_cors = {"http://127.0.0.1:8765", "http://localhost:8765"}
     if RUNTIME_MODE in PRODUCTION_LIKE_MODES and CORS_ALLOWED_ORIGINS:
         if set(CORS_ALLOWED_ORIGINS) & _localhost_cors:
@@ -280,7 +280,7 @@ def startup_errors() -> list[str]:
             "A configured admin token is mandatory when admin token enforcement is on."
         )
     elif RUNTIME_MODE in PRODUCTION_LIKE_MODES and _token_is_unsafe_placeholder(GRANTLAYER_ADMIN_TOKEN):
-        # GL-201: Reject placeholder, demo, or short admin tokens in production-like modes only.
+        # Reject placeholder, demo, or short admin tokens in production-like modes only.
         errs.append(
             "ERROR: GRANTLAYER_ADMIN_TOKEN is a known placeholder, demo value, or "
             f"shorter than the required {_PROD_MIN_ADMIN_TOKEN_LENGTH} characters. "
@@ -299,7 +299,7 @@ def startup_errors() -> list[str]:
             "Demo endpoints must be disabled in non-local / production-like modes."
         )
 
-    # GL-201: Reject placeholder bootstrap operator tokens in production-like modes.
+    # Reject placeholder bootstrap operator tokens in production-like modes.
     if RUNTIME_MODE in PRODUCTION_LIKE_MODES and GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN:
         if _token_is_unsafe_placeholder(GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN):
             errs.append(

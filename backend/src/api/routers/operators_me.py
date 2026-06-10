@@ -1,4 +1,4 @@
-"""GL-229: Operator self-info endpoint (FastAPI)."""
+"""Operator self-info endpoint (FastAPI)."""
 
 from __future__ import annotations
 

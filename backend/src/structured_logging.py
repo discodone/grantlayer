@@ -56,7 +56,7 @@ _SENSITIVE_KEY_SUBSTRINGS = frozenset([
     "operator_token",
 ])
 
-# Known safe runtime modes (self-contained, aligned with GL-076)
+# Known safe runtime modes (self-contained)
 _SAFE_RUNTIME_MODES = frozenset([
     "local",
     "test",

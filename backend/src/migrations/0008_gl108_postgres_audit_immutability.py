@@ -1,7 +1,7 @@
-"""GrantLayer MVP — GL-108 PostgreSQL Audit Immutability Trigger.
+"""GrantLayer MVP — PostgreSQL Audit Immutability Trigger.
 
 Adds PostgreSQL triggers to prevent UPDATE and DELETE on audit_events,
-matching the SQLite protection from GL-102.
+matching the SQLite protection from .
 
 Compatible with SQLite and PostgreSQL backends.
 """

@@ -1,7 +1,7 @@
-"""GrantLayer MVP — Baseline migration representing the full GL-032 schema.
+"""GrantLayer MVP — Baseline migration representing the full schema.
 
 When applied to a fresh database this migration creates every table,
-column, and index that existed at the end of GL-032.
+column, and index that existed at the end of .
 """
 
 import sqlite3
@@ -10,7 +10,7 @@ version = "0001_gl032_baseline"
 
 
 def apply(conn: sqlite3.Connection) -> None:
-    """Create the complete GL-032 schema on a fresh SQLite database."""
+    """Create the complete schema on a fresh SQLite database."""
     conn.executescript(
         """
         -- Grants

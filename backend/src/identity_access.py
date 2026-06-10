@@ -1,4 +1,4 @@
-"""GL-219 identity/access posture helpers.
+"""identity/access posture helpers.
 
 This module does not implement OAuth, OIDC, SAML, SSO, MFA, or JWT auth.
 It records the validation posture required before those token types may be

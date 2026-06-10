@@ -1,4 +1,4 @@
-"""GL-229: Policy requirements evaluation endpoint (FastAPI)."""
+"""Policy requirements evaluation endpoint (FastAPI)."""
 
 from __future__ import annotations
 

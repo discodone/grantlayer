@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-037-A Provenance Event Persistence migration.
+"""GrantLayer MVP — Provenance Event Persistence migration.
 
 Creates the provenance_events table for append-only event tracing.
 Compatible with SQLite and PostgreSQL.

@@ -1,4 +1,4 @@
-"""GL-229/GL-230: Shared FastAPI dependency helpers."""
+"""/Shared FastAPI dependency helpers."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def resolve_auth_and_workspace(
 ) -> tuple[dict, dict]:
     """Authenticate and resolve workspace context.
 
-    GL-230: tries JWT first when GRANTLAYER_JWT_SECRET is set; falls back to
+    tries JWT first when GRANTLAYER_JWT_SECRET is set; falls back to
     the existing static-token / operator-model path when JWT is not configured.
 
     Returns (auth_ctx, ws_ctx).  Raises HTTPException on failure.

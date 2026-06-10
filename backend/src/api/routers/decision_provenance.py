@@ -1,4 +1,4 @@
-"""GL-229: Decision provenance v2 endpoint (FastAPI)."""
+"""Decision provenance v2 endpoint (FastAPI)."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""GL-229: Approvals lifecycle and evaluation endpoints (FastAPI)."""
+"""Approvals lifecycle and evaluation endpoints (FastAPI)."""
 
 from __future__ import annotations
 

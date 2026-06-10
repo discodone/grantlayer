@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-224 Workspace Schema / Membership Baseline Migration.
+"""GrantLayer MVP — Workspace Schema / Membership Baseline Migration.
 
 Introduces three new tables:
   workspaces       — workspace identity, scoped to a tenant

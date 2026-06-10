@@ -1,4 +1,4 @@
-"""Approval Rule Evaluator Builder (GL-040-A1).
+"""Approval Rule Evaluator Builder.
 
 Fail-closed evaluator that determines whether a proposed grant-related action
 requires approval, how many approvals, and which roles, based on risk,

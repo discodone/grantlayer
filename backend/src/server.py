@@ -118,7 +118,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
         print(f"[{self.log_date_time_string()}] {fmt % args}", flush=True)
 
     def _gl030_error(self, error: str, code: str, reason: str | None = None) -> dict:
-        """Build a consistent GL-030 additive error payload.
+        """Build a consistent additive error payload.
 
         All error responses use the shape:
         {
@@ -518,7 +518,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
     ) -> tuple[dict | None, bool]:
         """Resolve workspace context. On failure the error is sent; returns (None, False).
 
-        GL-227: All tenant/workspace-scoped endpoints use this instead of _get_tenant_id.
+        All tenant/workspace-scoped endpoints use this instead of _get_tenant_id.
         Fail-closed: operators with no active workspace membership receive 403 when the
         tenant has workspaces configured. Pre-workspace tenants (no workspaces in DB for
         this tenant) fall back to demo workspace for backward compatibility.
@@ -529,7 +529,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             # Pre-workspace-enforcement backward compat: if the resolver fails because
             # the operator has no membership or a cross-workspace role requires explicit
             # workspace_id, check whether the tenant has ANY workspaces configured.
-            # If the tenant has none, fall back to demo workspace (pre-GL-224 compat).
+            # If the tenant has none, fall back to demo workspace.
             if error_code in ("no_workspace_membership", "workspace_id_required"):
                 tenant_id = auth_payload.get("tenant_id") or "demo"
                 if tenant_id != "demo":
@@ -784,7 +784,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 self._send_json(404, self._gl030_error("Operator model is disabled", "operator_model_disabled", "The operator model is not enabled on this instance."))
                 return
             self._send_json(200, payload.get("operator", {}))
-            
+
         elif path == "/grant-requests":
             if not self._check_rate_limit("api"):
                 return
@@ -987,7 +987,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             execution_id = m.group(1)
             tenant_id = ws_ctx["tenant_id"]
             if not self._execution_visible_to_tenant(execution_id, tenant_id):
-                # Preserve the GL-037 legacy-admin orphan provenance summary
+                # Preserve the legacy-admin orphan provenance summary
                 # contract while keeping operator-mode execution lookups tenant-scoped.
                 if config.ENABLE_OPERATOR_MODEL or execs.get_grant_execution(execution_id) is not None:
                     self._send_json(404, {
@@ -1129,7 +1129,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 return
             self._send_json(200, profile)
 
-        # ── GL-206: Admin control-plane operator management ───────────────────
+        # ── Admin control-plane operator management ───────────────────
 
         elif path == "/admin/operators":
             # Admin-only: list all operators (safe fields only, no token hashes)
@@ -1187,7 +1187,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
-            # GL-093: validate required string fields are non-empty strings
+            # validate required string fields are non-empty strings
             for field in ("subjectId", "role", "action", "resource", "createdBy", "reason"):
                 if field in data and (not isinstance(data[field], str) or data[field].strip() == ""):
                     self._send_json(400, self._gl030_error(
@@ -1196,7 +1196,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                         f"{field} must be a non-empty string.",
                     ))
                     return
-            # GL-114: validate string lengths
+            # validate string lengths
             for field, max_len in (
                 ("subjectId", MAX_SHORT_ID_LENGTH),
                 ("role", MAX_ROLE_LENGTH),
@@ -1262,7 +1262,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
-            # GL-114: validate revoke reason length
+            # validate revoke reason length
             try:
                 validate_string_length(data["revokedBy"], "revokedBy", MAX_SHORT_ID_LENGTH)
                 validate_string_length(data["reason"], "reason", MAX_REASON_LENGTH)
@@ -1277,7 +1277,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if g is None:
                 self._send_json(404, self._gl030_error("Grant not found", "grant_not_found", "The requested grant does not exist."))
                 return
-            # GL-227: workspace boundary enforcement for mutation
+            # workspace boundary enforcement for mutation
             access_ok, access_status, access_err = check_workspace_resource_access(
                 resource_workspace_id=None,
                 caller_workspace_id=ws_ctx["workspace_id"],
@@ -1315,7 +1315,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
-            # GL-114: validate challenge string lengths
+            # validate challenge string lengths
             for field, max_len in (
                 ("subjectId", MAX_SHORT_ID_LENGTH),
                 ("action", MAX_NAME_LENGTH),
@@ -1381,7 +1381,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if missing:
                 self._send_json(400, self._gl030_error(f"Missing fields: {missing}", "missing_required_fields", f"The following required fields are missing: {missing}."))
                 return
-            # GL-114: validate demo-action string lengths
+            # validate demo-action string lengths
             for field, max_len in (
                 ("subjectId", MAX_SHORT_ID_LENGTH),
                 ("role", MAX_ROLE_LENGTH),
@@ -1416,7 +1416,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 tenant_id=tenant_id,
             )
             self._send_json(200 if result["approved"] else 403, result)
-            
+
         elif path == "/grant-requests":
             # Create a new grant request
             if not self._check_rate_limit("api"):
@@ -1455,7 +1455,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                         f"{field} must be a non-empty string.",
                     ))
                     return
-            # GL-114: validate string lengths
+            # validate string lengths
             for field, max_len in (
                 ("subjectId", MAX_SHORT_ID_LENGTH),
                 ("role", MAX_ROLE_LENGTH),
@@ -1472,7 +1472,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                         str(e),
                     ))
                     return
-            # GL-162A: validate role against explicit allowlist
+            # validate role against explicit allowlist
             if data["role"] not in grant_requests.ALLOWED_GRANT_ROLES:
                 self._send_json(400, self._gl030_error(
                     "Invalid field: role",
@@ -1494,10 +1494,10 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 requested_by=operator_id,
                 reason=data["reason"],
             )
-            
+
             created_request = grant_requests.create_grant_request(request, tenant_id=tenant_id)
             self._send_json(201, created_request.to_dict())
-            
+
         elif m := re.fullmatch(r"/grant-requests/([^/]+)/approve", path):
             if not self._check_rate_limit("api"):
                 return
@@ -1530,7 +1530,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                 })
                 return
 
-            # GL-227: workspace boundary enforcement for mutation
+            # workspace boundary enforcement for mutation
             access_ok, access_status, access_err = check_workspace_resource_access(
                 resource_workspace_id=None,
                 caller_workspace_id=ws_ctx["workspace_id"],
@@ -1588,7 +1588,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if "reason" not in data or not data["reason"]:
                 self._send_json(400, self._gl030_error("Denial reason is required", "missing_denial_reason", "A reason is required when denying a grant request."))
                 return
-            # GL-114: validate denial reason length
+            # validate denial reason length
             try:
                 validate_string_length(data["reason"], "reason", MAX_REASON_LENGTH)
             except ValueError as e:
@@ -1598,7 +1598,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                     str(e),
                 ))
                 return
-            # GL-227: workspace boundary enforcement for mutation
+            # workspace boundary enforcement for mutation
             access_ok, access_status, access_err = check_workspace_resource_access(
                 resource_workspace_id=None,
                 caller_workspace_id=ws_ctx["workspace_id"],
@@ -1896,7 +1896,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
                     summary["policyRequirementEvaluation"] = None
             self._send_json(200, summary)
 
-        # ── GL-206: Admin control-plane operator management ───────────────────
+        # ── Admin control-plane operator management ───────────────────
 
         elif path == "/admin/operators":
             # Admin-only: create operator with explicit tenant_id
@@ -1939,7 +1939,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not isinstance(tenant_id, str) or not tenant_id.strip():
                 self._send_json(400, self._gl030_error("Invalid field: tenantId", "invalid_field", "tenantId must be a non-empty string."))
                 return
-            # GL-206: tenant_id is server-assigned from request body (admin-provided).
+            # tenant_id is server-assigned from request body (admin-provided).
             # The operator cannot later override their own tenant_id.
             raw_token = _secrets_mod.token_urlsafe(32)
             try:
@@ -1952,7 +1952,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             except Exception:
                 self._send_json(500, self._gl030_error("Operator creation failed", "operator_create_failed", "Failed to create operator."))
                 return
-            # GL-206 audit event: operator_created (no raw token in event)
+            # audit event: operator_created (no raw token in event)
             safe_log(_server_logger, "info", "operator_action", action="operator_created", operator_id=op.operator_id, tenant_id=op.tenant_id)
             append_event(AuditEvent(
                 subject_id="admin",
@@ -1990,7 +1990,7 @@ class GrantLayerHandler(BaseHTTPRequestHandler):
             if not revoked:
                 self._send_json(404, self._gl030_error("Operator not found", "operator_not_found", "The requested operator does not exist."))
                 return
-            # GL-206 audit event: operator_revoked (no raw token in event)
+            # audit event: operator_revoked (no raw token in event)
             safe_log(_server_logger, "info", "operator_action", action="operator_revoked", operator_id=operator_id)
             op_safe = ops.get_operator_safe(operator_id) or {}
             append_event(AuditEvent(
@@ -2018,14 +2018,14 @@ def run(host: str = "127.0.0.1", port: int = 8765) -> None:
         print(warning, flush=True)
     for msg in config.startup_warnings():
         print(msg, flush=True)
-    # GL-190: demo endpoint public exposure guard (always enforced, mode-independent)
+    # demo endpoint public exposure guard (always enforced, mode-independent)
     demo_errs = config.demo_endpoint_public_exposure_errors(host)
     if demo_errs:
         print("FATAL: Demo endpoint public exposure blocked. Server will not start.", flush=True)
         for err in demo_errs:
             print(err, flush=True)
         raise SystemExit(1)
-    # GL-089: fail-closed startup gate for non-local / production-like modes
+    # fail-closed startup gate for non-local / production-like modes
     if config.RUNTIME_MODE not in ("local", "test"):
         if not config.startup_ok():
             print("FATAL: Unsafe configuration detected in non-local mode. Server will not start.", flush=True)

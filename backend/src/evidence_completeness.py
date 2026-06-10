@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-038-A1 Evidence Completeness Scoring Builder.
+"""GrantLayer MVP — Evidence Completeness Scoring Builder.
 
 Public builder for a structured evidence completeness score per execution_id.
 Read-only. No mutations. No secrets in response.

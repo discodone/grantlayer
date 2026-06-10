@@ -1,4 +1,4 @@
-"""GL-229: Provenance endpoints (FastAPI)."""
+"""Provenance endpoints (FastAPI)."""
 
 from __future__ import annotations
 

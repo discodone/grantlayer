@@ -1,4 +1,4 @@
-"""GL-229: Compliance gaps and readiness endpoints (FastAPI)."""
+"""Compliance gaps and readiness endpoints (FastAPI)."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""GL-229: Grant requests endpoints (FastAPI)."""
+"""Grant requests endpoints (FastAPI)."""
 
 from __future__ import annotations
 

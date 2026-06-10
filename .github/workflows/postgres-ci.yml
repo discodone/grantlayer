@@ -72,7 +72,7 @@ jobs:
             sleep 1
           done
 
-      - name: Run GL-108/GL-116 PostgreSQL integration tests
+      - name: Run PostgreSQL integration tests
         env:
           # Ephemeral CI-only test database credential; not a production secret.
           GRANTLAYER_DATABASE_URL: postgres://grantlayer:grantlayer_test_password@localhost:5432/grantlayer

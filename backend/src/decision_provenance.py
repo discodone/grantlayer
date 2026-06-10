@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-041-A Decision Provenance v2 Builder.
+"""GrantLayer MVP — Decision Provenance v2 Builder.
 
 Pure/read-only function that determines decision provenance from structured inputs.
 No DB access, no network calls, no API endpoint, no persistence.

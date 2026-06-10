@@ -1,8 +1,8 @@
-"""GrantLayer MVP — GL-025 / GL-026 Evidence bundle builder.
+"""GrantLayer MVP — Evidence bundle builder.
 
 Read-only aggregation of the full grant lifecycle for a single
 GrantExecution.  Produces a safe, flat JSON evidence bundle
-with a deterministic integrity hash (GL-026).
+with a deterministic integrity hash.
 No mutation, no new tables, no migrations.
 """
 
@@ -90,7 +90,7 @@ def export_bundle_json(bundle: dict[str, Any]) -> str:
 
     Uses sorted keys and 2-space indentation so the artifact is human-readable
     and diff-friendly.  The pretty-print whitespace does *not* affect the
-    GL-026 evidenceHash because that hash is computed from the compact
+    evidenceHash because that hash is computed from the compact
     canonical form (see canonical_evidence_bundle).
     """
     return json.dumps(
@@ -102,7 +102,7 @@ def export_bundle_json(bundle: dict[str, Any]) -> str:
     )
 
 
-# ── GL-028: Offline verification helper ──────────────────────────────
+# ── Offline verification helper ──────────────────────────────
 
 VERIFY_ERROR_CODES = {"hash_mismatch", "invalid_artifact", "unsupported_format", "parse_error"}
 
@@ -110,14 +110,14 @@ VERIFY_ERROR_CODES = {"hash_mismatch", "invalid_artifact", "unsupported_format",
 def verify_evidence_export_artifact(bundle: dict[str, Any]) -> dict[str, Any]:
     """Validate an exported evidence bundle dict offline.
 
-    Recomputes the GL-026 evidenceHash from canonical bundle content and
+    Recomputes the evidenceHash from canonical bundle content and
     compares it to the embedded hash.  Returns a structured result dict.
 
     Validation order:
       1. canonicalVersion exists and == "gl-evidence-v1"
       2. hashAlgorithm exists and == "sha256"
       3. evidenceHash exists, is exactly 64-char lowercase hex
-      4. Rebuild canonical input (same rules as GL-026)
+      4. Rebuild canonical input (same rules as )
       5. Recompute SHA-256
       6. Compare to evidenceHash
     """
@@ -198,7 +198,7 @@ def verify_evidence_export_artifact(bundle: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-# ── GL-029: Evidence completeness check ─────────────────────────────
+# ── Evidence completeness check ─────────────────────────────
 
 def check_evidence_completeness(bundle: dict[str, Any]) -> dict[str, Any]:
     """Check structural completeness of an evidence bundle."""
@@ -289,7 +289,7 @@ def check_evidence_completeness(bundle: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-# ── GL-029: Denial / error-code consistency check ───────────────────
+# ── Denial / error-code consistency check ───────────────────
 
 KNOWN_DENIAL_CODES = {
     "no_grant",
@@ -526,11 +526,11 @@ def build_evidence_bundle(execution_id: str) -> Optional[dict[str, Any]]:
         if ev_dict.get("id") != primary_event_id:
             audit_trail.append(ev_dict)
 
-    # GL-026: sort audit trail deterministically by timestamp then id
+    # sort audit trail deterministically by timestamp then id
     audit_trail.sort(key=lambda ev: (ev.get("timestamp") or "", ev.get("id") or ""))
     bundle["auditTrail"] = audit_trail
 
-    # GL-026: compute deterministic evidence hash (before exposing hash metadata)
+    # compute deterministic evidence hash (before exposing hash metadata)
     bundle["evidenceHash"] = compute_evidence_hash(bundle)
     bundle["canonicalVersion"] = "gl-evidence-v1"
     bundle["hashAlgorithm"] = "sha256"

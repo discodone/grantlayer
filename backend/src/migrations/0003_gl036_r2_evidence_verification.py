@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-036-R2 Evidence Verification Core Migration.
+"""GrantLayer MVP — Evidence Verification Core Migration.
 
 Adds last_verified_at and last_verification_status to evidence_archives
 to track verification results without mutating the immutable bundle data.

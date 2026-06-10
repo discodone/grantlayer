@@ -1,4 +1,4 @@
-"""GrantLayer MVP — Database connection factory and query helpers (GL-034 / GL-035).
+"""GrantLayer MVP — Database connection factory and query helpers.
 
 Supports SQLite (default) and PostgreSQL backends.
 psycopg2 is lazy-imported only when a postgres:// URL is configured.
@@ -160,12 +160,12 @@ DB_BACKEND, DB_PATH_OR_URL = _resolve_db_url()
 # Backward-compatible alias for code that references the single path variable.
 DB_PATH = DB_PATH_OR_URL
 
-# PostgreSQL connection pool state (GL-123)
+# PostgreSQL connection pool state
 _pg_pool: Any = None
 _pg_pool_lock = threading.Lock()
 
 # ──────────────────────────────────────────────────────────────
-# Bounded retry config (GL-035: PostgreSQL transient failures)
+# Bounded retry config (PostgreSQL transient failures)
 # ──────────────────────────────────────────────────────────────
 
 # Maximum connection attempts for PostgreSQL on startup
@@ -173,7 +173,7 @@ _db_retry_max = int(os.environ.get("GRANTLAYER_DB_RETRY_MAX", "5"))
 # Delay between retries in seconds
 _db_retry_delay = float(os.environ.get("GRANTLAYER_DB_RETRY_DELAY", "1.0"))
 
-# Connection pool sizing for PostgreSQL (GL-123)
+# Connection pool sizing for PostgreSQL
 _db_pool_min = int(os.environ.get("GRANTLAYER_DB_POOL_MIN", "2"))
 _db_pool_max = int(os.environ.get("GRANTLAYER_DB_POOL_MAX", "10"))
 
@@ -257,7 +257,7 @@ class _ConnectionWrapper:
 def get_conn() -> _ConnectionWrapper:
     """Return a connection wrapper for the configured backend.
 
-    For PostgreSQL, uses a SimpleConnectionPool (GL-123) with bounded retry
+    For PostgreSQL, uses a SimpleConnectionPool with bounded retry
     on transient pool-creation failures. Connections are returned to the pool
     via wrapper.close() so existing finally-block patterns continue to work.
     """
@@ -328,7 +328,7 @@ def init_db() -> None:
     conn = get_conn()
     try:
         migrations.run_migrations(conn)
-        # GL-021: Bootstrap operators if needed
+        # Bootstrap operators if needed
         from . import operators
 
         operators.ensure_operators_table()
@@ -385,7 +385,7 @@ def executemany(sql: str, params_list: list) -> int:
 
 
 # ──────────────────────────────────────────────────────────────
-# Health / Readiness helpers (GL-032 / GL-034)
+# Health / Readiness helpers
 # ──────────────────────────────────────────────────────────────
 
 def _db_is_file() -> bool:
@@ -414,7 +414,7 @@ def get_db_health() -> dict[str, Any]:
         else "postgres"
         if DB_BACKEND == "postgres"
         else "file",
-        # GL-035: PostgreSQL additive fields
+        # PostgreSQL additive fields
         "pgVersion": None,
         "pgBackendPid": None,
         "pgActiveConnections": None,
@@ -460,7 +460,7 @@ def get_db_health() -> dict[str, Any]:
                 conn.execute("DROP TABLE _gl032_health_probe")
             result["dbWritable"] = True
 
-            # GL-035: PostgreSQL version (available without elevated privileges)
+            # PostgreSQL version (available without elevated privileges)
             if DB_BACKEND == "postgres":
                 try:
                     row = conn.execute("SELECT version()").fetchone()

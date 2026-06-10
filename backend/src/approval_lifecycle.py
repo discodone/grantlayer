@@ -1,4 +1,4 @@
-"""Approval Request Lifecycle Core (GL-040-B).
+"""Approval Request Lifecycle Core.
 
 Pure / read-only.  No DB access.  No secrets exposed.
 No persistence, no API endpoints, no migrations.
@@ -550,23 +550,23 @@ def _copy_request_with_blocker(
 
 def _normalise_approvers(approvers: Any) -> list:
     """Normalise approvers to a list, deduplicated and sorted.
-    
+
     For string approvers, deduplicate and sort strings.
     For dict approvers, deduplicate by JSON string representation and keep dicts.
     """
     if not isinstance(approvers, list):
         return []
-    
+
     # Separate dict approvers from string/other approvers
     dict_approvers = []
     string_approvers = []
-    
+
     for a in approvers:
         if isinstance(a, dict):
             dict_approvers.append(a)
         else:
             string_approvers.append(str(a))
-    
+
     # Deduplicate dict approvers by JSON string representation
     seen_dicts: set[str] = set()
     unique_dicts: list[dict] = []
@@ -577,10 +577,10 @@ def _normalise_approvers(approvers: Any) -> list:
             seen_dicts.add(key)
             unique_dicts.append(d)
             dict_keys.append(key)
-    
+
     # Sort dict approvers by their JSON representation for determinism
     sorted_dicts = [d for _, d in sorted(zip(dict_keys, unique_dicts))]
-    
+
     # Deduplicate string approvers
     seen_strings: set[str] = set()
     unique_strings: list[str] = []
@@ -588,10 +588,10 @@ def _normalise_approvers(approvers: Any) -> list:
         if s not in seen_strings:
             seen_strings.add(s)
             unique_strings.append(s)
-    
+
     # Sort string approvers for determinism
     unique_strings.sort()
-    
+
     # Return combined list (dicts first, then strings)
     return sorted_dicts + unique_strings
 

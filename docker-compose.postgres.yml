@@ -1,4 +1,4 @@
-# GrantLayer MVP — PostgreSQL stack override (GL-035)
+# GrantLayer MVP — PostgreSQL stack override
 #
 # Usage:
 #   docker compose -f docker-compose.yml -f docker-compose.postgres.yml up -d

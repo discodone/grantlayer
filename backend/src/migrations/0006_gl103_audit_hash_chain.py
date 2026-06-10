@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-103 Audit Hash Chain / Tamper Evidence Migration.
+"""GrantLayer MVP — Audit Hash Chain / Tamper Evidence Migration.
 
 Adds row_hash and prev_hash columns to audit_events to support
 cryptographic chaining of audit entries.
