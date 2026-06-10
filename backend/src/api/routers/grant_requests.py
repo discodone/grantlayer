@@ -117,8 +117,18 @@ def create_grant_request_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
-    operator_id = auth_ctx.get("operator", {}).get("operatorId")
+    operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
+
+    if not operator_id:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "Cannot determine caller identity",
+                "errorCode": "missing_caller_identity",
+                "reason": "requested_by could not be resolved from the authentication token.",
+            },
+        )
 
     for alias, value in (
         ("subjectId", body.subject_id),
@@ -186,7 +196,7 @@ def approve_grant_request_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
-    operator_id = auth_ctx.get("operator", {}).get("operatorId")
+    operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
 
     req = get_grant_request(request_id, tenant_id=tenant_id)
@@ -233,7 +243,7 @@ def deny_grant_request_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
-    operator_id = auth_ctx.get("operator", {}).get("operatorId")
+    operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
 
     req = get_grant_request(request_id, tenant_id=tenant_id)

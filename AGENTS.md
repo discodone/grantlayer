@@ -1,37 +1,71 @@
-# AGENTS.md
+# Contributing to GrantLayer
 
-GrantLayer is a verification, audit, and compliance layer for agentic grant and
-funding workflows. When AI agents prepare funding applications, evaluate eligibility,
-or trigger approval decisions, GrantLayer makes every step traceable, tamper-evident,
-and independently auditable.
-
-This repository is in **Developer Preview** — designed for local evaluation and
-controlled pilots. It is not a production SaaS.
+GrantLayer is a grant lifecycle management API — issue, verify, audit, and revoke
+scoped access grants. This file is a quick orientation for new contributors.
 
 ---
 
 ## Getting Started
 
-The fastest way to understand GrantLayer:
-
-1. **[README.md](README.md)** — project overview, API reference, configuration
-2. **[QUICKSTART.md](QUICKSTART.md)** — get the stack running in 5 minutes
+1. **[README.md](README.md)** — project overview and API reference
+2. **[QUICKSTART.md](QUICKSTART.md)** — run the stack in 5 minutes
 3. **[docs/architecture.md](docs/architecture.md)** — system design and data model
 4. **[docs/openapi.yaml](docs/openapi.yaml)** — full OpenAPI spec (also at `/api/docs` when running)
 
 ---
 
-## Contributing
+## Local Setup
 
-See **[CONTRIBUTING.md](CONTRIBUTING.md)** for:
+```bash
+git clone https://github.com/discodone/grantlayer.git
+cd grantlayer
+cp .env.example .env          # edit .env: set GRANTLAYER_JWT_SECRET
+./nginx/generate-certs.sh
+docker compose up -d
+curl http://localhost:8765/health
+```
 
-- Local setup and Docker quickstart
-- Coding guidelines and test expectations
-- How to open issues and pull requests
-- Security and data-handling rules
+For running tests:
 
-All contributions are welcome. The safest starting points are documentation
-improvements, test additions, and example updates.
+```bash
+cd backend
+pip install -r requirements-dev.txt
+scripts/run-functional-tests.sh   # fast, no network
+scripts/run-full-backend-suite.sh # full suite
+```
+
+---
+
+## How to Contribute
+
+1. Fork the repository and create a feature branch.
+2. Make your change with tests. The test suite must pass before opening a PR.
+3. Open a pull request against `main`. Describe what changed and why.
+4. Keep PRs focused — one logical change per PR.
+
+Good starting points:
+
+- Documentation improvements or typo fixes
+- New test cases for edge conditions
+- Example updates or clarifications
+
+---
+
+## Architecture Overview
+
+| Layer | Location | Purpose |
+|-------|----------|---------|
+| HTTP API | `backend/src/api/routers/` | FastAPI route handlers |
+| Business logic | `backend/src/` | Grant lifecycle, audit, auth |
+| Database | SQLite (default) / PostgreSQL | Persistent storage |
+| Auth | JWT (HS256) via `/auth/token` | Stateless token auth |
+
+Key concepts:
+
+- **Grant** — a scoped, time-bounded access record for a subject
+- **Grant Request** — a request/approval workflow that produces a Grant on approval
+- **Audit Event** — an immutable log entry for every state change
+- **Workspace** — a namespace for tenant isolation (developer preview)
 
 ---
 
@@ -39,9 +73,9 @@ improvements, test additions, and example updates.
 
 1. Check [existing issues](https://github.com/discodone/grantlayer/issues) first.
 2. Open a [new issue](https://github.com/discodone/grantlayer/issues/new) with:
-   - What you ran (exact command)
-   - What you expected
-   - What happened instead
+   - Exact command you ran
+   - Expected outcome
+   - Actual outcome (error message, status code)
    - OS, Docker version, Python version
 
 ---
@@ -55,15 +89,8 @@ See [SECURITY.md](SECURITY.md) for the full security policy.
 
 ---
 
-## Contact
-
-Open an issue or a discussion on the [GitHub repository](https://github.com/discodone/grantlayer).
-
----
-
-## Security and Data Rules
+## Code Rules
 
 - **No real secrets** — never commit API keys, tokens, or passwords. All examples use placeholder values.
-- **No real customer data** — never commit real names, addresses, or identifiers. All examples use synthetic data.
-- **No overclaims** — do not claim production SaaS readiness or production-complete tenant isolation.
-  Tenant/workspace isolation is not production-complete.
+- **No real customer data** — never commit real names, addresses, or identifiers. Use synthetic data in tests and examples.
+- **No production overclaims** — tenant/workspace isolation is not production-complete. Do not represent this as production SaaS.
