@@ -1,8 +1,13 @@
-"""Entry point: python3 -m backend"""
+"""Entry point: python3 -m backend — starts FastAPI via uvicorn."""
 import os
-from backend.src.server import run
+import uvicorn
 
 HOST = os.environ.get("GRANTLAYER_HOST", "127.0.0.1")
 PORT = int(os.environ.get("GRANTLAYER_PORT", "8765"))
 
-run(host=HOST, port=PORT)
+uvicorn.run(
+    "backend.src.api.app:app",
+    host=HOST,
+    port=PORT,
+    access_log=False,
+)

@@ -70,7 +70,13 @@ export GRANTLAYER_JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_h
 python3 -m backend
 ```
 
-Backend starts at `http://127.0.0.1:8765`.
+This starts the same FastAPI/uvicorn server as `docker compose up`. Backend starts at `http://127.0.0.1:8765`.
+
+Equivalent direct invocation:
+
+```bash
+uvicorn backend.src.api.app:app --port 8765
+```
 
 ---
 
