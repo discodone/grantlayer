@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-022 Grant Request workflow.
+"""GrantLayer MVP — Grant Request workflow.
 
 This module provides functions for managing grant requests as a separate
 lifecycle entity from grants themselves. A grant request can be:
@@ -32,7 +32,7 @@ VALID_REQUEST_STATUSES: frozenset[str] = frozenset({
     "requested", "approved", "denied", "revoked", "expired",
 })
 
-# GL-162A: Explicit allowlist of permitted grant roles for the public API (developer preview).
+# Explicit allowlist of permitted grant roles for the public API (developer preview).
 # Enforced at the HTTP layer (server.py) to validate user input without breaking internal
 # test fixtures that use non-standard role strings for isolation purposes.
 ALLOWED_GRANT_ROLES: frozenset[str] = frozenset({
@@ -150,11 +150,11 @@ def approve_grant_request(
                 f"Cannot approve grant request {request_id} with status {request.status}"
             )
 
-        # GL-098: Reject approval of expired requests deterministically
+        # Reject approval of expired requests deterministically
         if _is_request_expired(request):
             raise ValueError("Grant request has expired")
 
-        # GL-097: Self-approval guard
+        # Self-approval guard
         if request.requested_by == operator_id:
             raise ValueError("Self-approval is not permitted")
 
@@ -234,7 +234,7 @@ def deny_grant_request(
                 f"Cannot deny grant request {request_id} with status {request.status}"
             )
 
-        # GL-097: Denial reason length guard
+        # Denial reason length guard
         validate_string_length(reason, "reason", MAX_REASON_LENGTH)
 
         effective_tenant = tenant_id or "demo"
@@ -352,7 +352,7 @@ def revoke_grant_request(
 
 def expire_old_requests() -> int:
     """Expire grant requests that have been in 'requested' state for too long.
-    
+
     Returns the number of requests expired.
     """
     conn = db.get_conn()
@@ -361,7 +361,7 @@ def expire_old_requests() -> int:
         cutoff = (
             datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=24)
         ).isoformat().replace("+00:00", "Z")
-        
+
         # Find requests to expire (include tenant_id for audit propagation)
         to_expire = conn.execute(
             """
@@ -388,7 +388,7 @@ def expire_old_requests() -> int:
             [(now, row["id"]) for row in to_expire],
         )
 
-        # GL-098 / GL-200C: Create expiry audit events for each expired request,
+        # Create expiry audit events for each expired request,
         # propagating tenant_id so audit events are tenant-scoped.
         for row in to_expire:
             row_tenant = row["tenant_id"] if hasattr(row, "__getitem__") else None
@@ -405,9 +405,9 @@ def expire_old_requests() -> int:
                 ),
                 conn=conn,
             )
-        
+
         conn.commit()
-        
+
         # Return number of expired requests
         return len(to_expire)
     except Exception:

@@ -1,4 +1,4 @@
-"""GL-228: Health and readiness endpoints."""
+"""Health and readiness endpoints."""
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse

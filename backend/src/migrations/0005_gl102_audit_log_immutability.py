@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-102 Audit Log Database Immutability migration.
+"""GrantLayer MVP — Audit Log Database Immutability migration.
 
 Adds SQLite triggers to prevent UPDATE and DELETE on audit_events,
 preserving append-only INSERT and SELECT behavior.

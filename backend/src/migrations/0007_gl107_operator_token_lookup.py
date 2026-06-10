@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-107 Operator Auth Token Lookup Hardening.
+"""GrantLayer MVP — Operator Auth Token Lookup Hardening.
 
 Adds token_lookup_hash column to operators table for deterministic
 O(1) narrowing before PBKDF2 verification.  Also creates an index on

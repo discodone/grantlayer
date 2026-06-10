@@ -1,4 +1,4 @@
-"""GL-229: Demo endpoints (FastAPI)."""
+"""Demo endpoints (FastAPI)."""
 
 from __future__ import annotations
 

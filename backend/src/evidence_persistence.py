@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-036 Evidence Bundle Persistence Layer.
+"""GrantLayer MVP — Evidence Bundle Persistence Layer.
 
 Provides durable, immutable storage for evidence bundles with hash-based
 verification, lookup, and integrity checking.

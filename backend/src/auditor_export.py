@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-042-A Institutional Auditor Export Builder.
+"""GrantLayer MVP — Institutional Auditor Export Builder.
 
 Pure/read-only function that builds an institutional auditor export from
 structured inputs.  No DB access, no network calls, no API endpoint, no

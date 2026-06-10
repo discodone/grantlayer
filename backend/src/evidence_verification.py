@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-036-R2 Evidence Verification Core."""
+"""GrantLayer MVP — Evidence Verification Core."""
 
 from typing import Any
 import datetime

@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-037-C1 Minimal Auditor Report Builder.
+"""GrantLayer MVP — Minimal Auditor Report Builder.
 
 Public builder for a structured auditor report per execution_id.
 Read-only. No mutations. No secrets in response.

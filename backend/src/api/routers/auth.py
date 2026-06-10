@@ -1,4 +1,4 @@
-"""GL-233: /auth/token endpoint — exchange credentials for a JWT."""
+"""/auth/token endpoint — exchange credentials for a JWT."""
 
 from __future__ import annotations
 

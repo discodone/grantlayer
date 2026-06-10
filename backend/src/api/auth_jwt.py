@@ -1,4 +1,4 @@
-"""GL-230: JWT authentication for the GrantLayer FastAPI layer.
+"""JWT authentication for the GrantLayer FastAPI layer.
 
 Algorithm: HS256 (default) — suitable for single-server dev/demo.
 Production option: use RS256 with GRANTLAYER_JWT_ALGORITHM=RS256 and supply

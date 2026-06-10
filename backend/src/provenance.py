@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-037-A Provenance Event Model & Persistence.
+"""GrantLayer MVP — Provenance Event Model & Persistence.
 
 Append-only provenance event tracing.
 No update / delete operations.

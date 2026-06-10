@@ -1,4 +1,4 @@
-"""GL-229: Audit events endpoints (FastAPI)."""
+"""Audit events endpoints (FastAPI)."""
 
 from __future__ import annotations
 

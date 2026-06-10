@@ -1,4 +1,4 @@
-"""GL-229: Agent permissions endpoints (FastAPI)."""
+"""Agent permissions endpoints (FastAPI)."""
 
 from __future__ import annotations
 

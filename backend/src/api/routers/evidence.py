@@ -1,4 +1,4 @@
-"""GL-229: Evidence bundle endpoints (FastAPI)."""
+"""Evidence bundle endpoints (FastAPI)."""
 
 from __future__ import annotations
 

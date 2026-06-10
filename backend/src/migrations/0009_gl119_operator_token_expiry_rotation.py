@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-119 Operator Token Expiry and Rotation Baseline.
+"""GrantLayer MVP — Operator Token Expiry and Rotation Baseline.
 
 Adds expires_at and rotated_at columns to the operators table for
 operator token expiry and rotation support.

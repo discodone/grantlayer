@@ -46,7 +46,7 @@ _SECURITY_HEADERS = {
 async def _lifespan(app: FastAPI):
     """Initialize DB on startup."""
     init_db()
-    _logger.info("GrantLayer FastAPI layer started (GL-229 Phase 2)")
+    _logger.info("GrantLayer FastAPI layer started (Phase 2)")
     yield
     _logger.info("GrantLayer FastAPI layer shutting down")
 
@@ -55,7 +55,7 @@ def create_app() -> FastAPI:
     """Factory so tests can create isolated app instances."""
     app = FastAPI(
         title="GrantLayer",
-        description="Secure AI Agent Grant Management — FastAPI layer (GL-228 Phase 1)",
+        description="Secure AI Agent Grant Management — FastAPI layer (Phase 1)",
         version="0.1.0",
         lifespan=_lifespan,
         docs_url="/api/docs",

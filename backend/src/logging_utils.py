@@ -1,6 +1,6 @@
 """GrantLayer MVP — Structured logging utilities (stdlib only).
 
-GL-113: Minimal structured logging baseline using Python stdlib logging.
+Minimal structured logging baseline using Python stdlib logging.
 No external dependencies. No OpenTelemetry. No metrics/tracing platform.
 """
 

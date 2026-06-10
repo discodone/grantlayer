@@ -1,4 +1,4 @@
-"""GrantLayer MVP — Schema migration runner (GL-033 / GL-034).
+"""GrantLayer MVP — Schema migration runner.
 
 Minimal migration system: file-based, no ORM, SQLite and PostgreSQL support.
 """
@@ -124,7 +124,7 @@ def _column_exists(conn: Any, table: str, column: str) -> bool:
 
 
 # ──────────────────────────────────────────────────────────────
-# Baseline validation helpers for existing GL-032 DBs
+# Baseline validation helpers for existing DBs
 # ──────────────────────────────────────────────────────────────
 
 _EXPECTED_TABLES = {
@@ -173,7 +173,7 @@ _EXPECTED_INDEXES = [
 
 
 def _validate_gl032_baseline(conn: Any) -> None:
-    """Raise RuntimeError if the existing DB does not look like GL-032 baseline."""
+    """Raise RuntimeError if the existing DB does not look like baseline."""
     for table, columns in _EXPECTED_TABLES.items():
         if not _table_exists(conn, table):
             raise RuntimeError(f"Baseline validation failed: missing table '{table}'")
@@ -209,14 +209,14 @@ def run_migrations(conn: Any) -> None:
     """Run all pending migrations in order.
 
     On a fresh DB the baseline migration creates the full schema.
-    On an existing GL-032 DB the baseline is validated and marked
+    On an existing DB the baseline is validated and marked
     as applied without re-executing CREATE statements.
     """
     _ensure_migrations_table(conn)
 
     applied = set(_applied_versions(conn))
 
-    # Detect legacy GL-032 DB without migration tracker.
+    # Detect legacy DB without migration tracker.
     # Such a DB already contains the full schema from before the migration
     # runner was introduced; mark all known migrations applied so incremental
     # runs can proceed from a clean state.

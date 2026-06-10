@@ -1,4 +1,4 @@
-"""Agent Permission Scope Evaluator (GL-039-A1).
+"""Agent Permission Scope Evaluator.
 
 Fail-closed evaluator that determines whether an agent's assigned scopes
 authorize a requested scope.  No DB access, no secrets, no network calls.

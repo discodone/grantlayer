@@ -1,9 +1,9 @@
-"""GrantLayer MVP — Operator model (GL-021, GL-206).
+"""GrantLayer MVP — Operator model (, ).
 
 Minimal operator identity, role-based authorization, and bootstrap logic.
 Not production IAM — still local-only demo-quality.
 
-GL-206: Admin/Operator Tenant Control Plane hardening:
+Admin/Operator Tenant Control Plane hardening:
 - Explicit tenant_id required for create_operator (no silent global/None default)
 - revoke_operator() added for admin-only operator revocation
 - list_operators_for_admin() returns safe dict (no token/hash fields)
@@ -196,7 +196,7 @@ def list_operators() -> list[Operator]:
 
 
 # ──────────────────────────────────────────────────────────────
-# GL-206: Admin control-plane safe-field helpers
+# Admin control-plane safe-field helpers
 # ──────────────────────────────────────────────────────────────
 
 def _operator_to_safe_dict(op: Operator) -> dict:
@@ -219,7 +219,7 @@ def _operator_to_safe_dict(op: Operator) -> dict:
 def list_operators_for_admin() -> list[dict]:
     """List all operators with safe fields only (no token_hash/lookup_hash/raw token).
 
-    GL-206: Used by admin control-plane. Never returns internal hash fields.
+    Used by admin control-plane. Never returns internal hash fields.
     """
     operators = list_operators()
     return [_operator_to_safe_dict(op) for op in operators]
@@ -228,7 +228,7 @@ def list_operators_for_admin() -> list[dict]:
 def get_operator_safe(operator_id: str) -> dict | None:
     """Get operator safe dict by ID (active or inactive).
 
-    GL-206: Used by admin control-plane. Never returns internal hash fields.
+    Used by admin control-plane. Never returns internal hash fields.
     """
     row = query_one("SELECT * FROM operators WHERE id = ?", (operator_id,))
     if row is None:
@@ -240,7 +240,7 @@ def get_operator_safe(operator_id: str) -> dict | None:
 def revoke_operator(operator_id: str) -> bool:
     """Deactivate an operator (set active=0).
 
-    GL-206: Admin-only revocation. Returns True if updated, False if not found.
+    Admin-only revocation. Returns True if updated, False if not found.
     Revoked operators fail closed on authentication.
     """
     conn = get_conn()
@@ -266,7 +266,7 @@ def create_operator(
 
     The raw_token is returned exactly once; store it securely.
 
-    GL-206: tenant_id is now a required positional argument — no silent global
+    tenant_id is now a required positional argument — no silent global
     or None default in the public API. For demo/bootstrap usage, pass
     tenant_id='demo' explicitly.
     """
@@ -345,7 +345,7 @@ def authenticate_operator_with_reason(
             return None, "operator_token_expired"
         return get_operator_by_id(row["id"]), None
 
-    # Legacy fallback: rows created before GL-107 may lack token_lookup_hash.
+    # Legacy fallback: rows created from older migrations may lack token_lookup_hash.
     legacy_rows = query_all(
         "SELECT id, token_hash, expires_at FROM operators WHERE active = 1 AND token_lookup_hash IS NULL"
     )

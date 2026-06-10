@@ -5,7 +5,7 @@ It protects local/demo mutating endpoints.
 When GRANTLAYER_REQUIRE_ADMIN_TOKEN is true, protected endpoints fail closed
 if the token is missing, blank, or incorrect.
 
-GL-225/226: Workspace Context Resolver + Authorization Enforcement
+Workspace Context Resolver + Authorization Enforcement
 - resolve_workspace_context() derives workspace from server-side identity/membership.
 - No client-supplied workspace_id is trusted without membership verification.
 - Fail-closed: no valid workspace context → request rejected.
@@ -112,7 +112,7 @@ def admin_token_warning() -> str | None:
 
 
 # ──────────────────────────────────────────────────────────────
-# GL-225: Workspace Context Resolver
+# Workspace Context Resolver
 # ──────────────────────────────────────────────────────────────
 
 # Roles that are allowed to access resources across all workspaces within their tenant.
@@ -142,7 +142,7 @@ _WORKSPACE_MUTATION_ROLES: frozenset = frozenset({
 def _get_workspace_row(workspace_id: str, tenant_id: str) -> dict | None:
     """Return the workspace row if it belongs to the specified tenant, else None.
 
-    GL-225: Workspace must be verified against the caller's tenant_id — a
+    Workspace must be verified against the caller's tenant_id — a
     workspace_id supplied by the client is never trusted without this check.
     """
     return query_one(
@@ -180,7 +180,7 @@ def resolve_workspace_context(
 ) -> tuple[str | None, int, dict]:
     """Derive the effective workspace_id securely from server-side identity.
 
-    GL-225: The workspace is derived from the operator's identity and membership.
+    The workspace is derived from the operator's identity and membership.
     A client-supplied workspace_id is only accepted after membership verification.
     Fail-closed: if no valid workspace can be resolved, (None, 403, error) is returned.
 
@@ -342,7 +342,7 @@ def resolve_workspace_context(
 
 
 # ──────────────────────────────────────────────────────────────
-# GL-226: Cross-Workspace Authorization Enforcement
+# Cross-Workspace Authorization Enforcement
 # ──────────────────────────────────────────────────────────────
 
 
@@ -357,7 +357,7 @@ def check_workspace_resource_access(
 ) -> tuple[bool, int, dict]:
     """Enforce cross-workspace and cross-tenant access boundaries.
 
-    GL-226: This is the enforcement point for all resource-level workspace checks.
+    This is the enforcement point for all resource-level workspace checks.
 
     Rules:
     - Cross-tenant access is always denied (403).
@@ -388,7 +388,7 @@ def check_workspace_resource_access(
         }
 
     # Normalize: None resource_workspace_id is treated as same-workspace for backward compat
-    # (pre-GL-224 rows may lack workspace_id).
+    # (pre-migration rows may lack workspace_id).
     if resource_workspace_id is None:
         # Treat unscoped resources as same-workspace — still enforce role check for mutations.
         if require_mutation and workspace_member_role == "workspace_readonly":

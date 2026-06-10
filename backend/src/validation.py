@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-114 String-length validation helpers."""
+"""GrantLayer MVP — String-length validation helpers."""
 
 MAX_SHORT_ID_LENGTH = 128
 MAX_ROLE_LENGTH = 64

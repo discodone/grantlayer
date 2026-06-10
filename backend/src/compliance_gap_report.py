@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-038-B1 Compliance Gap Report Builder.
+"""GrantLayer MVP — Compliance Gap Report Builder.
 
 Public builder for a structured compliance gap report per execution_id.
 Read-only. No mutations. No secrets in response.

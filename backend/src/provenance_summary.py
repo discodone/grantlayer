@@ -1,4 +1,4 @@
-"""GrantLayer MVP — GL-037-B1 Decision Provenance Summary Builder.
+"""GrantLayer MVP — Decision Provenance Summary Builder.
 
 Public builder for a structured decision provenance summary per execution_id.
 Read-only. No mutations. No secrets in response.

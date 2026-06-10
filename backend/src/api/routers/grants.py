@@ -1,4 +1,4 @@
-"""GL-228: Grants CRUD endpoints (FastAPI)."""
+"""Grants CRUD endpoints (FastAPI)."""
 
 from __future__ import annotations
 

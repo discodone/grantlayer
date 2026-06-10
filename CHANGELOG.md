@@ -1,11 +1,11 @@
 # Changelog
 
-GrantLayer is Developer Preview / GL-0.1.
+GrantLayer is Developer Preview / v0.1.
 
 The public GitHub repository is a clean developer-facing snapshot. Internal Forgejo remains the source of truth. This changelog is for public snapshot
 orientation and stable version anchors; it is not a full internal history.
 
-## GL-0.1 Developer Preview - Public Snapshot
+## v0.1 Developer Preview - Public Snapshot
 
 - API-first verification and audit layer for agentic grant workflows.
 - Evidence persistence and verification concepts for stored grant workflow

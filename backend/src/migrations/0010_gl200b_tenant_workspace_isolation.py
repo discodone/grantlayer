@@ -1,6 +1,6 @@
-"""GrantLayer MVP — GL-200B Tenant/Workspace Isolation Baseline Migration.
+"""GrantLayer MVP — Tenant/Workspace Isolation Baseline Migration.
 
-Adds tenant_id and workspace_id (nullable, reserved for GL-200C) to all
+Adds tenant_id and workspace_id (nullable, reserved for ) to all
 business resource tables. Adds tenant_id to operators table (backfilled 'demo').
 
 Migration is idempotent: re-running is safe; column-existence is checked before
@@ -119,8 +119,8 @@ def _add_tenant_columns(conn, table: str, default_tenant: str, nullable: bool = 
             # No backfill for the nullable path (audit_events).
             # Pre-migration events keep tenant_id=NULL intentionally:
             # (a) NULL preserves the hash-chain canonical payload format so
-            #     stored row_hash values remain verifiable (GL-103/GL-202).
-            # (b) The audit immutability trigger (GL-102) blocks UPDATE, so
+            #     stored row_hash values remain verifiable (/).
+            # (b) The audit immutability trigger blocks UPDATE, so
             #     a blanket backfill would fail on any DB that already contains
             #     audit events.
             # Legacy events with NULL tenant_id are handled fail-closed by

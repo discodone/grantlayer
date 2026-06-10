@@ -1,4 +1,4 @@
-"""GL-228: Pydantic request/response schemas for FastAPI layer."""
+"""Pydantic request/response schemas for FastAPI layer."""
 
 from __future__ import annotations
 

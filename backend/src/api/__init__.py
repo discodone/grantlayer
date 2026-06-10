@@ -1,1 +1,1 @@
-"""GrantLayer FastAPI layer — GL-228 Phase 1 (strangler fig pattern)."""
+"""GrantLayer FastAPI layer — Phase 1 (strangler fig pattern)."""
