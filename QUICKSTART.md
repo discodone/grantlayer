@@ -178,11 +178,11 @@ curl -k -s -X POST https://localhost/grant-requests \
   }' | python3 -m json.tool
 ```
 
-Response includes a `requestId` you can use to approve or deny:
+Response includes an `id` you can use to approve or deny:
 
 ```bash
-# Approve the request (replace <requestId> with the id from the response above):
-curl -k -s -X POST https://localhost/grant-requests/<requestId>/approve \
+# Approve the request (replace <id> with the id from the response above):
+curl -k -s -X POST https://localhost/grant-requests/<id>/approve \
   -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
 ```
 
@@ -282,9 +282,11 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
-### Schema error at startup (`missing column` / `OperationalError`)
+### Schema error at startup (`RuntimeError: missing column` / `OperationalError`)
 
-If the database volume was created by an older version, the schema may be out of date:
+If the database volume was created by an older version, the schema may be out of date.
+**Symptom:** API container exits with `RuntimeError: missing column` or `OperationalError`.
+**Fix:**
 
 ```bash
 docker compose down -v

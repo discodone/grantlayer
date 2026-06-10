@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from ... import config
 from ...crypto_signing import verify_grant_signature
 from ..deps import resolve_auth_and_workspace
+from ...grant_requests import ALLOWED_GRANT_ROLES
 from ...grants import create_grant, get_grant, list_grants
 from ...models import AuditEvent, Grant
 from ... import audit_log as _audit_log
@@ -178,6 +179,16 @@ def create_grant_endpoint(
                     "reason": str(exc),
                 },
             ) from exc
+
+    if body.role not in ALLOWED_GRANT_ROLES:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "Invalid field: role",
+                "errorCode": "invalid_role",
+                "reason": f"role must be one of: {sorted(ALLOWED_GRANT_ROLES)}",
+            },
+        )
 
     _validate_grant_dates(body.valid_from, body.valid_until)
 

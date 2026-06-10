@@ -27,7 +27,7 @@ from ...validation import (
     validate_string_length,
 )
 from ..deps import enforce_workspace_mutation, resolve_auth_and_workspace
-from ..schemas import _validate_grant_dates as _validate_dates
+from ..schemas import GrantRequestResponse, _validate_grant_dates as _validate_dates
 
 router = APIRouter(prefix="/grant-requests", tags=["grant-requests"])
 
@@ -77,7 +77,7 @@ def list_grant_requests_endpoint(
             },
         )
     requests = list_grant_requests(status_filter=status, tenant_id=tenant_id)
-    return [r.to_dict() for r in requests]
+    return [GrantRequestResponse.from_grant_request(r).model_dump(by_alias=True) for r in requests]
 
 
 @router.get("/{request_id}")
@@ -102,7 +102,7 @@ def get_grant_request_endpoint(
                 "reason": "The requested grant request does not exist.",
             },
         )
-    return req.to_dict()
+    return GrantRequestResponse.from_grant_request(req).model_dump(by_alias=True)
 
 
 @router.post("", status_code=201)
@@ -181,7 +181,7 @@ def create_grant_request_endpoint(
         reason=body.reason,
     )
     created = create_grant_request(req, tenant_id=tenant_id)
-    return created.to_dict()
+    return GrantRequestResponse.from_grant_request(created).model_dump(by_alias=True)
 
 
 @router.post("/{request_id}/approve")
@@ -222,7 +222,11 @@ def approve_grant_request_endpoint(
 
     try:
         updated_req, new_grant = approve_grant_request(request_id, operator_id, tenant_id=tenant_id)
-        return {"ok": True, "request": updated_req.to_dict(), "grant": new_grant.to_dict()}
+        return {
+            "ok": True,
+            "request": GrantRequestResponse.from_grant_request(updated_req).model_dump(by_alias=True),
+            "grant": new_grant.to_dict(),
+        }
     except ValueError as exc:
         raise HTTPException(
             status_code=400,
@@ -271,7 +275,7 @@ def deny_grant_request_endpoint(
 
     try:
         updated_req = deny_grant_request(request_id, operator_id, body.reason, tenant_id=tenant_id)
-        return {"ok": True, "request": updated_req.to_dict()}
+        return {"ok": True, "request": GrantRequestResponse.from_grant_request(updated_req).model_dump(by_alias=True)}
     except ValueError as exc:
         raise HTTPException(
             status_code=400,

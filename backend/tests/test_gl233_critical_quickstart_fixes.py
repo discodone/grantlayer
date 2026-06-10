@@ -44,7 +44,7 @@ _ADMIN_TOKEN = "gl233-admin-token-test"
 
 _GRANT_BODY = {
     "subjectId": "agent-gl233",
-    "role": "reader",
+    "role": "viewer",
     "action": "read",
     "resource": "reports",
     "validFrom": "2025-01-01T00:00:00Z",

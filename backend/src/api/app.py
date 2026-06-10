@@ -1,8 +1,4 @@
-"""GL-228/GL-229: FastAPI application (strangler fig pattern).
-
-server.py continues to run in parallel.  This module provides a FastAPI
-app that can be mounted or run alongside server.py during the migration.
-"""
+"""GrantLayer FastAPI application."""
 
 from __future__ import annotations
 
@@ -67,7 +63,7 @@ def create_app() -> FastAPI:
         openapi_url="/api/openapi.json",
     )
 
-    # CORS — same policy as server.py (exact-match allowlist, no reflection)
+    # CORS — exact-match allowlist, no reflection
     if config.CORS_ALLOWED_ORIGINS:
         app.add_middleware(
             CORSMiddleware,
@@ -115,6 +111,15 @@ def create_app() -> FastAPI:
         return JSONResponse(
             status_code=403,
             content={"error": "Forbidden", "errorCode": "forbidden", "reason": "Access denied."},
+        )
+
+    @app.exception_handler(422)
+    async def _unprocessable(request: Request, exc):
+        if isinstance(getattr(exc, "detail", None), dict):
+            return JSONResponse(status_code=422, content=exc.detail)
+        return JSONResponse(
+            status_code=422,
+            content={"error": "Unprocessable Entity", "errorCode": "unprocessable_entity", "reason": "The request could not be processed."},
         )
 
     @app.exception_handler(501)
