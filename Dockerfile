@@ -10,7 +10,8 @@ RUN apt-get update \
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir cryptography==43.0.0
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ ./backend/
 
@@ -20,10 +21,13 @@ USER appuser
 
 EXPOSE 8765
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -fsS http://localhost:8765/health || exit 1
 
 ENV GRANTLAYER_HOST=0.0.0.0
 ENV GRANTLAYER_PORT=8765
+ENV PYTHONPATH=/app
 
-CMD ["python3", "-m", "backend"]
+CMD ["python3", "-m", "uvicorn", "backend.src.api.app:app", \
+     "--host", "0.0.0.0", "--port", "8765", \
+     "--no-access-log"]
