@@ -136,5 +136,6 @@ DOC_GUARD_MODULES: frozenset[str] = frozenset(
         "test_gl220_production_runtime_infrastructure_hardening_pack",
         "test_gl221_workspace_enforcement_final_go_no_go_v6",
         "test_gl223_workspace_identity_membership_ownership_implementation_plan",
+        "test_gl234_public_repo_cleanup",
     ]
 )

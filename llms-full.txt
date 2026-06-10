@@ -1,6 +1,6 @@
 # llms-full.txt
 
-## GrantLayer — Full Agent Entry Map
+## GrantLayer — Full Entry Map
 
 ---
 
@@ -12,7 +12,7 @@ eligibility, collect evidence, or trigger approval decisions, institutions need
 a neutral verification layer — one that makes every step traceable,
 tamper-evident, and independently auditable.
 
-**Primary language:** Python 3.13 (stdlib + `cryptography` v43.0.0)
+**Primary language:** Python 3.13 (FastAPI + `cryptography` v43.0.0)
 **Database:** SQLite (default) or PostgreSQL (optional)
 **Tests:** Python `unittest`
 **License:** Apache-2.0
@@ -25,15 +25,15 @@ tamper-evident, and independently auditable.
 |---------|-------|
 | Maturity | Developer Preview — local evaluation and controlled pilot only |
 | Production SaaS readiness | Not claimed |
-| Tenant/workspace isolation | Baseline implemented, not production-complete (GL-200–GL-206) |
-| Public snapshot on GitHub | **Available** — `https://github.com/Discodone/grantlayer.git` (GL-176) |
+| Tenant/workspace isolation | Baseline implemented, not production-complete |
+| Public snapshot on GitHub | **Available** — `https://github.com/Discodone/grantlayer.git` |
 | Real customer data | No — synthetic identifiers only |
 | Real secrets | No — placeholder tokens only |
 
 - This is **not a production SaaS**.
-- **Tenant/workspace isolation baseline is implemented** (GL-200–GL-206) but not production-complete. Full multi-tenant RBAC, workspace enforcement, and production IAM remain deferred. Tenant/workspace isolation is not production-complete.
+- **Tenant/workspace isolation baseline is implemented** but not production-complete. Full multi-tenant RBAC, workspace enforcement, and production IAM remain deferred. Tenant/workspace isolation is not production-complete.
 - **No real secrets or customer data** anywhere in the repository.
-- **Public GitHub repository is available** — `https://github.com/Discodone/grantlayer.git` (GL-176). Internal Forgejo remains the development mirror; GitHub is the public read-only snapshot.
+- **Public GitHub repository is available** — `https://github.com/Discodone/grantlayer.git`.
 
 ---
 
@@ -41,36 +41,37 @@ tamper-evident, and independently auditable.
 
 ```
 grantlayer-mvp/
-├── AGENTS.md                      # Primary entry point for AI coding agents
-├── llms.txt                       # Concise agent entry map
+├── AGENTS.md                      # Project entry point: getting started, contributing, contact
+├── llms.txt                       # Concise entry map
 ├── llms-full.txt                  # This file — detailed map
 ├── README.md                      # Human + agent project overview
 ├── LICENSE                        # Apache-2.0
-├── CONTRIBUTING.md                # Contribution rules and coding-agent guidelines
+├── CONTRIBUTING.md                # Contribution rules and guidelines
 ├── SECURITY.md                    # Security policy and reporting guidance
 ├── requirements.txt               # Python runtime dependencies (DO NOT CHANGE)
 ├── requirements-dev.txt           # Dev dependencies (DO NOT CHANGE)
 ├── backend/
-│   ├── src/                       # PRODUCTION CODE — agent changes forbidden by default
-│   ├── tests/                     # Tests — safe for agent contributions
+│   ├── src/                       # PRODUCTION CODE — changes require explicit issue scope
+│   ├── tests/                     # Tests — see backend/tests/README.md
 │   └── __main__.py                # Backend entry point
 ├── docs/
-│   ├── agent_quickstart.md        # 60-second orientation for agents
-│   ├── public_agent_api_walkthrough_refresh.md # Public agent/API walkthrough
-│   ├── agent_task_contract.md     # Issue/task contract and final-report format
-│   ├── agent_integration_manifest.json # Machine-readable metadata
-│   ├── ten_minute_quickstart.md   # Developer quickstart
-│   ├── langgraph_langchain_integration_example.md # Agent workflow example docs
-│   ├── public_feedback_infrastructure_pack.md # Public feedback routing and security guidance
-│   ├── public_github_readiness_pack.md # Public-readiness checklist
-│   ├── first_developer_feedback_log.md # Developer feedback intake
-│   ├── examples/gl*/              # Issue-specific validation artifacts
-│   └── openapi.yaml               # OpenAPI contract (DO NOT CHANGE)
+│   ├── README.md                  # Docs index for external developers
+│   ├── architecture.md            # System design and data model
+│   ├── openapi.yaml               # OpenAPI contract (DO NOT CHANGE)
+│   ├── integration_guide.md       # Integration guide
+│   ├── ten_minute_quickstart.md   # Developer quickstart (manual / no-Docker path)
+│   ├── langgraph_langchain_integration_example.md # Agent workflow example
+│   ├── public_feedback_infrastructure_pack.md     # Feedback routing and security guidance
+│   ├── agent_task_contract.md     # Issue/task contract format
+│   ├── agent_integration_manifest.json # Machine-readable project metadata
+│   ├── examples/                  # Validation artifacts and JSON examples
+│   ├── deployment/                # Deployment notes
+│   └── internal/                  # Internal governance docs (not for external developers)
 ├── sdk/python/
 │   ├── grantlayer_client.py       # SDK code (DO NOT CHANGE unless issue allows)
-│   └── README.md                  # SDK usage guide — safe to update
+│   └── README.md                  # SDK usage guide
 ├── examples/langgraph_langchain/
-│   └── grantlayer_agent_example.py # LangGraph example (DO NOT CHANGE unless issue allows)
+│   └── grantlayer_agent_example.py # LangGraph example
 └── scripts/                       # Dev/test scripts (DO NOT CHANGE)
 ```
 
@@ -80,15 +81,17 @@ grantlayer-mvp/
 
 | Document | What it covers |
 |----------|----------------|
-| `AGENTS.md` | Agent rules, safe/forbidden areas, workflow, final report format |
-| `docs/agent_quickstart.md` | 60-second orientation for first agent contributions |
-| `docs/public_agent_api_walkthrough_refresh.md` | Public agent/API walkthrough, no-install examples, and backend handoff |
-| `docs/agent_task_contract.md` | Task specification structure, disposition values, validation policy |
-| `docs/agent_integration_manifest.json` | Machine-readable project metadata |
 | `README.md` | Project overview, status, developer entry path, API quick reference |
-| `CONTRIBUTING.md` | Contribution guidelines, DCO recommendation, coding-agent rules |
+| `CONTRIBUTING.md` | Contribution guidelines, DCO, local setup |
 | `SECURITY.md` | Security policy, vulnerability scope, reporting guidance |
-| `docs/public_feedback_infrastructure_pack.md` | Public feedback intake, severity routing, and Security Advisory guidance |
+| `AGENTS.md` | Getting started, contributing, contact |
+| `docs/architecture.md` | System design, data model, audit chain |
+| `docs/openapi.yaml` | Full OpenAPI contract |
+| `docs/integration_guide.md` | Integration patterns |
+| `docs/ten_minute_quickstart.md` | Clone → install → start backend → smoke path |
+| `docs/langgraph_langchain_integration_example.md` | Agent workflow integration |
+| `docs/public_feedback_infrastructure_pack.md` | Public feedback intake and Security Advisory guidance |
+| `docs/agent_task_contract.md` | Task specification structure |
 
 ---
 
@@ -109,58 +112,32 @@ grantlayer-mvp/
 
 ---
 
-### 7. Agent Task Contract
-
-Every agent issue follows `docs/agent_task_contract.md`. Key concepts:
-- Issue ID, goal, expected changed files, allowed files, forbidden files
-- Acceptance criteria, validation commands, final report format
-- Disposition values: `ready_for_merge`, `merged_done`, `blocked`,
-  `needs_manual_review`, `provider_timeout_recovery_needed`
-- Public-readiness safety policy (no overclaim rules)
-
----
-
-### 8. Public-Readiness Docs
-
-- `docs/public_github_readiness_pack.md` — Readiness checklist, messaging rules,
-  release blockers, and go/no-go criteria before any future public sharing.
-- `docs/first_developer_feedback_log.md` — First structured feedback intake
-  (internal dry-run only; no real external feedback claimed).
-- `examples/grant_lifecycle_evidence_bundle.py` — second runnable no-install
-  example that pairs with the first output helper.
-- LICENSE, CONTRIBUTING.md, SECURITY.md provide governance baseline.
-
----
-
-### 9. Validation Commands
+### 7. Validation Commands
 
 ```bash
-# Fast regression (run on every agent branch)
+# Fast regression (run on every branch)
 python3 -m unittest backend.tests.test_security_boundary_regression -v
 
-# Issue-specific examples
-python3 -m unittest backend.tests.test_gl154_agent_entry_points_manifest -v
-python3 -m unittest backend.tests.test_gl153_license_contributing_security_decision -v
+# Full functional suite
+./scripts/run-functional-tests.sh
 
-# Full backend suite
-# Only run in environments with a real long-timeout shell.
-# Do NOT run through a 120-second-limited agent wrapper.
-scripts/run-full-backend-suite.sh
+# Full suite including documentation checks
+./scripts/run-full-backend-suite.sh
 ```
 
 ---
 
-### 10. Safe Default Change Areas
+### 8. Safe Default Change Areas
 
 - Any `.md` file (especially under `docs/`)
 - Any file under `backend/tests/` (test-only, no prod logic changes)
-- JSON validation artifacts under `docs/examples/gl*/`
+- JSON validation artifacts under `docs/examples/`
 - SDK README (`sdk/python/README.md`)
 - CONTRIBUTING.md, SECURITY.md (updates allowed if necessary)
 
 ---
 
-### 11. Forbidden Default Change Areas
+### 9. Restricted Change Areas
 
 Unless an issue explicitly overrides:
 - `backend/src/*` (production backend code)
@@ -175,7 +152,7 @@ Unless an issue explicitly overrides:
 
 ---
 
-### 12. No-Overclaim Rules
+### 10. No-Overclaim Rules
 
 - Do **not** claim production SaaS readiness.
 - Do **not** claim production-complete or production-grade tenant isolation.
@@ -183,32 +160,7 @@ Unless an issue explicitly overrides:
 - Do **not** use real secrets or real customer data.
 - Do **not** request private grant records or other non-public institutional data.
 - Do **not** rewrite git history or perform secret-history cleanup.
-- Do **not** change git remotes or publish to GitHub.
-
----
-
-### 13. Public Status and Next Issues
-
-The repository is publicly available at `https://github.com/Discodone/grantlayer.git`
-in a developer-preview / controlled-pilot posture. Governance gates GL-155 through GL-207 are complete.
-
-Completed internal hardening gates (GL-193–GL-207):
-
-| Issue | Title | Status |
-|-------|-------|--------|
-| GL-193 | Public Agent/API Walkthrough Refresh | Complete |
-| GL-198 | Controlled Preview Boundary Pack | Complete |
-| GL-199 | Production Readiness Gap Report v2 | Complete |
-| GL-200A–GL-200C | Tenant/Workspace Isolation Design + Implementation + Regression | Complete |
-| GL-201 | Production Auth/Secrets/Config Hardening | Complete |
-| GL-202 | Persistence/PostgreSQL/Migration Readiness | Complete |
-| GL-203–GL-203C | API Contract + OpenAPI Cleanup + SDK Prototype Boundary | Complete |
-| GL-204 | Production Ops / Go-No-Go v3 | Complete — NO-GO production SaaS |
-| GL-205 | Live PostgreSQL / Backup-Restore / Observability Baseline | Complete — dry-run/plan only |
-| GL-206 | Admin/Operator Tenant Control-Plane Baseline | Complete |
-| GL-207 | Claim Safety & Controlled Preview Boundary | Complete |
-
-Upcoming issues: GL-208 (Production IAM Baseline), GL-209 (Live PostgreSQL Validation Execution).
+- Do **not** change git remotes or publish to GitHub without explicit authorization.
 
 ---
 
@@ -218,7 +170,3 @@ The following lowercase phrases are intentionally included for agent and test
 compatibility:
 
 - tenant/workspace isolation is not production-complete
-
----
-
-> This llms-full.txt was created in **GL-154 AGENTS.md + llms.txt + Agent Integration Manifest** and updated in **GL-193 Public Agent/API Walkthrough Refresh** and **GL-207 Claim Safety & Controlled Preview Boundary**. It does **not** change git remotes, rewrite history, clean secrets from history, change production code, change API behavior, add migrations, change the database schema, add dependencies, implement SDK changes, implement LangGraph/LangChain changes, launch a website or frontend, or claim production SaaS readiness or production-complete tenant isolation. All examples use synthetic identifiers and placeholder tokens only.

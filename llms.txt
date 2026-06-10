@@ -3,16 +3,16 @@
 ## GrantLayer — Developer Preview
 
 GrantLayer is a verification, audit, and compliance layer for agentic grant and
-funding workflows, written in Python (stdlib + `cryptography`). It runs locally
+funding workflows, written in Python (FastAPI + `cryptography`). It runs locally
 with SQLite or PostgreSQL.
 
 **Status:** Developer Preview — local evaluation and controlled pilot only.
 
 **Important caveats:**
 - Not a production SaaS. Do not deploy to shared multi-tenant infrastructure.
-- Tenant/workspace isolation baseline is implemented (GL-200–GL-206) but not production-complete.
+- Tenant/workspace isolation baseline is implemented but not production-complete.
 - No real secrets or customer data are used anywhere.
-- Public GitHub repository available at `https://github.com/Discodone/grantlayer.git` (GL-176).
+- Public GitHub repository available at `https://github.com/Discodone/grantlayer.git`.
 
 ---
 
@@ -21,12 +21,12 @@ with SQLite or PostgreSQL.
 | File | Purpose |
 |------|---------|
 | `README.md` | Project overview, status, stack, API quick reference |
-| `AGENTS.md` | Primary entry point for AI coding agents: rules, boundaries, workflow |
-| `docs/agent_quickstart.md` | 60-second orientation for first agent contributions |
-| `docs/public_agent_api_walkthrough_refresh.md` | Public agent/API walkthrough, no-install examples, and backend handoff |
-| `docs/agent_task_contract.md` | Issue/task specification structure and final-report format |
-| `docs/ten_minute_quickstart.md` | Clone → install → start backend → smoke path |
-| `docs/public_feedback_infrastructure_pack.md` | Public feedback intake model, severity routing, and Security Advisory guidance |
+| `QUICKSTART.md` | Get the Docker stack running in 5 minutes |
+| `CONTRIBUTING.md` | How to contribute, run tests, report bugs |
+| `AGENTS.md` | Project entry point: getting started, contributing, contact |
+| `docs/architecture.md` | System design and data model |
+| `docs/integration_guide.md` | How to integrate GrantLayer into a workflow |
+| `docs/openapi.yaml` | Full OpenAPI specification |
 | `sdk/python/README.md` | Minimal Python SDK usage guide |
 | `docs/langgraph_langchain_integration_example.md` | How GrantLayer fits into an agentic workflow |
 
@@ -38,8 +38,7 @@ with SQLite or PostgreSQL.
 - Do not use real customer data — all examples use synthetic identifiers.
 - Do not claim production SaaS readiness.
 - Do not claim production-complete or production-grade tenant isolation.
-- Do not stage or commit `.claude/` files.
-- Do not request real secrets, real customer data, or private grants.
+- Tenant/workspace isolation is not production-complete.
 
 ---
 
@@ -49,12 +48,11 @@ with SQLite or PostgreSQL.
 # Fast regression
 python3 -m unittest backend.tests.test_security_boundary_regression -v
 
-# Issue-specific (example)
-python3 -m unittest backend.tests.test_gl154_agent_entry_points_manifest -v
+# Full functional suite
+./scripts/run-functional-tests.sh
 
-# Full suite (only in long-timeout environments; do not run through a
-# 120-second-limited agent shell wrapper)
-scripts/run-full-backend-suite.sh
+# Full suite including documentation checks
+./scripts/run-full-backend-suite.sh
 ```
 
 ---
@@ -66,13 +64,3 @@ compatibility:
 
 - not a production SaaS
 - tenant/workspace isolation is not production-complete
-
----
-
-## Next Steps
-
-Agent examples are available in `examples/langgraph_langchain/`,
-`examples/first_verifiable_output.py`, and
-`examples/grant_lifecycle_evidence_bundle.py`.
-
-GL-193 through GL-207 are complete. Upcoming issues: GL-208 (Production IAM Baseline).
