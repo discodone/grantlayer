@@ -78,10 +78,7 @@ curl http://localhost:8765/health
 
 ## 4. Get a JWT token
 
-### Option A — API endpoint (recommended)
-
 ```bash
-# Use your GRANTLAYER_ADMIN_TOKEN from .env as the secret
 export TOKEN=$(curl -s -X POST http://localhost:8765/auth/token \
   -H "Content-Type: application/json" \
   -d "{\"operator_id\": \"dev\", \"secret\": \"$(grep GRANTLAYER_ADMIN_TOKEN .env | cut -d= -f2-)\"}" \
@@ -99,28 +96,6 @@ Response shape:
 }
 ```
 
-### Option B — Python helper (local dev only)
-
-```bash
-# Export your JWT secret (must match .env)
-export GRANTLAYER_JWT_SECRET=<your-secret-from-.env>
-
-# Generate a dev token (valid for 1 hour)
-python3 - <<'EOF'
-import os, sys
-sys.path.insert(0, '.')
-from backend.src.api.auth_jwt import create_dev_token
-token = create_dev_token()
-print(token)
-EOF
-```
-
-Save the token:
-
-```bash
-export TOKEN=<paste-token-here>
-```
-
 ---
 
 ## 5. Create a Grant
@@ -131,7 +106,7 @@ curl -k -s -X POST https://localhost/grants \
   -H "Content-Type: application/json" \
   -d '{
     "subjectId": "agent-001",
-    "role": "reader",
+    "role": "viewer",
     "action": "read",
     "resource": "reports",
     "validFrom": "2025-01-01T00:00:00Z",
@@ -148,7 +123,7 @@ Response:
 {
   "id": "g_...",
   "subjectId": "agent-001",
-  "role": "reader",
+  "role": "viewer",
   "action": "read",
   "resource": "reports",
   "validFrom": "2025-01-01T00:00:00Z",
@@ -194,7 +169,7 @@ curl -k -s -X POST https://localhost/grant-requests \
   -H "Content-Type: application/json" \
   -d '{
     "subjectId": "agent-007",
-    "role": "reader",
+    "role": "viewer",
     "action": "read",
     "resource": "reports",
     "validFrom": "2025-01-01T00:00:00Z",
@@ -265,12 +240,10 @@ sudo cp nginx/certs/tls.crt /usr/local/share/ca-certificates/grantlayer-dev.crt 
 Your JWT is missing or expired. Regenerate:
 
 ```bash
-export GRANTLAYER_JWT_SECRET=<your-secret>
-python3 -c "
-import sys; sys.path.insert(0, '.')
-from backend.src.api.auth_jwt import create_dev_token
-print(create_dev_token())
-"
+export TOKEN=$(curl -s -X POST http://localhost:8765/auth/token \
+  -H "Content-Type: application/json" \
+  -d "{\"operator_id\": \"dev\", \"secret\": \"$(grep GRANTLAYER_ADMIN_TOKEN .env | cut -d= -f2-)\"}" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 ```
 
 ### `nginx: [emerg] cannot load certificate`
