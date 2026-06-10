@@ -25,10 +25,9 @@ docker compose up -d
 curl http://localhost:8765/health
 ```
 
-For running tests:
+For running tests (from the repo root):
 
 ```bash
-cd backend
 pip install -r requirements-dev.txt
 scripts/run-functional-tests.sh   # fast, no network
 scripts/run-full-backend-suite.sh # full suite

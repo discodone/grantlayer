@@ -159,7 +159,7 @@ class TestGrantsCRUDDemoMode(_GL228TestBase):
 
     VALID_BODY = {
         "subjectId": "agent-001",
-        "role": "executor",
+        "role": "operator",
         "action": "deploy",
         "resource": "service:payments",
         "validFrom": "2025-01-01T00:00:00Z",
@@ -229,7 +229,7 @@ class TestGrantsValidation(_GL228TestBase):
 
     BASE_BODY = {
         "subjectId": "agent-001",
-        "role": "executor",
+        "role": "operator",
         "action": "deploy",
         "resource": "service:payments",
         "validFrom": "2025-01-01T00:00:00Z",
@@ -303,7 +303,7 @@ class TestGrantsWorkspaceHeader(_GL228TestBase):
 
     BASE_BODY = {
         "subjectId": "agent-ws-001",
-        "role": "executor",
+        "role": "operator",
         "action": "deploy",
         "resource": "service:ws",
         "validFrom": "2025-01-01T00:00:00Z",

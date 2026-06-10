@@ -105,6 +105,59 @@ class GrantResponse(BaseModel):
         )
 
 
+class GrantRequestResponse(BaseModel):
+    id: str
+    subject_id: str = Field(alias="subjectId")
+    role: str
+    action: str
+    resource: str
+    valid_from: str = Field(alias="validFrom")
+    valid_until: str = Field(alias="validUntil")
+    requested_by: str = Field(alias="requestedBy")
+    reason: str
+    status: str
+    approved_by: Optional[str] = Field(default=None, alias="approvedBy")
+    approved_at: Optional[str] = Field(default=None, alias="approvedAt")
+    denied_by: Optional[str] = Field(default=None, alias="deniedBy")
+    denied_at: Optional[str] = Field(default=None, alias="deniedAt")
+    denial_reason: Optional[str] = Field(default=None, alias="denialReason")
+    revoked_by: Optional[str] = Field(default=None, alias="revokedBy")
+    revoked_at: Optional[str] = Field(default=None, alias="revokedAt")
+    revoked_reason: Optional[str] = Field(default=None, alias="revokedReason")
+    grant_id: Optional[str] = Field(default=None, alias="grantId")
+    created_at: str = Field(alias="createdAt")
+    updated_at: str = Field(alias="updatedAt")
+
+    model_config = {"populate_by_name": True, "from_attributes": True}
+
+    @classmethod
+    def from_grant_request(cls, req) -> "GrantRequestResponse":
+        d = req.to_dict()
+        return cls(
+            id=d["id"],
+            subjectId=d["subject_id"],
+            role=d["role"],
+            action=d["action"],
+            resource=d["resource"],
+            validFrom=d["valid_from"],
+            validUntil=d["valid_until"],
+            requestedBy=d["requested_by"],
+            reason=d["reason"],
+            status=d["status"],
+            approvedBy=d.get("approved_by"),
+            approvedAt=d.get("approved_at"),
+            deniedBy=d.get("denied_by"),
+            deniedAt=d.get("denied_at"),
+            denialReason=d.get("denial_reason"),
+            revokedBy=d.get("revoked_by"),
+            revokedAt=d.get("revoked_at"),
+            revokedReason=d.get("revoked_reason"),
+            grantId=d.get("grant_id"),
+            createdAt=d["created_at"],
+            updatedAt=d["updated_at"],
+        )
+
+
 class ErrorResponse(BaseModel):
     error: str
     error_code: str = Field(alias="errorCode")
