@@ -13,107 +13,97 @@ import subprocess
 import sys
 import tempfile
 import unittest
-import importlib
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+try:
+    import backend.src.db as _db
+    import backend.src.config as _cfg
+    import backend.src.operators as _ops
+    from fastapi.testclient import TestClient
+    from backend.src.api.app import create_app
+    _SKIP = lambda cls: cls  # noqa: E731
+except ImportError:
+    _SKIP = unittest.skip("FastAPI/backend not available")
 
 
 class _BaseGl083(unittest.TestCase):
-    """Shared helpers for GL-083 tests."""
+    """Shared helpers for GL-083 tests (FastAPI TestClient)."""
+
+    _operator_model: bool = True
+    _admin_token: str = ""
+    _require_admin: bool = False
 
     def setUp(self):
-        self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-        self._orig_db = os.environ.get("GRANTLAYER_DB")
-        os.environ["GRANTLAYER_DB"] = self.tmp_db.name
+        self._orig_enable_operator = _cfg.ENABLE_OPERATOR_MODEL
+        self._orig_admin_token_cfg = _cfg.GRANTLAYER_ADMIN_TOKEN
+        self._orig_require_admin_cfg = _cfg.REQUIRE_ADMIN_TOKEN
+        self._orig_allow_plaintext = _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE
+        self._orig_db_path = _db.DB_PATH_OR_URL
+        self._orig_env = {k: os.environ.get(k) for k in (
+            "GRANTLAYER_JWT_SECRET",
+            "GRANTLAYER_ENABLE_OPERATOR_MODEL",
+            "GRANTLAYER_ADMIN_TOKEN",
+            "GRANTLAYER_REQUIRE_ADMIN_TOKEN",
+            "GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE",
+        )}
 
-        self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
-        self._orig_admin_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
-        self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
-        self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        os.environ["GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"] = "true"
+        _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
 
-        import src.db as db_mod
-        importlib.reload(db_mod)
-        db_mod.init_db()
+        _cfg.ENABLE_OPERATOR_MODEL = self._operator_model
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true" if self._operator_model else "false"
 
-        import src.config as config_mod
-        importlib.reload(config_mod)
-        self.config_mod = config_mod
+        _cfg.GRANTLAYER_ADMIN_TOKEN = self._admin_token
+        _cfg.REQUIRE_ADMIN_TOKEN = self._require_admin
+        if self._admin_token:
+            os.environ["GRANTLAYER_ADMIN_TOKEN"] = self._admin_token
+        else:
+            os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
+        if self._require_admin:
+            os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
+        else:
+            os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
 
-        import src.operators as ops_mod
-        importlib.reload(ops_mod)
-        self.ops_mod = ops_mod
+        tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        tmp.close()
+        self._db_path = tmp.name
+        _db.DB_PATH_OR_URL = self._db_path
+        _db.DB_PATH = self._db_path
+        _db.init_db()
 
-        import src.auth as auth_mod
-        importlib.reload(auth_mod)
-        self.auth_mod = auth_mod
-
-        import src.grants as grants_mod
-        importlib.reload(grants_mod)
-        self.grants_mod = grants_mod
-
-        self.db_mod = db_mod
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
-        os.unlink(self.tmp_db.name)
-        for key, orig in [
-            ("GRANTLAYER_DB", self._orig_db),
-            ("GRANTLAYER_ENABLE_OPERATOR_MODEL", self._orig_enable_operator),
-            ("GRANTLAYER_ADMIN_TOKEN", self._orig_admin_token),
-            ("GRANTLAYER_REQUIRE_ADMIN_TOKEN", self._orig_require_admin),
-            ("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", self._orig_bootstrap_token),
-        ]:
-            if orig is None:
-                os.environ.pop(key, None)
+        _cfg.ENABLE_OPERATOR_MODEL = self._orig_enable_operator
+        _cfg.GRANTLAYER_ADMIN_TOKEN = self._orig_admin_token_cfg
+        _cfg.REQUIRE_ADMIN_TOKEN = self._orig_require_admin_cfg
+        _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = self._orig_allow_plaintext
+        _db.DB_PATH_OR_URL = self._orig_db_path
+        _db.DB_PATH = self._orig_db_path
+        for k, v in self._orig_env.items():
+            if v is None:
+                os.environ.pop(k, None)
             else:
-                os.environ[key] = orig
+                os.environ[k] = v
+        try:
+            os.unlink(self._db_path)
+        except OSError:
+            pass
 
     def _insert_operator(self, op_id, name, role, token):
-        conn = self.db_mod.get_conn()
+        conn = _db.get_conn()
         try:
             conn.execute(
-                """INSERT INTO operators (id, name, role, token_hash, active, created_at)
-                   VALUES (?, ?, ?, ?, 1, datetime('now'))""",
-                (op_id, name, role, self.ops_mod.hash_token(token)),
+                """INSERT INTO operators (id, name, role, token_hash, token_lookup_hash, active, created_at)
+                   VALUES (?, ?, ?, ?, ?, 1, datetime('now'))""",
+                (op_id, name, role, _ops.hash_token(token), _ops.derive_token_lookup_hash(token)),
             )
             conn.commit()
         finally:
             conn.close()
 
-    def _make_handler(self, path, method="GET", auth_header=None, body=b""):
-        import src.server as server_mod
-        importlib.reload(server_mod)
-        handler_class = server_mod.GrantLayerHandler
-        from io import BytesIO
-
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
-        headers = {}
-        if auth_header is not None:
-            headers["Authorization"] = auth_header
-        if body:
-            headers["Content-Length"] = str(len(body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        return handler
-
-    def _run_handler(self, handler):
-        if handler.command == "GET":
-            handler.do_GET()
-        elif handler.command == "POST":
-            handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status_line = response.split(b"\r\n")[0]
-        status = int(status_line.split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        body = json.loads(parts[1]) if len(parts) > 1 else {}
-        return status, body
+    def _auth(self, token):
+        return {"Authorization": f"Bearer {token}"}
 
     def _assert_no_secrets_in_body(self, body):
         body_str = json.dumps(body).lower()
@@ -133,129 +123,119 @@ class _BaseGl083(unittest.TestCase):
         self.assertIsInstance(payload["reason"], str)
 
 
+@_SKIP
 class TestGl083OperatorMode(_BaseGl083):
     """Operator-model auth tests for sensitive read endpoints."""
 
+    _operator_model = True
+
     def setUp(self):
         super().setUp()
-        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
-        os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
-        importlib.reload(self.config_mod)
-        import src.config as fresh_config
-        importlib.reload(fresh_config)
-        import src.auth as fresh_auth
-        importlib.reload(fresh_auth)
-        self.auth_mod = fresh_auth
-
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         self._insert_operator("admin-1", "Grant Admin", "grant_admin", "admin-token")
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
         self._insert_operator("demo-1", "Demo", "demo_operator", "demo-token")
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def test_health_public(self):
-        handler = self._make_handler("/health")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 200)
-        self.assertEqual(body.get("status"), "ok")
+        resp = self.client.get("/health")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json().get("status"), "ok")
 
     def test_readiness_public(self):
-        handler = self._make_handler("/readiness")
-        status, body = self._run_handler(handler)
-        self.assertIn(status, (200, 503))
-        self.assertIn(body.get("status"), ("ready", "not_ready"))
+        resp = self.client.get("/readiness")
+        self.assertIn(resp.status_code, (200, 503))
+        self.assertIn(resp.json().get("status"), ("ready", "not_ready"))
 
     def test_grants_without_auth_returns_401(self):
-        handler = self._make_handler("/grants", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/grants")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_grant_detail_without_auth_returns_401(self):
-        handler = self._make_handler("/grants/nonexistent-id", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/grants/nonexistent-id")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_audit_events_without_auth_returns_401(self):
-        handler = self._make_handler("/audit-events", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/audit-events")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_challenges_without_auth_returns_401(self):
-        handler = self._make_handler("/challenges", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/challenges")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_grant_executions_without_auth_returns_401(self):
-        handler = self._make_handler("/grant-executions", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/grant-executions")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_grant_executions_for_grant_without_auth_returns_401(self):
-        handler = self._make_handler("/grants/nonexistent-id/executions", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/grants/nonexistent-id/executions")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_evidence_without_auth_returns_401(self):
-        handler = self._make_handler("/evidence/executions/nonexistent-id", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/evidence/executions/nonexistent-id")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_grants_owner_succeeds(self):
-        handler = self._make_handler("/grants", auth_header="Bearer owner-token")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        resp = self.client.get("/grants", headers=self._auth("owner-token"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsInstance(resp.json(), list)
 
     def test_grants_grant_admin_succeeds(self):
-        handler = self._make_handler("/grants", auth_header="Bearer admin-token")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        resp = self.client.get("/grants", headers=self._auth("admin-token"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsInstance(resp.json(), list)
 
     def test_grants_auditor_succeeds(self):
-        handler = self._make_handler("/grants", auth_header="Bearer auditor-token")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        resp = self.client.get("/grants", headers=self._auth("auditor-token"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsInstance(resp.json(), list)
 
     def test_grants_demo_operator_forbidden(self):
-        handler = self._make_handler("/grants", auth_header="Bearer demo-token")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 403)
+        resp = self.client.get("/grants", headers=self._auth("demo-token"))
+        self.assertEqual(resp.status_code, 403)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
 
     def test_grant_detail_demo_operator_forbidden(self):
-        handler = self._make_handler("/grants/nonexistent-id", auth_header="Bearer demo-token")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 403)
+        resp = self.client.get("/grants/nonexistent-id", headers=self._auth("demo-token"))
+        self.assertEqual(resp.status_code, 403)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
 
     def test_audit_events_demo_operator_forbidden(self):
-        handler = self._make_handler("/audit-events", auth_header="Bearer demo-token")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 403)
+        resp = self.client.get("/audit-events", headers=self._auth("demo-token"))
+        self.assertEqual(resp.status_code, 403)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
 
     def test_error_responses_safe_json(self):
-        handler = self._make_handler("/grants", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/grants")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self._assert_no_secrets_in_body(body)
         body_str = json.dumps(body)
@@ -266,98 +246,86 @@ class TestGl083OperatorMode(_BaseGl083):
         self.assertNotIn("Bearer", body_str)
 
     def test_error_responses_no_stacktrace(self):
-        handler = self._make_handler("/grants", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
-        body_str = json.dumps(body)
+        resp = self.client.get("/grants")
+        self.assertEqual(resp.status_code, 401)
+        body_str = json.dumps(resp.json())
         self.assertNotIn("traceback", body_str.lower())
         self.assertNotIn("exception", body_str.lower())
 
     def test_authorized_grant_detail_returns_404_for_missing(self):
-        handler = self._make_handler("/grants/nonexistent-id", auth_header="Bearer owner-token")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 404)
+        resp = self.client.get("/grants/nonexistent-id", headers=self._auth("owner-token"))
+        self.assertEqual(resp.status_code, 404)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "grant_not_found")
 
 
+@_SKIP
 class TestGl083LegacyMode(_BaseGl083):
     """Legacy-mode auth tests for sensitive read endpoints."""
 
-    def setUp(self):
-        super().setUp()
-        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
-        os.environ["GRANTLAYER_ADMIN_TOKEN"] = "legacy-admin-token"
-        os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
-        importlib.reload(self.config_mod)
-        import src.config as fresh_config
-        importlib.reload(fresh_config)
-        import src.auth as fresh_auth
-        importlib.reload(fresh_auth)
-        self.auth_mod = fresh_auth
+    _operator_model = False
+    _admin_token = "legacy-admin-token"
+    _require_admin = True
 
     def test_health_public(self):
-        handler = self._make_handler("/health")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 200)
-        self.assertEqual(body.get("status"), "ok")
+        resp = self.client.get("/health")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json().get("status"), "ok")
 
     def test_readiness_public(self):
-        handler = self._make_handler("/readiness")
-        status, body = self._run_handler(handler)
-        self.assertIn(status, (200, 503))
+        resp = self.client.get("/readiness")
+        self.assertIn(resp.status_code, (200, 503))
 
     def test_grants_without_auth_returns_401(self):
-        handler = self._make_handler("/grants", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/grants")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_grant_detail_without_auth_returns_401(self):
-        handler = self._make_handler("/grants/nonexistent-id", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/grants/nonexistent-id")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_audit_events_without_auth_returns_401(self):
-        handler = self._make_handler("/audit-events", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/audit-events")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_challenges_without_auth_returns_401(self):
-        handler = self._make_handler("/challenges", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/challenges")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_grants_with_valid_admin_token_succeeds(self):
-        handler = self._make_handler("/grants", auth_header="Bearer legacy-admin-token")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        resp = self.client.get("/grants", headers=self._auth("legacy-admin-token"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsInstance(resp.json(), list)
 
     def test_grant_detail_with_valid_admin_token_succeeds(self):
-        handler = self._make_handler("/grants/nonexistent-id", auth_header="Bearer legacy-admin-token")
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 404)
-        self._assert_gl030_full(body)
+        resp = self.client.get("/grants/nonexistent-id", headers=self._auth("legacy-admin-token"))
+        self.assertEqual(resp.status_code, 404)
+        self._assert_gl030_full(resp.json())
 
     def test_evidence_without_auth_returns_401(self):
-        handler = self._make_handler("/evidence/executions/nonexistent-id", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/evidence/executions/nonexistent-id")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_error_responses_safe_json(self):
-        handler = self._make_handler("/grants", auth_header=None)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 401)
+        resp = self.client.get("/grants")
+        self.assertEqual(resp.status_code, 401)
+        body = resp.json()
         self._assert_gl030_full(body)
         self._assert_no_secrets_in_body(body)
         body_str = json.dumps(body)
