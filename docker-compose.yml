@@ -1,4 +1,4 @@
-# GL-230: GrantLayer full-stack compose (FastAPI + PostgreSQL + Nginx/TLS)
+# GrantLayer full-stack compose (FastAPI + PostgreSQL + Nginx/TLS)
 #
 # Quick start:
 #   1. cp .env.example .env && edit .env
