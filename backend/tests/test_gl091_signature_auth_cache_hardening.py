@@ -42,39 +42,39 @@ class _BaseGl091(unittest.TestCase):
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.models as models_mod
+        import backend.src.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
-        import src.challenges as challenges_mod
+        import backend.src.challenges as challenges_mod
         importlib.reload(challenges_mod)
         self.challenges_mod = challenges_mod
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         self.crypto_mod = crypto_mod
 
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         self.server_mod = server_mod
 
@@ -120,7 +120,7 @@ class _BaseGl091(unittest.TestCase):
         )
 
     def _make_handler(self, path, method="GET", auth_header=None, body=b""):
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         handler_class = server_mod.GrantLayerHandler
         from io import BytesIO
@@ -299,12 +299,12 @@ class TestGl091AuthCacheKeyHardening(_BaseGl091):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
@@ -322,11 +322,11 @@ class TestGl091AuthCacheKeyHardening(_BaseGl091):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "owner-token"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
 
@@ -404,12 +404,12 @@ class TestGl091AuthBehaviorPreserved(_BaseGl091):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
@@ -443,11 +443,11 @@ class TestGl091PriorGLProtections(_BaseGl091):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.auth_mod = fresh_auth
@@ -468,11 +468,11 @@ class TestGl091PriorGLProtections(_BaseGl091):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.auth_mod = fresh_auth
@@ -488,11 +488,11 @@ class TestGl091PriorGLProtections(_BaseGl091):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.auth_mod = fresh_auth
@@ -509,11 +509,11 @@ class TestGl091PriorGLProtections(_BaseGl091):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "true"
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.auth_mod = fresh_auth
@@ -553,11 +553,11 @@ class TestGl091LegacyMode(_BaseGl091):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "legacy-admin-token"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.auth_mod = fresh_auth

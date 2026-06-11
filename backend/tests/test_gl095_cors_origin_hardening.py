@@ -36,31 +36,31 @@ class _BaseGl095(unittest.TestCase):
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_cors_origins = os.environ.get("GRANTLAYER_CORS_ALLOWED_ORIGINS")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.models as models_mod
+        import backend.src.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
-        import src.challenges as challenges_mod
+        import backend.src.challenges as challenges_mod
         importlib.reload(challenges_mod)
         self.challenges_mod = challenges_mod
 
@@ -108,7 +108,7 @@ class _BaseGl095(unittest.TestCase):
         return grant
 
     def _make_handler(self, path, method="GET", auth_header=None, origin=None, body=b""):
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         handler_class = server_mod.GrantLayerHandler
         from io import BytesIO
@@ -171,7 +171,7 @@ class TestGl095CorsWildcardRemoved(_BaseGl095):
     def test_no_wildcard_on_public_health(self):
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = ""
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         handler = self._make_handler("/health", origin="http://evil.com")
         status, headers, body = self._run_handler(handler)
@@ -184,9 +184,9 @@ class TestGl095CorsWildcardRemoved(_BaseGl095):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin-token"
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         handler = self._make_handler("/grants", origin="http://evil.com")
         status, headers, body = self._run_handler(handler)
@@ -196,7 +196,7 @@ class TestGl095CorsWildcardRemoved(_BaseGl095):
     def test_no_wildcard_on_404(self):
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = ""
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         handler = self._make_handler("/nonexistent", origin="http://evil.com")
         status, headers, body = self._run_handler(handler)
@@ -210,7 +210,7 @@ class TestGl095ArbitraryOriginNotReflected(_BaseGl095):
     def test_malicious_origin_not_reflected_on_health(self):
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com"
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         handler = self._make_handler("/health", origin="http://malicious.com")
         status, headers, body = self._run_handler(handler)
@@ -223,9 +223,9 @@ class TestGl095ArbitraryOriginNotReflected(_BaseGl095):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin-token"
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         handler = self._make_handler("/grants", origin="http://malicious.com")
         status, headers, body = self._run_handler(handler)
@@ -235,7 +235,7 @@ class TestGl095ArbitraryOriginNotReflected(_BaseGl095):
     def test_malicious_origin_not_reflected_on_options(self):
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com"
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         handler = self._make_handler("/grants", method="OPTIONS", origin="http://malicious.com")
         status, headers, body = self._run_handler(handler)
@@ -250,7 +250,7 @@ class TestGl095AllowlistExactMatching(_BaseGl095):
         super().setUp()
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com,https://app.example.com"
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
 
@@ -305,7 +305,7 @@ class TestGl095OptionsPreflight(_BaseGl095):
         super().setUp()
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com"
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
 
@@ -324,9 +324,9 @@ class TestGl095OptionsPreflight(_BaseGl095):
 
     def test_options_does_not_mutate_state(self):
         # Count grants before and after OPTIONS request
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
-        from src.db import get_conn
+        from backend.src.db import get_conn
         conn = get_conn()
         before = conn.execute("SELECT COUNT(*) FROM grants").fetchone()[0]
         conn.close()
@@ -356,11 +356,11 @@ class TestGl095CorsDoesNotBypassAuth(_BaseGl095):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com"
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
 
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -413,11 +413,11 @@ class TestGl095PublicAndProtectedEndpoints(_BaseGl095):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com"
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
 
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 

@@ -42,35 +42,35 @@ class _BaseGl097(unittest.TestCase):
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.grant_requests as requests_mod
+        import backend.src.grant_requests as requests_mod
         importlib.reload(requests_mod)
         self.requests_mod = requests_mod
 
-        import src.models as models_mod
+        import backend.src.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         self.server_mod = server_mod
 
@@ -345,9 +345,9 @@ class TestGl097PriorGLRegressions(_BaseGl097):
     """Regression tests for prior GL protections."""
 
     def test_gl092_deny_revoke_audit_semantics_intact(self):
-        import src.grant_requests as requests_mod
+        import backend.src.grant_requests as requests_mod
         importlib.reload(requests_mod)
-        import src.models as models_mod
+        import backend.src.models as models_mod
         importlib.reload(models_mod)
         req = models_mod.GrantRequest(
             subject_id="tech-01",
@@ -366,9 +366,9 @@ class TestGl097PriorGLRegressions(_BaseGl097):
     def test_gl091_signature_auth_cache_hardening_intact(self):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         handler = self._make_handler("/grants", auth_header="Bearer owner-token")
@@ -385,9 +385,9 @@ class TestGl097PriorGLRegressions(_BaseGl097):
     def test_gl090_request_body_json_hardening_intact(self):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         oversized = b"x" * (fresh_server.MAX_JSON_BODY_BYTES + 1)
@@ -405,11 +405,11 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = ""
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         handler = self._make_handler("/grants")
         status, data = self._run_handler(handler)
@@ -419,9 +419,9 @@ class TestGl097PriorGLRegressions(_BaseGl097):
     def test_gl088_post_challenges_still_protected(self):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         valid_body = json.dumps({
             "subjectId": "sub-1", "action": "read", "resource": "repo-a"
@@ -435,9 +435,9 @@ class TestGl097PriorGLRegressions(_BaseGl097):
     def test_gl087_auth_error_response_consistency_intact(self):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         handler = self._make_handler("/grants")
         status, data = self._run_handler(handler)
@@ -449,9 +449,9 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "true"
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         demo_body = json.dumps({
             "subjectId": "sub-1", "role": "engineer", "action": "read", "resource": "repo-a"
