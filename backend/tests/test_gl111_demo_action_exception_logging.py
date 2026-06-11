@@ -296,9 +296,11 @@ class TestGl111Preservation(_BaseGl111):
         self.assertIn("/demo-action:", text)
 
     def test_no_endpoint_changes(self):
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.assertTrue(hasattr(server_mod, "GrantLayerHandler"))
+        from backend.src.api.app import create_app
+
+        app = create_app()
+        paths = {route.path for route in app.routes}
+        self.assertIn("/demo-action", paths)
 
 
 class TestGl111NoForbiddenFilesChanged(unittest.TestCase):

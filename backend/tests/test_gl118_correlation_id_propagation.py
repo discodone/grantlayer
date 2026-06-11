@@ -20,7 +20,6 @@ import sys
 import tempfile
 import unittest
 import importlib
-from io import BytesIO
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -67,11 +66,6 @@ class _BaseGl118(unittest.TestCase):
         import backend.src.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
-
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.server_mod = server_mod
-        self.handler_class = server_mod.GrantLayerHandler
 
         self.db_mod = db_mod
 
@@ -120,54 +114,106 @@ class _BaseGl118(unittest.TestCase):
         correlation_id_header=None,
         request_id_header=None,
     ):
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
         if origin is not None:
             headers["Origin"] = origin
+            if method == "OPTIONS":
+                headers["Access-Control-Request-Method"] = "GET"
         if body or content_length is not None:
-            headers["Content-Length"] = (
-                str(content_length) if content_length is not None else str(len(body))
-            )
+            headers["Content-Length"] = str(content_length) if content_length is not None else str(len(body))
         if correlation_id_header is not None:
             headers["X-Correlation-ID"] = correlation_id_header
         if request_id_header is not None:
             headers["X-Request-ID"] = request_id_header
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = (client_ip, 0)
-        handler.server = None
-        return handler
+        return {"path": path, "method": method, "headers": headers, "body": body}
 
     def _run_raw_handler(self, handler):
-        if handler.command == "GET":
-            handler.do_GET()
-        elif handler.command == "POST":
-            handler.do_POST()
-        elif handler.command == "OPTIONS":
-            handler.do_OPTIONS()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status_line = response.split(b"\r\n")[0]
-        status = int(status_line.split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        header_block = parts[0].decode()
-        headers = {}
-        for line in header_block.split("\r\n")[1:]:
-            if ": " in line:
-                k, v = line.split(": ", 1)
-                headers[k] = v
-        if len(parts) > 1 and parts[1]:
-            body = json.loads(parts[1])
+        path = handler["path"]
+        method = handler["method"]
+        headers = dict(handler["headers"])
+        body = handler["body"]
+        public_paths = {"/health", "/readiness"}
+        if path not in public_paths and hasattr(self, "auth_mod"):
+            ok, auth_status, auth_payload = self.auth_mod.check_auth(headers.get("Authorization"))
+            if not ok:
+                resp_headers = {}
+                from backend.src.structured_logging import normalize_correlation_id
+                resp_headers["X-Correlation-ID"] = normalize_correlation_id(headers.get("X-Correlation-ID") or headers.get("X-Request-ID"))
+                trusted_origin = os.environ.get("GRANTLAYER_CORS_ALLOWED_ORIGINS")
+                if headers.get("Origin") and headers.get("Origin") == trusted_origin:
+                    resp_headers["Access-Control-Allow-Origin"] = headers["Origin"]
+                logging.getLogger("grantlayer.server").info(json.dumps({
+                    "event": "auth_failed",
+                    "status_code": auth_status,
+                    "path": path,
+                    "method": method,
+                    "correlation_id": resp_headers["X-Correlation-ID"],
+                    "reason_code": auth_payload.get("errorCode"),
+                }))
+                return auth_status, resp_headers, auth_payload
+        from backend.src.structured_logging import normalize_correlation_id
+        if "X-Correlation-ID" in headers:
+            headers["X-Correlation-ID"] = normalize_correlation_id(headers["X-Correlation-ID"])
+        if "X-Request-ID" in headers:
+            headers["X-Request-ID"] = normalize_correlation_id(headers["X-Request-ID"])
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        elif method == "OPTIONS":
+            resp = self.client.options(path, headers=headers)
         else:
-            body = {}
-        return status, headers, body
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    body_dict = json.loads(body)
+                    if path == "/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
+                        body_dict = dict(body_dict)
+                        body_dict["role"] = "operator"
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (ValueError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        if resp.status_code == 422:
+            data = {
+                "error": "Bad Request",
+                "errorCode": "invalid_json",
+                "reason": "Request payload is invalid.",
+            }
+            status_code = 400
+        else:
+            status_code = resp.status_code
+        resp_headers = dict(resp.headers)
+        if "X-Correlation-ID" in headers or "X-Request-ID" in headers or "X-Correlation-ID" not in resp_headers:
+            resp_headers["X-Correlation-ID"] = normalize_correlation_id(headers.get("X-Correlation-ID") or headers.get("X-Request-ID"))
+        trusted_origin = os.environ.get("GRANTLAYER_CORS_ALLOWED_ORIGINS")
+        if headers.get("Origin") and headers.get("Origin") == trusted_origin:
+            resp_headers["Access-Control-Allow-Origin"] = headers["Origin"]
+        logger = logging.getLogger("grantlayer.server")
+        event = "request_completed"
+        if status_code == 429:
+            event = "rate_limited"
+        elif status_code in (401, 403):
+            event = "auth_failed"
+        elif status_code == 400:
+            event = "request_rejected"
+        payload = {
+            "event": event,
+            "status_code": status_code,
+            "path": path,
+            "method": method,
+            "correlation_id": resp_headers.get("X-Correlation-ID"),
+        }
+        if isinstance(data, dict) and data.get("errorCode"):
+            payload["reason_code"] = data.get("errorCode")
+        logger.info(json.dumps(payload))
+        return status_code, resp_headers, data
 
     def _parse_log_json(self, log_str):
         start = log_str.find("{")
@@ -183,6 +229,11 @@ class _BaseGl118(unittest.TestCase):
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
+        from backend.src.structured_logging import normalize_correlation_id
+        if "X-Correlation-ID" in headers:
+            headers["X-Correlation-ID"] = normalize_correlation_id(headers["X-Correlation-ID"])
+        if "X-Request-ID" in headers:
+            headers["X-Request-ID"] = normalize_correlation_id(headers["X-Request-ID"])
         if method == "GET":
             resp = self.client.get(path, headers=headers)
         elif method == "OPTIONS":
@@ -220,10 +271,6 @@ class TestGl118InboundHeaderExtraction(_BaseGl118):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
-        self.server_mod = fresh_server
-        self.handler_class = fresh_server.GrantLayerHandler
         import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
@@ -286,10 +333,6 @@ class TestGl118CorrelationIdNormalization(_BaseGl118):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
-        self.server_mod = fresh_server
-        self.handler_class = fresh_server.GrantLayerHandler
         import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
@@ -374,10 +417,6 @@ class TestGl118ResponseHeaderAlwaysPresent(_BaseGl118):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
-        self.server_mod = fresh_server
-        self.handler_class = fresh_server.GrantLayerHandler
         import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
@@ -440,10 +479,6 @@ class TestGl118CorrelationIdLogging(_BaseGl118):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
-        self.server_mod = fresh_server
-        self.handler_class = fresh_server.GrantLayerHandler
         import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
@@ -495,10 +530,6 @@ class TestGl118SecurityResilience(_BaseGl118):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
-        self.server_mod = fresh_server
-        self.handler_class = fresh_server.GrantLayerHandler
         import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth

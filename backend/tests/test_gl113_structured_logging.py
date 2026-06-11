@@ -499,9 +499,10 @@ class TestGl113CrossGlPreservation(unittest.TestCase):
         self.assertTrue(openapi_path.exists())
 
     def test_no_endpoint_changes(self):
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.assertTrue(hasattr(server_mod, "GrantLayerHandler"))
+        from backend.src.api.app import create_app
+
+        app = create_app()
+        self.assertTrue(any(route.path == "/health" for route in app.routes))
 
 
 # ═══════════════════════════════════════════════════════════════════════
