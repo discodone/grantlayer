@@ -55,23 +55,23 @@ class _BaseGl119(unittest.TestCase):
         self._orig_rate_limit_auth = os.environ.get("GRANTLAYER_RATE_LIMIT_AUTH")
         self._orig_rate_limit_api = os.environ.get("GRANTLAYER_RATE_LIMIT_API")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         self.server_mod = server_mod
         self.handler_class = server_mod.GrantLayerHandler
@@ -174,7 +174,7 @@ class TestGl119ExpiryBasics(_BaseGl119):
         os.environ["GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE"] = "owner"
         importlib.reload(self.config_mod)
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         db_mod.init_db()
         importlib.reload(self.ops_mod)
 
@@ -431,9 +431,9 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
@@ -450,9 +450,9 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
@@ -469,9 +469,9 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
@@ -488,9 +488,9 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
@@ -518,9 +518,9 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
@@ -551,9 +551,9 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
@@ -569,9 +569,9 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
@@ -653,7 +653,7 @@ class TestGl119Migration(_BaseGl119):
 
     def test_baseline_contains_new_columns(self):
         """Fresh schema from baseline contains expires_at and rotated_at."""
-        import src.db as db_mod
+        import backend.src.db as db_mod
         db_mod.init_db()
         conn = db_mod.get_conn()
         try:
@@ -689,9 +689,9 @@ class TestGl119LeakagePrevention(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler

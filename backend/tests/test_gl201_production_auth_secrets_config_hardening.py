@@ -65,7 +65,7 @@ def _make_db() -> str:
 
 
 def _reload_config_mod():
-    import src.config as config_mod
+    import backend.src.config as config_mod
     importlib.reload(config_mod)
     return config_mod
 
@@ -76,26 +76,26 @@ def _reload_all(db_path: str):
 
     # Reload config first so env-driven module-level constants (ENABLE_OPERATOR_MODEL etc.)
     # are fresh before dependent modules (auth, server) re-import it.
-    import src.config as config_mod
+    import backend.src.config as config_mod
     importlib.reload(config_mod)
 
-    import src.db as db_mod
+    import backend.src.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
 
-    import src.operators as ops_mod
+    import backend.src.operators as ops_mod
     importlib.reload(ops_mod)
 
-    import src.auth as auth_mod
+    import backend.src.auth as auth_mod
     importlib.reload(auth_mod)
 
-    import src.grants as grants_mod
+    import backend.src.grants as grants_mod
     importlib.reload(grants_mod)
 
-    import src.audit_log as audit_mod
+    import backend.src.audit_log as audit_mod
     importlib.reload(audit_mod)
 
-    import src.server as server_mod
+    import backend.src.server as server_mod
     importlib.reload(server_mod)
 
     return db_mod, ops_mod, auth_mod, grants_mod, audit_mod, server_mod
@@ -339,7 +339,7 @@ class TestGl201SecretLeakagePrevention(_BaseGl201):
     def test_022_runtime_config_describe_does_not_expose_secrets(self):
         """describe_runtime_config() must not expose admin token or other secrets."""
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = self._FAKE_PROD_TOKEN
-        from src.runtime_config import describe_runtime_config
+        from backend.src.runtime_config import describe_runtime_config
         result = describe_runtime_config()
         result_str = json.dumps(result)
         self.assertNotIn(self._FAKE_PROD_TOKEN, result_str,
@@ -361,7 +361,7 @@ class TestGl201SecretLeakagePrevention(_BaseGl201):
 
     def test_024_admin_token_warning_does_not_contain_token(self):
         """admin_token_warning() must not include the raw token value."""
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         warning = auth_mod.admin_token_warning()
         if warning:
@@ -469,7 +469,7 @@ class TestGl201OperatorTokenSafety(_BaseGl201):
         """Operator.to_dict() must not include token_hash or raw token."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         _reload_all(self.db_path)
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         op, raw_token = ops_mod.create_operator(
             name="Test Operator",
@@ -504,7 +504,7 @@ class TestGl201OperatorTokenSafety(_BaseGl201):
         """create_operator returns raw token exactly once; not stored in operator dict."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         _reload_all(self.db_path)
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         import secrets as secrets_mod
         raw = secrets_mod.token_urlsafe(32)
@@ -522,7 +522,7 @@ class TestGl201OperatorTokenSafety(_BaseGl201):
         """Operator tenant_id from GL-200B/C must be preserved in to_dict()."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         _reload_all(self.db_path)
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         import secrets as secrets_mod
         op, _ = ops_mod.create_operator(
@@ -538,7 +538,7 @@ class TestGl201OperatorTokenSafety(_BaseGl201):
         """authenticate_operator returns None for unrecognized token."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         _reload_all(self.db_path)
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         result = ops_mod.authenticate_operator("Bearer totally-fake-token-xyz-gl201")
         self.assertIsNone(result)
@@ -547,9 +547,9 @@ class TestGl201OperatorTokenSafety(_BaseGl201):
         """Expired operator token must return operator_token_expired reason code."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         _reload_all(self.db_path)
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         import secrets as secrets_mod
 
@@ -782,8 +782,8 @@ class TestGl201TenantWorkspaceRegression(_BaseGl201):
         """check_auth() must return tenant_id from authenticated operator."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         _reload_all(self.db_path)
-        import src.operators as ops_mod
-        import src.auth as auth_mod
+        import backend.src.operators as ops_mod
+        import backend.src.auth as auth_mod
         importlib.reload(ops_mod)
         importlib.reload(auth_mod)
         import secrets as secrets_mod
@@ -805,9 +805,9 @@ class TestGl201TenantWorkspaceRegression(_BaseGl201):
         token = "gl201-legacy-admin-token-test-xyz"
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = token
         # Reload config first so ENABLE_OPERATOR_MODEL is picked up
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         ok, status, payload = auth_mod.check_auth(f"Bearer {token}")
         self.assertTrue(ok, f"Expected ok=True, got status={status}, payload={payload}")
@@ -817,7 +817,7 @@ class TestGl201TenantWorkspaceRegression(_BaseGl201):
         """An operator from one tenant must not be returned for another tenant's lookup."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         _reload_all(self.db_path)
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         import secrets as secrets_mod
         token_a = secrets_mod.token_urlsafe(32)
@@ -840,8 +840,8 @@ class TestGl201TenantWorkspaceRegression(_BaseGl201):
         """Audit log list must be filterable by tenant (cross-tenant isolation preserved)."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         _reload_all(self.db_path)
-        import src.audit_log as audit_mod
-        import src.models as models_mod
+        import backend.src.audit_log as audit_mod
+        import backend.src.models as models_mod
         importlib.reload(audit_mod)
         importlib.reload(models_mod)
 
@@ -870,8 +870,8 @@ class TestGl201TenantWorkspaceRegression(_BaseGl201):
         """Audit hash chain must remain intact after GL-201 changes."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         _reload_all(self.db_path)
-        import src.audit_log as audit_mod
-        import src.models as models_mod
+        import backend.src.audit_log as audit_mod
+        import backend.src.models as models_mod
         importlib.reload(audit_mod)
         importlib.reload(models_mod)
 
@@ -1054,7 +1054,7 @@ class TestGl201SecretSourcesModule(unittest.TestCase):
 
     def test_120_describe_secret_source_redacts_value(self):
         """describe_secret_source must not expose raw secret value."""
-        import src.secret_sources as ss
+        import backend.src.secret_sources as ss
         fake_env = {"GRANTLAYER_ADMIN_TOKEN": "super-secret-do-not-expose"}
         result = ss.describe_secret_source("GRANTLAYER_ADMIN_TOKEN", env=fake_env)
         self.assertTrue(result["present"])
@@ -1063,21 +1063,21 @@ class TestGl201SecretSourcesModule(unittest.TestCase):
 
     def test_121_read_required_secret_raises_on_missing(self):
         """read_required_secret must raise SecretConfigurationError when missing."""
-        import src.secret_sources as ss
+        import backend.src.secret_sources as ss
         with self.assertRaises(ss.SecretConfigurationError) as ctx:
             ss.read_required_secret("NONEXISTENT_SECRET_GL201", env={})
         self.assertIn("NONEXISTENT_SECRET_GL201", str(ctx.exception))
 
     def test_122_secret_configuration_error_does_not_expose_value(self):
         """SecretConfigurationError string representation must not contain raw values."""
-        import src.secret_sources as ss
+        import backend.src.secret_sources as ss
         err = ss.SecretConfigurationError("required secret 'MY_SECRET' is missing or empty")
         self.assertNotIn("raw_value", str(err))
         self.assertIn("MY_SECRET", str(err))
 
     def test_123_validate_required_secrets_summary_safe(self):
         """validate_required_secrets returns safe summary with no raw values."""
-        import src.secret_sources as ss
+        import backend.src.secret_sources as ss
         fake_env = {
             "PRESENT_SECRET": "secret-value-do-not-expose",
         }

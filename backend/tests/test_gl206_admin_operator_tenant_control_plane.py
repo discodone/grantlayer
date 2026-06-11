@@ -54,35 +54,35 @@ def _reload_modules(db_path: str):
     os.environ["GRANTLAYER_DB"] = db_path
     os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-    import src.config as config_mod
+    import backend.src.config as config_mod
     importlib.reload(config_mod)
 
-    import src.db as db_mod
+    import backend.src.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
 
-    import src.models as models_mod
+    import backend.src.models as models_mod
     importlib.reload(models_mod)
 
-    import src.operators as ops_mod
+    import backend.src.operators as ops_mod
     importlib.reload(ops_mod)
 
-    import src.auth as auth_mod
+    import backend.src.auth as auth_mod
     importlib.reload(auth_mod)
 
-    import src.grants as grants_mod
+    import backend.src.grants as grants_mod
     importlib.reload(grants_mod)
 
-    import src.challenges as ch_mod
+    import backend.src.challenges as ch_mod
     importlib.reload(ch_mod)
 
-    import src.grant_requests as gr_mod
+    import backend.src.grant_requests as gr_mod
     importlib.reload(gr_mod)
 
-    import src.audit_log as audit_mod
+    import backend.src.audit_log as audit_mod
     importlib.reload(audit_mod)
 
-    import src.server as server_mod
+    import backend.src.server as server_mod
     importlib.reload(server_mod)
 
     return config_mod, db_mod, models_mod, ops_mod, auth_mod, grants_mod, ch_mod, gr_mod, audit_mod, server_mod

@@ -46,7 +46,7 @@ class _BaseGl141Config(unittest.TestCase):
 
     def setUp(self):
         self._orig_enable = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
-        import src.config as config_mod
+        import backend.src.config as config_mod
         self.config_mod = config_mod
 
     def tearDown(self):
@@ -75,23 +75,23 @@ class _BaseGl141Endpoint(unittest.TestCase):
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
         self.db_mod = db_mod
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
 
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         self.handler_class = server_mod.GrantLayerHandler
 
@@ -127,11 +127,11 @@ class _BaseGl141Endpoint(unittest.TestCase):
             conn.close()
 
     def _reload_server(self):
-        import src.config as cfg
+        import backend.src.config as cfg
         importlib.reload(cfg)
-        import src.auth as auth
+        import backend.src.auth as auth
         importlib.reload(auth)
-        import src.server as srv
+        import backend.src.server as srv
         importlib.reload(srv)
         self.handler_class = srv.GrantLayerHandler
 

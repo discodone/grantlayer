@@ -44,7 +44,7 @@ class _BaseGl190(unittest.TestCase):
         self._orig_require_challenge = os.environ.get("GRANTLAYER_REQUIRE_CHALLENGE")
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
         self.db_mod = db_mod
@@ -69,13 +69,13 @@ class _BaseGl190(unittest.TestCase):
                 os.environ[key] = orig
 
     def _reload_config(self):
-        import src.config as cfg
+        import backend.src.config as cfg
         importlib.reload(cfg)
         return cfg
 
     def _make_handler(self, path, method="GET", body=b""):
         """Build a minimal handler instance for request testing."""
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         from io import BytesIO
 
@@ -394,7 +394,7 @@ class TestHealthReadinessUnderBlockedStartup(_BaseGl190):
     def test_health_endpoint_accessible_regardless(self):
         # Health endpoint is always reachable once a server is up
         handler = self._make_handler("/health")
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
@@ -402,7 +402,7 @@ class TestHealthReadinessUnderBlockedStartup(_BaseGl190):
 
     def test_readiness_endpoint_accessible_regardless(self):
         handler = self._make_handler("/readiness")
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         status, body = self._run_handler(handler)
         self.assertIn(status, (200, 503))
