@@ -32,23 +32,23 @@ class _BaseGl046(unittest.TestCase):
         self._orig_admin_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.grant_requests as requests_mod
+        import backend.src.grant_requests as requests_mod
         importlib.reload(requests_mod)
         self.requests_mod = requests_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
@@ -80,7 +80,7 @@ class _BaseGl046(unittest.TestCase):
             conn.close()
 
     def _create_request(self, **kwargs):
-        from src.models import GrantRequest
+        from backend.src.models import GrantRequest
         defaults = dict(
             subject_id="tech-01",
             role="technician",
@@ -95,42 +95,43 @@ class _BaseGl046(unittest.TestCase):
         req = GrantRequest(**defaults)
         return self.requests_mod.create_grant_request(req)
 
-    def _make_handler(self, path, method="GET", auth_header=None, body=b""):
-        import src.server as server_mod
-        importlib.reload(server_mod)
-        handler_class = server_mod.GrantLayerHandler
-        from io import BytesIO
+    def _make_client(self):
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        import backend.src.db as bk_db
+        import backend.src.config as config_mod
+        import backend.src.auth as auth_mod
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        importlib.reload(config_mod)
+        importlib.reload(auth_mod)
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        return TestClient(create_app(), raise_server_exceptions=False)
 
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
+    def _make_handler(self, path, method="GET", auth_header=None, body=b""):
+        return (path, method, auth_header, body)
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
-        if body:
-            headers["Content-Length"] = str(len(body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        return handler
-
-    def _run_handler(self, handler):
-        if handler.command == "GET":
-            handler.do_GET()
-        elif handler.command == "POST":
-            handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        # Parse status line + body
-        status_line = response.split(b"\r\n")[0]
-        status = int(status_line.split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        body = json.loads(parts[1]) if len(parts) > 1 else {}
-        return status, body
+        client = self._make_client()
+        if method == "GET":
+            resp = client.get(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    body_dict = json.loads(body)
+                    resp = client.post(path, json=body_dict, headers=headers)
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    resp = client.post(path, content=body, headers=headers)
+            else:
+                resp = client.post(path, headers=headers)
+        try:
+            return resp.status_code, resp.json()
+        except Exception:
+            return resp.status_code, {}
 
 
 class TestGl046OperatorMode(_BaseGl046):
@@ -140,19 +141,17 @@ class TestGl046OperatorMode(_BaseGl046):
         super().setUp()
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
-        # Insert operators with varying roles
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         self._insert_operator("admin-1", "Grant Admin", "grant_admin", "admin-token")
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
         self._insert_operator("demo-1", "Demo", "demo_operator", "demo-token")
 
-        # Seed a grant request for detail-fetch tests
         self.request = self._create_request()
 
     # ──────────────────────────────────────────────
@@ -267,9 +266,9 @@ class TestGl046LegacyMode(_BaseGl046):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "legacy-admin-token"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
