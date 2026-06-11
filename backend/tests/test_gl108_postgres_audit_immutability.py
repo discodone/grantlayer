@@ -105,27 +105,27 @@ class _BaseGl108(unittest.TestCase):
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.models as models_mod
+        import backend.src.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         self.server_mod = server_mod
 
@@ -318,7 +318,7 @@ class TestGl108MigrationIdempotency(_BaseGl108):
 
     def test_sqlite_run_migrations_twice_does_not_raise(self):
         """run_migrations() on an already-migrated SQLite DB must be a no-op."""
-        import src.migrations.runner as runner_mod
+        import backend.src.migrations.runner as runner_mod
         importlib.reload(runner_mod)
         conn = self.db_mod.get_conn()
         try:
@@ -332,7 +332,7 @@ class TestGl108MigrationIdempotency(_BaseGl108):
 
     def test_sqlite_triggers_still_exist_after_idempotent_rerun(self):
         """SQLite immutability triggers must persist after migration re-run."""
-        import src.migrations.runner as runner_mod
+        import backend.src.migrations.runner as runner_mod
         importlib.reload(runner_mod)
         conn = self.db_mod.get_conn()
         try:
@@ -512,7 +512,7 @@ class TestGl108HistoricalRowsNotRewritten(_BaseGl108):
         self.assertIsNotNone(event_before)
         row_hash_before = getattr(event_before, "row_hash", None)
 
-        import src.migrations.runner as runner_mod
+        import backend.src.migrations.runner as runner_mod
         importlib.reload(runner_mod)
         conn = self.db_mod.get_conn()
         try:
@@ -539,7 +539,7 @@ class TestGl108NoForbiddenChanges(_BaseGl108):
 
     def test_no_audit_verification_endpoint_added(self):
         """server.py must not contain an /audit/verify or audit_verify endpoint."""
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         src_text = inspect.getsource(server_mod)
         self.assertNotIn("/audit/verify", src_text)
@@ -548,7 +548,7 @@ class TestGl108NoForbiddenChanges(_BaseGl108):
 
     def test_no_new_audit_sub_paths_in_routing(self):
         """Routing must not contain new /audit/ sub-path checks."""
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         src_text = inspect.getsource(server_mod)
         # No routing equality check for paths starting /audit/ (would be new endpoint)
@@ -557,7 +557,7 @@ class TestGl108NoForbiddenChanges(_BaseGl108):
 
     def test_gl107_operator_auth_preserved(self):
         """src.operators must still expose GL-107 token lookup functions."""
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.assertTrue(hasattr(ops_mod, "hash_token"),
             "hash_token missing from operators (GL-107 broken)")
@@ -566,7 +566,7 @@ class TestGl108NoForbiddenChanges(_BaseGl108):
 
     def test_gl106_rate_limiter_preserved(self):
         """src.rate_limiter must still expose RateLimiter class (GL-106)."""
-        import src.rate_limiter as rl_mod
+        import backend.src.rate_limiter as rl_mod
         importlib.reload(rl_mod)
         self.assertTrue(hasattr(rl_mod, "RateLimiter"),
             "RateLimiter class missing from rate_limiter (GL-106 broken)")
@@ -673,7 +673,7 @@ class TestGl116PostgresAuditImmutabilityIntegration(unittest.TestCase):
             raise unittest.SkipTest(f"PostgreSQL not reachable: {exc}")
 
     def _get_db_mod(self):
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         return db_mod
 

@@ -47,35 +47,35 @@ class _BaseGl102(unittest.TestCase):
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.grant_requests as requests_mod
+        import backend.src.grant_requests as requests_mod
         importlib.reload(requests_mod)
         self.requests_mod = requests_mod
 
-        import src.models as models_mod
+        import backend.src.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         self.server_mod = server_mod
 
@@ -439,7 +439,7 @@ class TestGl102MigrationIdempotency(_BaseGl102):
 
     def test_repeated_apply_does_not_raise(self):
         """Applying the migration twice must be safe."""
-        import src.migrations.runner as runner_mod
+        import backend.src.migrations.runner as runner_mod
         importlib.reload(runner_mod)
 
         conn = self.db_mod.get_conn()
@@ -627,7 +627,7 @@ class TestGl102Gl100Preserved(_BaseGl102):
 
     def test_demo_action_audit_with_matched_grant_id(self):
         """demo_action must still create audit with matched_grant_id."""
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
 
         g = self.models_mod.Grant(
