@@ -38,9 +38,9 @@ import tempfile
 import unittest
 import importlib
 import datetime
-from io import BytesIO
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 
 
 class _BaseGl100(unittest.TestCase):
@@ -58,9 +58,12 @@ class _BaseGl100(unittest.TestCase):
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -92,7 +95,10 @@ class _BaseGl100(unittest.TestCase):
         self.server_mod = server_mod
 
         self.db_mod = db_mod
-        self.handler_class = server_mod.GrantLayerHandler
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -175,35 +181,31 @@ class _BaseGl100(unittest.TestCase):
         return g
 
     def _make_handler(self, path, method="GET", auth_header=None, body=b"", content_length=None):
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
+        return (path, method, auth_header, body)
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
-        if body or content_length is not None:
-            headers["Content-Length"] = str(content_length) if content_length is not None else str(len(body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        return handler
-
-    def _run_handler(self, handler):
-        if handler.command == "GET":
-            handler.do_GET()
-        elif handler.command == "POST":
-            handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status_line = response.split(b"\r\n")[0]
-        status = int(status_line.split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        body = json.loads(parts[1]) if len(parts) > 1 else {}
-        return status, body
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    body_dict = json.loads(body)
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, data
 
     def _assert_gl030_full(self, payload):
         self.assertIn("error", payload)
@@ -428,15 +430,24 @@ class TestTamperGrantGuard(_BaseGl100):
         """POST /demo/tamper-grant/{id} returns 403 when ENABLE_DEMO_ENDPOINTS is not set."""
         os.environ.pop("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", None)
         importlib.reload(self.config_mod)
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.handler_class = server_mod.GrantLayerHandler
+        import backend.src.config as fresh_config
+        importlib.reload(fresh_config)
+        import backend.src.db as bk_db
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        client = TestClient(create_app(), raise_server_exceptions=False)
 
         g = self._make_grant()
-        handler = self._make_handler(f"/demo/tamper-grant/{g.id}", method="POST",
-                                     auth_header="Bearer any-token")
-        status, data = self._run_handler(handler)
-        self.assertEqual(status, 403)
+        resp = client.post(f"/demo/tamper-grant/{g.id}", headers={"Authorization": "Bearer any-token"})
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        self.assertEqual(resp.status_code, 403)
         self._assert_gl030_full(data)
         self.assertEqual(data.get("errorCode"), "demo_endpoints_disabled")
 
@@ -444,16 +455,25 @@ class TestTamperGrantGuard(_BaseGl100):
         """POST /demo/tamper-grant/{id} returns 200 when ENABLE_DEMO_ENDPOINTS=true and authed."""
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "true"
         importlib.reload(self.config_mod)
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.handler_class = server_mod.GrantLayerHandler
+        import backend.src.config as fresh_config
+        importlib.reload(fresh_config)
+        import backend.src.db as bk_db
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        client = TestClient(create_app(), raise_server_exceptions=False)
 
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         g = self._make_grant()
-        handler = self._make_handler(f"/demo/tamper-grant/{g.id}", method="POST",
-                                     auth_header="Bearer owner-token")
-        status, data = self._run_handler(handler)
-        self.assertEqual(status, 200)
+        resp = client.post(f"/demo/tamper-grant/{g.id}", headers={"Authorization": "Bearer owner-token"})
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        self.assertEqual(resp.status_code, 200)
         self.assertTrue(data.get("ok"))
         self.assertEqual(data.get("grantId"), g.id)
 
@@ -639,28 +659,28 @@ class TestSecurityBoundaryRegressionGL100(_BaseGl100):
 
     def test_health_endpoint_remains_public(self):
         """GET /health remains accessible without auth."""
-        handler = self._make_handler("/health")
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/health")
+        status, data = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(data.get("status"), "ok")
 
     def test_readiness_endpoint_remains_public(self):
         """GET /readiness remains accessible without auth."""
-        handler = self._make_handler("/readiness")
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/readiness")
+        status, data = self._run_handler(req)
         self.assertIn(status, (200, 503))
 
     def test_protected_endpoint_requires_auth(self):
         """GET /grants requires operator auth."""
-        handler = self._make_handler("/grants")
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/grants")
+        status, data = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self._assert_gl030_full(data)
 
     def test_no_internals_in_error_response(self):
         """Error responses do not leak internal stack traces or paths."""
-        handler = self._make_handler("/grants")
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/grants")
+        status, data = self._run_handler(req)
         data_str = json.dumps(data)
         for secret_pattern in ["Traceback", "/home/", "sqlite3", "Exception"]:
             self.assertNotIn(secret_pattern, data_str,

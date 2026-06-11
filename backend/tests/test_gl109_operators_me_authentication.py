@@ -19,6 +19,7 @@ from unittest.mock import patch
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
+
 class _BaseGl109(unittest.TestCase):
     """Shared helpers for GL-109 tests."""
 
@@ -33,9 +34,12 @@ class _BaseGl109(unittest.TestCase):
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_rate_limit_auth = os.environ.get("GRANTLAYER_RATE_LIMIT_AUTH")
         self._orig_cors_origins = os.environ.get("GRANTLAYER_CORS_ALLOWED_ORIGINS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -56,6 +60,10 @@ class _BaseGl109(unittest.TestCase):
         self.handler_class = server_mod.GrantLayerHandler
 
         self.db_mod = db_mod
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -88,15 +96,39 @@ class _BaseGl109(unittest.TestCase):
             conn.close()
 
     def _make_handler(self, path, method="GET", auth_header=None, origin=None, client_ip="127.0.0.1"):
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(b"")
-        handler.wfile = BytesIO()
+        return (path, method, auth_header, origin, client_ip)
+
+    def _run_handler(self, req):
+        path, method, auth_header, origin, client_ip = req
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
         if origin is not None:
             headers["Origin"] = origin
-        handler.headers = headers
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        elif method == "OPTIONS":
+            resp = self.client.options(path, headers=headers)
+        else:
+            resp = self.client.post(path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, dict(resp.headers), data
+
+    def _make_raw_handler(self, path, method="GET", auth_header=None, origin=None, client_ip="127.0.0.1"):
+        handler = self.handler_class.__new__(self.handler_class)
+        handler.rfile = BytesIO(b"")
+        handler.wfile = BytesIO()
+        req_headers = {}
+        if auth_header is not None:
+            req_headers["Authorization"] = auth_header
+        if origin is not None:
+            req_headers["Origin"] = origin
+        handler.headers = req_headers
         handler.path = path
         handler.command = method
         handler.requestline = f"{method} {path} HTTP/1.1"
@@ -105,7 +137,7 @@ class _BaseGl109(unittest.TestCase):
         handler.server = None
         return handler
 
-    def _run_handler(self, handler):
+    def _run_raw_handler(self, handler):
         if handler.command == "GET":
             handler.do_GET()
         elif handler.command == "POST":
@@ -118,16 +150,16 @@ class _BaseGl109(unittest.TestCase):
         status = int(status_line.split(b" ")[1])
         parts = response.split(b"\r\n\r\n", 1)
         header_block = parts[0].decode()
-        headers = {}
+        resp_headers = {}
         for line in header_block.split("\r\n")[1:]:
             if ": " in line:
                 k, v = line.split(": ", 1)
-                headers[k] = v
+                resp_headers[k] = v
         if len(parts) > 1 and parts[1]:
             body = json.loads(parts[1])
         else:
             body = {}
-        return status, headers, body
+        return status, resp_headers, body
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -152,20 +184,20 @@ class TestGl109MissingTokenFailsClosed(_BaseGl109):
         self.auth_mod = fresh_auth
 
     def test_missing_auth_header_returns_401(self):
-        handler = self._make_handler("/operators/me")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_empty_auth_header_returns_401(self):
-        handler = self._make_handler("/operators/me", auth_header="")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_no_bearer_prefix_returns_401(self):
-        handler = self._make_handler("/operators/me", auth_header="Basic wrong")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Basic wrong")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
@@ -190,14 +222,14 @@ class TestGl109InvalidTokenFailsClosed(_BaseGl109):
         self._insert_operator("op-1", "Alice", "owner", "valid-token")
 
     def test_invalid_token_returns_401(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer invalid-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer invalid-token")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_wrong_token_for_existing_operator_returns_401(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer totally-wrong")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer totally-wrong")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
@@ -222,8 +254,8 @@ class TestGl109InactiveTokenFailsClosed(_BaseGl109):
         self._insert_operator("op-inactive", "Inactive", "owner", "inactive-token", active=0)
 
     def test_inactive_operator_token_returns_401(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer inactive-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer inactive-token")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
@@ -252,8 +284,8 @@ class TestGl109ValidTokenSucceeds(_BaseGl109):
         self._insert_operator("op-1", "Alice", "owner", "secret-token")
 
     def test_valid_token_returns_200(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertIn("operatorId", body)
         self.assertEqual(body["operatorId"], "op-1")
@@ -261,8 +293,8 @@ class TestGl109ValidTokenSucceeds(_BaseGl109):
         self.assertEqual(body["role"], "owner")
 
     def test_response_includes_safe_fields(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         # Safe fields that should be present
         self.assertIn("operatorId", body)
@@ -271,29 +303,29 @@ class TestGl109ValidTokenSucceeds(_BaseGl109):
         self.assertIn("active", body)
 
     def test_response_does_not_include_raw_token(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         body_str = json.dumps(body)
         self.assertNotIn("secret-token", body_str)
 
     def test_response_does_not_include_token_hash(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         body_str = json.dumps(body)
         self.assertNotIn("token_hash", body_str)
 
     def test_response_does_not_include_token_lookup_hash(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         body_str = json.dumps(body)
         self.assertNotIn("token_lookup_hash", body_str)
 
     def test_response_does_not_include_pbkdf2_details(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         body_str = json.dumps(body)
         self.assertNotIn("pbkdf2", body_str.lower())
@@ -327,20 +359,20 @@ class TestGl109RoleBehaviorPreserved(_BaseGl109):
         self._insert_operator("op-auditor", "Auditor", "auditor", "auditor-token")
 
     def test_owner_role_can_access(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer owner-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer owner-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(body["role"], "owner")
 
     def test_grant_admin_role_can_access(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer admin-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer admin-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(body["role"], "grant_admin")
 
     def test_auditor_role_can_access(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer auditor-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer auditor-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(body["role"], "auditor")
 
@@ -359,6 +391,8 @@ class TestGl109OperatorModeDisabledSafe(_BaseGl109):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "legacy-admin-token"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
+        import backend.src.config as fresh_config
+        importlib.reload(fresh_config)
         import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
@@ -368,24 +402,31 @@ class TestGl109OperatorModeDisabledSafe(_BaseGl109):
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
+        import backend.src.db as bk_db
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
+
     def test_anonymous_caller_gets_401_not_404_when_disabled(self):
         """Anonymous callers must not learn operator model is disabled."""
-        handler = self._make_handler("/operators/me")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me")
+        status, headers, body = self._run_handler(req)
         # With auth required first, unauthenticated callers get 401, not 404
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_invalid_legacy_token_gets_403_not_404_when_disabled(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer wrong-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer wrong-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 403)
         self.assertIn("errorCode", body)
 
     def test_valid_legacy_token_gets_404_when_disabled(self):
         """Authenticated legacy callers may receive 404 (feature not available)."""
-        handler = self._make_handler("/operators/me", auth_header="Bearer legacy-admin-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me", auth_header="Bearer legacy-admin-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 404)
         self.assertEqual(body.get("errorCode"), "operator_model_disabled")
 
@@ -418,8 +459,8 @@ class TestGl109Gl107BoundedLookupPreserved(_BaseGl109):
 
         with patch.object(self.ops_mod, 'verify_token') as mock_verify:
             mock_verify.return_value = False
-            handler = self._make_handler("/operators/me", auth_header="Bearer totally-wrong")
-            status, headers, body = self._run_handler(handler)
+            req = self._make_handler("/operators/me", auth_header="Bearer totally-wrong")
+            status, headers, body = self._run_handler(req)
             self.assertIn(status, (401, 403))
             mock_verify.assert_not_called()
 
@@ -450,22 +491,22 @@ class TestGl109RateLimitingPreserved(_BaseGl109):
 
     def test_rate_limit_blocks_after_exceeded(self):
         for _ in range(2):
-            handler = self._make_handler("/operators/me", auth_header="Bearer owner-token")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token")
+            status, headers, body = self._run_raw_handler(handler)
             self.assertEqual(status, 200)
 
-        handler = self._make_handler("/operators/me", auth_header="Bearer owner-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertEqual(body.get("errorCode"), "rate_limit_exceeded")
 
     def test_rate_limited_response_includes_retry_after(self):
         for _ in range(2):
-            handler = self._make_handler("/operators/me", auth_header="Bearer owner-token")
-            self._run_handler(handler)
+            handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token")
+            self._run_raw_handler(handler)
 
-        handler = self._make_handler("/operators/me", auth_header="Bearer owner-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertIn("Retry-After", headers)
         retry_after = int(headers["Retry-After"])
@@ -480,14 +521,14 @@ class TestGl109PublicEndpoints(_BaseGl109):
     """Verify health and readiness remain public."""
 
     def test_health_public(self):
-        handler = self._make_handler("/health")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/health")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("status"), "ok")
 
     def test_readiness_public(self):
-        handler = self._make_handler("/readiness")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/readiness")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (200, 503))
         self.assertIn(body.get("status"), ("ready", "not_ready"))
 
@@ -517,20 +558,20 @@ class TestGl109CorsPreserved(_BaseGl109):
         self._insert_operator("op-1", "Owner", "owner", "owner-token")
 
     def test_cors_headers_on_success(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer owner-token", origin="http://trusted.com")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token", origin="http://trusted.com")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(headers.get("Access-Control-Allow-Origin"), "http://trusted.com")
 
     def test_cors_headers_on_auth_failure(self):
-        handler = self._make_handler("/operators/me", origin="http://trusted.com")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/operators/me", origin="http://trusted.com")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertEqual(headers.get("Access-Control-Allow-Origin"), "http://trusted.com")
 
     def test_no_cors_for_untrusted_origin(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer owner-token", origin="http://evil.com")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token", origin="http://evil.com")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertNotIn("Access-Control-Allow-Origin", headers)
 
@@ -559,13 +600,13 @@ class TestGl109SecurityBoundary(_BaseGl109):
         self._insert_operator("op-1", "Owner", "owner", "owner-token")
 
     def test_protected_endpoint_still_requires_auth(self):
-        handler = self._make_handler("/grants")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/grants")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
 
     def test_operators_me_requires_auth(self):
-        handler = self._make_handler("/operators/me")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/operators/me")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
 
 

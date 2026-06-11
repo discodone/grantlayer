@@ -36,6 +36,7 @@ from io import BytesIO
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
+
 class _BaseGl106(unittest.TestCase):
     """Shared helpers for GL-106 tests."""
 
@@ -51,9 +52,12 @@ class _BaseGl106(unittest.TestCase):
         self._orig_rate_limit_auth = os.environ.get("GRANTLAYER_RATE_LIMIT_AUTH")
         self._orig_rate_limit_api = os.environ.get("GRANTLAYER_RATE_LIMIT_API")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -87,6 +91,10 @@ class _BaseGl106(unittest.TestCase):
 
         self.db_mod = db_mod
 
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
+
     def tearDown(self):
         os.unlink(self.tmp_db.name)
         for key, orig in [
@@ -117,6 +125,37 @@ class _BaseGl106(unittest.TestCase):
             conn.close()
 
     def _make_handler(self, path, method="GET", auth_header=None, origin=None, body=b"", client_ip="127.0.0.1"):
+        return (path, method, auth_header, body, origin, client_ip)
+
+    def _run_handler(self, req):
+        path, method, auth_header, body, origin, client_ip = req
+        headers = {}
+        if auth_header is not None:
+            headers["Authorization"] = auth_header
+        if origin is not None:
+            headers["Origin"] = origin
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        elif method == "OPTIONS":
+            resp = self.client.options(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    body_dict = json.loads(body)
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, dict(resp.headers), data
+
+    def _make_raw_handler(self, path, method="GET", auth_header=None, origin=None, body=b"", client_ip="127.0.0.1"):
         handler = self.handler_class.__new__(self.handler_class)
         handler.rfile = BytesIO(body)
         handler.wfile = BytesIO()
@@ -136,7 +175,7 @@ class _BaseGl106(unittest.TestCase):
         handler.server = None
         return handler
 
-    def _run_handler(self, handler):
+    def _run_raw_handler(self, handler):
         if handler.command == "GET":
             handler.do_GET()
         elif handler.command == "POST":
@@ -149,16 +188,16 @@ class _BaseGl106(unittest.TestCase):
         status = int(status_line.split(b" ")[1])
         parts = response.split(b"\r\n\r\n", 1)
         header_block = parts[0].decode()
-        headers = {}
+        resp_headers = {}
         for line in header_block.split("\r\n")[1:]:
             if ": " in line:
                 k, v = line.split(": ", 1)
-                headers[k] = v
+                resp_headers[k] = v
         if len(parts) > 1 and parts[1]:
             body = json.loads(parts[1])
         else:
             body = {}
-        return status, headers, body
+        return status, resp_headers, body
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -315,22 +354,22 @@ class TestGl106Server429(_BaseGl106):
     def test_protected_endpoint_returns_429_when_exceeded(self):
         # Use /challenges (auth group) with limit=2
         for _ in range(2):
-            handler = self._make_handler("/challenges", auth_header="Bearer owner-token")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+            status, headers, body = self._run_raw_handler(handler)
             self.assertEqual(status, 200)
 
-        handler = self._make_handler("/challenges", auth_header="Bearer owner-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertEqual(body.get("errorCode"), "rate_limit_exceeded")
 
     def test_429_includes_retry_after_header(self):
         for _ in range(2):
-            handler = self._make_handler("/challenges", auth_header="Bearer owner-token")
-            self._run_handler(handler)
+            handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+            self._run_raw_handler(handler)
 
-        handler = self._make_handler("/challenges", auth_header="Bearer owner-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertIn("Retry-After", headers)
         retry_after = int(headers["Retry-After"])
@@ -365,8 +404,8 @@ class TestGl106BlockedRequestNoMutation(_BaseGl106):
     def test_blocked_post_does_not_create_grant(self):
         # Exhaust api limit with GET /grants
         for _ in range(2):
-            handler = self._make_handler("/grants", auth_header="Bearer owner-token")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+            status, headers, body = self._run_raw_handler(handler)
             self.assertEqual(status, 200)
 
         # Count grants before blocked request
@@ -387,8 +426,8 @@ class TestGl106BlockedRequestNoMutation(_BaseGl106):
             "createdBy": "owner-1",
             "reason": "test",
         }).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=grant_body)
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=grant_body)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
 
         # Count grants after blocked request
@@ -423,8 +462,8 @@ class TestGl106AuthStillRequired(_BaseGl106):
         self.auth_mod = fresh_auth
 
     def test_protected_endpoint_still_requires_auth(self):
-        handler = self._make_handler("/grants")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/grants")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
 
 
@@ -436,22 +475,22 @@ class TestGl106PublicEndpoints(_BaseGl106):
     """Verify public endpoints remain public and un-rate-limited."""
 
     def test_health_public(self):
-        handler = self._make_handler("/health")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/health")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("status"), "ok")
 
     def test_readiness_public(self):
-        handler = self._make_handler("/readiness")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/readiness")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (200, 503))
         self.assertIn(body.get("status"), ("ready", "not_ready"))
 
     def test_health_not_rate_limited(self):
         # Make many requests to health
         for _ in range(150):
-            handler = self._make_handler("/health")
-            status, headers, body = self._run_handler(handler)
+            req = self._make_handler("/health")
+            status, headers, body = self._run_handler(req)
             self.assertEqual(status, 200)
 
 
@@ -482,18 +521,18 @@ class TestGl106CorsPreserved(_BaseGl106):
 
     def test_cors_headers_on_rate_limited_response(self):
         for _ in range(2):
-            handler = self._make_handler("/challenges", auth_header="Bearer owner-token", origin="http://trusted.com")
-            self._run_handler(handler)
+            handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token", origin="http://trusted.com")
+            self._run_raw_handler(handler)
 
-        handler = self._make_handler("/challenges", auth_header="Bearer owner-token", origin="http://trusted.com")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token", origin="http://trusted.com")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertEqual(headers.get("Access-Control-Allow-Origin"), "http://trusted.com")
 
     def test_options_not_rate_limited(self):
         for _ in range(150):
-            handler = self._make_handler("/grants", method="OPTIONS", origin="http://trusted.com")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", method="OPTIONS", origin="http://trusted.com")
+            status, headers, body = self._run_raw_handler(handler)
             self.assertEqual(status, 204)
 
 
@@ -523,14 +562,14 @@ class TestGl106SecurityBoundary(_BaseGl106):
 
     def test_role_check_still_enforced(self):
         # Auditor cannot access owner-only endpoint
-        handler = self._make_handler("/agent-permissions/profiles", auth_header="Bearer auditor-token")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/agent-permissions/profiles", auth_header="Bearer auditor-token")
+        status, headers, body = self._run_handler(req)
         self.assertEqual(status, 403)
 
     def test_auth_failure_before_rate_limit_check(self):
         # Unauthenticated request should fail with 401, not 429
-        handler = self._make_handler("/grants")
-        status, headers, body = self._run_handler(handler)
+        req = self._make_handler("/grants")
+        status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
 
 

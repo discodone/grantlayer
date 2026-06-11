@@ -31,9 +31,9 @@ import sys
 import tempfile
 import unittest
 import importlib
-from io import BytesIO
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 
 
 class _BaseGl099(unittest.TestCase):
@@ -51,9 +51,12 @@ class _BaseGl099(unittest.TestCase):
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -85,7 +88,10 @@ class _BaseGl099(unittest.TestCase):
         self.server_mod = server_mod
 
         self.db_mod = db_mod
-        self.handler_class = server_mod.GrantLayerHandler
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -153,35 +159,31 @@ class _BaseGl099(unittest.TestCase):
             conn.close()
 
     def _make_handler(self, path, method="GET", auth_header=None, body=b"", content_length=None):
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
+        return (path, method, auth_header, body)
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
-        if body or content_length is not None:
-            headers["Content-Length"] = str(content_length) if content_length is not None else str(len(body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        return handler
-
-    def _run_handler(self, handler):
-        if handler.command == "GET":
-            handler.do_GET()
-        elif handler.command == "POST":
-            handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status_line = response.split(b"\r\n")[0]
-        status = int(status_line.split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        body = json.loads(parts[1]) if len(parts) > 1 else {}
-        return status, body
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    body_dict = json.loads(body)
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, data
 
     def _assert_gl030_full(self, payload):
         self.assertIn("error", payload)
@@ -606,19 +608,19 @@ class TestGl099ServerSafety(_BaseGl099):
             "reason": "API test request"
         }
         body = json.dumps(req_data).encode()
-        handler = self._make_handler("/grant-requests", method="POST", auth_header="Bearer admin-token", body=body)
-        status, data = self._run_handler(handler)
+        http_req = self._make_handler("/grant-requests", method="POST", auth_header="Bearer admin-token", body=body)
+        status, data = self._run_handler(http_req)
         self.assertEqual(status, 201)
         request_id = data["id"]
 
         approval_body = json.dumps({"comment": "Approved"}).encode()
-        handler = self._make_handler(
+        http_req = self._make_handler(
             f"/grant-requests/{request_id}/approve",
             method="POST",
             auth_header="Bearer admin-token",
             body=approval_body
         )
-        status, data = self._run_handler(handler)
+        status, data = self._run_handler(http_req)
         self.assertEqual(status, 403)
         self.assertEqual(data.get("errorCode"), "self_approval_forbidden")
 
@@ -627,28 +629,28 @@ class TestGl099ServerSafety(_BaseGl099):
         self._insert_operator("approver-1", "Approver", "grant_admin", "approver-token")
         req = self._create_old_request()
         approval_body = json.dumps({"comment": "Approved"}).encode()
-        handler = self._make_handler(
+        http_req = self._make_handler(
             f"/grant-requests/{req.id}/approve",
             method="POST",
             auth_header="Bearer approver-token",
             body=approval_body,
         )
-        status, data = self._run_handler(handler)
+        status, data = self._run_handler(http_req)
         self.assertEqual(status, 400)
         self._assert_gl030_full(data)
         self.assertIn("expired", data.get("reason", "").lower())
 
     def test_health_public(self):
         """GET /health remains public."""
-        handler = self._make_handler("/health")
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/health")
+        status, data = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(data.get("status"), "ok")
 
     def test_readiness_public(self):
         """GET /readiness remains public."""
-        handler = self._make_handler("/readiness")
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/readiness")
+        status, data = self._run_handler(req)
         self.assertIn(status, (200, 503))
 
 

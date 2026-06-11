@@ -31,9 +31,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from io import BytesIO
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 
 _MIGRATION_PATH = os.path.normpath(os.path.join(
     os.path.dirname(__file__), "..", "src", "migrations",
@@ -104,9 +104,12 @@ class _BaseGl108(unittest.TestCase):
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -130,7 +133,10 @@ class _BaseGl108(unittest.TestCase):
         self.server_mod = server_mod
 
         self.db_mod = db_mod
-        self.handler_class = server_mod.GrantLayerHandler
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -167,33 +173,31 @@ class _BaseGl108(unittest.TestCase):
         return event
 
     def _make_handler(self, path, method="GET", auth_header=None, body=b""):
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
+        return (path, method, auth_header, body)
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
-        headers["Content-Length"] = str(len(body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        return handler
-
-    def _run_handler(self, handler):
-        if handler.command == "GET":
-            handler.do_GET()
-        elif handler.command == "POST":
-            handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status = int(response.split(b"\r\n")[0].split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        body = json.loads(parts[1]) if len(parts) > 1 and parts[1].strip() else {}
-        return status, body
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    body_dict = json.loads(body)
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, data
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -581,27 +585,27 @@ class TestGl108SecurityBoundaryPreserved(_BaseGl108):
 
     def test_health_endpoint_public(self):
         """GET /health must remain public (no auth required)."""
-        handler = self._make_handler("/health")
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/health")
+        status, data = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(data.get("status"), "ok")
 
     def test_readiness_endpoint_public(self):
         """GET /readiness must remain public."""
-        handler = self._make_handler("/readiness")
-        status, _data = self._run_handler(handler)
+        req = self._make_handler("/readiness")
+        status, _data = self._run_handler(req)
         self.assertIn(status, (200, 503))
 
     def test_grants_endpoint_requires_auth(self):
         """GET /grants must require operator auth."""
-        handler = self._make_handler("/grants")
-        status, _data = self._run_handler(handler)
+        req = self._make_handler("/grants")
+        status, _data = self._run_handler(req)
         self.assertIn(status, (401, 403))
 
     def test_audit_events_endpoint_requires_auth(self):
         """GET /audit-events must require operator auth."""
-        handler = self._make_handler("/audit-events")
-        status, _data = self._run_handler(handler)
+        req = self._make_handler("/audit-events")
+        status, _data = self._run_handler(req)
         self.assertIn(status, (401, 403))
 
 
