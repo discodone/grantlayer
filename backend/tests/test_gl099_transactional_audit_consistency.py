@@ -83,10 +83,6 @@ class _BaseGl099(unittest.TestCase):
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.server_mod = server_mod
-
         self.db_mod = db_mod
 
         from fastapi.testclient import TestClient

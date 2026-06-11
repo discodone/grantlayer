@@ -128,10 +128,6 @@ class _BaseGl108(unittest.TestCase):
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.server_mod = server_mod
-
         self.db_mod = db_mod
 
         from fastapi.testclient import TestClient
@@ -543,18 +539,16 @@ class TestGl108NoForbiddenChanges(_BaseGl108):
 
     def test_no_audit_verification_endpoint_added(self):
         """server.py must not contain an /audit/verify or audit_verify endpoint."""
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        src_text = inspect.getsource(server_mod)
+        server_path = pathlib.Path(__file__).parents[1] / "src" / "server.py"
+        src_text = server_path.read_text()
         self.assertNotIn("/audit/verify", src_text)
         self.assertNotIn("/audit-verify", src_text)
         self.assertNotIn("audit_verify", src_text)
 
     def test_no_new_audit_sub_paths_in_routing(self):
         """Routing must not contain new /audit/ sub-path checks."""
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        src_text = inspect.getsource(server_mod)
+        server_path = pathlib.Path(__file__).parents[1] / "src" / "server.py"
+        src_text = server_path.read_text()
         # No routing equality check for paths starting /audit/ (would be new endpoint)
         self.assertNotIn('== "/audit/"', src_text)
         self.assertNotIn('"/audit/v', src_text)

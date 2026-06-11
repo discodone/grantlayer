@@ -27,7 +27,6 @@ import sys
 import tempfile
 import unittest
 import importlib
-from io import BytesIO
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -79,10 +78,6 @@ class _BaseGl104(unittest.TestCase):
         import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
-
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.server_mod = server_mod
 
         self.db_mod = db_mod
 
