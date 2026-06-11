@@ -29,24 +29,25 @@ class _BaseGl111(unittest.TestCase):
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_admin_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
@@ -68,7 +69,7 @@ class _BaseGl111(unittest.TestCase):
                 os.environ[key] = orig
 
     def _make_grant(self):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -246,30 +247,30 @@ class TestGl111Preservation(_BaseGl111):
         self.assertTrue(self.config_mod.ENABLE_DEMO_ENDPOINTS)
 
     def test_gl106_rate_limiting_preserved(self):
-        import src.rate_limiter as rl_mod
+        import backend.src.rate_limiter as rl_mod
         importlib.reload(rl_mod)
         self.assertTrue(hasattr(rl_mod, "RateLimiter"))
 
     def test_gl109_auth_preserved(self):
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.assertTrue(hasattr(auth_mod, "check_admin_token"))
         self.assertTrue(hasattr(auth_mod, "check_auth"))
 
     def test_gl110_private_key_behavior_preserved(self):
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         self.assertTrue(hasattr(crypto_mod, "load_private_key"))
         self.assertTrue(hasattr(crypto_mod, "verify_grant_signature"))
 
     def test_security_boundary_preserved(self):
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.assertTrue(hasattr(auth_mod, "check_admin_token"))
         self.assertTrue(hasattr(auth_mod, "check_auth"))
 
     def test_no_db_schema_migration_change(self):
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         conn = db_mod.get_conn()
         try:
@@ -295,7 +296,7 @@ class TestGl111Preservation(_BaseGl111):
         self.assertIn("/demo-action:", text)
 
     def test_no_endpoint_changes(self):
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         self.assertTrue(hasattr(server_mod, "GrantLayerHandler"))
 

@@ -54,9 +54,12 @@ class _BaseGl119(unittest.TestCase):
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_rate_limit_auth = os.environ.get("GRANTLAYER_RATE_LIMIT_AUTH")
         self._orig_rate_limit_api = os.environ.get("GRANTLAYER_RATE_LIMIT_API")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -77,6 +80,10 @@ class _BaseGl119(unittest.TestCase):
         self.handler_class = server_mod.GrantLayerHandler
 
         self.db_mod = db_mod
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -115,7 +122,7 @@ class _BaseGl119(unittest.TestCase):
         finally:
             conn.close()
 
-    def _make_handler(self, path, method="GET", auth_header=None, origin=None, client_ip="127.0.0.1"):
+    def _make_raw_handler(self, path, method="GET", auth_header=None, origin=None, client_ip="127.0.0.1"):
         handler = self.handler_class.__new__(self.handler_class)
         handler.rfile = BytesIO(b"")
         handler.wfile = BytesIO()
@@ -133,7 +140,7 @@ class _BaseGl119(unittest.TestCase):
         handler.server = None
         return handler
 
-    def _run_handler(self, handler):
+    def _run_raw_handler(self, handler):
         if handler.command == "GET":
             handler.do_GET()
         elif handler.command == "POST":
@@ -156,6 +163,38 @@ class _BaseGl119(unittest.TestCase):
         else:
             body = {}
         return status, headers, body
+
+    def _make_handler(self, path, method="GET", **kwargs):
+        return (path, method, kwargs.get("auth_header"), kwargs.get("body", b""))
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
+        headers = {}
+        if auth_header is not None:
+            headers["Authorization"] = auth_header
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        elif method == "OPTIONS":
+            resp = self.client.options(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    import json as _json
+                    body_dict = _json.loads(body)
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (ValueError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            import json as _json
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, dict(resp.headers), data
+
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -439,8 +478,8 @@ class TestGl119ServerPath(_BaseGl119):
         self.handler_class = fresh_server.GrantLayerHandler
         self.auth_mod = fresh_auth
 
-        handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/operators/me", auth_header="Bearer secret-token")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(body["operatorId"], "op-1")
 
@@ -458,8 +497,8 @@ class TestGl119ServerPath(_BaseGl119):
         self.handler_class = fresh_server.GrantLayerHandler
         self.auth_mod = fresh_auth
 
-        handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/operators/me", auth_header="Bearer secret-token")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_token_expired")
 
@@ -477,8 +516,8 @@ class TestGl119ServerPath(_BaseGl119):
         self.handler_class = fresh_server.GrantLayerHandler
         self.auth_mod = fresh_auth
 
-        handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/operators/me", auth_header="Bearer secret-token")
+        status, headers, body = self._run_raw_handler(handler)
         body_str = json.dumps(body)
         self.assertNotIn("secret-token", body_str)
 
@@ -498,8 +537,8 @@ class TestGl119ServerPath(_BaseGl119):
 
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-            self._run_handler(handler)
+            handler = self._make_raw_handler("/operators/me", auth_header="Bearer secret-token")
+            self._run_raw_handler(handler)
 
         payload = None
         for msg in cm.output:
@@ -528,12 +567,12 @@ class TestGl119ServerPath(_BaseGl119):
 
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler(
+            handler = self._make_raw_handler(
                 "/operators/me",
                 auth_header="Bearer secret-token",
             )
             handler.headers["X-Correlation-ID"] = "corr-expired-123"
-            self._run_handler(handler)
+            self._run_raw_handler(handler)
 
         payload = None
         for msg in cm.output:
@@ -559,8 +598,8 @@ class TestGl119ServerPath(_BaseGl119):
         self.handler_class = fresh_server.GrantLayerHandler
         self.auth_mod = fresh_auth
 
-        handler = self._make_handler("/operators/me", auth_header="Bearer wrong-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/operators/me", auth_header="Bearer wrong-token")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
@@ -577,8 +616,8 @@ class TestGl119ServerPath(_BaseGl119):
         self.handler_class = fresh_server.GrantLayerHandler
         self.auth_mod = fresh_auth
 
-        handler = self._make_handler("/operators/me")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/operators/me")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
@@ -699,8 +738,8 @@ class TestGl119LeakagePrevention(_BaseGl119):
 
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/operators/me", auth_header="Bearer secret-token")
-            self._run_handler(handler)
+            handler = self._make_raw_handler("/operators/me", auth_header="Bearer secret-token")
+            self._run_raw_handler(handler)
 
         for msg in cm.output:
             self.assertNotIn("secret-token", msg)

@@ -43,12 +43,15 @@ class _BaseGl114(unittest.TestCase):
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "test-admin"
         os.environ["GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN"] = "bootstrap-token"
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -86,6 +89,10 @@ class _BaseGl114(unittest.TestCase):
         self.db_mod = db_mod
         self.handler_class = server_mod.GrantLayerHandler
 
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
+
     def tearDown(self):
         os.unlink(self.tmp_db.name)
         for key, orig in [
@@ -114,6 +121,33 @@ class _BaseGl114(unittest.TestCase):
             conn.close()
 
     def _make_handler(self, path, method="GET", auth_header=None, body=b"", content_length=None):
+        return (path, method, auth_header, body)
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
+        headers = {}
+        if auth_header is not None:
+            headers["Authorization"] = auth_header
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    body_dict = json.loads(body)
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (ValueError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, data
+
+    def _make_raw_handler(self, path, method="GET", auth_header=None, body=b"", content_length=None):
         handler = self.handler_class.__new__(self.handler_class)
         handler.rfile = BytesIO(body)
         handler.wfile = BytesIO()
@@ -131,7 +165,7 @@ class _BaseGl114(unittest.TestCase):
         handler.server = None
         return handler
 
-    def _run_handler(self, handler):
+    def _run_raw_handler(self, handler):
         if handler.command == "GET":
             handler.do_GET()
         elif handler.command == "POST":
@@ -419,8 +453,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"subjectId": "x" * 129})
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self._assert_gl030_full(data)
         self.assertEqual(data["errorCode"], "invalid_field")
@@ -431,8 +465,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"role": "x" * 65})
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("role", data["reason"])
@@ -441,8 +475,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"action": "x" * 257})
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("action", data["reason"])
@@ -451,8 +485,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"resource": "x" * 257})
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("resource", data["reason"])
@@ -461,8 +495,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"createdBy": "x" * 129})
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("createdBy", data["reason"])
@@ -471,8 +505,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"reason": "x" * 1001})
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("reason", data["reason"])
@@ -488,8 +522,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
             "reason": "x" * 1000,
         })
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 201)
         self.assertEqual(data["subject_id"], "x" * 128)
 
@@ -498,8 +532,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         long_val = "x" * 5000
         payload = self._grant_payload({"subjectId": long_val})
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         raw = json.dumps(data)
         self.assertNotIn(long_val, raw)
@@ -508,8 +542,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {"subjectId": "x" * 129, "action": "read", "resource": "repo-a"}
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("subjectId", data["reason"])
@@ -518,8 +552,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {"subjectId": "sub-1", "action": "x" * 257, "resource": "repo-a"}
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("action", data["reason"])
@@ -528,8 +562,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {"subjectId": "sub-1", "action": "read", "resource": "x" * 257}
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("resource", data["reason"])
@@ -538,8 +572,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {"subjectId": "x" * 128, "action": "x" * 256, "resource": "x" * 256}
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 201)
         self.assertEqual(data["subjectId"], "x" * 128)
 
@@ -549,8 +583,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         importlib.reload(self.config_mod)
         payload = {"subjectId": "x" * 129, "role": "engineer", "action": "read", "resource": "repo-a"}
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/demo-action", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/demo-action", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("subjectId", data["reason"])
@@ -561,8 +595,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         importlib.reload(self.config_mod)
         payload = {"subjectId": "sub-1", "role": "engineer", "action": "read", "resource": "repo-a", "challengeId": "x" * 129}
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/demo-action", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/demo-action", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("challengeId", data["reason"])
@@ -576,8 +610,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self.handler_class = fresh_server.GrantLayerHandler
         payload = {"subjectId": "x" * 128, "role": "x" * 64, "action": "x" * 256, "resource": "x" * 256}
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/demo-action", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/demo-action", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertIn(status, (200, 403))  # no matching grant expected, but validated
 
     def test_post_grant_request_rejects_overlong_reason(self):
@@ -592,8 +626,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
             "reason": "x" * 1001,
         }
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("reason", data["reason"])
@@ -610,8 +644,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
             "reason": "x" * 1000,
         }
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 201)
         self.assertEqual(data["reason"], "x" * 1000)
 
@@ -625,8 +659,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self.grants_mod.create_grant(g)
         payload = {"revokedBy": "admin-1", "reason": "x" * 1001}
         body = json.dumps(payload).encode()
-        handler = self._make_handler(f"/grants/{g.id}/revoke", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler(f"/grants/{g.id}/revoke", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("reason", data["reason"])
@@ -641,8 +675,8 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         self.grants_mod.create_grant(g)
         payload = {"revokedBy": "admin-1", "reason": "x" * 1000}
         body = json.dumps(payload).encode()
-        handler = self._make_handler(f"/grants/{g.id}/revoke", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler(f"/grants/{g.id}/revoke", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
 
     def test_post_grant_request_deny_rejects_overlong_reason(self):
@@ -661,13 +695,13 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         created = self.requests_mod.create_grant_request(req)
         payload = {"reason": "x" * 1001}
         body = json.dumps(payload).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             f"/grant-requests/{created.id}/deny",
             method="POST",
             auth_header="Bearer approver-token",
             body=body,
         )
-        status, data = self._run_handler(handler)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
         self.assertIn("reason", data["reason"])
@@ -688,13 +722,13 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         created = self.requests_mod.create_grant_request(req)
         payload = {"reason": "x" * 1000}
         body = json.dumps(payload).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             f"/grant-requests/{created.id}/deny",
             method="POST",
             auth_header="Bearer approver-token",
             body=body,
         )
-        status, data = self._run_handler(handler)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(data["request"]["denial_reason"], "x" * 1000)
 
@@ -711,8 +745,8 @@ class TestGl114NoStateMutationOnFailure(_BaseGl114):
         before = len(self.grants_mod.list_grants())
         payload = self._grant_payload({"subjectId": "x" * 129})
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
-        status, _ = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        status, _ = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         after = len(self.grants_mod.list_grants())
         self.assertEqual(before, after)
@@ -722,8 +756,8 @@ class TestGl114NoStateMutationOnFailure(_BaseGl114):
         before = len(self.ch_mod.list_challenges())
         payload = {"subjectId": "x" * 129, "action": "read", "resource": "repo-a"}
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
-        status, _ = self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
+        status, _ = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         after = len(self.ch_mod.list_challenges())
         self.assertEqual(before, after)
@@ -741,8 +775,8 @@ class TestGl114NoStateMutationOnFailure(_BaseGl114):
             "reason": "x" * 1001,
         }
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
-        status, _ = self._run_handler(handler)
+        handler = self._make_raw_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
+        status, _ = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         after = len(self.requests_mod.list_grant_requests())
         self.assertEqual(before, after)
@@ -759,8 +793,8 @@ class TestGl114ExistingBehaviorPreserved(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload()
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 201)
         self.assertEqual(data["subject_id"], "sub-1")
 
@@ -768,8 +802,8 @@ class TestGl114ExistingBehaviorPreserved(_BaseGl114):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = {"subjectId": "sub-1", "action": "read", "resource": "repo-a"}
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 201)
         self.assertEqual(data["subjectId"], "sub-1")
 
@@ -785,20 +819,20 @@ class TestGl114ExistingBehaviorPreserved(_BaseGl114):
             "reason": "Routine maintenance",
         }
         body = json.dumps(payload).encode()
-        handler = self._make_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 201)
         self.assertEqual(data["status"], "requested")
 
     def test_health_endpoint_still_public(self):
-        handler = self._make_handler("/health")
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/health")
+        status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(data["status"], "ok")
 
     def test_readiness_endpoint_still_public(self):
-        handler = self._make_handler("/readiness")
-        status, data = self._run_handler(handler)
+        handler = self._make_raw_handler("/readiness")
+        status, data = self._run_raw_handler(handler)
         self.assertIn(status, (200, 503))
 
 

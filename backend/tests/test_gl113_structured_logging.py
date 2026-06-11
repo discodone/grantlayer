@@ -27,7 +27,7 @@ class _BaseGl113(unittest.TestCase):
     """Shared helpers for GL-113 tests."""
 
     def setUp(self):
-        import src.logging_utils as lu_mod
+        import backend.src.logging_utils as lu_mod
         importlib.reload(lu_mod)
         self.lu_mod = lu_mod
 
@@ -428,36 +428,36 @@ class TestGl113CrossGlPreservation(unittest.TestCase):
     """Verify other GL behaviors are not broken by GL-113 changes."""
 
     def test_gl111_demo_action_module_preserved(self):
-        import src.demo_action as demo_mod
+        import backend.src.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.assertTrue(hasattr(demo_mod, "handle_demo_action"))
         self.assertTrue(hasattr(demo_mod, "logger"))
 
     def test_gl106_rate_limiter_preserved(self):
-        import src.rate_limiter as rl_mod
+        import backend.src.rate_limiter as rl_mod
         importlib.reload(rl_mod)
         self.assertTrue(hasattr(rl_mod, "RateLimiter"))
 
     def test_gl109_auth_module_preserved(self):
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.assertTrue(hasattr(auth_mod, "check_admin_token"))
         self.assertTrue(hasattr(auth_mod, "check_auth"))
 
     def test_gl110_crypto_signing_preserved(self):
-        import src.crypto_signing as crypto_mod
+        import backend.src.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         self.assertTrue(hasattr(crypto_mod, "load_private_key"))
         self.assertTrue(hasattr(crypto_mod, "sign_grant"))
 
     def test_gl112_audit_log_preserved(self):
-        import src.audit_log as audit_mod
+        import backend.src.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.assertTrue(hasattr(audit_mod, "append_event"))
         self.assertTrue(hasattr(audit_mod, "verify_audit_hash_chain"))
 
     def test_security_boundary_preserved(self):
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.assertTrue(hasattr(auth_mod, "check_admin_token"))
         self.assertTrue(hasattr(auth_mod, "check_auth"))
@@ -469,7 +469,7 @@ class TestGl113CrossGlPreservation(unittest.TestCase):
         os.environ["GRANTLAYER_DB"] = tmp_db.name
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         try:
-            import src.db as db_mod
+            import backend.src.db as db_mod
             importlib.reload(db_mod)
             db_mod.init_db()
             conn = db_mod.get_conn()
@@ -499,7 +499,7 @@ class TestGl113CrossGlPreservation(unittest.TestCase):
         self.assertTrue(openapi_path.exists())
 
     def test_no_endpoint_changes(self):
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         self.assertTrue(hasattr(server_mod, "GrantLayerHandler"))
 

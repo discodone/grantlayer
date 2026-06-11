@@ -34,9 +34,12 @@ class _BaseGl117(unittest.TestCase):
         self._orig_rate_limit_auth = os.environ.get("GRANTLAYER_RATE_LIMIT_AUTH")
         self._orig_rate_limit_api = os.environ.get("GRANTLAYER_RATE_LIMIT_API")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -65,6 +68,10 @@ class _BaseGl117(unittest.TestCase):
         self.handler_class = server_mod.GrantLayerHandler
 
         self.db_mod = db_mod
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -95,7 +102,7 @@ class _BaseGl117(unittest.TestCase):
         finally:
             conn.close()
 
-    def _make_handler(self, path, method="GET", auth_header=None, origin=None, body=b"", client_ip="127.0.0.1", content_length=None):
+    def _make_raw_handler(self, path, method="GET", auth_header=None, origin=None, body=b"", client_ip="127.0.0.1", content_length=None):
         handler = self.handler_class.__new__(self.handler_class)
         handler.rfile = BytesIO(body)
         handler.wfile = BytesIO()
@@ -115,7 +122,7 @@ class _BaseGl117(unittest.TestCase):
         handler.server = None
         return handler
 
-    def _run_handler(self, handler):
+    def _run_raw_handler(self, handler):
         if handler.command == "GET":
             handler.do_GET()
         elif handler.command == "POST":
@@ -146,6 +153,38 @@ class _BaseGl117(unittest.TestCase):
             self.fail(f"No JSON found in log record: {log_str}")
         return json.loads(log_str[start:])
 
+    def _make_handler(self, path, method="GET", **kwargs):
+        return (path, method, kwargs.get("auth_header"), kwargs.get("body", b""))
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
+        headers = {}
+        if auth_header is not None:
+            headers["Authorization"] = auth_header
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        elif method == "OPTIONS":
+            resp = self.client.options(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    import json as _json
+                    body_dict = _json.loads(body)
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (ValueError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            import json as _json
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, dict(resp.headers), data
+
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # 1. Successful request completion structured event
@@ -173,8 +212,8 @@ class TestGl117SuccessfulRequest(_BaseGl117):
     def test_get_grants_emits_request_completed(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants", auth_header="Bearer owner-token")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+            status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertTrue(any("request_completed" in msg for msg in cm.output))
         payload = self._parse_log_json(next(msg for msg in cm.output if "request_completed" in msg))
@@ -196,8 +235,8 @@ class TestGl117SuccessfulRequest(_BaseGl117):
             "reason": "test",
         }).encode()
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=grant_body)
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=grant_body)
+            status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 201)
         self.assertTrue(any("request_completed" in msg for msg in cm.output))
         payload = self._parse_log_json(next(msg for msg in cm.output if "request_completed" in msg))
@@ -233,8 +272,8 @@ class TestGl117AuthFailure(_BaseGl117):
     def test_missing_auth_emits_auth_failed(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants")
+            status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertTrue(any("auth_failed" in msg for msg in cm.output))
         payload = self._parse_log_json(next(msg for msg in cm.output if "auth_failed" in msg))
@@ -244,16 +283,16 @@ class TestGl117AuthFailure(_BaseGl117):
     def test_invalid_token_emits_auth_failed(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants", auth_header="Bearer wrong-token")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", auth_header="Bearer wrong-token")
+            status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertTrue(any("auth_failed" in msg for msg in cm.output))
 
     def test_auth_log_does_not_contain_raw_token(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants", auth_header="Bearer secret-token-123")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", auth_header="Bearer secret-token-123")
+            status, headers, body = self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("secret-token-123", log_str)
         self.assertNotIn("Bearer", log_str)
@@ -261,8 +300,8 @@ class TestGl117AuthFailure(_BaseGl117):
     def test_auth_log_does_not_contain_authorization_header(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants", auth_header="Bearer secret-token-123")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", auth_header="Bearer secret-token-123")
+            status, headers, body = self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("authorization", log_str.lower())
 
@@ -294,12 +333,12 @@ class TestGl117RateLimit(_BaseGl117):
     def test_rate_limit_emits_rate_limited(self):
         logger = logging.getLogger("grantlayer.server")
         for _ in range(2):
-            handler = self._make_handler("/challenges", auth_header="Bearer owner-token")
-            self._run_handler(handler)
+            handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+            self._run_raw_handler(handler)
 
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/challenges", auth_header="Bearer owner-token")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+            status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertTrue(any("rate_limited" in msg for msg in cm.output))
         payload = self._parse_log_json(next(msg for msg in cm.output if "rate_limited" in msg))
@@ -310,12 +349,12 @@ class TestGl117RateLimit(_BaseGl117):
     def test_rate_limit_log_does_not_contain_raw_token(self):
         logger = logging.getLogger("grantlayer.server")
         for _ in range(2):
-            handler = self._make_handler("/challenges", auth_header="Bearer secret-token-456")
-            self._run_handler(handler)
+            handler = self._make_raw_handler("/challenges", auth_header="Bearer secret-token-456")
+            self._run_raw_handler(handler)
 
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/challenges", auth_header="Bearer secret-token-456")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/challenges", auth_header="Bearer secret-token-456")
+            status, headers, body = self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("secret-token-456", log_str)
         self.assertNotIn("Bearer", log_str)
@@ -348,8 +387,8 @@ class TestGl117InvalidJson(_BaseGl117):
         logger = logging.getLogger("grantlayer.server")
         bad_body = b"not json"
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=bad_body)
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=bad_body)
+            status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertTrue(any("request_rejected" in msg for msg in cm.output))
         payload = self._parse_log_json(next(msg for msg in cm.output if "request_rejected" in msg))
@@ -359,8 +398,8 @@ class TestGl117InvalidJson(_BaseGl117):
     def test_empty_body_emits_request_rejected(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=b"", content_length=0)
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=b"", content_length=0)
+            status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertTrue(any("request_rejected" in msg for msg in cm.output))
 
@@ -368,8 +407,8 @@ class TestGl117InvalidJson(_BaseGl117):
         logger = logging.getLogger("grantlayer.server")
         bad_body = b"sensitive-payload-123"
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=bad_body)
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=bad_body)
+            status, headers, body = self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("sensitive-payload-123", log_str)
 
@@ -417,7 +456,7 @@ class TestGl117DemoActionPreserved(_BaseGl117):
     def test_demo_action_exception_logging_preserved(self):
         with self.assertLogs(self.demo_mod.logger, level="ERROR") as cm:
             with patch.object(self.demo_mod, "list_grants", side_effect=RuntimeError("secret-boom")):
-                handler = self._make_handler(
+                handler = self._make_raw_handler(
                     "/demo-action",
                     method="POST",
                     auth_header="Bearer owner-token",
@@ -428,7 +467,7 @@ class TestGl117DemoActionPreserved(_BaseGl117):
                         "resource": "customer-env-a",
                     }).encode(),
                 )
-                status, headers, body = self._run_handler(handler)
+                status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 403)
         self.assertFalse(body["approved"])
         self.assertEqual(body["reason"], "internal_handler_error")
@@ -462,15 +501,15 @@ class TestGl117LoggingFailureSafety(_BaseGl117):
 
     def test_logging_failure_does_not_alter_http_behavior(self):
         with patch("src.server.safe_log", side_effect=RuntimeError("log failure")):
-            handler = self._make_handler("/grants", auth_header="Bearer owner-token")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+            status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_auth_logging_failure_does_not_alter_http_behavior(self):
         with patch("src.server.safe_log", side_effect=RuntimeError("log failure")):
-            handler = self._make_handler("/grants")
-            status, headers, body = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants")
+            status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
@@ -499,14 +538,14 @@ class TestGl117ResponseSemanticsPreserved(_BaseGl117):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def test_get_grants_response_unchanged(self):
-        handler = self._make_handler("/grants", auth_header="Bearer owner-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_auth_failure_response_unchanged(self):
-        handler = self._make_handler("/grants")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
@@ -517,17 +556,17 @@ class TestGl117ResponseSemanticsPreserved(_BaseGl117):
         importlib.reload(fresh_server)
         self.handler_class = fresh_server.GrantLayerHandler
 
-        handler = self._make_handler("/challenges", auth_header="Bearer owner-token")
-        self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+        self._run_raw_handler(handler)
 
-        handler = self._make_handler("/challenges", auth_header="Bearer owner-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertEqual(body.get("errorCode"), "rate_limit_exceeded")
 
     def test_invalid_json_response_unchanged(self):
-        handler = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=b"bad")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=b"bad")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(body.get("errorCode"), "invalid_json")
 

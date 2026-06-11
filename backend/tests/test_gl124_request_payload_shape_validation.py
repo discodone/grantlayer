@@ -54,37 +54,44 @@ class _BaseGl124(unittest.TestCase):
         self._orig_rate_limit_auth = os.environ.get("GRANTLAYER_RATE_LIMIT_AUTH")
         self._orig_rate_limit_api = os.environ.get("GRANTLAYER_RATE_LIMIT_API")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.models as models_mod
+        import backend.src.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         self.server_mod = server_mod
         self.handler_class = server_mod.GrantLayerHandler
 
         self.db_mod = db_mod
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -115,7 +122,7 @@ class _BaseGl124(unittest.TestCase):
         finally:
             conn.close()
 
-    def _make_handler(
+    def _make_raw_handler(
         self,
         path,
         method="GET",
@@ -148,7 +155,7 @@ class _BaseGl124(unittest.TestCase):
         handler.server = None
         return handler
 
-    def _run_handler(self, handler):
+    def _run_raw_handler(self, handler):
         if handler.command == "GET":
             handler.do_GET()
         elif handler.command == "POST":
@@ -193,6 +200,38 @@ class _BaseGl124(unittest.TestCase):
             base.update(overrides)
         return base
 
+    def _make_handler(self, path, method="GET", **kwargs):
+        return (path, method, kwargs.get("auth_header"), kwargs.get("body", b""))
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
+        headers = {}
+        if auth_header is not None:
+            headers["Authorization"] = auth_header
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        elif method == "OPTIONS":
+            resp = self.client.options(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    import json as _json
+                    body_dict = _json.loads(body)
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (ValueError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            import json as _json
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, dict(resp.headers), data
+
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # 1–2. Oversized body
@@ -206,35 +245,35 @@ class TestGl124OversizedBody(_BaseGl124):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         self.MAX_JSON_BODY_BYTES = fresh_server.MAX_JSON_BODY_BYTES
 
     def test_oversized_body_rejected_413(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             content_length=self.MAX_JSON_BODY_BYTES + 1,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 413)
         self.assertEqual(body.get("errorCode"), "payload_too_large")
 
     def test_oversized_body_response_has_gl030_shape(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             content_length=self.MAX_JSON_BODY_BYTES + 1,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 413)
         self.assertIn("error", body)
         self.assertIn("errorCode", body)
@@ -243,14 +282,14 @@ class TestGl124OversizedBody(_BaseGl124):
     def test_oversized_body_response_does_not_echo_payload(self):
         sentinel = "SENTINEL-OVERSIZED-GL124"
         oversized_body = sentinel.encode() + b"x" * 10
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=oversized_body,
             content_length=self.MAX_JSON_BODY_BYTES + 1,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 413)
         self.assertNotIn(sentinel, json.dumps(body))
 
@@ -267,62 +306,62 @@ class TestGl124MalformedJson(_BaseGl124):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def test_malformed_json_rejected_400(self):
         bad_body = b"not json at all"
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=bad_body,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(body.get("errorCode"), "invalid_json")
 
     def test_malformed_json_response_does_not_echo_payload(self):
         sentinel = b"SECRET-MALFORMED-GL124"
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=sentinel,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertNotIn(sentinel.decode(), json.dumps(body))
 
     def test_malformed_json_log_does_not_echo_payload(self):
         logger = logging.getLogger("grantlayer.server")
         sentinel = b"SECRET-LOG-BODY-GL124"
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=sentinel,
         )
         with self.assertLogs(logger, level="INFO") as cm:
-            self._run_handler(handler)
+            self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn(sentinel.decode(), log_str)
 
     def test_truncated_json_rejected_400(self):
         bad_body = b'{"subjectId": "sub-1"'
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=bad_body,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(body.get("errorCode"), "invalid_json")
 
@@ -339,36 +378,36 @@ class TestGl124EmptyBody(_BaseGl124):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def test_empty_body_rejected_400(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=b"",
             content_length=0,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(body.get("errorCode"), "empty_request_body")
 
     def test_empty_body_response_has_gl030_shape(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=b"",
             content_length=0,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertIn("error", body)
         self.assertIn("errorCode", body)
         self.assertIn("reason", body)
@@ -386,24 +425,24 @@ class TestGl124NonObjectTopLevel(_BaseGl124):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def _post_value(self, value):
         body = json.dumps(value).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body,
         )
-        return self._run_handler(handler)
+        return self._run_raw_handler(handler)
 
     def test_top_level_array_rejected(self):
         status, headers, body = self._post_value([{"key": "val"}])
@@ -454,37 +493,37 @@ class TestGl124ValidObjectPreserved(_BaseGl124):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def test_valid_grant_object_accepted(self):
         body = json.dumps(self._grant_payload()).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 201)
 
     def test_valid_object_with_extra_fields_accepted(self):
         payload = self._grant_payload()
         payload["unknownField"] = "ignored"
         body = json.dumps(payload).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (201, 400))
 
 
@@ -500,11 +539,11 @@ class TestGl124Gl114Preserved(_BaseGl124):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
@@ -512,25 +551,25 @@ class TestGl124Gl114Preserved(_BaseGl124):
     def test_overlong_subject_id_still_rejected(self):
         payload = self._grant_payload(overrides={"subjectId": "x" * 200})
         body = json.dumps(payload).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
 
     def test_overlong_role_still_rejected(self):
         payload = self._grant_payload(overrides={"role": "x" * 200})
         body = json.dumps(payload).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
 
 
@@ -546,42 +585,42 @@ class TestGl124CorrelationId(_BaseGl124):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def test_malformed_json_rejection_echoes_correlation_id(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=b"not json",
             correlation_id_header="corr-gl124-a",
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(headers.get("X-Correlation-ID"), "corr-gl124-a")
 
     def test_non_object_rejection_echoes_correlation_id(self):
         body_bytes = json.dumps([1, 2, 3]).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body_bytes,
             correlation_id_header="corr-gl124-b",
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(headers.get("X-Correlation-ID"), "corr-gl124-b")
 
     def test_empty_body_rejection_echoes_correlation_id(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
@@ -589,13 +628,13 @@ class TestGl124CorrelationId(_BaseGl124):
             content_length=0,
             correlation_id_header="corr-gl124-c",
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(headers.get("X-Correlation-ID"), "corr-gl124-c")
 
     def test_rejection_log_includes_correlation_id(self):
         logger = logging.getLogger("grantlayer.server")
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
@@ -603,14 +642,14 @@ class TestGl124CorrelationId(_BaseGl124):
             correlation_id_header="corr-gl124-log",
         )
         with self.assertLogs(logger, level="INFO") as cm:
-            self._run_handler(handler)
+            self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertIn("corr-gl124-log", log_str)
 
     def test_rejection_log_does_not_include_raw_body(self):
         logger = logging.getLogger("grantlayer.server")
         sentinel = b"RAWBODY-SENTINEL-GL124"
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
@@ -618,7 +657,7 @@ class TestGl124CorrelationId(_BaseGl124):
             correlation_id_header="corr-gl124-d",
         )
         with self.assertLogs(logger, level="INFO") as cm:
-            self._run_handler(handler)
+            self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn(sentinel.decode(), log_str)
 
@@ -635,33 +674,33 @@ class TestGl124AuthPreserved(_BaseGl124):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import src.server as fresh_server
+        import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self.server_mod = fresh_server
         self.handler_class = fresh_server.GrantLayerHandler
-        import src.auth as fresh_auth
+        import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
     def test_missing_auth_still_401(self):
         body_bytes = json.dumps([1, 2]).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             body=body_bytes,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
 
     def test_invalid_token_still_rejected(self):
         body_bytes = json.dumps({"key": "value"}).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer wrong-token",
             body=body_bytes,
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
 
 

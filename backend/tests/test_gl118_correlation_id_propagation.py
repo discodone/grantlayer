@@ -40,9 +40,12 @@ class _BaseGl118(unittest.TestCase):
         self._orig_rate_limit_auth = os.environ.get("GRANTLAYER_RATE_LIMIT_AUTH")
         self._orig_rate_limit_api = os.environ.get("GRANTLAYER_RATE_LIMIT_API")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -71,6 +74,10 @@ class _BaseGl118(unittest.TestCase):
         self.handler_class = server_mod.GrantLayerHandler
 
         self.db_mod = db_mod
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -101,7 +108,7 @@ class _BaseGl118(unittest.TestCase):
         finally:
             conn.close()
 
-    def _make_handler(
+    def _make_raw_handler(
         self,
         path,
         method="GET",
@@ -138,7 +145,7 @@ class _BaseGl118(unittest.TestCase):
         handler.server = None
         return handler
 
-    def _run_handler(self, handler):
+    def _run_raw_handler(self, handler):
         if handler.command == "GET":
             handler.do_GET()
         elif handler.command == "POST":
@@ -168,6 +175,38 @@ class _BaseGl118(unittest.TestCase):
             self.fail(f"No JSON found in log record: {log_str}")
         return json.loads(log_str[start:])
 
+    def _make_handler(self, path, method="GET", **kwargs):
+        return (path, method, kwargs.get("auth_header"), kwargs.get("body", b""))
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
+        headers = {}
+        if auth_header is not None:
+            headers["Authorization"] = auth_header
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        elif method == "OPTIONS":
+            resp = self.client.options(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    import json as _json
+                    body_dict = _json.loads(body)
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (ValueError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            import json as _json
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, dict(resp.headers), data
+
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # 1. Inbound header extraction
@@ -191,47 +230,47 @@ class TestGl118InboundHeaderExtraction(_BaseGl118):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def test_valid_correlation_id_echoed_in_response(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header="abc-123",
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(headers.get("X-Correlation-ID"), "abc-123")
 
     def test_falls_back_to_request_id(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             request_id_header="req-456",
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(headers.get("X-Correlation-ID"), "req-456")
 
     def test_generates_id_when_no_headers(self):
-        handler = self._make_handler("/grants", auth_header="Bearer owner-token")
-        status, headers, body = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         cid = headers.get("X-Correlation-ID")
         self.assertIsNotNone(cid)
         self.assertTrue(len(cid) > 0)
 
     def test_prefers_correlation_id_over_request_id(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header="preferred-id",
             request_id_header="fallback-id",
         )
-        status, headers, body = self._run_handler(handler)
+        status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(headers.get("X-Correlation-ID"), "preferred-id")
 
     def test_generated_id_is_non_empty(self):
-        handler = self._make_handler("/grants", auth_header="Bearer owner-token")
-        _, headers, _ = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+        _, headers, _ = self._run_raw_handler(handler)
         self.assertTrue(headers.get("X-Correlation-ID", ""))
 
 
@@ -258,23 +297,23 @@ class TestGl118CorrelationIdNormalization(_BaseGl118):
 
     def test_too_long_id_replaced(self):
         long_id = "a" * 200
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header=long_id,
         )
-        _, headers, _ = self._run_handler(handler)
+        _, headers, _ = self._run_raw_handler(handler)
         response_id = headers.get("X-Correlation-ID", "")
         self.assertTrue(len(response_id) > 0)
         self.assertNotEqual(response_id, long_id)
 
     def test_unsafe_chars_replaced(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header="invalid id with spaces",
         )
-        _, headers, _ = self._run_handler(handler)
+        _, headers, _ = self._run_raw_handler(handler)
         response_id = headers.get("X-Correlation-ID", "")
         self.assertTrue(len(response_id) > 0)
         self.assertNotEqual(response_id, "invalid id with spaces")
@@ -282,44 +321,44 @@ class TestGl118CorrelationIdNormalization(_BaseGl118):
 
     def test_empty_id_replaced(self):
         # empty string is falsy; falls through to generate a new ID
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header="",
         )
-        _, headers, _ = self._run_handler(handler)
+        _, headers, _ = self._run_raw_handler(handler)
         response_id = headers.get("X-Correlation-ID", "")
         self.assertTrue(len(response_id) > 0)
 
     def test_whitespace_only_replaced(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header="   ",
         )
-        _, headers, _ = self._run_handler(handler)
+        _, headers, _ = self._run_raw_handler(handler)
         response_id = headers.get("X-Correlation-ID", "")
         self.assertTrue(len(response_id) > 0)
         self.assertNotEqual(response_id.strip(), "")
 
     def test_valid_special_chars_accepted(self):
         safe_id = "abc.def-123_test:v1"
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header=safe_id,
         )
-        _, headers, _ = self._run_handler(handler)
+        _, headers, _ = self._run_raw_handler(handler)
         self.assertEqual(headers.get("X-Correlation-ID"), safe_id)
 
     def test_oversized_id_not_echoed(self):
         long_id = "x" * 200
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header=long_id,
         )
-        _, headers, _ = self._run_handler(handler)
+        _, headers, _ = self._run_raw_handler(handler)
         self.assertNotEqual(headers.get("X-Correlation-ID"), long_id)
 
 
@@ -345,8 +384,8 @@ class TestGl118ResponseHeaderAlwaysPresent(_BaseGl118):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def test_get_has_correlation_header(self):
-        handler = self._make_handler("/grants", auth_header="Bearer owner-token")
-        status, headers, _ = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+        status, headers, _ = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertIn("X-Correlation-ID", headers)
 
@@ -361,31 +400,31 @@ class TestGl118ResponseHeaderAlwaysPresent(_BaseGl118):
             "createdBy": "owner-1",
             "reason": "test",
         }).encode()
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=grant_body,
         )
-        status, headers, _ = self._run_handler(handler)
+        status, headers, _ = self._run_raw_handler(handler)
         self.assertEqual(status, 201)
         self.assertIn("X-Correlation-ID", headers)
 
     def test_options_has_correlation_header(self):
-        handler = self._make_handler("/grants", method="OPTIONS", origin="https://example.com")
-        _, headers, _ = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants", method="OPTIONS", origin="https://example.com")
+        _, headers, _ = self._run_raw_handler(handler)
         self.assertIn("X-Correlation-ID", headers)
 
     def test_unauthenticated_request_has_correlation_header(self):
         # Auth fails but X-Correlation-ID must still be present
-        handler = self._make_handler("/grants")
-        status, headers, _ = self._run_handler(handler)
+        handler = self._make_raw_handler("/grants")
+        status, headers, _ = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertIn("X-Correlation-ID", headers)
 
     def test_correlation_header_present_on_nonexistent_path(self):
-        handler = self._make_handler("/does-not-exist-gl118", auth_header="Bearer owner-token")
-        _, headers, _ = self._run_handler(handler)
+        handler = self._make_raw_handler("/does-not-exist-gl118", auth_header="Bearer owner-token")
+        _, headers, _ = self._run_raw_handler(handler)
         self.assertIn("X-Correlation-ID", headers)
 
 
@@ -413,8 +452,8 @@ class TestGl118CorrelationIdLogging(_BaseGl118):
     def test_log_event_includes_correlation_id_field(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants", auth_header="Bearer owner-token")
-            self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+            self._run_raw_handler(handler)
         log_payloads = [self._parse_log_json(msg) for msg in cm.output if "{" in msg]
         has_correlation_id = any("correlation_id" in p for p in log_payloads)
         self.assertTrue(has_correlation_id, "No log entry contained correlation_id field")
@@ -422,8 +461,8 @@ class TestGl118CorrelationIdLogging(_BaseGl118):
     def test_log_correlation_id_matches_response_header(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler("/grants", auth_header="Bearer owner-token")
-            status, resp_headers, _ = self._run_handler(handler)
+            handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+            status, resp_headers, _ = self._run_raw_handler(handler)
         response_cid = resp_headers.get("X-Correlation-ID")
         self.assertIsNotNone(response_cid)
         log_payloads = [self._parse_log_json(msg) for msg in cm.output if "{" in msg]
@@ -434,12 +473,12 @@ class TestGl118CorrelationIdLogging(_BaseGl118):
     def test_inbound_id_propagated_to_log(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_handler(
+            handler = self._make_raw_handler(
                 "/grants",
                 auth_header="Bearer owner-token",
                 correlation_id_header="trace-789",
             )
-            self._run_handler(handler)
+            self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertIn("trace-789", log_str)
 
@@ -468,12 +507,12 @@ class TestGl118SecurityResilience(_BaseGl118):
     def test_newline_injection_rejected(self):
         # CRLF injection attempt — newline not in safe charset
         malicious = "abc\r\nX-Evil: injected"
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header=malicious,
         )
-        _, headers, _ = self._run_handler(handler)
+        _, headers, _ = self._run_raw_handler(handler)
         response_id = headers.get("X-Correlation-ID", "")
         self.assertNotEqual(response_id, malicious)
         self.assertNotIn("\r\n", response_id)
@@ -481,34 +520,34 @@ class TestGl118SecurityResilience(_BaseGl118):
 
     def test_oversized_header_not_reflected(self):
         oversized = "z" * 300
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header=oversized,
         )
-        _, headers, _ = self._run_handler(handler)
+        _, headers, _ = self._run_raw_handler(handler)
         response_id = headers.get("X-Correlation-ID", "")
         self.assertFalse(response_id.startswith("z" * 129), "Oversized ID was reflected")
 
     def test_null_byte_id_replaced(self):
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header="abc\x00def",
         )
-        _, headers, _ = self._run_handler(handler)
+        _, headers, _ = self._run_raw_handler(handler)
         response_id = headers.get("X-Correlation-ID", "")
         self.assertTrue(len(response_id) > 0)
         self.assertNotIn("\x00", response_id)
 
     def test_unicode_id_replaced(self):
         # Non-ASCII chars not in safe charset → replaced
-        handler = self._make_handler(
+        handler = self._make_raw_handler(
             "/grants",
             auth_header="Bearer owner-token",
             correlation_id_header="café-123",
         )
-        _, headers, _ = self._run_handler(handler)
+        _, headers, _ = self._run_raw_handler(handler)
         response_id = headers.get("X-Correlation-ID", "")
         self.assertTrue(len(response_id) > 0)
         self.assertNotEqual(response_id, "café-123")
