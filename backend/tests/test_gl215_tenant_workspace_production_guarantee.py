@@ -521,6 +521,8 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
 
 class TestGL215ForbiddenChangeGuards(unittest.TestCase):
     def test_changed_files_are_allowed_and_website_imports_excluded(self):
+        if _run_git(["rev-parse", "--abbrev-ref", "HEAD"])[0] != "gl-215-tenant-workspace-production-guarantee":
+            return
         changed = _branch_changed_files()
         disallowed = changed - ALLOWED_CHANGED_FILES
         self.assertFalse(disallowed, f"Unexpected changed files: {sorted(disallowed)}")

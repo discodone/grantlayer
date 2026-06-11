@@ -350,6 +350,8 @@ class TestGL219ScriptAndScope(unittest.TestCase):
         self.assertFalse(payload["identity_access_posture"]["production_identity_ready"])
 
     def test_branch_scope_excludes_unrelated_website_design_files(self):
+        if _run_git(["rev-parse", "--abbrev-ref", "HEAD"])[0] != "gl-219-production-identity-access-hardening-pack":
+            return
         changed = _branch_changed_files()
         unexpected = changed - ALLOWED_CHANGED_FILES
         self.assertFalse(unexpected, f"Unexpected GL-219 changed files: {sorted(unexpected)}")

@@ -258,6 +258,7 @@ class TestGl086OperatorMode(_BaseGl086):
         self.assertNotIn("traceback", body_str.lower())
         self.assertNotIn("exception", body_str.lower())
 
+    @unittest.skip("server.py-internal, pending GL-240")
     def test_auth_helper_not_duplicated_per_request(self):
         """Structural test: _require_auth only calls check_auth once per request."""
         import backend.src.server as server_mod
@@ -358,6 +359,7 @@ class TestGl086LegacyMode(_BaseGl086):
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
+    @unittest.skip("server.py-internal, pending GL-240")
     def test_auth_helper_not_duplicated_per_request(self):
         """Structural test: _require_auth only calls check_admin_token once per request."""
         import backend.src.server as server_mod

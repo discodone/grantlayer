@@ -171,9 +171,6 @@ class TestGL032ProductionReadiness(unittest.TestCase):
     # 9. /health response contains new readiness fields and no secrets
     # ──────────────────────────────────────────────
     def test_health_response_contains_new_fields(self):
-        import src.server as server_mod
-        importlib.reload(server_mod)
-
         # Build a simulated health payload (mirrors server.py logic)
         from src.auth import admin_token_is_configured
         import src.config as c

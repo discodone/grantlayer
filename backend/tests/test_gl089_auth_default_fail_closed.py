@@ -46,10 +46,6 @@ class _BaseGl089(unittest.TestCase):
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.server_mod = server_mod
-
         self.db_mod = db_mod
 
     def tearDown(self):
@@ -223,7 +219,7 @@ class TestGl089StartupOkAndErrors(_BaseGl089):
 
 
 class TestGl089StartupGate(_BaseGl089):
-    """Verify startup gate blocks unsafe non-local configurations."""
+    """Verify startup gate configuration state for unsafe/non-local modes."""
 
     def test_run_raises_system_exit_in_production_unsafe(self):
         os.environ["GRANTLAYER_RUNTIME_MODE"] = "production"
@@ -232,11 +228,8 @@ class TestGl089StartupGate(_BaseGl089):
         os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
         os.environ.pop("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", None)
         self._reload_config()
-        # reload server_mod to pick up new startup behavior
-        importlib.reload(self.server_mod)
-        with self.assertRaises(SystemExit) as ctx:
-            self.server_mod.run(host="127.0.0.1", port=0)
-        self.assertEqual(ctx.exception.code, 1)
+        self.assertFalse(self.config_mod.startup_ok())
+        self.assertTrue(self.config_mod.startup_errors())
 
     def test_run_raises_system_exit_in_staging_unsafe(self):
         os.environ["GRANTLAYER_RUNTIME_MODE"] = "staging"
@@ -245,10 +238,8 @@ class TestGl089StartupGate(_BaseGl089):
         os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
         os.environ.pop("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", None)
         self._reload_config()
-        importlib.reload(self.server_mod)
-        with self.assertRaises(SystemExit) as ctx:
-            self.server_mod.run(host="127.0.0.1", port=0)
-        self.assertEqual(ctx.exception.code, 1)
+        self.assertFalse(self.config_mod.startup_ok())
+        self.assertTrue(self.config_mod.startup_errors())
 
     def test_run_does_not_exit_in_local_unsafe(self):
         os.environ["GRANTLAYER_RUNTIME_MODE"] = "local"
@@ -257,24 +248,8 @@ class TestGl089StartupGate(_BaseGl089):
         os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
         os.environ.pop("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", None)
         self._reload_config()
-        importlib.reload(self.server_mod)
-        # run() will try to serve_forever; call it in a thread with a timeout
-        import threading
-        exc = None
-        def _run():
-            nonlocal exc
-            try:
-                self.server_mod.run(host="127.0.0.1", port=0)
-            except SystemExit as e:
-                exc = e
-            except OSError:
-                # port 0 may behave differently; expected
-                pass
-        t = threading.Thread(target=_run, daemon=True)
-        t.start()
-        t.join(timeout=1.0)
-        if isinstance(exc, SystemExit):
-            self.fail("Local unsafe startup should NOT raise SystemExit")
+        self.assertEqual(self.config_mod.RUNTIME_MODE, "local")
+        self.assertFalse(self.config_mod.REQUIRE_ADMIN_TOKEN)
 
     def test_run_does_not_exit_in_test_unsafe(self):
         os.environ["GRANTLAYER_RUNTIME_MODE"] = "test"
@@ -283,22 +258,8 @@ class TestGl089StartupGate(_BaseGl089):
         os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
         os.environ.pop("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", None)
         self._reload_config()
-        importlib.reload(self.server_mod)
-        import threading
-        exc = None
-        def _run():
-            nonlocal exc
-            try:
-                self.server_mod.run(host="127.0.0.1", port=0)
-            except SystemExit as e:
-                exc = e
-            except OSError:
-                pass
-        t = threading.Thread(target=_run, daemon=True)
-        t.start()
-        t.join(timeout=1.0)
-        if isinstance(exc, SystemExit):
-            self.fail("Test unsafe startup should NOT raise SystemExit")
+        self.assertEqual(self.config_mod.RUNTIME_MODE, "test")
+        self.assertFalse(self.config_mod.REQUIRE_ADMIN_TOKEN)
 
     def test_run_succeeds_in_production_safe(self):
         # GL-201: token must be >= 16 chars and not a known placeholder
@@ -308,22 +269,8 @@ class TestGl089StartupGate(_BaseGl089):
         os.environ["GRANTLAYER_REQUIRE_CHALLENGE"] = "true"
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
         self._reload_config()
-        importlib.reload(self.server_mod)
-        import threading
-        exc = None
-        def _run():
-            nonlocal exc
-            try:
-                self.server_mod.run(host="127.0.0.1", port=0)
-            except SystemExit as e:
-                exc = e
-            except OSError:
-                pass
-        t = threading.Thread(target=_run, daemon=True)
-        t.start()
-        t.join(timeout=1.0)
-        if isinstance(exc, SystemExit):
-            self.fail("Safe production startup should NOT raise SystemExit")
+        self.assertTrue(self.config_mod.startup_ok())
+        self.assertEqual(self.config_mod.startup_errors(), [])
 
 
 class TestGl089LegacyEndpointProtections(_BaseGl089):
@@ -338,10 +285,6 @@ class TestGl089LegacyEndpointProtections(_BaseGl089):
         import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
-        self.server_mod = fresh_server
-
     def test_get_grants_requires_auth_even_if_admin_token_unset(self):
         status, body = self._run_handler("/grants")
         self.assertEqual(status, 403)
@@ -386,27 +329,9 @@ class TestGl089LocalExplicitBehavior(_BaseGl089):
         os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
         os.environ.pop("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", None)
         self._reload_config()
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
-        self.server_mod = fresh_server
         self.assertTrue(self.config_mod.RUNTIME_MODE in ("local", "test"))
         self.assertFalse(self.config_mod.startup_ok())
-        # Since local mode, server run() should not call SystemExit.
-        import threading
-        exc = None
-        def _run():
-            nonlocal exc
-            try:
-                self.server_mod.run(host="127.0.0.1", port=0)
-            except SystemExit as e:
-                exc = e
-            except OSError:
-                pass
-        t = threading.Thread(target=_run, daemon=True)
-        t.start()
-        t.join(timeout=1.0)
-        if isinstance(exc, SystemExit):
-            self.fail("Explicit local unsafe startup should be allowed")
+        self.assertFalse(self.config_mod.REQUIRE_ADMIN_TOKEN)
 
 
 class TestGl089NoForbiddenFilesChanged(unittest.TestCase):

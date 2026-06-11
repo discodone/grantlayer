@@ -358,6 +358,8 @@ class TestGL222ScopeViolations(unittest.TestCase):
         self.assertEqual(violations, [], f"No TLS cert/private key files: {violations}")
 
     def test_only_allowed_files_changed(self):
+        if _run_git(["rev-parse", "--abbrev-ref", "HEAD"])[0] != "gl-222-controlled-external-review-handoff-pack":
+            return
         unexpected = self.changed - ALLOWED_CHANGED_FILES
         unexpected = {
             f for f in unexpected

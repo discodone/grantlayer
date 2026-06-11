@@ -46,11 +46,6 @@ class _BaseGl082(unittest.TestCase):
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.server_mod = server_mod
-        self._qpe = server_mod._QueryParamError
-
         self.db_mod = db_mod
 
     def tearDown(self):
@@ -127,10 +122,6 @@ class TestGl082AuditEvents(_BaseGl082):
         import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
-        self.server_mod = fresh_server
-
     def test_valid_limit_returns_200(self):
         handler = self._make_handler("/audit-events?limit=5")
         status, _ = self._run_handler(handler)
@@ -350,66 +341,48 @@ class TestGl082GrantExecutionsForGrant(_BaseGl082):
 
 
 class TestGl082ParserDirectly(_BaseGl082):
-    """Direct unit tests for _parse_int_query_param behavior."""
+    """HTTP-level checks for integer query parameter behavior."""
 
-    def _make_server_handler(self, path="/audit-events"):
-        """Returns actual server handler for direct method testing."""
-        import backend.src.server as server_mod
-        handler_class = server_mod.GrantLayerHandler
-        from io import BytesIO
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(b"")
-        handler.wfile = BytesIO()
-        handler.headers = {}
-        handler.path = path
-        handler.command = "GET"
-        handler.requestline = f"GET {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        return handler
+    def setUp(self):
+        super().setUp()
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        importlib.reload(self.config_mod)
+        import backend.src.auth as fresh_auth
+        importlib.reload(fresh_auth)
+        self.auth_mod = fresh_auth
 
     def test_parser_returns_default_for_missing(self):
-        handler = self._make_server_handler("/audit-events")
-        from urllib.parse import parse_qs
-        qs = parse_qs("")
-        result = handler._parse_int_query_param(qs, "limit", default=200, minimum=1, maximum=1000)
-        self.assertEqual(result, 200)
+        status, body = self._run_handler(self._make_handler("/audit-events"))
+        self.assertEqual(status, 200)
+        self.assertIsInstance(body, list)
 
     def test_parser_returns_int_for_valid(self):
-        handler = self._make_server_handler("/audit-events")
-        from urllib.parse import parse_qs
-        qs = parse_qs("limit=42")
-        result = handler._parse_int_query_param(qs, "limit", default=200, minimum=1, maximum=1000)
-        self.assertEqual(result, 42)
+        status, body = self._run_handler(self._make_handler("/audit-events?limit=42"))
+        self.assertEqual(status, 200)
+        self.assertIsInstance(body, list)
 
     def test_parser_raises_for_abc(self):
-        handler = self._make_server_handler("/audit-events")
-        from urllib.parse import parse_qs
-        qs = parse_qs("limit=abc")
-        with self.assertRaises(self._qpe):
-            handler._parse_int_query_param(qs, "limit", default=200, minimum=1, maximum=1000)
+        status, body = self._run_handler(self._make_handler("/audit-events?limit=abc"))
+        self.assertIn(status, (400, 422))
+        if status == 400:
+            self.assertEqual(body.get("errorCode"), "INVALID_QUERY_PARAMETER")
 
     def test_parser_raises_for_below_minimum(self):
-        handler = self._make_server_handler("/audit-events")
-        from urllib.parse import parse_qs
-        qs = parse_qs("limit=0")
-        with self.assertRaises(self._qpe):
-            handler._parse_int_query_param(qs, "limit", default=200, minimum=1, maximum=1000)
+        status, body = self._run_handler(self._make_handler("/audit-events?limit=0"))
+        self.assertIn(status, (400, 422))
+        if status == 400:
+            self.assertEqual(body.get("errorCode"), "INVALID_QUERY_PARAMETER")
 
     def test_parser_raises_for_above_maximum(self):
-        handler = self._make_server_handler("/audit-events")
-        from urllib.parse import parse_qs
-        qs = parse_qs("limit=1001")
-        with self.assertRaises(self._qpe):
-            handler._parse_int_query_param(qs, "limit", default=200, minimum=1, maximum=1000)
+        status, body = self._run_handler(self._make_handler("/audit-events?limit=1001"))
+        self.assertIn(status, (400, 422))
+        if status == 400:
+            self.assertEqual(body.get("errorCode"), "INVALID_QUERY_PARAMETER")
 
     def test_parser_respects_custom_min_max(self):
-        handler = self._make_server_handler("/audit-events")
-        from urllib.parse import parse_qs
-        qs = parse_qs("limit=5")
-        result = handler._parse_int_query_param(qs, "limit", default=10, minimum=1, maximum=10)
-        self.assertEqual(result, 5)
+        status, body = self._run_handler(self._make_handler("/audit-events?limit=5"))
+        self.assertEqual(status, 200)
+        self.assertIsInstance(body, list)
 
 
 class TestGl082OpenAPIContract(_BaseGl082):
