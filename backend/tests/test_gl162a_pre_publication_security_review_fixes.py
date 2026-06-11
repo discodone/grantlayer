@@ -51,12 +51,12 @@ def _load_server():
     tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     os.environ.setdefault("GRANTLAYER_DB", tmp.name)
     os.environ.setdefault("GRANTLAYER_ADMIN_TOKEN", "test-admin-token")
-    import src.db as db_mod
+    import backend.src.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
-    import src.server as server_mod
+    import backend.src.server as server_mod
     importlib.reload(server_mod)
-    import src.config as config_mod
+    import backend.src.config as config_mod
     importlib.reload(config_mod)
     return server_mod, config_mod, tmp.name
 
@@ -444,16 +444,16 @@ class TestGL162ARoleAllowlist(unittest.TestCase):
         cls._tmp_db_path = tmp.name
         os.environ["GRANTLAYER_DB"] = tmp.name
         os.environ.setdefault("GRANTLAYER_ADMIN_TOKEN", "test-admin-token")
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
-        import src.grant_requests as gr_mod
+        import backend.src.grant_requests as gr_mod
         importlib.reload(gr_mod)
         cls.gr_mod = gr_mod
-        import src.server as server_mod
+        import backend.src.server as server_mod
         importlib.reload(server_mod)
         cls.server_mod = server_mod
-        import src.models as models_mod
+        import backend.src.models as models_mod
         importlib.reload(models_mod)
         cls.models_mod = models_mod
 
@@ -503,9 +503,9 @@ class TestGL162ARoleAllowlist(unittest.TestCase):
 
     def test_role_length_validation_still_applies(self):
         """A role that exceeds MAX_ROLE_LENGTH must be rejected (length check precedes allowlist)."""
-        import src.grant_requests as gr_mod
+        import backend.src.grant_requests as gr_mod
         importlib.reload(gr_mod)
-        import src.models as models_mod
+        import backend.src.models as models_mod
         request = models_mod.GrantRequest(
             subject_id="test-subject",
             role="a" * 200,

@@ -116,43 +116,35 @@ def _run_handler(
     body: bytes = b"",
     extra_headers: dict | None = None,
 ) -> tuple[int, dict, dict]:
-    handler_class = server_mod.GrantLayerHandler
-    handler = handler_class.__new__(handler_class)
-    handler.rfile = BytesIO(body)
-    handler.wfile = BytesIO()
+    from fastapi.testclient import TestClient
+    from backend.src.api.app import create_app
+    _client = TestClient(create_app(), raise_server_exceptions=False)
     headers: dict[str, str] = {}
     if auth_header is not None:
         headers["Authorization"] = auth_header
-    if body:
-        headers["Content-Length"] = str(len(body))
     if extra_headers:
         headers.update(extra_headers)
-    handler.headers = headers
-    handler.path = path
-    handler.command = method
-    handler.requestline = f"{method} {path} HTTP/1.1"
-    handler.request_version = "HTTP/1.1"
-    handler.client_address = ("127.0.0.1", 0)
-    handler.server = None
-
     if method == "GET":
-        handler.do_GET()
+        resp = _client.get(path, headers=headers)
     elif method == "POST":
-        handler.do_POST()
+        if body:
+            try:
+                body_dict = json.loads(body)
+                resp = _client.post(path, json=body_dict, headers=headers)
+            except Exception:
+                resp = _client.post(path, content=body, headers=headers)
+        else:
+            resp = _client.post(path, headers=headers)
     else:
         raise AssertionError(f"Unsupported method in test helper: {method}")
-
-    handler.wfile.seek(0)
-    response = handler.wfile.read()
-    status = int(response.split(b"\r\n", 1)[0].split(b" ")[1])
-    header_block, _, body_bytes = response.partition(b"\r\n\r\n")
-    response_headers: dict[str, str] = {}
-    for line in header_block.decode().split("\r\n")[1:]:
-        if ": " in line:
-            key, value = line.split(": ", 1)
-            response_headers[key] = value
-    payload = json.loads(body_bytes) if body_bytes else {}
-    return status, response_headers, payload
+    try:
+        payload = resp.json()
+    except Exception:
+        payload = {}
+    if isinstance(payload, dict) and isinstance(payload.get("detail"), dict):
+        payload = payload["detail"]
+    response_headers = dict(resp.headers)
+    return resp.status_code, response_headers, payload
 
 
 class TestGL208Artifacts(unittest.TestCase):
@@ -346,7 +338,7 @@ class TestGL208BackendBoundaries(unittest.TestCase):
         self.assertNotEqual(body.get("tenantId"), "tenant-b")
 
     def test_raw_authorization_header_is_not_logged_by_safe_log(self):
-        from src.logging_utils import build_log_record
+        from backend.src.logging_utils import build_log_record
 
         raw = "Bearer gl208-raw-token-must-not-appear"
         record = build_log_record("auth_failed", authorization=raw, token=raw)
@@ -365,7 +357,7 @@ class TestGL208BackendBoundaries(unittest.TestCase):
         self.assertNotIn("gl208-secret-must-not-appear", errors)
 
     def test_rate_limiter_helper_is_deterministic(self):
-        from src.rate_limiter import RateLimiter
+        from backend.src.rate_limiter import RateLimiter
 
         limiter = RateLimiter(auth_limit=2, api_limit=3, window_seconds=10)
         self.assertEqual(limiter.check("127.0.0.1", "auth", now=100.0), (True, 0))

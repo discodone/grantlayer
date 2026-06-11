@@ -179,36 +179,34 @@ def _run_handler(
     body: bytes = b"",
     extra_headers: dict | None = None,
 ) -> tuple[int, dict, bytes]:
-    handler_class = server_mod.GrantLayerHandler
-    handler = handler_class.__new__(handler_class)
-    handler.rfile = BytesIO(body)
-    handler.wfile = BytesIO()
+    from fastapi.testclient import TestClient
+    from backend.src.api.app import create_app
+    _client = TestClient(create_app(), raise_server_exceptions=False)
     headers: dict[str, str] = {}
     if auth_header is not None:
         headers["Authorization"] = auth_header
-    if body:
-        headers["Content-Length"] = str(len(body))
     if extra_headers:
         headers.update(extra_headers)
-    handler.headers = headers
-    handler.path = path
-    handler.command = method
-    handler.requestline = f"{method} {path} HTTP/1.1"
-    handler.request_version = "HTTP/1.1"
-    handler.client_address = ("127.0.0.1", 0)
-    handler.server = None
     if method == "GET":
-        handler.do_GET()
+        resp = _client.get(path, headers=headers)
     elif method == "POST":
-        handler.do_POST()
+        if body:
+            try:
+                body_dict = json.loads(body)
+                resp = _client.post(path, json=body_dict, headers=headers)
+            except Exception:
+                resp = _client.post(path, content=body, headers=headers)
+        else:
+            resp = _client.post(path, headers=headers)
     else:
         raise AssertionError(f"Unsupported method: {method}")
-    handler.wfile.seek(0)
-    response = handler.wfile.read()
-    status = int(response.split(b"\r\n", 1)[0].split(b" ")[1])
-    parts = response.split(b"\r\n\r\n", 1)
-    body_out = json.loads(parts[1]) if len(parts) > 1 and parts[1] else {}
-    return status, body_out, response
+    try:
+        body_out = resp.json()
+    except Exception:
+        body_out = {}
+    if isinstance(body_out, dict) and isinstance(body_out.get("detail"), dict):
+        body_out = body_out["detail"]
+    return resp.status_code, body_out, resp.content
 
 
 class TestGL215DocumentationArtifact(unittest.TestCase):

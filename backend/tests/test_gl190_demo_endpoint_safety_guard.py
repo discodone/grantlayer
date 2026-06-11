@@ -73,37 +73,10 @@ class _BaseGl190(unittest.TestCase):
         importlib.reload(cfg)
         return cfg
 
-    def _make_handler(self, path, method="GET", body=b""):
-        """Build a minimal handler instance for request testing."""
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        from io import BytesIO
-
-        handler = server_mod.GrantLayerHandler.__new__(server_mod.GrantLayerHandler)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
-        headers = {}
-        if body:
-            headers["Content-Length"] = str(len(body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        return handler
-
-    def _run_handler(self, handler):
-        if handler.command == "GET":
-            handler.do_GET()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status_line = response.split(b"\r\n")[0]
-        status = int(status_line.split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        body = json.loads(parts[1]) if len(parts) > 1 else {}
-        return status, body
+    def _make_client(self):
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        return TestClient(create_app(), raise_server_exceptions=False)
 
 
 class TestDemoEndpointsDisabled(_BaseGl190):
@@ -393,20 +366,16 @@ class TestHealthReadinessUnderBlockedStartup(_BaseGl190):
 
     def test_health_endpoint_accessible_regardless(self):
         # Health endpoint is always reachable once a server is up
-        handler = self._make_handler("/health")
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        status, body = self._run_handler(handler)
-        self.assertEqual(status, 200)
-        self.assertEqual(body.get("status"), "ok")
+        client = self._make_client()
+        resp = client.get("/health")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json().get("status"), "ok")
 
     def test_readiness_endpoint_accessible_regardless(self):
-        handler = self._make_handler("/readiness")
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        status, body = self._run_handler(handler)
-        self.assertIn(status, (200, 503))
-        self.assertIn(body.get("status"), ("ready", "not_ready"))
+        client = self._make_client()
+        resp = client.get("/readiness")
+        self.assertIn(resp.status_code, (200, 503))
+        self.assertIn(resp.json().get("status"), ("ready", "not_ready"))
 
 
 class TestNoClaimsOrForbiddenScope(unittest.TestCase):
