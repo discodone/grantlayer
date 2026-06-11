@@ -33,27 +33,23 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()
 
-        from src.server import GrantLayerHandler
-        from src.provenance import record_provenance_event
-        from src.grant_executions import create_grant_execution
-        from src.models import GrantExecution
-        from src import evidence_persistence as evp
-        from src.evidence_bundle import build_evidence_bundle
-        from src import config
-        from src import operators as ops
+        from backend.src.provenance import record_provenance_event
+        from backend.src.grant_executions import create_grant_execution
+        from backend.src.models import GrantExecution
+        from backend.src import evidence_persistence as evp
+        from backend.src.evidence_bundle import build_evidence_bundle
+        from backend.src import operators as ops
 
-        self.handler_class = GrantLayerHandler
         self.record_event = record_provenance_event
         self.create_execution = create_grant_execution
         self.GrantExecution = GrantExecution
         self.evp = evp
         self.build_evidence = build_evidence_bundle
-        self.config = config
         self.ops = ops
 
     def tearDown(self):
@@ -98,7 +94,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
         self.evp.store_bundle(execution_id, bundle, stored_by=stored_by)
 
     def _insert_operator(self, op_id, name, role, token):
-        import src.db as db_mod
+        import backend.src.db as db_mod
         conn = db_mod.get_conn()
         try:
             conn.execute(
@@ -110,66 +106,32 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
         finally:
             conn.close()
 
+    def _make_client(self):
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        import backend.src.db as bk_db
+        import backend.src.config as config_mod
+        import backend.src.auth as auth_mod
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        importlib.reload(config_mod)
+        importlib.reload(auth_mod)
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        return TestClient(create_app(), raise_server_exceptions=False)
+
     def _run_handler(self, path, method="GET", auth=None):
-        """Simulate a server request and return (status, response_json)."""
-        importlib.reload(self.config)
-        from io import BytesIO
-
-        class DummyRequest:
-            def __init__(self):
-                self.headers = {}
-                if auth:
-                    self.headers["Authorization"] = auth
-                self.rfile = BytesIO(b"")
-                self.wfile = BytesIO()
-                self._status = None
-                self._headers = {}
-
-            def send_response(self, code):
-                self._status = code
-
-            def send_header(self, key, value):
-                self._headers[key] = value
-
-            def end_headers(self):
-                pass
-
-        class TestHandler(self.handler_class):
-            def __init__(inner_self, request):
-                inner_self.command = method
-                inner_self.path = path
-                inner_self.request_version = "HTTP/1.1"
-                inner_self.headers = request.headers
-                inner_self.rfile = request.rfile
-                inner_self.wfile = request.wfile
-                inner_self._status = None
-                inner_self._headers = {}
-
-            def send_response(inner_self, code):
-                inner_self._status = code
-
-            def send_header(inner_self, key, value):
-                inner_self._headers[key] = value
-
-            def end_headers(inner_self):
-                pass
-
-            def _send_json(inner_self, status, data):
-                inner_self.send_response(status)
-                inner_self._json = data
-                inner_self._status = status
-
-            def _send_html(inner_self, body):
-                inner_self.send_response(200)
-                inner_self._status = 200
-
-        req = DummyRequest()
-        handler = TestHandler(req)
+        headers = {}
+        if auth:
+            headers["Authorization"] = auth
+        client = self._make_client()
         if method == "GET":
-            handler.do_GET()
+            resp = client.get(path, headers=headers)
         else:
-            handler.do_POST()
-        return handler._status, getattr(handler, "_json", None)
+            resp = client.post(path, headers=headers)
+        try:
+            return resp.status_code, resp.json()
+        except Exception:
+            return resp.status_code, None
 
     # ── Endpoint routing ────────────────────────────────────────
     def test_endpoint_exists_and_returns_404_for_unknown_execution(self):

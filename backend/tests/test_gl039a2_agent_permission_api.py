@@ -32,17 +32,12 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()
 
-        from src.server import GrantLayerHandler
-        from src import config
-        from src import operators as ops
-
-        self.handler_class = GrantLayerHandler
-        self.config = config
+        from backend.src import operators as ops
         self.ops = ops
 
     def tearDown(self):
@@ -69,7 +64,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
             os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
 
     def _insert_operator(self, op_id, name, role, token):
-        import src.db as db_mod
+        import backend.src.db as db_mod
         conn = db_mod.get_conn()
         try:
             conn.execute(
@@ -81,69 +76,34 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
         finally:
             conn.close()
 
+    def _make_client(self):
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        import backend.src.db as bk_db
+        import backend.src.config as config_mod
+        import backend.src.auth as auth_mod
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        importlib.reload(config_mod)
+        importlib.reload(auth_mod)
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        return TestClient(create_app(), raise_server_exceptions=False)
+
     def _run_handler(self, path, method="POST", auth=None, body=None):
-        """Simulate a server request and return (status, response_json)."""
-        importlib.reload(self.config)
-        from io import BytesIO
-
-        class DummyRequest:
-            def __init__(self):
-                self.headers = {}
-                if auth:
-                    self.headers["Authorization"] = auth
-                self.rfile = BytesIO(b"")
-                self.wfile = BytesIO()
-                self._status = None
-                self._headers = {}
-
-            def send_response(self, code):
-                self._status = code
-
-            def send_header(self, key, value):
-                self._headers[key] = value
-
-            def end_headers(self):
-                pass
-
-        class TestHandler(self.handler_class):
-            def __init__(inner_self, request):
-                inner_self.command = method
-                inner_self.path = path
-                inner_self.request_version = "HTTP/1.1"
-                inner_self.headers = request.headers
-                inner_self.rfile = request.rfile
-                inner_self.wfile = request.wfile
-                inner_self._status = None
-                inner_self._headers = {}
-
-            def send_response(inner_self, code):
-                inner_self._status = code
-
-            def send_header(inner_self, key, value):
-                inner_self._headers[key] = value
-
-            def end_headers(inner_self):
-                pass
-
-            def _send_json(inner_self, status, data):
-                inner_self.send_response(status)
-                inner_self._json = data
-                inner_self._status = status
-
-            def _send_html(inner_self, body):
-                inner_self.send_response(200)
-                inner_self._status = 200
-
-        req = DummyRequest()
-        if body is not None:
-            req.rfile = BytesIO(json.dumps(body).encode("utf-8"))
-            req.headers["Content-Length"] = str(len(json.dumps(body).encode("utf-8")))
-        handler = TestHandler(req)
+        headers = {}
+        if auth:
+            headers["Authorization"] = auth
+        client = self._make_client()
         if method == "GET":
-            handler.do_GET()
+            resp = client.get(path, headers=headers)
+        elif body is not None:
+            resp = client.post(path, json=body, headers=headers)
         else:
-            handler.do_POST()
-        return handler._status, getattr(handler, "_json", None)
+            resp = client.post(path, headers=headers)
+        try:
+            return resp.status_code, resp.json()
+        except Exception:
+            return resp.status_code, None
 
     # ── Endpoint routing ────────────────────────────────────────
     def test_endpoint_exists_and_returns_400_for_missing_fields(self):
@@ -153,7 +113,8 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
             body={"agentId": "agent-1"},
         )
         self.assertEqual(status, 400)
-        self.assertIn("Missing fields", body.get("error", ""))
+        error_msg = body.get("error") or body.get("detail", {}).get("error", "")
+        self.assertIn("Missing fields", error_msg)
 
     def test_endpoint_returns_200_for_valid_request(self):
         status, body = self._run_handler(
