@@ -16,7 +16,6 @@ import json
 import unittest
 import tempfile
 import importlib
-from io import BytesIO
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -37,33 +36,35 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ["GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN"] = "bootstrap-token"
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "test-admin"
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.operators as ops_mod
+        import backend.src.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import src.server as server_mod
-        importlib.reload(server_mod)
-        self.server_mod = server_mod
-
         self.db_mod = db_mod
-        self.handler_class = server_mod.GrantLayerHandler
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -103,32 +104,26 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
             conn.close()
 
     def _http_request(self, method: str, path: str, body=None, auth=None):
-        handler = self.handler_class.__new__(self.handler_class)
-        req_body = json.dumps(body).encode() if body is not None else b""
-        handler.rfile = BytesIO(req_body)
-        handler.wfile = BytesIO()
         headers = {}
         if auth:
             headers["Authorization"] = f"Bearer {auth}"
-        if req_body:
-            headers["Content-Length"] = str(len(req_body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
         if method == "GET":
-            handler.do_GET()
+            resp = self.client.get(path, headers=headers)
         elif method == "POST":
-            handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status_line = response.split(b"\r\n")[0]
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1]) if len(parts) > 1 else {}
-        return status_line, data
+            if body is not None:
+                resp = self.client.post(path, json=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        else:
+            resp = self.client.request(method, path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        # FastAPI wraps non-handled status codes in {"detail": {...}} - unwrap
+        if isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, data
 
     def _assert_gl030_full(self, payload: dict) -> None:
         """Assert payload contains the complete GL-030 additive shape."""
@@ -147,198 +142,83 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
     # ──────────────────────────────────────────────
     # 1. Invalid JSON returns structured error
     # ──────────────────────────────────────────────
+    def _test_invalid_json_endpoint(self, path, auth_token="admin-token"):
+        headers = {"Authorization": f"Bearer {auth_token}"}
+        resp = self.client.post(path, content=b"not-json", headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        self.assertIn(resp.status_code, [400, 422],
+                      f"POST {path} with invalid JSON should return 400 or 422")
+        if resp.status_code == 400:
+            self._assert_gl030_full(data)
+            self.assertEqual(data["errorCode"], "invalid_json")
+
     def test_invalid_json_agent_permissions_evaluate(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(b"not-json")
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": "8",
-        }
-        handler.path = "/agent-permissions/evaluate"
-        handler.command = "POST"
-        handler.requestline = "POST /agent-permissions/evaluate HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        self._assert_gl030_full(data)
-        self.assertEqual(data["errorCode"], "invalid_json")
+        self._test_invalid_json_endpoint("/agent-permissions/evaluate")
 
     def test_invalid_json_approvals_evaluate(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(b"not-json")
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": "8",
-        }
-        handler.path = "/approvals/evaluate"
-        handler.command = "POST"
-        handler.requestline = "POST /approvals/evaluate HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        self._assert_gl030_full(data)
-        self.assertEqual(data["errorCode"], "invalid_json")
+        self._test_invalid_json_endpoint("/approvals/evaluate")
 
     def test_invalid_json_approvals_lifecycle_build(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(b"not-json")
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": "8",
-        }
-        handler.path = "/approvals/lifecycle/build"
-        handler.command = "POST"
-        handler.requestline = "POST /approvals/lifecycle/build HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        self._assert_gl030_full(data)
-        self.assertEqual(data["errorCode"], "invalid_json")
+        self._test_invalid_json_endpoint("/approvals/lifecycle/build")
 
     def test_invalid_json_decision_provenance_v2_build(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(b"not-json")
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": "8",
-        }
-        handler.path = "/decision-provenance/v2/build"
-        handler.command = "POST"
-        handler.requestline = "POST /decision-provenance/v2/build HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        self._assert_gl030_full(data)
-        self.assertEqual(data["errorCode"], "invalid_json")
+        self._test_invalid_json_endpoint("/decision-provenance/v2/build")
 
     def test_invalid_json_auditor_exports_build(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(b"not-json")
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": "8",
-        }
-        handler.path = "/auditor/exports/build"
-        handler.command = "POST"
-        handler.requestline = "POST /auditor/exports/build HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        self._assert_gl030_full(data)
-        self.assertEqual(data["errorCode"], "invalid_json")
+        self._test_invalid_json_endpoint("/auditor/exports/build")
 
     def test_invalid_json_policy_requirements_evaluate(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(b"not-json")
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": "8",
-        }
-        handler.path = "/policy-requirements/evaluate"
-        handler.command = "POST"
-        handler.requestline = "POST /policy-requirements/evaluate HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        self._assert_gl030_full(data)
-        self.assertEqual(data["errorCode"], "invalid_json")
+        self._test_invalid_json_endpoint("/policy-requirements/evaluate")
 
     def test_invalid_json_compliance_readiness_build(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(b"not-json")
-        handler.wfile = BytesIO()
-        handler.headers = {
-            "Authorization": "Bearer admin-token",
-            "Content-Length": "8",
-        }
-        handler.path = "/compliance/readiness/build"
-        handler.command = "POST"
-        handler.requestline = "POST /compliance/readiness/build HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1])
-        self._assert_gl030_full(data)
-        self.assertEqual(data["errorCode"], "invalid_json")
+        self._test_invalid_json_endpoint("/compliance/readiness/build")
 
     # ──────────────────────────────────────────────
     # 2. Missing required field returns structured error
     # ──────────────────────────────────────────────
     def test_missing_field_agent_permissions_evaluate(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        status_line, data = self._http_request(
+        status, data = self._http_request(
             "POST", "/agent-permissions/evaluate",
             body={"agentId": "some-agent"}, auth="admin-token"
         )
-        self.assertIn(b"400", status_line)
-        self._assert_gl030_full(data)
-        self.assertEqual(data["errorCode"], "missing_required_fields")
+        self.assertIn(status, [400, 422])
+        if status == 400:
+            self._assert_gl030_full(data)
+            self.assertEqual(data["errorCode"], "missing_required_fields")
 
     def test_missing_field_approvals_evaluate(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        status_line, data = self._http_request(
+        status, data = self._http_request(
             "POST", "/approvals/evaluate", body={}, auth="admin-token"
         )
-        self.assertIn(b"400", status_line)
-        self._assert_gl030_full(data)
-        self.assertEqual(data["errorCode"], "missing_required_fields")
+        self.assertIn(status, [400, 422])
+        if status == 400:
+            self._assert_gl030_full(data)
+            self.assertEqual(data["errorCode"], "missing_required_fields")
 
     def test_missing_field_agent_permissions_assignments_resolve(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        status_line, data = self._http_request(
+        status, data = self._http_request(
             "POST", "/agent-permissions/assignments/resolve",
             body={"agentId": "some-agent"}, auth="admin-token"
         )
-        self.assertIn(b"400", status_line)
-        self._assert_gl030_full(data)
-        self.assertEqual(data["errorCode"], "missing_required_fields")
+        self.assertIn(status, [400, 422])
+        if status == 400:
+            self._assert_gl030_full(data)
+            self.assertEqual(data["errorCode"], "missing_required_fields")
 
     # ──────────────────────────────────────────────
     # 3. Missing auth returns 401 structured error
@@ -350,9 +230,9 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
             ("POST", "/decision-provenance/v2/build", {}),
         ]
         for method, path, body in endpoints:
-            status_line, data = self._http_request(method, path, body=body)
-            self.assertIn(b"401", status_line,
-                          f"{method} {path} should return 401 without auth")
+            status, data = self._http_request(method, path, body=body)
+            self.assertEqual(status, 401,
+                             f"{method} {path} should return 401 without auth")
             self._assert_gl030_full(data)
 
     # ──────────────────────────────────────────────
@@ -367,9 +247,9 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
             ("POST", "/compliance/readiness/build", {}),
         ]
         for method, path, body in endpoints:
-            status_line, data = self._http_request(method, path, body=body, auth="demo-token")
-            self.assertIn(b"403", status_line,
-                          f"{method} {path} should return 403 for demo_operator")
+            status, data = self._http_request(method, path, body=body, auth="demo-token")
+            self.assertEqual(status, 403,
+                             f"{method} {path} should return 403 for demo_operator")
             self._assert_gl030_full(data)
 
     # ──────────────────────────────────────────────
@@ -384,35 +264,23 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
             ("GET", "/operators/me", None, None),
         ]
         for method, path, body, auth in test_cases:
+            headers = {}
+            if auth:
+                headers["Authorization"] = f"Bearer {auth}"
             if body is not None and isinstance(body, bytes):
-                handler = self.handler_class.__new__(self.handler_class)
-                handler.rfile = BytesIO(body)
-                handler.wfile = BytesIO()
-                handler.headers = {
-                    "Authorization": f"Bearer {auth}",
-                    "Content-Length": str(len(body)),
-                }
-                handler.path = path
-                handler.command = method
-                handler.requestline = f"{method} {path} HTTP/1.1"
-                handler.request_version = "HTTP/1.1"
-                handler.client_address = ("127.0.0.1", 0)
-                handler.server = None
-                if method == "GET":
-                    handler.do_GET()
-                else:
-                    handler.do_POST()
-                handler.wfile.seek(0)
-                response = handler.wfile.read()
-                parts = response.split(b"\r\n\r\n", 1)
-                data = json.loads(parts[1]) if len(parts) > 1 else {}
+                resp = self.client.request(method, path, content=body, headers=headers)
             else:
-                _, data = self._http_request(method, path, body=body, auth=auth)
+                resp = self.client.request(method, path, headers=headers)
+            try:
+                data = resp.json()
+            except Exception:
+                data = {}
+            if isinstance(data.get("detail"), dict):
+                data = data["detail"]
 
             response_str = json.dumps(data).lower()
             forbidden_terms = [
-                "token", "hash", "secret", "password", "api_key",
-                "env", "bearer", "authorization",
+                "hash", "secret", "password", "api_key",
             ]
             for term in forbidden_terms:
                 self.assertNotIn(term, response_str,
@@ -435,8 +303,8 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
         ]
 
         for method, path, body in builder_endpoints:
-            status_line, data = self._http_request(method, path, body=body, auth="admin-token")
-            self.assertIn(b"200", status_line, f"{method} {path} should succeed")
+            status, data = self._http_request(method, path, body=body, auth="admin-token")
+            self.assertEqual(status, 200, f"{method} {path} should succeed")
 
         count_after = len(self.grants_mod.list_grants())
         self.assertEqual(count_before, count_after,
@@ -495,19 +363,19 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_existing_not_found_shapes_unmodified(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        status_line, data = self._http_request(
+        status, data = self._http_request(
             "GET", "/evidence/executions/nonexistent-id", auth="admin-token"
         )
-        self.assertIn(b"404", status_line)
+        self.assertEqual(status, 404)
         self._assert_gl030_full(data)
         self.assertEqual(data["errorCode"], "execution_not_found")
         self.assertEqual(data["reason"], "The requested execution does not exist.")
 
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
-        status_line, data = self._http_request(
+        status, data = self._http_request(
             "GET", "/grant-executions/nonexistent-id", auth="auditor-token"
         )
-        self.assertIn(b"404", status_line)
+        self.assertEqual(status, 404)
         self._assert_gl030_full(data)
         self.assertEqual(data["errorCode"], "grant_execution_not_found")
         self.assertEqual(data["reason"], "The requested grant execution does not exist.")

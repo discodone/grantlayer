@@ -21,7 +21,6 @@ import sys
 import tempfile
 import unittest
 import importlib
-from io import BytesIO
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -41,9 +40,12 @@ class _BaseGl097(unittest.TestCase):
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -75,7 +77,10 @@ class _BaseGl097(unittest.TestCase):
         self.server_mod = server_mod
 
         self.db_mod = db_mod
-        self.handler_class = server_mod.GrantLayerHandler
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -121,35 +126,31 @@ class _BaseGl097(unittest.TestCase):
             conn.close()
 
     def _make_handler(self, path, method="GET", auth_header=None, body=b"", content_length=None):
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
+        return (path, method, auth_header, body)
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
-        if body or content_length is not None:
-            headers["Content-Length"] = str(content_length) if content_length is not None else str(len(body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        return handler
-
-    def _run_handler(self, handler):
-        if handler.command == "GET":
-            handler.do_GET()
-        elif handler.command == "POST":
-            handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status_line = response.split(b"\r\n")[0]
-        status = int(status_line.split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        body = json.loads(parts[1]) if len(parts) > 1 else {}
-        return status, body
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    body_dict = json.loads(body)
+                    resp = self.client.post(path, json=body_dict, headers=headers)
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, data
 
     def _assert_gl030_full(self, payload):
         self.assertIn("error", payload)
@@ -320,19 +321,19 @@ class TestGl097ServerSelfApprovalGuard(_BaseGl097):
             "reason": "API test request"
         }
         body = json.dumps(req_data).encode()
-        handler = self._make_handler("/grant-requests", method="POST", auth_header="Bearer admin-token", body=body)
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/grant-requests", method="POST", auth_header="Bearer admin-token", body=body)
+        status, data = self._run_handler(req)
         self.assertEqual(status, 201)
         request_id = data["id"]
 
         approval_body = json.dumps({"comment": "Approved"}).encode()
-        handler = self._make_handler(
+        req = self._make_handler(
             f"/grant-requests/{request_id}/approve",
             method="POST",
             auth_header="Bearer admin-token",
             body=approval_body
         )
-        status, data = self._run_handler(handler)
+        status, data = self._run_handler(req)
         self.assertEqual(status, 403)
         self.assertEqual(data.get("errorCode"), "self_approval_forbidden")
 
@@ -364,6 +365,8 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         self.assertEqual(denied.status, "denied")
 
     def test_gl091_signature_auth_cache_hardening_intact(self):
+        import hashlib
+        from io import BytesIO
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
         import backend.src.config as fresh_config
@@ -371,18 +374,29 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
-        handler = self._make_handler("/grants", auth_header="Bearer owner-token")
+
+        handler_class = fresh_server.GrantLayerHandler
+        handler = handler_class.__new__(handler_class)
+        handler.rfile = BytesIO(b"")
+        handler.wfile = BytesIO()
+        handler.headers = {"Authorization": "Bearer owner-token"}
+        handler.path = "/grants"
+        handler.command = "GET"
+        handler.requestline = "GET /grants HTTP/1.1"
+        handler.request_version = "HTTP/1.1"
+        handler.client_address = ("127.0.0.1", 0)
+        handler.server = None
         handler.do_GET()
         auth_cache = getattr(handler, "_auth_cache", {})
         for key in auth_cache:
             if key[0] == "operator":
-                import hashlib
                 digest = key[2]
                 self.assertEqual(len(digest), 64)
                 expected = hashlib.sha256("Bearer owner-token".encode("utf-8")).hexdigest()
                 self.assertEqual(digest, expected)
 
     def test_gl090_request_body_json_hardening_intact(self):
+        from io import BytesIO
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
         import backend.src.config as fresh_config
@@ -390,12 +404,28 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         import backend.src.server as fresh_server
         importlib.reload(fresh_server)
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
+
         oversized = b"x" * (fresh_server.MAX_JSON_BODY_BYTES + 1)
-        handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token", body=oversized,
-        )
-        handler.headers["Content-Length"] = str(len(oversized))
-        status, data = self._run_handler(handler)
+        handler_class = fresh_server.GrantLayerHandler
+        handler = handler_class.__new__(handler_class)
+        handler.rfile = BytesIO(oversized)
+        handler.wfile = BytesIO()
+        handler.headers = {
+            "Authorization": "Bearer owner-token",
+            "Content-Length": str(len(oversized)),
+        }
+        handler.path = "/grants"
+        handler.command = "POST"
+        handler.requestline = "POST /grants HTTP/1.1"
+        handler.request_version = "HTTP/1.1"
+        handler.client_address = ("127.0.0.1", 0)
+        handler.server = None
+        handler.do_POST()
+        handler.wfile.seek(0)
+        response = handler.wfile.read()
+        status = int(response.split(b"\r\n")[0].split(b" ")[1])
+        parts = response.split(b"\r\n\r\n", 1)
+        data = json.loads(parts[1]) if len(parts) > 1 else {}
         self.assertEqual(status, 413)
         self.assertEqual(data.get("errorCode"), "payload_too_large")
 
@@ -409,25 +439,26 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         importlib.reload(fresh_config)
         import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
-        handler = self._make_handler("/grants")
-        status, data = self._run_handler(handler)
-        self.assertEqual(status, 403)
-        self.assertEqual(data.get("errorCode"), "admin_token_required")
+        import backend.src.db as bk_db
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        client = TestClient(create_app(), raise_server_exceptions=False)
+        resp = client.get("/grants")
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.json().get("errorCode"), "admin_token_required")
 
     def test_gl088_post_challenges_still_protected(self):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
         import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
         valid_body = json.dumps({
             "subjectId": "sub-1", "action": "read", "resource": "repo-a"
         }).encode()
-        handler = self._make_handler("/challenges", method="POST", body=valid_body)
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/challenges", method="POST", body=valid_body)
+        status, data = self._run_handler(req)
         self.assertEqual(status, 401)
         self._assert_gl030_full(data)
         self.assertEqual(data.get("errorCode"), "operator_auth_required")
@@ -437,10 +468,8 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         importlib.reload(self.config_mod)
         import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
-        handler = self._make_handler("/grants")
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/grants")
+        status, data = self._run_handler(req)
         self.assertEqual(status, 401)
         self.assertEqual(data.get("errorCode"), "operator_auth_required")
         self.assertEqual(data.get("reason"), "Operator authentication is required.")
@@ -451,28 +480,26 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         importlib.reload(self.config_mod)
         import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
         demo_body = json.dumps({
             "subjectId": "sub-1", "role": "engineer", "action": "read", "resource": "repo-a"
         }).encode()
-        handler = self._make_handler("/demo-action", method="POST", body=demo_body)
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/demo-action", method="POST", body=demo_body)
+        status, data = self._run_handler(req)
         self.assertEqual(status, 401)
         self._assert_gl030_full(data)
         self.assertEqual(data.get("errorCode"), "operator_auth_required")
 
     def test_health_public(self):
         """GET /health remains public."""
-        handler = self._make_handler("/health")
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/health")
+        status, data = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(data.get("status"), "ok")
 
     def test_readiness_public(self):
         """GET /readiness remains public."""
-        handler = self._make_handler("/readiness")
-        status, data = self._run_handler(handler)
+        req = self._make_handler("/readiness")
+        status, data = self._run_handler(req)
         self.assertIn(status, (200, 503))
 
 

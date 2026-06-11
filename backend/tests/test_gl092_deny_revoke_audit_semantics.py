@@ -37,9 +37,12 @@ class _BaseGl092(unittest.TestCase):
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
         import backend.src.config as config_mod
@@ -109,41 +112,45 @@ class _BaseGl092(unittest.TestCase):
         updated_req, grant = self.requests_mod.approve_grant_request(req.id, operator_id)
         return updated_req, grant
 
-    def _make_handler(self, path, method="GET", auth_header=None, body=b""):
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        handler_class = server_mod.GrantLayerHandler
-        from io import BytesIO
+    def _make_client(self):
+        import backend.src.db as bk_db
+        import backend.src.config as config_mod
+        import backend.src.auth as auth_mod
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        importlib.reload(config_mod)
+        importlib.reload(auth_mod)
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        return TestClient(create_app(), raise_server_exceptions=False)
 
-        handler = handler_class.__new__(handler_class)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
+    def _make_handler(self, path, method="GET", auth_header=None, body=b""):
+        return (path, method, auth_header, body)
+
+    def _run_handler(self, req):
+        path, method, auth_header, body = req
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
-        if body:
-            headers["Content-Length"] = str(len(body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        return handler
-
-    def _run_handler(self, handler):
-        if handler.command == "GET":
-            handler.do_GET()
-        elif handler.command == "POST":
-            handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status_line = response.split(b"\r\n")[0]
-        status = int(status_line.split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        body = json.loads(parts[1]) if len(parts) > 1 else {}
-        return status, body
+        client = self._make_client()
+        if method == "GET":
+            resp = client.get(path, headers=headers)
+        else:
+            if isinstance(body, (bytes, bytearray)) and len(body) > 0:
+                try:
+                    body_dict = json.loads(body)
+                    resp = client.post(path, json=body_dict, headers=headers)
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    resp = client.post(path, content=body, headers=headers)
+            else:
+                resp = client.post(path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, data
 
     def _assert_gl030_full(self, payload):
         self.assertIn("error", payload)
@@ -176,7 +183,6 @@ class TestGl092DenyRollbackHardening(_BaseGl092):
         finally:
             self.audit_mod.append_event = original_append
 
-        # Request must remain in requested state
         req_after = self.requests_mod.get_grant_request(req.id)
         self.assertEqual(req_after.status, "requested")
         self.assertIsNone(req_after.denied_by)
@@ -272,7 +278,6 @@ class TestGl092RevokeAuditSemantics(_BaseGl092):
         revoke = [e for e in events if e.action == "revoke_grant_request"]
         approve = [e for e in events if e.action == "approve_grant_request"]
 
-        # _create_and_approve_request creates exactly 1 approval event
         self.assertEqual(len(revoke), 1)
         self.assertEqual(len(approve), 1)
         self.assertFalse(revoke[0].approved)
@@ -387,6 +392,8 @@ class TestGl092PriorGLRegressions(_BaseGl092):
 
     def test_gl091_signature_auth_cache_hardening_intact(self):
         """Auth cache still uses SHA-256 hex, not Python hash()."""
+        import hashlib
+        from io import BytesIO
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
         import backend.src.config as fresh_config
@@ -395,19 +402,29 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         importlib.reload(fresh_server)
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
-        handler = self._make_handler("/grants", auth_header="Bearer owner-token")
+        handler_class = fresh_server.GrantLayerHandler
+        handler = handler_class.__new__(handler_class)
+        handler.rfile = BytesIO(b"")
+        handler.wfile = BytesIO()
+        handler.headers = {"Authorization": "Bearer owner-token"}
+        handler.path = "/grants"
+        handler.command = "GET"
+        handler.requestline = "GET /grants HTTP/1.1"
+        handler.request_version = "HTTP/1.1"
+        handler.client_address = ("127.0.0.1", 0)
+        handler.server = None
         handler.do_GET()
         auth_cache = getattr(handler, "_auth_cache", {})
         for key in auth_cache:
             if key[0] == "operator":
-                import hashlib
                 digest = key[2]
                 self.assertEqual(len(digest), 64)
                 expected = hashlib.sha256("Bearer owner-token".encode("utf-8")).hexdigest()
                 self.assertEqual(digest, expected)
 
     def test_gl090_request_body_json_hardening_intact(self):
-        """Oversized body still returns 413."""
+        """Oversized body still returns 413 via GrantLayerHandler."""
+        from io import BytesIO
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
         import backend.src.config as fresh_config
@@ -417,11 +434,26 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
         oversized = b"x" * (fresh_server.MAX_JSON_BODY_BYTES + 1)
-        handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token", body=oversized,
-        )
-        handler.headers["Content-Length"] = str(len(oversized))
-        status, body = self._run_handler(handler)
+        handler_class = fresh_server.GrantLayerHandler
+        handler = handler_class.__new__(handler_class)
+        handler.rfile = BytesIO(oversized)
+        handler.wfile = BytesIO()
+        handler.headers = {
+            "Authorization": "Bearer owner-token",
+            "Content-Length": str(len(oversized)),
+        }
+        handler.path = "/grants"
+        handler.command = "POST"
+        handler.requestline = "POST /grants HTTP/1.1"
+        handler.request_version = "HTTP/1.1"
+        handler.client_address = ("127.0.0.1", 0)
+        handler.server = None
+        handler.do_POST()
+        handler.wfile.seek(0)
+        response = handler.wfile.read()
+        status = int(response.split(b"\r\n")[0].split(b" ")[1])
+        parts = response.split(b"\r\n\r\n", 1)
+        body = json.loads(parts[1]) if len(parts) > 1 else {}
         self.assertEqual(status, 413)
         self.assertEqual(body.get("errorCode"), "payload_too_large")
 
@@ -431,14 +463,12 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         importlib.reload(self.config_mod)
         import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
 
         valid_body = json.dumps({
             "subjectId": "sub-1", "action": "read", "resource": "repo-a"
         }).encode()
-        handler = self._make_handler("/challenges", method="POST", body=valid_body)
-        status, body = self._run_handler(handler)
+        req = self._make_handler("/challenges", method="POST", body=valid_body)
+        status, body = self._run_handler(req)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
@@ -449,11 +479,9 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         importlib.reload(self.config_mod)
         import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
 
-        handler = self._make_handler("/grants")
-        status, body = self._run_handler(handler)
+        req = self._make_handler("/grants")
+        status, body = self._run_handler(req)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
         self.assertEqual(body.get("reason"), "Operator authentication is required.")
@@ -465,14 +493,12 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         importlib.reload(self.config_mod)
         import backend.src.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
 
         demo_body = json.dumps({
             "subjectId": "sub-1", "role": "engineer", "action": "read", "resource": "repo-a"
         }).encode()
-        handler = self._make_handler("/demo-action", method="POST", body=demo_body)
-        status, body = self._run_handler(handler)
+        req = self._make_handler("/demo-action", method="POST", body=demo_body)
+        status, body = self._run_handler(req)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
@@ -488,25 +514,23 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         importlib.reload(fresh_config)
         import backend.src.auth as fresh_auth
         importlib.reload(fresh_auth)
-        import backend.src.server as fresh_server
-        importlib.reload(fresh_server)
 
-        handler = self._make_handler("/grants")
-        status, body = self._run_handler(handler)
+        req = self._make_handler("/grants")
+        status, body = self._run_handler(req)
         self.assertEqual(status, 403)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_health_public(self):
         """GET /health remains public."""
-        handler = self._make_handler("/health")
-        status, body = self._run_handler(handler)
+        req = self._make_handler("/health")
+        status, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("status"), "ok")
 
     def test_readiness_public(self):
         """GET /readiness remains public."""
-        handler = self._make_handler("/readiness")
-        status, body = self._run_handler(handler)
+        req = self._make_handler("/readiness")
+        status, body = self._run_handler(req)
         self.assertIn(status, (200, 503))
 
 

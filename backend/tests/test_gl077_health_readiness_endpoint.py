@@ -16,7 +16,6 @@ import tempfile
 import unittest
 import importlib
 
-# Ensure backend is on path so that `import src.server` resolves correctly.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
@@ -27,17 +26,23 @@ class TestGL077HealthReadinessEndpoint(unittest.TestCase):
         self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         self._orig_db = os.environ.get("GRANTLAYER_DB")
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         self._orig_runtime_mode = os.environ.get("GRANTLAYER_RUNTIME_MODE")
 
-        import src.db as db_mod
+        import backend.src.db as db_mod
         importlib.reload(db_mod)
+        db_mod.DB_PATH_OR_URL = self.tmp_db.name
+        db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import src.server as server_mod
-        importlib.reload(server_mod)
-        self.server_mod = server_mod
-        self.handler_class = server_mod.GrantLayerHandler
+        import backend.src.config as config_mod
+        importlib.reload(config_mod)
+        self.config_mod = config_mod
+
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        self.client = TestClient(create_app(), raise_server_exceptions=False)
 
     def tearDown(self):
         os.unlink(self.tmp_db.name)
@@ -52,28 +57,31 @@ class TestGL077HealthReadinessEndpoint(unittest.TestCase):
             os.environ.pop("GRANTLAYER_RUNTIME_MODE", None)
 
     def _run_get(self, path, headers=None):
-        """Simulate GET request and return (status, response_json)."""
-        from io import BytesIO
+        """GET request via TestClient, returns (status_code, response_json)."""
+        resp = self.client.get(path, headers=headers or {})
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        return resp.status_code, data
 
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(b"")
-        handler.wfile = BytesIO()
-        handler.headers = headers or {}
-        handler.path = path
-        handler.command = "GET"
-        handler.requestline = f"GET {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        handler.do_GET()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        parts = response.split(b"\r\n\r\n", 1)
-        data = json.loads(parts[1]) if len(parts) > 1 else {}
-        # Derive status from response line
-        status_line = response.split(b"\r\n")[0].decode()
-        status = int(status_line.split()[1])
-        return status, data
+    def _make_client_with_runtime_mode(self, runtime_mode=None):
+        """Create a fresh TestClient after setting runtime mode env var.
+
+        Does not reload config — the readiness endpoint reads os.environ
+        at request time via describe_runtime_config(), so only the env var
+        needs to be set before the request.
+        """
+        if runtime_mode is None:
+            os.environ.pop("GRANTLAYER_RUNTIME_MODE", None)
+        else:
+            os.environ["GRANTLAYER_RUNTIME_MODE"] = runtime_mode
+        import backend.src.db as bk_db
+        bk_db.DB_PATH_OR_URL = self.tmp_db.name
+        bk_db.DB_PATH = self.tmp_db.name
+        from fastapi.testclient import TestClient
+        from backend.src.api.app import create_app
+        return TestClient(create_app(), raise_server_exceptions=False)
 
     # ──────────────────────────────────────────────
     # GET /health
@@ -104,7 +112,6 @@ class TestGL077HealthReadinessEndpoint(unittest.TestCase):
         self.assertNotIn("postgres://", resp_str)
         self.assertNotIn("admin-secret", resp_str)
         self.assertNotIn("DATABASE_URL", resp_str)
-        # Clean up to avoid leakage into other tests
         for k in ["SECRET_TOKEN", "DATABASE_URL", "GRANTLAYER_ADMIN_TOKEN"]:
             os.environ.pop(k, None)
 
@@ -112,55 +119,55 @@ class TestGL077HealthReadinessEndpoint(unittest.TestCase):
     # GET /readiness — default / valid modes
     # ──────────────────────────────────────────────
     def test_readiness_returns_200_with_default_runtime_config(self):
-        os.environ.pop("GRANTLAYER_RUNTIME_MODE", None)
-        status, _ = self._run_get("/readiness")
-        self.assertEqual(status, 200)
+        client = self._make_client_with_runtime_mode(None)
+        resp = client.get("/readiness")
+        self.assertEqual(resp.status_code, 200)
 
     def test_readiness_returns_status_ready(self):
-        os.environ.pop("GRANTLAYER_RUNTIME_MODE", None)
-        _, resp = self._run_get("/readiness")
-        self.assertEqual(resp.get("status"), "ready")
+        client = self._make_client_with_runtime_mode(None)
+        resp = client.get("/readiness")
+        self.assertEqual(resp.json().get("status"), "ready")
 
     def test_readiness_includes_runtime_mode_local_by_default(self):
-        os.environ.pop("GRANTLAYER_RUNTIME_MODE", None)
-        _, resp = self._run_get("/readiness")
-        self.assertEqual(resp.get("runtimeMode"), "local")
+        client = self._make_client_with_runtime_mode(None)
+        resp = client.get("/readiness")
+        self.assertEqual(resp.json().get("runtimeMode"), "local")
 
     def test_readiness_is_production_like_false_for_local(self):
-        os.environ["GRANTLAYER_RUNTIME_MODE"] = "local"
-        _, resp = self._run_get("/readiness")
-        self.assertEqual(resp.get("isProductionLike"), False)
+        client = self._make_client_with_runtime_mode("local")
+        resp = client.get("/readiness")
+        self.assertEqual(resp.json().get("isProductionLike"), False)
 
     def test_readiness_is_production_like_true_for_staging(self):
-        os.environ["GRANTLAYER_RUNTIME_MODE"] = "staging"
-        _, resp = self._run_get("/readiness")
-        self.assertEqual(resp.get("isProductionLike"), True)
+        client = self._make_client_with_runtime_mode("staging")
+        resp = client.get("/readiness")
+        self.assertEqual(resp.json().get("isProductionLike"), True)
 
     def test_readiness_is_production_like_true_for_production(self):
-        os.environ["GRANTLAYER_RUNTIME_MODE"] = "production"
-        _, resp = self._run_get("/readiness")
-        self.assertEqual(resp.get("isProductionLike"), True)
+        client = self._make_client_with_runtime_mode("production")
+        resp = client.get("/readiness")
+        self.assertEqual(resp.json().get("isProductionLike"), True)
 
     # ──────────────────────────────────────────────
     # GET /readiness — invalid runtime mode
     # ──────────────────────────────────────────────
     def test_readiness_returns_503_for_invalid_runtime_mode(self):
-        os.environ["GRANTLAYER_RUNTIME_MODE"] = "invalid"
-        status, _ = self._run_get("/readiness")
-        self.assertEqual(status, 503)
+        client = self._make_client_with_runtime_mode("invalid")
+        resp = client.get("/readiness")
+        self.assertEqual(resp.status_code, 503)
 
     def test_readiness_invalid_response_uses_error_code_runtime_config_invalid(self):
-        os.environ["GRANTLAYER_RUNTIME_MODE"] = "invalid"
-        _, resp = self._run_get("/readiness")
-        self.assertEqual(resp.get("errorCode"), "RUNTIME_CONFIG_INVALID")
+        client = self._make_client_with_runtime_mode("invalid")
+        resp = client.get("/readiness")
+        self.assertEqual(resp.json().get("errorCode"), "RUNTIME_CONFIG_INVALID")
 
     def test_readiness_invalid_does_not_expose_secret_like_invalid_values(self):
-        os.environ["GRANTLAYER_RUNTIME_MODE"] = "sk-invalid-secret"
-        _, resp = self._run_get("/readiness")
-        resp_str = json.dumps(resp)
+        client = self._make_client_with_runtime_mode("sk-invalid-secret")
+        resp = client.get("/readiness")
+        resp_str = json.dumps(resp.json())
         self.assertNotIn("sk-invalid-secret", resp_str)
-        self.assertEqual(resp.get("errorCode"), "RUNTIME_CONFIG_INVALID")
-        self.assertEqual(resp.get("status"), "not_ready")
+        self.assertEqual(resp.json().get("errorCode"), "RUNTIME_CONFIG_INVALID")
+        self.assertEqual(resp.json().get("status"), "not_ready")
 
     # ──────────────────────────────────────────────
     # OpenAPI contract checks
@@ -183,7 +190,6 @@ class TestGL077HealthReadinessEndpoint(unittest.TestCase):
     def test_no_forbidden_files_changed(self):
         """Ensure implementation does not touch forbidden areas."""
         repo_root = pathlib.Path(__file__).with_suffix("").parent.parent.parent
-        # Verify that no new frontend, deployment, migration, or infrastructure files appear.
         forbidden_patterns = [
             "frontend/*",
             "dashboard/*",
@@ -193,10 +199,7 @@ class TestGL077HealthReadinessEndpoint(unittest.TestCase):
             "backend/src/db/migrations/*",
         ]
         for pattern in forbidden_patterns:
-            matches = list(repo_root.glob(pattern))
-            # We don't assert absence because they may be pre-existing;
-            # the real gate is git diff. This is a lightweight reminder.
-            pass
+            list(repo_root.glob(pattern))
 
 
 class TestGL077RegressionNoForbiddenChanges(unittest.TestCase):
