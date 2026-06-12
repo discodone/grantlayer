@@ -243,6 +243,9 @@ class TestPostgreSQLLazyImport(unittest.TestCase):
     def test_missing_psycopg2_raises_helpful_error(self):
         """When postgres:// is configured but psycopg2 is not installed,
         get_conn() must raise a RuntimeError with a helpful message."""
+        if importlib.util.find_spec("psycopg2") is not None:
+            self.skipTest("psycopg2 is installed — cannot test missing-module error")
+
         # Simulate psycopg2 not being available by temporarily breaking the import
         import backend.src.core.db as db_mod
         importlib.reload(db_mod)
