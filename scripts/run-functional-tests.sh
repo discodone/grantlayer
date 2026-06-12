@@ -9,8 +9,8 @@
 # Usage (from repo root):
 #   ./scripts/run-functional-tests.sh
 #
-# With pytest installed:
-#   pytest -m "not doc_guard"
+# Requires pytest + pytest-xdist:
+#   pytest -n auto -m "not doc_guard and not scope_guard"
 #
 # Expected counts (approximate, grows as features are added):
 #   ~120 test files, ~3 400 test methods
@@ -34,49 +34,12 @@ echo ""
 
 EXIT_CODE=0
 
-# Prefer pytest (marker-based filtering) when available.
-if python3 -c "import pytest" 2>/dev/null; then
-    echo "Runner: pytest -m 'not doc_guard'"
-    echo ""
-    python3 -m pytest backend/tests/ -m "not doc_guard" -v || EXIT_CODE=$?
-else
-    echo "Runner: python3 -m unittest (standalone, pytest not installed)"
-    echo ""
-    # Build the list of functional modules and run them with unittest.
-    python3 - << 'PYEOF'
-import importlib
-import os
-import sys
-import unittest
-
-REPO_ROOT = os.getcwd()  # run-functional-tests.sh does cd "${REPO_ROOT}" before this
-sys.path.insert(0, os.path.join(REPO_ROOT, "backend"))
-
-# Import the canonical exclusion list.
-from tests._doc_guard_modules import DOC_GUARD_MODULES
-
-tests_dir = os.path.join(REPO_ROOT, "backend", "tests")
-loader = unittest.TestLoader()
-suite = unittest.TestSuite()
-
-for fname in sorted(os.listdir(tests_dir)):
-    if not fname.endswith(".py") or not fname.startswith("test_"):
-        continue
-    module_name = fname[:-3]
-    if module_name in DOC_GUARD_MODULES:
-        continue
-    try:
-        mod = importlib.import_module(f"tests.{module_name}")
-        suite.addTests(loader.loadTestsFromModule(mod))
-    except Exception as exc:
-        print(f"WARNING: could not load tests.{module_name}: {exc}", file=sys.stderr)
-
-runner = unittest.TextTestRunner(verbosity=2)
-result = runner.run(suite)
-sys.exit(0 if result.wasSuccessful() else 1)
-PYEOF
-    EXIT_CODE=$?
-fi
+echo "Runner: pytest -n auto -m 'not doc_guard and not scope_guard'"
+echo ""
+python3 -m pytest backend/tests/ -n auto \
+    -m "not doc_guard and not scope_guard" \
+    -o cache_dir=/tmp/grantlayer-pytest-cache \
+    --tb=short -q || EXIT_CODE=$?
 
 echo ""
 echo "=== Functional Tests Finished ==="
