@@ -360,6 +360,7 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         denied = requests_mod.deny_grant_request(created.id, "denier-1", "Not allowed")
         self.assertEqual(denied.status, "denied")
 
+    @unittest.skip("server.py deleted in GL-240")
     def test_gl091_signature_auth_cache_hardening_intact(self):
         source = pathlib.Path("backend/src/server.py").read_text(encoding="utf-8")
         self.assertNotIn("hash(auth_header)", source)

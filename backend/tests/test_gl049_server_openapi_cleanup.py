@@ -7,6 +7,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
+@unittest.skip("server.py deleted in GL-240")
 class TestGL049Cleanup(unittest.TestCase):
     """Verify GL-049 cleanup: no duplicate imports, all error dicts use _gl030_error, no duplicate OpenAPI."""
 

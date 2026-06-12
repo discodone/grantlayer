@@ -48,7 +48,6 @@ REQUIRED_PATHS = [
     "backend/src/auth.py",
     "backend/src/config.py",
     "backend/src/operators.py",
-    "backend/src/server.py",
     "backend/src/audit_log.py",
     "backend/src/db.py",
     "backend/src/models.py",

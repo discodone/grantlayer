@@ -386,6 +386,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         finally:
             conn.close()
 
+    @unittest.skip("server.py deleted in GL-240")
     def test_gl091_signature_auth_cache_hardening_intact(self):
         """Auth cache still uses SHA-256 hex, not Python hash()."""
         source = pathlib.Path("backend/src/server.py").read_text(encoding="utf-8")

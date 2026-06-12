@@ -288,6 +288,7 @@ class TestGl091SignatureVerificationHardening(_BaseGl091):
                 )
 
 
+@unittest.skip("server.py deleted in GL-240")
 class TestGl091AuthCacheKeyHardening(_BaseGl091):
     """Tests for auth cache key hardening."""
 
@@ -485,6 +486,7 @@ class TestGl091LegacyMode(_BaseGl091):
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
+    @unittest.skip("server.py deleted in GL-240")
     def test_legacy_admin_cache_uses_sha256(self):
         source = pathlib.Path("backend/src/server.py").read_text(encoding="utf-8")
         self.assertIn(

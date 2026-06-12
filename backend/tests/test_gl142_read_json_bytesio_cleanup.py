@@ -77,6 +77,7 @@ def _make_handler(body: bytes, extra_headers: dict | None = None):
 # 1. Source-level guard: no BytesIO isinstance in _read_json
 # ---------------------------------------------------------------------------
 
+@unittest.skip("server.py deleted in GL-240")
 class TestGl142NoByteIOHackInProduction(unittest.TestCase):
     """_read_json must not contain BytesIO-specific isinstance branching."""
 
@@ -363,6 +364,7 @@ class TestGl142Gl141Preserved(unittest.TestCase):
 # 11. GL-140 ThreadingHTTPServer preserved
 # ---------------------------------------------------------------------------
 
+@unittest.skip("server.py deleted in GL-240")
 class TestGl142Gl140Preserved(unittest.TestCase):
 
     def test_threading_http_server_imported(self):

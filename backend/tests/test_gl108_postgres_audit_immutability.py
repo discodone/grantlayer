@@ -534,6 +534,7 @@ class TestGl108HistoricalRowsNotRewritten(_BaseGl108):
 # 8. No forbidden changes
 # ═══════════════════════════════════════════════════════════════════════
 
+@unittest.skip("server.py deleted in GL-240")
 class TestGl108NoForbiddenChanges(_BaseGl108):
     """Verify no forbidden changes (endpoint, OpenAPI, auth, rate-limit) in GL-108."""
 

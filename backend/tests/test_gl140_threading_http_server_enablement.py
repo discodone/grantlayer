@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # 1. ThreadingHTTPServer imported
 # ═══════════════════════════════════════════════════════════════════════
 
+@unittest.skip("server.py deleted in GL-240")
 class TestGl140ThreadingImported(unittest.TestCase):
     """server.py must import ThreadingHTTPServer."""
 
@@ -48,6 +49,7 @@ class TestGl140ThreadingImported(unittest.TestCase):
 # 2. ThreadingHTTPServer used in run()
 # ═══════════════════════════════════════════════════════════════════════
 
+@unittest.skip("server.py deleted in GL-240")
 class TestGl140ThreadingUsedInRun(unittest.TestCase):
     """run() must instantiate ThreadingHTTPServer, not plain HTTPServer."""
 

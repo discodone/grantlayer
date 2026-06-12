@@ -439,6 +439,7 @@ class TestGL162ARoleAllowlist(unittest.TestCase):
             self.assertIn(role, self.gr_mod.ALLOWED_GRANT_ROLES,
                           f"Expected role '{role}' must be in ALLOWED_GRANT_ROLES")
 
+    @unittest.skip("server.py deleted in GL-240")
     def test_role_allowlist_check_present_in_server_source(self):
         """server.py must contain a role allowlist check for the /grant-requests endpoint."""
         server_src = _REPO_ROOT / "backend" / "src" / "server.py"
@@ -472,6 +473,7 @@ class TestGL162ARoleAllowlist(unittest.TestCase):
         with self.assertRaises(ValueError):
             gr_mod.create_grant_request(request)
 
+    @unittest.skip("server.py deleted in GL-240")
     def test_role_error_message_is_safe(self):
         """The allowlist error message in server.py must not reference secrets."""
         server_src = _REPO_ROOT / "backend" / "src" / "server.py"

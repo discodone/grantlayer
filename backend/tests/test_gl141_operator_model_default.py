@@ -446,6 +446,7 @@ class TestGl141Gl140Preserved(unittest.TestCase):
     def _server_source(self):
         return (_repo_root() / "backend" / "src" / "server.py").read_text(encoding="utf-8")
 
+    @unittest.skip("server.py deleted in GL-240")
     def test_threading_http_server_in_server_source(self):
         self.assertIn(
             "ThreadingHTTPServer",

@@ -313,6 +313,7 @@ class TestIsolationAndDependencies(unittest.TestCase):
         for imp in third_party_imports:
             self.assertNotIn(imp, source, f"Found third-party import: {imp}")
 
+    @unittest.skip("server.py deleted in GL-240")
     def test_server_py_not_changed(self) -> None:
         with open("backend/src/server.py", "r") as fh:
             content = fh.read()

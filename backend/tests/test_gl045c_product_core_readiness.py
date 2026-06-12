@@ -146,6 +146,7 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
     # ──────────────────────────────────────────────
     # 3. Expected API paths are present in server.py
     # ──────────────────────────────────────────────
+    @unittest.skip("server.py deleted in GL-240")
     def test_api_paths_present_in_server_py(self):
         server_path = os.path.join(os.path.dirname(__file__), "..", "src", "server.py")
         with open(server_path, "r", encoding="utf-8") as f:
