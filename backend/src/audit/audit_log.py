@@ -4,15 +4,19 @@ import hashlib
 import json
 from threading import RLock
 from typing import List, Optional
-from ..core.db import execute, query_one, query_all
+from ..core.db import execute, query_one, query_all, DB_BACKEND, get_conn
 from ..core.models import AuditEvent
 
 
 # ──────────────────────────────────────────────────────────────
-# Process-local write lock for hash-chain critical section
+# Process-local write lock — SQLite fallback for in-process safety
 # ──────────────────────────────────────────────────────────────
 
 _AUDIT_HASH_CHAIN_WRITE_LOCK = RLock()
+
+# Transaction-scoped advisory lock key used on PostgreSQL to serialize
+# hash-chain appends across multiple workers/processes in a cluster.
+_PG_AUDIT_CHAIN_LOCK_KEY = 6252
 
 
 # ──────────────────────────────────────────────────────────────
@@ -281,35 +285,72 @@ def verify_audit_hash_chain() -> dict:
 # Public API
 # ──────────────────────────────────────────────────────────────
 
-def append_event(event: AuditEvent, conn=None) -> None:
-    # serialize hash-chain append critical section
-    with _AUDIT_HASH_CHAIN_WRITE_LOCK:
-        # compute hash-chain linkage
-        latest = _get_latest_row_hash(conn)
-        prev_hash = latest if latest is not None else None
-        row_hash = _compute_row_hash(event, prev_hash)
-
-        sql = """INSERT INTO audit_events
+_INSERT_SQL = """INSERT INTO audit_events
                (id, timestamp, subject_id, role, action, resource,
                 approved, reason, matched_grant_id,
                 challenge_id, challenge_present, challenge_result,
                 grant_signature_result, row_hash, prev_hash,
                 tenant_id, workspace_id, scope)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
-        params = (
-            event.id, event.timestamp, event.subject_id, event.role,
-            event.action, event.resource, int(event.approved),
-            event.reason, event.matched_grant_id,
-            event.challenge_id, int(event.challenge_present), event.challenge_result,
-            event.grant_signature_result,
-            row_hash, prev_hash,
-            event.tenant_id, event.workspace_id, event.scope,
-        )
+
+
+def _build_insert_params(event: AuditEvent, row_hash: str, prev_hash: Optional[str]) -> tuple:
+    return (
+        event.id, event.timestamp, event.subject_id, event.role,
+        event.action, event.resource, int(event.approved),
+        event.reason, event.matched_grant_id,
+        event.challenge_id, int(event.challenge_present), event.challenge_result,
+        event.grant_signature_result,
+        row_hash, prev_hash,
+        event.tenant_id, event.workspace_id, event.scope,
+    )
+
+
+def append_event(event: AuditEvent, conn=None) -> None:
+    """Append an audit event with hash-chain linkage.
+
+    Multi-worker safety:
+    - PostgreSQL: acquires a transaction-scoped advisory lock (pg_advisory_xact_lock)
+      so that only one worker at a time can read the chain tail and insert, even
+      across multiple processes or containers.
+    - SQLite: uses an in-process RLock (SQLite serializes writes at the file level,
+      and single-process deployments don't need cross-process coordination).
+    """
+    if DB_BACKEND == "postgres" and conn is None:
+        _append_event_postgres(event)
+    else:
+        _append_event_sqlite(event, conn)
+
+
+def _append_event_postgres(event: AuditEvent) -> None:
+    """PostgreSQL path: advisory lock serializes across all workers."""
+    conn = get_conn()
+    try:
+        # Acquire a cluster-wide transaction-scoped exclusive advisory lock.
+        # Released automatically when the transaction commits or rolls back.
+        conn.execute(f"SELECT pg_advisory_xact_lock({_PG_AUDIT_CHAIN_LOCK_KEY})")
+        prev_hash = _get_latest_row_hash(conn)
+        row_hash = _compute_row_hash(event, prev_hash)
+        conn.execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
+        conn.commit()
+        event.row_hash = row_hash
+        event.prev_hash = prev_hash
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def _append_event_sqlite(event: AuditEvent, conn=None) -> None:
+    """SQLite path: process-local RLock for in-process serialization."""
+    with _AUDIT_HASH_CHAIN_WRITE_LOCK:
+        prev_hash = _get_latest_row_hash(conn)
+        row_hash = _compute_row_hash(event, prev_hash)
         if conn is not None:
-            conn.execute(sql, params)
+            conn.execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
         else:
-            execute(sql, params)
-        # Mutate the event in-place so callers see the hashes
+            execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
         event.row_hash = row_hash
         event.prev_hash = prev_hash
 
