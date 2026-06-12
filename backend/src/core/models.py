@@ -5,6 +5,9 @@ from typing import Optional, Literal
 import uuid
 import datetime
 
+# Re-export SQLAlchemy Base so Alembic env.py can import it from here.
+from .orm import Base  # noqa: F401
+
 
 def _now_iso() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
