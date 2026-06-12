@@ -111,7 +111,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
     # ── Endpoint routing ────────────────────────────────────────
     def test_endpoint_returns_200_for_authorized_legacy_admin(self):
         status, resp = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={},
         )
@@ -122,10 +122,10 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     # ── Auth ────────────────────────────────────────────────────
     def test_endpoint_requires_admin_token_when_operator_disabled(self):
-        status, body = self._run_handler("/compliance/readiness/build", body={})
+        status, body = self._run_handler("/v1/compliance/readiness/build", body={})
         self.assertEqual(status, 401)
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer wrong-token",
             body={},
         )
@@ -138,7 +138,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
         self._insert_operator("auditor-1", "Auditor One", "auditor", "auditor-token")
 
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer auditor-token",
             body={},
         )
@@ -152,7 +152,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
         self._insert_operator("demo-op-1", "Demo Op", "demo_operator", "demo-token")
 
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer demo-token",
             body={},
         )
@@ -161,7 +161,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
     # ── Response shape ──────────────────────────────────────────
     def test_response_contains_minimum_fields(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={},
         )
@@ -178,7 +178,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_response_preserves_subject_id_and_workflow_id(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={"subjectId": "sub-123", "workflowId": "wf-456"},
         )
@@ -189,7 +189,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
     # ── Readiness logic ─────────────────────────────────────────
     def test_all_clean_ready_signals_returns_ready(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "evidenceCompleteness": {"completenessStatus": "complete"},
@@ -215,7 +215,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_missing_all_signals_returns_insufficient_data(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={},
         )
@@ -227,7 +227,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_compliance_high_critical_gaps_block_result(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "complianceGapReport": {"overallStatus": "blocked", "complianceGaps": [{"gapId": "g1", "severity": "critical"}]},
@@ -240,7 +240,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_permission_result_allowed_false_blocks(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "permissionResult": {"allowed": False},
@@ -253,7 +253,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_approval_requirement_decision_blocked_blocks(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {"decision": "blocked"},
@@ -266,7 +266,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_approval_lifecycle_status_blocked_blocks(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalLifecycle": {"status": "blocked"},
@@ -279,7 +279,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_decision_provenance_decision_status_blocked_blocks(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "decisionProvenance": {"decisionStatus": "blocked"},
@@ -292,7 +292,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_auditor_export_export_status_blocked_blocks(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "auditorExport": {"exportStatus": "blocked"},
@@ -305,7 +305,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_policy_requirement_evaluation_status_blocked_blocks(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "policyRequirementEvaluation": {"evaluationStatus": "blocked"},
@@ -318,7 +318,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_warning_level_signals_create_warnings(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "evidenceCompleteness": {"completenessStatus": "incomplete"},
@@ -331,7 +331,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_blockers_force_readiness_status_blocked(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "evidenceCompleteness": {"completenessStatus": "complete"},
@@ -345,7 +345,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_warnings_without_blockers_create_needs_review(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "evidenceCompleteness": {"completenessStatus": "incomplete"},
@@ -359,7 +359,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_readiness_score_deterministic_between_0_and_100(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={},
         )
@@ -372,7 +372,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
     # ── includeDetails flag ─────────────────────────────────────
     def test_include_details_true_includes_nested_objects(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "evidenceCompleteness": {"completenessStatus": "complete"},
@@ -386,7 +386,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_include_details_false_omits_detail_objects(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "evidenceCompleteness": {"completenessStatus": "complete"},
@@ -411,7 +411,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
     # ── Secrets safety ──────────────────────────────────────────
     def test_response_does_not_expose_secrets(self):
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={
                 "context": {"note": "safe"},
@@ -432,7 +432,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
         before = conn.execute("SELECT COUNT(*) FROM grants").fetchone()[0]
         conn.close()
         status, body = self._run_handler(
-            "/compliance/readiness/build",
+            "/v1/compliance/readiness/build",
             auth="Bearer test-admin-token",
             body={"evidenceCompleteness": {"completenessStatus": "complete"}},
         )

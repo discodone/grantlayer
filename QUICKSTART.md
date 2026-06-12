@@ -79,7 +79,7 @@ curl http://localhost:8765/health
 ## 4. Get a JWT token
 
 ```bash
-export TOKEN=$(curl -s -X POST http://localhost:8765/auth/token \
+export TOKEN=$(curl -s -X POST http://localhost:8765/v1/auth/token \
   -H "Content-Type: application/json" \
   -d "{\"operator_id\": \"dev\", \"secret\": \"$(grep GRANTLAYER_ADMIN_TOKEN .env | cut -d= -f2-)\"}" \
   | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
@@ -101,7 +101,7 @@ Response shape:
 ## 5. Create a Grant
 
 ```bash
-curl -k -s -X POST https://localhost/grants \
+curl -k -s -X POST https://localhost/v1/grants \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -144,7 +144,7 @@ Response:
 ## 6. List Grants
 
 ```bash
-curl -k -s https://localhost/grants \
+curl -k -s https://localhost/v1/grants \
   -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
 ```
 
@@ -152,7 +152,7 @@ curl -k -s https://localhost/grants \
 
 ## 7. Submit a Grant Request (Operator Mode)
 
-The `/grant-requests` endpoint is part of the operator model — a request/approval workflow on top of direct grant creation.
+The `/v1/grant-requests` endpoint is part of the operator model — a request/approval workflow on top of direct grant creation.
 
 > **Required:** `GRANTLAYER_ENABLE_OPERATOR_MODEL=true` must be set in `.env` (enabled by default in `docker-compose.yml`). If disabled, the endpoint returns `operator_model_disabled`.
 
@@ -164,7 +164,7 @@ The `/grant-requests` endpoint is part of the operator model — a request/appro
 Create a grant request:
 
 ```bash
-curl -k -s -X POST https://localhost/grant-requests \
+curl -k -s -X POST https://localhost/v1/grant-requests \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -182,7 +182,7 @@ Response includes an `id` you can use to approve or deny:
 
 ```bash
 # Approve the request (replace <id> with the id from the response above):
-curl -k -s -X POST https://localhost/grant-requests/<id>/approve \
+curl -k -s -X POST https://localhost/v1/grant-requests/<id>/approve \
   -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
 ```
 
@@ -191,7 +191,7 @@ curl -k -s -X POST https://localhost/grant-requests/<id>/approve \
 ## 8. Export an Audit Log
 
 ```bash
-curl -k -s "https://localhost/audit-events?limit=20" \
+curl -k -s "https://localhost/v1/audit-events?limit=20" \
   -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
 ```
 
@@ -240,7 +240,7 @@ sudo cp nginx/certs/tls.crt /usr/local/share/ca-certificates/grantlayer-dev.crt 
 Your JWT is missing or expired. Regenerate:
 
 ```bash
-export TOKEN=$(curl -s -X POST http://localhost:8765/auth/token \
+export TOKEN=$(curl -s -X POST http://localhost:8765/v1/auth/token \
   -H "Content-Type: application/json" \
   -d "{\"operator_id\": \"dev\", \"secret\": \"$(grep GRANTLAYER_ADMIN_TOKEN .env | cut -d= -f2-)\"}" \
   | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")

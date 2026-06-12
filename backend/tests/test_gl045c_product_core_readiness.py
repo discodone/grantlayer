@@ -153,21 +153,21 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
             source = f.read()
 
         expected_paths = [
-            '"/agent-permissions/evaluate"',
-            '"/agent-permissions/profiles"',
-            '"/agent-permissions/profiles/([^/]+)"',
-            '"/agent-permissions/assignments/resolve"',
-            '"/approvals/evaluate"',
-            '"/approvals/lifecycle/build"',
-            '"/approvals/lifecycle/transition"',
-            '"/decision-provenance/v2/build"',
-            '"/auditor/exports/build"',
-            '"/policy-requirements/evaluate"',
-            '"/compliance/readiness/build"',
-            '"/evidence/executions/([^/]+)/verify"',
-            '"/evidence/executions/([^/]+)/completeness"',
-            '"/compliance/gaps/executions/([^/]+)"',
-            '"/auditor/reports/executions/([^/]+)"',
+            '"/v1/agent-permissions/evaluate"',
+            '"/v1/agent-permissions/profiles"',
+            '"/v1/agent-permissions/profiles/([^/]+)"',
+            '"/v1/agent-permissions/assignments/resolve"',
+            '"/v1/approvals/evaluate"',
+            '"/v1/approvals/lifecycle/build"',
+            '"/v1/approvals/lifecycle/transition"',
+            '"/v1/decision-provenance/v2/build"',
+            '"/v1/auditor/exports/build"',
+            '"/v1/policy-requirements/evaluate"',
+            '"/v1/compliance/readiness/build"',
+            '"/v1/evidence/executions/([^/]+)/verify"',
+            '"/v1/evidence/executions/([^/]+)/completeness"',
+            '"/v1/compliance/gaps/executions/([^/]+)"',
+            '"/v1/auditor/reports/executions/([^/]+)"',
         ]
         for path_literal in expected_paths:
             with self.subTest(path=path_literal):
@@ -183,15 +183,15 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
 
         # These must be documented in OpenAPI
         expected_openapi_paths = [
-            "/agent-permissions/evaluate:",
-            "/agent-permissions/profiles:",
-            "/agent-permissions/profiles/{profileName}:",
-            "/agent-permissions/assignments/resolve:",
-            "/approvals/evaluate:",
-            "/approvals/lifecycle/build:",
-            "/approvals/lifecycle/transition:",
-            "/decision-provenance/v2/build:",
-            "/evidence/executions/{id}/verify:",
+            "/v1/agent-permissions/evaluate:",
+            "/v1/agent-permissions/profiles:",
+            "/v1/agent-permissions/profiles/{profileName}:",
+            "/v1/agent-permissions/assignments/resolve:",
+            "/v1/approvals/evaluate:",
+            "/v1/approvals/lifecycle/build:",
+            "/v1/approvals/lifecycle/transition:",
+            "/v1/decision-provenance/v2/build:",
+            "/v1/evidence/executions/{id}/verify:",
         ]
         for path_literal in expected_openapi_paths:
             with self.subTest(path=path_literal):
@@ -199,12 +199,12 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
 
         # These are also expected to be in OpenAPI (server.py has them)
         additional_paths = [
-            "/auditor/exports/build:",
-            "/policy-requirements/evaluate:",
-            "/compliance/readiness/build:",
-            "/evidence/executions/{id}/completeness:",
-            "/compliance/gaps/executions/{id}:",
-            "/auditor/reports/executions/{id}:",
+            "/v1/auditor/exports/build:",
+            "/v1/policy-requirements/evaluate:",
+            "/v1/compliance/readiness/build:",
+            "/v1/evidence/executions/{id}/completeness:",
+            "/v1/compliance/gaps/executions/{id}:",
+            "/v1/auditor/reports/executions/{id}:",
         ]
         for path_literal in additional_paths:
             with self.subTest(path=path_literal):

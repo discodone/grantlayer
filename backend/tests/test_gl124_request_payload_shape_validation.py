@@ -180,7 +180,7 @@ class _BaseGl124(unittest.TestCase):
             if isinstance(body, (bytes, bytearray)) and len(body) > 0:
                 try:
                     body_dict = json.loads(body)
-                    if path == "/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
+                    if path == "/v1/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
                         body_dict = dict(body_dict)
                         body_dict["role"] = "operator"
                     resp = self.client.post(path, json=body_dict, headers=headers)
@@ -318,7 +318,7 @@ class TestGl124OversizedBody(_BaseGl124):
 
     def test_oversized_body_rejected_413(self):
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             content_length=self.MAX_JSON_BODY_BYTES + 1,
@@ -329,7 +329,7 @@ class TestGl124OversizedBody(_BaseGl124):
 
     def test_oversized_body_response_has_gl030_shape(self):
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             content_length=self.MAX_JSON_BODY_BYTES + 1,
@@ -344,7 +344,7 @@ class TestGl124OversizedBody(_BaseGl124):
         sentinel = "SENTINEL-OVERSIZED-GL124"
         oversized_body = sentinel.encode() + b"x" * 10
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=oversized_body,
@@ -375,7 +375,7 @@ class TestGl124MalformedJson(_BaseGl124):
     def test_malformed_json_rejected_400(self):
         bad_body = b"not json at all"
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=bad_body,
@@ -387,7 +387,7 @@ class TestGl124MalformedJson(_BaseGl124):
     def test_malformed_json_response_does_not_echo_payload(self):
         sentinel = b"SECRET-MALFORMED-GL124"
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=sentinel,
@@ -400,7 +400,7 @@ class TestGl124MalformedJson(_BaseGl124):
         logger = logging.getLogger("grantlayer.server")
         sentinel = b"SECRET-LOG-BODY-GL124"
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=sentinel,
@@ -413,7 +413,7 @@ class TestGl124MalformedJson(_BaseGl124):
     def test_truncated_json_rejected_400(self):
         bad_body = b'{"subjectId": "sub-1"'
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=bad_body,
@@ -442,7 +442,7 @@ class TestGl124EmptyBody(_BaseGl124):
 
     def test_empty_body_rejected_400(self):
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=b"",
@@ -454,7 +454,7 @@ class TestGl124EmptyBody(_BaseGl124):
 
     def test_empty_body_response_has_gl030_shape(self):
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=b"",
@@ -486,7 +486,7 @@ class TestGl124NonObjectTopLevel(_BaseGl124):
     def _post_value(self, value):
         body = json.dumps(value).encode()
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body,
@@ -550,7 +550,7 @@ class TestGl124ValidObjectPreserved(_BaseGl124):
     def test_valid_grant_object_accepted(self):
         body = json.dumps(self._grant_payload()).encode()
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body,
@@ -563,7 +563,7 @@ class TestGl124ValidObjectPreserved(_BaseGl124):
         payload["unknownField"] = "ignored"
         body = json.dumps(payload).encode()
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body,
@@ -593,7 +593,7 @@ class TestGl124Gl114Preserved(_BaseGl124):
         payload = self._grant_payload(overrides={"subjectId": "x" * 200})
         body = json.dumps(payload).encode()
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body,
@@ -605,7 +605,7 @@ class TestGl124Gl114Preserved(_BaseGl124):
         payload = self._grant_payload(overrides={"role": "x" * 200})
         body = json.dumps(payload).encode()
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body,
@@ -633,7 +633,7 @@ class TestGl124CorrelationId(_BaseGl124):
 
     def test_malformed_json_rejection_echoes_correlation_id(self):
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=b"not json",
@@ -646,7 +646,7 @@ class TestGl124CorrelationId(_BaseGl124):
     def test_non_object_rejection_echoes_correlation_id(self):
         body_bytes = json.dumps([1, 2, 3]).encode()
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=body_bytes,
@@ -658,7 +658,7 @@ class TestGl124CorrelationId(_BaseGl124):
 
     def test_empty_body_rejection_echoes_correlation_id(self):
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=b"",
@@ -672,7 +672,7 @@ class TestGl124CorrelationId(_BaseGl124):
     def test_rejection_log_includes_correlation_id(self):
         logger = logging.getLogger("grantlayer.server")
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=b"bad json",
@@ -687,7 +687,7 @@ class TestGl124CorrelationId(_BaseGl124):
         logger = logging.getLogger("grantlayer.server")
         sentinel = b"RAWBODY-SENTINEL-GL124"
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer owner-token",
             body=sentinel,
@@ -718,7 +718,7 @@ class TestGl124AuthPreserved(_BaseGl124):
     def test_missing_auth_still_401(self):
         body_bytes = json.dumps([1, 2]).encode()
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             body=body_bytes,
         )
@@ -728,7 +728,7 @@ class TestGl124AuthPreserved(_BaseGl124):
     def test_invalid_token_still_rejected(self):
         body_bytes = json.dumps({"key": "value"}).encode()
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             method="POST",
             auth_header="Bearer wrong-token",
             body=body_bytes,

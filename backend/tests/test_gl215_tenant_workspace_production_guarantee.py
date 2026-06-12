@@ -375,13 +375,13 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
     def test_secondary_execution_routes_deny_cross_tenant_lookup(self):
         execution = self._make_execution("tenant_a")
         routes = [
-            f"/evidence/executions/{execution.id}",
-            f"/evidence/executions/{execution.id}/export",
-            f"/evidence/executions/{execution.id}/verify",
-            f"/provenance/executions/{execution.id}/summary",
-            f"/auditor/reports/executions/{execution.id}",
-            f"/evidence/executions/{execution.id}/completeness",
-            f"/compliance/gaps/executions/{execution.id}",
+            f"/v1/evidence/executions/{execution.id}",
+            f"/v1/evidence/executions/{execution.id}/export",
+            f"/v1/evidence/executions/{execution.id}/verify",
+            f"/v1/provenance/executions/{execution.id}/summary",
+            f"/v1/auditor/reports/executions/{execution.id}",
+            f"/v1/evidence/executions/{execution.id}/completeness",
+            f"/v1/compliance/gaps/executions/{execution.id}",
         ]
         for route in routes:
             with self.subTest(route=route):
@@ -413,7 +413,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
                 "synthetic",
             ),
         )
-        status, body, _ = _run_handler(f"/evidence/executions/{execution.id}/verify",
+        status, body, _ = _run_handler(f"/v1/evidence/executions/{execution.id}/verify",
             method="GET",
             auth_header=self._auth_b(),
         )
@@ -430,7 +430,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
         mods = _reload_modules(self.db_path)
         self.grants = mods["grants"]
         grant = self._make_grant("tenant_a")
-        status, body, _ = _run_handler(f"/demo/tamper-grant/{grant.id}",
+        status, body, _ = _run_handler(f"/v1/demo/tamper-grant/{grant.id}",
             method="POST",
             auth_header=self._auth_b(),
             body=b"{}",
@@ -453,7 +453,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
             "tenantId": "tenant_b",
             "workspaceId": "workspace_b",
         }
-        status, body, _ = _run_handler("/grants",
+        status, body, _ = _run_handler("/v1/grants",
             method="POST",
             auth_header=self._auth_a(),
             body=json.dumps(payload).encode(),
@@ -467,7 +467,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
         self.assertIsNone(row["workspace_id"])
 
     def test_operator_admin_audit_events_preserve_safe_tenant_context(self):
-        status, body, _ = _run_handler("/admin/operators",
+        status, body, _ = _run_handler("/v1/admin/operators",
             method="POST",
             auth_header=f"Bearer {ADMIN_TOKEN}",
             body=json.dumps({

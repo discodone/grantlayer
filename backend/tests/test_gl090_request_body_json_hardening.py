@@ -193,7 +193,7 @@ class TestGl090RequestBodyLimits(_BaseGl090):
 
     def test_missing_content_length_returns_400(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=self._valid_grant_body(), content_length=None,
         )
         status, body = self._run_handler(handler)
@@ -203,7 +203,7 @@ class TestGl090RequestBodyLimits(_BaseGl090):
 
     def test_non_integer_content_length_returns_400(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=self._valid_grant_body(), content_length="abc",
         )
         status, body = self._run_handler(handler)
@@ -213,7 +213,7 @@ class TestGl090RequestBodyLimits(_BaseGl090):
 
     def test_negative_content_length_returns_400(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=self._valid_grant_body(), content_length="-5",
         )
         status, body = self._run_handler(handler)
@@ -224,7 +224,7 @@ class TestGl090RequestBodyLimits(_BaseGl090):
     def test_oversized_content_length_returns_413(self):
         oversized = b"x" * (self.server_mod.MAX_JSON_BODY_BYTES + 1)
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=oversized, content_length=str(len(oversized)),
         )
         status, body = self._run_handler(handler)
@@ -236,7 +236,7 @@ class TestGl090RequestBodyLimits(_BaseGl090):
         before = self.grants_mod.list_grants()
         oversized = b"x" * (self.server_mod.MAX_JSON_BODY_BYTES + 1)
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=oversized, content_length=str(len(oversized)),
         )
         self._run_handler(handler)
@@ -245,7 +245,7 @@ class TestGl090RequestBodyLimits(_BaseGl090):
 
     def test_empty_body_returns_400(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=b"", content_length="0",
         )
         status, body = self._run_handler(handler)
@@ -255,7 +255,7 @@ class TestGl090RequestBodyLimits(_BaseGl090):
 
     def test_malformed_json_returns_400(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=b"{not json", content_length="9",
         )
         status, body = self._run_handler(handler)
@@ -265,7 +265,7 @@ class TestGl090RequestBodyLimits(_BaseGl090):
 
     def test_valid_json_under_limit_succeeds(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=self._valid_grant_body(),
         )
         status, body = self._run_handler(handler)
@@ -274,7 +274,7 @@ class TestGl090RequestBodyLimits(_BaseGl090):
 
     def test_error_response_does_not_leak_valueerror_message(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=b"{bad", content_length="4",
         )
         status, body = self._run_handler(handler)
@@ -286,7 +286,7 @@ class TestGl090RequestBodyLimits(_BaseGl090):
 
     def test_error_response_does_not_leak_internals_on_missing_cl(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=self._valid_grant_body(), content_length=None,
         )
         status, body = self._run_handler(handler)
@@ -317,7 +317,7 @@ class TestGl090MutationEndpointsProtected(_BaseGl090):
         before = self.challenges_mod.list_challenges()
         oversized = b"x" * (self.max_json_body_bytes + 1)
         handler = self._make_handler(
-            "/challenges", method="POST", auth_header="Bearer owner-token",
+            "/v1/challenges", method="POST", auth_header="Bearer owner-token",
             body=oversized, content_length=str(len(oversized)),
         )
         status, body = self._run_handler(handler)
@@ -328,7 +328,7 @@ class TestGl090MutationEndpointsProtected(_BaseGl090):
     def test_post_challenges_malformed_json_does_not_create(self):
         before = self.challenges_mod.list_challenges()
         handler = self._make_handler(
-            "/challenges", method="POST", auth_header="Bearer owner-token",
+            "/v1/challenges", method="POST", auth_header="Bearer owner-token",
             body=b"{not json", content_length="9",
         )
         status, body = self._run_handler(handler)
@@ -340,7 +340,7 @@ class TestGl090MutationEndpointsProtected(_BaseGl090):
         # demo-action is protected by auth first, so use valid auth
         oversized = b"x" * (self.max_json_body_bytes + 1)
         handler = self._make_handler(
-            "/demo-action", method="POST", auth_header="Bearer owner-token",
+            "/v1/demo-action", method="POST", auth_header="Bearer owner-token",
             body=oversized, content_length=str(len(oversized)),
         )
         status, body = self._run_handler(handler)
@@ -348,7 +348,7 @@ class TestGl090MutationEndpointsProtected(_BaseGl090):
 
     def test_post_demo_action_malformed_json_returns_400(self):
         handler = self._make_handler(
-            "/demo-action", method="POST", auth_header="Bearer owner-token",
+            "/v1/demo-action", method="POST", auth_header="Bearer owner-token",
             body=b"{bad", content_length="4",
         )
         status, body = self._run_handler(handler)
@@ -375,7 +375,7 @@ class TestGl090AuthProtectionsPreserved(_BaseGl090):
 
     def test_post_challenges_still_requires_auth(self):
         handler = self._make_handler(
-            "/challenges", method="POST", body=self._valid_challenge_body(),
+            "/v1/challenges", method="POST", body=self._valid_challenge_body(),
         )
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
@@ -384,7 +384,7 @@ class TestGl090AuthProtectionsPreserved(_BaseGl090):
     def test_post_challenges_invalid_body_does_not_create(self):
         before = self.challenges_mod.list_challenges()
         handler = self._make_handler(
-            "/challenges", method="POST", auth_header="Bearer owner-token",
+            "/v1/challenges", method="POST", auth_header="Bearer owner-token",
             body=b"{bad", content_length="4",
         )
         status, body = self._run_handler(handler)
@@ -400,20 +400,20 @@ class TestGl090AuthProtectionsPreserved(_BaseGl090):
             "resource": "repo-a",
         }).encode()
         handler = self._make_handler(
-            "/demo-action", method="POST", body=demo_body,
+            "/v1/demo-action", method="POST", body=demo_body,
         )
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
 
     def test_get_grants_still_requires_auth(self):
-        handler = self._make_handler("/grants")
+        handler = self._make_handler("/v1/grants")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
 
     def test_get_audit_events_still_requires_auth(self):
-        handler = self._make_handler("/audit-events")
+        handler = self._make_handler("/v1/audit-events")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -447,7 +447,7 @@ class TestGl090LegacyMode(_BaseGl090):
 
     def test_missing_content_length_legacy_mode(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer legacy-admin-token",
+            "/v1/grants", method="POST", auth_header="Bearer legacy-admin-token",
             body=self._valid_grant_body(), content_length=None,
         )
         status, body = self._run_handler(handler)
@@ -458,7 +458,7 @@ class TestGl090LegacyMode(_BaseGl090):
     def test_oversized_body_legacy_mode(self):
         oversized = b"x" * (self.max_json_body_bytes + 1)
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer legacy-admin-token",
+            "/v1/grants", method="POST", auth_header="Bearer legacy-admin-token",
             body=oversized, content_length=str(len(oversized)),
         )
         status, body = self._run_handler(handler)
@@ -468,7 +468,7 @@ class TestGl090LegacyMode(_BaseGl090):
 
     def test_malformed_json_legacy_mode(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer legacy-admin-token",
+            "/v1/grants", method="POST", auth_header="Bearer legacy-admin-token",
             body=b"{bad", content_length="4",
         )
         status, body = self._run_handler(handler)
@@ -478,7 +478,7 @@ class TestGl090LegacyMode(_BaseGl090):
 
     def test_valid_json_legacy_mode_succeeds(self):
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer legacy-admin-token",
+            "/v1/grants", method="POST", auth_header="Bearer legacy-admin-token",
             body=self._valid_grant_body(),
         )
         status, body = self._run_handler(handler)

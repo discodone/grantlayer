@@ -180,7 +180,7 @@ class _BaseGl119(unittest.TestCase):
             if isinstance(body, (bytes, bytearray)) and len(body) > 0:
                 try:
                     body_dict = json.loads(body)
-                    if path == "/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
+                    if path == "/v1/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
                         body_dict = dict(body_dict)
                         body_dict["role"] = "operator"
                     resp = self.client.post(path, json=body_dict, headers=headers)
@@ -544,7 +544,7 @@ class TestGl119ServerPath(_BaseGl119):
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
-        handler = self._make_raw_handler("/operators/me", auth_header="Bearer secret-token")
+        handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer secret-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(body["operatorId"], "op-1")
@@ -559,7 +559,7 @@ class TestGl119ServerPath(_BaseGl119):
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
-        handler = self._make_raw_handler("/operators/me", auth_header="Bearer secret-token")
+        handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer secret-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_token_expired")
@@ -574,7 +574,7 @@ class TestGl119ServerPath(_BaseGl119):
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
-        handler = self._make_raw_handler("/operators/me", auth_header="Bearer secret-token")
+        handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer secret-token")
         status, headers, body = self._run_raw_handler(handler)
         body_str = json.dumps(body)
         self.assertNotIn("secret-token", body_str)
@@ -591,7 +591,7 @@ class TestGl119ServerPath(_BaseGl119):
 
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/operators/me", auth_header="Bearer secret-token")
+            handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer secret-token")
             self._run_raw_handler(handler)
 
         payload = None
@@ -618,7 +618,7 @@ class TestGl119ServerPath(_BaseGl119):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
             handler = self._make_raw_handler(
-                "/operators/me",
+                "/v1/operators/me",
                 auth_header="Bearer secret-token",
             )
             handler["headers"]["X-Correlation-ID"] = "corr-expired-123"
@@ -644,7 +644,7 @@ class TestGl119ServerPath(_BaseGl119):
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
-        handler = self._make_raw_handler("/operators/me", auth_header="Bearer wrong-token")
+        handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer wrong-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
@@ -658,7 +658,7 @@ class TestGl119ServerPath(_BaseGl119):
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
-        handler = self._make_raw_handler("/operators/me")
+        handler = self._make_raw_handler("/v1/operators/me")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
@@ -776,7 +776,7 @@ class TestGl119LeakagePrevention(_BaseGl119):
 
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/operators/me", auth_header="Bearer secret-token")
+            handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer secret-token")
             self._run_raw_handler(handler)
 
         for msg in cm.output:

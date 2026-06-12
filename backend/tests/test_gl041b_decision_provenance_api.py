@@ -112,7 +112,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_exists_and_returns_200_for_valid_request(self):
         """POST /decision-provenance/v2/build returns 200 for valid request."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decisionId": "dec-123",
@@ -159,7 +159,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_missing_auth_returns_401(self):
         """POST /decision-provenance/v2/build without auth returns 401."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             body={},
         )
         self.assertEqual(status, 401)
@@ -167,7 +167,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_returns_400_for_invalid_json(self):
         """POST /decision-provenance/v2/build with invalid JSON returns 400."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body=b"invalid json",
         )
@@ -180,7 +180,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
         self._insert_operator("op-1", "Test Admin", "grant_admin", "op-token-1")
 
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer op-token-1",
             body={
                 "decisionId": "dec-123",
@@ -197,7 +197,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
         self._insert_operator("op-1", "Test Owner", "owner", "op-token-1")
 
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer op-token-1",
             body={
                 "decisionId": "dec-123",
@@ -214,7 +214,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
         self._insert_operator("op-1", "Test Auditor", "auditor", "op-token-1")
 
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer op-token-1",
             body={
                 "decisionId": "dec-123",
@@ -231,7 +231,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
         self._insert_operator("op-1", "Test Demo", "demo_operator", "op-token-1")
 
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer op-token-1",
             body={},
         )
@@ -243,13 +243,13 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
 
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             body={},
         )
         self.assertEqual(status, 401)
 
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer wrong-token",
             body={},
         )
@@ -258,7 +258,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_returns_blocked_for_denied_permission(self):
         """POST /decision-provenance/v2/build returns blocked when permission is denied."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decisionId": "dec-perm-block",
@@ -274,7 +274,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_returns_incomplete_for_missing_decision(self):
         """POST /decision-provenance/v2/build returns incomplete for missing decision."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decisionId": "dec-789",
@@ -291,7 +291,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_omits_details_when_include_details_false(self):
         """POST /decision-provenance/v2/build omits details when includeDetails=False."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decisionId": "test-details",
@@ -322,7 +322,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_includes_details_when_include_details_true(self):
         """POST /decision-provenance/v2/build includes details when includeDetails=True."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decisionId": "test-details-true",
@@ -348,7 +348,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_redacts_secrets_in_inputs(self):
         """POST /decision-provenance/v2/build redacts secrets in inputs."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decision": "approved",
@@ -378,7 +378,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_returns_404_for_get(self):
         """GET /decision-provenance/v2/build returns 404 or 405 (POST only)."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             method="GET",
             auth="Bearer test-admin-token",
         )
@@ -387,7 +387,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_empty_body_returns_valid_provenance(self):
         """POST /decision-provenance/v2/build with empty body returns valid provenance."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={},
         )
@@ -407,7 +407,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_handles_all_optional_fields(self):
         """POST /decision-provenance/v2/build handles all optional fields."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decisionId": "dec-full",
@@ -443,7 +443,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_returns_warning_for_provenance_decision_id_mismatch(self):
         """POST /decision-provenance/v2/build returns warning when provenance decisionId mismatches."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decisionId": "dec-A",
@@ -456,7 +456,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_returns_blocked_for_policy_failed(self):
         """POST /decision-provenance/v2/build returns blocked when policy fails."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decision": "approved",
@@ -470,7 +470,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_returns_warning_for_policy_partial(self):
         """POST /decision-provenance/v2/build returns warning for partial policy."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decision": "approved",
@@ -484,7 +484,7 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
     def test_build_endpoint_no_secrets_in_response(self):
         """POST /decision-provenance/v2/build does not expose secrets in response."""
         status, resp = self._run_handler(
-            "/decision-provenance/v2/build",
+            "/v1/decision-provenance/v2/build",
             auth="Bearer test-admin-token",
             body={
                 "decision": "approved",

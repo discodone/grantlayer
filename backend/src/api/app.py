@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from ..core import config
 from ..core.db import init_db
@@ -131,25 +131,49 @@ def create_app() -> FastAPI:
             content={"error": "Not Implemented", "errorCode": "not_implemented", "reason": "Feature not available."},
         )
 
-    # Routers
-    app.include_router(auth.router)
+    # Health endpoints — no versioning (infrastructure checks must be stable)
     app.include_router(health.router)
-    app.include_router(grants.router)
-    app.include_router(grant_requests.router)
-    app.include_router(audit_events.router)
-    app.include_router(executions.router)
-    app.include_router(evidence.router)
-    app.include_router(provenance.router)
-    app.include_router(auditor.router)
-    app.include_router(compliance.router)
-    app.include_router(operators_me.router)
-    app.include_router(admin.router)
-    app.include_router(challenges.router)
-    app.include_router(agent_permissions.router)
-    app.include_router(approvals.router)
-    app.include_router(decision_provenance.router)
-    app.include_router(policy_requirements.router)
-    app.include_router(demo.router)
+
+    # All API routers under /v1/
+    app.include_router(auth.router, prefix="/v1")
+    app.include_router(grants.router, prefix="/v1")
+    app.include_router(grant_requests.router, prefix="/v1")
+    app.include_router(audit_events.router, prefix="/v1")
+    app.include_router(executions.router, prefix="/v1")
+    app.include_router(evidence.router, prefix="/v1")
+    app.include_router(provenance.router, prefix="/v1")
+    app.include_router(auditor.router, prefix="/v1")
+    app.include_router(compliance.router, prefix="/v1")
+    app.include_router(operators_me.router, prefix="/v1")
+    app.include_router(admin.router, prefix="/v1")
+    app.include_router(challenges.router, prefix="/v1")
+    app.include_router(agent_permissions.router, prefix="/v1")
+    app.include_router(approvals.router, prefix="/v1")
+    app.include_router(decision_provenance.router, prefix="/v1")
+    app.include_router(policy_requirements.router, prefix="/v1")
+    app.include_router(demo.router, prefix="/v1")
+
+    # Backward-compat redirects: unversioned paths → /v1/ (307 Temporary Redirect)
+    _COMPAT_PREFIXES = [
+        "/auth", "/grants", "/grant-requests", "/grant-executions", "/audit-events",
+        "/evidence", "/provenance", "/auditor", "/compliance", "/operators",
+        "/admin", "/challenges", "/agent-permissions", "/approvals",
+        "/decision-provenance", "/policy-requirements", "/demo", "/demo-action",
+    ]
+
+    def _make_redirect_handler():
+        async def _redirect(request: Request) -> RedirectResponse:
+            url = f"/v1{request.url.path}"
+            if request.url.query:
+                url += f"?{request.url.query}"
+            return RedirectResponse(url=url, status_code=307)
+        return _redirect
+
+    _methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
+    for _pfx in _COMPAT_PREFIXES:
+        _h = _make_redirect_handler()
+        app.add_api_route(_pfx, _h, methods=_methods, include_in_schema=False)
+        app.add_api_route(f"{_pfx}/{{path:path}}", _h, methods=_methods, include_in_schema=False)
 
     return app
 

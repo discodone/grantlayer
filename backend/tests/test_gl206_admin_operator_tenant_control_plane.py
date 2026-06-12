@@ -323,14 +323,14 @@ class TestGL206AdminAuthEnforcement(_BaseGL206):
 
     def test_auth_001_missing_token_on_admin_list(self):
         """Missing admin token on GET /admin/operators → 401 or 403."""
-        status, body = self._get("/admin/operators", auth_header=None)
+        status, body = self._get("/v1/admin/operators", auth_header=None)
         self.assertIn(status, (401, 403),
                       f"Missing admin token must be 401 or 403, got {status}")
         self.assertIn("errorCode", body)
 
     def test_auth_002_invalid_token_on_admin_list(self):
         """Invalid admin token on GET /admin/operators → 401 or 403."""
-        status, body = self._get("/admin/operators", auth_header="Bearer invalid-token-xyz")
+        status, body = self._get("/v1/admin/operators", auth_header="Bearer invalid-token-xyz")
         self.assertIn(status, (401, 403),
                       f"Invalid admin token must be 401 or 403, got {status}")
         self.assertIn("errorCode", body)
@@ -338,7 +338,7 @@ class TestGL206AdminAuthEnforcement(_BaseGL206):
     def test_auth_003_missing_token_on_admin_create(self):
         """Missing admin token on POST /admin/operators → 401 or 403."""
         status, body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Test", "role": "owner", "tenantId": "t1"},
             auth_header=None,
         )
@@ -348,7 +348,7 @@ class TestGL206AdminAuthEnforcement(_BaseGL206):
     def test_auth_004_invalid_token_on_admin_create(self):
         """Invalid admin token on POST /admin/operators → 401 or 403."""
         status, body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Test", "role": "owner", "tenantId": "t1"},
             auth_header="Bearer wrong-token",
         )
@@ -363,7 +363,7 @@ class TestGL206AdminAuthEnforcement(_BaseGL206):
             name="Op GL206", role="owner", token=token, tenant_id="gl206-tenant"
         )
         # Operator token should not be accepted on admin route
-        status, body = self._get("/admin/operators", auth_header=f"Bearer {token}")
+        status, body = self._get("/v1/admin/operators", auth_header=f"Bearer {token}")
         self.assertIn(status, (401, 403),
                       f"Operator token on admin route must be 401 or 403, got {status}")
 
@@ -375,7 +375,7 @@ class TestGL206AdminAuthEnforcement(_BaseGL206):
             name="Op Forbidden", role="owner", token=token, tenant_id="gl206-t"
         )
         status, body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Evil Op", "role": "owner", "tenantId": "other-tenant"},
             auth_header=f"Bearer {token}",
         )
@@ -390,20 +390,20 @@ class TestGL206AdminAuthEnforcement(_BaseGL206):
             name="To Revoke", role="owner", token=token, tenant_id="demo"
         )
         # Verify it works before revoke
-        status_before, _ = self._get("/grants", auth_header=f"Bearer {token}")
+        status_before, _ = self._get("/v1/grants", auth_header=f"Bearer {token}")
         self.assertEqual(status_before, 200, "Operator should work before revoke")
         # Revoke
         self.ops_mod.revoke_operator(op.operator_id)
         # Reload modules to ensure no caching
         self.mods = _reload_modules(self.db_path)
         # Now auth must fail
-        status_after, body_after = self._get("/grants", auth_header=f"Bearer {token}")
+        status_after, body_after = self._get("/v1/grants", auth_header=f"Bearer {token}")
         self.assertIn(status_after, (401, 403),
                       f"Revoked operator must get 401 or 403, got {status_after}")
 
     def test_auth_008_valid_admin_token_on_admin_list_succeeds(self):
         """Valid admin token on GET /admin/operators → 200."""
-        status, body = self._get("/admin/operators", auth_header=self._admin_auth())
+        status, body = self._get("/v1/admin/operators", auth_header=self._admin_auth())
         self.assertEqual(status, 200, f"Valid admin token must get 200, got {status}")
         self.assertIsInstance(body, list)
 
@@ -414,7 +414,7 @@ class TestGL206OperatorCreate(_BaseGL206):
     def test_create_001_with_explicit_tenant_id_succeeds(self):
         """POST /admin/operators with name, role, tenantId → 201."""
         status, body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Alice", "role": "owner", "tenantId": "acme-corp"},
             auth_header=self._admin_auth(),
         )
@@ -425,7 +425,7 @@ class TestGL206OperatorCreate(_BaseGL206):
     def test_create_002_without_tenant_id_is_400(self):
         """POST /admin/operators without tenantId → 400 or 422."""
         status, body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Bob", "role": "owner"},
             auth_header=self._admin_auth(),
         )
@@ -436,7 +436,7 @@ class TestGL206OperatorCreate(_BaseGL206):
     def test_create_003_tenant_id_preserved_in_created_operator(self):
         """Created operator must have the tenant_id from the request."""
         status, body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Carol", "role": "grant_admin", "tenantId": "tenant-xyz"},
             auth_header=self._admin_auth(),
         )
@@ -450,7 +450,7 @@ class TestGL206OperatorCreate(_BaseGL206):
     def test_create_004_response_contains_one_time_token(self):
         """POST /admin/operators response must include one-time raw token."""
         status, body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Dave", "role": "owner", "tenantId": "demo"},
             auth_header=self._admin_auth(),
         )
@@ -463,7 +463,7 @@ class TestGL206OperatorCreate(_BaseGL206):
     def test_create_005_create_response_excludes_hash_fields(self):
         """POST /admin/operators response must not include token_hash or lookup_hash."""
         status, body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Eve", "role": "auditor", "tenantId": "gl206-t"},
             auth_header=self._admin_auth(),
         )
@@ -476,7 +476,7 @@ class TestGL206OperatorCreate(_BaseGL206):
     def test_create_006_missing_name_is_400(self):
         """POST /admin/operators without name → 400 or 422."""
         status, body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"role": "owner", "tenantId": "demo"},
             auth_header=self._admin_auth(),
         )
@@ -488,18 +488,18 @@ class TestGL206OperatorList(_BaseGL206):
 
     def test_list_001_list_is_empty_on_fresh_db(self):
         """GET /admin/operators on fresh DB → 200 with empty list."""
-        status, body = self._get("/admin/operators", auth_header=self._admin_auth())
+        status, body = self._get("/v1/admin/operators", auth_header=self._admin_auth())
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_list_002_created_operator_appears_in_list(self):
         """After creating operator, it appears in GET /admin/operators list."""
         self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "ListMe", "role": "owner", "tenantId": "t-list"},
             auth_header=self._admin_auth(),
         )
-        status, body = self._get("/admin/operators", auth_header=self._admin_auth())
+        status, body = self._get("/v1/admin/operators", auth_header=self._admin_auth())
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
         self.assertGreater(len(body), 0)
@@ -509,11 +509,11 @@ class TestGL206OperatorList(_BaseGL206):
     def test_list_003_list_response_has_no_token_hash(self):
         """GET /admin/operators response must not include token_hash, lookup_hash, or raw token."""
         self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "HashCheck", "role": "owner", "tenantId": "demo"},
             auth_header=self._admin_auth(),
         )
-        status, body = self._get("/admin/operators", auth_header=self._admin_auth())
+        status, body = self._get("/v1/admin/operators", auth_header=self._admin_auth())
         self.assertEqual(status, 200)
         body_str = json.dumps(body)
         self.assertNotIn("token_hash", body_str,
@@ -526,11 +526,11 @@ class TestGL206OperatorList(_BaseGL206):
     def test_list_004_tenant_id_included_in_list_response(self):
         """GET /admin/operators response must include tenantId for each operator."""
         self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "TenantInList", "role": "owner", "tenantId": "expected-tenant"},
             auth_header=self._admin_auth(),
         )
-        status, body = self._get("/admin/operators", auth_header=self._admin_auth())
+        status, body = self._get("/v1/admin/operators", auth_header=self._admin_auth())
         self.assertEqual(status, 200)
         for op in body:
             self.assertIn("tenantId", op, "Each operator in list must have tenantId")
@@ -542,12 +542,12 @@ class TestGL206OperatorRead(_BaseGL206):
     def test_read_001_read_existing_operator_succeeds(self):
         """GET /admin/operators/{id} for existing operator → 200."""
         _, create_body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "ReadMe", "role": "owner", "tenantId": "read-tenant"},
             auth_header=self._admin_auth(),
         )
         op_id = create_body["operatorId"]
-        status, body = self._get(f"/admin/operators/{op_id}",
+        status, body = self._get(f"/v1/admin/operators/{op_id}",
                                  auth_header=self._admin_auth())
         self.assertEqual(status, 200)
         self.assertEqual(body.get("operatorId"), op_id)
@@ -556,12 +556,12 @@ class TestGL206OperatorRead(_BaseGL206):
     def test_read_002_read_response_has_no_token_hash(self):
         """GET /admin/operators/{id} must not include token_hash or raw token."""
         _, create_body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "ReadHashCheck", "role": "owner", "tenantId": "demo"},
             auth_header=self._admin_auth(),
         )
         op_id = create_body["operatorId"]
-        status, body = self._get(f"/admin/operators/{op_id}",
+        status, body = self._get(f"/v1/admin/operators/{op_id}",
                                  auth_header=self._admin_auth())
         self.assertEqual(status, 200)
         body_str = json.dumps(body)
@@ -571,7 +571,7 @@ class TestGL206OperatorRead(_BaseGL206):
 
     def test_read_003_read_nonexistent_operator_is_404(self):
         """GET /admin/operators/{id} for nonexistent ID → 404."""
-        status, body = self._get("/admin/operators/nonexistent-id-xyz",
+        status, body = self._get("/v1/admin/operators/nonexistent-id-xyz",
                                  auth_header=self._admin_auth())
         self.assertEqual(status, 404)
         self.assertIn("errorCode", body)
@@ -583,13 +583,13 @@ class TestGL206OperatorRevoke(_BaseGL206):
     def test_revoke_001_revoke_existing_operator_succeeds(self):
         """POST /admin/operators/{id}/revoke → 200."""
         _, create_body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "ToRevoke", "role": "owner", "tenantId": "demo"},
             auth_header=self._admin_auth(),
         )
         op_id = create_body["operatorId"]
         status, body = self._post_json(
-            f"/admin/operators/{op_id}/revoke", {},
+            f"/v1/admin/operators/{op_id}/revoke", {},
             auth_header=self._admin_auth(),
         )
         self.assertEqual(status, 200, f"Revoke must return 200, got {status}: {body}")
@@ -602,7 +602,7 @@ class TestGL206OperatorRevoke(_BaseGL206):
         import secrets
         raw_token = secrets.token_urlsafe(32)
         _, create_body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "RevokeAuth", "role": "owner", "tenantId": "demo"},
             auth_header=self._admin_auth(),
         )
@@ -615,19 +615,19 @@ class TestGL206OperatorRevoke(_BaseGL206):
         # Verify can authenticate before revoke
         self.mods = _reload_modules(self.db_path)
         self.ops_mod = self.mods[3]
-        status_before, _ = self._get("/grants", auth_header=f"Bearer {raw_token}")
+        status_before, _ = self._get("/v1/grants", auth_header=f"Bearer {raw_token}")
         self.assertEqual(status_before, 200, "Should work before revoke")
         # Revoke
         self.ops_mod.revoke_operator(op_d.operator_id)
         self.mods = _reload_modules(self.db_path)
-        status_after, _ = self._get("/grants", auth_header=f"Bearer {raw_token}")
+        status_after, _ = self._get("/v1/grants", auth_header=f"Bearer {raw_token}")
         self.assertIn(status_after, (401, 403),
                       f"Revoked operator must fail closed, got {status_after}")
 
     def test_revoke_003_revoke_nonexistent_operator_is_404(self):
         """POST /admin/operators/{id}/revoke for nonexistent ID → 404."""
         status, body = self._post_json(
-            "/admin/operators/nonexistent-id-xyz/revoke", {},
+            "/v1/admin/operators/nonexistent-id-xyz/revoke", {},
             auth_header=self._admin_auth(),
         )
         self.assertEqual(status, 404)
@@ -641,14 +641,14 @@ class TestGL206OperatorRevoke(_BaseGL206):
             name="OpRevoke", role="owner", token=token, tenant_id="demo"
         )
         _, create_body = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Target", "role": "owner", "tenantId": "demo"},
             auth_header=self._admin_auth(),
         )
         target_id = create_body["operatorId"]
         self.mods = _reload_modules(self.db_path)
         status, body = self._post_json(
-            f"/admin/operators/{target_id}/revoke", {},
+            f"/v1/admin/operators/{target_id}/revoke", {},
             auth_header=f"Bearer {token}",
         )
         self.assertIn(status, (401, 403),
@@ -681,7 +681,7 @@ class TestGL206TenantIsolation(_BaseGL206):
         self.mods = _reload_modules(self.db_path)
         self.ops_mod = self.mods[3]
         # Try to override tenant via X-Tenant-ID header
-        status, body = _run_handler("/grants", method="GET",
+        status, body = _run_handler("/v1/grants", method="GET",
             auth_header=f"Bearer {token}",
             extra_headers={"X-Tenant-ID": "attacker-tenant"},
         )
@@ -703,7 +703,7 @@ class TestGL206TenantIsolation(_BaseGL206):
         )
         self.mods = _reload_modules(self.db_path)
         # Operator token A cannot list operators (admin route requires admin token)
-        status, body = self._get("/admin/operators", auth_header=f"Bearer {token_a}")
+        status, body = self._get("/v1/admin/operators", auth_header=f"Bearer {token_a}")
         self.assertIn(status, (401, 403),
                       f"Operator token must not access admin operator list: {status}")
 
@@ -735,7 +735,7 @@ class TestGL206AuditEvents(_BaseGL206):
         """Audit hash-chain must remain valid after admin control-plane operations."""
         # Create an operator via admin route
         self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "AuditTest", "role": "owner", "tenantId": "audit-tenant"},
             auth_header=self._admin_auth(),
         )
@@ -835,8 +835,8 @@ class TestGL206RegressionPreservation(_BaseGL206):
         grants_mod.create_grant(grant, tenant_id="tenant-gl206-a")
 
         # tenant-b should not see tenant-a's grant
-        status_a, body_a = self._get("/grants", auth_header=f"Bearer {token_a}")
-        status_b, body_b = self._get("/grants", auth_header=f"Bearer {token_b}")
+        status_a, body_a = self._get("/v1/grants", auth_header=f"Bearer {token_a}")
+        status_b, body_b = self._get("/v1/grants", auth_header=f"Bearer {token_b}")
         self.assertEqual(status_a, 200)
         self.assertEqual(status_b, 200)
         self.assertGreater(len(body_a), 0, "Tenant-a should see its own grants")
@@ -844,19 +844,19 @@ class TestGL206RegressionPreservation(_BaseGL206):
 
     def test_regression_004_admin_token_fail_closed(self):
         """Wrong admin token on admin route → 401 or 403 (GL-201 regression)."""
-        status, body = self._get("/admin/operators", auth_header="Bearer wrong-admin-token")
+        status, body = self._get("/v1/admin/operators", auth_header="Bearer wrong-admin-token")
         self.assertIn(status, (401, 403),
                       f"Wrong admin token must fail closed: {status}")
 
     def test_regression_005_operator_model_routes_require_operator_auth(self):
         """GET /grants requires auth; no auth → 401 (GL-200 regression)."""
-        status, body = self._get("/grants")
+        status, body = self._get("/v1/grants")
         self.assertIn(status, (401, 403),
                       f"Protected routes must require auth: {status}")
 
     def test_regression_006_operators_me_requires_operator_auth(self):
         """GET /operators/me requires operator auth; no auth → 401."""
-        status, body = self._get("/operators/me")
+        status, body = self._get("/v1/operators/me")
         self.assertIn(status, (401, 403),
                       f"GET /operators/me must require auth: {status}")
 

@@ -282,19 +282,19 @@ class TestGL208BackendBoundaries(unittest.TestCase):
         return f"Bearer {token or self.owner_token}"
 
     def test_admin_operator_routes_remain_protected(self):
-        status, _, body = _run_handler("/admin/operators")
+        status, _, body = _run_handler("/v1/admin/operators")
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_operator_token_cannot_access_admin_only_routes(self):
-        status, _, body = _run_handler("/admin/operators",
+        status, _, body = _run_handler("/v1/admin/operators",
             auth_header=self._operator_auth(),
         )
         self.assertEqual(status, 403)
         self.assertEqual(body.get("errorCode"), "admin_token_invalid")
 
     def test_admin_route_allows_admin_token_and_returns_safe_fields(self):
-        status, _, body = _run_handler("/admin/operators",
+        status, _, body = _run_handler("/v1/admin/operators",
             auth_header=self._admin_auth(),
         )
         self.assertEqual(status, 200)
@@ -320,7 +320,7 @@ class TestGL208BackendBoundaries(unittest.TestCase):
         self.assertEqual(payload.get("tenant_id"), "tenant-a")
 
     def test_arbitrary_tenant_override_header_remains_unsupported(self):
-        status, _, body = _run_handler("/operators/me",
+        status, _, body = _run_handler("/v1/operators/me",
             auth_header=self._operator_auth(),
             extra_headers={"X-Tenant-ID": "tenant-b"},
         )

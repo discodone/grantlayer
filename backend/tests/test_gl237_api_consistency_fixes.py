@@ -101,45 +101,45 @@ class _Base(unittest.TestCase):
 @_SKIP
 class TestBug1GrantsRoleValidation(_Base):
     def test_invalid_role_returns_422(self):
-        r = self.client.post("/grants", json=self._grant_body("hacker"), headers=self._auth())
+        r = self.client.post("/v1/grants", json=self._grant_body("hacker"), headers=self._auth())
         self.assertEqual(r.status_code, 422)
 
     def test_invalid_role_error_code(self):
-        r = self.client.post("/grants", json=self._grant_body("hacker"), headers=self._auth())
+        r = self.client.post("/v1/grants", json=self._grant_body("hacker"), headers=self._auth())
         body = r.json()
         self.assertEqual(body.get("errorCode"), "invalid_role")
 
     def test_invalid_role_reason_lists_allowed(self):
-        r = self.client.post("/grants", json=self._grant_body("superadmin"), headers=self._auth())
+        r = self.client.post("/v1/grants", json=self._grant_body("superadmin"), headers=self._auth())
         body = r.json()
         self.assertIn("viewer", body.get("reason", ""))
 
     def test_valid_role_viewer_returns_201(self):
-        r = self.client.post("/grants", json=self._grant_body("viewer"), headers=self._auth())
+        r = self.client.post("/v1/grants", json=self._grant_body("viewer"), headers=self._auth())
         self.assertEqual(r.status_code, 201)
 
     def test_valid_role_auditor_returns_201(self):
-        r = self.client.post("/grants", json=self._grant_body("auditor"), headers=self._auth())
+        r = self.client.post("/v1/grants", json=self._grant_body("auditor"), headers=self._auth())
         self.assertEqual(r.status_code, 201)
 
     def test_valid_role_operator_returns_201(self):
-        r = self.client.post("/grants", json=self._grant_body("operator"), headers=self._auth())
+        r = self.client.post("/v1/grants", json=self._grant_body("operator"), headers=self._auth())
         self.assertEqual(r.status_code, 201)
 
     def test_valid_role_admin_returns_201(self):
-        r = self.client.post("/grants", json=self._grant_body("admin"), headers=self._auth())
+        r = self.client.post("/v1/grants", json=self._grant_body("admin"), headers=self._auth())
         self.assertEqual(r.status_code, 201)
 
     def test_empty_string_role_rejected(self):
         body = self._grant_body("")
-        r = self.client.post("/grants", json=body, headers=self._auth())
+        r = self.client.post("/v1/grants", json=body, headers=self._auth())
         self.assertIn(r.status_code, [400, 422])
 
     def test_all_allowed_roles_accepted(self):
         from backend.src.grants.grant_requests import ALLOWED_GRANT_ROLES
         for role in ALLOWED_GRANT_ROLES:
             with self.subTest(role=role):
-                r = self.client.post("/grants", json=self._grant_body(role), headers=self._auth())
+                r = self.client.post("/v1/grants", json=self._grant_body(role), headers=self._auth())
                 self.assertEqual(r.status_code, 201, f"Expected 201 for valid role '{role}', got {r.status_code}")
 
     def test_grants_router_imports_allowed_grant_roles(self):
@@ -163,7 +163,7 @@ class TestBug2GrantRequestsCamelCase(_Base):
             "validUntil": "2025-12-31T23:59:59Z",
             "reason": "gl237 camelCase test",
         }
-        r = self.client.post("/grant-requests", json=body, headers=self._auth())
+        r = self.client.post("/v1/grant-requests", json=body, headers=self._auth())
         self.assertEqual(r.status_code, 201, r.text)
         return r.json()
 
@@ -186,7 +186,7 @@ class TestBug2GrantRequestsCamelCase(_Base):
 
     def test_list_response_uses_camel_case(self):
         self._create_request()
-        r = self.client.get("/grant-requests", headers=self._auth())
+        r = self.client.get("/v1/grant-requests", headers=self._auth())
         self.assertEqual(r.status_code, 200)
         items = r.json()
         self.assertGreater(len(items), 0)
@@ -198,7 +198,7 @@ class TestBug2GrantRequestsCamelCase(_Base):
     def test_get_single_response_uses_camel_case(self):
         created = self._create_request()
         req_id = created["id"]
-        r = self.client.get(f"/grant-requests/{req_id}", headers=self._auth())
+        r = self.client.get(f"/v1/grant-requests/{req_id}", headers=self._auth())
         self.assertEqual(r.status_code, 200)
         body = r.json()
         self.assertIn("subjectId", body)
@@ -206,7 +206,7 @@ class TestBug2GrantRequestsCamelCase(_Base):
         self.assertNotIn("subject_id", body)
 
     def test_grants_response_already_camel_case(self):
-        r = self.client.post("/grants", json=self._grant_body("viewer"), headers=self._auth())
+        r = self.client.post("/v1/grants", json=self._grant_body("viewer"), headers=self._auth())
         self.assertEqual(r.status_code, 201)
         body = r.json()
         self.assertIn("subjectId", body)

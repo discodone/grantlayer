@@ -183,7 +183,7 @@ class _BaseGl109(unittest.TestCase):
             if isinstance(body, (bytes, bytearray)) and len(body) > 0:
                 try:
                     body_dict = json.loads(body)
-                    if path == "/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
+                    if path == "/v1/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
                         body_dict = dict(body_dict)
                         body_dict["role"] = "operator"
                     resp = self.client.post(path, json=body_dict, headers=headers)
@@ -250,19 +250,19 @@ class TestGl109MissingTokenFailsClosed(_BaseGl109):
         self.auth_mod = fresh_auth
 
     def test_missing_auth_header_returns_401(self):
-        req = self._make_handler("/operators/me")
+        req = self._make_handler("/v1/operators/me")
         status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_empty_auth_header_returns_401(self):
-        req = self._make_handler("/operators/me", auth_header="")
+        req = self._make_handler("/v1/operators/me", auth_header="")
         status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_no_bearer_prefix_returns_401(self):
-        req = self._make_handler("/operators/me", auth_header="Basic wrong")
+        req = self._make_handler("/v1/operators/me", auth_header="Basic wrong")
         status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
@@ -284,13 +284,13 @@ class TestGl109InvalidTokenFailsClosed(_BaseGl109):
         self._insert_operator("op-1", "Alice", "owner", "valid-token")
 
     def test_invalid_token_returns_401(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer invalid-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer invalid-token")
         status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_wrong_token_for_existing_operator_returns_401(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer totally-wrong")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer totally-wrong")
         status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
@@ -312,7 +312,7 @@ class TestGl109InactiveTokenFailsClosed(_BaseGl109):
         self._insert_operator("op-inactive", "Inactive", "owner", "inactive-token", active=0)
 
     def test_inactive_operator_token_returns_401(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer inactive-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer inactive-token")
         status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
@@ -338,7 +338,7 @@ class TestGl109ValidTokenSucceeds(_BaseGl109):
         self._insert_operator("op-1", "Alice", "owner", "secret-token")
 
     def test_valid_token_returns_200(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer secret-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertIn("operatorId", body)
@@ -347,7 +347,7 @@ class TestGl109ValidTokenSucceeds(_BaseGl109):
         self.assertEqual(body["role"], "owner")
 
     def test_response_includes_safe_fields(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer secret-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         # Safe fields that should be present
@@ -357,28 +357,28 @@ class TestGl109ValidTokenSucceeds(_BaseGl109):
         self.assertIn("active", body)
 
     def test_response_does_not_include_raw_token(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer secret-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         body_str = json.dumps(body)
         self.assertNotIn("secret-token", body_str)
 
     def test_response_does_not_include_token_hash(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer secret-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         body_str = json.dumps(body)
         self.assertNotIn("token_hash", body_str)
 
     def test_response_does_not_include_token_lookup_hash(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer secret-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         body_str = json.dumps(body)
         self.assertNotIn("token_lookup_hash", body_str)
 
     def test_response_does_not_include_pbkdf2_details(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer secret-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer secret-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         body_str = json.dumps(body)
@@ -409,19 +409,19 @@ class TestGl109RoleBehaviorPreserved(_BaseGl109):
         self._insert_operator("op-auditor", "Auditor", "auditor", "auditor-token")
 
     def test_owner_role_can_access(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer owner-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer owner-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(body["role"], "owner")
 
     def test_grant_admin_role_can_access(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer admin-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer admin-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(body["role"], "grant_admin")
 
     def test_auditor_role_can_access(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer auditor-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer auditor-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 200)
         self.assertEqual(body["role"], "auditor")
@@ -457,21 +457,21 @@ class TestGl109OperatorModeDisabledSafe(_BaseGl109):
 
     def test_anonymous_caller_gets_401_not_404_when_disabled(self):
         """Anonymous callers must not learn operator model is disabled."""
-        req = self._make_handler("/operators/me")
+        req = self._make_handler("/v1/operators/me")
         status, headers, body = self._run_handler(req)
         # With auth required first, unauthenticated callers get 401, not 404
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_invalid_legacy_token_gets_403_not_404_when_disabled(self):
-        req = self._make_handler("/operators/me", auth_header="Bearer wrong-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer wrong-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 403)
         self.assertIn("errorCode", body)
 
     def test_valid_legacy_token_gets_404_when_disabled(self):
         """Authenticated legacy callers may receive 404 (feature not available)."""
-        req = self._make_handler("/operators/me", auth_header="Bearer legacy-admin-token")
+        req = self._make_handler("/v1/operators/me", auth_header="Bearer legacy-admin-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 404)
         self.assertEqual(body.get("errorCode"), "operator_model_disabled")
@@ -501,7 +501,7 @@ class TestGl109Gl107BoundedLookupPreserved(_BaseGl109):
 
         with patch.object(self.ops_mod, 'verify_token') as mock_verify:
             mock_verify.return_value = False
-            req = self._make_handler("/operators/me", auth_header="Bearer totally-wrong")
+            req = self._make_handler("/v1/operators/me", auth_header="Bearer totally-wrong")
             status, headers, body = self._run_handler(req)
             self.assertIn(status, (401, 403))
             mock_verify.assert_not_called()
@@ -529,21 +529,21 @@ class TestGl109RateLimitingPreserved(_BaseGl109):
 
     def test_rate_limit_blocks_after_exceeded(self):
         for _ in range(2):
-            handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token")
+            handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer owner-token")
             status, headers, body = self._run_raw_handler(handler)
             self.assertEqual(status, 200)
 
-        handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token")
+        handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer owner-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertEqual(body.get("errorCode"), "rate_limit_exceeded")
 
     def test_rate_limited_response_includes_retry_after(self):
         for _ in range(2):
-            handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token")
+            handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer owner-token")
             self._run_raw_handler(handler)
 
-        handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token")
+        handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer owner-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertIn("Retry-After", headers)
@@ -592,19 +592,19 @@ class TestGl109CorsPreserved(_BaseGl109):
         self._insert_operator("op-1", "Owner", "owner", "owner-token")
 
     def test_cors_headers_on_success(self):
-        handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token", origin="http://trusted.com")
+        handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer owner-token", origin="http://trusted.com")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(headers.get("Access-Control-Allow-Origin"), "http://trusted.com")
 
     def test_cors_headers_on_auth_failure(self):
-        handler = self._make_raw_handler("/operators/me", origin="http://trusted.com")
+        handler = self._make_raw_handler("/v1/operators/me", origin="http://trusted.com")
         status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertEqual(headers.get("Access-Control-Allow-Origin"), "http://trusted.com")
 
     def test_no_cors_for_untrusted_origin(self):
-        handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-token", origin="http://evil.com")
+        handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer owner-token", origin="http://evil.com")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertNotIn("Access-Control-Allow-Origin", headers)
@@ -630,12 +630,12 @@ class TestGl109SecurityBoundary(_BaseGl109):
         self._insert_operator("op-1", "Owner", "owner", "owner-token")
 
     def test_protected_endpoint_still_requires_auth(self):
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
 
     def test_operators_me_requires_auth(self):
-        req = self._make_handler("/operators/me")
+        req = self._make_handler("/v1/operators/me")
         status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
 

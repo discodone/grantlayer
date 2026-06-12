@@ -113,7 +113,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_build_endpoint_exists_and_returns_200_for_valid_request(self):
         """POST /approvals/lifecycle/build returns 200 for valid request."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -140,7 +140,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_build_endpoint_missing_auth_returns_401(self):
         """POST /approvals/lifecycle/build without auth returns 401."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             body={},
         )
         self.assertEqual(status, 401)
@@ -148,7 +148,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_build_endpoint_returns_400_for_invalid_json(self):
         """POST /approvals/lifecycle/build with invalid JSON returns 400."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body=b"invalid json",
         )
@@ -161,7 +161,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Admin", "grant_admin", "op-token-1")
 
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer op-token-1",
             body={
                 "approvalRequirement": {
@@ -180,7 +180,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Auditor", "auditor", "op-token-1")
 
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer op-token-1",
             body={},
         )
@@ -193,7 +193,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Owner", "owner", "op-token-1")
 
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer op-token-1",
             body={
                 "approvalRequirement": {
@@ -212,14 +212,14 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Missing auth should return 401
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             body={},
         )
         self.assertEqual(status, 401)
 
         # Wrong token should return 403
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer wrong-token",
             body={},
         )
@@ -228,7 +228,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_build_endpoint_returns_blocked_for_missing_approval_requirement(self):
         """POST /approvals/lifecycle/build returns blocked status for missing approvalRequirement."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "requestId": "req-123",
@@ -244,7 +244,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_build_endpoint_returns_not_required_for_no_approval_required(self):
         """POST /approvals/lifecycle/build returns not_required for no_approval_required decision."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -261,7 +261,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_build_endpoint_returns_pending_for_approval_required(self):
         """POST /approvals/lifecycle/build returns pending for approval_required decision."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -280,7 +280,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_build_endpoint_returns_pending_for_four_eyes_required(self):
         """POST /approvals/lifecycle/build returns pending for four_eyes_required decision."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -298,7 +298,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_build_endpoint_returns_blocked_for_blocked_decision(self):
         """POST /approvals/lifecycle/build returns blocked for blocked decision."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -317,7 +317,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_build_endpoint_handles_optional_fields(self):
         """POST /approvals/lifecycle/build handles all optional fields."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -346,7 +346,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_build_endpoint_includes_context_when_include_details_true(self):
         """POST /approvals/lifecycle/build includes context when includeDetails=True."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -368,7 +368,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         """POST /approvals/lifecycle/transition returns 200 for valid request."""
         # First create a pending approval request
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -385,7 +385,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Now transition it
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -403,7 +403,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_transition_endpoint_missing_auth_returns_401(self):
         """POST /approvals/lifecycle/transition without auth returns 401."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             body={
                 "approvalRequest": {},
                 "transition": "create",
@@ -414,7 +414,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_transition_endpoint_returns_400_for_invalid_json(self):
         """POST /approvals/lifecycle/transition with invalid JSON returns 400."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body=b"invalid json",
         )
@@ -423,7 +423,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_transition_endpoint_returns_400_for_missing_required_fields(self):
         """POST /approvals/lifecycle/transition returns 400 for missing approvalRequest or transition."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={},
         )
@@ -438,7 +438,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Admin", "grant_admin", "op-token-1")
 
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer op-token-1",
             body={
                 "approvalRequest": {
@@ -460,7 +460,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Auditor", "auditor", "op-token-1")
 
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer op-token-1",
             body={
                 "approvalRequest": {},
@@ -476,7 +476,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Owner", "owner", "op-token-1")
 
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer op-token-1",
             body={
                 "approvalRequest": {
@@ -498,7 +498,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Missing auth should return 401
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             body={
                 "approvalRequest": {},
                 "transition": "create",
@@ -508,7 +508,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Wrong token should return 403
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer wrong-token",
             body={
                 "approvalRequest": {},
@@ -521,7 +521,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         """POST /approvals/lifecycle/transition handles create transition."""
         # Build a not_required request
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -534,7 +534,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Transition to pending
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -551,7 +551,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         """POST /approvals/lifecycle/transition handles approve transition."""
         # Build a pending request
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -567,7 +567,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Transition to approved
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -587,7 +587,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         """POST /approvals/lifecycle/transition handles reject transition."""
         # Build a pending request
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -599,7 +599,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Transition to rejected
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -617,7 +617,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         """POST /approvals/lifecycle/transition handles expire transition."""
         # Build a pending request
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -629,7 +629,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Transition to expired
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -647,7 +647,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         """POST /approvals/lifecycle/transition handles cancel transition."""
         # Build a pending request
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -659,7 +659,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Transition to cancelled
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -677,7 +677,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         """POST /approvals/lifecycle/transition handles block transition."""
         # Build a pending request
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -689,7 +689,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Transition to blocked
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -707,7 +707,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         """POST /approvals/lifecycle/transition handles reopen transition."""
         # Build a rejected request
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -718,7 +718,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         )
         # First reject it
         status, rejected_resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -731,7 +731,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Now reopen it
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": rejected_resp,
@@ -747,7 +747,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_transition_endpoint_returns_blocked_for_invalid_transition(self):
         """POST /approvals/lifecycle/transition returns blocked for invalid transition."""
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -759,7 +759,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Try invalid transition
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -774,7 +774,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_transition_endpoint_handles_optional_fields(self):
         """POST /approvals/lifecycle/transition handles all optional fields."""
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -785,7 +785,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         )
 
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -805,7 +805,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_transition_endpoint_includes_context_when_include_details_true(self):
         """POST /approvals/lifecycle/transition includes context when includeDetails=True."""
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -816,7 +816,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         )
 
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -834,7 +834,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
         """POST /approvals/lifecycle/transition allows blocked->reopen with allowBlockedReopen flag."""
         # Build a blocked request
         status, build_resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {
@@ -847,7 +847,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Try to reopen without flag (should fail)
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -861,7 +861,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
 
         # Try to reopen with flag (should succeed)
         status, resp = self._run_handler(
-            "/approvals/lifecycle/transition",
+            "/v1/approvals/lifecycle/transition",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequest": build_resp,
@@ -876,7 +876,7 @@ class TestApprovalLifecycleAPI(unittest.TestCase):
     def test_response_does_not_expose_secrets(self):
         """Response does not expose secrets, tokens, or auth hashes."""
         status, resp = self._run_handler(
-            "/approvals/lifecycle/build",
+            "/v1/approvals/lifecycle/build",
             auth="Bearer test-admin-token",
             body={
                 "approvalRequirement": {

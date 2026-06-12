@@ -350,7 +350,7 @@ class TestGl106AuthStillRequired(_BaseGl106):
         self.auth_mod = fresh_auth
 
     def test_protected_endpoint_still_requires_auth(self):
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
 
@@ -412,7 +412,7 @@ class TestGl106CorsPreserved(_BaseGl106):
 
     def test_options_not_rate_limited(self):
         for _ in range(150):
-            req = self._make_handler("/grants", method="OPTIONS", origin="http://trusted.com")
+            req = self._make_handler("/v1/grants", method="OPTIONS", origin="http://trusted.com")
             status, headers, body = self._run_handler(req)
             self.assertIn(status, (200, 204))
 
@@ -439,13 +439,13 @@ class TestGl106SecurityBoundary(_BaseGl106):
 
     def test_role_check_still_enforced(self):
         # Auditor cannot access owner-only endpoint
-        req = self._make_handler("/agent-permissions/profiles", auth_header="Bearer auditor-token")
+        req = self._make_handler("/v1/agent-permissions/profiles", auth_header="Bearer auditor-token")
         status, headers, body = self._run_handler(req)
         self.assertEqual(status, 403)
 
     def test_auth_failure_before_rate_limit_check(self):
         # Unauthenticated request should fail with 401, not 429
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, headers, body = self._run_handler(req)
         self.assertIn(status, (401, 403))
 

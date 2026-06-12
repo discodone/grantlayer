@@ -593,13 +593,13 @@ class TestGl108SecurityBoundaryPreserved(_BaseGl108):
 
     def test_grants_endpoint_requires_auth(self):
         """GET /grants must require operator auth."""
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, _data = self._run_handler(req)
         self.assertIn(status, (401, 403))
 
     def test_audit_events_endpoint_requires_auth(self):
         """GET /audit-events must require operator auth."""
-        req = self._make_handler("/audit-events")
+        req = self._make_handler("/v1/audit-events")
         status, _data = self._run_handler(req)
         self.assertIn(status, (401, 403))
 

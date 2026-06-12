@@ -838,7 +838,7 @@ class TestGl103ServerSafety(_BaseGl103):
 
     def test_protected_endpoint_requires_auth(self):
         """GET /grants requires operator auth."""
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, data = self._run_handler(req)
         self.assertIn(status, (401, 403))
 

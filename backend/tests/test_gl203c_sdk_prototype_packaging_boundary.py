@@ -591,7 +591,7 @@ class TestGL203CPrototypeFakeTransport(unittest.TestCase):
         resp = client.list_grants()
         self.assertEqual(resp.status, 200)
         req = transport.calls[0]
-        self.assertIn("/grants", req.get_full_url())
+        self.assertIn("/v1/grants", req.get_full_url())
         self.assertEqual(req.get_method(), "GET")
 
     def test_create_grant_request_body(self):
@@ -609,7 +609,7 @@ class TestGL203CPrototypeFakeTransport(unittest.TestCase):
         )
         req = transport.calls[0]
         self.assertEqual(req.get_method(), "POST")
-        self.assertIn("/grants", req.get_full_url())
+        self.assertIn("/v1/grants", req.get_full_url())
         body = json.loads(req.data.decode("utf-8"))
         self.assertEqual(body["subjectId"], "gl203c-demo-subject")
         self.assertEqual(body["role"], "technician")
@@ -652,7 +652,7 @@ class TestGL203CPrototypeFakeTransport(unittest.TestCase):
         )
         req = transport.calls[0]
         self.assertEqual(req.get_method(), "POST")
-        self.assertIn("/agent-permissions/evaluate", req.get_full_url())
+        self.assertIn("/v1/agent-permissions/evaluate", req.get_full_url())
         body = json.loads(req.data.decode("utf-8"))
         self.assertEqual(body["agentId"], "agent-001")
         self.assertEqual(body["requestedScope"], "grants:read")
@@ -663,7 +663,7 @@ class TestGL203CPrototypeFakeTransport(unittest.TestCase):
         client.revoke_grant("grant-001", "demo-admin", "test revocation")
         req = transport.calls[0]
         self.assertEqual(req.get_method(), "POST")
-        self.assertIn("/grants/grant-001/revoke", req.get_full_url())
+        self.assertIn("/v1/grants/grant-001/revoke", req.get_full_url())
         body = json.loads(req.data.decode("utf-8"))
         self.assertEqual(body["revokedBy"], "demo-admin")
 

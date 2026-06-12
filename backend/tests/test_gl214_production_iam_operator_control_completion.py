@@ -343,7 +343,7 @@ class _BaseGL214Server(unittest.TestCase):
 
     def _create_operator(self, tenant_id: str = "tenant-a", role: str = "owner"):
         status, body, _raw = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Operator", "role": role, "tenantId": tenant_id},
             auth_header=self._admin_auth(),
         )
@@ -354,7 +354,7 @@ class _BaseGL214Server(unittest.TestCase):
 class TestGL214ImplementationBehavior(_BaseGL214Server):
     def test_missing_admin_token_fails_closed_on_operator_create(self):
         status, body, raw = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Op", "role": "owner", "tenantId": "tenant-a"},
         )
         self.assertEqual(status, 401)
@@ -363,7 +363,7 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
 
     def test_invalid_admin_token_fails_closed_on_operator_create(self):
         status, body, raw = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Op", "role": "owner", "tenantId": "tenant-a"},
             auth_header="Bearer wrong-token",
         )
@@ -382,7 +382,7 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
     def test_operator_token_cannot_create_operator(self):
         op = self._create_operator()
         status, body, raw = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Other", "role": "owner", "tenantId": "tenant-a"},
             auth_header=f"Bearer {op['token']}",
         )
@@ -393,7 +393,7 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
     def test_operator_token_cannot_revoke_operator(self):
         op = self._create_operator()
         status, body, raw = self._post_json(
-            f"/admin/operators/{op['operatorId']}/revoke",
+            f"/v1/admin/operators/{op['operatorId']}/revoke",
             {},
             auth_header=f"Bearer {op['token']}",
         )
@@ -404,12 +404,12 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
     def test_revoked_operator_token_cannot_authenticate(self):
         op = self._create_operator()
         status, body, _raw = self._post_json(
-            f"/admin/operators/{op['operatorId']}/revoke",
+            f"/v1/admin/operators/{op['operatorId']}/revoke",
             {},
             auth_header=self._admin_auth(),
         )
         self.assertEqual(status, 200, body)
-        status, body, raw = self._get("/operators/me", auth_header=f"Bearer {op['token']}")
+        status, body, raw = self._get("/v1/operators/me", auth_header=f"Bearer {op['token']}")
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
         self.assertNotIn(op["token"].encode(), raw)
@@ -422,7 +422,7 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
             tenant_id="tenant-a",
         )
         self.db_mod.execute("UPDATE operators SET active = 0 WHERE id = ?", (op.operator_id,))
-        status, body, raw = self._get("/operators/me", auth_header=f"Bearer {token}")
+        status, body, raw = self._get("/v1/operators/me", auth_header=f"Bearer {token}")
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
         self.assertNotIn(token.encode(), raw)
@@ -430,7 +430,7 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
     def test_operator_tenant_id_cannot_be_overridden_by_header(self):
         op = self._create_operator(tenant_id="tenant-a")
         status, body, _raw = self._get(
-            "/operators/me",
+            "/v1/operators/me",
             auth_header=f"Bearer {op['token']}",
             extra_headers={"X-Tenant-ID": "tenant-b"},
         )
@@ -439,7 +439,7 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
 
     def test_admin_create_operator_requires_explicit_tenant_assignment(self):
         status, body, _raw = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Op", "role": "owner"},
             auth_header=self._admin_auth(),
         )
@@ -449,7 +449,7 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
 
     def test_admin_create_operator_rejects_unknown_role(self):
         status, body, _raw = self._post_json(
-            "/admin/operators",
+            "/v1/admin/operators",
             {"name": "Op", "role": "superuser", "tenantId": "tenant-a"},
             auth_header=self._admin_auth(),
         )
@@ -458,7 +458,7 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
 
     def test_admin_list_get_revoke_preserve_safe_gl206_semantics(self):
         op = self._create_operator(tenant_id="tenant-a", role="auditor")
-        status, operators, _raw = self._get("/admin/operators", auth_header=self._admin_auth())
+        status, operators, _raw = self._get("/v1/admin/operators", auth_header=self._admin_auth())
         self.assertEqual(status, 200)
         self.assertEqual(len(operators), 1)
         listed = operators[0]
@@ -467,14 +467,14 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
         self.assertFalse(forbidden & set(listed))
 
         status, got, _raw = self._get(
-            f"/admin/operators/{op['operatorId']}",
+            f"/v1/admin/operators/{op['operatorId']}",
             auth_header=self._admin_auth(),
         )
         self.assertEqual(status, 200)
         self.assertFalse(forbidden & set(got))
 
         status, body, _raw = self._post_json(
-            f"/admin/operators/{op['operatorId']}/revoke",
+            f"/v1/admin/operators/{op['operatorId']}/revoke",
             {},
             auth_header=self._admin_auth(),
         )
@@ -484,7 +484,7 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
     def test_audit_entries_for_create_and_revoke_do_not_include_token_material(self):
         op = self._create_operator(tenant_id="tenant-a")
         self._post_json(
-            f"/admin/operators/{op['operatorId']}/revoke",
+            f"/v1/admin/operators/{op['operatorId']}/revoke",
             {},
             auth_header=self._admin_auth(),
         )

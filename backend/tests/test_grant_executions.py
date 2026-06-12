@@ -361,7 +361,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
 
-        status, data = self._http_get("/grant-executions", auth_token="auditor-token")
+        status, data = self._http_get("/v1/grant-executions", auth_token="auditor-token")
         self.assertEqual(status, 200)
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["grantId"], g.id)
@@ -379,7 +379,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         execution_id = result["executionId"]
 
         status, data = self._http_get(
-            f"/grant-executions/{execution_id}", auth_token="auditor-token"
+            f"/v1/grant-executions/{execution_id}", auth_token="auditor-token"
         )
         self.assertEqual(status, 200)
         self.assertEqual(data["id"], execution_id)
@@ -395,7 +395,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         )
 
         status, data = self._http_get(
-            f"/grants/{g.id}/executions", auth_token="auditor-token"
+            f"/v1/grants/{g.id}/executions", auth_token="auditor-token"
         )
         self.assertEqual(status, 200)
         self.assertEqual(len(data), 1)
@@ -412,7 +412,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         )
 
         status, data = self._http_get(
-            f"/grant-executions?grantId={g1.id}", auth_token="auditor-token"
+            f"/v1/grant-executions?grantId={g1.id}", auth_token="auditor-token"
         )
         self.assertEqual(status, 200)
         self.assertEqual(len(data), 1)
@@ -434,7 +434,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         )
 
         status, data = self._http_get(
-            "/grant-executions?operatorId=op-123", auth_token="auditor-token"
+            "/v1/grant-executions?operatorId=op-123", auth_token="auditor-token"
         )
         self.assertEqual(status, 200)
         self.assertEqual(len(data), 1)
@@ -447,7 +447,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self._insert_operator("viewer-1", "Viewer", "grant_admin", "viewer-token")
         # grant_admin is allowed, so use a different role
         self._insert_operator("nobody-1", "Nobody", "demo_operator", "nobody-token")
-        status, data = self._http_get("/grant-executions", auth_token="nobody-token")
+        status, data = self._http_get("/v1/grant-executions", auth_token="nobody-token")
         self.assertEqual(status, 403)
 
     # ──────────────────────────────────────────────
@@ -456,7 +456,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
     def test_get_nonexistent_execution_returns_404(self):
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
         status, data = self._http_get(
-            "/grant-executions/nonexistent-id", auth_token="auditor-token"
+            "/v1/grant-executions/nonexistent-id", auth_token="auditor-token"
         )
         self.assertEqual(status, 404)
         self.assertEqual(data["error"], "Grant execution not found")
@@ -469,7 +469,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
     def test_get_executions_for_nonexistent_grant_returns_404(self):
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
         status, data = self._http_get(
-            "/grants/nonexistent-id/executions", auth_token="auditor-token"
+            "/v1/grants/nonexistent-id/executions", auth_token="auditor-token"
         )
         self.assertEqual(status, 404)
 
@@ -484,7 +484,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             from fastapi.testclient import TestClient
             from backend.src.api.app import create_app
             client_no_op = TestClient(create_app(), raise_server_exceptions=False)
-            resp = client_no_op.get("/grant-executions")
+            resp = client_no_op.get("/v1/grant-executions")
             self.assertEqual(resp.status_code, 404)
         finally:
             bk_cfg.ENABLE_OPERATOR_MODEL = orig

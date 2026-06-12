@@ -36,10 +36,10 @@
     "python3 -m backend",
     "curl http://127.0.0.1:8765/health",
     "curl http://127.0.0.1:8765/readiness",
-    "curl -X POST http://127.0.0.1:8765/grants",
-    "curl -X POST http://127.0.0.1:8765/demo-action",
-    "curl http://127.0.0.1:8765/audit-events",
-    "curl -X POST http://127.0.0.1:8765/grants/{id}/revoke"
+    "curl -X POST http://127.0.0.1:8765/v1/grants",
+    "curl -X POST http://127.0.0.1:8765/v1/demo-action",
+    "curl http://127.0.0.1:8765/v1/audit-events",
+    "curl -X POST http://127.0.0.1:8765/v1/grants/{id}/revoke"
   ],
   "safety_caveats": [
     "No production SaaS readiness claim",

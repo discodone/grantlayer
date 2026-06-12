@@ -162,7 +162,7 @@ class TestGl093ValidFromValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload()
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 201)
         self.assertEqual(data.get("subjectId") or data.get("subject_id"), "sub-1")
@@ -174,7 +174,7 @@ class TestGl093ValidFromValidation(_BaseGl093):
             "validUntil": "2099-12-31T23:59:59",
         })
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 201)
 
@@ -185,7 +185,7 @@ class TestGl093ValidFromValidation(_BaseGl093):
             "validUntil": "2099-12-31T23:59:59+00:00",
         })
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 201)
 
@@ -193,7 +193,7 @@ class TestGl093ValidFromValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"validFrom": "not-a-date"})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -204,7 +204,7 @@ class TestGl093ValidFromValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"validUntil": "also-not"})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -218,7 +218,7 @@ class TestGl093ValidFromValidation(_BaseGl093):
             "validUntil": "2026-01-01T00:00:00Z",
         })
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -233,7 +233,7 @@ class TestGl093ValidFromValidation(_BaseGl093):
             "validUntil": "2026-01-01T00:00:00Z",
         })
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -247,7 +247,7 @@ class TestGl093ValidFromValidation(_BaseGl093):
             "validUntil": "2026-01-02T00:00:00Z",
         })
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 201)
 
@@ -255,7 +255,7 @@ class TestGl093ValidFromValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"validFrom": ""})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -266,7 +266,7 @@ class TestGl093ValidFromValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"validFrom": 1234567890})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -286,7 +286,7 @@ class TestGl093MaxUsesValidation(_BaseGl093):
         payload = self._grant_payload()
         payload.pop("maxUses", None)
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 201)
         self.assertIsNone(data.get("max_uses"))
@@ -295,7 +295,7 @@ class TestGl093MaxUsesValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"maxUses": 1})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 201)
         self.assertEqual(data.get("maxUses") or data.get("max_uses"), 1)
@@ -304,7 +304,7 @@ class TestGl093MaxUsesValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"maxUses": 0})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -315,7 +315,7 @@ class TestGl093MaxUsesValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"maxUses": -5})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -326,7 +326,7 @@ class TestGl093MaxUsesValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"maxUses": 1.5})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -337,7 +337,7 @@ class TestGl093MaxUsesValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"maxUses": "5"})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         # FastAPI/Pydantic coerces string to int; handler rejected it as invalid_max_uses
         self.assertIn(status, [201, 400, 422])
@@ -349,7 +349,7 @@ class TestGl093MaxUsesValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"maxUses": True})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         # FastAPI/Pydantic coerces bool to int; handler rejected it as invalid_max_uses
         self.assertIn(status, [201, 400, 422])
@@ -361,7 +361,7 @@ class TestGl093MaxUsesValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"maxUses": False})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -373,7 +373,7 @@ class TestGl093MaxUsesValidation(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"maxUses": None})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 201)
         self.assertIsNone(data.get("maxUses") or data.get("max_uses"))
@@ -391,7 +391,7 @@ class TestGl093RequiredFalsyFieldHandling(_BaseGl093):
         payload = self._grant_payload()
         del payload["subjectId"]
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -403,7 +403,7 @@ class TestGl093RequiredFalsyFieldHandling(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"subjectId": None})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -414,7 +414,7 @@ class TestGl093RequiredFalsyFieldHandling(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"resource": ""})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -425,7 +425,7 @@ class TestGl093RequiredFalsyFieldHandling(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"reason": "   "})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -437,7 +437,7 @@ class TestGl093RequiredFalsyFieldHandling(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"maxUses": 0})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -447,7 +447,7 @@ class TestGl093RequiredFalsyFieldHandling(_BaseGl093):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         payload = self._grant_payload({"validFrom": "bad"})
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grants", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         raw = json.dumps(data)
@@ -475,7 +475,7 @@ class TestGl093GrantRequestsValidation(_BaseGl093):
             "reason": "test",
         }
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -494,7 +494,7 @@ class TestGl093GrantRequestsValidation(_BaseGl093):
             "reason": "test",
         }
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -513,7 +513,7 @@ class TestGl093GrantRequestsValidation(_BaseGl093):
             "reason": "",
         }
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -532,7 +532,7 @@ class TestGl093GrantRequestsValidation(_BaseGl093):
             "reason": "Routine maintenance",
         }
         body = json.dumps(payload).encode()
-        req = self._make_handler("/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
+        req = self._make_handler("/v1/grant-requests", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 201)
         self.assertEqual(data.get("subjectId") or data.get("subject_id"), "sub-1")
@@ -581,7 +581,7 @@ class TestGl093PriorGLRegressions(_BaseGl093):
         before = self.grants_mod.list_grants()
         oversized = b"x" * (1_048_576 + 1)
         req = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token", body=oversized
+            "/v1/grants", method="POST", auth_header="Bearer owner-token", body=oversized
         )
         status, data = self._run_handler(req)
         self.assertIn(status, (400, 413, 422))
@@ -605,7 +605,7 @@ class TestGl093PriorGLRegressions(_BaseGl093):
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
         client = TestClient(create_app(), raise_server_exceptions=False)
-        resp = client.get("/grants")
+        resp = client.get("/v1/grants")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(resp.json().get("errorCode"), "admin_token_required")
 
@@ -617,7 +617,7 @@ class TestGl093PriorGLRegressions(_BaseGl093):
         valid_body = json.dumps({
             "subjectId": "sub-1", "action": "read", "resource": "repo-a"
         }).encode()
-        req = self._make_handler("/challenges", method="POST", body=valid_body)
+        req = self._make_handler("/v1/challenges", method="POST", body=valid_body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 401)
         self._assert_gl030_full(data)
@@ -628,7 +628,7 @@ class TestGl093PriorGLRegressions(_BaseGl093):
         importlib.reload(self.config_mod)
         import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, data = self._run_handler(req)
         self.assertEqual(status, 401)
         self.assertEqual(data.get("errorCode"), "operator_auth_required")
@@ -643,7 +643,7 @@ class TestGl093PriorGLRegressions(_BaseGl093):
         demo_body = json.dumps({
             "subjectId": "sub-1", "role": "engineer", "action": "read", "resource": "repo-a"
         }).encode()
-        req = self._make_handler("/demo-action", method="POST", body=demo_body)
+        req = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 401)
         self._assert_gl030_full(data)

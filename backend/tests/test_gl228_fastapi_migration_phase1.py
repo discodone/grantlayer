@@ -132,7 +132,7 @@ class TestGrantsAuthGuard(_GL228TestBase):
 
     def test_list_grants_no_auth_demo_mode(self):
         """In demo mode (no token required) list should return 200."""
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
 
@@ -140,13 +140,13 @@ class TestGrantsAuthGuard(_GL228TestBase):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "test-secret-token-16x"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         client = TestClient(create_app(), raise_server_exceptions=True)
-        resp = client.get("/grants")
+        resp = client.get("/v1/grants")
         self.assertIn(resp.status_code, (401, 403))
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN")
         os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
 
     def test_get_grant_not_found(self):
-        resp = self.client.get("/grants/nonexistent-id-0000")
+        resp = self.client.get("/v1/grants/nonexistent-id-0000")
         self.assertEqual(resp.status_code, 404)
         data = resp.json()
         self.assertIn("errorCode", data.get("detail", data))
@@ -174,11 +174,11 @@ class TestGrantsCRUDDemoMode(_GL228TestBase):
         super().setUp()
 
     def test_create_grant_201(self):
-        resp = self.client.post("/grants", json=self.VALID_BODY)
+        resp = self.client.post("/v1/grants", json=self.VALID_BODY)
         self.assertEqual(resp.status_code, 201)
 
     def test_create_grant_response_shape(self):
-        resp = self.client.post("/grants", json=self.VALID_BODY)
+        resp = self.client.post("/v1/grants", json=self.VALID_BODY)
         self.assertEqual(resp.status_code, 201)
         data = resp.json()
         for field in ("id", "subjectId", "role", "action", "resource",
@@ -188,37 +188,37 @@ class TestGrantsCRUDDemoMode(_GL228TestBase):
             self.assertIn(field, data, f"Missing field: {field}")
 
     def test_create_grant_signature_present(self):
-        resp = self.client.post("/grants", json=self.VALID_BODY)
+        resp = self.client.post("/v1/grants", json=self.VALID_BODY)
         self.assertTrue(resp.json()["signaturePresent"])
 
     def test_create_grant_not_revoked(self):
-        resp = self.client.post("/grants", json=self.VALID_BODY)
+        resp = self.client.post("/v1/grants", json=self.VALID_BODY)
         self.assertFalse(resp.json()["revoked"])
 
     def test_create_grant_subject_id_reflected(self):
-        resp = self.client.post("/grants", json=self.VALID_BODY)
+        resp = self.client.post("/v1/grants", json=self.VALID_BODY)
         self.assertEqual(resp.json()["subjectId"], "agent-001")
 
     def test_list_grants_returns_created(self):
-        self.client.post("/grants", json=self.VALID_BODY)
-        resp = self.client.get("/grants")
+        self.client.post("/v1/grants", json=self.VALID_BODY)
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
         # At least one grant in the list
         self.assertGreaterEqual(len(resp.json()), 1)
 
     def test_get_grant_by_id(self):
-        create_resp = self.client.post("/grants", json=self.VALID_BODY)
+        create_resp = self.client.post("/v1/grants", json=self.VALID_BODY)
         grant_id = create_resp.json()["id"]
-        resp = self.client.get(f"/grants/{grant_id}")
+        resp = self.client.get(f"/v1/grants/{grant_id}")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["id"], grant_id)
 
     def test_get_nonexistent_grant_404(self):
-        resp = self.client.get("/grants/does-not-exist-xyz")
+        resp = self.client.get("/v1/grants/does-not-exist-xyz")
         self.assertEqual(resp.status_code, 404)
 
     def test_list_grants_response_is_list(self):
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertIsInstance(resp.json(), list)
 
 
@@ -244,7 +244,7 @@ class TestGrantsValidation(_GL228TestBase):
         super().setUp()
 
     def _post(self, body: dict):
-        return self.client.post("/grants", json=body)
+        return self.client.post("/v1/grants", json=body)
 
     def test_missing_subject_id_400(self):
         body = dict(self.BASE_BODY)
@@ -318,12 +318,12 @@ class TestGrantsWorkspaceHeader(_GL228TestBase):
         super().setUp()
 
     def test_list_with_workspace_header_no_server_error(self):
-        resp = self.client.get("/grants", headers={"X-Workspace-Id": "default"})
+        resp = self.client.get("/v1/grants", headers={"X-Workspace-Id": "default"})
         self.assertNotEqual(resp.status_code // 100, 5)
 
     def test_create_with_workspace_header_no_server_error(self):
         resp = self.client.post(
-            "/grants",
+            "/v1/grants",
             json=self.BASE_BODY,
             headers={"X-Workspace-Id": "default"},
         )

@@ -148,92 +148,92 @@ class TestGl083OperatorMode(_BaseGl083):
         self.assertIn(resp.json().get("status"), ("ready", "not_ready"))
 
     def test_grants_without_auth_returns_401(self):
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_grant_detail_without_auth_returns_401(self):
-        resp = self.client.get("/grants/nonexistent-id")
+        resp = self.client.get("/v1/grants/nonexistent-id")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_audit_events_without_auth_returns_401(self):
-        resp = self.client.get("/audit-events")
+        resp = self.client.get("/v1/audit-events")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_challenges_without_auth_returns_401(self):
-        resp = self.client.get("/challenges")
+        resp = self.client.get("/v1/challenges")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_grant_executions_without_auth_returns_401(self):
-        resp = self.client.get("/grant-executions")
+        resp = self.client.get("/v1/grant-executions")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_grant_executions_for_grant_without_auth_returns_401(self):
-        resp = self.client.get("/grants/nonexistent-id/executions")
+        resp = self.client.get("/v1/grants/nonexistent-id/executions")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_evidence_without_auth_returns_401(self):
-        resp = self.client.get("/evidence/executions/nonexistent-id")
+        resp = self.client.get("/v1/evidence/executions/nonexistent-id")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_grants_owner_succeeds(self):
-        resp = self.client.get("/grants", headers=self._auth("owner-token"))
+        resp = self.client.get("/v1/grants", headers=self._auth("owner-token"))
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
 
     def test_grants_grant_admin_succeeds(self):
-        resp = self.client.get("/grants", headers=self._auth("admin-token"))
+        resp = self.client.get("/v1/grants", headers=self._auth("admin-token"))
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
 
     def test_grants_auditor_succeeds(self):
-        resp = self.client.get("/grants", headers=self._auth("auditor-token"))
+        resp = self.client.get("/v1/grants", headers=self._auth("auditor-token"))
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
 
     def test_grants_demo_operator_forbidden(self):
-        resp = self.client.get("/grants", headers=self._auth("demo-token"))
+        resp = self.client.get("/v1/grants", headers=self._auth("demo-token"))
         self.assertEqual(resp.status_code, 403)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
 
     def test_grant_detail_demo_operator_forbidden(self):
-        resp = self.client.get("/grants/nonexistent-id", headers=self._auth("demo-token"))
+        resp = self.client.get("/v1/grants/nonexistent-id", headers=self._auth("demo-token"))
         self.assertEqual(resp.status_code, 403)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
 
     def test_audit_events_demo_operator_forbidden(self):
-        resp = self.client.get("/audit-events", headers=self._auth("demo-token"))
+        resp = self.client.get("/v1/audit-events", headers=self._auth("demo-token"))
         self.assertEqual(resp.status_code, 403)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
 
     def test_error_responses_safe_json(self):
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
@@ -246,14 +246,14 @@ class TestGl083OperatorMode(_BaseGl083):
         self.assertNotIn("Bearer", body_str)
 
     def test_error_responses_no_stacktrace(self):
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 401)
         body_str = json.dumps(resp.json())
         self.assertNotIn("traceback", body_str.lower())
         self.assertNotIn("exception", body_str.lower())
 
     def test_authorized_grant_detail_returns_404_for_missing(self):
-        resp = self.client.get("/grants/nonexistent-id", headers=self._auth("owner-token"))
+        resp = self.client.get("/v1/grants/nonexistent-id", headers=self._auth("owner-token"))
         self.assertEqual(resp.status_code, 404)
         body = resp.json()
         self._assert_gl030_full(body)
@@ -278,52 +278,52 @@ class TestGl083LegacyMode(_BaseGl083):
         self.assertIn(resp.status_code, (200, 503))
 
     def test_grants_without_auth_returns_401(self):
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_grant_detail_without_auth_returns_401(self):
-        resp = self.client.get("/grants/nonexistent-id")
+        resp = self.client.get("/v1/grants/nonexistent-id")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_audit_events_without_auth_returns_401(self):
-        resp = self.client.get("/audit-events")
+        resp = self.client.get("/v1/audit-events")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_challenges_without_auth_returns_401(self):
-        resp = self.client.get("/challenges")
+        resp = self.client.get("/v1/challenges")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_grants_with_valid_admin_token_succeeds(self):
-        resp = self.client.get("/grants", headers=self._auth("legacy-admin-token"))
+        resp = self.client.get("/v1/grants", headers=self._auth("legacy-admin-token"))
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
 
     def test_grant_detail_with_valid_admin_token_succeeds(self):
-        resp = self.client.get("/grants/nonexistent-id", headers=self._auth("legacy-admin-token"))
+        resp = self.client.get("/v1/grants/nonexistent-id", headers=self._auth("legacy-admin-token"))
         self.assertEqual(resp.status_code, 404)
         self._assert_gl030_full(resp.json())
 
     def test_evidence_without_auth_returns_401(self):
-        resp = self.client.get("/evidence/executions/nonexistent-id")
+        resp = self.client.get("/v1/evidence/executions/nonexistent-id")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_error_responses_safe_json(self):
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 401)
         body = resp.json()
         self._assert_gl030_full(body)
@@ -352,40 +352,40 @@ class TestGl083OpenAPIContract(_BaseGl083):
 
     def test_openapi_grants_has_security(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/grants:", "/grants/{id}:")
+        section = self._section_between(text, "/v1/grants:", "/v1/grants/{id}:")
         self.assertIn("security:", section)
         self.assertIn("LegacyAdminToken", section)
         self.assertIn("OperatorToken", section)
 
     def test_openapi_grants_has_401_403(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/grants:", "/grants/{id}:")
+        section = self._section_between(text, "/v1/grants:", "/v1/grants/{id}:")
         self.assertIn('"401"', section)
         self.assertIn('"403"', section)
 
     def test_openapi_grant_detail_has_security(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/grants/{id}:", "/grants/{id}/revoke:")
+        section = self._section_between(text, "/v1/grants/{id}:", "/v1/grants/{id}/revoke:")
         self.assertIn("security:", section)
         self.assertIn("LegacyAdminToken", section)
         self.assertIn("OperatorToken", section)
 
     def test_openapi_grant_detail_has_401_403(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/grants/{id}:", "/grants/{id}/revoke:")
+        section = self._section_between(text, "/v1/grants/{id}:", "/v1/grants/{id}/revoke:")
         self.assertIn('"401"', section)
         self.assertIn('"403"', section)
 
     def test_openapi_audit_events_has_security(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/audit-events:", "/evidence/")
+        section = self._section_between(text, "/v1/audit-events:", "/v1/evidence/")
         self.assertIn("security:", section)
         self.assertIn("LegacyAdminToken", section)
         self.assertIn("OperatorToken", section)
 
     def test_openapi_audit_events_has_401_403(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/audit-events:", "/evidence/")
+        section = self._section_between(text, "/v1/audit-events:", "/v1/evidence/")
         self.assertIn('"401"', section)
         self.assertIn('"403"', section)
 
@@ -401,13 +401,13 @@ class TestGl083OpenAPIContract(_BaseGl083):
 
     def test_openapi_grant_requests_has_security(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/grant-requests:", "/grant-requests/{id}:")
+        section = self._section_between(text, "/v1/grant-requests:", "/v1/grant-requests/{id}:")
         self.assertIn("security:", section)
         self.assertIn("OperatorToken", section)
 
     def test_openapi_grant_executions_has_security(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/grant-executions:", "/grant-executions/{id}:")
+        section = self._section_between(text, "/v1/grant-executions:", "/v1/grant-executions/{id}:")
         self.assertIn("security:", section)
         self.assertIn("OperatorToken", section)
 

@@ -123,46 +123,46 @@ class TestGl082AuditEvents(_BaseGl082):
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
     def test_valid_limit_returns_200(self):
-        handler = self._make_handler("/audit-events?limit=5")
+        handler = self._make_handler("/v1/audit-events?limit=5")
         status, _ = self._run_handler(handler)
         self.assertEqual(status, 200)
 
     def test_missing_limit_uses_default(self):
-        handler = self._make_handler("/audit-events")
+        handler = self._make_handler("/v1/audit-events")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_limit_abc_returns_400(self):
-        handler = self._make_handler("/audit-events?limit=abc")
+        handler = self._make_handler("/v1/audit-events?limit=abc")
         status, body = self._run_handler(handler)
         self.assertIn(status, [400, 422])
         if status == 400:
             self.assertEqual(body.get("errorCode"), "INVALID_QUERY_PARAMETER")
 
     def test_limit_negative_returns_400(self):
-        handler = self._make_handler("/audit-events?limit=-1")
+        handler = self._make_handler("/v1/audit-events?limit=-1")
         status, body = self._run_handler(handler)
         self.assertIn(status, [400, 422])
         if status == 400:
             self.assertEqual(body.get("errorCode"), "INVALID_QUERY_PARAMETER")
 
     def test_limit_zero_returns_400(self):
-        handler = self._make_handler("/audit-events?limit=0")
+        handler = self._make_handler("/v1/audit-events?limit=0")
         status, body = self._run_handler(handler)
         self.assertIn(status, [400, 422])
         if status == 400:
             self.assertEqual(body.get("errorCode"), "INVALID_QUERY_PARAMETER")
 
     def test_excessive_limit_returns_400(self):
-        handler = self._make_handler("/audit-events?limit=1001")
+        handler = self._make_handler("/v1/audit-events?limit=1001")
         status, body = self._run_handler(handler)
         self.assertIn(status, [400, 422])
         if status == 400:
             self.assertEqual(body.get("errorCode"), "INVALID_QUERY_PARAMETER")
 
     def test_invalid_limit_response_no_stacktrace(self):
-        handler = self._make_handler("/audit-events?limit=abc")
+        handler = self._make_handler("/v1/audit-events?limit=abc")
         status, body = self._run_handler(handler)
         body_str = json.dumps(body)
         self.assertNotIn("traceback", body_str.lower())
@@ -174,13 +174,13 @@ class TestGl082AuditEvents(_BaseGl082):
             self.assertIn("reason", body)
 
     def test_limit_at_maximum_returns_200(self):
-        handler = self._make_handler("/audit-events?limit=1000")
+        handler = self._make_handler("/v1/audit-events?limit=1000")
         status, _ = self._run_handler(handler)
         self.assertEqual(status, 200)
 
     def test_limit_determinism_repeated_abc(self):
-        handler1 = self._make_handler("/audit-events?limit=abc")
-        handler2 = self._make_handler("/audit-events?limit=abc")
+        handler1 = self._make_handler("/v1/audit-events?limit=abc")
+        handler2 = self._make_handler("/v1/audit-events?limit=abc")
         status1, body1 = self._run_handler(handler1)
         status2, body2 = self._run_handler(handler2)
         self.assertEqual(status1, status2)
@@ -201,7 +201,7 @@ class TestGl082GrantExecutions(_BaseGl082):
 
     def test_valid_limit_returns_200(self):
         handler = self._make_handler(
-            "/grant-executions?limit=5",
+            "/v1/grant-executions?limit=5",
             auth_header="Bearer owner-token",
         )
         status, _ = self._run_handler(handler)
@@ -209,7 +209,7 @@ class TestGl082GrantExecutions(_BaseGl082):
 
     def test_missing_limit_returns_200(self):
         handler = self._make_handler(
-            "/grant-executions",
+            "/v1/grant-executions",
             auth_header="Bearer owner-token",
         )
         status, _ = self._run_handler(handler)
@@ -217,7 +217,7 @@ class TestGl082GrantExecutions(_BaseGl082):
 
     def test_limit_abc_returns_400(self):
         handler = self._make_handler(
-            "/grant-executions?limit=abc",
+            "/v1/grant-executions?limit=abc",
             auth_header="Bearer owner-token",
         )
         status, body = self._run_handler(handler)
@@ -227,7 +227,7 @@ class TestGl082GrantExecutions(_BaseGl082):
 
     def test_limit_negative_returns_400(self):
         handler = self._make_handler(
-            "/grant-executions?limit=-1",
+            "/v1/grant-executions?limit=-1",
             auth_header="Bearer owner-token",
         )
         status, body = self._run_handler(handler)
@@ -237,7 +237,7 @@ class TestGl082GrantExecutions(_BaseGl082):
 
     def test_limit_zero_returns_400(self):
         handler = self._make_handler(
-            "/grant-executions?limit=0",
+            "/v1/grant-executions?limit=0",
             auth_header="Bearer owner-token",
         )
         status, body = self._run_handler(handler)
@@ -247,7 +247,7 @@ class TestGl082GrantExecutions(_BaseGl082):
 
     def test_excessive_limit_returns_400(self):
         handler = self._make_handler(
-            "/grant-executions?limit=10001",
+            "/v1/grant-executions?limit=10001",
             auth_header="Bearer owner-token",
         )
         status, body = self._run_handler(handler)
@@ -285,7 +285,7 @@ class TestGl082GrantExecutionsForGrant(_BaseGl082):
 
     def test_valid_limit_returns_200(self):
         handler = self._make_handler(
-            f"/grants/{self.grant.id}/executions?limit=5",
+            f"/v1/grants/{self.grant.id}/executions?limit=5",
             auth_header="Bearer owner-token",
         )
         status, _ = self._run_handler(handler)
@@ -293,7 +293,7 @@ class TestGl082GrantExecutionsForGrant(_BaseGl082):
 
     def test_missing_limit_returns_200(self):
         handler = self._make_handler(
-            f"/grants/{self.grant.id}/executions",
+            f"/v1/grants/{self.grant.id}/executions",
             auth_header="Bearer owner-token",
         )
         status, _ = self._run_handler(handler)
@@ -301,7 +301,7 @@ class TestGl082GrantExecutionsForGrant(_BaseGl082):
 
     def test_limit_abc_returns_400(self):
         handler = self._make_handler(
-            f"/grants/{self.grant.id}/executions?limit=abc",
+            f"/v1/grants/{self.grant.id}/executions?limit=abc",
             auth_header="Bearer owner-token",
         )
         status, body = self._run_handler(handler)
@@ -311,7 +311,7 @@ class TestGl082GrantExecutionsForGrant(_BaseGl082):
 
     def test_limit_negative_returns_400(self):
         handler = self._make_handler(
-            f"/grants/{self.grant.id}/executions?limit=-1",
+            f"/v1/grants/{self.grant.id}/executions?limit=-1",
             auth_header="Bearer owner-token",
         )
         status, body = self._run_handler(handler)
@@ -321,7 +321,7 @@ class TestGl082GrantExecutionsForGrant(_BaseGl082):
 
     def test_limit_zero_returns_400(self):
         handler = self._make_handler(
-            f"/grants/{self.grant.id}/executions?limit=0",
+            f"/v1/grants/{self.grant.id}/executions?limit=0",
             auth_header="Bearer owner-token",
         )
         status, body = self._run_handler(handler)
@@ -331,7 +331,7 @@ class TestGl082GrantExecutionsForGrant(_BaseGl082):
 
     def test_excessive_limit_returns_400(self):
         handler = self._make_handler(
-            f"/grants/{self.grant.id}/executions?limit=10001",
+            f"/v1/grants/{self.grant.id}/executions?limit=10001",
             auth_header="Bearer owner-token",
         )
         status, body = self._run_handler(handler)
@@ -352,35 +352,35 @@ class TestGl082ParserDirectly(_BaseGl082):
         self.auth_mod = fresh_auth
 
     def test_parser_returns_default_for_missing(self):
-        status, body = self._run_handler(self._make_handler("/audit-events"))
+        status, body = self._run_handler(self._make_handler("/v1/audit-events"))
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_parser_returns_int_for_valid(self):
-        status, body = self._run_handler(self._make_handler("/audit-events?limit=42"))
+        status, body = self._run_handler(self._make_handler("/v1/audit-events?limit=42"))
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_parser_raises_for_abc(self):
-        status, body = self._run_handler(self._make_handler("/audit-events?limit=abc"))
+        status, body = self._run_handler(self._make_handler("/v1/audit-events?limit=abc"))
         self.assertIn(status, (400, 422))
         if status == 400:
             self.assertEqual(body.get("errorCode"), "INVALID_QUERY_PARAMETER")
 
     def test_parser_raises_for_below_minimum(self):
-        status, body = self._run_handler(self._make_handler("/audit-events?limit=0"))
+        status, body = self._run_handler(self._make_handler("/v1/audit-events?limit=0"))
         self.assertIn(status, (400, 422))
         if status == 400:
             self.assertEqual(body.get("errorCode"), "INVALID_QUERY_PARAMETER")
 
     def test_parser_raises_for_above_maximum(self):
-        status, body = self._run_handler(self._make_handler("/audit-events?limit=1001"))
+        status, body = self._run_handler(self._make_handler("/v1/audit-events?limit=1001"))
         self.assertIn(status, (400, 422))
         if status == 400:
             self.assertEqual(body.get("errorCode"), "INVALID_QUERY_PARAMETER")
 
     def test_parser_respects_custom_min_max(self):
-        status, body = self._run_handler(self._make_handler("/audit-events?limit=5"))
+        status, body = self._run_handler(self._make_handler("/v1/audit-events?limit=5"))
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
@@ -396,17 +396,17 @@ class TestGl082OpenAPIContract(_BaseGl082):
 
     def test_openapi_includes_400_for_audit_events(self):
         text = self._openapi_text()
-        section = text[text.find("/audit-events:"):text.find("/evidence/")]
+        section = text[text.find("/v1/audit-events:"):text.find("/v1/evidence/")]
         self.assertIn('"400"', section)
 
     def test_openapi_includes_400_for_grant_executions(self):
         text = self._openapi_text()
-        section = text[text.find("/grant-executions:"):text.find("/grant-executions/{id}:")]
+        section = text[text.find("/v1/grant-executions:"):text.find("/v1/grant-executions/{id}:")]
         self.assertIn('"400"', section)
 
     def test_openapi_includes_400_for_grant_executions_for_grant(self):
         text = self._openapi_text()
-        section = text[text.find("/grants/{id}/executions:"):text.find("/evidence/")]
+        section = text[text.find("/v1/grants/{id}/executions:"):text.find("/v1/evidence/")]
         self.assertIn('"400"', section)
 
     def test_openapi_documents_limit_as_integer(self):

@@ -161,7 +161,7 @@ class _BaseGl120(unittest.TestCase):
             if isinstance(body, (bytes, bytearray)) and len(body) > 0:
                 try:
                     body_dict = json.loads(body)
-                    if path == "/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
+                    if path == "/v1/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
                         body_dict = dict(body_dict)
                         body_dict["role"] = "operator"
                     resp = self.client.post(path, json=body_dict, headers=headers)
@@ -274,7 +274,7 @@ class TestGl120MissingTokenEvent(_BaseGl120):
     def test_missing_token_emits_auth_failed_event(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             status, _, _ = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertTrue(any("auth_failed" in msg for msg in cm.output))
@@ -282,7 +282,7 @@ class TestGl120MissingTokenEvent(_BaseGl120):
     def test_missing_token_event_has_reason_code(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             self._run_raw_handler(handler)
         payload = self._parse_log_json(
             next(msg for msg in cm.output if "auth_failed" in msg)
@@ -293,7 +293,7 @@ class TestGl120MissingTokenEvent(_BaseGl120):
     def test_missing_token_event_fields(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             self._run_raw_handler(handler)
         payload = self._parse_log_json(
             next(msg for msg in cm.output if "auth_failed" in msg)
@@ -301,12 +301,12 @@ class TestGl120MissingTokenEvent(_BaseGl120):
         self.assertEqual(payload["event"], "auth_failed")
         self.assertEqual(payload["status_code"], 401)
         self.assertEqual(payload["method"], "GET")
-        self.assertEqual(payload["path"], "/grants")
+        self.assertEqual(payload["path"], "/v1/grants")
 
     def test_missing_token_event_has_no_status_field(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             self._run_raw_handler(handler)
         payload = self._parse_log_json(
             next(msg for msg in cm.output if "auth_failed" in msg)
@@ -334,7 +334,7 @@ class TestGl120InvalidTokenEvent(_BaseGl120):
     def test_invalid_token_emits_auth_failed_event(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer wrong-token")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer wrong-token")
             status, _, _ = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertTrue(any("auth_failed" in msg for msg in cm.output))
@@ -342,7 +342,7 @@ class TestGl120InvalidTokenEvent(_BaseGl120):
     def test_invalid_token_event_has_reason_code(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer wrong-token")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer wrong-token")
             self._run_raw_handler(handler)
         payload = self._parse_log_json(
             next(msg for msg in cm.output if "auth_failed" in msg)
@@ -354,7 +354,7 @@ class TestGl120InvalidTokenEvent(_BaseGl120):
     def test_invalid_token_reason_code_is_not_unknown(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer wrong-token")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer wrong-token")
             self._run_raw_handler(handler)
         payload = self._parse_log_json(
             next(msg for msg in cm.output if "auth_failed" in msg)
@@ -364,7 +364,7 @@ class TestGl120InvalidTokenEvent(_BaseGl120):
     def test_invalid_token_event_includes_status_code(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer wrong-token")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer wrong-token")
             status, _, _ = self._run_raw_handler(handler)
         payload = self._parse_log_json(
             next(msg for msg in cm.output if "auth_failed" in msg)
@@ -404,7 +404,7 @@ class TestGl120ForbiddenRoleEvent(_BaseGl120):
         }).encode()
         with self.assertLogs(logger, level="INFO") as cm:
             handler = self._make_raw_handler(
-                "/grants",
+                "/v1/grants",
                 method="POST",
                 auth_header="Bearer auditor-token",
                 body=grant_body,
@@ -427,7 +427,7 @@ class TestGl120ForbiddenRoleEvent(_BaseGl120):
         }).encode()
         with self.assertLogs(logger, level="INFO") as cm:
             handler = self._make_raw_handler(
-                "/grants",
+                "/v1/grants",
                 method="POST",
                 auth_header="Bearer auditor-token",
                 body=grant_body,
@@ -454,7 +454,7 @@ class TestGl120ForbiddenRoleEvent(_BaseGl120):
         # Forbidden role → 403
         with self.assertLogs(logger, level="INFO") as cm_role:
             handler = self._make_raw_handler(
-                "/grants",
+                "/v1/grants",
                 method="POST",
                 auth_header="Bearer auditor-token",
                 body=grant_body,
@@ -466,7 +466,7 @@ class TestGl120ForbiddenRoleEvent(_BaseGl120):
 
         # Missing token → 401
         with self.assertLogs(logger, level="INFO") as cm_missing:
-            handler2 = self._make_raw_handler("/grants")
+            handler2 = self._make_raw_handler("/v1/grants")
             self._run_raw_handler(handler2)
         missing_payload = self._parse_log_json(
             next(msg for msg in cm_missing.output if "auth_failed" in msg)
@@ -500,10 +500,10 @@ class TestGl120RateLimitEvent(_BaseGl120):
     def test_rate_limit_emits_rate_limited_event(self):
         logger = logging.getLogger("grantlayer.server")
         for _ in range(2):
-            handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+            handler = self._make_raw_handler("/v1/challenges", auth_header="Bearer owner-token")
             self._run_raw_handler(handler)
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+            handler = self._make_raw_handler("/v1/challenges", auth_header="Bearer owner-token")
             status, _, _ = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertTrue(any("rate_limited" in msg for msg in cm.output))
@@ -516,10 +516,10 @@ class TestGl120RateLimitEvent(_BaseGl120):
     def test_rate_limit_event_has_no_raw_token(self):
         logger = logging.getLogger("grantlayer.server")
         for _ in range(2):
-            handler = self._make_raw_handler("/challenges", auth_header="Bearer secret-rate-token")
+            handler = self._make_raw_handler("/v1/challenges", auth_header="Bearer secret-rate-token")
             self._run_raw_handler(handler)
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/challenges", auth_header="Bearer secret-rate-token")
+            handler = self._make_raw_handler("/v1/challenges", auth_header="Bearer secret-rate-token")
             self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("secret-rate-token", log_str)
@@ -546,7 +546,7 @@ class TestGl120OperatorAuthFailureEvent(_BaseGl120):
     def test_operator_missing_auth_emits_event(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             status, _, _ = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertTrue(any("auth_failed" in msg for msg in cm.output))
@@ -558,7 +558,7 @@ class TestGl120OperatorAuthFailureEvent(_BaseGl120):
     def test_operator_invalid_auth_emits_event(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer bad")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer bad")
             status, _, _ = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertTrue(any("auth_failed" in msg for msg in cm.output))
@@ -570,7 +570,7 @@ class TestGl120OperatorAuthFailureEvent(_BaseGl120):
 
     def test_multiple_endpoints_all_emit_auth_failed(self):
         logger = logging.getLogger("grantlayer.server")
-        endpoints = ["/grants", "/audit-events", "/grant-requests"]
+        endpoints = ["/v1/grants", "/v1/audit-events", "/v1/grant-requests"]
         for endpoint in endpoints:
             with self.assertLogs(logger, level="INFO") as cm:
                 handler = self._make_raw_handler(endpoint)
@@ -601,7 +601,7 @@ class TestGl120CorrelationIdInAuthEvent(_BaseGl120):
     def test_auth_failed_event_includes_correlation_id(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             self._run_raw_handler(handler)
         payload = self._parse_log_json(
             next(msg for msg in cm.output if "auth_failed" in msg)
@@ -613,7 +613,7 @@ class TestGl120CorrelationIdInAuthEvent(_BaseGl120):
     def test_auth_failed_correlation_id_matches_response_header(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             _, resp_headers, _ = self._run_raw_handler(handler)
         response_cid = resp_headers.get("X-Correlation-ID")
         self.assertIsNotNone(response_cid)
@@ -626,7 +626,7 @@ class TestGl120CorrelationIdInAuthEvent(_BaseGl120):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
             handler = self._make_raw_handler(
-                "/grants",
+                "/v1/grants",
                 correlation_id_header="trace-gl120-test",
             )
             self._run_raw_handler(handler)
@@ -660,7 +660,7 @@ class TestGl120ReasonCodeStability(_BaseGl120):
         logger = logging.getLogger("grantlayer.server")
         for _ in range(2):
             with self.assertLogs(logger, level="INFO") as cm:
-                handler = self._make_raw_handler("/grants")
+                handler = self._make_raw_handler("/v1/grants")
                 self._run_raw_handler(handler)
             payload = self._parse_log_json(
                 next(msg for msg in cm.output if "auth_failed" in msg)
@@ -682,7 +682,7 @@ class TestGl120ReasonCodeStability(_BaseGl120):
         for _ in range(2):
             with self.assertLogs(logger, level="INFO") as cm:
                 handler = self._make_raw_handler(
-                    "/grants",
+                    "/v1/grants",
                     method="POST",
                     auth_header="Bearer auditor-token",
                     body=grant_body,
@@ -696,7 +696,7 @@ class TestGl120ReasonCodeStability(_BaseGl120):
     def test_reason_code_is_non_empty_string(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             self._run_raw_handler(handler)
         payload = self._parse_log_json(
             next(msg for msg in cm.output if "auth_failed" in msg)
@@ -725,7 +725,7 @@ class TestGl120SecuritySafety(_BaseGl120):
     def test_raw_token_not_in_auth_failed_log(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer secret-token-gl120")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer secret-token-gl120")
             self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("secret-token-gl120", log_str)
@@ -733,7 +733,7 @@ class TestGl120SecuritySafety(_BaseGl120):
     def test_bearer_scheme_not_in_auth_failed_log(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer secret-token-gl120")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer secret-token-gl120")
             self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("Bearer", log_str)
@@ -741,7 +741,7 @@ class TestGl120SecuritySafety(_BaseGl120):
     def test_authorization_header_name_not_in_auth_failed_log(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer secret-token-gl120")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer secret-token-gl120")
             self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("authorization", log_str.lower())
@@ -751,7 +751,7 @@ class TestGl120SecuritySafety(_BaseGl120):
         sensitive_body = json.dumps({"secret": "my-private-value-gl120"}).encode()
         with self.assertLogs(logger, level="INFO") as cm:
             handler = self._make_raw_handler(
-                "/grants",
+                "/v1/grants",
                 method="POST",
                 auth_header="Bearer wrong-token",
                 body=sensitive_body,
@@ -763,7 +763,7 @@ class TestGl120SecuritySafety(_BaseGl120):
     def test_no_private_key_or_secret_in_logs(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer wrong-token")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer wrong-token")
             self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("private_key", log_str)
@@ -789,14 +789,14 @@ class TestGl120LoggingFailureSafety(_BaseGl120):
 
     def test_auth_logging_failure_preserves_401(self):
         with patch("backend.src.core.logging_utils.safe_log", side_effect=RuntimeError("log crash")):
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             status, _, body = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertIn("errorCode", body)
 
     def test_auth_logging_failure_preserves_success_200(self):
         with patch("backend.src.core.logging_utils.safe_log", side_effect=RuntimeError("log crash")):
-            handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
             status, _, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
@@ -815,7 +815,7 @@ class TestGl120LoggingFailureSafety(_BaseGl120):
         }).encode()
         with patch("backend.src.core.logging_utils.safe_log", side_effect=RuntimeError("log crash")):
             handler = self._make_raw_handler(
-                "/grants",
+                "/v1/grants",
                 method="POST",
                 auth_header="Bearer auditor-token",
                 body=grant_body,
@@ -843,19 +843,19 @@ class TestGl120ResponseSemanticsPreserved(_BaseGl120):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def test_missing_token_response_unchanged(self):
-        handler = self._make_raw_handler("/grants")
+        handler = self._make_raw_handler("/v1/grants")
         status, _, body = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertIn("errorCode", body)
 
     def test_invalid_token_response_unchanged(self):
-        handler = self._make_raw_handler("/grants", auth_header="Bearer wrong-token")
+        handler = self._make_raw_handler("/v1/grants", auth_header="Bearer wrong-token")
         status, _, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_valid_auth_response_unchanged(self):
-        handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+        handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
         status, _, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
@@ -863,14 +863,14 @@ class TestGl120ResponseSemanticsPreserved(_BaseGl120):
     def test_gl117_structured_logging_preserved(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
             status, _, _ = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertTrue(any("request_completed" in msg for msg in cm.output))
 
     def test_gl118_correlation_propagation_preserved(self):
         handler = self._make_raw_handler(
-            "/grants",
+            "/v1/grants",
             auth_header="Bearer owner-token",
             correlation_id_header="persist-check-id",
         )

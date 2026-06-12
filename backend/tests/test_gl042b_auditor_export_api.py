@@ -112,7 +112,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_exists_and_returns_200_for_valid_request(self):
         """POST /auditor/exports/build returns 200 for valid request."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-123",
@@ -161,7 +161,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_missing_auth_returns_401(self):
         """POST /auditor/exports/build without auth returns 401."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             body={},
         )
         self.assertEqual(status, 401)
@@ -169,7 +169,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_returns_400_for_invalid_json(self):
         """POST /auditor/exports/build with invalid JSON returns 400."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body=b"invalid json",
         )
@@ -182,7 +182,7 @@ class TestAuditorExportAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Admin", "grant_admin", "op-token-1")
 
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer op-token-1",
             body={"exportId": "exp-123"},
         )
@@ -196,7 +196,7 @@ class TestAuditorExportAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Owner", "owner", "op-token-1")
 
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer op-token-1",
             body={"exportId": "exp-123"},
         )
@@ -210,7 +210,7 @@ class TestAuditorExportAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Auditor", "auditor", "op-token-1")
 
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer op-token-1",
             body={"exportId": "exp-123"},
         )
@@ -224,7 +224,7 @@ class TestAuditorExportAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Demo", "demo_operator", "op-token-1")
 
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer op-token-1",
             body={},
         )
@@ -236,13 +236,13 @@ class TestAuditorExportAPI(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
 
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             body={},
         )
         self.assertEqual(status, 401)
 
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer wrong-token",
             body={},
         )
@@ -251,7 +251,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_returns_blocked_for_denied_permission(self):
         """POST /auditor/exports/build returns blocked when permission is denied."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-perm-block",
@@ -275,7 +275,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_returns_incomplete_for_missing_sections(self):
         """POST /auditor/exports/build returns incomplete for missing sections."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={"exportId": "exp-incomplete"},
         )
@@ -288,7 +288,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_returns_needs_review_for_some_missing(self):
         """POST /auditor/exports/build returns needs_review when some sections missing."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-needs-review",
@@ -307,7 +307,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_omits_details_when_include_details_false(self):
         """POST /auditor/exports/build omits details when includeDetails=False."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-no-details",
@@ -334,7 +334,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_includes_details_when_include_details_true(self):
         """POST /auditor/exports/build includes details when includeDetails=True."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-with-details",
@@ -364,7 +364,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_returns_404_for_get(self):
         """GET /auditor/exports/build returns 404 or 405 (POST only)."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             method="GET",
             auth="Bearer test-admin-token",
         )
@@ -373,7 +373,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_empty_body_returns_valid_export(self):
         """POST /auditor/exports/build with empty body returns valid export."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={},
         )
@@ -386,7 +386,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_handles_all_optional_fields(self):
         """POST /auditor/exports/build handles all optional fields."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-full",
@@ -420,7 +420,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_no_secrets_at_top_level(self):
         """POST /auditor/exports/build does not expose secrets at top level."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-secrets",
@@ -437,7 +437,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_returns_blocked_for_policy_failed(self):
         """POST /auditor/exports/build returns blocked when policy fails."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-policy-fail",
@@ -461,7 +461,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_returns_warning_for_approval_pending(self):
         """POST /auditor/exports/build returns warning when approval pending."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-approval-pending",
@@ -485,7 +485,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_returns_blocked_for_critical_findings(self):
         """POST /auditor/exports/build returns blocked for critical auditor findings."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-critical",
@@ -512,7 +512,7 @@ class TestAuditorExportAPI(unittest.TestCase):
     def test_build_endpoint_returns_blocked_for_compliance_critical_gaps(self):
         """POST /auditor/exports/build returns blocked for critical compliance gaps."""
         status, resp = self._run_handler(
-            "/auditor/exports/build",
+            "/v1/auditor/exports/build",
             auth="Bearer test-admin-token",
             body={
                 "exportId": "exp-compliance-critical",

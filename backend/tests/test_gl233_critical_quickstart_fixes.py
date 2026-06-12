@@ -171,49 +171,49 @@ class TestAuditEventAfterGrantCreate(_GL233TestBase):
     """BUG 3: POST /grants must produce an audit event in GET /audit-events."""
 
     def test_audit_events_empty_before_grant(self):
-        resp = self.client.get("/audit-events", headers=self._jwt_header())
+        resp = self.client.get("/v1/audit-events", headers=self._jwt_header())
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json(), [])
 
     def test_audit_event_created_after_grant(self):
         self.client.post(
-            "/grants",
+            "/v1/grants",
             json=_GRANT_BODY,
             headers={**self._jwt_header(), "Content-Type": "application/json"},
         )
-        resp = self.client.get("/audit-events", headers=self._jwt_header())
+        resp = self.client.get("/v1/audit-events", headers=self._jwt_header())
         self.assertEqual(resp.status_code, 200)
         events = resp.json()
         self.assertGreater(len(events), 0, "Audit events must not be empty after creating a grant")
 
     def test_audit_event_has_correct_subject_id(self):
         self.client.post(
-            "/grants",
+            "/v1/grants",
             json=_GRANT_BODY,
             headers={**self._jwt_header(), "Content-Type": "application/json"},
         )
-        events = self.client.get("/audit-events", headers=self._jwt_header()).json()
+        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()
         subjects = [e.get("subjectId") or e.get("subject_id") for e in events]
         self.assertIn("agent-gl233", subjects)
 
     def test_audit_event_is_approved(self):
         self.client.post(
-            "/grants",
+            "/v1/grants",
             json=_GRANT_BODY,
             headers={**self._jwt_header(), "Content-Type": "application/json"},
         )
-        events = self.client.get("/audit-events", headers=self._jwt_header()).json()
+        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()
         self.assertTrue(any(e.get("approved") for e in events),
                         "Grant-create audit event must have approved=true")
 
     def test_audit_event_has_matched_grant_id(self):
         create_resp = self.client.post(
-            "/grants",
+            "/v1/grants",
             json=_GRANT_BODY,
             headers={**self._jwt_header(), "Content-Type": "application/json"},
         )
         grant_id = create_resp.json().get("id")
-        events = self.client.get("/audit-events", headers=self._jwt_header()).json()
+        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()
         matched_ids = [e.get("matchedGrantId") or e.get("matched_grant_id") for e in events]
         self.assertIn(grant_id, matched_ids,
                       "Audit event must reference the created grant's ID")
@@ -222,16 +222,16 @@ class TestAuditEventAfterGrantCreate(_GL233TestBase):
         for i in range(3):
             body = {**_GRANT_BODY, "subjectId": f"agent-{i:03d}"}
             self.client.post(
-                "/grants",
+                "/v1/grants",
                 json=body,
                 headers={**self._jwt_header(), "Content-Type": "application/json"},
             )
-        events = self.client.get("/audit-events", headers=self._jwt_header()).json()
+        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()
         self.assertGreaterEqual(len(events), 3)
 
     def test_grant_create_returns_201(self):
         resp = self.client.post(
-            "/grants",
+            "/v1/grants",
             json=_GRANT_BODY,
             headers={**self._jwt_header(), "Content-Type": "application/json"},
         )
@@ -246,14 +246,14 @@ class TestAuthTokenEndpoint(_GL233TestBase):
 
     def test_token_endpoint_returns_200_with_valid_credentials(self):
         resp = self.client.post(
-            "/auth/token",
+            "/v1/auth/token",
             json={"operator_id": "dev", "secret": _ADMIN_TOKEN},
         )
         self.assertEqual(resp.status_code, 200, resp.text)
 
     def test_token_response_has_access_token(self):
         resp = self.client.post(
-            "/auth/token",
+            "/v1/auth/token",
             json={"operator_id": "dev", "secret": _ADMIN_TOKEN},
         )
         data = resp.json()
@@ -262,21 +262,21 @@ class TestAuthTokenEndpoint(_GL233TestBase):
 
     def test_token_response_type_is_bearer(self):
         resp = self.client.post(
-            "/auth/token",
+            "/v1/auth/token",
             json={"operator_id": "dev", "secret": _ADMIN_TOKEN},
         )
         self.assertEqual(resp.json()["token_type"], "bearer")
 
     def test_token_response_expires_in_3600(self):
         resp = self.client.post(
-            "/auth/token",
+            "/v1/auth/token",
             json={"operator_id": "dev", "secret": _ADMIN_TOKEN},
         )
         self.assertEqual(resp.json()["expires_in"], 3600)
 
     def test_issued_jwt_is_valid(self):
         resp = self.client.post(
-            "/auth/token",
+            "/v1/auth/token",
             json={"operator_id": "dev", "secret": _ADMIN_TOKEN},
         )
         token = resp.json()["access_token"]
@@ -286,26 +286,26 @@ class TestAuthTokenEndpoint(_GL233TestBase):
 
     def test_token_works_for_authenticated_endpoints(self):
         resp = self.client.post(
-            "/auth/token",
+            "/v1/auth/token",
             json={"operator_id": "dev", "secret": _ADMIN_TOKEN},
         )
         token = resp.json()["access_token"]
         grants_resp = self.client.get(
-            "/grants",
+            "/v1/grants",
             headers={"Authorization": f"Bearer {token}"},
         )
         self.assertEqual(grants_resp.status_code, 200)
 
     def test_wrong_secret_returns_401(self):
         resp = self.client.post(
-            "/auth/token",
+            "/v1/auth/token",
             json={"operator_id": "dev", "secret": "wrong-secret"},
         )
         self.assertEqual(resp.status_code, 401)
 
     def test_wrong_secret_error_code(self):
         resp = self.client.post(
-            "/auth/token",
+            "/v1/auth/token",
             json={"operator_id": "dev", "secret": "wrong-secret"},
         )
         self.assertEqual(resp.json().get("errorCode"), "invalid_credentials")
@@ -315,7 +315,7 @@ class TestAuthTokenEndpoint(_GL233TestBase):
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
         client = TestClient(create_app(), raise_server_exceptions=True)
         resp = client.post(
-            "/auth/token",
+            "/v1/auth/token",
             json={"operator_id": "dev", "secret": _ADMIN_TOKEN},
         )
         self.assertEqual(resp.status_code, 501)
@@ -333,7 +333,7 @@ class TestEndToEndQuickstartFlow(_GL233TestBase):
     def test_full_quickstart_flow(self):
         # Step 1: get token
         token_resp = self.client.post(
-            "/auth/token",
+            "/v1/auth/token",
             json={"operator_id": "dev", "secret": _ADMIN_TOKEN},
         )
         self.assertEqual(token_resp.status_code, 200)
@@ -341,12 +341,12 @@ class TestEndToEndQuickstartFlow(_GL233TestBase):
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
         # Step 2: create grant
-        grant_resp = self.client.post("/grants", json=_GRANT_BODY, headers=headers)
+        grant_resp = self.client.post("/v1/grants", json=_GRANT_BODY, headers=headers)
         self.assertEqual(grant_resp.status_code, 201)
         grant_id = grant_resp.json()["id"]
 
         # Step 3: verify audit events
-        audit_resp = self.client.get("/audit-events", headers=headers)
+        audit_resp = self.client.get("/v1/audit-events", headers=headers)
         self.assertEqual(audit_resp.status_code, 200)
         events = audit_resp.json()
         self.assertGreater(len(events), 0, "Audit events must not be empty")
@@ -373,7 +373,7 @@ class TestQuickstartMdContent(unittest.TestCase):
 
     def test_quickstart_documents_auth_token_endpoint(self):
         content = self._read_quickstart()
-        self.assertIn("/auth/token", content,
+        self.assertIn("/v1/auth/token", content,
                       "QUICKSTART.md must document the /auth/token endpoint")
 
     def test_quickstart_operator_model_doc_corrected(self):

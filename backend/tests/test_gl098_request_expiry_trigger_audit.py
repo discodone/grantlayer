@@ -307,7 +307,7 @@ class TestGl098ServerApprovalPath(_BaseGl098):
         req = self._create_old_request()
         approval_body = json.dumps({"comment": "Approved"}).encode()
         http_req = self._make_handler(
-            f"/grant-requests/{req.id}/approve",
+            f"/v1/grant-requests/{req.id}/approve",
             method="POST",
             auth_header="Bearer approver-token",
             body=approval_body,
@@ -501,7 +501,7 @@ class TestGl098PriorGLRegressions(_BaseGl098):
         valid_body = json.dumps({
             "subjectId": "sub-1", "action": "read", "resource": "repo-a"
         }).encode()
-        req = self._make_handler("/challenges", method="POST", body=valid_body)
+        req = self._make_handler("/v1/challenges", method="POST", body=valid_body)
         status, data = self._run_handler(req)
         self.assertEqual(status, 401)
         self._assert_gl030_full(data)
@@ -513,7 +513,7 @@ class TestGl098PriorGLRegressions(_BaseGl098):
         importlib.reload(self.config_mod)
         import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, data = self._run_handler(req)
         self.assertEqual(status, 401)
         self.assertEqual(data.get("errorCode"), "operator_auth_required")
@@ -536,7 +536,7 @@ class TestGl098PriorGLRegressions(_BaseGl098):
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
         client = TestClient(create_app(), raise_server_exceptions=False)
-        resp = client.get("/grants")
+        resp = client.get("/v1/grants")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(resp.json().get("errorCode"), "admin_token_required")
 

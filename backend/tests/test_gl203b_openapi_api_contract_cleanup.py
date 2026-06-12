@@ -257,29 +257,29 @@ class TestGL203BEndpointSecurity(unittest.TestCase):
         self.assertIsNone(security, "/readiness must not require auth (no security field)")
 
     def test_grants_post_has_security(self):
-        if "/grants" not in self.paths:
-            self.skipTest("/grants not in OpenAPI")
-        security = self._get_security("/grants", "post")
+        if "/v1/grants" not in self.paths:
+            self.skipTest("/v1/grants not in OpenAPI")
+        security = self._get_security("/v1/grants", "post")
         self.assertIsNotNone(security, "POST /grants must have security requirements")
         self.assertGreater(len(security), 0, "POST /grants must have at least one security scheme")
 
     def test_audit_events_has_security(self):
-        if "/audit-events" not in self.paths:
-            self.skipTest("/audit-events not in OpenAPI")
-        security = self._get_security("/audit-events", "get")
+        if "/v1/audit-events" not in self.paths:
+            self.skipTest("/v1/audit-events not in OpenAPI")
+        security = self._get_security("/v1/audit-events", "get")
         self.assertIsNotNone(security, "GET /audit-events must have security requirements")
 
     def test_demo_action_has_security(self):
-        if "/demo-action" not in self.paths:
-            self.skipTest("/demo-action not in OpenAPI")
-        security = self._get_security("/demo-action", "post")
+        if "/v1/demo-action" not in self.paths:
+            self.skipTest("/v1/demo-action not in OpenAPI")
+        security = self._get_security("/v1/demo-action", "post")
         self.assertIsNotNone(security, "POST /demo-action must have security requirements")
         self.assertGreater(len(security), 0, "POST /demo-action must require auth")
 
     def test_demo_tamper_has_security_or_is_guarded(self):
-        tamper_path = "/demo/tamper-grant/{id}"
+        tamper_path = "/v1/demo/tamper-grant/{id}"
         if tamper_path not in self.paths:
-            self.skipTest("/demo/tamper-grant/{id} not in OpenAPI")
+            self.skipTest("/v1/demo/tamper-grant/{id} not in OpenAPI")
         endpoint = self.paths.get(tamper_path, {})
         op = endpoint.get("post", {})
         desc = op.get("description", "").lower()
@@ -440,27 +440,27 @@ class TestGL203BOperatorsMeSchema(unittest.TestCase):
         self.paths = self.openapi.get("paths", {})
 
     def test_operators_me_has_tenant_id_field(self):
-        if "/operators/me" not in self.paths:
-            self.skipTest("/operators/me not in OpenAPI")
-        op = self.paths["/operators/me"].get("get", {})
+        if "/v1/operators/me" not in self.paths:
+            self.skipTest("/v1/operators/me not in OpenAPI")
+        op = self.paths["/v1/operators/me"].get("get", {})
         schema = op.get("responses", {}).get("200", {}).get("content", {}) \
                    .get("application/json", {}).get("schema", {})
         props = schema.get("properties", {})
         self.assertTrue(
             "tenantId" in props,
-            "/operators/me 200 response schema must include tenantId field"
+            "/v1/operators/me 200 response schema must include tenantId field"
         )
 
     def test_operators_me_has_active_field(self):
-        if "/operators/me" not in self.paths:
-            self.skipTest("/operators/me not in OpenAPI")
-        op = self.paths["/operators/me"].get("get", {})
+        if "/v1/operators/me" not in self.paths:
+            self.skipTest("/v1/operators/me not in OpenAPI")
+        op = self.paths["/v1/operators/me"].get("get", {})
         schema = op.get("responses", {}).get("200", {}).get("content", {}) \
                    .get("application/json", {}).get("schema", {})
         props = schema.get("properties", {})
         self.assertTrue(
             "active" in props,
-            "/operators/me 200 response schema must include active field"
+            "/v1/operators/me 200 response schema must include active field"
         )
 
 

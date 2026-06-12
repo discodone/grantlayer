@@ -108,7 +108,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
     # ── GET /agent-permissions/profiles ─────────────────────────
     def test_list_profiles_returns_200_for_authorized_legacy_admin_token(self):
         status, body = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status, 200)
@@ -120,7 +120,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
 
     def test_list_profiles_returns_deterministic_profile_list(self):
         status, body = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status, 200)
@@ -133,12 +133,12 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         self.assertIn("compliance_reviewer", names_set)
 
     def test_list_profiles_no_admin_token_returns_401(self):
-        status, body = self._run_handler("/agent-permissions/profiles")
+        status, body = self._run_handler("/v1/agent-permissions/profiles")
         self.assertEqual(status, 401)
 
     def test_list_profiles_wrong_token_returns_403(self):
         status, body = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer wrong-token",
         )
         self.assertEqual(status, 403)
@@ -148,7 +148,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("owner-1", "Owner One", "owner", "owner-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer owner-token",
         )
         self.assertEqual(status, 200)
@@ -159,7 +159,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("admin-1", "Admin One", "grant_admin", "admin-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer admin-token",
         )
         self.assertEqual(status, 200)
@@ -170,7 +170,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("auditor-1", "Auditor One", "auditor", "auditor-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer auditor-token",
         )
         self.assertEqual(status, 403)
@@ -180,7 +180,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("demo-1", "Demo Op", "demo_operator", "demo-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer demo-token",
         )
         self.assertEqual(status, 403)
@@ -188,7 +188,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
     # ── GET /agent-permissions/profiles/:name ───────────────────
     def test_get_profile_returns_known_profile(self):
         status, body = self._run_handler(
-            "/agent-permissions/profiles/auditor_readonly",
+            "/v1/agent-permissions/profiles/auditor_readonly",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status, 200)
@@ -199,7 +199,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
 
     def test_get_profile_unknown_returns_404(self):
         status, body = self._run_handler(
-            "/agent-permissions/profiles/nonexistent",
+            "/v1/agent-permissions/profiles/nonexistent",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status, 404)
@@ -208,11 +208,11 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
 
     def test_get_profile_case_insensitive(self):
         status_lower, body_lower = self._run_handler(
-            "/agent-permissions/profiles/auditor_readonly",
+            "/v1/agent-permissions/profiles/auditor_readonly",
             auth="Bearer test-admin-token",
         )
         status_upper, body_upper = self._run_handler(
-            "/agent-permissions/profiles/AUDITOR_READONLY",
+            "/v1/agent-permissions/profiles/AUDITOR_READONLY",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status_lower, 200)
@@ -220,7 +220,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         self.assertEqual(body_lower["scopes"], body_upper["scopes"])
 
     def test_get_profile_missing_auth_returns_401(self):
-        status, body = self._run_handler("/agent-permissions/profiles/auditor_readonly")
+        status, body = self._run_handler("/v1/agent-permissions/profiles/auditor_readonly")
         self.assertEqual(status, 401)
 
     def test_get_profile_owner_allowed_in_operator_mode(self):
@@ -228,7 +228,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("owner-1", "Owner One", "owner", "owner-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles/auditor_readonly",
+            "/v1/agent-permissions/profiles/auditor_readonly",
             auth="Bearer owner-token",
         )
         self.assertEqual(status, 200)
@@ -239,7 +239,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("admin-1", "Admin One", "grant_admin", "admin-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles/auditor_readonly",
+            "/v1/agent-permissions/profiles/auditor_readonly",
             auth="Bearer admin-token",
         )
         self.assertEqual(status, 200)
@@ -250,7 +250,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("auditor-1", "Auditor One", "auditor", "auditor-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles/auditor_readonly",
+            "/v1/agent-permissions/profiles/auditor_readonly",
             auth="Bearer auditor-token",
         )
         self.assertEqual(status, 403)
@@ -260,7 +260,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         self._insert_operator("demo-1", "Demo Op", "demo_operator", "demo-token")
         status, body = self._run_handler(
-            "/agent-permissions/profiles/auditor_readonly",
+            "/v1/agent-permissions/profiles/auditor_readonly",
             auth="Bearer demo-token",
         )
         self.assertEqual(status, 403)
@@ -268,7 +268,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
     # ── Secrets safety ──────────────────────────────────────────
     def test_list_profiles_does_not_expose_secrets(self):
         status, body = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status, 200)
@@ -278,7 +278,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
 
     def test_get_profile_does_not_expose_secrets(self):
         status, body = self._run_handler(
-            "/agent-permissions/profiles/auditor_readonly",
+            "/v1/agent-permissions/profiles/auditor_readonly",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status, 200)
@@ -288,7 +288,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
 
     def test_list_profiles_no_admin_star_in_builtin_profiles(self):
         status, body = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status, 200)
@@ -297,7 +297,7 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
 
     def test_get_profile_no_admin_star_in_builtin_profiles(self):
         status, body = self._run_handler(
-            "/agent-permissions/profiles/auditor_readonly",
+            "/v1/agent-permissions/profiles/auditor_readonly",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status, 200)
@@ -307,13 +307,13 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
     def test_list_profiles_does_not_mutate_grant_decision(self):
         # Verify the profile endpoints are read-only and do not affect grants
         status, body = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status, 200)
         # After calling the read-only endpoint, the grant decision endpoint should still work normally
         status2, body2 = self._run_handler(
-            "/agent-permissions/profiles/auditor_readonly",
+            "/v1/agent-permissions/profiles/auditor_readonly",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status2, 200)
@@ -322,13 +322,13 @@ class TestAgentPermissionProfilesAPI(unittest.TestCase):
     def test_get_profile_does_not_mutate_grant_decision(self):
         # Verify the profile endpoints are read-only and do not affect grants
         status, body = self._run_handler(
-            "/agent-permissions/profiles/evidence_verifier",
+            "/v1/agent-permissions/profiles/evidence_verifier",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status, 200)
         # After calling the read-only endpoint, the profile list should remain unchanged
         status2, body2 = self._run_handler(
-            "/agent-permissions/profiles",
+            "/v1/agent-permissions/profiles",
             auth="Bearer test-admin-token",
         )
         self.assertEqual(status2, 200)

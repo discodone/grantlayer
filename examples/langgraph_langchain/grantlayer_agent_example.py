@@ -2,7 +2,7 @@
 GL-148: LangGraph/LangChain Integration Example
 developer-preview — local use only — standard library only
 
-Shows how GrantLayer can act as a policy/evidence/audit boundary inside
+Shows how GrantLayer can act as a policy/v1/evidence/audit boundary inside
 an AI-agent workflow. No LangGraph or LangChain installation required.
 
 LangGraph adaptation:
@@ -126,7 +126,7 @@ def prepare_grant_decision_context(state: Dict[str, Any]) -> Dict[str, Any]:
     decide whether to approve/reject, and then call GrantLayer via the SDK
     to persist the decision and emit an audit event.
 
-    LangChain Tool call shape (POST /demo-action):
+    LangChain Tool call shape (POST /v1/demo-action):
         {
             "subjectId": state["subjectId"],
             "role":      state["role"],
@@ -159,14 +159,14 @@ def prepare_grant_decision_context(state: Dict[str, Any]) -> Dict[str, Any]:
         "grantlayer_endpoints": {
             "health": "GET /health",
             "readiness": "GET /readiness",
-            "demo_action": "POST /demo-action",
-            "create_grant": "POST /grants",
-            "audit_log": "GET /audit-events",
+            "demo_action": "POST /v1/demo-action",
+            "create_grant": "POST /v1/grants",
+            "audit_log": "GET /v1/audit-events",
         },
         "adaptation_notes": (
-            "Pass demo_action_body to POST /demo-action to check current approval status. "
-            "Pass grant_create_body to POST /grants to create a new grant. "
-            "Read /audit-events after any mutation to verify the audit trail."
+            "Pass demo_action_body to POST /v1/demo-action to check current approval status. "
+            "Pass grant_create_body to POST /v1/grants to create a new grant. "
+            "Read /v1/audit-events after any mutation to verify the audit trail."
         ),
     }
 

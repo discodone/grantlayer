@@ -288,7 +288,7 @@ class TestGetGrantsLegacyMode(_Base):
 
     def test_get_grants_legacy_200(self):
         """Legacy mode: no operator, no admin token required → 200."""
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
 
@@ -303,7 +303,7 @@ class TestGetGrantsLegacyMode(_Base):
         )
         _grants.create_grant(g, tenant_id="demo")
 
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
         ids = [item["id"] for item in resp.json()]
         self.assertIn(g.id, ids)
@@ -319,7 +319,7 @@ class TestGetGrantsLegacyMode(_Base):
         )
         _grants.create_grant(g_other, tenant_id="other_tenant")
 
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
         ids = [item["id"] for item in resp.json()]
         self.assertNotIn(g_other.id, ids)
@@ -337,7 +337,7 @@ class TestGetGrantsOperatorMode(_Base):
     def test_get_grants_operator_single_membership_200(self):
         """Operator with single membership → GET /grants succeeds."""
         op_id, token = self._op(name="owner2", role="grant_admin", token="tok-ws006a", ws_id="ws-006a")
-        resp = self.client.get("/grants", headers=self._header(token))
+        resp = self.client.get("/v1/grants", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
 
@@ -346,7 +346,7 @@ class TestGetGrantsOperatorMode(_Base):
         op_id = "op-nows-006"
         _insert_operator(op_id, "nows", "grant_admin", "tok-nows-006", tenant_id="t1")
         _insert_workspace("ws-sentinel-006", "t1")
-        resp = self.client.get("/grants", headers={"Authorization": "Bearer tok-nows-006"})
+        resp = self.client.get("/v1/grants", headers={"Authorization": "Bearer tok-nows-006"})
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(resp.json().get("errorCode"), "no_workspace_membership")
 
@@ -362,7 +362,7 @@ class TestGetGrantsOperatorMode(_Base):
         )
         _grants.create_grant(g_other, tenant_id="other_tenant")
 
-        resp = self.client.get("/grants", headers=self._header(token))
+        resp = self.client.get("/v1/grants", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
         ids = [item["id"] for item in resp.json()]
         self.assertNotIn(g_other.id, ids)
@@ -385,7 +385,7 @@ class TestPostGrantsOperatorMode(_Base):
             "resource": "doc1", "validFrom": _past(1), "validUntil": _future(30),
             "createdBy": "op1", "reason": "test create",
         }
-        resp = self.client.post("/grants", json=body_data, headers=self._header(token))
+        resp = self.client.post("/v1/grants", json=body_data, headers=self._header(token))
         self.assertEqual(resp.status_code, 201)
         self.assertIn("id", resp.json())
 
@@ -399,7 +399,7 @@ class TestPostGrantsOperatorMode(_Base):
             "resource": "doc1", "validFrom": _past(1), "validUntil": _future(30),
             "createdBy": "op1", "reason": "test create",
         }
-        resp = self.client.post("/grants", json=body_data,
+        resp = self.client.post("/v1/grants", json=body_data,
                                 headers={"Authorization": "Bearer tok-nows-007"})
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(resp.json().get("errorCode"), "no_workspace_membership")
@@ -416,7 +416,7 @@ class TestGetAuditEventsWorkspaceContext(_Base):
 
     def test_audit_events_single_membership_200(self):
         op_id, token = self._op(name="owner5", role="grant_admin", token="tok-ws008a", ws_id="ws-008a")
-        resp = self.client.get("/audit-events", headers=self._header(token))
+        resp = self.client.get("/v1/audit-events", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
 
@@ -424,7 +424,7 @@ class TestGetAuditEventsWorkspaceContext(_Base):
         op_id = "op-nows-008"
         _insert_operator(op_id, "nows8", "grant_admin", "tok-nows-008", tenant_id="t1")
         _insert_workspace("ws-sentinel-008", "t1")
-        resp = self.client.get("/audit-events", headers={"Authorization": "Bearer tok-nows-008"})
+        resp = self.client.get("/v1/audit-events", headers={"Authorization": "Bearer tok-nows-008"})
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(resp.json().get("errorCode"), "no_workspace_membership")
 
@@ -440,7 +440,7 @@ class TestGetGrantRequestsWorkspaceContext(_Base):
 
     def test_grant_requests_single_membership_200(self):
         op_id, token = self._op(name="owner6", role="grant_admin", token="tok-ws009a", ws_id="ws-009a")
-        resp = self.client.get("/grant-requests", headers=self._header(token))
+        resp = self.client.get("/v1/grant-requests", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
 
@@ -448,7 +448,7 @@ class TestGetGrantRequestsWorkspaceContext(_Base):
         op_id = "op-nows-009"
         _insert_operator(op_id, "nows9", "grant_admin", "tok-nows-009", tenant_id="t1")
         _insert_workspace("ws-sentinel-009", "t1")
-        resp = self.client.get("/grant-requests", headers={"Authorization": "Bearer tok-nows-009"})
+        resp = self.client.get("/v1/grant-requests", headers={"Authorization": "Bearer tok-nows-009"})
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(resp.json().get("errorCode"), "no_workspace_membership")
 
@@ -475,7 +475,7 @@ class TestRevokeGrantWorkspaceContext(_Base):
         _grants.create_grant(g, tenant_id="t1")
 
         resp = self.client.post(
-            f"/grants/{g.id}/revoke",
+            f"/v1/grants/{g.id}/revoke",
             json={"revokedBy": op_id, "reason": "test revoke"},
             headers=self._header(token),
         )
@@ -497,7 +497,7 @@ class TestRevokeGrantWorkspaceContext(_Base):
         _grants.create_grant(g, tenant_id="t1")
 
         resp = self.client.post(
-            f"/grants/{g.id}/revoke",
+            f"/v1/grants/{g.id}/revoke",
             json={"revokedBy": op_id, "reason": "test"},
             headers={"Authorization": "Bearer tok-nows-010"},
         )
@@ -522,7 +522,7 @@ class TestRevokeGrantWorkspaceContext(_Base):
         _grants.create_grant(g, tenant_id="t1")
 
         resp = self.client.post(
-            f"/grants/{g.id}/revoke",
+            f"/v1/grants/{g.id}/revoke",
             json={"revokedBy": op_id, "reason": "test"},
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -541,7 +541,7 @@ class TestGetChallengesWorkspaceContext(_Base):
 
     def test_challenges_single_membership_200(self):
         op_id, token = self._op(name="owner8", role="grant_admin", token="tok-ws011a", ws_id="ws-011a")
-        resp = self.client.get("/challenges", headers=self._header(token))
+        resp = self.client.get("/v1/challenges", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
 
@@ -549,7 +549,7 @@ class TestGetChallengesWorkspaceContext(_Base):
         op_id = "op-nows-011"
         _insert_operator(op_id, "nows11", "grant_admin", "tok-nows-011", tenant_id="t1")
         _insert_workspace("ws-sentinel-011", "t1")
-        resp = self.client.get("/challenges", headers={"Authorization": "Bearer tok-nows-011"})
+        resp = self.client.get("/v1/challenges", headers={"Authorization": "Bearer tok-nows-011"})
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(resp.json().get("errorCode"), "no_workspace_membership")
 
@@ -583,7 +583,7 @@ class TestTenantIdFromWorkspaceContext(_Base):
         )
         _grants.create_grant(g_other, tenant_id="other-tenant-xyz")
 
-        resp = self.client.get("/grants", headers=self._header(token))
+        resp = self.client.get("/v1/grants", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
         ids = [item["id"] for item in resp.json()]
         self.assertIn(g.id, ids)
@@ -606,16 +606,16 @@ class TestDemoModeBackwardCompat(_Base):
 
     def test_get_grants_no_auth_still_works_in_demo_mode(self):
         """In demo mode (no token requirement), /grants returns 200 without any auth."""
-        resp = self.client.get("/grants")
+        resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
 
     def test_get_audit_events_demo_mode(self):
-        resp = self.client.get("/audit-events")
+        resp = self.client.get("/v1/audit-events")
         self.assertEqual(resp.status_code, 200)
 
     def test_post_challenges_demo_mode(self):
         payload = {"subjectId": "sub1", "action": "read", "resource": "doc1"}
-        resp = self.client.post("/challenges", json=payload)
+        resp = self.client.post("/v1/challenges", json=payload)
         self.assertEqual(resp.status_code, 201)
         self.assertIn("challengeId", resp.json())
 
@@ -649,7 +649,7 @@ class TestCrossTenantIsolationPreserved(_Base):
         )
         _grants.create_grant(g_other, tenant_id="tenant-other-014")
 
-        resp = self.client.get("/grants", headers=self._header(token))
+        resp = self.client.get("/v1/grants", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
         ids = [item["id"] for item in resp.json()]
         self.assertIn(g_mine.id, ids)

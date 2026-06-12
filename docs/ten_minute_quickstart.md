@@ -215,7 +215,7 @@ and does not touch real customer data.
 ### 9.1 Create a grant
 
 ```bash
-curl -s -X POST http://127.0.0.1:8765/grants \
+curl -s -X POST http://127.0.0.1:8765/v1/grants \
   -H "Content-Type: application/json" \
   -d '{
     "subjectId": "gl146-demo-subject-001",
@@ -234,7 +234,7 @@ Save the returned `id` field as `GRANT_ID` for the next steps.
 ### 9.2 Run a protected demo action
 
 ```bash
-curl -s -X POST http://127.0.0.1:8765/demo-action \
+curl -s -X POST http://127.0.0.1:8765/v1/demo-action \
   -H "Content-Type: application/json" \
   -d '{
     "subjectId": "gl146-demo-subject-001",
@@ -249,7 +249,7 @@ curl -s -X POST http://127.0.0.1:8765/demo-action \
 ### 9.3 Check the audit log
 
 ```bash
-curl -s http://127.0.0.1:8765/audit-events | python3 -m json.tool
+curl -s http://127.0.0.1:8765/v1/audit-events | python3 -m json.tool
 ```
 
 You should see audit events for the grant creation and the demo action.
@@ -257,7 +257,7 @@ You should see audit events for the grant creation and the demo action.
 ### 9.4 Revoke the grant
 
 ```bash
-curl -s -X POST "http://127.0.0.1:8765/grants/${GRANT_ID}/revoke" \
+curl -s -X POST "http://127.0.0.1:8765/v1/grants/${GRANT_ID}/revoke" \
   -H "Content-Type: application/json" \
   -d '{
     "revokedBy": "gl146-demo-admin",
@@ -268,7 +268,7 @@ curl -s -X POST "http://127.0.0.1:8765/grants/${GRANT_ID}/revoke" \
 ### 9.5 Verify the grant is revoked
 
 ```bash
-curl -s "http://127.0.0.1:8765/grants/${GRANT_ID}" | python3 -m json.tool
+curl -s "http://127.0.0.1:8765/v1/grants/${GRANT_ID}" | python3 -m json.tool
 ```
 
 **Expected:** `"status": "revoked"`
@@ -276,7 +276,7 @@ curl -s "http://127.0.0.1:8765/grants/${GRANT_ID}" | python3 -m json.tool
 ### 9.6 Re-run the demo action — now blocked
 
 ```bash
-curl -s -X POST http://127.0.0.1:8765/demo-action \
+curl -s -X POST http://127.0.0.1:8765/v1/demo-action \
   -H "Content-Type: application/json" \
   -d '{
     "subjectId": "gl146-demo-subject-001",

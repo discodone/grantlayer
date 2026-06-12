@@ -174,7 +174,7 @@ class TestGl088OperatorMode(_BaseGl088):
         self.assertIn(body.get("status"), ("ready", "not_ready"))
 
     def test_post_challenges_without_auth_returns_401(self):
-        handler = self._make_handler("/challenges", method="POST", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", body=self._challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -182,13 +182,13 @@ class TestGl088OperatorMode(_BaseGl088):
 
     def test_post_challenges_without_auth_does_not_create(self):
         before = self.challenges_mod.list_challenges()
-        handler = self._make_handler("/challenges", method="POST", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", body=self._challenge_body())
         self._run_handler(handler)
         after = self.challenges_mod.list_challenges()
         self.assertEqual(len(after), len(before))
 
     def test_post_challenges_demo_operator_forbidden(self):
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer demo-token", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", auth_header="Bearer demo-token", body=self._challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self._assert_gl030_full(body)
@@ -196,13 +196,13 @@ class TestGl088OperatorMode(_BaseGl088):
 
     def test_post_challenges_demo_operator_does_not_create(self):
         before = self.challenges_mod.list_challenges()
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer demo-token", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", auth_header="Bearer demo-token", body=self._challenge_body())
         self._run_handler(handler)
         after = self.challenges_mod.list_challenges()
         self.assertEqual(len(after), len(before))
 
     def test_post_challenges_owner_succeeds(self):
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", auth_header="Bearer owner-token", body=self._challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 201)
         self.assertIn("challengeId", body)
@@ -212,19 +212,19 @@ class TestGl088OperatorMode(_BaseGl088):
         self.assertIn("expiresAt", body)
 
     def test_post_challenges_grant_admin_succeeds(self):
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer admin-token", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", auth_header="Bearer admin-token", body=self._challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 201)
         self.assertIn("challengeId", body)
 
     def test_post_challenges_auditor_succeeds(self):
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer auditor-token", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", auth_header="Bearer auditor-token", body=self._challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 201)
         self.assertIn("challengeId", body)
 
     def test_post_challenges_response_shape_compatible(self):
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer owner-token", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", auth_header="Bearer owner-token", body=self._challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 201)
         self.assertIsInstance(body.get("challengeId"), str)
@@ -234,20 +234,20 @@ class TestGl088OperatorMode(_BaseGl088):
         self.assertIsInstance(body.get("expiresAt"), str)
 
     def test_get_challenges_still_requires_auth(self):
-        handler = self._make_handler("/challenges", auth_header=None)
+        handler = self._make_handler("/v1/challenges", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_get_challenges_owner_succeeds(self):
-        handler = self._make_handler("/challenges", auth_header="Bearer owner-token")
+        handler = self._make_handler("/v1/challenges", auth_header="Bearer owner-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_gl087_auth_error_response_shape_preserved(self):
-        handler = self._make_handler("/challenges", method="POST", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", body=self._challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -266,19 +266,19 @@ class TestGl088OperatorMode(_BaseGl088):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/demo-action", method="POST", body=demo_body)
+        handler = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
 
     def test_gl083_grants_still_require_auth(self):
-        handler = self._make_handler("/grants", auth_header=None)
+        handler = self._make_handler("/v1/grants", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
 
     def test_gl083_audit_events_still_require_auth(self):
-        handler = self._make_handler("/audit-events", auth_header=None)
+        handler = self._make_handler("/v1/audit-events", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -311,7 +311,7 @@ class TestGl088LegacyMode(_BaseGl088):
         self.assertIn(status, (200, 503))
 
     def test_post_challenges_without_auth_returns_401(self):
-        handler = self._make_handler("/challenges", method="POST", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", body=self._challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -319,13 +319,13 @@ class TestGl088LegacyMode(_BaseGl088):
 
     def test_post_challenges_without_auth_does_not_create(self):
         before = self.challenges_mod.list_challenges()
-        handler = self._make_handler("/challenges", method="POST", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", body=self._challenge_body())
         self._run_handler(handler)
         after = self.challenges_mod.list_challenges()
         self.assertEqual(len(after), len(before))
 
     def test_post_challenges_invalid_token_forbidden(self):
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer wrong-token", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", auth_header="Bearer wrong-token", body=self._challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self._assert_gl030_full(body)
@@ -333,26 +333,26 @@ class TestGl088LegacyMode(_BaseGl088):
 
     def test_post_challenges_invalid_token_does_not_create(self):
         before = self.challenges_mod.list_challenges()
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer wrong-token", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", auth_header="Bearer wrong-token", body=self._challenge_body())
         self._run_handler(handler)
         after = self.challenges_mod.list_challenges()
         self.assertEqual(len(after), len(before))
 
     def test_post_challenges_with_valid_admin_token_succeeds(self):
-        handler = self._make_handler("/challenges", method="POST", auth_header="Bearer legacy-admin-token", body=self._challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", auth_header="Bearer legacy-admin-token", body=self._challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 201)
         self.assertIn("challengeId", body)
 
     def test_get_challenges_still_requires_auth(self):
-        handler = self._make_handler("/challenges", auth_header=None)
+        handler = self._make_handler("/v1/challenges", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_get_challenges_with_valid_admin_token_succeeds(self):
-        handler = self._make_handler("/challenges", auth_header="Bearer legacy-admin-token")
+        handler = self._make_handler("/v1/challenges", auth_header="Bearer legacy-admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
@@ -364,19 +364,19 @@ class TestGl088LegacyMode(_BaseGl088):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/demo-action", method="POST", body=demo_body)
+        handler = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
 
     def test_gl083_grants_still_require_auth(self):
-        handler = self._make_handler("/grants", auth_header=None)
+        handler = self._make_handler("/v1/grants", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
 
     def test_gl083_audit_events_still_require_auth(self):
-        handler = self._make_handler("/audit-events", auth_header=None)
+        handler = self._make_handler("/v1/audit-events", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -401,14 +401,14 @@ class TestGl088OpenAPIContract(_BaseGl088):
 
     def test_openapi_challenges_has_security(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/challenges:", "/operators/me:")
+        section = self._section_between(text, "/v1/challenges:", "/v1/operators/me:")
         self.assertIn("security:", section)
         self.assertIn("LegacyAdminToken", section)
         self.assertIn("OperatorToken", section)
 
     def test_openapi_challenges_has_401_403(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/challenges:", "/operators/me:")
+        section = self._section_between(text, "/v1/challenges:", "/v1/operators/me:")
         self.assertIn('"401"', section)
         self.assertIn('"403"', section)
 

@@ -355,20 +355,20 @@ class TestGl091AuthBehaviorPreserved(_BaseGl091):
         self._insert_operator("demo-1", "Demo", "demo_operator", "demo-token")
 
     def test_missing_auth_returns_401_safe_json(self):
-        handler = self._make_handler("/grants")
+        handler = self._make_handler("/v1/grants")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_valid_auth_succeeds(self):
-        handler = self._make_handler("/grants", auth_header="Bearer owner-token")
+        handler = self._make_handler("/v1/grants", auth_header="Bearer owner-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_invalid_role_returns_403_safe_json(self):
-        handler = self._make_handler("/grants", auth_header="Bearer demo-token")
+        handler = self._make_handler("/v1/grants", auth_header="Bearer demo-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self._assert_gl030_full(body)
@@ -392,7 +392,7 @@ class TestGl091PriorGLProtections(_BaseGl091):
         # Oversized body should still return 413
         oversized = b"x" * (1_048_576 + 1)
         handler = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token",
+            "/v1/grants", method="POST", auth_header="Bearer owner-token",
             body=oversized,
         )
         status, body = self._run_handler(handler)
@@ -411,7 +411,7 @@ class TestGl091PriorGLProtections(_BaseGl091):
         self.auth_mod = fresh_auth
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
-        handler = self._make_handler("/challenges", method="POST", body=self._valid_challenge_body())
+        handler = self._make_handler("/v1/challenges", method="POST", body=self._valid_challenge_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -428,7 +428,7 @@ class TestGl091PriorGLProtections(_BaseGl091):
         self.auth_mod = fresh_auth
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
-        handler = self._make_handler("/grants")
+        handler = self._make_handler("/v1/grants")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
@@ -453,7 +453,7 @@ class TestGl091PriorGLProtections(_BaseGl091):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/demo-action", method="POST", body=demo_body)
+        handler = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -495,14 +495,14 @@ class TestGl091LegacyMode(_BaseGl091):
         )
 
     def test_legacy_missing_auth_returns_401(self):
-        handler = self._make_handler("/grants")
+        handler = self._make_handler("/v1/grants")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_legacy_valid_auth_succeeds(self):
-        handler = self._make_handler("/grants", auth_header="Bearer legacy-admin-token")
+        handler = self._make_handler("/v1/grants", auth_header="Bearer legacy-admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)

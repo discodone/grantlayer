@@ -293,14 +293,14 @@ class TestGl111Preservation(_BaseGl111):
         openapi_path = repo_root / "docs" / "openapi.yaml"
         self.assertTrue(openapi_path.exists())
         text = openapi_path.read_text(encoding="utf-8")
-        self.assertIn("/demo-action:", text)
+        self.assertIn("/v1/demo-action:", text)
 
     def test_no_endpoint_changes(self):
         from backend.src.api.app import create_app
 
         app = create_app()
         paths = {route.path for route in app.routes}
-        self.assertIn("/demo-action", paths)
+        self.assertIn("/v1/demo-action", paths)
 
 
 class TestGl111NoForbiddenFilesChanged(unittest.TestCase):

@@ -78,7 +78,7 @@ class TestBug2RoleInconsistency(unittest.TestCase):
     def test_quickstart_grant_requests_uses_viewer(self):
         text = _read("QUICKSTART.md")
         # Find the POST /grant-requests curl block
-        post_start = text.find("POST https://localhost/grant-requests")
+        post_start = text.find("POST https://localhost/v1/grant-requests")
         self.assertGreater(post_start, 0, "QUICKSTART.md must have POST /grant-requests curl block")
         post_section = text[post_start:post_start + 600]
         self.assertIn('"viewer"', post_section,
@@ -89,7 +89,7 @@ class TestBug2RoleInconsistency(unittest.TestCase):
     def test_quickstart_grants_uses_viewer(self):
         text = _read("QUICKSTART.md")
         # Find the /grants POST example (step 5)
-        grants_section_start = text.find("POST https://localhost/grants")
+        grants_section_start = text.find("POST https://localhost/v1/grants")
         self.assertGreater(grants_section_start, 0, "QUICKSTART.md must have /grants POST section")
         grants_section = text[grants_section_start:grants_section_start + 500]
         self.assertNotIn('"reader"', grants_section,
@@ -161,7 +161,7 @@ class TestBug5QuickstartJwt(unittest.TestCase):
         self.text = _read("QUICKSTART.md")
 
     def test_auth_token_endpoint_present(self):
-        self.assertIn("/auth/token", self.text,
+        self.assertIn("/v1/auth/token", self.text,
                       "QUICKSTART.md must document /auth/token endpoint")
 
     def test_no_python_only_token_generation_in_step4(self):

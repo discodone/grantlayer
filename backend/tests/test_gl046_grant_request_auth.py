@@ -158,13 +158,13 @@ class TestGl046OperatorMode(_BaseGl046):
     # No auth
     # ──────────────────────────────────────────────
     def test_list_without_auth_returns_401(self):
-        handler = self._make_handler("/grant-requests", auth_header=None)
+        handler = self._make_handler("/v1/grant-requests", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_detail_without_auth_returns_401(self):
-        handler = self._make_handler(f"/grant-requests/{self.request.id}", auth_header=None)
+        handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
@@ -173,37 +173,37 @@ class TestGl046OperatorMode(_BaseGl046):
     # Valid roles
     # ──────────────────────────────────────────────
     def test_list_owner_succeeds(self):
-        handler = self._make_handler("/grant-requests", auth_header="Bearer owner-token")
+        handler = self._make_handler("/v1/grant-requests", auth_header="Bearer owner-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_list_grant_admin_succeeds(self):
-        handler = self._make_handler("/grant-requests", auth_header="Bearer admin-token")
+        handler = self._make_handler("/v1/grant-requests", auth_header="Bearer admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_list_auditor_succeeds(self):
-        handler = self._make_handler("/grant-requests", auth_header="Bearer auditor-token")
+        handler = self._make_handler("/v1/grant-requests", auth_header="Bearer auditor-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_detail_owner_succeeds(self):
-        handler = self._make_handler(f"/grant-requests/{self.request.id}", auth_header="Bearer owner-token")
+        handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header="Bearer owner-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("id"), self.request.id)
 
     def test_detail_grant_admin_succeeds(self):
-        handler = self._make_handler(f"/grant-requests/{self.request.id}", auth_header="Bearer admin-token")
+        handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header="Bearer admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("id"), self.request.id)
 
     def test_detail_auditor_succeeds(self):
-        handler = self._make_handler(f"/grant-requests/{self.request.id}", auth_header="Bearer auditor-token")
+        handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header="Bearer auditor-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("id"), self.request.id)
@@ -212,13 +212,13 @@ class TestGl046OperatorMode(_BaseGl046):
     # demo_operator forbidden
     # ──────────────────────────────────────────────
     def test_list_demo_operator_forbidden(self):
-        handler = self._make_handler("/grant-requests", auth_header="Bearer demo-token")
+        handler = self._make_handler("/v1/grant-requests", auth_header="Bearer demo-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
 
     def test_detail_demo_operator_forbidden(self):
-        handler = self._make_handler(f"/grant-requests/{self.request.id}", auth_header="Bearer demo-token")
+        handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header="Bearer demo-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
@@ -227,7 +227,7 @@ class TestGl046OperatorMode(_BaseGl046):
     # Error hygiene
     # ──────────────────────────────────────────────
     def test_error_list_does_not_expose_token(self):
-        handler = self._make_handler("/grant-requests", auth_header=None)
+        handler = self._make_handler("/v1/grant-requests", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         body_str = json.dumps(body)
@@ -236,7 +236,7 @@ class TestGl046OperatorMode(_BaseGl046):
         self.assertNotIn("Bearer", body_str)
 
     def test_error_detail_does_not_expose_token(self):
-        handler = self._make_handler(f"/grant-requests/{self.request.id}", auth_header="Bearer demo-token")
+        handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header="Bearer demo-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         body_str = json.dumps(body)
@@ -247,12 +247,12 @@ class TestGl046OperatorMode(_BaseGl046):
     # Endpoint paths unchanged
     # ──────────────────────────────────────────────
     def test_list_endpoint_path_unchanged(self):
-        handler = self._make_handler("/grant-requests", auth_header="Bearer owner-token")
+        handler = self._make_handler("/v1/grant-requests", auth_header="Bearer owner-token")
         status, _ = self._run_handler(handler)
         self.assertEqual(status, 200)
 
     def test_detail_endpoint_path_unchanged(self):
-        handler = self._make_handler(f"/grant-requests/{self.request.id}", auth_header="Bearer owner-token")
+        handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header="Bearer owner-token")
         status, _ = self._run_handler(handler)
         self.assertEqual(status, 200)
 
@@ -275,23 +275,23 @@ class TestGl046LegacyMode(_BaseGl046):
         self.request = self._create_request()
 
     def test_list_without_auth_returns_401(self):
-        handler = self._make_handler("/grant-requests", auth_header=None)
+        handler = self._make_handler("/v1/grant-requests", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
 
     def test_detail_without_auth_returns_401(self):
-        handler = self._make_handler(f"/grant-requests/{self.request.id}", auth_header=None)
+        handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
 
     def test_list_with_valid_admin_token_succeeds(self):
-        handler = self._make_handler("/grant-requests", auth_header="Bearer legacy-admin-token")
+        handler = self._make_handler("/v1/grant-requests", auth_header="Bearer legacy-admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_detail_with_valid_admin_token_succeeds(self):
-        handler = self._make_handler(f"/grant-requests/{self.request.id}", auth_header="Bearer legacy-admin-token")
+        handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header="Bearer legacy-admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("id"), self.request.id)

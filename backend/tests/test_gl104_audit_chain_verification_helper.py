@@ -544,7 +544,7 @@ class TestGl104ServerSafety(_BaseGl104):
         self.assertIn(status, (200, 503))
 
     def test_protected_endpoint_requires_auth(self):
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, data = self._run_handler(req)
         self.assertIn(status, (401, 403))
 

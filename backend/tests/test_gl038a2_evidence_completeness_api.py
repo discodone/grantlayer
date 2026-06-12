@@ -138,7 +138,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
     # ── Endpoint routing ────────────────────────────────────────
     def test_endpoint_exists_and_returns_404_for_unknown_execution(self):
         status, body = self._run_handler(
-            "/evidence/executions/nonexistent-id/completeness",
+            "/v1/evidence/executions/nonexistent-id/completeness",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 404)
@@ -157,7 +157,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
             grant_id="g-api-1",
         )
         status, body = self._run_handler(
-            "/evidence/executions/ex-api-1/completeness",
+            "/v1/evidence/executions/ex-api-1/completeness",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -167,10 +167,10 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
     # ── Auth ────────────────────────────────────────────────────
     def test_endpoint_requires_admin_token_when_operator_disabled(self):
         self._make_execution("ex-auth-1")
-        status, body = self._run_handler("/evidence/executions/ex-auth-1/completeness")
+        status, body = self._run_handler("/v1/evidence/executions/ex-auth-1/completeness")
         self.assertEqual(status, 401)
         status, body = self._run_handler(
-            "/evidence/executions/ex-auth-1/completeness",
+            "/v1/evidence/executions/ex-auth-1/completeness",
             auth="Bearer wrong-token"
         )
         self.assertEqual(status, 403)
@@ -183,7 +183,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
 
         self._make_execution("ex-auth-2")
         status, body = self._run_handler(
-            "/evidence/executions/ex-auth-2/completeness",
+            "/v1/evidence/executions/ex-auth-2/completeness",
             auth="Bearer auditor-token"
         )
         self.assertEqual(status, 200)
@@ -197,7 +197,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
 
         self._make_execution("ex-auth-3")
         status, body = self._run_handler(
-            "/evidence/executions/ex-auth-3/completeness",
+            "/v1/evidence/executions/ex-auth-3/completeness",
             auth="Bearer demo-token"
         )
         self.assertEqual(status, 403)
@@ -235,7 +235,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
         ev_mod.verify_execution("ex-shape-1")
 
         status, body = self._run_handler(
-            "/evidence/executions/ex-shape-1/completeness",
+            "/v1/evidence/executions/ex-shape-1/completeness",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -260,7 +260,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
             execution_id="ex-details-1",
         )
         status, body = self._run_handler(
-            "/evidence/executions/ex-details-1/completeness",
+            "/v1/evidence/executions/ex-details-1/completeness",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -278,7 +278,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
             execution_id="ex-details-0",
         )
         status, body = self._run_handler(
-            "/evidence/executions/ex-details-0/completeness?includeDetails=false",
+            "/v1/evidence/executions/ex-details-0/completeness?includeDetails=false",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -318,7 +318,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
         ev_mod.verify_execution("ex-complete")
 
         status, body = self._run_handler(
-            "/evidence/executions/ex-complete/completeness",
+            "/v1/evidence/executions/ex-complete/completeness",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -338,7 +338,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
             execution_id="ex-missing",
         )
         status, body = self._run_handler(
-            "/evidence/executions/ex-missing/completeness",
+            "/v1/evidence/executions/ex-missing/completeness",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -374,7 +374,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
             grant_id="g-sec-1",
         )
         status, body = self._run_handler(
-            "/evidence/executions/ex-sec-1/completeness",
+            "/v1/evidence/executions/ex-sec-1/completeness",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)

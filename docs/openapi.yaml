@@ -141,7 +141,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /grants:
+  /v1/grants:
     get:
       summary: List grants
       description: Returns all grants with signature metadata.
@@ -220,7 +220,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /grants/{id}:
+  /v1/grants/{id}:
     get:
       summary: Get grant by ID
       description: Returns a single grant with signature metadata.
@@ -259,7 +259,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /grants/{id}/revoke:
+  /v1/grants/{id}/revoke:
     post:
       summary: Revoke grant
       description: Revoke an active grant.
@@ -312,7 +312,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /grant-requests:
+  /v1/grant-requests:
     get:
       summary: List grant requests
       description: |
@@ -409,7 +409,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /grant-requests/{id}:
+  /v1/grant-requests/{id}:
     get:
       summary: Get grant request by ID
       description: Returns a single grant request. Operator mode only.
@@ -435,7 +435,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /grant-requests/{id}/approve:
+  /v1/grant-requests/{id}/approve:
     post:
       summary: Approve grant request
       description: Approve a grant request and create the associated grant. Operator mode only.
@@ -486,7 +486,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /grant-requests/{id}/deny:
+  /v1/grant-requests/{id}/deny:
     post:
       summary: Deny grant request
       description: Deny a grant request without creating a grant. Operator mode only.
@@ -544,7 +544,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /grant-executions:
+  /v1/grant-executions:
     get:
       summary: List grant executions
       description: Returns all grant executions, optionally filtered. Operator mode only.
@@ -598,7 +598,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /grant-executions/{id}:
+  /v1/grant-executions/{id}:
     get:
       summary: Get grant execution by ID
       description: Returns a single grant execution. Operator mode only.
@@ -636,7 +636,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /grants/{id}/executions:
+  /v1/grants/{id}/executions:
     get:
       summary: List executions for a grant
       description: Returns all executions linked to a specific grant. Operator mode only.
@@ -686,7 +686,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /audit-events:
+  /v1/audit-events:
     get:
       summary: List audit events
       description: Returns audit events ordered by timestamp descending.
@@ -727,7 +727,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /challenges:
+  /v1/challenges:
     get:
       summary: List challenges
       description: Returns all challenges ordered by creation time descending.
@@ -807,7 +807,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /operators/me:
+  /v1/operators/me:
     get:
       summary: Get current operator profile
       description: |
@@ -850,7 +850,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /evidence/executions/{id}:
+  /v1/evidence/executions/{id}:
     get:
       summary: Get evidence bundle for execution
       description: |
@@ -891,7 +891,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /evidence/executions/{id}/export:
+  /v1/evidence/executions/{id}/export:
     get:
       summary: Export evidence bundle artifact
       description: |
@@ -945,7 +945,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /evidence/executions/{id}/verify:
+  /v1/evidence/executions/{id}/verify:
     get:
       summary: Verify evidence bundle for execution
       description: |
@@ -989,7 +989,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /provenance/executions/{executionId}/summary:
+  /v1/provenance/executions/{executionId}/summary:
     get:
       summary: Decision Provenance Summary
       description: |
@@ -1045,7 +1045,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /decision-provenance/v2/build:
+  /v1/decision-provenance/v2/build:
     post:
       summary: Build Decision Provenance v2
       description: |
@@ -1128,7 +1128,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /agent-permissions/evaluate:
+  /v1/agent-permissions/evaluate:
     post:
       summary: Evaluate Agent Permission
       description: |
@@ -1223,7 +1223,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /approvals/evaluate:
+  /v1/approvals/evaluate:
     post:
       summary: Evaluate Approval Requirements
       description: |
@@ -1374,7 +1374,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /approvals/lifecycle/build:
+  /v1/approvals/lifecycle/build:
     post:
       summary: Build Approval Request Lifecycle
       description: |
@@ -1522,7 +1522,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /approvals/lifecycle/transition:
+  /v1/approvals/lifecycle/transition:
     post:
       summary: Transition Approval Request
       description: |
@@ -1650,7 +1650,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /agent-permissions/profiles:
+  /v1/agent-permissions/profiles:
     get:
       summary: List agent permission scope profiles
       description: |
@@ -1684,7 +1684,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /agent-permissions/profiles/{profileName}:
+  /v1/agent-permissions/profiles/{profileName}:
     get:
       summary: Get agent permission scope profile by name
       description: |
@@ -1728,7 +1728,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /agent-permissions/assignments/resolve:
+  /v1/agent-permissions/assignments/resolve:
     post:
       summary: Resolve Agent Permission Assignment
       description: |
@@ -1812,7 +1812,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /demo-action:
+  /v1/demo-action:
     post:
       summary: Execute a protected demo action
       description: |
@@ -1866,7 +1866,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /demo/tamper-grant/{id}:
+  /v1/demo/tamper-grant/{id}:
     post:
       summary: Demo tamper a grant (DEMO ONLY)
       description: |
@@ -1906,7 +1906,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /evidence/executions/{id}/completeness:
+  /v1/evidence/executions/{id}/completeness:
     get:
       summary: Evidence completeness report for execution
       description: |
@@ -1951,7 +1951,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /compliance/gaps/executions/{id}:
+  /v1/compliance/gaps/executions/{id}:
     get:
       summary: Compliance gap report for execution
       description: |
@@ -1996,7 +1996,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /auditor/reports/executions/{id}:
+  /v1/auditor/reports/executions/{id}:
     get:
       summary: Auditor report for execution
       description: |
@@ -2041,7 +2041,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /auditor/exports/build:
+  /v1/auditor/exports/build:
     post:
       summary: Build institutional auditor export
       description: |
@@ -2102,7 +2102,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /policy-requirements/evaluate:
+  /v1/policy-requirements/evaluate:
     post:
       summary: Evaluate policy requirements
       description: |
@@ -2156,7 +2156,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /compliance/readiness/build:
+  /v1/compliance/readiness/build:
     post:
       summary: Build compliance readiness summary
       description: |

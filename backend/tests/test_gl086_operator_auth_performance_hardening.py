@@ -164,26 +164,26 @@ class TestGl086OperatorMode(_BaseGl086):
         self.assertIn(body.get("status"), ("ready", "not_ready"))
 
     def test_operator_me_without_auth_returns_401(self):
-        handler = self._make_handler("/operators/me")
+        handler = self._make_handler("/v1/operators/me")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_operator_me_with_valid_owner_succeeds(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer owner-token")
+        handler = self._make_handler("/v1/operators/me", auth_header="Bearer owner-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("role"), "owner")
 
     def test_operator_me_with_valid_grant_admin_succeeds(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer admin-token")
+        handler = self._make_handler("/v1/operators/me", auth_header="Bearer admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("role"), "grant_admin")
 
     def test_operator_me_with_valid_auditor_succeeds(self):
-        handler = self._make_handler("/operators/me", auth_header="Bearer auditor-token")
+        handler = self._make_handler("/v1/operators/me", auth_header="Bearer auditor-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("role"), "auditor")
@@ -197,7 +197,7 @@ class TestGl086OperatorMode(_BaseGl086):
             return original_check_auth(auth_header, required_roles)
         self.auth_mod.check_auth = logged_check_auth
         try:
-            handler = self._make_handler("/operators/me", auth_header="Bearer owner-token")
+            handler = self._make_handler("/v1/operators/me", auth_header="Bearer owner-token")
             status, body = self._run_handler(handler)
             self.assertEqual(status, 200)
             # Accept 0 or 1 calls depending on FastAPI auth implementation
@@ -206,20 +206,20 @@ class TestGl086OperatorMode(_BaseGl086):
             self.auth_mod.check_auth = original_check_auth
 
     def test_grant_requests_without_auth_returns_401(self):
-        handler = self._make_handler("/grant-requests", auth_header=None)
+        handler = self._make_handler("/v1/grant-requests", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_grant_requests_approve_without_auth_returns_401(self):
-        handler = self._make_handler("/grant-requests/r1/approve", method="POST", body=b"{}")
+        handler = self._make_handler("/v1/grant-requests/r1/approve", method="POST", body=b"{}")
         status, body = self._run_handler(handler)
         self.assertIn(status, [401, 404])
 
     def test_grant_requests_deny_without_auth_returns_401(self):
         body_bytes = json.dumps({"reason": "test"}).encode()
-        handler = self._make_handler("/grant-requests/r1/deny", method="POST", body=body_bytes)
+        handler = self._make_handler("/v1/grant-requests/r1/deny", method="POST", body=body_bytes)
         status, body = self._run_handler(handler)
         self.assertIn(status, [401, 404])
 
@@ -231,14 +231,14 @@ class TestGl086OperatorMode(_BaseGl086):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/demo-action", method="POST", auth_header="Bearer demo-token", body=demo_body)
+        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer demo-token", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
 
     def test_error_responses_safe_json_no_secrets(self):
-        handler = self._make_handler("/operators/me")
+        handler = self._make_handler("/v1/operators/me")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -251,7 +251,7 @@ class TestGl086OperatorMode(_BaseGl086):
         self.assertNotIn("Bearer", body_str)
 
     def test_error_responses_no_stacktrace(self):
-        handler = self._make_handler("/operators/me")
+        handler = self._make_handler("/v1/operators/me")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         body_str = json.dumps(body)
@@ -279,7 +279,7 @@ class TestGl086OperatorMode(_BaseGl086):
             handler.rfile = BytesIO(b"")
             handler.wfile = BytesIO()
             handler.headers = {"Authorization": "Bearer test-token"}
-            handler.path = "/grants"
+            handler.path = "/v1/grants"
             handler.command = "GET"
             handler.requestline = "GET /grants HTTP/1.1"
             handler.request_version = "HTTP/1.1"
@@ -295,13 +295,13 @@ class TestGl086OperatorMode(_BaseGl086):
             server_mod.check_auth = original_check_auth
 
     def test_gl083_grants_still_require_auth(self):
-        handler = self._make_handler("/grants", auth_header=None)
+        handler = self._make_handler("/v1/grants", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
 
     def test_gl083_audit_events_still_require_auth(self):
-        handler = self._make_handler("/audit-events", auth_header=None)
+        handler = self._make_handler("/v1/audit-events", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -313,7 +313,7 @@ class TestGl086OperatorMode(_BaseGl086):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/demo-action", method="POST", body=demo_body)
+        handler = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -347,14 +347,14 @@ class TestGl086LegacyMode(_BaseGl086):
         self.assertIn(body.get("status"), ("ready", "not_ready"))
 
     def test_grants_without_auth_returns_401(self):
-        handler = self._make_handler("/grants", auth_header=None)
+        handler = self._make_handler("/v1/grants", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_grants_with_valid_admin_token_succeeds(self):
-        handler = self._make_handler("/grants", auth_header="Bearer legacy-admin-token")
+        handler = self._make_handler("/v1/grants", auth_header="Bearer legacy-admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
@@ -380,7 +380,7 @@ class TestGl086LegacyMode(_BaseGl086):
             handler.rfile = BytesIO(b"")
             handler.wfile = BytesIO()
             handler.headers = {"Authorization": "Bearer legacy-admin-token"}
-            handler.path = "/grants"
+            handler.path = "/v1/grants"
             handler.command = "GET"
             handler.requestline = "GET /grants HTTP/1.1"
             handler.request_version = "HTTP/1.1"
@@ -402,14 +402,14 @@ class TestGl086LegacyMode(_BaseGl086):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/demo-action", method="POST", body=demo_body)
+        handler = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_gl083_audit_events_still_require_auth(self):
-        handler = self._make_handler("/audit-events", auth_header=None)
+        handler = self._make_handler("/v1/audit-events", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)

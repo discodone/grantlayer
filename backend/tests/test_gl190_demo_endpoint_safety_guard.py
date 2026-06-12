@@ -227,7 +227,7 @@ class TestBlockedErrorIsSafe(_BaseGl190):
     def test_blocked_error_no_endpoint_paths(self):
         errs = self._get_blocked_errors()
         combined = " ".join(errs)
-        for path in ("/demo/", "/tamper", "/grants", "/audit"):
+        for path in ("/v1/demo/", "/tamper", "/v1/grants", "/audit"):
             self.assertNotIn(path, combined, f"Error leaks endpoint path: {path}")
 
     def test_blocked_error_is_deterministic(self):

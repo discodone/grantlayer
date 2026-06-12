@@ -403,7 +403,7 @@ class TestQuickstartMd(unittest.TestCase):
 
     def test_has_grant_creation_example(self):
         content = open(self._PATH).read()
-        self.assertIn("/grants", content)
+        self.assertIn("/v1/grants", content)
 
 
 if __name__ == "__main__":

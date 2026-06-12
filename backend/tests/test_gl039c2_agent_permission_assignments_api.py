@@ -108,7 +108,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
     # ── Endpoint routing ────────────────────────────────────────
     def test_endpoint_exists_and_returns_400_for_missing_fields(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={"agentId": "agent-1"},
         )
@@ -118,7 +118,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_returns_200_for_valid_request_with_scopes(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -135,7 +135,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_returns_200_for_valid_request_with_profiles(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -150,7 +150,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_returns_200_with_both_scopes_and_profiles(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -168,7 +168,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
     # ── Auth ────────────────────────────────────────────────────
     def test_endpoint_requires_admin_token_when_operator_disabled(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             body={
                 "agentId": "agent-1",
                 "requestedScope": "evidence:read",
@@ -177,7 +177,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
         )
         self.assertEqual(status, 401)
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer wrong-token",
             body={
                 "agentId": "agent-1",
@@ -194,7 +194,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
         self._insert_operator("owner-1", "Owner One", "owner", "owner-token")
 
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer owner-token",
             body={
                 "agentId": "agent-1",
@@ -212,7 +212,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
         self._insert_operator("admin-1", "Admin One", "grant_admin", "admin-token")
 
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer admin-token",
             body={
                 "agentId": "agent-1",
@@ -230,7 +230,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
         self._insert_operator("auditor-1", "Auditor One", "auditor", "auditor-token")
 
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer auditor-token",
             body={
                 "agentId": "agent-1",
@@ -247,7 +247,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
         self._insert_operator("demo-op-1", "Demo Op", "demo_operator", "demo-token")
 
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer demo-token",
             body={
                 "agentId": "agent-1",
@@ -260,7 +260,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
     # ── Response shape ──────────────────────────────────────────
     def test_response_contains_expected_keys(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -291,7 +291,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_response_with_details_includes_profile_resolution_and_evaluation(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -307,7 +307,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_response_without_details_omits_profile_resolution_and_evaluation(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -325,7 +325,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
     # ── Evaluation logic ────────────────────────────────────────
     def test_endpoint_denies_unknown_scope(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -340,7 +340,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_denies_empty_assignment(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -356,7 +356,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_allows_wildcard_read(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -370,7 +370,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_denies_malformed_requested_scope(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -384,7 +384,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_allows_admin_star(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -398,7 +398,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_denies_scope_not_matched(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -412,7 +412,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_passes_context_optional(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -426,7 +426,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_warns_on_unknown_profile(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -441,7 +441,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_endpoint_with_neither_scopes_nor_profiles_denies(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -455,7 +455,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
     # ── Determinism and ordering ────────────────────────────────
     def test_combined_scopes_are_sorted(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -472,7 +472,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
     # ── Secrets safety ──────────────────────────────────────────
     def test_response_does_not_expose_secrets(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -487,7 +487,7 @@ class TestAgentPermissionAssignmentsAPI(unittest.TestCase):
 
     def test_no_admin_star_in_resolved_scopes_from_builtin_profiles(self):
         status, body = self._run_handler(
-            "/agent-permissions/assignments/resolve",
+            "/v1/agent-permissions/assignments/resolve",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",

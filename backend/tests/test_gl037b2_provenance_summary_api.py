@@ -136,7 +136,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
     # ── Endpoint routing ────────────────────────────────────────
     def test_endpoint_exists_and_returns_404_for_unknown_execution(self):
         status, body = self._run_handler(
-            "/provenance/executions/nonexistent-id/summary",
+            "/v1/provenance/executions/nonexistent-id/summary",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 404)
@@ -155,7 +155,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
             grant_id="g-api-1",
         )
         status, body = self._run_handler(
-            "/provenance/executions/ex-api-1/summary",
+            "/v1/provenance/executions/ex-api-1/summary",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -180,7 +180,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
             grant_id="g-api-2",
         )
         status, body = self._run_handler(
-            "/provenance/executions/ex-api-2/summary",
+            "/v1/provenance/executions/ex-api-2/summary",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -193,11 +193,11 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
     def test_endpoint_requires_admin_token_when_operator_disabled(self):
         self._make_execution("ex-auth-1")
         # No auth header when token is configured -> 401
-        status, body = self._run_handler("/provenance/executions/ex-auth-1/summary")
+        status, body = self._run_handler("/v1/provenance/executions/ex-auth-1/summary")
         self.assertEqual(status, 401)
         # Invalid token -> 403
         status, body = self._run_handler(
-            "/provenance/executions/ex-auth-1/summary",
+            "/v1/provenance/executions/ex-auth-1/summary",
             auth="Bearer wrong-token"
         )
         self.assertEqual(status, 403)
@@ -210,7 +210,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
 
         self._make_execution("ex-auth-2")
         status, body = self._run_handler(
-            "/provenance/executions/ex-auth-2/summary",
+            "/v1/provenance/executions/ex-auth-2/summary",
             auth="Bearer auditor-token"
         )
         self.assertEqual(status, 200)
@@ -224,7 +224,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
 
         self._make_execution("ex-auth-3")
         status, body = self._run_handler(
-            "/provenance/executions/ex-auth-3/summary",
+            "/v1/provenance/executions/ex-auth-3/summary",
             auth="Bearer demo-token"
         )
         self.assertEqual(status, 403)
@@ -249,7 +249,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
             execution_id="ex-shape-1",
         )
         status, body = self._run_handler(
-            "/provenance/executions/ex-shape-1/summary",
+            "/v1/provenance/executions/ex-shape-1/summary",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -262,7 +262,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
         self._make_execution("ex-ev-1")
         self._archive_evidence("ex-ev-1")
         status, body = self._run_handler(
-            "/provenance/executions/ex-ev-1/summary",
+            "/v1/provenance/executions/ex-ev-1/summary",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -273,7 +273,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
     def test_response_warnings_for_missing_evidence(self):
         self._make_execution("ex-warn-1")
         status, body = self._run_handler(
-            "/provenance/executions/ex-warn-1/summary",
+            "/v1/provenance/executions/ex-warn-1/summary",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -292,7 +292,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
             execution_id="ex-sec-1",
         )
         status, body = self._run_handler(
-            "/provenance/executions/ex-sec-1/summary",
+            "/v1/provenance/executions/ex-sec-1/summary",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -312,7 +312,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
             execution_id="ex-tl-1",
         )
         status, body = self._run_handler(
-            "/provenance/executions/ex-tl-1/summary",
+            "/v1/provenance/executions/ex-tl-1/summary",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)

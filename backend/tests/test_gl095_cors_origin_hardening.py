@@ -186,7 +186,7 @@ class TestGl095CorsWildcardRemoved(_BaseGl095):
         importlib.reload(self.config_mod)
         import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
-        handler = self._make_handler("/grants", origin="http://evil.com")
+        handler = self._make_handler("/v1/grants", origin="http://evil.com")
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self.assertNotEqual(headers.get("access-control-allow-origin"), "*")
@@ -219,7 +219,7 @@ class TestGl095ArbitraryOriginNotReflected(_BaseGl095):
         importlib.reload(self.config_mod)
         import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
-        handler = self._make_handler("/grants", origin="http://malicious.com")
+        handler = self._make_handler("/v1/grants", origin="http://malicious.com")
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self.assertNotIn("http://malicious.com", headers.get("access-control-allow-origin", ""))
@@ -227,7 +227,7 @@ class TestGl095ArbitraryOriginNotReflected(_BaseGl095):
     def test_malicious_origin_not_reflected_on_options(self):
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com"
         importlib.reload(self.config_mod)
-        handler = self._make_handler("/grants", method="OPTIONS", origin="http://malicious.com")
+        handler = self._make_handler("/v1/grants", method="OPTIONS", origin="http://malicious.com")
         status, headers, body = self._run_handler(handler)
         self.assertIn(status, [200, 204, 400, 405])
         self.assertNotIn("http://malicious.com", headers.get("access-control-allow-origin", ""))
@@ -291,13 +291,13 @@ class TestGl095OptionsPreflight(_BaseGl095):
         importlib.reload(self.config_mod)
 
     def test_options_allowed_origin_returns_2xx_with_cors(self):
-        handler = self._make_handler("/grants", method="OPTIONS", origin="http://trusted.com")
+        handler = self._make_handler("/v1/grants", method="OPTIONS", origin="http://trusted.com")
         status, headers, body = self._run_handler(handler)
         self.assertIn(status, [200, 204])
         self.assertEqual(headers.get("access-control-allow-origin"), "http://trusted.com")
 
     def test_options_unlisted_origin_returns_2xx_without_cors(self):
-        handler = self._make_handler("/grants", method="OPTIONS", origin="http://evil.com")
+        handler = self._make_handler("/v1/grants", method="OPTIONS", origin="http://evil.com")
         status, headers, body = self._run_handler(handler)
         self.assertIn(status, [200, 204, 400, 405])
         self.assertNotIn("http://evil.com", headers.get("access-control-allow-origin", ""))
@@ -308,7 +308,7 @@ class TestGl095OptionsPreflight(_BaseGl095):
         before = conn.execute("SELECT COUNT(*) FROM grants").fetchone()[0]
         conn.close()
 
-        handler = self._make_handler("/grants", method="OPTIONS", origin="http://trusted.com")
+        handler = self._make_handler("/v1/grants", method="OPTIONS", origin="http://trusted.com")
         self._run_handler(handler)
 
         conn = get_conn()
@@ -340,13 +340,13 @@ class TestGl095CorsDoesNotBypassAuth(_BaseGl095):
         self._create_matching_grant()
 
     def test_grants_still_requires_auth_with_allowed_origin(self):
-        handler = self._make_handler("/grants", origin="http://trusted.com")
+        handler = self._make_handler("/v1/grants", origin="http://trusted.com")
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
 
     def test_grants_succeeds_with_allowed_origin_and_auth(self):
-        handler = self._make_handler("/grants", auth_header="Bearer owner-token", origin="http://trusted.com")
+        handler = self._make_handler("/v1/grants", auth_header="Bearer owner-token", origin="http://trusted.com")
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
@@ -359,7 +359,7 @@ class TestGl095CorsDoesNotBypassAuth(_BaseGl095):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/demo-action", method="POST", origin="http://trusted.com", body=demo_body)
+        handler = self._make_handler("/v1/demo-action", method="POST", origin="http://trusted.com", body=demo_body)
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -370,7 +370,7 @@ class TestGl095CorsDoesNotBypassAuth(_BaseGl095):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/challenges", method="POST", origin="http://trusted.com", body=challenge_body)
+        handler = self._make_handler("/v1/challenges", method="POST", origin="http://trusted.com", body=challenge_body)
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -406,7 +406,7 @@ class TestGl095PublicAndProtectedEndpoints(_BaseGl095):
         self.assertIn(body.get("status"), ("ready", "not_ready"))
 
     def test_get_grants_protected(self):
-        handler = self._make_handler("/grants", origin="http://trusted.com")
+        handler = self._make_handler("/v1/grants", origin="http://trusted.com")
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 401)
 
@@ -417,7 +417,7 @@ class TestGl095PublicAndProtectedEndpoints(_BaseGl095):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/demo-action", method="POST", origin="http://trusted.com", body=demo_body)
+        handler = self._make_handler("/v1/demo-action", method="POST", origin="http://trusted.com", body=demo_body)
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 401)
 
@@ -427,7 +427,7 @@ class TestGl095PublicAndProtectedEndpoints(_BaseGl095):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/challenges", method="POST", origin="http://trusted.com", body=challenge_body)
+        handler = self._make_handler("/v1/challenges", method="POST", origin="http://trusted.com", body=challenge_body)
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 401)
 

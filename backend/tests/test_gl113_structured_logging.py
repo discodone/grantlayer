@@ -98,8 +98,8 @@ class TestGl113SafeFields(_BaseGl113):
         self.assertEqual(payload["method"], "POST")
 
     def test_path_field_present(self):
-        payload = json.loads(self.lu_mod.build_log_record("e", path="/grants"))
-        self.assertEqual(payload["path"], "/grants")
+        payload = json.loads(self.lu_mod.build_log_record("e", path="/v1/grants"))
+        self.assertEqual(payload["path"], "/v1/grants")
 
     def test_status_code_field_present(self):
         payload = json.loads(self.lu_mod.build_log_record("e", status_code=200))

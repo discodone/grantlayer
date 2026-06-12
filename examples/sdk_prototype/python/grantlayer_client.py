@@ -322,12 +322,12 @@ class GrantLayerClient:
     # -----------------------------------------------------------------------
 
     def list_grants(self) -> GrantLayerResponse:
-        """GET /grants — list all grants. Requires auth."""
-        return self._do_request("GET", "/grants")
+        """GET /v1/grants — list all grants. Requires auth."""
+        return self._do_request("GET", "/v1/grants")
 
     def get_grant(self, grant_id: str) -> GrantLayerResponse:
-        """GET /grants/{id} — get a single grant. Requires auth."""
-        return self._do_request("GET", f"/grants/{grant_id}")
+        """GET /v1/grants/{id} — get a single grant. Requires auth."""
+        return self._do_request("GET", f"/v1/grants/{grant_id}")
 
     def create_grant(
         self,
@@ -341,7 +341,7 @@ class GrantLayerClient:
         reason: str,
         max_uses: Optional[int] = None,
     ) -> GrantLayerResponse:
-        """POST /grants — create a new grant. Requires auth."""
+        """POST /v1/grants — create a new grant. Requires auth."""
         body: Dict[str, Any] = {
             "subjectId": subject_id,
             "role": role,
@@ -354,7 +354,7 @@ class GrantLayerClient:
         }
         if max_uses is not None:
             body["maxUses"] = max_uses
-        return self._do_request("POST", "/grants", body=body)
+        return self._do_request("POST", "/v1/grants", body=body)
 
     def revoke_grant(
         self,
@@ -362,10 +362,10 @@ class GrantLayerClient:
         revoked_by: str,
         reason: str,
     ) -> GrantLayerResponse:
-        """POST /grants/{id}/revoke — revoke an active grant. Requires auth."""
+        """POST /v1/grants/{id}/revoke — revoke an active grant. Requires auth."""
         return self._do_request(
             "POST",
-            f"/grants/{grant_id}/revoke",
+            f"/v1/grants/{grant_id}/revoke",
             body={"revokedBy": revoked_by, "reason": reason},
         )
 
@@ -374,16 +374,16 @@ class GrantLayerClient:
     # -----------------------------------------------------------------------
 
     def list_audit_events(self, limit: int = 200) -> GrantLayerResponse:
-        """GET /audit-events — list audit events. Requires auth."""
-        return self._do_request("GET", f"/audit-events?limit={limit}")
+        """GET /v1/audit-events — list audit events. Requires auth."""
+        return self._do_request("GET", f"/v1/audit-events?limit={limit}")
 
     # -----------------------------------------------------------------------
     # Challenges
     # -----------------------------------------------------------------------
 
     def list_challenges(self) -> GrantLayerResponse:
-        """GET /challenges — list all challenges. Requires auth."""
-        return self._do_request("GET", "/challenges")
+        """GET /v1/challenges — list all challenges. Requires auth."""
+        return self._do_request("GET", "/v1/challenges")
 
     def create_challenge(
         self,
@@ -391,10 +391,10 @@ class GrantLayerClient:
         action: str,
         resource: str,
     ) -> GrantLayerResponse:
-        """POST /challenges — create a challenge. Requires auth."""
+        """POST /v1/challenges — create a challenge. Requires auth."""
         return self._do_request(
             "POST",
-            "/challenges",
+            "/v1/challenges",
             body={"subjectId": subject_id, "action": action, "resource": resource},
         )
 
@@ -403,8 +403,8 @@ class GrantLayerClient:
     # -----------------------------------------------------------------------
 
     def get_operator_me(self) -> GrantLayerResponse:
-        """GET /operators/me — current operator profile. Operator mode only."""
-        return self._do_request("GET", "/operators/me")
+        """GET /v1/operators/me — current operator profile. Operator mode only."""
+        return self._do_request("GET", "/v1/operators/me")
 
     # -----------------------------------------------------------------------
     # Grant requests (operator mode)
@@ -413,15 +413,15 @@ class GrantLayerClient:
     def list_grant_requests(
         self, status_filter: Optional[str] = None
     ) -> GrantLayerResponse:
-        """GET /grant-requests — list grant requests. Requires auth."""
-        path = "/grant-requests"
+        """GET /v1/grant-requests — list grant requests. Requires auth."""
+        path = "/v1/grant-requests"
         if status_filter:
-            path = f"/grant-requests?status={status_filter}"
+            path = f"/v1/grant-requests?status={status_filter}"
         return self._do_request("GET", path)
 
     def get_grant_request(self, request_id: str) -> GrantLayerResponse:
-        """GET /grant-requests/{id} — get a single grant request. Operator mode only."""
-        return self._do_request("GET", f"/grant-requests/{request_id}")
+        """GET /v1/grant-requests/{id} — get a single grant request. Operator mode only."""
+        return self._do_request("GET", f"/v1/grant-requests/{request_id}")
 
     def create_grant_request(
         self,
@@ -433,10 +433,10 @@ class GrantLayerClient:
         valid_until: str,
         reason: str,
     ) -> GrantLayerResponse:
-        """POST /grant-requests — create a grant request. Operator mode only."""
+        """POST /v1/grant-requests — create a grant request. Operator mode only."""
         return self._do_request(
             "POST",
-            "/grant-requests",
+            "/v1/grant-requests",
             body={
                 "subjectId": subject_id,
                 "role": role,
@@ -449,14 +449,14 @@ class GrantLayerClient:
         )
 
     def approve_grant_request(self, request_id: str) -> GrantLayerResponse:
-        """POST /grant-requests/{id}/approve — approve a request. Operator mode only."""
-        return self._do_request("POST", f"/grant-requests/{request_id}/approve")
+        """POST /v1/grant-requests/{id}/approve — approve a request. Operator mode only."""
+        return self._do_request("POST", f"/v1/grant-requests/{request_id}/approve")
 
     def deny_grant_request(self, request_id: str, reason: str) -> GrantLayerResponse:
-        """POST /grant-requests/{id}/deny — deny a request. Operator mode only."""
+        """POST /v1/grant-requests/{id}/deny — deny a request. Operator mode only."""
         return self._do_request(
             "POST",
-            f"/grant-requests/{request_id}/deny",
+            f"/v1/grant-requests/{request_id}/deny",
             body={"reason": reason},
         )
 
@@ -470,47 +470,47 @@ class GrantLayerClient:
         grant_id: Optional[str] = None,
         operator_id: Optional[str] = None,
     ) -> GrantLayerResponse:
-        """GET /grant-executions — list executions. Operator mode only."""
+        """GET /v1/grant-executions — list executions. Operator mode only."""
         params = [f"limit={limit}"]
         if grant_id:
             params.append(f"grantId={grant_id}")
         if operator_id:
             params.append(f"operatorId={operator_id}")
-        return self._do_request("GET", f"/grant-executions?{'&'.join(params)}")
+        return self._do_request("GET", f"/v1/grant-executions?{'&'.join(params)}")
 
     def get_grant_execution(self, execution_id: str) -> GrantLayerResponse:
-        """GET /grant-executions/{id} — get a single execution. Operator mode only."""
-        return self._do_request("GET", f"/grant-executions/{execution_id}")
+        """GET /v1/grant-executions/{id} — get a single execution. Operator mode only."""
+        return self._do_request("GET", f"/v1/grant-executions/{execution_id}")
 
     def list_executions_for_grant(
         self, grant_id: str, limit: int = 200
     ) -> GrantLayerResponse:
-        """GET /grants/{id}/executions — list executions for a grant. Operator mode only."""
-        return self._do_request("GET", f"/grants/{grant_id}/executions?limit={limit}")
+        """GET /v1/grants/{id}/executions — list executions for a grant. Operator mode only."""
+        return self._do_request("GET", f"/v1/grants/{grant_id}/executions?limit={limit}")
 
     # -----------------------------------------------------------------------
     # Evidence / provenance
     # -----------------------------------------------------------------------
 
     def get_evidence_bundle(self, execution_id: str) -> GrantLayerResponse:
-        """GET /evidence/executions/{id} — evidence bundle. Requires auth."""
-        return self._do_request("GET", f"/evidence/executions/{execution_id}")
+        """GET /v1/evidence/executions/{id} — evidence bundle. Requires auth."""
+        return self._do_request("GET", f"/v1/evidence/executions/{execution_id}")
 
     def verify_evidence_bundle(self, execution_id: str) -> GrantLayerResponse:
-        """GET /evidence/executions/{id}/verify — verify evidence. Requires auth."""
-        return self._do_request("GET", f"/evidence/executions/{execution_id}/verify")
+        """GET /v1/evidence/executions/{id}/verify — verify evidence. Requires auth."""
+        return self._do_request("GET", f"/v1/evidence/executions/{execution_id}/verify")
 
     # -----------------------------------------------------------------------
     # Agent permissions
     # -----------------------------------------------------------------------
 
     def list_agent_permission_profiles(self) -> GrantLayerResponse:
-        """GET /agent-permissions/profiles — list profiles. Requires auth."""
-        return self._do_request("GET", "/agent-permissions/profiles")
+        """GET /v1/agent-permissions/profiles — list profiles. Requires auth."""
+        return self._do_request("GET", "/v1/agent-permissions/profiles")
 
     def get_agent_permission_profile(self, profile_name: str) -> GrantLayerResponse:
-        """GET /agent-permissions/profiles/{name} — get a profile. Requires auth."""
-        return self._do_request("GET", f"/agent-permissions/profiles/{profile_name}")
+        """GET /v1/agent-permissions/profiles/{name} — get a profile. Requires auth."""
+        return self._do_request("GET", f"/v1/agent-permissions/profiles/{profile_name}")
 
     def evaluate_agent_permission(
         self,
@@ -520,7 +520,7 @@ class GrantLayerClient:
         resource_type: Optional[str] = None,
         resource_id: Optional[str] = None,
     ) -> GrantLayerResponse:
-        """POST /agent-permissions/evaluate — evaluate agent permission. Requires auth."""
+        """POST /v1/agent-permissions/evaluate — evaluate agent permission. Requires auth."""
         body: Dict[str, Any] = {
             "agentId": agent_id,
             "requestedScope": requested_scope,
@@ -530,7 +530,7 @@ class GrantLayerClient:
             body["resourceType"] = resource_type
         if resource_id is not None:
             body["resourceId"] = resource_id
-        return self._do_request("POST", "/agent-permissions/evaluate", body=body)
+        return self._do_request("POST", "/v1/agent-permissions/evaluate", body=body)
 
     # -----------------------------------------------------------------------
     # Generic escape hatch

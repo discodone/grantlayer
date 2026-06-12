@@ -604,14 +604,14 @@ class TestGl099ServerSafety(_BaseGl099):
             "reason": "API test request"
         }
         body = json.dumps(req_data).encode()
-        http_req = self._make_handler("/grant-requests", method="POST", auth_header="Bearer admin-token", body=body)
+        http_req = self._make_handler("/v1/grant-requests", method="POST", auth_header="Bearer admin-token", body=body)
         status, data = self._run_handler(http_req)
         self.assertEqual(status, 201)
         request_id = data["id"]
 
         approval_body = json.dumps({"comment": "Approved"}).encode()
         http_req = self._make_handler(
-            f"/grant-requests/{request_id}/approve",
+            f"/v1/grant-requests/{request_id}/approve",
             method="POST",
             auth_header="Bearer admin-token",
             body=approval_body
@@ -626,7 +626,7 @@ class TestGl099ServerSafety(_BaseGl099):
         req = self._create_old_request()
         approval_body = json.dumps({"comment": "Approved"}).encode()
         http_req = self._make_handler(
-            f"/grant-requests/{req.id}/approve",
+            f"/v1/grant-requests/{req.id}/approve",
             method="POST",
             auth_header="Bearer approver-token",
             body=approval_body,

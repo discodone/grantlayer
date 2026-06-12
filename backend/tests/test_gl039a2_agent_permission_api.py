@@ -108,7 +108,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
     # ── Endpoint routing ────────────────────────────────────────
     def test_endpoint_exists_and_returns_400_for_missing_fields(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer test-admin-token",
             body={"agentId": "agent-1"},
         )
@@ -118,7 +118,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
 
     def test_endpoint_returns_200_for_valid_request(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -136,7 +136,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
     # ── Auth ────────────────────────────────────────────────────
     def test_endpoint_requires_admin_token_when_operator_disabled(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             body={
                 "agentId": "agent-1",
                 "requestedScope": "evidence:read",
@@ -145,7 +145,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
         )
         self.assertEqual(status, 401)
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer wrong-token",
             body={
                 "agentId": "agent-1",
@@ -162,7 +162,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
         self._insert_operator("owner-1", "Owner One", "owner", "owner-token")
 
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer owner-token",
             body={
                 "agentId": "agent-1",
@@ -180,7 +180,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
         self._insert_operator("admin-1", "Admin One", "grant_admin", "admin-token")
 
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer admin-token",
             body={
                 "agentId": "agent-1",
@@ -198,7 +198,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
         self._insert_operator("auditor-1", "Auditor One", "auditor", "auditor-token")
 
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer auditor-token",
             body={
                 "agentId": "agent-1",
@@ -215,7 +215,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
         self._insert_operator("demo-op-1", "Demo Op", "demo_operator", "demo-token")
 
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer demo-token",
             body={
                 "agentId": "agent-1",
@@ -228,7 +228,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
     # ── Response shape ──────────────────────────────────────────
     def test_response_contains_expected_keys(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -256,7 +256,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
     # ── Evaluation logic ────────────────────────────────────────
     def test_endpoint_denies_unknown_scope(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -270,7 +270,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
 
     def test_endpoint_allows_wildcard_read(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -284,7 +284,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
 
     def test_endpoint_denies_malformed_scope(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -298,7 +298,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
 
     def test_endpoint_allows_admin_star(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -312,7 +312,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
 
     def test_endpoint_denies_scope_not_matched(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -326,7 +326,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
 
     def test_endpoint_passes_context_optional(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",
@@ -341,7 +341,7 @@ class TestAgentPermissionEvaluationAPI(unittest.TestCase):
     # ── Secrets safety ──────────────────────────────────────────
     def test_response_does_not_expose_secrets(self):
         status, body = self._run_handler(
-            "/agent-permissions/evaluate",
+            "/v1/agent-permissions/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "agentId": "agent-1",

@@ -330,19 +330,19 @@ class TestGl141FailClosedMissingToken(_BaseGl141Endpoint):
         self._reload_server()
 
     def test_missing_token_grants_returns_401(self):
-        handler = self._make_raw_handler("/grants")
+        handler = self._make_raw_handler("/v1/grants")
         status, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_missing_token_operators_me_returns_401(self):
-        handler = self._make_raw_handler("/operators/me")
+        handler = self._make_raw_handler("/v1/operators/me")
         status, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_missing_token_does_not_expose_raw_config(self):
-        handler = self._make_raw_handler("/grants")
+        handler = self._make_raw_handler("/v1/grants")
         _, body = self._run_raw_handler(handler)
         body_str = json.dumps(body).lower()
         self.assertNotIn("enable_operator_model", body_str)
@@ -362,13 +362,13 @@ class TestGl141FailClosedInvalidToken(_BaseGl141Endpoint):
         self._reload_server()
 
     def test_invalid_token_grants_returns_401(self):
-        handler = self._make_raw_handler("/grants", auth_header="Bearer totally-wrong-token")
+        handler = self._make_raw_handler("/v1/grants", auth_header="Bearer totally-wrong-token")
         status, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_invalid_token_does_not_expose_real_token(self):
-        handler = self._make_raw_handler("/grants", auth_header="Bearer totally-wrong-token")
+        handler = self._make_raw_handler("/v1/grants", auth_header="Bearer totally-wrong-token")
         _, body = self._run_raw_handler(handler)
         body_str = json.dumps(body)
         self.assertNotIn("real-token-gl141", body_str)
@@ -385,7 +385,7 @@ class TestGl141ValidBehaviorPreserved(_BaseGl141Endpoint):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         self._insert_operator("op-owner", "Owner", "owner", "owner-tok-gl141")
         self._reload_server()
-        handler = self._make_raw_handler("/operators/me", auth_header="Bearer owner-tok-gl141")
+        handler = self._make_raw_handler("/v1/operators/me", auth_header="Bearer owner-tok-gl141")
         status, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertEqual(body.get("role"), "owner")
@@ -395,7 +395,7 @@ class TestGl141ValidBehaviorPreserved(_BaseGl141Endpoint):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "legacy-admin-gl141"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         self._reload_server()
-        handler = self._make_raw_handler("/grants", auth_header="Bearer legacy-admin-gl141")
+        handler = self._make_raw_handler("/v1/grants", auth_header="Bearer legacy-admin-gl141")
         status, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
@@ -403,7 +403,7 @@ class TestGl141ValidBehaviorPreserved(_BaseGl141Endpoint):
     def test_explicit_true_missing_token_fails_closed(self):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         self._reload_server()
-        handler = self._make_raw_handler("/grants")
+        handler = self._make_raw_handler("/v1/grants")
         status, _ = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
 
@@ -412,7 +412,7 @@ class TestGl141ValidBehaviorPreserved(_BaseGl141Endpoint):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "legacy-admin-gl141"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         self._reload_server()
-        handler = self._make_raw_handler("/grants")
+        handler = self._make_raw_handler("/v1/grants")
         status, _ = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
 

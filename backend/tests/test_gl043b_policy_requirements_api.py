@@ -112,7 +112,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_exists_and_returns_200_for_valid_request(self):
         """POST /policy-requirements/evaluate returns 200 for valid request."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -174,7 +174,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_missing_auth_returns_401(self):
         """POST /policy-requirements/evaluate without auth returns 401."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             body={},
         )
         self.assertEqual(status, 401)
@@ -182,7 +182,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_400_for_invalid_json(self):
         """POST /policy-requirements/evaluate with invalid JSON returns 400."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body=b"invalid json",
         )
@@ -195,7 +195,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Admin", "grant_admin", "op-token-1")
 
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer op-token-1",
             body={"policyPack": {"policyPackId": "pp-1"}},
         )
@@ -209,7 +209,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Owner", "owner", "op-token-1")
 
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer op-token-1",
             body={"policyPack": {"policyPackId": "pp-1"}},
         )
@@ -223,7 +223,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Auditor", "auditor", "op-token-1")
 
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer op-token-1",
             body={"policyPack": {"policyPackId": "pp-1"}},
         )
@@ -237,7 +237,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
         self._insert_operator("op-1", "Test Demo", "demo_operator", "op-token-1")
 
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer op-token-1",
             body={},
         )
@@ -249,13 +249,13 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
 
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             body={},
         )
         self.assertEqual(status, 401)
 
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer wrong-token",
             body={},
         )
@@ -264,7 +264,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_missing_policy_pack_returns_blocked(self):
         """POST /policy-requirements/evaluate returns blocked when policy pack missing."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={"subject": {"subjectId": "sub-1"}},
         )
@@ -277,7 +277,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_malformed_policy_pack_returns_blocked(self):
         """POST /policy-requirements/evaluate returns blocked when policy pack malformed."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={"policyPack": "not-a-dict"},
         )
@@ -288,7 +288,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_empty_body_returns_valid_evaluation(self):
         """POST /policy-requirements/evaluate with empty body returns valid evaluation."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={},
         )
@@ -302,7 +302,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_missing_subject_recorded(self):
         """POST /policy-requirements/evaluate records missing subject."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {"policyPackId": "pp-1"},
@@ -317,7 +317,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_omits_details_when_include_details_false(self):
         """POST /policy-requirements/evaluate omits details when includeDetails=False."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -356,7 +356,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_includes_details_when_include_details_true(self):
         """POST /policy-requirements/evaluate includes details when includeDetails=True."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -396,7 +396,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_no_secrets_at_top_level(self):
         """POST /policy-requirements/evaluate does not expose secrets at top level."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {"policyPackId": "pp-1"},
@@ -414,7 +414,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_blocked_for_denied_permission(self):
         """POST /policy-requirements/evaluate returns blocked when permission denied."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -440,7 +440,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_blocked_for_compliance_critical(self):
         """POST /policy-requirements/evaluate returns blocked for critical compliance gaps."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -470,7 +470,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_blocked_for_approval_lifecycle_blocked(self):
         """POST /policy-requirements/evaluate returns blocked when approval lifecycle blocked."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -498,7 +498,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_blocked_for_decision_provenance_blocked(self):
         """POST /policy-requirements/evaluate returns blocked when decision provenance blocked."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -527,7 +527,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_blocked_for_auditor_export_blocked(self):
         """POST /policy-requirements/evaluate returns blocked when auditor export blocked."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -557,7 +557,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_blocked_for_exclusion(self):
         """POST /policy-requirements/evaluate returns blocked for blocking exclusion."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -584,7 +584,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_404_for_get(self):
         """GET /policy-requirements/evaluate returns 404 or 405 (POST only)."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             method="GET",
             auth="Bearer test-admin-token",
         )
@@ -593,7 +593,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_handles_all_optional_fields(self):
         """POST /policy-requirements/evaluate handles all optional fields."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -641,7 +641,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_needs_review_for_warnings(self):
         """POST /policy-requirements/evaluate returns needs_review when only warnings."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -669,7 +669,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_blocked_for_amount_above_max(self):
         """POST /policy-requirements/evaluate returns blocked when amount above max."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -696,7 +696,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_returns_blocked_for_expired_deadline(self):
         """POST /policy-requirements/evaluate returns blocked for expired required deadline."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {
@@ -725,7 +725,7 @@ class TestPolicyRequirementsAPI(unittest.TestCase):
     def test_evaluate_endpoint_field_preservation(self):
         """POST /policy-requirements/evaluate preserves policy pack id, version and subject id."""
         status, resp = self._run_handler(
-            "/policy-requirements/evaluate",
+            "/v1/policy-requirements/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "policyPack": {"policyPackId": "pp-123", "policyPackVersion": "v3"},

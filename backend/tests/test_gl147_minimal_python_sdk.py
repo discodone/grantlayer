@@ -229,7 +229,7 @@ class TestGl147SdkBehavior(unittest.TestCase):
             return _make_mock_response(200, {})
 
         with patch("urllib.request.urlopen", side_effect=fake_urlopen):
-            c.request_json("POST", "/grants", body={"subject": "s"})
+            c.request_json("POST", "/v1/grants", body={"subject": "s"})
         self.assertEqual(captured["ct"], "application/json")
 
     def test_no_body_does_not_set_content_type(self):
@@ -253,7 +253,7 @@ class TestGl147SdkBehavior(unittest.TestCase):
             return _make_mock_response(200, {})
 
         with patch("urllib.request.urlopen", side_effect=fake_urlopen):
-            c.request_json("GET", "/grants")
+            c.request_json("GET", "/v1/grants")
         self.assertEqual(captured["auth"], "Bearer demo-token-local")
 
     def test_no_token_no_authorization_header(self):
@@ -273,7 +273,7 @@ class TestGl147SdkBehavior(unittest.TestCase):
 
         def fake_urlopen(req, timeout=None):
             err = urllib.error.HTTPError(
-                url="http://localhost:8765/grants",
+                url="http://localhost:8765/v1/grants",
                 code=403,
                 msg="Forbidden",
                 hdrs=None,
@@ -284,7 +284,7 @@ class TestGl147SdkBehavior(unittest.TestCase):
 
         with patch("urllib.request.urlopen", side_effect=fake_urlopen):
             with self.assertRaises(self.mod.GrantLayerHTTPError) as ctx:
-                c.request_json("GET", "/grants")
+                c.request_json("GET", "/v1/grants")
 
         exc = ctx.exception
         self.assertEqual(exc.status, 403)
@@ -294,7 +294,7 @@ class TestGl147SdkBehavior(unittest.TestCase):
 
         def fake_urlopen(req, timeout=None):
             err = urllib.error.HTTPError(
-                url="http://localhost:8765/grants",
+                url="http://localhost:8765/v1/grants",
                 code=401,
                 msg="Unauthorized",
                 hdrs=None,
@@ -305,7 +305,7 @@ class TestGl147SdkBehavior(unittest.TestCase):
 
         with patch("urllib.request.urlopen", side_effect=fake_urlopen):
             with self.assertRaises(self.mod.GrantLayerHTTPError) as ctx:
-                c.request_json("GET", "/grants")
+                c.request_json("GET", "/v1/grants")
 
         self.assertNotIn("secret-token-local", str(ctx.exception))
 

@@ -362,7 +362,7 @@ class TestGrantRequests(unittest.TestCase):
         }
 
         # 1. Create a grant request
-        resp = client.post("/grant-requests", json=req_data, headers={"Authorization": "Bearer admin-token"})
+        resp = client.post("/v1/grant-requests", json=req_data, headers={"Authorization": "Bearer admin-token"})
         self.assertEqual(resp.status_code, 201)
         data = resp.json()
         self.assertEqual(data["subjectId"], "tech-01")
@@ -371,21 +371,21 @@ class TestGrantRequests(unittest.TestCase):
         request_id = data["id"]
 
         # 2. List grant requests
-        resp = client.get("/grant-requests", headers={"Authorization": "Bearer approver-token"})
+        resp = client.get("/v1/grant-requests", headers={"Authorization": "Bearer approver-token"})
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["id"], request_id)
 
         # 3. Get a single grant request
-        resp = client.get(f"/grant-requests/{request_id}", headers={"Authorization": "Bearer approver-token"})
+        resp = client.get(f"/v1/grant-requests/{request_id}", headers={"Authorization": "Bearer approver-token"})
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertEqual(data["id"], request_id)
         self.assertEqual(data["subjectId"], "tech-01")
 
         # 4. Approve the grant request
-        resp = client.post(f"/grant-requests/{request_id}/approve", headers={"Authorization": "Bearer approver-token"})
+        resp = client.post(f"/v1/grant-requests/{request_id}/approve", headers={"Authorization": "Bearer approver-token"})
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertTrue(data["ok"])
@@ -393,17 +393,17 @@ class TestGrantRequests(unittest.TestCase):
         self.assertEqual(data["request"]["approvedBy"], "approver-1")
 
         # 5. Try to approve again (already approved — expect error)
-        resp = client.post(f"/grant-requests/{request_id}/approve", headers={"Authorization": "Bearer admin-token"})
+        resp = client.post(f"/v1/grant-requests/{request_id}/approve", headers={"Authorization": "Bearer admin-token"})
         self.assertIn(resp.status_code, (400, 403))
         body = resp.json()
         self.assertIn("error", body)
 
         # 6. Create another request and deny it
-        resp = client.post("/grant-requests", json=req_data, headers={"Authorization": "Bearer admin-token"})
+        resp = client.post("/v1/grant-requests", json=req_data, headers={"Authorization": "Bearer admin-token"})
         self.assertEqual(resp.status_code, 201)
         request2_id = resp.json()["id"]
 
-        resp = client.post(f"/grant-requests/{request2_id}/deny", json={"reason": "Denied for test"}, headers={"Authorization": "Bearer approver-token"})
+        resp = client.post(f"/v1/grant-requests/{request2_id}/deny", json={"reason": "Denied for test"}, headers={"Authorization": "Bearer approver-token"})
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertTrue(data["ok"])
@@ -428,12 +428,12 @@ class TestGrantRequests(unittest.TestCase):
         }
 
         # Create a grant request as admin-1
-        resp = client.post("/grant-requests", json=req_data, headers={"Authorization": "Bearer admin-token"})
+        resp = client.post("/v1/grant-requests", json=req_data, headers={"Authorization": "Bearer admin-token"})
         self.assertEqual(resp.status_code, 201)
         request_id = resp.json()["id"]
 
         # Try to approve with the same token (self-approval)
-        resp = client.post(f"/grant-requests/{request_id}/approve", headers={"Authorization": "Bearer admin-token"})
+        resp = client.post(f"/v1/grant-requests/{request_id}/approve", headers={"Authorization": "Bearer admin-token"})
         self.assertEqual(resp.status_code, 403)
         data = resp.json()
         self.assertEqual(data["error"], "Cannot approve your own request")

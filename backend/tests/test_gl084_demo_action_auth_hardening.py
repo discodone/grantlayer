@@ -196,28 +196,28 @@ class TestGl084OperatorMode(_BaseGl084):
         self.assertIn(body.get("status"), ("ready", "not_ready"))
 
     def test_demo_action_without_auth_returns_401(self):
-        handler = self._make_handler("/demo-action", method="POST", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
 
     def test_demo_action_auditor_forbidden(self):
-        handler = self._make_handler("/demo-action", method="POST", auth_header="Bearer auditor-token", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer auditor-token", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
 
     def test_demo_action_demo_operator_forbidden(self):
-        handler = self._make_handler("/demo-action", method="POST", auth_header="Bearer demo-token", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer demo-token", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
 
     def test_demo_action_owner_succeeds(self):
-        handler = self._make_handler("/demo-action", method="POST", auth_header="Bearer owner-token", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer owner-token", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIn("approved", body)
@@ -228,7 +228,7 @@ class TestGl084OperatorMode(_BaseGl084):
         self.assertIn("message", body)
 
     def test_demo_action_grant_admin_succeeds(self):
-        handler = self._make_handler("/demo-action", method="POST", auth_header="Bearer admin-token", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer admin-token", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIn("approved", body)
@@ -239,7 +239,7 @@ class TestGl084OperatorMode(_BaseGl084):
         self.assertIn("message", body)
 
     def test_demo_action_response_shape_compatible(self):
-        handler = self._make_handler("/demo-action", method="POST", auth_header="Bearer owner-token", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer owner-token", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body.get("approved"), bool)
@@ -252,7 +252,7 @@ class TestGl084OperatorMode(_BaseGl084):
             self.assertIsInstance(body.get("reason"), str)
 
     def test_demo_action_unauthorized_safe_json(self):
-        handler = self._make_handler("/demo-action", method="POST", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -265,7 +265,7 @@ class TestGl084OperatorMode(_BaseGl084):
         self.assertNotIn("Bearer", body_str)
 
     def test_demo_action_unauthorized_no_stacktrace(self):
-        handler = self._make_handler("/demo-action", method="POST", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         body_str = json.dumps(body)
@@ -273,13 +273,13 @@ class TestGl084OperatorMode(_BaseGl084):
         self.assertNotIn("exception", body_str.lower())
 
     def test_gl083_grants_still_require_auth(self):
-        handler = self._make_handler("/grants", auth_header=None)
+        handler = self._make_handler("/v1/grants", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
 
     def test_gl083_audit_events_still_require_auth(self):
-        handler = self._make_handler("/audit-events", auth_header=None)
+        handler = self._make_handler("/v1/audit-events", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -322,14 +322,14 @@ class TestGl084LegacyMode(_BaseGl084):
         self.assertIn(status, (200, 503))
 
     def test_demo_action_without_auth_returns_401(self):
-        handler = self._make_handler("/demo-action", method="POST", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_demo_action_with_valid_admin_token_succeeds(self):
-        handler = self._make_handler("/demo-action", method="POST", auth_header="Bearer legacy-admin-token", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer legacy-admin-token", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIn("approved", body)
@@ -339,7 +339,7 @@ class TestGl084LegacyMode(_BaseGl084):
         self.assertIn("grantSignatureResult", body)
 
     def test_demo_action_unauthorized_safe_json(self):
-        handler = self._make_handler("/demo-action", method="POST", body=self._demo_body())
+        handler = self._make_handler("/v1/demo-action", method="POST", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -349,14 +349,14 @@ class TestGl084LegacyMode(_BaseGl084):
         self.assertNotIn("Bearer", body_str)
 
     def test_gl083_grants_still_require_auth(self):
-        handler = self._make_handler("/grants", auth_header=None)
+        handler = self._make_handler("/v1/grants", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_gl083_audit_events_still_require_auth(self):
-        handler = self._make_handler("/audit-events", auth_header=None)
+        handler = self._make_handler("/v1/audit-events", auth_header=None)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -382,14 +382,14 @@ class TestGl084OpenAPIContract(_BaseGl084):
 
     def test_openapi_demo_action_has_security(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/demo-action:", "/demo/tamper-grant/")
+        section = self._section_between(text, "/v1/demo-action:", "/v1/demo/tamper-grant/")
         self.assertIn("security:", section)
         self.assertIn("LegacyAdminToken", section)
         self.assertIn("OperatorToken", section)
 
     def test_openapi_demo_action_has_401_403(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/demo-action:", "/demo/tamper-grant/")
+        section = self._section_between(text, "/v1/demo-action:", "/v1/demo/tamper-grant/")
         self.assertIn('"401"', section)
         self.assertIn('"403"', section)
 

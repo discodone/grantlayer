@@ -345,7 +345,7 @@ class TestGl201SecretLeakagePrevention(_BaseGl201):
         # Use operator model (default) to avoid ENABLE_OPERATOR_MODEL state contamination
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
-        status, body = self._run_handler("/grants", method="GET",
+        status, body = self._run_handler("/v1/grants", method="GET",
             auth_header=f"Bearer {self._FAKE_PROD_TOKEN}"
         )
         body_str = json.dumps(body)
@@ -388,7 +388,7 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
         """Missing Authorization header must return 401 (operator model, no operators)."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
-        status, body = self._run_handler("/grants", method="GET")
+        status, body = self._run_handler("/v1/grants", method="GET")
         self.assertIn(status, (401, 403), f"Expected auth rejection, got {status}")
         self.assertIn("errorCode", body)
 
@@ -397,7 +397,7 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
         wrong_token = "gl201-completely-wrong-operator-token-xyz"
-        status, body = self._run_handler("/grants", method="GET",
+        status, body = self._run_handler("/v1/grants", method="GET",
                                          auth_header=f"Bearer {wrong_token}")
         self.assertEqual(status, 401)
         self.assertNotIn(wrong_token, json.dumps(body))
@@ -415,7 +415,7 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
             token=token,
             tenant_id="gl201-test-tenant",
         )
-        status, body = self._run_handler("/grants", method="GET",
+        status, body = self._run_handler("/v1/grants", method="GET",
                                          auth_header=f"Bearer {token}")
         self.assertEqual(status, 200)
 
@@ -424,7 +424,7 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
         attempted_token = "gl201-attempted-token-value-xyz-do-not-echo"
-        status, body = self._run_handler("/grants", method="GET",
+        status, body = self._run_handler("/v1/grants", method="GET",
                                          auth_header=f"Bearer {attempted_token}")
         body_str = json.dumps(body)
         self.assertNotIn(attempted_token, body_str,
@@ -435,7 +435,7 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
         """Auth error responses must use safe, generic error codes."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
-        status, body = self._run_handler("/grants", method="GET",
+        status, body = self._run_handler("/v1/grants", method="GET",
                                          auth_header="Bearer gl201-bad-token-xyz")
         self.assertIn("errorCode", body)
         error_code = body.get("errorCode", "")
@@ -480,7 +480,7 @@ class TestGl201OperatorTokenSafety(_BaseGl201):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
         fake_token = "gl201-fake-operator-token-xyz-not-real"
-        status, body = self._run_handler("/grants", method="GET",
+        status, body = self._run_handler("/v1/grants", method="GET",
                                          auth_header=f"Bearer {fake_token}")
         self.assertEqual(status, 401)
         body_str = json.dumps(body)
@@ -582,7 +582,7 @@ class TestGl201DemoFlagSafety(_BaseGl201):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
         # No auth header → must reject; send a valid body so FastAPI body validation passes first
-        status, body = self._run_handler("/demo-action", method="POST",
+        status, body = self._run_handler("/v1/demo-action", method="POST",
             body=json.dumps({"subjectId": "s1", "role": "viewer", "action": "read", "resource": "test"}).encode()
         )
         self.assertIn(status, (401, 403), f"Expected auth rejection, got {status}")
@@ -592,7 +592,7 @@ class TestGl201DemoFlagSafety(_BaseGl201):
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
         mods = _reload_all(self.db_path)
         # FastAPI returns 405 (POST-only route) or 403/404 depending on impl
-        status, body = self._run_handler("/demo/tamper-grant/fake-id")
+        status, body = self._run_handler("/v1/demo/tamper-grant/fake-id")
         self.assertIn(status, (403, 404, 405))
 
     def test_053_allow_public_demo_endpoints_defaults_false(self):

@@ -286,25 +286,25 @@ class TestGl089LegacyEndpointProtections(_BaseGl089):
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
     def test_get_grants_requires_auth_even_if_admin_token_unset(self):
-        status, body = self._run_handler("/grants")
+        status, body = self._run_handler("/v1/grants")
         self.assertEqual(status, 403)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_post_challenges_requires_auth_even_if_admin_token_unset(self):
         body_data = json.dumps({"subjectId": "sub-1", "action": "read", "resource": "repo-a"}).encode()
-        status, body = self._run_handler("/challenges", method="POST", body=body_data)
+        status, body = self._run_handler("/v1/challenges", method="POST", body=body_data)
         self.assertIn(status, [403, 422])
         if status == 403:
             self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_get_audit_events_requires_auth_even_if_admin_token_unset(self):
-        status, body = self._run_handler("/audit-events")
+        status, body = self._run_handler("/v1/audit-events")
         self.assertEqual(status, 403)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_post_demo_action_requires_auth_even_if_admin_token_unset(self):
         body_data = json.dumps({"subjectId": "sub-1", "role": "eng", "action": "read", "resource": "repo-a"}).encode()
-        status, body = self._run_handler("/demo-action", method="POST", body=body_data)
+        status, body = self._run_handler("/v1/demo-action", method="POST", body=body_data)
         self.assertIn(status, [403, 422])
         if status == 403:
             self.assertEqual(body.get("errorCode"), "admin_token_required")

@@ -404,7 +404,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         before = self.grants_mod.list_grants()
         oversized = b"x" * (1_048_576 + 1)
         req = self._make_handler(
-            "/grants", method="POST", auth_header="Bearer owner-token", body=oversized
+            "/v1/grants", method="POST", auth_header="Bearer owner-token", body=oversized
         )
         status, body = self._run_handler(req)
         self.assertIn(status, (400, 413, 422))
@@ -422,7 +422,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         valid_body = json.dumps({
             "subjectId": "sub-1", "action": "read", "resource": "repo-a"
         }).encode()
-        req = self._make_handler("/challenges", method="POST", body=valid_body)
+        req = self._make_handler("/v1/challenges", method="POST", body=valid_body)
         status, body = self._run_handler(req)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -435,7 +435,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
 
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, body = self._run_handler(req)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
@@ -452,7 +452,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         demo_body = json.dumps({
             "subjectId": "sub-1", "role": "engineer", "action": "read", "resource": "repo-a"
         }).encode()
-        req = self._make_handler("/demo-action", method="POST", body=demo_body)
+        req = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
         status, body = self._run_handler(req)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -470,7 +470,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
 
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, body = self._run_handler(req)
         self.assertEqual(status, 403)
         self.assertEqual(body.get("errorCode"), "admin_token_required")

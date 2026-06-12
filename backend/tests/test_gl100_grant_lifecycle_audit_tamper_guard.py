@@ -436,7 +436,7 @@ class TestTamperGrantGuard(_BaseGl100):
         client = TestClient(create_app(), raise_server_exceptions=False)
 
         g = self._make_grant()
-        resp = client.post(f"/demo/tamper-grant/{g.id}", headers={"Authorization": "Bearer any-token"})
+        resp = client.post(f"/v1/demo/tamper-grant/{g.id}", headers={"Authorization": "Bearer any-token"})
         try:
             data = resp.json()
         except Exception:
@@ -462,7 +462,7 @@ class TestTamperGrantGuard(_BaseGl100):
 
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
         g = self._make_grant()
-        resp = client.post(f"/demo/tamper-grant/{g.id}", headers={"Authorization": "Bearer owner-token"})
+        resp = client.post(f"/v1/demo/tamper-grant/{g.id}", headers={"Authorization": "Bearer owner-token"})
         try:
             data = resp.json()
         except Exception:
@@ -668,14 +668,14 @@ class TestSecurityBoundaryRegressionGL100(_BaseGl100):
 
     def test_protected_endpoint_requires_auth(self):
         """GET /grants requires operator auth."""
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, data = self._run_handler(req)
         self.assertIn(status, (401, 403))
         self._assert_gl030_full(data)
 
     def test_no_internals_in_error_response(self):
         """Error responses do not leak internal stack traces or paths."""
-        req = self._make_handler("/grants")
+        req = self._make_handler("/v1/grants")
         status, data = self._run_handler(req)
         data_str = json.dumps(data)
         for secret_pattern in ["Traceback", "/home/", "sqlite3", "Exception"]:

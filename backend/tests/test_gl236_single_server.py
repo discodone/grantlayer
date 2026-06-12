@@ -185,17 +185,17 @@ class _GL236TestBase(unittest.TestCase):
 
 @_SKIP
 class TestAuthTokenEndpoint(_GL236TestBase):
-    """/auth/token must work when JWT is configured — same as Docker environment."""
+    """/v1/auth/token must work when JWT is configured — same as Docker environment."""
 
     def test_auth_token_returns_200(self):
         resp = self.client.post(
-            "/auth/token", json={"operator_id": "gl236-agent", "secret": _ADMIN_TOKEN}
+            "/v1/auth/token", json={"operator_id": "gl236-agent", "secret": _ADMIN_TOKEN}
         )
         self.assertEqual(resp.status_code, 200, resp.text)
 
     def test_auth_token_returns_access_token_field(self):
         resp = self.client.post(
-            "/auth/token", json={"operator_id": "gl236-agent", "secret": _ADMIN_TOKEN}
+            "/v1/auth/token", json={"operator_id": "gl236-agent", "secret": _ADMIN_TOKEN}
         )
         data = resp.json()
         self.assertIn("access_token", data, "Response must have 'access_token' field")
@@ -204,7 +204,7 @@ class TestAuthTokenEndpoint(_GL236TestBase):
     def test_auth_token_501_when_no_secret(self):
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
         resp = self.client.post(
-            "/auth/token", json={"operator_id": "gl236-agent", "secret": _ADMIN_TOKEN}
+            "/v1/auth/token", json={"operator_id": "gl236-agent", "secret": _ADMIN_TOKEN}
         )
         self.assertEqual(resp.status_code, 501, resp.text)
 
@@ -215,14 +215,14 @@ class TestGrantsEndpoint(_GL236TestBase):
 
     def _get_jwt(self, operator_id: str = "gl236-agent") -> str:
         resp = self.client.post(
-            "/auth/token", json={"operator_id": operator_id, "secret": _ADMIN_TOKEN}
+            "/v1/auth/token", json={"operator_id": operator_id, "secret": _ADMIN_TOKEN}
         )
         return resp.json()["access_token"]
 
     def test_post_grant_returns_201(self):
         token = self._get_jwt()
         resp = self.client.post(
-            "/grants",
+            "/v1/grants",
             json={
                 "subjectId": "agent-gl236",
                 "role": "viewer",
@@ -240,7 +240,7 @@ class TestGrantsEndpoint(_GL236TestBase):
     def test_post_grant_has_id_field(self):
         token = self._get_jwt()
         resp = self.client.post(
-            "/grants",
+            "/v1/grants",
             json={
                 "subjectId": "agent-gl236b",
                 "role": "viewer",
@@ -262,10 +262,10 @@ class TestAuditEventsAfterGrant(_GL236TestBase):
 
     def test_audit_event_created_after_grant(self):
         token = self.client.post(
-            "/auth/token", json={"operator_id": "gl236-auditor", "secret": _ADMIN_TOKEN}
+            "/v1/auth/token", json={"operator_id": "gl236-auditor", "secret": _ADMIN_TOKEN}
         ).json()["access_token"]
         self.client.post(
-            "/grants",
+            "/v1/grants",
             json={
                 "subjectId": "agent-audit",
                 "role": "viewer",
@@ -279,7 +279,7 @@ class TestAuditEventsAfterGrant(_GL236TestBase):
             headers={"Authorization": f"Bearer {token}"},
         )
         resp = self.client.get(
-            "/audit-events",
+            "/v1/audit-events",
             headers={"Authorization": f"Bearer {token}"},
         )
         self.assertEqual(resp.status_code, 200, resp.text)

@@ -108,7 +108,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
     # Endpoint routing
     def test_endpoint_exists_and_returns_400_for_missing_fields(self):
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer test-admin-token",
             body={"actorId": "admin-1"},
         )
@@ -118,7 +118,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
 
     def test_endpoint_returns_200_for_valid_request(self):
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "action": "create-grant",
@@ -137,7 +137,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
     # Auth
     def test_endpoint_requires_admin_token_when_operator_disabled(self):
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             body={
                 "action": "create-grant",
                 "actorId": "admin-1",
@@ -146,7 +146,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
         )
         self.assertEqual(status, 401)
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer wrong-token",
             body={
                 "action": "create-grant",
@@ -163,7 +163,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
         self._insert_operator("owner-1", "Owner One", "owner", "owner-token")
 
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer owner-token",
             body={
                 "action": "create-grant",
@@ -184,7 +184,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
         self._insert_operator("admin-1", "Admin One", "grant_admin", "admin-token")
 
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer admin-token",
             body={
                 "action": "create-grant",
@@ -205,7 +205,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
         self._insert_operator("auditor-1", "Auditor One", "auditor", "auditor-token")
 
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer auditor-token",
             body={
                 "action": "create-grant",
@@ -225,7 +225,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
         self._insert_operator("demo-op-1", "Demo Op", "demo_operator", "demo-token")
 
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer demo-token",
             body={
                 "action": "create-grant",
@@ -241,7 +241,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
     # Response shape
     def test_response_contains_expected_keys(self):
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "action": "create-grant",
@@ -272,7 +272,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
     # Evaluation logic
     def test_endpoint_returns_blocked_for_missing_permission(self):
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "action": "create-grant",
@@ -289,7 +289,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
 
     def test_endpoint_returns_four_eyes_for_high_risk(self):
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "action": "create-grant",
@@ -306,7 +306,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
 
     def test_endpoint_passes_optional_fields(self):
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "action": "create-grant",
@@ -328,7 +328,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
     # Secrets safety
     def test_response_does_not_expose_secrets(self):
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "action": "create-grant",
@@ -349,7 +349,7 @@ class TestApprovalRuleEvaluationAPI(unittest.TestCase):
 
     def test_include_details_false_omits_checks_and_inputs(self):
         status, body = self._run_handler(
-            "/approvals/evaluate",
+            "/v1/approvals/evaluate",
             auth="Bearer test-admin-token",
             body={
                 "action": "create-grant",

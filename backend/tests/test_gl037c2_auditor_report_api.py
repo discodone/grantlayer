@@ -143,7 +143,7 @@ class TestAuditorReportAPI(unittest.TestCase):
     # ── Endpoint routing ────────────────────────────────────────
     def test_endpoint_exists_and_returns_404_for_unknown_execution(self):
         status, body = self._run_handler(
-            "/auditor/reports/executions/nonexistent-id",
+            "/v1/auditor/reports/executions/nonexistent-id",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 404)
@@ -162,7 +162,7 @@ class TestAuditorReportAPI(unittest.TestCase):
             grant_id="g-api-1",
         )
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-api-1",
+            "/v1/auditor/reports/executions/ex-api-1",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -179,10 +179,10 @@ class TestAuditorReportAPI(unittest.TestCase):
     # ── Auth ────────────────────────────────────────────────────
     def test_endpoint_requires_admin_token_when_operator_disabled(self):
         self._make_execution("ex-auth-1")
-        status, body = self._run_handler("/auditor/reports/executions/ex-auth-1")
+        status, body = self._run_handler("/v1/auditor/reports/executions/ex-auth-1")
         self.assertEqual(status, 401)
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-auth-1",
+            "/v1/auditor/reports/executions/ex-auth-1",
             auth="Bearer wrong-token"
         )
         self.assertEqual(status, 403)
@@ -195,7 +195,7 @@ class TestAuditorReportAPI(unittest.TestCase):
 
         self._make_execution("ex-auth-2")
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-auth-2",
+            "/v1/auditor/reports/executions/ex-auth-2",
             auth="Bearer auditor-token"
         )
         self.assertEqual(status, 200)
@@ -209,7 +209,7 @@ class TestAuditorReportAPI(unittest.TestCase):
 
         self._make_execution("ex-auth-3")
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-auth-3",
+            "/v1/auditor/reports/executions/ex-auth-3",
             auth="Bearer demo-token"
         )
         self.assertEqual(status, 403)
@@ -226,7 +226,7 @@ class TestAuditorReportAPI(unittest.TestCase):
             execution_id="ex-shape-1",
         )
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-shape-1",
+            "/v1/auditor/reports/executions/ex-shape-1",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -254,7 +254,7 @@ class TestAuditorReportAPI(unittest.TestCase):
         self.create_grant(grant)
         self._make_execution("ex-grant", grant_id="g-link")
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-grant",
+            "/v1/auditor/reports/executions/ex-grant",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -299,7 +299,7 @@ class TestAuditorReportAPI(unittest.TestCase):
         )
         self._make_execution("ex-req", grant_id="g-req")
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-req",
+            "/v1/auditor/reports/executions/ex-req",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -310,7 +310,7 @@ class TestAuditorReportAPI(unittest.TestCase):
     def test_response_findings_and_conclusion_attention_required(self):
         self._make_execution("ex-find-attn")
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-find-attn",
+            "/v1/auditor/reports/executions/ex-find-attn",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -323,7 +323,7 @@ class TestAuditorReportAPI(unittest.TestCase):
         record = self.evp.get_bundle_by_execution("ex-find-clean")
         self.evp.update_verification_status(record.id, "valid")
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-find-clean",
+            "/v1/auditor/reports/executions/ex-find-clean",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -344,7 +344,7 @@ class TestAuditorReportAPI(unittest.TestCase):
             execution_id="ex-sec-1",
         )
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-sec-1",
+            "/v1/auditor/reports/executions/ex-sec-1",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -357,7 +357,7 @@ class TestAuditorReportAPI(unittest.TestCase):
         self._make_execution("ex-raw-off")
         self._archive_evidence("ex-raw-off")
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-raw-off?includeRawEvidence=false",
+            "/v1/auditor/reports/executions/ex-raw-off?includeRawEvidence=false",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -367,7 +367,7 @@ class TestAuditorReportAPI(unittest.TestCase):
         self._make_execution("ex-raw-on")
         self._archive_evidence("ex-raw-on")
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-raw-on?includeRawEvidence=true",
+            "/v1/auditor/reports/executions/ex-raw-on?includeRawEvidence=true",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)
@@ -378,7 +378,7 @@ class TestAuditorReportAPI(unittest.TestCase):
     def test_include_raw_evidence_true_none_when_no_archive(self):
         self._make_execution("ex-raw-none")
         status, body = self._run_handler(
-            "/auditor/reports/executions/ex-raw-none?includeRawEvidence=true",
+            "/v1/auditor/reports/executions/ex-raw-none?includeRawEvidence=true",
             auth="Bearer test-admin-token"
         )
         self.assertEqual(status, 200)

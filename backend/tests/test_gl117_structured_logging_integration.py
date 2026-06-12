@@ -160,7 +160,7 @@ class _BaseGl117(unittest.TestCase):
             if isinstance(body, (bytes, bytearray)) and len(body) > 0:
                 try:
                     body_dict = json.loads(body)
-                    if path == "/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
+                    if path == "/v1/grants" and isinstance(body_dict, dict) and body_dict.get("role") == "engineer":
                         body_dict = dict(body_dict)
                         body_dict["role"] = "operator"
                     resp = self.client.post(path, json=body_dict, headers=headers)
@@ -276,14 +276,14 @@ class TestGl117SuccessfulRequest(_BaseGl117):
     def test_get_grants_emits_request_completed(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
             status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertTrue(any("request_completed" in msg for msg in cm.output))
         payload = self._parse_log_json(next(msg for msg in cm.output if "request_completed" in msg))
         self.assertEqual(payload["event"], "request_completed")
         self.assertEqual(payload["status_code"], 200)
-        self.assertEqual(payload["path"], "/grants")
+        self.assertEqual(payload["path"], "/v1/grants")
         self.assertEqual(payload["method"], "GET")
 
     def test_post_grants_emits_request_completed(self):
@@ -299,14 +299,14 @@ class TestGl117SuccessfulRequest(_BaseGl117):
             "reason": "test",
         }).encode()
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=grant_body)
+            handler = self._make_raw_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=grant_body)
             status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 201)
         self.assertTrue(any("request_completed" in msg for msg in cm.output))
         payload = self._parse_log_json(next(msg for msg in cm.output if "request_completed" in msg))
         self.assertEqual(payload["event"], "request_completed")
         self.assertEqual(payload["status_code"], 201)
-        self.assertEqual(payload["path"], "/grants")
+        self.assertEqual(payload["path"], "/v1/grants")
         self.assertEqual(payload["method"], "POST")
 
 
@@ -332,7 +332,7 @@ class TestGl117AuthFailure(_BaseGl117):
     def test_missing_auth_emits_auth_failed(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertTrue(any("auth_failed" in msg for msg in cm.output))
@@ -343,7 +343,7 @@ class TestGl117AuthFailure(_BaseGl117):
     def test_invalid_token_emits_auth_failed(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer wrong-token")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer wrong-token")
             status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertTrue(any("auth_failed" in msg for msg in cm.output))
@@ -351,7 +351,7 @@ class TestGl117AuthFailure(_BaseGl117):
     def test_auth_log_does_not_contain_raw_token(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer secret-token-123")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer secret-token-123")
             status, headers, body = self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("secret-token-123", log_str)
@@ -360,7 +360,7 @@ class TestGl117AuthFailure(_BaseGl117):
     def test_auth_log_does_not_contain_authorization_header(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", auth_header="Bearer secret-token-123")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer secret-token-123")
             status, headers, body = self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("authorization", log_str.lower())
@@ -389,11 +389,11 @@ class TestGl117RateLimit(_BaseGl117):
     def test_rate_limit_emits_rate_limited(self):
         logger = logging.getLogger("grantlayer.server")
         for _ in range(2):
-            handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+            handler = self._make_raw_handler("/v1/challenges", auth_header="Bearer owner-token")
             self._run_raw_handler(handler)
 
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+            handler = self._make_raw_handler("/v1/challenges", auth_header="Bearer owner-token")
             status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertTrue(any("rate_limited" in msg for msg in cm.output))
@@ -405,11 +405,11 @@ class TestGl117RateLimit(_BaseGl117):
     def test_rate_limit_log_does_not_contain_raw_token(self):
         logger = logging.getLogger("grantlayer.server")
         for _ in range(2):
-            handler = self._make_raw_handler("/challenges", auth_header="Bearer secret-token-456")
+            handler = self._make_raw_handler("/v1/challenges", auth_header="Bearer secret-token-456")
             self._run_raw_handler(handler)
 
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/challenges", auth_header="Bearer secret-token-456")
+            handler = self._make_raw_handler("/v1/challenges", auth_header="Bearer secret-token-456")
             status, headers, body = self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("secret-token-456", log_str)
@@ -439,7 +439,7 @@ class TestGl117InvalidJson(_BaseGl117):
         logger = logging.getLogger("grantlayer.server")
         bad_body = b"not json"
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=bad_body)
+            handler = self._make_raw_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=bad_body)
             status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertTrue(any("request_rejected" in msg for msg in cm.output))
@@ -450,7 +450,7 @@ class TestGl117InvalidJson(_BaseGl117):
     def test_empty_body_emits_request_rejected(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=b"", content_length=0)
+            handler = self._make_raw_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=b"", content_length=0)
             status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertTrue(any("request_rejected" in msg for msg in cm.output))
@@ -459,7 +459,7 @@ class TestGl117InvalidJson(_BaseGl117):
         logger = logging.getLogger("grantlayer.server")
         bad_body = b"sensitive-payload-123"
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=bad_body)
+            handler = self._make_raw_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=bad_body)
             status, headers, body = self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
         self.assertNotIn("sensitive-payload-123", log_str)
@@ -505,7 +505,7 @@ class TestGl117DemoActionPreserved(_BaseGl117):
         with self.assertLogs(self.demo_mod.logger, level="ERROR") as cm:
             with patch.object(self.demo_mod, "list_grants", side_effect=RuntimeError("secret-boom")):
                 handler = self._make_raw_handler(
-                    "/demo-action",
+                    "/v1/demo-action",
                     method="POST",
                     auth_header="Bearer owner-token",
                     body=json.dumps({
@@ -545,14 +545,14 @@ class TestGl117LoggingFailureSafety(_BaseGl117):
 
     def test_logging_failure_does_not_alter_http_behavior(self):
         with patch("backend.src.core.logging_utils.safe_log", side_effect=RuntimeError("log failure")):
-            handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+            handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
             status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_auth_logging_failure_does_not_alter_http_behavior(self):
         with patch("backend.src.core.logging_utils.safe_log", side_effect=RuntimeError("log failure")):
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
@@ -578,13 +578,13 @@ class TestGl117ResponseSemanticsPreserved(_BaseGl117):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def test_get_grants_response_unchanged(self):
-        handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+        handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_auth_failure_response_unchanged(self):
-        handler = self._make_raw_handler("/grants")
+        handler = self._make_raw_handler("/v1/grants")
         status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
@@ -593,16 +593,16 @@ class TestGl117ResponseSemanticsPreserved(_BaseGl117):
         os.environ["GRANTLAYER_RATE_LIMIT_AUTH"] = "1"
         importlib.reload(self.config_mod)
 
-        handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+        handler = self._make_raw_handler("/v1/challenges", auth_header="Bearer owner-token")
         self._run_raw_handler(handler)
 
-        handler = self._make_raw_handler("/challenges", auth_header="Bearer owner-token")
+        handler = self._make_raw_handler("/v1/challenges", auth_header="Bearer owner-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 429)
         self.assertEqual(body.get("errorCode"), "rate_limit_exceeded")
 
     def test_invalid_json_response_unchanged(self):
-        handler = self._make_raw_handler("/grants", method="POST", auth_header="Bearer owner-token", body=b"bad")
+        handler = self._make_raw_handler("/v1/grants", method="POST", auth_header="Bearer owner-token", body=b"bad")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(body.get("errorCode"), "invalid_json")

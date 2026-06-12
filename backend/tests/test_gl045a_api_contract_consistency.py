@@ -159,31 +159,31 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
 
     def test_invalid_json_agent_permissions_evaluate(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        self._test_invalid_json_endpoint("/agent-permissions/evaluate")
+        self._test_invalid_json_endpoint("/v1/agent-permissions/evaluate")
 
     def test_invalid_json_approvals_evaluate(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        self._test_invalid_json_endpoint("/approvals/evaluate")
+        self._test_invalid_json_endpoint("/v1/approvals/evaluate")
 
     def test_invalid_json_approvals_lifecycle_build(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        self._test_invalid_json_endpoint("/approvals/lifecycle/build")
+        self._test_invalid_json_endpoint("/v1/approvals/lifecycle/build")
 
     def test_invalid_json_decision_provenance_v2_build(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        self._test_invalid_json_endpoint("/decision-provenance/v2/build")
+        self._test_invalid_json_endpoint("/v1/decision-provenance/v2/build")
 
     def test_invalid_json_auditor_exports_build(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        self._test_invalid_json_endpoint("/auditor/exports/build")
+        self._test_invalid_json_endpoint("/v1/auditor/exports/build")
 
     def test_invalid_json_policy_requirements_evaluate(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        self._test_invalid_json_endpoint("/policy-requirements/evaluate")
+        self._test_invalid_json_endpoint("/v1/policy-requirements/evaluate")
 
     def test_invalid_json_compliance_readiness_build(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
-        self._test_invalid_json_endpoint("/compliance/readiness/build")
+        self._test_invalid_json_endpoint("/v1/compliance/readiness/build")
 
     # ──────────────────────────────────────────────
     # 2. Missing required field returns structured error
@@ -191,7 +191,7 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
     def test_missing_field_agent_permissions_evaluate(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
         status, data = self._http_request(
-            "POST", "/agent-permissions/evaluate",
+            "POST", "/v1/agent-permissions/evaluate",
             body={"agentId": "some-agent"}, auth="admin-token"
         )
         self.assertIn(status, [400, 422])
@@ -202,7 +202,7 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
     def test_missing_field_approvals_evaluate(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
         status, data = self._http_request(
-            "POST", "/approvals/evaluate", body={}, auth="admin-token"
+            "POST", "/v1/approvals/evaluate", body={}, auth="admin-token"
         )
         self.assertIn(status, [400, 422])
         if status == 400:
@@ -212,7 +212,7 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
     def test_missing_field_agent_permissions_assignments_resolve(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
         status, data = self._http_request(
-            "POST", "/agent-permissions/assignments/resolve",
+            "POST", "/v1/agent-permissions/assignments/resolve",
             body={"agentId": "some-agent"}, auth="admin-token"
         )
         self.assertIn(status, [400, 422])
@@ -225,9 +225,9 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_missing_auth_returns_401(self):
         endpoints = [
-            ("POST", "/agent-permissions/evaluate", {}),
-            ("POST", "/approvals/evaluate", {"action": "test"}),
-            ("POST", "/decision-provenance/v2/build", {}),
+            ("POST", "/v1/agent-permissions/evaluate", {}),
+            ("POST", "/v1/approvals/evaluate", {"action": "test"}),
+            ("POST", "/v1/decision-provenance/v2/build", {}),
         ]
         for method, path, body in endpoints:
             status, data = self._http_request(method, path, body=body)
@@ -241,10 +241,10 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
     def test_demo_operator_forbidden_returns_403(self):
         self._insert_operator("demo-op", "Demo", "demo_operator", "demo-token")
         endpoints = [
-            ("POST", "/agent-permissions/evaluate",
+            ("POST", "/v1/agent-permissions/evaluate",
              {"agentId": "a", "requestedScope": "b", "assignedScopes": ["c"]}),
-            ("POST", "/approvals/evaluate", {"action": "test"}),
-            ("POST", "/compliance/readiness/build", {}),
+            ("POST", "/v1/approvals/evaluate", {"action": "test"}),
+            ("POST", "/v1/compliance/readiness/build", {}),
         ]
         for method, path, body in endpoints:
             status, data = self._http_request(method, path, body=body, auth="demo-token")
@@ -258,10 +258,10 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
     def test_error_responses_do_not_expose_secrets(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
         test_cases = [
-            ("GET", "/grants/nonexistent-id", None, None),
-            ("POST", "/grants", b"bad-json", "admin-token"),
-            ("POST", "/agent-permissions/evaluate", b"bad-json", "admin-token"),
-            ("GET", "/operators/me", None, None),
+            ("GET", "/v1/grants/nonexistent-id", None, None),
+            ("POST", "/v1/grants", b"bad-json", "admin-token"),
+            ("POST", "/v1/agent-permissions/evaluate", b"bad-json", "admin-token"),
+            ("GET", "/v1/operators/me", None, None),
         ]
         for method, path, body, auth in test_cases:
             headers = {}
@@ -294,12 +294,12 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
         count_before = len(self.grants_mod.list_grants())
 
         builder_endpoints = [
-            ("POST", "/decision-provenance/v2/build", {"decisionId": "test-1"}),
-            ("POST", "/auditor/exports/build", {"exportId": "test-1"}),
-            ("POST", "/policy-requirements/evaluate", {"policyPack": "test"}),
-            ("POST", "/compliance/readiness/build", {"subjectId": "test"}),
-            ("POST", "/approvals/evaluate", {"action": "test"}),
-            ("POST", "/approvals/lifecycle/build", {"action": "test"}),
+            ("POST", "/v1/decision-provenance/v2/build", {"decisionId": "test-1"}),
+            ("POST", "/v1/auditor/exports/build", {"exportId": "test-1"}),
+            ("POST", "/v1/policy-requirements/evaluate", {"policyPack": "test"}),
+            ("POST", "/v1/compliance/readiness/build", {"subjectId": "test"}),
+            ("POST", "/v1/approvals/evaluate", {"action": "test"}),
+            ("POST", "/v1/approvals/lifecycle/build", {"action": "test"}),
         ]
 
         for method, path, body in builder_endpoints:
@@ -364,7 +364,7 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
     def test_existing_not_found_shapes_unmodified(self):
         self._insert_operator("admin-1", "Admin", "owner", "admin-token")
         status, data = self._http_request(
-            "GET", "/evidence/executions/nonexistent-id", auth="admin-token"
+            "GET", "/v1/evidence/executions/nonexistent-id", auth="admin-token"
         )
         self.assertEqual(status, 404)
         self._assert_gl030_full(data)
@@ -373,7 +373,7 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
 
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
         status, data = self._http_request(
-            "GET", "/grant-executions/nonexistent-id", auth="auditor-token"
+            "GET", "/v1/grant-executions/nonexistent-id", auth="auditor-token"
         )
         self.assertEqual(status, 404)
         self._assert_gl030_full(data)

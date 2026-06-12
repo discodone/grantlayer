@@ -179,7 +179,7 @@ class TestEvidenceBundle(unittest.TestCase):
     def test_missing_execution_returns_404(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
-        status, body = self._run_handler("/evidence/executions/nonexistent-id", auth="Bearer admin")
+        status, body = self._run_handler("/v1/evidence/executions/nonexistent-id", auth="Bearer admin")
         self.assertEqual(status, 404)
         self.assertEqual(body["error"], "Execution not found")
         self.assertEqual(body["errorCode"], "execution_not_found")
@@ -393,7 +393,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, body = self._run_handler(f"/evidence/executions/{ex_id}", auth="Bearer legacy-token")
+        status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth="Bearer legacy-token")
         self.assertEqual(status, 200)
         self.assertEqual(body["evidenceId"], ex_id)
 
@@ -412,10 +412,10 @@ class TestEvidenceBundle(unittest.TestCase):
         )
         ex_id = result["executionId"]
         # Missing token
-        status, body = self._run_handler(f"/evidence/executions/{ex_id}", auth=None)
+        status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=None)
         self.assertEqual(status, 401)
         # Invalid token
-        status, body = self._run_handler(f"/evidence/executions/{ex_id}", auth="Bearer wrong")
+        status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth="Bearer wrong")
         self.assertEqual(status, 403)
 
     # ──────────────────────────────────────────────
@@ -428,7 +428,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, body = self._run_handler(f"/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
+        status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
         self.assertEqual(status, 200)
         self.assertEqual(body["evidenceId"], ex_id)
 
@@ -442,7 +442,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, body = self._run_handler(f"/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
+        status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
         self.assertEqual(status, 200)
         self.assertEqual(body["evidenceId"], ex_id)
 
@@ -456,7 +456,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, body = self._run_handler(f"/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
+        status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
         self.assertEqual(status, 403)
         self.assertEqual(body["error"], "operator_role_forbidden")
         self.assertEqual(body["errorCode"], "operator_role_forbidden")
@@ -472,7 +472,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, body = self._run_handler(f"/evidence/executions/{ex_id}", auth=None)
+        status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=None)
         self.assertEqual(status, 401)
         self.assertEqual(body["error"], "operator_auth_required")
         self.assertEqual(body["errorCode"], "operator_auth_required")
@@ -766,7 +766,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
         self.assertEqual(status, 200)
 
     # ──────────────────────────────────────────────
@@ -783,7 +783,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
         # HTTPX normalises header names to lowercase
         ct = headers.get("Content-Type") or headers.get("content-type", "")
         self.assertIn("application/json", ct)
@@ -802,7 +802,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
         cd = headers.get("Content-Disposition") or headers.get("content-disposition")
         self.assertTrue(cd.startswith("attachment"))
         self.assertIn(f"evidence-{ex_id}", cd)
@@ -825,7 +825,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
         data = json.loads(body)
         xeh = headers.get("X-Evidence-Hash") or headers.get("x-evidence-hash")
         self.assertEqual(xeh, data["evidenceHash"])
@@ -845,10 +845,10 @@ class TestEvidenceBundle(unittest.TestCase):
         )
         ex_id = result["executionId"]
 
-        status_normal, body_normal = self._run_handler(f"/evidence/executions/{ex_id}", auth="Bearer admin")
+        status_normal, body_normal = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth="Bearer admin")
         self.assertEqual(status_normal, 200)
 
-        status_export, headers, body_export = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        status_export, headers, body_export = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
         self.assertEqual(status_export, 200)
 
         data_export = json.loads(body_export)
@@ -868,7 +868,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
         data = json.loads(body)
         self.assertEqual(data["canonicalVersion"], "gl-evidence-v1")
         self.assertEqual(data["hashAlgorithm"], "sha256")
@@ -887,7 +887,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
         data = json.loads(body)
         raw = json.dumps(data)
         self.assertNotIn("Bearer", raw)
@@ -917,7 +917,7 @@ class TestEvidenceBundle(unittest.TestCase):
         self.assertEqual(export1, export2)
 
         # The HTTP response should also be pretty-printed
-        status, h, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer admin")
+        status, h, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
         self.assertEqual(status, 200)
         text = body.decode("utf-8")
         self.assertIn("\n  ", text)  # 2-space indent
@@ -932,7 +932,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
         self.assertEqual(status, 200)
 
     # ──────────────────────────────────────────────
@@ -945,7 +945,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
         self.assertEqual(status, 200)
 
     # ──────────────────────────────────────────────
@@ -958,7 +958,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
         self.assertEqual(status, 200)
 
     # ──────────────────────────────────────────────
@@ -971,7 +971,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
         self.assertEqual(status, 403)
 
     # ──────────────────────────────────────────────
@@ -988,7 +988,7 @@ class TestEvidenceBundle(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a"
         )
         ex_id = result["executionId"]
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer legacy-token")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer legacy-token")
         self.assertEqual(status, 200)
 
     # ──────────────────────────────────────────────
@@ -1006,10 +1006,10 @@ class TestEvidenceBundle(unittest.TestCase):
         )
         ex_id = result["executionId"]
         # Missing auth
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth=None)
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=None)
         self.assertEqual(status, 401)
         # Wrong token
-        status, headers, body = self._run_export(f"/evidence/executions/{ex_id}/export", auth="Bearer wrong")
+        status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer wrong")
         self.assertEqual(status, 403)
 
     # ──────────────────────────────────────────────
@@ -1021,7 +1021,7 @@ class TestEvidenceBundle(unittest.TestCase):
         importlib.reload(self.config_mod)
         importlib.reload(self.auth_mod)
 
-        status, headers, body = self._run_export("/evidence/executions/nonexistent-id/export", auth="Bearer admin")
+        status, headers, body = self._run_export("/v1/evidence/executions/nonexistent-id/export", auth="Bearer admin")
         self.assertEqual(status, 404)
 
 

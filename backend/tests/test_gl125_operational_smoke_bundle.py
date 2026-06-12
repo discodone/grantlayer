@@ -284,25 +284,25 @@ class TestGl125AuthBoundary(_BaseGl125):
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
     def test_missing_token_rejected_401(self):
-        handler = self._make_raw_handler("/grants")
+        handler = self._make_raw_handler("/v1/grants")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 401)
         self.assertIn("errorCode", body)
 
     def test_invalid_token_rejected(self):
-        handler = self._make_raw_handler("/grants", auth_header="Bearer wrong-token")
+        handler = self._make_raw_handler("/v1/grants", auth_header="Bearer wrong-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertIn(status, (401, 403))
         self.assertIn("errorCode", body)
 
     def test_authorized_request_succeeds(self):
-        handler = self._make_raw_handler("/grants", auth_header="Bearer owner-token")
+        handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
         self.assertIsInstance(body, list)
 
     def test_multiple_endpoints_require_auth(self):
-        endpoints = ["/grants", "/audit-events", "/grant-requests"]
+        endpoints = ["/v1/grants", "/v1/audit-events", "/v1/grant-requests"]
         for endpoint in endpoints:
             handler = self._make_raw_handler(endpoint)
             status, _, _ = self._run_raw_handler(handler)
@@ -336,7 +336,7 @@ class TestGl125PayloadValidation(_BaseGl125):
 
     def test_invalid_json_rejected_400(self):
         handler = self._make_raw_handler(
-            "/grants", method="POST",
+            "/v1/grants", method="POST",
             auth_header="Bearer owner-token", body=b"not json",
         )
         status, headers, body = self._run_raw_handler(handler)
@@ -346,7 +346,7 @@ class TestGl125PayloadValidation(_BaseGl125):
     def test_top_level_array_rejected(self):
         body = json.dumps([{"key": "val"}]).encode()
         handler = self._make_raw_handler(
-            "/grants", method="POST",
+            "/v1/grants", method="POST",
             auth_header="Bearer owner-token", body=body,
         )
         status, headers, body = self._run_raw_handler(handler)
@@ -356,7 +356,7 @@ class TestGl125PayloadValidation(_BaseGl125):
     @unittest.skip("Content-Length pre-check (413) is a GrantLayerHandler internal not exposed by FastAPI test surface")
     def test_oversized_body_rejected_413(self):
         handler = self._make_raw_handler(
-            "/grants", method="POST",
+            "/v1/grants", method="POST",
             auth_header="Bearer owner-token",
             content_length=self.MAX_JSON_BODY_BYTES + 1,
         )
@@ -367,7 +367,7 @@ class TestGl125PayloadValidation(_BaseGl125):
     def test_invalid_payload_not_echoed(self):
         sentinel = "RAW-PAYLOAD-SENTINEL-GL125"
         handler = self._make_raw_handler(
-            "/grants", method="POST",
+            "/v1/grants", method="POST",
             auth_header="Bearer owner-token", body=sentinel.encode(),
         )
         status, headers, body = self._run_raw_handler(handler)
@@ -397,7 +397,7 @@ class TestGl125CorrelationId(_BaseGl125):
 
     def test_correlation_id_preserved_in_successful_response(self):
         handler = self._make_raw_handler(
-            "/grants", auth_header="Bearer owner-token",
+            "/v1/grants", auth_header="Bearer owner-token",
             correlation_id_header="smoke-cid-ok",
         )
         status, headers, body = self._run_raw_handler(handler)
@@ -406,7 +406,7 @@ class TestGl125CorrelationId(_BaseGl125):
 
     def test_correlation_id_preserved_in_rejection_response(self):
         handler = self._make_raw_handler(
-            "/grants", method="POST",
+            "/v1/grants", method="POST",
             auth_header="Bearer owner-token", body=b"bad json",
             correlation_id_header="smoke-cid-reject",
         )
@@ -417,7 +417,7 @@ class TestGl125CorrelationId(_BaseGl125):
     def test_rejection_log_includes_correlation_id(self):
         logger = logging.getLogger("grantlayer.server")
         handler = self._make_raw_handler(
-            "/grants", method="POST",
+            "/v1/grants", method="POST",
             auth_header="Bearer owner-token", body=b"bad json",
             correlation_id_header="smoke-cid-log",
         )
@@ -451,7 +451,7 @@ class TestGl125LoggingSafety(_BaseGl125):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
             handler = self._make_raw_handler(
-                "/grants", auth_header="Bearer secret-token-abc-123",
+                "/v1/grants", auth_header="Bearer secret-token-abc-123",
             )
             self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
@@ -461,7 +461,7 @@ class TestGl125LoggingSafety(_BaseGl125):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
             handler = self._make_raw_handler(
-                "/grants", auth_header="Bearer secret-token-abc-123",
+                "/v1/grants", auth_header="Bearer secret-token-abc-123",
             )
             self._run_raw_handler(handler)
         log_str = "\n".join(cm.output)
@@ -472,7 +472,7 @@ class TestGl125LoggingSafety(_BaseGl125):
         sentinel = "SENSITIVE-BODY-DATA-GL125"
         with self.assertLogs(logger, level="INFO") as cm:
             handler = self._make_raw_handler(
-                "/grants", method="POST",
+                "/v1/grants", method="POST",
                 auth_header="Bearer owner-token", body=sentinel.encode(),
             )
             self._run_raw_handler(handler)
@@ -482,7 +482,7 @@ class TestGl125LoggingSafety(_BaseGl125):
     def test_auth_failed_event_has_correlation_id(self):
         logger = logging.getLogger("grantlayer.server")
         with self.assertLogs(logger, level="INFO") as cm:
-            handler = self._make_raw_handler("/grants")
+            handler = self._make_raw_handler("/v1/grants")
             self._run_raw_handler(handler)
         payload = self._parse_log_json(
             next(msg for msg in cm.output if "auth_failed" in msg)

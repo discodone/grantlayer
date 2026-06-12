@@ -57,7 +57,7 @@ Good starting points:
 | HTTP API | `backend/src/api/routers/` | FastAPI route handlers |
 | Business logic | `backend/src/` | Grant lifecycle, audit, auth |
 | Database | SQLite (default) / PostgreSQL | Persistent storage |
-| Auth | JWT (HS256) via `/auth/token` | Stateless token auth |
+| Auth | JWT (HS256) via `/v1/auth/token` | Stateless token auth |
 
 Key concepts:
 

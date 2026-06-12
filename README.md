@@ -26,15 +26,15 @@ See [QUICKSTART.md](QUICKSTART.md) for the full walkthrough: token generation, c
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/health` | Liveness check |
-| `GET` | `/grants` | List all grants |
-| `POST` | `/grants` | Create a grant |
-| `POST` | `/grants/:id/revoke` | Revoke a grant |
-| `GET` | `/grant-requests` | List grant requests |
-| `POST` | `/grant-requests` | Submit a grant request (requires `GRANTLAYER_ENABLE_OPERATOR_MODEL=true`) |
-| `POST` | `/grant-requests/:id/approve` | Approve a grant request |
-| `POST` | `/grant-requests/:id/deny` | Deny a grant request |
-| `GET` | `/audit-events` | List audit events |
-| `GET` | `/grant-executions` | List grant executions (owner/admin/auditor) |
+| `GET` | `/v1/grants` | List all grants |
+| `POST` | `/v1/grants` | Create a grant |
+| `POST` | `/v1/grants/:id/revoke` | Revoke a grant |
+| `GET` | `/v1/grant-requests` | List grant requests |
+| `POST` | `/v1/grant-requests` | Submit a grant request (requires `GRANTLAYER_ENABLE_OPERATOR_MODEL=true`) |
+| `POST` | `/v1/grant-requests/:id/approve` | Approve a grant request |
+| `POST` | `/v1/grant-requests/:id/deny` | Deny a grant request |
+| `GET` | `/v1/audit-events` | List audit events |
+| `GET` | `/v1/grant-executions` | List grant executions (owner/v1/admin/v1/auditor) |
 
 Full OpenAPI spec: `docs/openapi.yaml`. Interactive Swagger UI available at `/api/docs` when the stack is running.
 
