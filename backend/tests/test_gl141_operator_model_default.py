@@ -28,8 +28,6 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from io import BytesIO
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
@@ -93,9 +91,6 @@ class _BaseGl141Endpoint(unittest.TestCase):
         import backend.src.auth as auth_mod
         importlib.reload(auth_mod)
 
-        import backend.src.server as server_mod
-        importlib.reload(server_mod)
-        self.handler_class = server_mod.GrantLayerHandler
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
         from fastapi.testclient import TestClient
@@ -138,9 +133,6 @@ class _BaseGl141Endpoint(unittest.TestCase):
         importlib.reload(cfg)
         import backend.src.auth as auth
         importlib.reload(auth)
-        import backend.src.server as srv
-        importlib.reload(srv)
-        self.handler_class = srv.GrantLayerHandler
         import backend.src.db as bk_db
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
@@ -176,34 +168,33 @@ class _BaseGl141Endpoint(unittest.TestCase):
         return resp.status_code, data
 
     def _make_raw_handler(self, path, method="GET", auth_header=None, body=b""):
-        handler = self.handler_class.__new__(self.handler_class)
-        handler.rfile = BytesIO(body)
-        handler.wfile = BytesIO()
-        headers: dict = {}
-        if auth_header is not None:
-            headers["Authorization"] = auth_header
-        if body:
-            headers["Content-Length"] = str(len(body))
-        handler.headers = headers
-        handler.path = path
-        handler.command = method
-        handler.requestline = f"{method} {path} HTTP/1.1"
-        handler.request_version = "HTTP/1.1"
-        handler.client_address = ("127.0.0.1", 0)
-        handler.server = None
-        return handler
+        return {"path": path, "method": method, "auth_header": auth_header, "body": body}
 
     def _run_raw_handler(self, handler):
-        if handler.command == "GET":
-            handler.do_GET()
-        elif handler.command == "POST":
-            handler.do_POST()
-        handler.wfile.seek(0)
-        response = handler.wfile.read()
-        status = int(response.split(b"\r\n")[0].split(b" ")[1])
-        parts = response.split(b"\r\n\r\n", 1)
-        body = json.loads(parts[1]) if len(parts) > 1 and parts[1] else {}
-        return status, body
+        path = handler["path"]
+        method = handler["method"]
+        auth_header = handler["auth_header"]
+        body = handler["body"]
+        headers = {}
+        if auth_header is not None:
+            headers["Authorization"] = auth_header
+        if method == "GET":
+            resp = self.client.get(path, headers=headers)
+        else:
+            if body:
+                try:
+                    resp = self.client.post(path, json=json.loads(body), headers=headers)
+                except (ValueError, UnicodeDecodeError):
+                    resp = self.client.post(path, content=body, headers=headers)
+            else:
+                resp = self.client.post(path, headers=headers)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {}
+        if isinstance(data, dict) and isinstance(data.get("detail"), dict):
+            data = data["detail"]
+        return resp.status_code, data
 
 
 # ══════════════════════════════════════════════════════════════════════

@@ -95,10 +95,7 @@ def _reload_all(db_path: str):
     import backend.src.audit_log as audit_mod
     importlib.reload(audit_mod)
 
-    import backend.src.server as server_mod
-    importlib.reload(server_mod)
-
-    return db_mod, ops_mod, auth_mod, grants_mod, audit_mod, server_mod
+    return db_mod, ops_mod, auth_mod, grants_mod, audit_mod
 
 
 class _BaseGl201(unittest.TestCase):
@@ -139,7 +136,7 @@ class _BaseGl201(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_CHALLENGE"] = "true"
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
 
-    def _run_handler(self, server_mod, path, method="GET", auth_header=None, body=b"", origin=None):
+    def _run_handler(self, path, method="GET", auth_header=None, body=b"", origin=None):
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
         _client = TestClient(create_app(), raise_server_exceptions=False)
@@ -348,9 +345,7 @@ class TestGl201SecretLeakagePrevention(_BaseGl201):
         # Use operator model (default) to avoid ENABLE_OPERATOR_MODEL state contamination
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
-        status, body = self._run_handler(
-            server_mod, "/grants", method="GET",
+        status, body = self._run_handler("/grants", method="GET",
             auth_header=f"Bearer {self._FAKE_PROD_TOKEN}"
         )
         body_str = json.dumps(body)
@@ -393,8 +388,7 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
         """Missing Authorization header must return 401 (operator model, no operators)."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
-        status, body = self._run_handler(server_mod, "/grants", method="GET")
+        status, body = self._run_handler("/grants", method="GET")
         self.assertIn(status, (401, 403), f"Expected auth rejection, got {status}")
         self.assertIn("errorCode", body)
 
@@ -402,9 +396,8 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
         """Wrong operator token must return 401 and not echo the token value."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
         wrong_token = "gl201-completely-wrong-operator-token-xyz"
-        status, body = self._run_handler(server_mod, "/grants", method="GET",
+        status, body = self._run_handler("/grants", method="GET",
                                          auth_header=f"Bearer {wrong_token}")
         self.assertEqual(status, 401)
         self.assertNotIn(wrong_token, json.dumps(body))
@@ -415,7 +408,6 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
         ops_mod = mods[1]
-        server_mod = mods[5]
         token = secrets_mod.token_urlsafe(32)
         ops_mod.create_operator(
             name="GL201 HTTP Test Operator",
@@ -423,7 +415,7 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
             token=token,
             tenant_id="gl201-test-tenant",
         )
-        status, body = self._run_handler(server_mod, "/grants", method="GET",
+        status, body = self._run_handler("/grants", method="GET",
                                          auth_header=f"Bearer {token}")
         self.assertEqual(status, 200)
 
@@ -431,9 +423,8 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
         """Auth error responses must not echo the attempted token value."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
         attempted_token = "gl201-attempted-token-value-xyz-do-not-echo"
-        status, body = self._run_handler(server_mod, "/grants", method="GET",
+        status, body = self._run_handler("/grants", method="GET",
                                          auth_header=f"Bearer {attempted_token}")
         body_str = json.dumps(body)
         self.assertNotIn(attempted_token, body_str,
@@ -444,8 +435,7 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
         """Auth error responses must use safe, generic error codes."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
-        status, body = self._run_handler(server_mod, "/grants", method="GET",
+        status, body = self._run_handler("/grants", method="GET",
                                          auth_header="Bearer gl201-bad-token-xyz")
         self.assertIn("errorCode", body)
         error_code = body.get("errorCode", "")
@@ -489,9 +479,8 @@ class TestGl201OperatorTokenSafety(_BaseGl201):
         """Operator auth failure must not reveal token hash or raw token."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
         fake_token = "gl201-fake-operator-token-xyz-not-real"
-        status, body = self._run_handler(server_mod, "/grants", method="GET",
+        status, body = self._run_handler("/grants", method="GET",
                                          auth_header=f"Bearer {fake_token}")
         self.assertEqual(status, 401)
         body_str = json.dumps(body)
@@ -592,10 +581,8 @@ class TestGl201DemoFlagSafety(_BaseGl201):
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
         # No auth header → must reject; send a valid body so FastAPI body validation passes first
-        status, body = self._run_handler(
-            server_mod, "/demo-action", method="POST",
+        status, body = self._run_handler("/demo-action", method="POST",
             body=json.dumps({"subjectId": "s1", "role": "viewer", "action": "read", "resource": "test"}).encode()
         )
         self.assertIn(status, (401, 403), f"Expected auth rejection, got {status}")
@@ -604,9 +591,8 @@ class TestGl201DemoFlagSafety(_BaseGl201):
         """GET /demo/tamper-grant/* must return 4xx when demo endpoints disabled."""
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
         # FastAPI returns 405 (POST-only route) or 403/404 depending on impl
-        status, body = self._run_handler(server_mod, "/demo/tamper-grant/fake-id")
+        status, body = self._run_handler("/demo/tamper-grant/fake-id")
         self.assertIn(status, (403, 404, 405))
 
     def test_053_allow_public_demo_endpoints_defaults_false(self):
@@ -661,8 +647,7 @@ class TestGl201CorsAndPublicExposure(_BaseGl201):
         """CORS must not reflect arbitrary origins. Only exact-match whitelist."""
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://allowed.example.com"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
-        status, body = self._run_handler(server_mod, "/health", method="GET",
+        status, body = self._run_handler("/health", method="GET",
                                          origin="http://evil.attacker.com")
         # Response must not contain attacker origin in Access-Control-Allow-Origin
         # (We check via body since handler output includes headers in raw wfile)
@@ -713,16 +698,14 @@ class TestGl201HealthReadinessPublic(_BaseGl201):
     def test_070_health_returns_200_without_auth(self):
         """GET /health must return 200 without authentication."""
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
-        status, body = self._run_handler(server_mod, "/health")
+        status, body = self._run_handler("/health")
         self.assertEqual(status, 200)
         self.assertEqual(body.get("status"), "ok")
 
     def test_071_readiness_returns_200_without_auth(self):
         """GET /readiness must return 200 without authentication."""
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
-        status, body = self._run_handler(server_mod, "/readiness")
+        status, body = self._run_handler("/readiness")
         self.assertEqual(status, 200)
         self.assertEqual(body.get("status"), "ready")
 
@@ -730,8 +713,7 @@ class TestGl201HealthReadinessPublic(_BaseGl201):
         """GET /health response must not include any secret values."""
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "gl201-secret-health-test-token-xyz"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
-        status, body = self._run_handler(server_mod, "/health")
+        status, body = self._run_handler("/health")
         body_str = json.dumps(body)
         self.assertNotIn("gl201-secret-health-test-token-xyz", body_str)
         # Must not include any raw environment variables
@@ -741,8 +723,7 @@ class TestGl201HealthReadinessPublic(_BaseGl201):
         """GET /readiness response must not include any secret values."""
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "gl201-secret-readiness-test-token-xyz"
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
-        status, body = self._run_handler(server_mod, "/readiness")
+        status, body = self._run_handler("/readiness")
         body_str = json.dumps(body)
         self.assertNotIn("gl201-secret-readiness-test-token-xyz", body_str)
         self.assertNotIn("GRANTLAYER_ADMIN_TOKEN", body_str)
@@ -750,8 +731,7 @@ class TestGl201HealthReadinessPublic(_BaseGl201):
     def test_074_readiness_exposes_only_safe_fields(self):
         """GET /readiness must only return safe runtime metadata."""
         mods = _reload_all(self.db_path)
-        server_mod = mods[5]
-        status, body = self._run_handler(server_mod, "/readiness")
+        status, body = self._run_handler("/readiness")
         allowed_keys = {"status", "service", "checkType", "runtimeMode", "isProductionLike", "errorCode"}
         for key in body:
             self.assertIn(key, allowed_keys,

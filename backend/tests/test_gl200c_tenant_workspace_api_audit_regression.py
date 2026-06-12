@@ -66,35 +66,35 @@ def _reload_modules(db_path: str):
     os.environ["GRANTLAYER_DB"] = db_path
     os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-    import src.db as db_mod
+    import backend.src.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
 
-    import src.models as models_mod
+    import backend.src.models as models_mod
     importlib.reload(models_mod)
 
-    import src.operators as ops_mod
+    import backend.src.operators as ops_mod
     importlib.reload(ops_mod)
 
-    import src.auth as auth_mod
+    import backend.src.auth as auth_mod
     importlib.reload(auth_mod)
 
-    import src.grants as grants_mod
+    import backend.src.grants as grants_mod
     importlib.reload(grants_mod)
 
-    import src.challenges as ch_mod
+    import backend.src.challenges as ch_mod
     importlib.reload(ch_mod)
 
-    import src.grant_requests as gr_mod
+    import backend.src.grant_requests as gr_mod
     importlib.reload(gr_mod)
 
-    import src.audit_log as audit_mod
+    import backend.src.audit_log as audit_mod
     importlib.reload(audit_mod)
 
-    import src.grant_executions as exec_mod
+    import backend.src.grant_executions as exec_mod
     importlib.reload(exec_mod)
 
-    import src.demo_action as demo_mod
+    import backend.src.demo_action as demo_mod
     importlib.reload(demo_mod)
 
     return db_mod, models_mod, ops_mod, auth_mod, grants_mod, ch_mod, gr_mod, audit_mod, exec_mod, demo_mod
@@ -234,7 +234,7 @@ class TestGrantScopedExecutionTenantContext(unittest.TestCase):
             pass
 
     def _make_grant(self, tenant_id="demo"):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="sub1",
             role="viewer",
@@ -249,7 +249,7 @@ class TestGrantScopedExecutionTenantContext(unittest.TestCase):
         return g
 
     def _make_execution_for_grant(self, grant_id, tenant_id):
-        from src.models import GrantExecution
+        from backend.src.models import GrantExecution
         ex = GrantExecution(action="read", resource="res1", grant_id=grant_id)
         self.exec_mod.create_grant_execution(ex, tenant_id=tenant_id)
         return ex
@@ -313,7 +313,7 @@ class TestDemoActionTenantPropagation(unittest.TestCase):
             pass
 
     def _create_active_grant(self, tenant_id="demo"):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="agent-1",
             role="viewer",
@@ -432,7 +432,7 @@ class TestExpireOldRequestsTenantPropagation(unittest.TestCase):
             pass
 
     def _create_old_request(self, tenant_id="tenant_x"):
-        from src.models import GrantRequest
+        from backend.src.models import GrantRequest
         old_time = (
             datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=48)
         ).isoformat().replace("+00:00", "Z")
@@ -525,7 +525,7 @@ class TestAuditPropagation(unittest.TestCase):
 
     def test_au001_audit_list_filters_by_tenant(self):
         """AU-001: list_events filters by tenant_id — no cross-tenant leakage."""
-        from src.models import AuditEvent
+        from backend.src.models import AuditEvent
         evt_a = AuditEvent(
             subject_id="op-a", role="operator", action="test", resource="r/1",
             approved=True, reason="test", tenant_id="tenant_alpha", scope="tenant",
@@ -551,7 +551,7 @@ class TestAuditPropagation(unittest.TestCase):
 
     def test_au002_hash_chain_intact_after_tenant_events(self):
         """AU-002: hash-chain remains valid after tenant-scoped audit events."""
-        from src.models import AuditEvent
+        from backend.src.models import AuditEvent
         for i in range(3):
             evt = AuditEvent(
                 subject_id=f"op-{i}", role="operator", action="approve",
@@ -566,7 +566,7 @@ class TestAuditPropagation(unittest.TestCase):
 
     def test_au003_audit_event_carries_tenant_id(self):
         """AU-003: manually appended audit event stores tenant_id correctly."""
-        from src.models import AuditEvent
+        from backend.src.models import AuditEvent
         evt = AuditEvent(
             subject_id="op-1", role="operator", action="approve_grant_request",
             resource="grant_request/req-x", approved=True, reason="test",
@@ -580,7 +580,7 @@ class TestAuditPropagation(unittest.TestCase):
 
     def test_au004_system_events_nullable_tenant(self):
         """AU-004: system-level audit events may have nullable tenant_id (legacy/system events)."""
-        from src.models import AuditEvent
+        from backend.src.models import AuditEvent
         evt = AuditEvent(
             subject_id="system", role="system", action="internal_check",
             resource="system/health", approved=True, reason="ok",
@@ -616,12 +616,12 @@ class TestTenantContextDerivation(unittest.TestCase):
 
     def test_ctx001_operator_auth_returns_tenant_id(self):
         """CTX-001: Operator auth payload contains tenant_id from operator record."""
-        import src.config as cfg
+        import backend.src.config as cfg
         prev = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
         try:
             os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
             importlib.reload(cfg)
-            import src.auth as auth_ctx1
+            import backend.src.auth as auth_ctx1
             importlib.reload(auth_ctx1)
 
             raw_token = "ctx001-raw-token-" + str(uuid.uuid4())
@@ -645,8 +645,8 @@ class TestTenantContextDerivation(unittest.TestCase):
 
     def test_ctx002_admin_token_resolves_to_demo_tenant(self):
         """CTX-002: check_auth() in admin-token mode adds tenant_id='demo' to payload."""
-        import src.config as cfg
-        import src.auth as auth_ctx2
+        import backend.src.config as cfg
+        import backend.src.auth as auth_ctx2
 
         prev_op = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
         prev_tok = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
@@ -681,9 +681,6 @@ class TestTenantContextDerivation(unittest.TestCase):
 
     def test_ctx003_get_tenant_id_falls_back_to_demo(self):
         """CTX-003: _get_tenant_id falls back to 'demo' for missing or empty tenant_id."""
-        import src.server as srv_mod
-        importlib.reload(srv_mod)
-
         # Simulate the helper logic directly
         # Empty payload → 'demo'
         result = {"tenant_id": None}.get("tenant_id") or "demo"
@@ -695,8 +692,8 @@ class TestTenantContextDerivation(unittest.TestCase):
 
     def test_ctx004_operator_different_tenants_isolated(self):
         """CTX-004: Two operators from different tenants cannot see each other's resources."""
-        from src.models import Grant
-        import src.grants as grants_mod
+        from backend.src.models import Grant
+        import backend.src.grants as grants_mod
         importlib.reload(grants_mod)
 
         grant_a = Grant(
@@ -735,7 +732,7 @@ class TestCrossTenantMutationBoundary(unittest.TestCase):
             pass
 
     def _make_grant(self, tenant_id):
-        from src.models import Grant
+        from backend.src.models import Grant
         g = Grant(
             subject_id="sub1", role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -805,7 +802,7 @@ class TestPublicEndpointSafety(unittest.TestCase):
 
     def test_pub003_demo_endpoint_guard_config_respected(self):
         """PUB-003: ENABLE_DEMO_ENDPOINTS=false disables demo endpoints (GL-190 guard preserved)."""
-        import src.config as cfg
+        import backend.src.config as cfg
         importlib.reload(cfg)
         # Verify config attribute exists and is accessible
         demo_enabled = getattr(cfg, "ENABLE_DEMO_ENDPOINTS", None)
@@ -853,7 +850,7 @@ class TestMigrationCompleteness(unittest.TestCase):
 
     def test_mig003_migration_idempotent(self):
         """MIG-003: Running migrations again does not fail."""
-        from src.migrations import runner
+        from backend.src.migrations import runner
         conn = self.db_mod.get_conn()
         try:
             runner.run_migrations(conn)
@@ -949,7 +946,7 @@ class TestAgentPermissionsStateless(unittest.TestCase):
 
     def test_ap001_evaluate_does_not_access_db(self):
         """AP-001: evaluate_agent_permission is stateless (no DB queries)."""
-        from src.agent_permissions import evaluate_agent_permission
+        from backend.src.agent_permissions import evaluate_agent_permission
         result = evaluate_agent_permission(
             agent_id="agent-x",
             requested_scope="evidence:read",
@@ -960,7 +957,7 @@ class TestAgentPermissionsStateless(unittest.TestCase):
 
     def test_ap002_resolve_does_not_access_db(self):
         """AP-002: resolve_agent_permission_assignment is stateless (no DB queries)."""
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             agent_id="agent-x",
             requested_scope="evidence:read",

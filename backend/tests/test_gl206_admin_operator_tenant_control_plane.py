@@ -82,10 +82,7 @@ def _reload_modules(db_path: str):
     import backend.src.audit_log as audit_mod
     importlib.reload(audit_mod)
 
-    import backend.src.server as server_mod
-    importlib.reload(server_mod)
-
-    return config_mod, db_mod, models_mod, ops_mod, auth_mod, grants_mod, ch_mod, gr_mod, audit_mod, server_mod
+    return config_mod, db_mod, models_mod, ops_mod, auth_mod, grants_mod, ch_mod, gr_mod, audit_mod
 
 
 def _load_json() -> dict:
@@ -98,7 +95,7 @@ def _load_doc() -> str:
         return f.read()
 
 
-def _run_handler(server_mod_or_client, path: str, method: str = "GET",
+def _run_handler(path: str, method: str = "GET",
                  auth_header: str | None = None,
                  body: bytes = b"",
                  extra_headers: dict | None = None) -> tuple[int, dict]:
@@ -159,7 +156,6 @@ class _BaseGL206(unittest.TestCase):
         self.ops_mod = self.mods[3]
         self.auth_mod = self.mods[4]
         self.audit_mod = self.mods[8]
-        self.server_mod = self.mods[9]
 
     def tearDown(self):
         try:
@@ -178,11 +174,11 @@ class _BaseGL206(unittest.TestCase):
     def _post_json(self, path: str, data: dict,
                    auth_header: str | None = None) -> tuple[int, dict]:
         body = json.dumps(data).encode()
-        return _run_handler(self.server_mod, path, method="POST",
+        return _run_handler(path, method="POST",
                             auth_header=auth_header, body=body)
 
     def _get(self, path: str, auth_header: str | None = None) -> tuple[int, dict]:
-        return _run_handler(self.server_mod, path, method="GET",
+        return _run_handler(path, method="GET",
                             auth_header=auth_header)
 
 
@@ -399,7 +395,6 @@ class TestGL206AdminAuthEnforcement(_BaseGL206):
         self.ops_mod.revoke_operator(op.operator_id)
         # Reload modules to ensure no caching
         self.mods = _reload_modules(self.db_path)
-        self.server_mod = self.mods[9]
         # Now auth must fail
         status_after, body_after = self._get("/grants", auth_header=f"Bearer {token}")
         self.assertIn(status_after, (401, 403),
@@ -618,14 +613,12 @@ class TestGL206OperatorRevoke(_BaseGL206):
         )
         # Verify can authenticate before revoke
         self.mods = _reload_modules(self.db_path)
-        self.server_mod = self.mods[9]
         self.ops_mod = self.mods[3]
         status_before, _ = self._get("/grants", auth_header=f"Bearer {raw_token}")
         self.assertEqual(status_before, 200, "Should work before revoke")
         # Revoke
         self.ops_mod.revoke_operator(op_d.operator_id)
         self.mods = _reload_modules(self.db_path)
-        self.server_mod = self.mods[9]
         status_after, _ = self._get("/grants", auth_header=f"Bearer {raw_token}")
         self.assertIn(status_after, (401, 403),
                       f"Revoked operator must fail closed, got {status_after}")
@@ -653,7 +646,6 @@ class TestGL206OperatorRevoke(_BaseGL206):
         )
         target_id = create_body["operatorId"]
         self.mods = _reload_modules(self.db_path)
-        self.server_mod = self.mods[9]
         status, body = self._post_json(
             f"/admin/operators/{target_id}/revoke", {},
             auth_header=f"Bearer {token}",
@@ -686,11 +678,9 @@ class TestGL206TenantIsolation(_BaseGL206):
             name="HeaderTest", role="owner", token=token, tenant_id="real-tenant"
         )
         self.mods = _reload_modules(self.db_path)
-        self.server_mod = self.mods[9]
         self.ops_mod = self.mods[3]
         # Try to override tenant via X-Tenant-ID header
-        status, body = _run_handler(
-            self.server_mod, "/grants", method="GET",
+        status, body = _run_handler("/grants", method="GET",
             auth_header=f"Bearer {token}",
             extra_headers={"X-Tenant-ID": "attacker-tenant"},
         )
@@ -711,7 +701,6 @@ class TestGL206TenantIsolation(_BaseGL206):
             name="OpA", role="owner", token=token_a, tenant_id="tenant-a"
         )
         self.mods = _reload_modules(self.db_path)
-        self.server_mod = self.mods[9]
         # Operator token A cannot list operators (admin route requires admin token)
         status, body = self._get("/admin/operators", auth_header=f"Bearer {token_a}")
         self.assertIn(status, (401, 403),
@@ -829,7 +818,6 @@ class TestGL206RegressionPreservation(_BaseGL206):
             name="TenantB Op", role="owner", token=token_b, tenant_id="tenant-gl206-b"
         )
         self.mods = _reload_modules(self.db_path)
-        self.server_mod = self.mods[9]
         self.ops_mod = self.mods[3]
         grants_mod = self.mods[5]
 

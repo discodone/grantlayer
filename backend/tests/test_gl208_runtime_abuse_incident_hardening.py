@@ -102,14 +102,10 @@ def _reload_modules(db_path: str):
     import backend.src.auth as auth_mod
     importlib.reload(auth_mod)
 
-    import backend.src.server as server_mod
-    importlib.reload(server_mod)
-
-    return config_mod, db_mod, ops_mod, auth_mod, server_mod
+    return config_mod, db_mod, ops_mod, auth_mod
 
 
 def _run_handler(
-    server_mod,
     path: str,
     method: str = "GET",
     auth_header: str | None = None,
@@ -260,7 +256,7 @@ class TestGL208BackendBoundaries(unittest.TestCase):
     def setUp(self):
         self.saved_env = {key: os.environ.get(key) for key in self.ENV_KEYS}
         self.db_path = _make_db()
-        self.config_mod, self.db_mod, self.ops_mod, self.auth_mod, self.server_mod = (
+        self.config_mod, self.db_mod, self.ops_mod, self.auth_mod = (
             _reload_modules(self.db_path)
         )
         self.owner, self.owner_token = self.ops_mod.create_operator(
@@ -285,23 +281,19 @@ class TestGL208BackendBoundaries(unittest.TestCase):
         return f"Bearer {token or self.owner_token}"
 
     def test_admin_operator_routes_remain_protected(self):
-        status, _, body = _run_handler(self.server_mod, "/admin/operators")
+        status, _, body = _run_handler("/admin/operators")
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_operator_token_cannot_access_admin_only_routes(self):
-        status, _, body = _run_handler(
-            self.server_mod,
-            "/admin/operators",
+        status, _, body = _run_handler("/admin/operators",
             auth_header=self._operator_auth(),
         )
         self.assertEqual(status, 403)
         self.assertEqual(body.get("errorCode"), "admin_token_invalid")
 
     def test_admin_route_allows_admin_token_and_returns_safe_fields(self):
-        status, _, body = _run_handler(
-            self.server_mod,
-            "/admin/operators",
+        status, _, body = _run_handler("/admin/operators",
             auth_header=self._admin_auth(),
         )
         self.assertEqual(status, 200)
@@ -327,9 +319,7 @@ class TestGL208BackendBoundaries(unittest.TestCase):
         self.assertEqual(payload.get("tenant_id"), "tenant-a")
 
     def test_arbitrary_tenant_override_header_remains_unsupported(self):
-        status, _, body = _run_handler(
-            self.server_mod,
-            "/operators/me",
+        status, _, body = _run_handler("/operators/me",
             auth_header=self._operator_auth(),
             extra_headers={"X-Tenant-ID": "tenant-b"},
         )
