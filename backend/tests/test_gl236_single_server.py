@@ -141,13 +141,16 @@ class _GL236TestBase(unittest.TestCase):
     def setUp(self):
         self._orig_db_path = _db.DB_PATH_OR_URL
         self._orig_enable_operator = _cfg.ENABLE_OPERATOR_MODEL
+        self._orig_allow_plaintext = _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE
 
         os.environ["GRANTLAYER_JWT_SECRET"] = _JWT_SECRET
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = _ADMIN_TOKEN
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
+        os.environ["GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"] = "true"
 
         _cfg.ENABLE_OPERATOR_MODEL = False
+        _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
 
         tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         tmp.close()
@@ -162,8 +165,10 @@ class _GL236TestBase(unittest.TestCase):
         _db.DB_PATH_OR_URL = self._orig_db_path
         _db.DB_PATH = self._orig_db_path
         _cfg.ENABLE_OPERATOR_MODEL = self._orig_enable_operator
+        _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = self._orig_allow_plaintext
         for key in ("GRANTLAYER_JWT_SECRET", "GRANTLAYER_ADMIN_TOKEN",
-                    "GRANTLAYER_REQUIRE_ADMIN_TOKEN", "GRANTLAYER_ENABLE_OPERATOR_MODEL"):
+                    "GRANTLAYER_REQUIRE_ADMIN_TOKEN", "GRANTLAYER_ENABLE_OPERATOR_MODEL",
+                    "GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"):
             os.environ.pop(key, None)
         try:
             os.unlink(self._db_file)

@@ -24,6 +24,9 @@ jobs:
           pip install cryptography pytest pyyaml fastapi uvicorn httpx
 
       - name: Run functional tests (SQLite, excludes doc-guard/scope-guard)
+        env:
+          GRANTLAYER_RUNTIME_MODE: test
+          GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
         run: |
           python3 -m pytest backend/tests/ -m "not doc_guard" \
             --ignore=backend/tests/test_gl112_audit_log_duplication_cleanup.py \
