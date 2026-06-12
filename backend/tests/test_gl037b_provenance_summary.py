@@ -27,17 +27,17 @@ class TestDecisionProvenanceSummary(unittest.TestCase):
         if self._orig_url is not None:
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()
 
-        from src.provenance_summary import build_decision_provenance_summary
-        from src.provenance import record_provenance_event
-        from src.grant_executions import create_grant_execution
-        from src.models import GrantExecution
-        from src import evidence_persistence as evp
-        from src.evidence_bundle import build_evidence_bundle
+        from backend.src.policy.provenance_summary import build_decision_provenance_summary
+        from backend.src.policy.provenance import record_provenance_event
+        from backend.src.grants.grant_executions import create_grant_execution
+        from backend.src.core.models import GrantExecution
+        from backend.src.evidence import evidence_persistence as evp
+        from backend.src.evidence.evidence_bundle import build_evidence_bundle
 
         self.build = build_decision_provenance_summary
         self.record_event = record_provenance_event
@@ -78,11 +78,11 @@ class TestDecisionProvenanceSummary(unittest.TestCase):
 
     # ── Module location ─────────────────────────────────────────
     def test_summary_builder_lives_in_provenance_summary_module(self):
-        from src import provenance_summary as ps
+        from backend.src.policy import provenance_summary as ps
         self.assertTrue(hasattr(ps, "build_decision_provenance_summary"))
 
     def test_provenance_module_keeps_low_level_functions(self):
-        from src import provenance as prov
+        from backend.src.policy import provenance as prov
         self.assertTrue(hasattr(prov, "record_provenance_event"))
         self.assertTrue(hasattr(prov, "get_provenance_event"))
         self.assertTrue(hasattr(prov, "list_provenance_events"))

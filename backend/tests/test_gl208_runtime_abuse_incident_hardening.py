@@ -89,17 +89,17 @@ def _reload_modules(db_path: str):
     os.environ["GRANTLAYER_RATE_LIMIT_AUTH"] = "100"
     os.environ["GRANTLAYER_RATE_LIMIT_API"] = "100"
 
-    import backend.src.config as config_mod
+    import backend.src.core.config as config_mod
     importlib.reload(config_mod)
 
-    import backend.src.db as db_mod
+    import backend.src.core.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
 
-    import backend.src.operators as ops_mod
+    import backend.src.auth.operators as ops_mod
     importlib.reload(ops_mod)
 
-    import backend.src.auth as auth_mod
+    import backend.src.auth.auth as auth_mod
     importlib.reload(auth_mod)
 
     return config_mod, db_mod, ops_mod, auth_mod
@@ -329,7 +329,7 @@ class TestGL208BackendBoundaries(unittest.TestCase):
         self.assertNotEqual(body.get("tenantId"), "tenant-b")
 
     def test_raw_authorization_header_is_not_logged_by_safe_log(self):
-        from backend.src.logging_utils import build_log_record
+        from backend.src.core.logging_utils import build_log_record
 
         raw = "Bearer gl208-raw-token-must-not-appear"
         record = build_log_record("auth_failed", authorization=raw, token=raw)
@@ -348,7 +348,7 @@ class TestGL208BackendBoundaries(unittest.TestCase):
         self.assertNotIn("gl208-secret-must-not-appear", errors)
 
     def test_rate_limiter_helper_is_deterministic(self):
-        from backend.src.rate_limiter import RateLimiter
+        from backend.src.core.rate_limiter import RateLimiter
 
         limiter = RateLimiter(auth_limit=2, api_limit=3, window_seconds=10)
         self.assertEqual(limiter.check("127.0.0.1", "auth", now=100.0), (True, 0))

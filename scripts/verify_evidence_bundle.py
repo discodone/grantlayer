@@ -22,9 +22,9 @@ import sys
 from pathlib import Path
 
 # Allow running from repo root without installing the backend package.
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.evidence_bundle import verify_evidence_export_artifact  # noqa: E402
+from backend.src.evidence.evidence_bundle import verify_evidence_export_artifact  # noqa: E402
 
 
 def main(argv: list[str]) -> int:

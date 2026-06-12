@@ -39,33 +39,33 @@ class _BaseGl092(unittest.TestCase):
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.DB_PATH_OR_URL = self.tmp_db.name
         db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.grant_requests as requests_mod
+        import backend.src.grants.grant_requests as requests_mod
         importlib.reload(requests_mod)
         self.requests_mod = requests_mod
 
-        import backend.src.models as models_mod
+        import backend.src.core.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
-        import backend.src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
@@ -109,9 +109,9 @@ class _BaseGl092(unittest.TestCase):
         return updated_req, grant
 
     def _make_client(self):
-        import backend.src.db as bk_db
-        import backend.src.config as config_mod
-        import backend.src.auth as auth_mod
+        import backend.src.core.db as bk_db
+        import backend.src.core.config as config_mod
+        import backend.src.auth.auth as auth_mod
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         importlib.reload(config_mod)
@@ -397,7 +397,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         """Oversized body still fails safely before creating a grant."""
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
@@ -416,7 +416,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         """POST /challenges still requires auth."""
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
 
         valid_body = json.dumps({
@@ -432,7 +432,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         """Auth error response format remains consistent."""
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
 
         req = self._make_handler("/grants")
@@ -446,7 +446,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "true"
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
 
         demo_body = json.dumps({
@@ -465,9 +465,9 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = ""
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
 
         req = self._make_handler("/grants")

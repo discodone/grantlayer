@@ -52,7 +52,7 @@ REQUIRED_SAFETY_FLAGS = [
     "local_only",
 ]
 
-AUTH_FILE = REPO_ROOT / "backend" / "src" / "auth.py"
+AUTH_FILE = REPO_ROOT / "backend" / "src" / "auth" / "auth.py"
 TEST_FILE = REPO_ROOT / "backend" / "tests" / "test_gl225_226_workspace_context_resolver_authorization.py"
 
 FORBIDDEN_FILES = [

@@ -44,7 +44,7 @@ class _BaseGl141Config(unittest.TestCase):
 
     def setUp(self):
         self._orig_enable = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         self.config_mod = config_mod
 
     def tearDown(self):
@@ -73,22 +73,22 @@ class _BaseGl141Endpoint(unittest.TestCase):
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.DB_PATH_OR_URL = self.tmp_db.name
         db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
         self.db_mod = db_mod
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
 
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
@@ -129,11 +129,11 @@ class _BaseGl141Endpoint(unittest.TestCase):
             conn.close()
 
     def _reload_server(self):
-        import backend.src.config as cfg
+        import backend.src.core.config as cfg
         importlib.reload(cfg)
-        import backend.src.auth as auth
+        import backend.src.auth.auth as auth
         importlib.reload(auth)
-        import backend.src.db as bk_db
+        import backend.src.core.db as bk_db
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         from fastapi.testclient import TestClient
@@ -424,7 +424,7 @@ class TestGl141ValidBehaviorPreserved(_BaseGl141Endpoint):
 class TestGl141Gl138Preserved(unittest.TestCase):
 
     def test_exactly_one_check_admin_token_function(self):
-        auth_path = _repo_root() / "backend" / "src" / "auth.py"
+        auth_path = _repo_root() / "backend" / "src" / "auth" / "auth.py"
         source = auth_path.read_text(encoding="utf-8")
         tree = ast.parse(source)
         funcs = [
@@ -469,7 +469,7 @@ class TestGl141Gl140Preserved(unittest.TestCase):
 class TestGl141Gl139Preserved(unittest.TestCase):
 
     def _audit_source(self):
-        return (_repo_root() / "backend" / "src" / "audit_log.py").read_text(encoding="utf-8")
+        return (_repo_root() / "backend" / "src" / "audit" / "audit_log.py").read_text(encoding="utf-8")
 
     def test_audit_lock_still_present(self):
         self.assertIn(

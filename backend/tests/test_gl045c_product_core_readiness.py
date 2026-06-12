@@ -41,11 +41,11 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
         os.environ["GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN"] = "bootstrap-token"
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "test-admin"
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
@@ -71,9 +71,9 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
             else:
                 os.environ[key] = orig
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
 
     # ──────────────────────────────────────────────
@@ -81,17 +81,17 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_modules_importable(self):
         modules = [
-            "backend.src.evidence_completeness",
-            "backend.src.compliance_gap_report",
-            "backend.src.agent_permissions",
-            "backend.src.agent_permission_profiles",
-            "backend.src.agent_permission_assignments",
-            "backend.src.approval_rules",
-            "backend.src.approval_lifecycle",
-            "backend.src.decision_provenance",
-            "backend.src.auditor_export",
-            "backend.src.policy_requirements",
-            "backend.src.compliance_readiness",
+            "backend.src.evidence.evidence_completeness",
+            "backend.src.policy.compliance_gap_report",
+            "backend.src.policy.agent_permissions",
+            "backend.src.policy.agent_permission_profiles",
+            "backend.src.policy.agent_permission_assignments",
+            "backend.src.policy.approval_rules",
+            "backend.src.policy.approval_lifecycle",
+            "backend.src.policy.decision_provenance",
+            "backend.src.audit.auditor_export",
+            "backend.src.policy.policy_requirements",
+            "backend.src.policy.compliance_readiness",
         ]
         for mod_name in modules:
             with self.subTest(module=mod_name):
@@ -104,43 +104,43 @@ class TestGl045cProductCoreReadiness(unittest.TestCase):
     # 2. Expected builder/evaluator functions exist
     # ──────────────────────────────────────────────
     def test_evaluate_agent_permission_exists(self):
-        from backend.src.agent_permissions import evaluate_agent_permission
+        from backend.src.policy.agent_permissions import evaluate_agent_permission
         self.assertTrue(callable(evaluate_agent_permission))
 
     def test_expand_agent_permission_profiles_exists(self):
-        from backend.src.agent_permission_profiles import expand_agent_permission_profiles
+        from backend.src.policy.agent_permission_profiles import expand_agent_permission_profiles
         self.assertTrue(callable(expand_agent_permission_profiles))
 
     def test_resolve_agent_permission_assignment_exists(self):
-        from backend.src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         self.assertTrue(callable(resolve_agent_permission_assignment))
 
     def test_evaluate_approval_requirements_exists(self):
-        from backend.src.approval_rules import evaluate_approval_requirements
+        from backend.src.policy.approval_rules import evaluate_approval_requirements
         self.assertTrue(callable(evaluate_approval_requirements))
 
     def test_build_approval_request_lifecycle_exists(self):
-        from backend.src.approval_lifecycle import build_approval_request_lifecycle
+        from backend.src.policy.approval_lifecycle import build_approval_request_lifecycle
         self.assertTrue(callable(build_approval_request_lifecycle))
 
     def test_transition_approval_request_exists(self):
-        from backend.src.approval_lifecycle import transition_approval_request
+        from backend.src.policy.approval_lifecycle import transition_approval_request
         self.assertTrue(callable(transition_approval_request))
 
     def test_build_decision_provenance_v2_exists(self):
-        from backend.src.decision_provenance import build_decision_provenance_v2
+        from backend.src.policy.decision_provenance import build_decision_provenance_v2
         self.assertTrue(callable(build_decision_provenance_v2))
 
     def test_build_institutional_auditor_export_exists(self):
-        from backend.src.auditor_export import build_institutional_auditor_export
+        from backend.src.audit.auditor_export import build_institutional_auditor_export
         self.assertTrue(callable(build_institutional_auditor_export))
 
     def test_evaluate_policy_requirements_exists(self):
-        from backend.src.policy_requirements import evaluate_policy_requirements
+        from backend.src.policy.policy_requirements import evaluate_policy_requirements
         self.assertTrue(callable(evaluate_policy_requirements))
 
     def test_build_compliance_readiness_summary_exists(self):
-        from backend.src.compliance_readiness import build_compliance_readiness_summary
+        from backend.src.policy.compliance_readiness import build_compliance_readiness_summary
         self.assertTrue(callable(build_compliance_readiness_summary))
 
     # ──────────────────────────────────────────────

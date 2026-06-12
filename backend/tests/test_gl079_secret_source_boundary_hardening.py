@@ -11,9 +11,9 @@ import sys
 import unittest
 from typing import Any
 
-sys.path.append("backend/src")
+sys.path.append("backend")
 
-from secret_sources import (
+from backend.src.core.secret_sources import (
     REDACTED_SECRET_VALUE,
     SECRET_SOURCE_ENVIRONMENT,
     SecretConfigurationError,
@@ -295,7 +295,7 @@ class TestIsolationAndDependencies(unittest.TestCase):
         import importlib.util
         import pathlib
 
-        spec = importlib.util.find_spec("secret_sources")
+        spec = importlib.util.find_spec("backend.src.core.secret_sources")
         self.assertIsNotNone(spec)
         self.assertIsNotNone(spec.origin)
         source = pathlib.Path(spec.origin).read_text(encoding="utf-8")

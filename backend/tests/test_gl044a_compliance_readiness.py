@@ -12,7 +12,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.compliance_readiness import (
+from backend.src.policy.compliance_readiness import (
     build_compliance_readiness_summary,
     RECORD_TYPE,
     RECORD_VERSION,
@@ -24,7 +24,7 @@ class TestComplianceReadinessBuilder(unittest.TestCase):
 
     def test_module_import(self):
         """Test that the module imports successfully."""
-        import src.compliance_readiness as cr_mod
+        import backend.src.policy.compliance_readiness as cr_mod
         self.assertIsNotNone(cr_mod)
         self.assertTrue(hasattr(cr_mod, "build_compliance_readiness_summary"))
         self.assertEqual(cr_mod.RECORD_TYPE, "compliance_readiness_summary")

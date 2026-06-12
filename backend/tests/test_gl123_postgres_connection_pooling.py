@@ -55,11 +55,11 @@ class TestPoolDefaults(unittest.TestCase):
     """GL-123 pool sizing defaults."""
 
     def test_pool_min_defaults_to_two(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         self.assertEqual(db_mod._db_pool_min, 2)
 
     def test_pool_max_defaults_to_ten(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         self.assertEqual(db_mod._db_pool_max, 10)
 
 
@@ -70,7 +70,7 @@ class TestPoolEnvOverrides(unittest.TestCase):
         orig = os.environ.get("GRANTLAYER_DB_POOL_MIN")
         os.environ["GRANTLAYER_DB_POOL_MIN"] = "4"
         try:
-            import src.db as db_mod
+            import backend.src.core.db as db_mod
             importlib.reload(db_mod)
             self.assertEqual(db_mod._db_pool_min, 4)
         finally:
@@ -84,7 +84,7 @@ class TestPoolEnvOverrides(unittest.TestCase):
         orig = os.environ.get("GRANTLAYER_DB_POOL_MAX")
         os.environ["GRANTLAYER_DB_POOL_MAX"] = "20"
         try:
-            import src.db as db_mod
+            import backend.src.core.db as db_mod
             importlib.reload(db_mod)
             self.assertEqual(db_mod._db_pool_max, 20)
         finally:
@@ -99,7 +99,7 @@ class TestPoolInitialization(unittest.TestCase):
     """GL-123 pool is initialized lazily and connections are returned."""
 
     def test_pool_created_on_first_use(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
 
         orig_backend = db_mod.DB_BACKEND
@@ -132,7 +132,7 @@ class TestPoolInitialization(unittest.TestCase):
             db_mod._pg_pool = orig_pool
 
     def test_connection_returned_to_pool_on_close(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
 
         orig_backend = db_mod.DB_BACKEND
@@ -159,7 +159,7 @@ class TestPoolInitialization(unittest.TestCase):
             db_mod._pg_pool = orig_pool
 
     def test_pool_reused_across_calls(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
 
         orig_backend = db_mod.DB_BACKEND
@@ -189,7 +189,7 @@ class TestPoolInitialization(unittest.TestCase):
             db_mod._pg_pool = orig_pool
 
     def test_query_helpers_return_connections(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
 
         orig_backend = db_mod.DB_BACKEND
@@ -228,7 +228,7 @@ class TestPoolRetryBehavior(unittest.TestCase):
     """GL-123 pool creation retries on transient failures."""
 
     def test_pool_creation_retries_then_raises(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
 
         orig_backend = db_mod.DB_BACKEND
@@ -272,7 +272,7 @@ class TestSQLiteUnchanged(unittest.TestCase):
     """GL-123 SQLite path is completely unaffected by pooling."""
 
     def test_sqlite_still_uses_direct_connection(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.assertEqual(db_mod.DB_BACKEND, "sqlite")
         conn = db_mod.get_conn()
@@ -283,7 +283,7 @@ class TestSQLiteUnchanged(unittest.TestCase):
             conn.close()
 
     def test_sqlite_wrapper_close_calls_raw_close(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         import sqlite3
 
@@ -300,7 +300,7 @@ class TestClosePoolHelper(unittest.TestCase):
     """GL-123 _close_pg_pool() is safe and effective."""
 
     def test_close_pool_when_no_pool_is_safe(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         orig_pool = db_mod._pg_pool
         try:
@@ -310,7 +310,7 @@ class TestClosePoolHelper(unittest.TestCase):
             db_mod._pg_pool = orig_pool
 
     def test_close_pool_closes_and_clears(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         orig_pool = db_mod._pg_pool
 
@@ -328,7 +328,7 @@ class TestPoolMinMaxClamped(unittest.TestCase):
     """GL-123 pool min/max are clamped to at least 1."""
 
     def test_pool_min_clamped_to_one(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
 
         orig_backend = db_mod.DB_BACKEND

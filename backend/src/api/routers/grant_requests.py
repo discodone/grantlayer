@@ -8,8 +8,8 @@ from typing import Annotated, Any, Optional
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
-from ... import config
-from ...grant_requests import (
+from ...core import config
+from ...grants.grant_requests import (
     ALLOWED_GRANT_ROLES,
     VALID_REQUEST_STATUSES,
     approve_grant_request,
@@ -18,8 +18,8 @@ from ...grant_requests import (
     get_grant_request,
     list_grant_requests,
 )
-from ...models import GrantRequest
-from ...validation import (
+from ...core.models import GrantRequest
+from ...core.validation import (
     MAX_NAME_LENGTH,
     MAX_REASON_LENGTH,
     MAX_ROLE_LENGTH,

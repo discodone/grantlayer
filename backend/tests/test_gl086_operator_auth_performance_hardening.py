@@ -28,23 +28,23 @@ class _BaseGl086(unittest.TestCase):
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
@@ -79,9 +79,9 @@ class _BaseGl086(unittest.TestCase):
     def _make_client(self):
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
-        import backend.src.db as bk_db
-        import backend.src.config as config_mod
-        import backend.src.auth as auth_mod
+        import backend.src.core.db as bk_db
+        import backend.src.core.config as config_mod
+        import backend.src.auth.auth as auth_mod
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         importlib.reload(config_mod)
@@ -140,9 +140,9 @@ class TestGl086OperatorMode(_BaseGl086):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -328,9 +328,9 @@ class TestGl086LegacyMode(_BaseGl086):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "legacy-admin-token"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 

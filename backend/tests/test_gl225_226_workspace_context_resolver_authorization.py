@@ -128,7 +128,7 @@ class _PatchedDB:
 
     def __enter__(self) -> "_PatchedDB":
         sys.path.insert(0, str(REPO_ROOT / "backend"))
-        import src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         self._auth_mod = auth_mod
         self._orig_one = auth_mod.query_one
         self._orig_all = auth_mod.query_all
@@ -161,7 +161,7 @@ class TestWorkspaceContextResolverLegacy(unittest.TestCase):
         sys.path.insert(0, str(REPO_ROOT / "backend"))
 
     def test_legacy_no_operator_resolves_demo(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         auth_payload = {"tenant_id": "demo"}  # no "operator" key
         ws_id, status, ctx = resolve_workspace_context(auth_payload)
         self.assertEqual(status, 200)
@@ -172,7 +172,7 @@ class TestWorkspaceContextResolverLegacy(unittest.TestCase):
         self.assertFalse(ctx["cross_workspace_access"])
 
     def test_legacy_empty_operator_resolves_demo(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         auth_payload = {"operator": {}, "tenant_id": "demo"}
         ws_id, status, ctx = resolve_workspace_context(auth_payload)
         self.assertEqual(status, 200)
@@ -180,7 +180,7 @@ class TestWorkspaceContextResolverLegacy(unittest.TestCase):
         self.assertEqual(ctx["resolution_mode"], "legacy_demo")
 
     def test_legacy_operator_none_resolves_demo(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         auth_payload = {"operator": None, "tenant_id": "demo"}
         ws_id, status, ctx = resolve_workspace_context(auth_payload)
         self.assertEqual(status, 200)
@@ -201,7 +201,7 @@ class TestWorkspaceContextResolverSingleMembership(unittest.TestCase):
         self.conn.close()
 
     def test_single_membership_auto_resolved(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         payload = _make_operator_payload("op-001", "t-001", "grant_admin")
         with _PatchedDB(self.conn):
             ws_id, status, ctx = resolve_workspace_context(payload)
@@ -214,7 +214,7 @@ class TestWorkspaceContextResolverSingleMembership(unittest.TestCase):
         self.assertFalse(ctx["cross_workspace_access"])
 
     def test_single_membership_readonly_auto_resolved(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         conn2 = _fresh_conn()
         _setup_workspace_tables(conn2)
         _insert_workspace(conn2, "ws-ro", "t-001")
@@ -241,7 +241,7 @@ class TestWorkspaceContextResolverNoMembership(unittest.TestCase):
         self.conn.close()
 
     def test_no_membership_fails_closed(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         payload = _make_operator_payload("op-nobody", "t-001")
         with _PatchedDB(self.conn):
             ws_id, status, ctx = resolve_workspace_context(payload)
@@ -250,7 +250,7 @@ class TestWorkspaceContextResolverNoMembership(unittest.TestCase):
         self.assertEqual(ctx["errorCode"], "no_workspace_membership")
 
     def test_revoked_membership_fails_closed(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         conn2 = _fresh_conn()
         _setup_workspace_tables(conn2)
         _insert_workspace(conn2, "ws-rev", "t-001")
@@ -279,7 +279,7 @@ class TestWorkspaceContextResolverMultipleMemberships(unittest.TestCase):
         self.conn.close()
 
     def test_multiple_memberships_no_workspace_id_fails(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         payload = _make_operator_payload("op-multi", "t-001")
         with _PatchedDB(self.conn):
             ws_id, status, ctx = resolve_workspace_context(payload)
@@ -288,7 +288,7 @@ class TestWorkspaceContextResolverMultipleMemberships(unittest.TestCase):
         self.assertEqual(ctx["errorCode"], "workspace_id_required")
 
     def test_multiple_memberships_with_workspace_id_resolved(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         payload = _make_operator_payload("op-multi", "t-001")
         with _PatchedDB(self.conn):
             ws_id, status, ctx = resolve_workspace_context(payload, client_workspace_id="ws-b")
@@ -313,7 +313,7 @@ class TestWorkspaceContextResolverExplicitWorkspaceId(unittest.TestCase):
         self.conn.close()
 
     def test_explicit_workspace_id_with_membership_resolved(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         payload = _make_operator_payload("op-001", "t-001")
         with _PatchedDB(self.conn):
             ws_id, status, ctx = resolve_workspace_context(payload, client_workspace_id="ws-mine")
@@ -322,7 +322,7 @@ class TestWorkspaceContextResolverExplicitWorkspaceId(unittest.TestCase):
         self.assertEqual(ctx["resolution_mode"], "membership_verified")
 
     def test_explicit_workspace_id_no_membership_denied(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         # op-001 has no membership in ws-other
         conn2 = _fresh_conn()
         _setup_workspace_tables(conn2)
@@ -338,7 +338,7 @@ class TestWorkspaceContextResolverExplicitWorkspaceId(unittest.TestCase):
         conn2.close()
 
     def test_explicit_workspace_id_wrong_tenant_denied(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         # ws-other belongs to t-other, but caller is t-001
         payload = _make_operator_payload("op-001", "t-001")
         with _PatchedDB(self.conn):
@@ -348,7 +348,7 @@ class TestWorkspaceContextResolverExplicitWorkspaceId(unittest.TestCase):
         self.assertEqual(ctx["errorCode"], "workspace_not_found")
 
     def test_explicit_workspace_id_nonexistent_denied(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         payload = _make_operator_payload("op-001", "t-001")
         with _PatchedDB(self.conn):
             ws_id, status, ctx = resolve_workspace_context(payload, client_workspace_id="ws-doesnotexist")
@@ -357,7 +357,7 @@ class TestWorkspaceContextResolverExplicitWorkspaceId(unittest.TestCase):
         self.assertEqual(ctx["errorCode"], "workspace_not_found")
 
     def test_explicit_workspace_id_empty_string_rejected(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         payload = _make_operator_payload("op-001", "t-001")
         with _PatchedDB(self.conn):
             ws_id, status, ctx = resolve_workspace_context(payload, client_workspace_id="   ")
@@ -366,7 +366,7 @@ class TestWorkspaceContextResolverExplicitWorkspaceId(unittest.TestCase):
         self.assertEqual(ctx["errorCode"], "invalid_workspace_id")
 
     def test_explicit_workspace_id_inactive_workspace_denied(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         conn2 = _fresh_conn()
         _setup_workspace_tables(conn2)
         _insert_workspace(conn2, "ws-inactive", "t-001", status="suspended")
@@ -381,7 +381,7 @@ class TestWorkspaceContextResolverExplicitWorkspaceId(unittest.TestCase):
 
     def test_client_supplied_workspace_id_not_trusted_without_membership(self):
         """Core GL-225 guarantee: client cannot override workspace without membership."""
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         # op-001 has membership only in ws-mine, NOT in ws-other
         payload = _make_operator_payload("op-001", "t-001")
         with _PatchedDB(self.conn):
@@ -406,7 +406,7 @@ class TestWorkspaceContextResolverCrossWorkspaceRole(unittest.TestCase):
         self.conn.close()
 
     def test_owner_can_access_any_workspace_with_id(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         payload = _make_operator_payload("op-owner", "t-001", role="owner")
         with _PatchedDB(self.conn):
             ws_id, status, ctx = resolve_workspace_context(payload, client_workspace_id="ws-b")
@@ -417,7 +417,7 @@ class TestWorkspaceContextResolverCrossWorkspaceRole(unittest.TestCase):
         self.assertEqual(ctx["resolution_mode"], "cross_workspace_role")
 
     def test_owner_without_workspace_id_in_demo_tenant(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         conn2 = _fresh_conn()
         _setup_workspace_tables(conn2)
         _insert_workspace(conn2, "default", "demo")
@@ -431,7 +431,7 @@ class TestWorkspaceContextResolverCrossWorkspaceRole(unittest.TestCase):
         conn2.close()
 
     def test_owner_without_workspace_id_non_demo_tenant_requires_explicit(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         payload = _make_operator_payload("op-owner", "t-001", role="owner")
         with _PatchedDB(self.conn):
             ws_id, status, ctx = resolve_workspace_context(payload)
@@ -441,7 +441,7 @@ class TestWorkspaceContextResolverCrossWorkspaceRole(unittest.TestCase):
 
     def test_owner_cross_workspace_access_flag_documented(self):
         """Verify cross_workspace_access is True (not silent bypass)."""
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         payload = _make_operator_payload("op-owner", "t-001", role="owner")
         with _PatchedDB(self.conn):
             ws_id, status, ctx = resolve_workspace_context(payload, client_workspace_id="ws-a")
@@ -460,7 +460,7 @@ class TestCheckWorkspaceResourceAccessSameWorkspace(unittest.TestCase):
         sys.path.insert(0, str(REPO_ROOT / "backend"))
 
     def test_same_workspace_lookup_allowed(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id="ws-a",
             caller_workspace_id="ws-a",
@@ -471,7 +471,7 @@ class TestCheckWorkspaceResourceAccessSameWorkspace(unittest.TestCase):
         self.assertEqual(status, 200)
 
     def test_same_workspace_mutation_allowed(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id="ws-a",
             caller_workspace_id="ws-a",
@@ -484,7 +484,7 @@ class TestCheckWorkspaceResourceAccessSameWorkspace(unittest.TestCase):
         self.assertEqual(status, 200)
 
     def test_same_workspace_readonly_lookup_allowed(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id="ws-a",
             caller_workspace_id="ws-a",
@@ -496,7 +496,7 @@ class TestCheckWorkspaceResourceAccessSameWorkspace(unittest.TestCase):
         self.assertEqual(status, 200)
 
     def test_same_workspace_readonly_mutation_denied(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, ctx = check_workspace_resource_access(
             resource_workspace_id="ws-a",
             caller_workspace_id="ws-a",
@@ -510,7 +510,7 @@ class TestCheckWorkspaceResourceAccessSameWorkspace(unittest.TestCase):
         self.assertEqual(ctx["errorCode"], "workspace_role_insufficient")
 
     def test_unscoped_resource_always_allowed(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id=None,
             caller_workspace_id="ws-a",
@@ -528,7 +528,7 @@ class TestCrossWorkspaceLookupDenial(unittest.TestCase):
         sys.path.insert(0, str(REPO_ROOT / "backend"))
 
     def test_cross_workspace_lookup_denied(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, ctx = check_workspace_resource_access(
             resource_workspace_id="ws-other",
             caller_workspace_id="ws-mine",
@@ -541,7 +541,7 @@ class TestCrossWorkspaceLookupDenial(unittest.TestCase):
         self.assertEqual(ctx["errorCode"], "cross_workspace_lookup_denied")
 
     def test_cross_workspace_lookup_denied_without_bypass_flag(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         # Default cross_workspace_access=False
         ok, status, ctx = check_workspace_resource_access(
             resource_workspace_id="ws-x",
@@ -561,7 +561,7 @@ class TestCrossWorkspaceMutationDenial(unittest.TestCase):
         sys.path.insert(0, str(REPO_ROOT / "backend"))
 
     def test_cross_workspace_mutation_denied(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, ctx = check_workspace_resource_access(
             resource_workspace_id="ws-other",
             caller_workspace_id="ws-mine",
@@ -576,7 +576,7 @@ class TestCrossWorkspaceMutationDenial(unittest.TestCase):
 
     def test_cross_workspace_mutation_denied_code_distinct_from_lookup(self):
         """Mutation denial has a distinct error code from lookup denial."""
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         _, _, ctx_lookup = check_workspace_resource_access(
             resource_workspace_id="ws-other",
             caller_workspace_id="ws-mine",
@@ -605,7 +605,7 @@ class TestCrossTenantDenial(unittest.TestCase):
         sys.path.insert(0, str(REPO_ROOT / "backend"))
 
     def test_cross_tenant_lookup_denied(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, ctx = check_workspace_resource_access(
             resource_workspace_id="ws-theirs",
             caller_workspace_id="ws-ours",
@@ -618,7 +618,7 @@ class TestCrossTenantDenial(unittest.TestCase):
         self.assertEqual(ctx["errorCode"], "cross_tenant_access_denied")
 
     def test_cross_tenant_mutation_denied(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, ctx = check_workspace_resource_access(
             resource_workspace_id="ws-theirs",
             caller_workspace_id="ws-ours",
@@ -633,7 +633,7 @@ class TestCrossTenantDenial(unittest.TestCase):
 
     def test_cross_tenant_denied_even_with_cross_workspace_role(self):
         """Admin/cross-workspace role does NOT bypass cross-tenant boundary."""
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, ctx = check_workspace_resource_access(
             resource_workspace_id="ws-theirs",
             caller_workspace_id="ws-ours",
@@ -653,7 +653,7 @@ class TestAdminBypassDocumented(unittest.TestCase):
         sys.path.insert(0, str(REPO_ROOT / "backend"))
 
     def test_admin_cross_workspace_lookup_allowed(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id="ws-any",
             caller_workspace_id="ws-admin",
@@ -665,7 +665,7 @@ class TestAdminBypassDocumented(unittest.TestCase):
         self.assertEqual(status, 200)
 
     def test_admin_cross_workspace_mutation_allowed(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id="ws-any",
             caller_workspace_id="ws-admin",
@@ -680,7 +680,7 @@ class TestAdminBypassDocumented(unittest.TestCase):
 
     def test_admin_cross_workspace_readonly_mutation_denied(self):
         """Cross-workspace admin with readonly role: mutation still denied."""
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, ctx = check_workspace_resource_access(
             resource_workspace_id="ws-any",
             caller_workspace_id="ws-admin",
@@ -704,7 +704,7 @@ class TestWorkspaceRoleChecks(unittest.TestCase):
         sys.path.insert(0, str(REPO_ROOT / "backend"))
 
     def test_workspace_owner_can_mutate(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id="ws-a",
             caller_workspace_id="ws-a",
@@ -717,7 +717,7 @@ class TestWorkspaceRoleChecks(unittest.TestCase):
         self.assertEqual(status, 200)
 
     def test_workspace_admin_can_mutate(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id="ws-a",
             caller_workspace_id="ws-a",
@@ -730,7 +730,7 @@ class TestWorkspaceRoleChecks(unittest.TestCase):
         self.assertEqual(status, 200)
 
     def test_workspace_member_can_mutate(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id="ws-a",
             caller_workspace_id="ws-a",
@@ -743,7 +743,7 @@ class TestWorkspaceRoleChecks(unittest.TestCase):
         self.assertEqual(status, 200)
 
     def test_workspace_readonly_cannot_mutate(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         ok, status, ctx = check_workspace_resource_access(
             resource_workspace_id="ws-a",
             caller_workspace_id="ws-a",
@@ -757,7 +757,7 @@ class TestWorkspaceRoleChecks(unittest.TestCase):
         self.assertEqual(ctx["errorCode"], "workspace_role_insufficient")
 
     def test_context_resolver_returns_member_role(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         conn = _fresh_conn()
         _setup_workspace_tables(conn)
         _insert_workspace(conn, "ws-role-test", "t-001")
@@ -779,19 +779,19 @@ class TestDemoSyntheticCompatibility(unittest.TestCase):
         sys.path.insert(0, str(REPO_ROOT / "backend"))
 
     def test_demo_mode_no_operator_payload(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         ws_id, status, ctx = resolve_workspace_context({})
         self.assertEqual(status, 200)
         self.assertEqual(ws_id, "default")
 
     def test_demo_mode_tenant_id_missing(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         ws_id, status, ctx = resolve_workspace_context({"tenant_id": None})
         self.assertEqual(status, 200)
         self.assertEqual(ws_id, "default")
 
     def test_check_access_no_resource_workspace_id(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         # Unscoped resource (pre-GL-224 backfill rows) must always pass.
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id=None,
@@ -803,7 +803,7 @@ class TestDemoSyntheticCompatibility(unittest.TestCase):
         self.assertEqual(status, 200)
 
     def test_same_tenant_no_resource_tenant_id(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         # resource_tenant_id=None → no tenant check, same workspace
         ok, status, _ = check_workspace_resource_access(
             resource_workspace_id="default",
@@ -824,19 +824,19 @@ class TestAuthModuleImportable(unittest.TestCase):
         sys.path.insert(0, str(REPO_ROOT / "backend"))
 
     def test_resolve_workspace_context_importable(self):
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         self.assertTrue(callable(resolve_workspace_context))
 
     def test_check_workspace_resource_access_importable(self):
-        from src.auth import check_workspace_resource_access
+        from backend.src.auth.auth import check_workspace_resource_access
         self.assertTrue(callable(check_workspace_resource_access))
 
     def test_existing_check_auth_still_works(self):
-        from src.auth import check_auth
+        from backend.src.auth.auth import check_auth
         self.assertTrue(callable(check_auth))
 
     def test_existing_check_admin_token_still_works(self):
-        from src.auth import check_admin_token
+        from backend.src.auth.auth import check_admin_token
         self.assertTrue(callable(check_admin_token))
 
 
@@ -956,18 +956,18 @@ class TestSafetyConfirmations(unittest.TestCase):
     """Static safety checks: no forbidden patterns in new/changed files."""
 
     def test_no_production_saas_claim_in_auth_py(self):
-        auth_path = SRC_DIR / "auth.py"
+        auth_path = SRC_DIR / "auth" / "auth.py"
         content = auth_path.read_text()
         self.assertNotIn("production_saas_ready = True", content)
         self.assertNotIn("real_customer_private_data_ready = True", content)
 
     def test_no_private_key_material_in_auth_py(self):
-        auth_path = SRC_DIR / "auth.py"
+        auth_path = SRC_DIR / "auth" / "auth.py"
         content = auth_path.read_text()
         self.assertNotIn("-----BEGIN", content)
 
     def test_no_network_calls_in_auth_py(self):
-        auth_path = SRC_DIR / "auth.py"
+        auth_path = SRC_DIR / "auth" / "auth.py"
         content = auth_path.read_text()
         # No stdlib http/urllib/socket calls should be added (only db helpers)
         self.assertNotIn("urllib.request", content)
@@ -984,7 +984,7 @@ class TestSafetyConfirmations(unittest.TestCase):
 
     def test_fail_closed_no_workspace_is_rejection(self):
         """resolve_workspace_context never returns workspace_id for operators without access."""
-        from src.auth import resolve_workspace_context
+        from backend.src.auth.auth import resolve_workspace_context
         # Operator with no payload operator id → demo fallback (legacy/demo)
         # is acceptable. But operator with explicit id and no workspace → 403 or 400.
         sys.path.insert(0, str(REPO_ROOT / "backend"))

@@ -160,19 +160,19 @@ class TestGL224ModelsExist(unittest.TestCase):
         sys.path.insert(0, str(REPO_ROOT / "backend"))
 
     def test_workspace_model_importable(self):
-        from src.models import Workspace
+        from backend.src.core.models import Workspace
         self.assertTrue(callable(Workspace))
 
     def test_workspace_member_model_importable(self):
-        from src.models import WorkspaceMember
+        from backend.src.core.models import WorkspaceMember
         self.assertTrue(callable(WorkspaceMember))
 
     def test_workspace_invite_model_importable(self):
-        from src.models import WorkspaceInvite
+        from backend.src.core.models import WorkspaceInvite
         self.assertTrue(callable(WorkspaceInvite))
 
     def test_workspace_constructs(self):
-        from src.models import Workspace
+        from backend.src.core.models import Workspace
         ws = Workspace(
             id="ws-001",
             tenant_id="demo",
@@ -191,7 +191,7 @@ class TestGL224ModelsExist(unittest.TestCase):
         self.assertIn("status", d)
 
     def test_workspace_member_constructs(self):
-        from src.models import WorkspaceMember
+        from backend.src.core.models import WorkspaceMember
         m = WorkspaceMember(
             id="mem-001",
             workspace_id="ws-001",
@@ -206,7 +206,7 @@ class TestGL224ModelsExist(unittest.TestCase):
         self.assertIn("role", d)
 
     def test_workspace_invite_constructs(self):
-        from src.models import WorkspaceInvite
+        from backend.src.core.models import WorkspaceInvite
         inv = WorkspaceInvite(
             id="inv-001",
             workspace_id="ws-001",
@@ -222,15 +222,15 @@ class TestGL224ModelsExist(unittest.TestCase):
         self.assertNotIn("email", [k for k in d if k != "email_hash"])
 
     def test_workspace_status_literals(self):
-        from src.models import WorkspaceStatus
+        from backend.src.core.models import WorkspaceStatus
         self.assertIsNotNone(WorkspaceStatus)
 
     def test_workspace_member_role_literals(self):
-        from src.models import WorkspaceMemberRole
+        from backend.src.core.models import WorkspaceMemberRole
         self.assertIsNotNone(WorkspaceMemberRole)
 
     def test_workspace_invite_status_literals(self):
-        from src.models import WorkspaceInviteStatus
+        from backend.src.core.models import WorkspaceInviteStatus
         self.assertIsNotNone(WorkspaceInviteStatus)
 
 

@@ -13,7 +13,7 @@ import time
 from typing import Any
 from urllib.parse import urlparse
 
-from . import migrations
+from .. import migrations
 
 
 # ──────────────────────────────────────────────────────────────
@@ -329,7 +329,7 @@ def init_db() -> None:
     try:
         migrations.run_migrations(conn)
         # Bootstrap operators if needed
-        from . import operators
+        from ..auth import operators
 
         operators.ensure_operators_table()
     finally:

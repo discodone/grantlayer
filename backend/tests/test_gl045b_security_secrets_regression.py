@@ -13,11 +13,11 @@ from typing import Any
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from auditor_export import build_institutional_auditor_export
-from compliance_readiness import build_compliance_readiness_summary
-from policy_requirements import evaluate_policy_requirements
+from backend.src.audit.auditor_export import build_institutional_auditor_export
+from backend.src.policy.compliance_readiness import build_compliance_readiness_summary
+from backend.src.policy.policy_requirements import evaluate_policy_requirements
 
 
 class TestSecretContextLeakage(unittest.TestCase):

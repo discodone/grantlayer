@@ -62,7 +62,7 @@ MIGRATION_FILE = (
     / "0011_gl224_workspace_schema_membership_baseline.py"
 )
 
-MODELS_FILE = REPO_ROOT / "backend" / "src" / "models.py"
+MODELS_FILE = REPO_ROOT / "backend" / "src" / "core" / "models.py"
 
 FORBIDDEN_FILES = [
     REPO_ROOT / "setup.py",

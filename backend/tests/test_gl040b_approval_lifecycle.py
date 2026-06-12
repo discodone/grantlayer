@@ -7,7 +7,7 @@ import unittest
 # Add parent directory to path so we can import src modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.approval_lifecycle import (
+from backend.src.policy.approval_lifecycle import (
     _STATUS_NOT_REQUIRED,
     _STATUS_PENDING,
     _STATUS_APPROVED,

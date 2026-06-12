@@ -24,8 +24,8 @@ _SKIP = unittest.skipUnless(_FASTAPI_AVAILABLE, "FastAPI not installed (apt inst
 # to avoid polluting other test modules.  No module-level config mutations here.
 
 if _FASTAPI_AVAILABLE:
-    import backend.src.config as _gl228_config  # noqa: E402
-    import backend.src.db as _gl228_db          # noqa: E402
+    import backend.src.core.config as _gl228_config  # noqa: E402
+    import backend.src.core.db as _gl228_db          # noqa: E402
     from fastapi.testclient import TestClient
     from backend.src.api.app import create_app
 

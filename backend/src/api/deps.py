@@ -6,8 +6,8 @@ from typing import Optional
 
 from fastapi import HTTPException
 
-from .. import config
-from ..auth import check_auth, check_admin_token, resolve_workspace_context, check_workspace_resource_access
+from ..core import config
+from ..auth.auth import check_auth, check_admin_token, resolve_workspace_context, check_workspace_resource_access
 from .auth_jwt import validate_jwt_header
 
 
@@ -42,7 +42,7 @@ def resolve_auth_and_workspace(
         if error_code in ("no_workspace_membership", "workspace_id_required"):
             tenant_id = payload.get("tenant_id") or "demo"
             if tenant_id != "demo":
-                from ..db import query_all as _qa
+                from ..core.db import query_all as _qa
                 tenant_has_ws = _qa(
                     "SELECT id FROM workspaces WHERE tenant_id = ? AND status = 'active' LIMIT 1",
                     (tenant_id,),

@@ -10,7 +10,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.auditor_export import (
+from backend.src.audit.auditor_export import (
     build_institutional_auditor_export,
     RECORD_TYPE,
     RECORD_VERSION,
@@ -22,7 +22,7 @@ class TestAuditorExportBuilder(unittest.TestCase):
 
     def test_module_import(self):
         """Test that the module imports successfully."""
-        import src.auditor_export as ae_mod
+        import backend.src.audit.auditor_export as ae_mod
         self.assertIsNotNone(ae_mod)
         self.assertTrue(hasattr(ae_mod, "build_institutional_auditor_export"))
         self.assertEqual(ae_mod.RECORD_TYPE, "auditor_export")

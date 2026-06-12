@@ -21,7 +21,7 @@ import uuid
 import datetime
 from typing import Optional
 
-from .db import get_conn, execute, query_one, query_all
+from ..core.db import get_conn, execute, query_one, query_all
 
 
 # ──────────────────────────────────────────────────────────────
@@ -420,7 +420,7 @@ def rotate_operator_token(operator_id: str, ttl_days: int = DEFAULT_TOKEN_TTL_DA
 
 def bootstrap_operator_if_needed() -> None:
     """Create bootstrap operator if operators table is empty and config is set."""
-    from . import config
+    from ..core import config
 
     if not config.ENABLE_OPERATOR_MODEL:
         return

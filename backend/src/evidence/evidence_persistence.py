@@ -10,8 +10,8 @@ from typing import Optional, Any
 import datetime
 import json
 
-from . import db
-from .models import EvidenceBundle
+from ..core import db
+from ..core.models import EvidenceBundle
 
 
 STORE_ERROR_CODES = {"already_stored", "execution_not_found", "hash_mismatch", "invalid_bundle"}

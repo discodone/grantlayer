@@ -36,21 +36,21 @@ class _BaseGl109(unittest.TestCase):
         self._orig_cors_origins = os.environ.get("GRANTLAYER_CORS_ALLOWED_ORIGINS")
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.DB_PATH_OR_URL = self.tmp_db.name
         db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
@@ -100,7 +100,7 @@ class _BaseGl109(unittest.TestCase):
             headers["Authorization"] = auth_header
         if origin is not None:
             headers["Origin"] = origin
-        from backend.src.structured_logging import normalize_correlation_id
+        from backend.src.core.structured_logging import normalize_correlation_id
         if "X-Correlation-ID" in headers:
             headers["X-Correlation-ID"] = normalize_correlation_id(headers["X-Correlation-ID"])
         if "X-Request-ID" in headers:
@@ -156,7 +156,7 @@ class _BaseGl109(unittest.TestCase):
             ok, auth_status, auth_payload = self.auth_mod.check_auth(headers.get("Authorization"))
             if not ok:
                 resp_headers = {}
-                from backend.src.structured_logging import normalize_correlation_id
+                from backend.src.core.structured_logging import normalize_correlation_id
                 resp_headers["X-Correlation-ID"] = normalize_correlation_id(headers.get("X-Correlation-ID") or headers.get("X-Request-ID"))
                 trusted_origin = os.environ.get("GRANTLAYER_CORS_ALLOWED_ORIGINS")
                 if headers.get("Origin") and headers.get("Origin") == trusted_origin:
@@ -170,7 +170,7 @@ class _BaseGl109(unittest.TestCase):
                     "reason_code": auth_payload.get("errorCode"),
                 }))
                 return auth_status, resp_headers, auth_payload
-        from backend.src.structured_logging import normalize_correlation_id
+        from backend.src.core.structured_logging import normalize_correlation_id
         if "X-Correlation-ID" in headers:
             headers["X-Correlation-ID"] = normalize_correlation_id(headers["X-Correlation-ID"])
         if "X-Request-ID" in headers:
@@ -245,7 +245,7 @@ class TestGl109MissingTokenFailsClosed(_BaseGl109):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -277,7 +277,7 @@ class TestGl109InvalidTokenFailsClosed(_BaseGl109):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -305,7 +305,7 @@ class TestGl109InactiveTokenFailsClosed(_BaseGl109):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -331,7 +331,7 @@ class TestGl109ValidTokenSucceeds(_BaseGl109):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -400,7 +400,7 @@ class TestGl109RoleBehaviorPreserved(_BaseGl109):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -441,14 +441,14 @@ class TestGl109OperatorModeDisabledSafe(_BaseGl109):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "legacy-admin-token"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
-        import backend.src.db as bk_db
+        import backend.src.core.db as bk_db
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         from fastapi.testclient import TestClient
@@ -490,7 +490,7 @@ class TestGl109Gl107BoundedLookupPreserved(_BaseGl109):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -521,7 +521,7 @@ class TestGl109RateLimitingPreserved(_BaseGl109):
         os.environ["GRANTLAYER_RATE_LIMIT_AUTH"] = "2"
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -585,7 +585,7 @@ class TestGl109CorsPreserved(_BaseGl109):
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com"
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -623,7 +623,7 @@ class TestGl109SecurityBoundary(_BaseGl109):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 

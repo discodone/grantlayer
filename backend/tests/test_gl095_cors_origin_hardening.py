@@ -37,33 +37,33 @@ class _BaseGl095(unittest.TestCase):
         self._orig_cors_origins = os.environ.get("GRANTLAYER_CORS_ALLOWED_ORIGINS")
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.DB_PATH_OR_URL = self.tmp_db.name
         db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.models as models_mod
+        import backend.src.core.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
-        import backend.src.challenges as challenges_mod
+        import backend.src.auth.challenges as challenges_mod
         importlib.reload(challenges_mod)
         self.challenges_mod = challenges_mod
 
@@ -111,9 +111,9 @@ class _BaseGl095(unittest.TestCase):
         return grant
 
     def _make_client(self):
-        import backend.src.db as bk_db
-        import backend.src.config as config_mod
-        import backend.src.auth as auth_mod
+        import backend.src.core.db as bk_db
+        import backend.src.core.config as config_mod
+        import backend.src.auth.auth as auth_mod
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         importlib.reload(config_mod)
@@ -184,7 +184,7 @@ class TestGl095CorsWildcardRemoved(_BaseGl095):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin-token"
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         importlib.reload(self.config_mod)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         handler = self._make_handler("/grants", origin="http://evil.com")
         status, headers, body = self._run_handler(handler)
@@ -217,7 +217,7 @@ class TestGl095ArbitraryOriginNotReflected(_BaseGl095):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "admin-token"
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         importlib.reload(self.config_mod)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         handler = self._make_handler("/grants", origin="http://malicious.com")
         status, headers, body = self._run_handler(handler)
@@ -303,7 +303,7 @@ class TestGl095OptionsPreflight(_BaseGl095):
         self.assertNotIn("http://evil.com", headers.get("access-control-allow-origin", ""))
 
     def test_options_does_not_mutate_state(self):
-        from backend.src.db import get_conn
+        from backend.src.core.db import get_conn
         conn = get_conn()
         before = conn.execute("SELECT COUNT(*) FROM grants").fetchone()[0]
         conn.close()
@@ -332,7 +332,7 @@ class TestGl095CorsDoesNotBypassAuth(_BaseGl095):
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com"
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -386,7 +386,7 @@ class TestGl095PublicAndProtectedEndpoints(_BaseGl095):
         os.environ["GRANTLAYER_CORS_ALLOWED_ORIGINS"] = "http://trusted.com"
         importlib.reload(self.config_mod)
 
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 

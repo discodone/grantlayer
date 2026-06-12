@@ -24,31 +24,31 @@ class TestGrantExecutionModel(unittest.TestCase):
 
         self._orig_req_challenge = os.environ.get("GRANTLAYER_REQUIRE_CHALLENGE")
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import backend.src.challenges as ch_mod
+        import backend.src.auth.challenges as ch_mod
         importlib.reload(ch_mod)
         self.ch_mod = ch_mod
 
-        import backend.src.demo_action as demo_mod
+        import backend.src.demo.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import backend.src.grant_executions as exec_mod
+        import backend.src.grants.grant_executions as exec_mod
         importlib.reload(exec_mod)
         self.exec_mod = exec_mod
 
-        import backend.src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
@@ -66,7 +66,7 @@ class TestGrantExecutionModel(unittest.TestCase):
             os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
 
     def _make_grant(self, **kwargs):
-        from backend.src.models import Grant
+        from backend.src.core.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -195,9 +195,9 @@ class TestGrantExecutionModel(unittest.TestCase):
     # 6. Execution links to grant_request_id
     # ──────────────────────────────────────────────
     def test_execution_links_grant_request_id(self):
-        import backend.src.grant_requests as gr_mod
+        import backend.src.grants.grant_requests as gr_mod
         importlib.reload(gr_mod)
-        from backend.src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
 
         req = GrantRequest(
             subject_id="tech-01",
@@ -264,31 +264,31 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.grant_executions as exec_mod
+        import backend.src.grants.grant_executions as exec_mod
         importlib.reload(exec_mod)
         self.exec_mod = exec_mod
 
-        import backend.src.demo_action as demo_mod
+        import backend.src.demo.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import backend.src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
@@ -300,7 +300,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         # Create TestClient with operator model enabled
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
-        import backend.src.config as bk_cfg
+        import backend.src.core.config as bk_cfg
         bk_cfg.ENABLE_OPERATOR_MODEL = True
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
         self.client = TestClient(create_app(), raise_server_exceptions=False)
@@ -329,7 +329,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             conn.close()
 
     def _make_grant(self):
-        from backend.src.models import Grant
+        from backend.src.core.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -477,7 +477,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
     # 14. Operator model disabled returns 404
     # ──────────────────────────────────────────────
     def test_executions_disabled_without_operator_model(self):
-        import backend.src.config as bk_cfg
+        import backend.src.core.config as bk_cfg
         orig = bk_cfg.ENABLE_OPERATOR_MODEL
         try:
             bk_cfg.ENABLE_OPERATOR_MODEL = False

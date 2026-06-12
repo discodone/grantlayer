@@ -2,7 +2,7 @@
 
 import unittest
 
-from backend.src.approval_rules import (
+from backend.src.policy.approval_rules import (
     evaluate_approval_requirements,
     normalize_risk_level,
     normalize_amount,
@@ -452,11 +452,11 @@ class TestExistingGrantLogicUnchanged(unittest.TestCase):
     def test_existing_grant_decision_logic_not_changed(self):
         # This is a meta-test: approval_rules is a new module and must not
         # mutate any existing GrantLayer state.
-        from backend.src import policy_engine
+        from backend.src.policy import policy_engine
         # Ensure evaluate_access still exists and behaves correctly
         self.assertTrue(callable(policy_engine.evaluate_access))
 
-        from backend.src import grants
+        from backend.src.grants import grants
         self.assertTrue(callable(grants.create_grant))
 
 

@@ -32,8 +32,8 @@ REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 if _FASTAPI_AVAILABLE:
     import tempfile
-    import backend.src.config as _cfg
-    import backend.src.db as _db
+    import backend.src.core.config as _cfg
+    import backend.src.core.db as _db
     from backend.src.api.app import create_app
 
 _JWT_SECRET = "gl236-test-secret-xxxxxxxxxxxxxxxx"

@@ -35,23 +35,23 @@ class TestApiErrorContract(unittest.TestCase):
 
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
@@ -93,7 +93,7 @@ class TestApiErrorContract(unittest.TestCase):
     # 1. 404 for missing grant uses GL-030 shape
     # ──────────────────────────────────────────────
     def test_404_missing_grant_execution_has_gl030_shape(self):
-        import src.grant_executions as execs_mod
+        import backend.src.grants.grant_executions as execs_mod
         importlib.reload(execs_mod)
         execution = execs_mod.get_grant_execution("nonexistent-id")
         self.assertIsNone(execution)

@@ -25,19 +25,19 @@ class TestEvidenceCompletenessBuilder(unittest.TestCase):
         if self._orig_url is not None:
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()
 
-        from src.evidence_completeness import build_evidence_completeness_for_execution
-        from src.grant_executions import create_grant_execution
-        from src.models import GrantExecution
-        from src import evidence_persistence as evp
-        from src.evidence_bundle import build_evidence_bundle
-        from src.provenance import record_provenance_event
-        from src.grants import create_grant
-        from src.models import Grant
+        from backend.src.evidence.evidence_completeness import build_evidence_completeness_for_execution
+        from backend.src.grants.grant_executions import create_grant_execution
+        from backend.src.core.models import GrantExecution
+        from backend.src.evidence import evidence_persistence as evp
+        from backend.src.evidence.evidence_bundle import build_evidence_bundle
+        from backend.src.policy.provenance import record_provenance_event
+        from backend.src.grants.grants import create_grant
+        from backend.src.core.models import Grant
 
         self.build = build_evidence_completeness_for_execution
         self.create_execution = create_grant_execution
@@ -97,7 +97,7 @@ class TestEvidenceCompletenessBuilder(unittest.TestCase):
 
     # ── Module location ─────────────────────────────────────
     def test_builder_lives_in_evidence_completeness_module(self):
-        from src import evidence_completeness as ec
+        from backend.src.evidence import evidence_completeness as ec
         self.assertTrue(hasattr(ec, "build_evidence_completeness_for_execution"))
 
     # ── Not found ─────────────────────────────────────────────
@@ -151,7 +151,7 @@ class TestEvidenceCompletenessBuilder(unittest.TestCase):
             grant_id="g-complete",
         )
         # Trigger verification so status becomes valid
-        from src import evidence_verification as ev_mod
+        from backend.src.evidence import evidence_verification as ev_mod
         importlib.reload(ev_mod)
         ev_mod.verify_execution("ex-complete")
 
@@ -324,7 +324,7 @@ class TestEvidenceCompletenessBuilder(unittest.TestCase):
     # ── Grant decision logic unchanged ─────────────────────────
     def test_grant_decision_logic_unchanged(self):
         # Verify that existing grants module still works independently
-        from src import grants as g_mod
+        from backend.src.grants import grants as g_mod
         importlib.reload(g_mod)
         self._create_grant("g-unchanged")
         grant = g_mod.get_grant("g-unchanged")

@@ -73,7 +73,7 @@ def _fresh_db() -> tuple:
     db_path = _make_db_file()
     os.environ["GRANTLAYER_DB"] = db_path
     os.environ.pop("GRANTLAYER_DATABASE_URL", None)
-    import src.db as db_mod
+    import backend.src.core.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
     return db_path, db_mod
@@ -114,7 +114,7 @@ class TestMigrationOrdering(unittest.TestCase):
     """Migration files are ordered deterministically and structurally sound."""
 
     def setUp(self):
-        from src.migrations import runner
+        from backend.src.migrations import runner
         self.runner = runner
 
     def test_migration_files_ordered_deterministically(self):
@@ -163,7 +163,7 @@ class TestMigrationFailureSafety(unittest.TestCase):
         self._db_path = _make_db_file()
         os.environ["GRANTLAYER_DB"] = self._db_path
         os.environ.pop("GRANTLAYER_DATABASE_URL", None)
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db_mod = db_mod
 
@@ -175,7 +175,7 @@ class TestMigrationFailureSafety(unittest.TestCase):
 
     def test_runner_raises_on_missing_apply_function(self):
         """RuntimeError with migration version is raised for missing apply."""
-        from src.migrations import runner
+        from backend.src.migrations import runner
         import types
 
         conn = self.db_mod.get_conn()
@@ -207,7 +207,7 @@ class TestMigrationFailureSafety(unittest.TestCase):
 
     def test_runner_raises_with_context_on_apply_failure(self):
         """RuntimeError wraps apply exceptions and includes migration version."""
-        from src.migrations import runner
+        from backend.src.migrations import runner
         import types
 
         conn = self.db_mod.get_conn()
@@ -246,7 +246,7 @@ class TestMigrationFailureSafety(unittest.TestCase):
 
     def test_failed_migration_not_marked_applied(self):
         """A migration that raises is NOT recorded in schema_migrations."""
-        from src.migrations import runner
+        from backend.src.migrations import runner
         import types
 
         conn = self.db_mod.get_conn()
@@ -318,7 +318,7 @@ class TestFreshDbSchema(unittest.TestCase):
 
     def test_all_migrations_marked_applied_on_fresh_db(self):
         """All migrations are recorded in schema_migrations after init_db."""
-        from src.migrations import runner
+        from backend.src.migrations import runner
         conn = self._db_mod.get_conn()
         try:
             applied = runner._applied_versions(conn)
@@ -444,7 +444,7 @@ class TestMigrationIdempotency(unittest.TestCase):
 
     def test_run_migrations_called_twice_adds_no_new_rows(self):
         """run_migrations on fully-applied DB does not touch schema_migrations."""
-        from src.migrations import runner
+        from backend.src.migrations import runner
         conn = self._db_mod.get_conn()
         try:
             applied_before = runner._applied_versions(conn)
@@ -525,7 +525,7 @@ class TestLegacyDbPath(unittest.TestCase):
         self._make_legacy_gl032_db(self._db_path)
         os.environ["GRANTLAYER_DB"] = self._db_path
         os.environ.pop("GRANTLAYER_DATABASE_URL", None)
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db_mod = db_mod
 
@@ -555,7 +555,7 @@ class TestLegacyDbPath(unittest.TestCase):
     def test_legacy_db_all_migrations_marked(self):
         """All known migrations are recorded after legacy DB detection."""
         self.db_mod.init_db()
-        from src.migrations import runner
+        from backend.src.migrations import runner
         conn = self.db_mod.get_conn()
         try:
             applied = runner._applied_versions(conn)
@@ -567,7 +567,7 @@ class TestLegacyDbPath(unittest.TestCase):
     def test_legacy_db_no_pending_after_init(self):
         """list_pending_migrations returns empty after init_db on legacy DB."""
         self.db_mod.init_db()
-        from src.migrations import list_pending_migrations
+        from backend.src.migrations import list_pending_migrations
         conn = self.db_mod.get_conn()
         try:
             pending = list_pending_migrations(conn)
@@ -618,8 +618,8 @@ class TestTenantBackfillSafety(unittest.TestCase):
 
     def test_audit_event_null_tenant_not_backfilled(self):
         """Audit events without tenant_id keep NULL (not backfilled to 'demo')."""
-        import src.audit_log as al
-        from src.models import AuditEvent
+        import backend.src.audit.audit_log as al
+        from backend.src.core.models import AuditEvent
         event = AuditEvent(
             subject_id="svc", role="system", action="health",
             resource="probe", approved=True, reason="probe",
@@ -634,7 +634,7 @@ class TestTenantBackfillSafety(unittest.TestCase):
 
     def test_legacy_row_not_globally_accessible_by_default(self):
         """A grant with tenant_id='demo' is not returned for a different tenant query."""
-        import src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         import datetime
         # Grants list is scoped to operator context; verify basic filtering works.
         # A grant created with 'demo' tenant should not appear if we filter for 't-other'.
@@ -677,7 +677,7 @@ class TestAuditHashChainMigration(unittest.TestCase):
             pass
 
     def _make_event(self, tenant_id=None, **kw) -> object:
-        from src.models import AuditEvent
+        from backend.src.core.models import AuditEvent
         defaults = dict(
             subject_id="subj", role="reader", action="read",
             resource="res", approved=True, reason="r",
@@ -689,7 +689,7 @@ class TestAuditHashChainMigration(unittest.TestCase):
 
     def test_empty_db_chain_verification_valid(self):
         """Empty audit log verifies as valid with zero checked events."""
-        import src.audit_log as al
+        import backend.src.audit.audit_log as al
         result = al.verify_audit_hash_chain()
         self.assertTrue(result["valid"])
         self.assertEqual(result["checked"], 0)
@@ -716,7 +716,7 @@ class TestAuditHashChainMigration(unittest.TestCase):
         conn_raw.commit()
         conn_raw.close()
 
-        import src.audit_log as al
+        import backend.src.audit.audit_log as al
         result = al.verify_audit_hash_chain()
         # Pre-chain event (NULL row_hash) must be skipped
         self.assertTrue(result["valid"])
@@ -724,7 +724,7 @@ class TestAuditHashChainMigration(unittest.TestCase):
 
     def test_post_migration_tenant_aware_events_verify(self):
         """Audit events with tenant_id verify correctly in hash chain."""
-        import src.audit_log as al
+        import backend.src.audit.audit_log as al
         e1 = self._make_event(tenant_id="t-corp")
         e2 = self._make_event(tenant_id="t-corp")
         al.append_event(e1)
@@ -735,7 +735,7 @@ class TestAuditHashChainMigration(unittest.TestCase):
 
     def test_events_without_tenant_verify_correctly(self):
         """Audit events with NULL tenant_id are included in chain verification."""
-        import src.audit_log as al
+        import backend.src.audit.audit_log as al
         e1 = self._make_event(tenant_id=None)
         e2 = self._make_event(tenant_id=None)
         al.append_event(e1)
@@ -748,7 +748,7 @@ class TestAuditHashChainMigration(unittest.TestCase):
         """Mix of pre-chain (NULL row_hash) and chain events verifies correctly."""
         import sqlite3 as _sqlite3
         import datetime
-        import src.audit_log as al
+        import backend.src.audit.audit_log as al
 
         # Insert one pre-chain event (no row_hash)
         conn_raw = _sqlite3.connect(self._db_path)
@@ -835,7 +835,7 @@ class TestAuditHashChainMigration(unittest.TestCase):
         raw.commit()
 
         # Verify using the hash chain logic directly (without loading the full app DB)
-        from src.audit_log import _filter_chain_rows, _row_to_audit_event, _verify_single_event
+        from backend.src.audit.audit_log import _filter_chain_rows, _row_to_audit_event, _verify_single_event
         rows = [dict(r) for r in raw.execute(
             "SELECT * FROM audit_events ORDER BY timestamp ASC, rowid ASC"
         ).fetchall()]
@@ -852,7 +852,7 @@ class TestAuditHashChainMigration(unittest.TestCase):
 
     def test_audit_immutability_trigger_blocks_update(self):
         """The audit immutability trigger blocks UPDATE via normal connection."""
-        import src.audit_log as al
+        import backend.src.audit.audit_log as al
         e = self._make_event(tenant_id="t-corp")
         al.append_event(e)
 
@@ -868,7 +868,7 @@ class TestAuditHashChainMigration(unittest.TestCase):
 
     def test_chain_verification_report_structure(self):
         """build_audit_chain_verification_report returns expected structure."""
-        import src.audit_log as al
+        import backend.src.audit.audit_log as al
         e = self._make_event(tenant_id="t-corp")
         al.append_event(e)
         report = al.build_audit_chain_verification_report()
@@ -900,7 +900,7 @@ class TestListPendingMigrations(unittest.TestCase):
 
     def test_no_pending_after_init_db(self):
         """list_pending_migrations returns empty list on a fully-applied DB."""
-        from src.migrations import list_pending_migrations
+        from backend.src.migrations import list_pending_migrations
         conn = self._db_mod.get_conn()
         try:
             pending = list_pending_migrations(conn)
@@ -913,11 +913,11 @@ class TestListPendingMigrations(unittest.TestCase):
         db_path = _make_db_file()
         os.environ["GRANTLAYER_DB"] = db_path
         os.environ.pop("GRANTLAYER_DATABASE_URL", None)
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         conn = db_mod.get_conn()
         try:
-            from src.migrations import list_pending_migrations, runner
+            from backend.src.migrations import list_pending_migrations, runner
             pending = list_pending_migrations(conn)
             all_versions = [v for v, _ in runner._discovery()]
         finally:
@@ -936,11 +936,11 @@ class TestListPendingMigrations(unittest.TestCase):
         db_path = _make_db_file()
         os.environ["GRANTLAYER_DB"] = db_path
         os.environ.pop("GRANTLAYER_DATABASE_URL", None)
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         conn = db_mod.get_conn()
         try:
-            from src.migrations import list_pending_migrations
+            from backend.src.migrations import list_pending_migrations
             pending = list_pending_migrations(conn)
             for item in pending:
                 self.assertEqual(len(item), 2)
@@ -964,7 +964,7 @@ class TestPostgreSQLStaticCompatibility(unittest.TestCase):
 
     def test_placeholder_translation_handles_migration_sql(self):
         """_translate_placeholders converts ? to %s in typical migration SQL."""
-        from src.db import _translate_placeholders
+        from backend.src.core.db import _translate_placeholders
         # Typical migration SQL pattern
         sql = (
             "SELECT 1 FROM information_schema.columns "
@@ -977,14 +977,14 @@ class TestPostgreSQLStaticCompatibility(unittest.TestCase):
 
     def test_placeholder_translation_ignores_sql_in_comments(self):
         """? inside SQL comments is not translated."""
-        from src.db import _translate_placeholders
+        from backend.src.core.db import _translate_placeholders
         sql = "SELECT id FROM t WHERE id = ? -- filter by ? value\nAND name = ?"
         translated, count = _translate_placeholders(sql)
         self.assertEqual(count, 2)
 
     def test_executescript_comment_stripping_sqlite_backend(self):
         """executescript on SQLite does not use the comment-stripping path."""
-        from src.db import _ConnectionWrapper
+        from backend.src.core.db import _ConnectionWrapper
         import sqlite3 as _sqlite3
 
         raw = _sqlite3.connect(":memory:")
@@ -1012,7 +1012,7 @@ class TestPostgreSQLStaticCompatibility(unittest.TestCase):
             def cursor(self):
                 return _MockCursor()
 
-        from src.db import _ConnectionWrapper
+        from backend.src.core.db import _ConnectionWrapper
         wrapper = _ConnectionWrapper(_MockConn(), "postgres")
         # Statement with leading comment followed by SQL
         wrapper.executescript(
@@ -1027,7 +1027,7 @@ class TestPostgreSQLStaticCompatibility(unittest.TestCase):
 
     def test_migration_sql_uses_if_not_exists(self):
         """Key migration files use IF NOT EXISTS syntax (PostgreSQL compatible)."""
-        from src.migrations import runner
+        from backend.src.migrations import runner
         for version, filepath in runner._discovery():
             with open(filepath) as fh:
                 src_text = fh.read()
@@ -1048,7 +1048,7 @@ class TestPostgreSQLStaticCompatibility(unittest.TestCase):
 
     def test_migration_sql_no_sqlite_pragma_outside_guard(self):
         """Migrations that use PRAGMA do so inside SQLite-specific branches."""
-        from src.migrations import runner
+        from backend.src.migrations import runner
         for version, filepath in runner._discovery():
             with open(filepath) as fh:
                 src_text = fh.read()
@@ -1088,7 +1088,7 @@ class TestSecretSafety(unittest.TestCase):
         fake_dsn = "postgresql://fakeuser:S3cret_password@fake-host:5432/fakedb"
         os.environ["GRANTLAYER_DATABASE_URL"] = fake_dsn
         os.environ.pop("GRANTLAYER_DB", None)
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         try:
             db_mod.get_conn()
@@ -1099,13 +1099,13 @@ class TestSecretSafety(unittest.TestCase):
 
     def test_migration_error_contains_version_not_secrets(self):
         """Migration failure error includes version name, not raw secret values."""
-        from src.migrations import runner
+        from backend.src.migrations import runner
         import types
 
         db_path = _make_db_file()
         os.environ["GRANTLAYER_DB"] = db_path
         os.environ.pop("GRANTLAYER_DATABASE_URL", None)
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
 
         conn = db_mod.get_conn()
@@ -1176,7 +1176,7 @@ class TestGL201ConfigPreserved(unittest.TestCase):
                 os.environ[k] = v
 
     def _reload_config(self):
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         return config_mod
 

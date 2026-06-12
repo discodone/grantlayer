@@ -25,23 +25,23 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.grant_requests as requests_mod
+        import backend.src.grants.grant_requests as requests_mod
         importlib.reload(requests_mod)
         self.requests_mod = requests_mod
 
-        import src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
@@ -59,7 +59,7 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
 
     def _create_request(self, **kwargs):
         """Helper to create a grant request with defaults."""
-        from src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         defaults = dict(
             subject_id="tech-01",
             role="technician",
@@ -109,7 +109,7 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
         """If the request status update fails, the linked grant revoke must roll back."""
         req, grant = self._create_and_approve_request()
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         original_get_conn = db_mod.get_conn
 
         def patched_get_conn():
@@ -197,7 +197,7 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
         """Using revoke_grant with an outer connection must not commit on its own."""
         req, grant = self._create_and_approve_request()
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         conn = db_mod.get_conn()
         try:
             conn.execute("BEGIN TRANSACTION")

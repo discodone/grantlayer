@@ -15,9 +15,9 @@ import tempfile
 import unittest
 
 try:
-    import backend.src.db as _db
-    import backend.src.config as _cfg
-    import backend.src.operators as _ops
+    import backend.src.core.db as _db
+    import backend.src.core.config as _cfg
+    import backend.src.auth.operators as _ops
     from fastapi.testclient import TestClient
     from backend.src.api.app import create_app
     _SKIP = lambda cls: cls  # noqa: E731

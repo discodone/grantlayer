@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from backend.src.auth import check_admin_token, admin_token_is_configured
+from backend.src.auth.auth import check_admin_token, admin_token_is_configured
 
 
 class TestDemoAdminToken(unittest.TestCase):

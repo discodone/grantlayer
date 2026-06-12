@@ -33,12 +33,12 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()
 
-        from backend.src import operators as ops
+        from backend.src.auth import operators as ops
         self.ops = ops
 
     def tearDown(self):
@@ -65,7 +65,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
             os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
 
     def _insert_operator(self, op_id, name, role, token):
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         conn = db_mod.get_conn()
         try:
             conn.execute(
@@ -80,9 +80,9 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
     def _make_client(self):
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
-        import backend.src.db as bk_db
-        import backend.src.config as config_mod
-        import backend.src.auth as auth_mod
+        import backend.src.core.db as bk_db
+        import backend.src.core.config as config_mod
+        import backend.src.auth.auth as auth_mod
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         importlib.reload(config_mod)
@@ -425,7 +425,7 @@ class TestComplianceReadinessDashboardAPI(unittest.TestCase):
 
     def test_endpoint_does_not_mutate_grant_decision_state(self):
         """POST /compliance/readiness/build is read-only and does not mutate DB state."""
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
         conn = db_mod.get_conn()

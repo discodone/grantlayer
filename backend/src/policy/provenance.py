@@ -10,8 +10,8 @@ import json
 import uuid
 from typing import Optional
 
-from .db import execute, query_one, query_all
-from .models import ProvenanceEvent
+from ..core.db import execute, query_one, query_all
+from ..core.models import ProvenanceEvent
 
 
 # ──────────────────────────────────────────────────────────────

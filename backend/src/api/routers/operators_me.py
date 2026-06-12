@@ -6,7 +6,7 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, HTTPException
 
-from ... import config
+from ...core import config
 from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(tags=["operators"])

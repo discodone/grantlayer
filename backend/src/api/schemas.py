@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Optional
 from pydantic import BaseModel, Field
 
-from ..validation import (
+from ..core.validation import (
     MAX_SHORT_ID_LENGTH,
     MAX_ROLE_LENGTH,
     MAX_NAME_LENGTH,

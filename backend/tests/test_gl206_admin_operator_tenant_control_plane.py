@@ -54,32 +54,32 @@ def _reload_modules(db_path: str):
     os.environ["GRANTLAYER_DB"] = db_path
     os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-    import backend.src.config as config_mod
+    import backend.src.core.config as config_mod
     importlib.reload(config_mod)
 
-    import backend.src.db as db_mod
+    import backend.src.core.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
 
-    import backend.src.models as models_mod
+    import backend.src.core.models as models_mod
     importlib.reload(models_mod)
 
-    import backend.src.operators as ops_mod
+    import backend.src.auth.operators as ops_mod
     importlib.reload(ops_mod)
 
-    import backend.src.auth as auth_mod
+    import backend.src.auth.auth as auth_mod
     importlib.reload(auth_mod)
 
-    import backend.src.grants as grants_mod
+    import backend.src.grants.grants as grants_mod
     importlib.reload(grants_mod)
 
-    import backend.src.challenges as ch_mod
+    import backend.src.auth.challenges as ch_mod
     importlib.reload(ch_mod)
 
-    import backend.src.grant_requests as gr_mod
+    import backend.src.grants.grant_requests as gr_mod
     importlib.reload(gr_mod)
 
-    import backend.src.audit_log as audit_mod
+    import backend.src.audit.audit_log as audit_mod
     importlib.reload(audit_mod)
 
     return config_mod, db_mod, models_mod, ops_mod, auth_mod, grants_mod, ch_mod, gr_mod, audit_mod
@@ -826,7 +826,7 @@ class TestGL206RegressionPreservation(_BaseGL206):
         now = datetime.datetime.now(datetime.timezone.utc)
         valid_from = (now - datetime.timedelta(days=1)).isoformat().replace("+00:00", "Z")
         valid_until = (now + datetime.timedelta(days=30)).isoformat().replace("+00:00", "Z")
-        from backend.src.models import Grant
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="subject-1", role="owner", action="read",
             resource="res-1", valid_from=valid_from, valid_until=valid_until,

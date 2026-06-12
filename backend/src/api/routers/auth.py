@@ -8,8 +8,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from ..auth_jwt import encode_token, is_jwt_enabled, _get_jwt_secret
-from ...auth import check_auth, check_admin_token
-from ... import config
+from ...auth.auth import check_auth, check_admin_token
+from ...core import config
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

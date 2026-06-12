@@ -25,8 +25,8 @@ _SKIP = unittest.skipUnless(
 )
 
 if _FASTAPI_AVAILABLE:
-    import backend.src.config as _cfg
-    import backend.src.db as _db
+    import backend.src.core.config as _cfg
+    import backend.src.core.db as _db
     from backend.src.api.app import create_app
 
 _REPO_ROOT = pathlib.Path(__file__).parent.parent.parent
@@ -136,7 +136,7 @@ class TestBug1GrantsRoleValidation(_Base):
         self.assertIn(r.status_code, [400, 422])
 
     def test_all_allowed_roles_accepted(self):
-        from backend.src.grant_requests import ALLOWED_GRANT_ROLES
+        from backend.src.grants.grant_requests import ALLOWED_GRANT_ROLES
         for role in ALLOWED_GRANT_ROLES:
             with self.subTest(role=role):
                 r = self.client.post("/grants", json=self._grant_body(role), headers=self._auth())
@@ -144,7 +144,7 @@ class TestBug1GrantsRoleValidation(_Base):
 
     def test_grants_router_imports_allowed_grant_roles(self):
         import backend.src.api.routers.grants as grants_router
-        from backend.src.grant_requests import ALLOWED_GRANT_ROLES
+        from backend.src.grants.grant_requests import ALLOWED_GRANT_ROLES
         self.assertTrue(hasattr(grants_router, "ALLOWED_GRANT_ROLES"))
         self.assertEqual(grants_router.ALLOWED_GRANT_ROLES, ALLOWED_GRANT_ROLES)
 

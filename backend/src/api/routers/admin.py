@@ -8,10 +8,10 @@ from typing import Annotated, Any, Optional
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
-from ...audit_log import append_event
-from ...logging_utils import get_logger, safe_log
-from ...models import AuditEvent
-from ... import operators as ops
+from ...audit.audit_log import append_event
+from ...core.logging_utils import get_logger, safe_log
+from ...core.models import AuditEvent
+from ...auth import operators as ops
 from ..deps import require_admin
 
 router = APIRouter(prefix="/admin", tags=["admin"])

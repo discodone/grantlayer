@@ -26,12 +26,12 @@ class TestProvenanceEvents(unittest.TestCase):
         if self._orig_url is not None:
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()
 
-        from src.provenance import (
+        from backend.src.policy.provenance import (
             record_provenance_event,
             get_provenance_event,
             list_provenance_events,
@@ -248,7 +248,7 @@ class TestProvenanceEvents(unittest.TestCase):
     # ── Append-only contract ───────────────────────────────────
     def test_no_update_function_exists(self):
         """Append-only: module must not expose update / delete functions."""
-        import src.provenance as prov_mod
+        import backend.src.policy.provenance as prov_mod
         self.assertFalse(hasattr(prov_mod, "update_provenance_event"))
         self.assertFalse(hasattr(prov_mod, "delete_provenance_event"))
 
@@ -301,8 +301,8 @@ class TestProvenanceEvents(unittest.TestCase):
     # ── Grant logic untouched ──────────────────────────────────
     def test_grant_logic_unchanged(self):
         """Confirm grants table still works independently."""
-        from src.grants import create_grant
-        from src.models import Grant
+        from backend.src.grants.grants import create_grant
+        from backend.src.core.models import Grant
 
         grant = Grant(
             subject_id="sub-1",

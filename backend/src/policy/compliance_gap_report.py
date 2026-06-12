@@ -9,7 +9,7 @@ from __future__ import annotations
 import datetime
 from typing import Any, Optional
 
-from .evidence_completeness import build_evidence_completeness_for_execution
+from ..evidence.evidence_completeness import build_evidence_completeness_for_execution
 
 
 _REPORT_VERSION = "gl-compliance-gap-v1"

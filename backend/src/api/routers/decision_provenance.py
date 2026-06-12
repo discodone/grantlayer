@@ -6,7 +6,7 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header
 
-from ...decision_provenance import build_decision_provenance_v2
+from ...policy.decision_provenance import build_decision_provenance_v2
 from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(prefix="/decision-provenance", tags=["decision-provenance"])

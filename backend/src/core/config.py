@@ -16,7 +16,7 @@ import os
 import warnings
 
 from .runtime_config import get_runtime_mode, PRODUCTION_LIKE_MODES
-from .identity_access import external_identity_startup_errors
+from ..auth.identity_access import external_identity_startup_errors
 
 # ──────────────────────────────────────────────────────────────
 # Placeholder/weak token detection constants

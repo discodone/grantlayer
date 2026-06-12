@@ -38,25 +38,25 @@ class TestGl045aApiContractConsistency(unittest.TestCase):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "test-admin"
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.DB_PATH_OR_URL = self.tmp_db.name
         db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 

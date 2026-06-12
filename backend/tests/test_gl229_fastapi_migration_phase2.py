@@ -24,8 +24,8 @@ _SKIP = unittest.skipUnless(
 )
 
 if _FASTAPI_AVAILABLE:
-    import backend.src.config as _cfg
-    import backend.src.db as _db
+    import backend.src.core.config as _cfg
+    import backend.src.core.db as _db
     from backend.src.api.app import create_app
 
 

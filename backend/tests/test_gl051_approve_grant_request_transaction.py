@@ -17,7 +17,7 @@ import importlib
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.models import GrantRequest
+from backend.src.core.models import GrantRequest
 
 
 class TestApproveGrantRequestTransaction(unittest.TestCase):
@@ -37,15 +37,15 @@ class TestApproveGrantRequestTransaction(unittest.TestCase):
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.grant_requests as requests_mod
+        import backend.src.grants.grant_requests as requests_mod
         importlib.reload(requests_mod)
         self.requests_mod = requests_mod
 

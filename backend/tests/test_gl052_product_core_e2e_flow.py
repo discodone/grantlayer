@@ -28,7 +28,7 @@ import datetime
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.models import GrantRequest, GrantExecution
+from backend.src.core.models import GrantRequest, GrantExecution
 
 
 class TestProductCoreE2EFlow(unittest.TestCase):
@@ -54,76 +54,76 @@ class TestProductCoreE2EFlow(unittest.TestCase):
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
         self.db_mod = db_mod
 
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
-        import src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import src.grant_requests as greps_mod
+        import backend.src.grants.grant_requests as greps_mod
         importlib.reload(greps_mod)
         self.greps_mod = greps_mod
 
-        import src.grant_executions as execs_mod
+        import backend.src.grants.grant_executions as execs_mod
         importlib.reload(execs_mod)
         self.execs_mod = execs_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import src.provenance as prov_mod
+        import backend.src.policy.provenance as prov_mod
         importlib.reload(prov_mod)
         self.prov_mod = prov_mod
 
-        import src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         importlib.reload(eb_mod)
         self.eb_mod = eb_mod
 
-        import src.evidence_persistence as evp_mod
+        import backend.src.evidence.evidence_persistence as evp_mod
         importlib.reload(evp_mod)
         self.evp_mod = evp_mod
 
-        import src.provenance_summary as ps_mod
+        import backend.src.policy.provenance_summary as ps_mod
         importlib.reload(ps_mod)
         self.ps_mod = ps_mod
 
-        import src.auditor_report as ar_mod
+        import backend.src.audit.auditor_report as ar_mod
         importlib.reload(ar_mod)
         self.ar_mod = ar_mod
 
-        import src.evidence_completeness as ec_mod
+        import backend.src.evidence.evidence_completeness as ec_mod
         importlib.reload(ec_mod)
         self.ec_mod = ec_mod
 
-        import src.compliance_gap_report as cgr_mod
+        import backend.src.policy.compliance_gap_report as cgr_mod
         importlib.reload(cgr_mod)
         self.cgr_mod = cgr_mod
 
-        import src.decision_provenance as dp_mod
+        import backend.src.policy.decision_provenance as dp_mod
         importlib.reload(dp_mod)
         self.dp_mod = dp_mod
 
-        import src.auditor_export as ae_mod
+        import backend.src.audit.auditor_export as ae_mod
         importlib.reload(ae_mod)
         self.ae_mod = ae_mod
 
-        import src.policy_requirements as pr_mod
+        import backend.src.policy.policy_requirements as pr_mod
         importlib.reload(pr_mod)
         self.pr_mod = pr_mod
 
-        import src.compliance_readiness as cr_mod
+        import backend.src.policy.compliance_readiness as cr_mod
         importlib.reload(cr_mod)
         self.cr_mod = cr_mod
 

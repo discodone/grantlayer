@@ -27,20 +27,20 @@ class TestAuditorReportBuilder(unittest.TestCase):
         if self._orig_url is not None:
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()
 
-        from src.auditor_report import build_auditor_report_for_execution
-        from src.provenance_summary import build_decision_provenance_summary
-        from src.provenance import record_provenance_event
-        from src.grant_executions import create_grant_execution
-        from src.models import GrantExecution, Grant, GrantRequest
-        from src.grants import create_grant
-        from src.grant_requests import create_grant_request
-        from src import evidence_persistence as evp
-        from src.evidence_bundle import build_evidence_bundle
+        from backend.src.audit.auditor_report import build_auditor_report_for_execution
+        from backend.src.policy.provenance_summary import build_decision_provenance_summary
+        from backend.src.policy.provenance import record_provenance_event
+        from backend.src.grants.grant_executions import create_grant_execution
+        from backend.src.core.models import GrantExecution, Grant, GrantRequest
+        from backend.src.grants.grants import create_grant
+        from backend.src.grants.grant_requests import create_grant_request
+        from backend.src.evidence import evidence_persistence as evp
+        from backend.src.evidence.evidence_bundle import build_evidence_bundle
 
         self.build = build_auditor_report_for_execution
         self.build_summary = build_decision_provenance_summary
@@ -86,15 +86,15 @@ class TestAuditorReportBuilder(unittest.TestCase):
 
     # ── Module location ─────────────────────────────────────
     def test_auditor_report_builder_lives_in_auditor_report_module(self):
-        from src import auditor_report as ar
+        from backend.src.audit import auditor_report as ar
         self.assertTrue(hasattr(ar, "build_auditor_report_for_execution"))
 
     def test_compat_wrapper_build_auditor_report_still_exists(self):
-        from src import auditor_report as ar
+        from backend.src.audit import auditor_report as ar
         self.assertTrue(hasattr(ar, "build_auditor_report"))
 
     def test_provenance_summary_module_unchanged(self):
-        from src import provenance_summary as ps
+        from backend.src.policy import provenance_summary as ps
         self.assertTrue(hasattr(ps, "build_decision_provenance_summary"))
         self.assertFalse(hasattr(ps, "build_auditor_report"))
 
@@ -207,7 +207,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             grant_id="g-req",
         )
         self.create_grant_request(req)
-        from src.db import execute
+        from backend.src.core.db import execute
         execute(
             "UPDATE grant_requests SET grant_id = ? WHERE id = ?",
             ("g-req", "req-1"),
@@ -296,7 +296,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             reason="Test",
         )
         self.create_grant(grant)
-        from src.grants import revoke_grant
+        from backend.src.grants.grants import revoke_grant
         revoke_grant("g-revoked", "admin", "Emergency")
         self._make_execution("ex-revoked", grant_id="g-revoked")
         result = self.build("ex-revoked")
@@ -317,7 +317,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             reason="Test",
         )
         self.create_grant(grant)
-        from src.db import execute
+        from backend.src.core.db import execute
         execute(
             "UPDATE grants SET signature = NULL, signing_key_id = NULL, payload_hash = NULL WHERE id = ?",
             ("g-unsigned",),
@@ -358,7 +358,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             grant_id="g-reqdeny",
         )
         self.create_grant_request(req)
-        from src.db import execute
+        from backend.src.core.db import execute
         execute(
             "UPDATE grant_requests SET grant_id = ? WHERE id = ?",
             ("g-reqdeny", "req-deny"),

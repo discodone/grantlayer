@@ -35,15 +35,15 @@ class _BaseGl112(unittest.TestCase):
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.models as models_mod
+        import backend.src.core.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
-        import src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 

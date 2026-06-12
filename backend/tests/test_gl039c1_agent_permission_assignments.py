@@ -17,7 +17,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
 
     # ── Module location ─────────────────────────────────────────
     def test_module_is_importable(self):
-        from src import agent_permission_assignments as resolver
+        from backend.src.policy import agent_permission_assignments as resolver
         self.assertTrue(hasattr(resolver, "resolve_agent_permission_assignment"))
         self.assertTrue(hasattr(resolver, "_combine_effective_scopes"))
         # Private helper
@@ -25,7 +25,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
 
     # ── resolve_agent_permission_assignment ────────────────────
     def test_resolve_with_direct_scopes_only(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-1", "evidence:read", assigned_scopes=["evidence:read"]
         )
@@ -39,7 +39,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertEqual(result["reason"], "scope_matched")
 
     def test_resolve_with_profile_only(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-2", "evidence:read", assigned_profiles=["auditor_readonly"]
         )
@@ -51,7 +51,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertEqual(result["reason"], "scope_matched")
 
     def test_resolve_with_both_scopes_and_profiles(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-3", "evidence:verify", 
             assigned_scopes=["evidence:read"],
@@ -64,7 +64,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertEqual(result["matchedScope"], "evidence:verify")
 
     def test_resolve_denies_unknown_requested_scope(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-4", "evidence:frobnicate",
             assigned_profiles=["auditor_readonly"]
@@ -75,7 +75,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertIn("evidence:read", result["resolvedScopes"])
 
     def test_resolve_empty_assignment_denies(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-5", "evidence:read",
             assigned_scopes=[],
@@ -86,7 +86,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertEqual(result["resolvedScopes"], [])
 
     def test_resolve_deduplicates_scopes_and_profiles(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-6", "evidence:read",
             assigned_scopes=["evidence:read", "evidence:read"],
@@ -104,7 +104,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertEqual(evidence_read_count, 1, f"evidence:read appears {evidence_read_count} times, should be 1")
 
     def test_resolve_with_malformed_scopes_adds_warnings(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-7", "evidence:read",
             assigned_scopes=["evidence", "evidence:read"],
@@ -118,7 +118,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertEqual(result["matchedScope"], "evidence:read")
 
     def test_resolve_with_unknown_profile_adds_warnings(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-8", "evidence:read",
             assigned_profiles=["unknown_profile"],
@@ -128,7 +128,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertEqual(result["resolvedScopes"], [])
 
     def test_resolve_include_details_false_omits_details(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-9", "evidence:read",
             assigned_profiles=["auditor_readonly"],
@@ -142,7 +142,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertIn("matchedScope", result)
 
     def test_resolve_include_details_true_includes_details(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-10", "evidence:read",
             assigned_profiles=["auditor_readonly"],
@@ -154,14 +154,14 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertEqual(result["profileResolution"]["resolvedProfiles"], ["auditor_readonly"])
 
     def test_resolve_missing_agent_id_denies(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment("", "evidence:read", assigned_scopes=["evidence:read"])
         self.assertFalse(result["allowed"])
         self.assertEqual(result["reason"], "agent_id_missing")
         self.assertIn("missing or empty", result["warnings"][0])
 
     def test_resolve_resource_preservation(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-11", "evidence:read",
             assigned_scopes=["evidence:read"],
@@ -174,7 +174,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
 
     # ── Security / validation ───────────────────────────────────
     def test_response_does_not_expose_secrets(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-1", "evidence:read",
             assigned_profiles=["auditor_readonly"]
@@ -184,7 +184,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
             self.assertNotIn(forbidden, raw.lower(), f"Secret leak detected: {forbidden}")
 
     def test_no_assignment_introduces_admin_star(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-1", "evidence:read",
             assigned_profiles=["auditor_readonly", "evidence_verifier"]
@@ -194,7 +194,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
 
     # ── Determinism and ordering ────────────────────────────────
     def test_resolve_result_is_deterministic(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         r1 = resolve_agent_permission_assignment(
             "agent-1", "evidence:read",
             assigned_scopes=["evidence:verify", "evidence:read"],
@@ -210,7 +210,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertEqual(r1["matchedScope"], r2["matchedScope"])
 
     def test_combined_scopes_are_sorted(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-1", "evidence:read",
             assigned_scopes=["provenance:read", "evidence:verify"],
@@ -223,8 +223,8 @@ class TestAgentPermissionAssignments(unittest.TestCase):
 
     # ── Integration with existing components ────────────────────
     def test_uses_existing_evaluator(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
-        from src.agent_permissions import evaluate_agent_permission
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permissions import evaluate_agent_permission
         result = resolve_agent_permission_assignment(
             "agent-1", "evidence:read",
             assigned_scopes=["evidence:read"]
@@ -236,8 +236,8 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertEqual(result["matchedScope"], eval_result.get("matchedScope"))
 
     def test_uses_existing_profile_expander(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
-        from src.agent_permission_profiles import expand_agent_permission_profiles
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_profiles import expand_agent_permission_profiles
         result = resolve_agent_permission_assignment(
             "agent-1", "evidence:read",
             assigned_profiles=["auditor_readonly"]
@@ -246,7 +246,7 @@ class TestAgentPermissionAssignments(unittest.TestCase):
         self.assertIn("evidence:read", profile_expansion.get("scopes", []))
 
     def test_context_argument_is_ignored(self):
-        from src.agent_permission_assignments import resolve_agent_permission_assignment
+        from backend.src.policy.agent_permission_assignments import resolve_agent_permission_assignment
         result = resolve_agent_permission_assignment(
             "agent-1", "evidence:read",
             assigned_scopes=["evidence:read"],

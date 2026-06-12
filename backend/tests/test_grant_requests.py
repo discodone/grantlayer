@@ -40,32 +40,32 @@ class TestGrantRequests(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
 
         # Reset modules
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.grant_requests as requests_mod
+        import backend.src.grants.grant_requests as requests_mod
         importlib.reload(requests_mod)
         self.requests_mod = requests_mod
 
-        import backend.src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
         # Patch backend.src.db so TestClient uses the same temp DB
-        import backend.src.db as bk_db
+        import backend.src.core.db as bk_db
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         self._bk_db = bk_db
@@ -105,7 +105,7 @@ class TestGrantRequests(unittest.TestCase):
 
     def _create_request(self, **kwargs):
         """Helper to create a grant request with defaults."""
-        from backend.src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         defaults = dict(
             subject_id="tech-01",
             role="technician",
@@ -125,7 +125,7 @@ class TestGrantRequests(unittest.TestCase):
     # ─────────────────────────────────────────────────────
     def test_create_grant_request(self):
         """Test creating a grant request."""
-        from backend.src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         req = GrantRequest(
             subject_id="tech-01",
             role="technician",
@@ -305,7 +305,7 @@ class TestGrantRequests(unittest.TestCase):
     def test_expire_stale_grant_requests(self):
         """Test expiring old grant requests."""
         # Create a request with a created_at time in the past
-        from backend.src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         old_time = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=25)).isoformat().replace("+00:00", "Z")
         req = GrantRequest(
             subject_id="tech-01",
@@ -338,7 +338,7 @@ class TestGrantRequests(unittest.TestCase):
         """Create a FastAPI TestClient using the temp DB."""
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
-        import backend.src.config as bk_cfg
+        import backend.src.core.config as bk_cfg
         bk_cfg.ENABLE_OPERATOR_MODEL = True
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
         return TestClient(create_app(), raise_server_exceptions=False)

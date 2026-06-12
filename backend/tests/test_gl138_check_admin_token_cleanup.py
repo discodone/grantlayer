@@ -61,7 +61,7 @@ class TestGl138CheckAdminTokenCleanup(unittest.TestCase):
     # 2. Importable
     # ──────────────────────────────────────────────
     def test_check_admin_token_is_importable(self):
-        from backend.src.auth import check_admin_token
+        from backend.src.auth.auth import check_admin_token
         self.assertTrue(callable(check_admin_token))
 
     # ──────────────────────────────────────────────
@@ -70,7 +70,7 @@ class TestGl138CheckAdminTokenCleanup(unittest.TestCase):
     def test_valid_admin_token_allows(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "valid-token"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
-        from backend.src.auth import check_admin_token
+        from backend.src.auth.auth import check_admin_token
         ok, status, payload = check_admin_token("Bearer valid-token")
         self.assertTrue(ok)
         self.assertEqual(status, 200)
@@ -82,7 +82,7 @@ class TestGl138CheckAdminTokenCleanup(unittest.TestCase):
     def test_missing_admin_token_fails_closed(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "valid-token"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
-        from backend.src.auth import check_admin_token
+        from backend.src.auth.auth import check_admin_token
         ok, status, payload = check_admin_token(None)
         self.assertFalse(ok)
         self.assertEqual(status, 401)
@@ -94,7 +94,7 @@ class TestGl138CheckAdminTokenCleanup(unittest.TestCase):
     def test_invalid_admin_token_fails_closed(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "valid-token"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
-        from backend.src.auth import check_admin_token
+        from backend.src.auth.auth import check_admin_token
         ok, status, payload = check_admin_token("Bearer wrong-token")
         self.assertFalse(ok)
         self.assertEqual(status, 403)
@@ -107,7 +107,7 @@ class TestGl138CheckAdminTokenCleanup(unittest.TestCase):
         secret = "super-secret-token-138"
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = secret
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
-        from backend.src.auth import check_admin_token
+        from backend.src.auth.auth import check_admin_token
         for header in [None, "Bearer wrong-token"]:
             ok, status, payload = check_admin_token(header)
             result_str = str(payload)

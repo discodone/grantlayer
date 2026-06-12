@@ -13,13 +13,13 @@ class TestGL047AgentPermissionAssignmentImports(unittest.TestCase):
     def test_import_via_package_succeeds(self) -> None:
         """Importing agent_permission_assignments from the package must work."""
         try:
-            from backend.src import agent_permission_assignments  # type: ignore[import]
+            from backend.src.policy import agent_permission_assignments  # type: ignore[import]
         except ImportError as exc:
             self.fail(f"Package import of agent_permission_assignments failed: {exc}")
 
     def test_resolve_function_is_callable(self) -> None:
         """The resolve_agent_permission_assignment function must be importable and callable."""
-        from backend.src.agent_permission_assignments import (  # type: ignore[import]
+        from backend.src.policy.agent_permission_assignments import (  # type: ignore[import]
             resolve_agent_permission_assignment,
         )
         self.assertTrue(callable(resolve_agent_permission_assignment))
@@ -27,7 +27,7 @@ class TestGL047AgentPermissionAssignmentImports(unittest.TestCase):
     def test_no_absolute_src_imports_in_module(self) -> None:
         """The module must not contain absolute 'from src.' imports."""
         import inspect
-        import backend.src.agent_permission_assignments as module  # type: ignore[import]
+        import backend.src.policy.agent_permission_assignments as module  # type: ignore[import]
 
         source = inspect.getsource(module)
         self.assertNotIn(
@@ -43,7 +43,7 @@ class TestGL047AgentPermissionAssignmentImports(unittest.TestCase):
 
     def test_basic_resolution_works_after_import(self) -> None:
         """A simple resolution call must succeed after package import."""
-        from backend.src.agent_permission_assignments import (  # type: ignore[import]
+        from backend.src.policy.agent_permission_assignments import (  # type: ignore[import]
             resolve_agent_permission_assignment,
         )
 

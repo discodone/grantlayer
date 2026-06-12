@@ -42,33 +42,33 @@ class _BaseGl097(unittest.TestCase):
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.DB_PATH_OR_URL = self.tmp_db.name
         db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.grant_requests as requests_mod
+        import backend.src.grants.grant_requests as requests_mod
         importlib.reload(requests_mod)
         self.requests_mod = requests_mod
 
-        import backend.src.models as models_mod
+        import backend.src.core.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
-        import backend.src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
@@ -342,9 +342,9 @@ class TestGl097PriorGLRegressions(_BaseGl097):
     """Regression tests for prior GL protections."""
 
     def test_gl092_deny_revoke_audit_semantics_intact(self):
-        import backend.src.grant_requests as requests_mod
+        import backend.src.grants.grant_requests as requests_mod
         importlib.reload(requests_mod)
-        import backend.src.models as models_mod
+        import backend.src.core.models as models_mod
         importlib.reload(models_mod)
         req = models_mod.GrantRequest(
             subject_id="tech-01",
@@ -369,7 +369,7 @@ class TestGl097PriorGLRegressions(_BaseGl097):
     def test_gl090_request_body_json_hardening_intact(self):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
         self._insert_operator("owner-1", "Owner", "owner", "owner-token")
 
@@ -390,11 +390,11 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = ""
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
-        import backend.src.db as bk_db
+        import backend.src.core.db as bk_db
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         from fastapi.testclient import TestClient
@@ -407,7 +407,7 @@ class TestGl097PriorGLRegressions(_BaseGl097):
     def test_gl088_post_challenges_still_protected(self):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
         valid_body = json.dumps({
             "subjectId": "sub-1", "action": "read", "resource": "repo-a"
@@ -421,7 +421,7 @@ class TestGl097PriorGLRegressions(_BaseGl097):
     def test_gl087_auth_error_response_consistency_intact(self):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
         req = self._make_handler("/grants")
         status, data = self._run_handler(req)
@@ -433,7 +433,7 @@ class TestGl097PriorGLRegressions(_BaseGl097):
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "true"
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
         demo_body = json.dumps({
             "subjectId": "sub-1", "role": "engineer", "action": "read", "resource": "repo-a"

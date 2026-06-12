@@ -33,51 +33,51 @@ class TestEvidenceVerificationCore(unittest.TestCase):
         self._orig_admin_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import backend.src.challenges as ch_mod
+        import backend.src.auth.challenges as ch_mod
         importlib.reload(ch_mod)
         self.ch_mod = ch_mod
 
-        import backend.src.demo_action as demo_mod
+        import backend.src.demo.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import backend.src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.grant_executions as execs_mod
+        import backend.src.grants.grant_executions as execs_mod
         importlib.reload(execs_mod)
         self.execs_mod = execs_mod
 
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         importlib.reload(eb_mod)
         self.eb_mod = eb_mod
 
-        import backend.src.evidence_persistence as ep_mod
+        import backend.src.evidence.evidence_persistence as ep_mod
         importlib.reload(ep_mod)
         self.ep_mod = ep_mod
 
-        import backend.src.evidence_verification as ev_mod
+        import backend.src.evidence.evidence_verification as ev_mod
         importlib.reload(ev_mod)
         self.ev_mod = ev_mod
 
@@ -101,7 +101,7 @@ class TestEvidenceVerificationCore(unittest.TestCase):
     # ── Helpers ──────────────────────────────────────────────
 
     def _make_grant(self, **kwargs):
-        from backend.src.models import Grant
+        from backend.src.core.models import Grant
         defaults = dict(
             subject_id="tech-01",
             role="technician",
@@ -143,7 +143,7 @@ class TestEvidenceVerificationCore(unittest.TestCase):
             "auditTrail": [],
             "generatedAt": "2026-01-01T00:00:00Z",
         }
-        from backend.src.evidence_bundle import compute_evidence_hash
+        from backend.src.evidence.evidence_bundle import compute_evidence_hash
         bundle["evidenceHash"] = compute_evidence_hash(bundle)
         bundle["canonicalVersion"] = "gl-evidence-v1"
         bundle["hashAlgorithm"] = "sha256"

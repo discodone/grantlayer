@@ -15,8 +15,8 @@ import importlib
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.models import Grant
-from src.grants import create_grant, get_grant
+from backend.src.core.models import Grant
+from backend.src.grants.grants import create_grant, get_grant
 
 
 class TestCreateGrantAtomicSignature(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestCreateGrantAtomicSignature(unittest.TestCase):
         os.environ.pop("GRANTLAYER_REQUIRE_CHALLENGE", None)
 
         # Initialize database
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 

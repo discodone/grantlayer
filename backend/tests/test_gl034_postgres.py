@@ -22,7 +22,7 @@ class TestPlaceholderScanner(unittest.TestCase):
     """GL-034 placeholder scanner correctness."""
 
     def setUp(self):
-        from src.db import _translate_placeholders
+        from backend.src.core.db import _translate_placeholders
         self.translate = _translate_placeholders
 
     def test_simple_placeholders(self):
@@ -81,7 +81,7 @@ class TestConnectionFactory(unittest.TestCase):
     """GL-034 connection factory URL parsing."""
 
     def setUp(self):
-        from src.db import _parse_database_url
+        from backend.src.core.db import _parse_database_url
         self.parse = _parse_database_url
 
     def test_sqlite_absolute_path(self):
@@ -133,7 +133,7 @@ class TestCRUDHelpersSQLite(unittest.TestCase):
         if self._orig_url is not None:
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()
@@ -222,7 +222,7 @@ class TestConnectionWrapper(unittest.TestCase):
 
     def test_wrapper_exposes_backend_sqlite(self):
         import sqlite3
-        from src.db import _ConnectionWrapper
+        from backend.src.core.db import _ConnectionWrapper
         conn = sqlite3.connect(":memory:")
         wrapper = _ConnectionWrapper(conn, "sqlite")
         self.assertEqual(wrapper.backend, "sqlite")
@@ -230,7 +230,7 @@ class TestConnectionWrapper(unittest.TestCase):
 
     def test_wrapper_exposes_backend_postgres(self):
         import sqlite3
-        from src.db import _ConnectionWrapper
+        from backend.src.core.db import _ConnectionWrapper
         conn = sqlite3.connect(":memory:")
         wrapper = _ConnectionWrapper(conn, "postgres")
         self.assertEqual(wrapper.backend, "postgres")
@@ -244,7 +244,7 @@ class TestPostgreSQLLazyImport(unittest.TestCase):
         """When postgres:// is configured but psycopg2 is not installed,
         get_conn() must raise a RuntimeError with a helpful message."""
         # Simulate psycopg2 not being available by temporarily breaking the import
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
 
         orig_backend = db_mod.DB_BACKEND
@@ -273,7 +273,7 @@ class TestMigrationRunnerBackendAwareness(unittest.TestCase):
         if self._orig_url is not None:
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
 
@@ -289,7 +289,7 @@ class TestMigrationRunnerBackendAwareness(unittest.TestCase):
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
     def test_runner_detects_sqlite_backend(self):
-        from src.migrations import runner
+        from backend.src.migrations import runner
         conn = self.db.get_conn()
         try:
             self.assertEqual(runner._backend(conn), "sqlite")
@@ -297,7 +297,7 @@ class TestMigrationRunnerBackendAwareness(unittest.TestCase):
             conn.close()
 
     def test_runner_table_exists_sqlite(self):
-        from src.migrations import runner
+        from backend.src.migrations import runner
         conn = self.db.get_conn()
         try:
             runner._ensure_migrations_table(conn)
@@ -307,7 +307,7 @@ class TestMigrationRunnerBackendAwareness(unittest.TestCase):
             conn.close()
 
     def test_runner_column_exists_sqlite(self):
-        from src.migrations import runner
+        from backend.src.migrations import runner
         conn = self.db.get_conn()
         try:
             runner._ensure_migrations_table(conn)
@@ -329,7 +329,7 @@ class TestHealthProbesBackendAware(unittest.TestCase):
         if self._orig_url is not None:
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()

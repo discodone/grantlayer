@@ -13,11 +13,11 @@ import sqlite3
 import datetime
 from typing import List, Optional, Dict, Any, Tuple
 
-from . import db
+from ..core import db
 from . import grants
-from . import audit_log
-from .models import GrantRequest, Grant, AuditEvent
-from .validation import (
+from ..audit import audit_log
+from ..core.models import GrantRequest, Grant, AuditEvent
+from ..core.validation import (
     MAX_SHORT_ID_LENGTH,
     MAX_ROLE_LENGTH,
     MAX_NAME_LENGTH,

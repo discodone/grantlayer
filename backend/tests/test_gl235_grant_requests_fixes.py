@@ -53,7 +53,7 @@ class TestBug1OperatorIdFallback(unittest.TestCase):
         """Unit test: create_grant_request_endpoint extracts sub from JWT-style auth_ctx."""
         import sys
         sys.path.insert(0, os.path.join(REPO_ROOT, "backend"))
-        from src.grant_requests import ALLOWED_GRANT_ROLES
+        from backend.src.grants.grant_requests import ALLOWED_GRANT_ROLES
         self.assertIn("viewer", ALLOWED_GRANT_ROLES)
         self.assertNotIn("reader", ALLOWED_GRANT_ROLES)
 
@@ -64,7 +64,7 @@ class TestBug2RoleInconsistency(unittest.TestCase):
     def setUp(self):
         import sys
         sys.path.insert(0, os.path.join(REPO_ROOT, "backend"))
-        from src.grant_requests import ALLOWED_GRANT_ROLES
+        from backend.src.grants.grant_requests import ALLOWED_GRANT_ROLES
         self.allowed = ALLOWED_GRANT_ROLES
 
     def test_reader_not_in_allowed_grant_roles(self):

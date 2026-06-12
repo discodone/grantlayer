@@ -6,7 +6,7 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, HTTPException, Query
 
-from ...audit_log import list_events
+from ...audit.audit_log import list_events
 from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(tags=["audit"])

@@ -21,7 +21,7 @@ JSON_PATH = os.path.join(
     "production_identity_access_hardening_pack.json",
 )
 SCRIPT_PATH = os.path.join(REPO_ROOT, "scripts", "ops", "gl219_identity_access_gate.py")
-IDENTITY_ACCESS_PATH = os.path.join(REPO_ROOT, "backend", "src", "identity_access.py")
+IDENTITY_ACCESS_PATH = os.path.join(REPO_ROOT, "backend", "src", "auth", "identity_access.py")
 
 REQUIRED_INPUT_SOURCES = [
     "docs/production_go_no_go_v5.md",
@@ -87,7 +87,7 @@ REQUIRED_JSON_KEYS = [
 
 ALLOWED_CHANGED_FILES = {
     "backend/src/config.py",
-    "backend/src/identity_access.py",
+    "backend/src/auth/identity_access.py",
     "backend/tests/test_gl219_production_identity_access_hardening_pack.py",
     "docs/production_identity_access_hardening_pack.md",
     "docs/examples/gl219/production_identity_access_hardening_pack.json",
@@ -260,7 +260,7 @@ class TestGL219DocumentationArtifact(unittest.TestCase):
 class TestGL219IdentityAccessHelpers(unittest.TestCase):
     def setUp(self):
         sys.path.insert(0, os.path.join(REPO_ROOT, "backend"))
-        import src.identity_access as identity_access
+        import backend.src.auth.identity_access as identity_access
 
         self.identity_access = importlib.reload(identity_access)
 
@@ -310,7 +310,7 @@ class TestGL219IdentityAccessHelpers(unittest.TestCase):
                     "GRANTLAYER_ENABLE_JWT_AUTH": "true",
                 }
             )
-            import src.config as config_mod
+            import backend.src.core.config as config_mod
 
             config_mod = importlib.reload(config_mod)
             errors = config_mod.startup_errors()

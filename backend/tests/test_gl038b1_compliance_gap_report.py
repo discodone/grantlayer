@@ -25,19 +25,19 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
         if self._orig_url is not None:
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()
 
-        from src.compliance_gap_report import build_compliance_gap_report_for_execution
-        from src.grant_executions import create_grant_execution
-        from src.models import GrantExecution
-        from src import evidence_persistence as evp
-        from src.evidence_bundle import build_evidence_bundle
-        from src.provenance import record_provenance_event
-        from src.grants import create_grant
-        from src.models import Grant
+        from backend.src.policy.compliance_gap_report import build_compliance_gap_report_for_execution
+        from backend.src.grants.grant_executions import create_grant_execution
+        from backend.src.core.models import GrantExecution
+        from backend.src.evidence import evidence_persistence as evp
+        from backend.src.evidence.evidence_bundle import build_evidence_bundle
+        from backend.src.policy.provenance import record_provenance_event
+        from backend.src.grants.grants import create_grant
+        from backend.src.core.models import Grant
 
         self.build = build_compliance_gap_report_for_execution
         self.create_execution = create_grant_execution
@@ -99,7 +99,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
 
     # ── Module location ─────────────────────────────────────
     def test_builder_lives_in_compliance_gap_report_module(self):
-        from src import compliance_gap_report as cgr
+        from backend.src.policy import compliance_gap_report as cgr
         self.assertTrue(hasattr(cgr, "build_compliance_gap_report_for_execution"))
 
     # ── Parameter name ────────────────────────────────────────
@@ -129,7 +129,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             execution_id="ex-min",
             grant_id="g-min",
         )
-        from src import evidence_verification as ev_mod
+        from backend.src.evidence import evidence_verification as ev_mod
         importlib.reload(ev_mod)
         ev_mod.verify_execution("ex-min")
 
@@ -165,7 +165,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             execution_id="ex-clean",
             grant_id="g-clean",
         )
-        from src import evidence_verification as ev_mod
+        from backend.src.evidence import evidence_verification as ev_mod
         importlib.reload(ev_mod)
         ev_mod.verify_execution("ex-clean")
 
@@ -304,7 +304,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             reason="Test",
         )
         self.create_grant(grant)
-        from src.grants import revoke_grant
+        from backend.src.grants.grants import revoke_grant
         revoke_grant("g-revoked-gap", "admin", "Emergency")
         self._make_execution("ex-revoked-gap", grant_id="g-revoked-gap")
         result = self.build("ex-revoked-gap")
@@ -328,7 +328,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             reason="Test",
         )
         self.create_grant(grant)
-        from src.db import execute
+        from backend.src.core.db import execute
         execute(
             "UPDATE grants SET signature = NULL, signing_key_id = NULL, payload_hash = NULL WHERE id = ?",
             ("g-unsigned-gap",),

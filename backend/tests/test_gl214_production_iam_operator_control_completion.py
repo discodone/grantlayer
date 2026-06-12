@@ -125,20 +125,20 @@ def _reload_modules(db_path: str):
     os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
     os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
 
-    import backend.src.config as config_mod
+    import backend.src.core.config as config_mod
     importlib.reload(config_mod)
 
-    import backend.src.db as db_mod
+    import backend.src.core.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
 
-    import backend.src.operators as ops_mod
+    import backend.src.auth.operators as ops_mod
     importlib.reload(ops_mod)
 
-    import backend.src.auth as auth_mod
+    import backend.src.auth.auth as auth_mod
     importlib.reload(auth_mod)
 
-    import backend.src.audit_log as audit_mod
+    import backend.src.audit.audit_log as audit_mod
     importlib.reload(audit_mod)
 
     return config_mod, db_mod, ops_mod, auth_mod, audit_mod

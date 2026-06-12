@@ -4,17 +4,17 @@ import os
 import datetime
 import logging
 from typing import Optional
-from .models import AccessRequest, AuditEvent, PolicyResult, GrantExecution
-from .policy_engine import evaluate_access
-from .grants import list_grants
-from .audit_log import append_event
-from .challenges import validate_challenge
-from .crypto_signing import verify_grant_signature
-from .grant_executions import (
+from ..core.models import AccessRequest, AuditEvent, PolicyResult, GrantExecution
+from ..policy.policy_engine import evaluate_access
+from ..grants.grants import list_grants
+from ..audit.audit_log import append_event
+from ..auth.challenges import validate_challenge
+from ..core.crypto_signing import verify_grant_signature
+from ..grants.grant_executions import (
     create_grant_execution,
     update_grant_execution_audit_event_id,
 )
-from .grant_requests import get_grant_request_id_by_grant_id
+from ..grants.grant_requests import get_grant_request_id_by_grant_id
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +127,7 @@ def handle_demo_action(
 
         # Atomic grant usage consumption
         if result.approved and result.matched_grant_id:
-            from .grants import try_consume_grant_use
+            from ..grants.grants import try_consume_grant_use
             consumed = try_consume_grant_use(result.matched_grant_id)
             if not consumed:
                 result = PolicyResult(

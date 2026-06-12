@@ -44,7 +44,7 @@ class _BaseGl190(unittest.TestCase):
         self._orig_require_challenge = os.environ.get("GRANTLAYER_REQUIRE_CHALLENGE")
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
         self.db_mod = db_mod
@@ -69,7 +69,7 @@ class _BaseGl190(unittest.TestCase):
                 os.environ[key] = orig
 
     def _reload_config(self):
-        import backend.src.config as cfg
+        import backend.src.core.config as cfg
         importlib.reload(cfg)
         return cfg
 

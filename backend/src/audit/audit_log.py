@@ -4,8 +4,8 @@ import hashlib
 import json
 from threading import RLock
 from typing import List, Optional
-from .db import execute, query_one, query_all
-from .models import AuditEvent
+from ..core.db import execute, query_one, query_all
+from ..core.models import AuditEvent
 
 
 # ──────────────────────────────────────────────────────────────

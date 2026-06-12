@@ -9,7 +9,7 @@ from __future__ import annotations
 import datetime
 from typing import Any, Optional
 
-from .auditor_report import build_auditor_report_for_execution
+from ..audit.auditor_report import build_auditor_report_for_execution
 
 
 # Mapping of auditor-report findings considered "critical compliance gaps"

@@ -44,51 +44,51 @@ class TestEvidenceBundle(unittest.TestCase):
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
 
         # Reset modules for clean state
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import backend.src.challenges as ch_mod
+        import backend.src.auth.challenges as ch_mod
         importlib.reload(ch_mod)
         self.ch_mod = ch_mod
 
-        import backend.src.demo_action as demo_mod
+        import backend.src.demo.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import backend.src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import backend.src.grant_requests as greps_mod
+        import backend.src.grants.grant_requests as greps_mod
         importlib.reload(greps_mod)
         self.greps_mod = greps_mod
 
-        import backend.src.grant_executions as execs_mod
+        import backend.src.grants.grant_executions as execs_mod
         importlib.reload(execs_mod)
         self.execs_mod = execs_mod
 
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         importlib.reload(eb_mod)
         self.eb_mod = eb_mod
 
@@ -114,7 +114,7 @@ class TestEvidenceBundle(unittest.TestCase):
     # Helpers
     # ──────────────────────────────────────────────
     def _make_grant(self, **kwargs):
-        from backend.src.models import Grant
+        from backend.src.core.models import Grant
         defaults = dict(
             subject_id="tech-01",
             role="technician",
@@ -152,7 +152,7 @@ class TestEvidenceBundle(unittest.TestCase):
         """Create a FastAPI TestClient using the current module config state."""
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
-        import backend.src.db as bk_db
+        import backend.src.core.db as bk_db
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
@@ -195,7 +195,7 @@ class TestEvidenceBundle(unittest.TestCase):
     # 3. Execution without grant / request returns minimal bundle
     # ──────────────────────────────────────────────
     def test_minimal_bundle_for_orphan_execution(self):
-        from backend.src.models import GrantExecution
+        from backend.src.core.models import GrantExecution
         ex = GrantExecution(
             action="restart-service",
             resource="customer-env-a",
@@ -253,7 +253,7 @@ class TestEvidenceBundle(unittest.TestCase):
         self._setup_operator("owner-1", "Owner", "owner")
         self._setup_operator("req-1", "Requester", "grant_admin")
 
-        from backend.src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         req = GrantRequest(
             subject_id="tech-02",
             role="senior-engineer",
@@ -295,7 +295,7 @@ class TestEvidenceBundle(unittest.TestCase):
         self._setup_operator("owner-1", "Owner", "owner")
         self._setup_operator("req-1", "Requester", "grant_admin")
 
-        from backend.src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         req = GrantRequest(
             subject_id="tech-03",
             role="technician",
@@ -310,7 +310,7 @@ class TestEvidenceBundle(unittest.TestCase):
         denied_req = self.greps_mod.deny_grant_request(req.id, "owner-1", "Not needed")
 
         # Manually create an execution linked to the denied request (no grant)
-        from backend.src.models import GrantExecution
+        from backend.src.core.models import GrantExecution
         ex = GrantExecution(
             action="restart-service",
             resource="customer-env-c",
@@ -655,7 +655,7 @@ class TestEvidenceBundle(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_null_grant_request_produces_deterministic_hash(self):
         # Orphan execution with no grant/request
-        from backend.src.models import GrantExecution
+        from backend.src.core.models import GrantExecution
         ex = GrantExecution(
             action="restart-service",
             resource="customer-env-a",
@@ -678,7 +678,7 @@ class TestEvidenceBundle(unittest.TestCase):
         self._setup_operator("owner-1", "Owner", "owner")
         self._setup_operator("req-1", "Requester", "grant_admin")
 
-        from backend.src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         req = GrantRequest(
             subject_id="tech-03",
             role="technician",
@@ -692,7 +692,7 @@ class TestEvidenceBundle(unittest.TestCase):
         self.greps_mod.create_grant_request(req)
         denied_req = self.greps_mod.deny_grant_request(req.id, "owner-1", "Not needed")
 
-        from backend.src.models import GrantExecution
+        from backend.src.core.models import GrantExecution
         ex = GrantExecution(
             action="restart-service",
             resource="customer-env-c",
@@ -1060,7 +1060,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
             "hashAlgorithm": "sha256",
         }
         # Compute correct hash for this bundle
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle["evidenceHash"] = eb_mod.compute_evidence_hash(bundle)
         result = eb_mod.verify_evidence_export_artifact(bundle)
         self.assertTrue(result["ok"])
@@ -1072,7 +1072,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 42. Meaningful bundle content change fails
     # ──────────────────────────────────────────────
     def test_content_change_fails_verification(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-002",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1111,7 +1111,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 43. Changing generatedAt alone still verifies
     # ──────────────────────────────────────────────
     def test_generated_at_change_still_verifies(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-003",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1149,7 +1149,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 44. Changing evidenceHash to wrong value fails
     # ──────────────────────────────────────────────
     def test_wrong_evidence_hash_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-004",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1185,7 +1185,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 45. Missing evidenceHash fails
     # ──────────────────────────────────────────────
     def test_missing_evidence_hash_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-005",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1220,7 +1220,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 46. Missing canonicalVersion fails
     # ──────────────────────────────────────────────
     def test_missing_canonical_version_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-006",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1255,7 +1255,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 47. Unsupported canonicalVersion fails
     # ──────────────────────────────────────────────
     def test_unsupported_canonical_version_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-007",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1291,7 +1291,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 48. Missing hashAlgorithm fails
     # ──────────────────────────────────────────────
     def test_missing_hash_algorithm_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-008",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1326,7 +1326,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 49. Unsupported hashAlgorithm fails
     # ──────────────────────────────────────────────
     def test_unsupported_hash_algorithm_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-009",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1362,7 +1362,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 50. Invalid hash format fails
     # ──────────────────────────────────────────────
     def test_invalid_hash_format_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-010",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1398,7 +1398,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 51. Reordered JSON keys still verify
     # ──────────────────────────────────────────────
     def test_reordered_keys_still_verify(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-011",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1451,7 +1451,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 52. Build-then-verify round-trip using real bundle
     # ──────────────────────────────────────────────
     def test_build_then_verify_round_trip(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         # Minimal dict that mimics a real built bundle structure
         bundle = {
             "evidenceId": "ex-012",
@@ -1491,22 +1491,22 @@ class TestEvidenceBundleVerification(unittest.TestCase):
         self._env_setup = {}
         self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
-        import backend.src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
-        import backend.src.demo_action as demo_mod
+        import backend.src.demo.demo_action as demo_mod
         importlib.reload(demo_mod)
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         importlib.reload(eb_mod)
 
-        from backend.src.models import Grant
+        from backend.src.core.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -1532,7 +1532,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 54. CLI: valid export exits 0
     # ──────────────────────────────────────────────
     def test_cli_valid_export_exits_0(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-cli-001",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1582,7 +1582,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
     # 55. CLI: tampered export exits 2
     # ──────────────────────────────────────────────
     def test_cli_tampered_export_exits_2(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-cli-002",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1754,7 +1754,7 @@ class TestEvidenceBundleVerificationReport(unittest.TestCase):
     """GL-029 A: Evidence Verification Report structure."""
 
     def _base_bundle(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-029-a",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1786,7 +1786,7 @@ class TestEvidenceBundleVerificationReport(unittest.TestCase):
         return bundle
 
     def test_success_report_form(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         result = eb_mod.verify_evidence_export_artifact(bundle)
         self.assertTrue(result["ok"])
@@ -1798,7 +1798,7 @@ class TestEvidenceBundleVerificationReport(unittest.TestCase):
         self.assertTrue(result["verifiedAt"].startswith("20"))
 
     def test_error_report_includes_evidence_id(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["evidenceHash"] = "0" * 64
         result = eb_mod.verify_evidence_export_artifact(bundle)
@@ -1808,7 +1808,7 @@ class TestEvidenceBundleVerificationReport(unittest.TestCase):
         self.assertEqual(result["evidenceId"], "ex-029-a")
 
     def test_error_report_missing_fields(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         for missing_field, expected_error in [
             ("canonicalVersion", "invalid_artifact"),
             ("hashAlgorithm", "invalid_artifact"),
@@ -1822,7 +1822,7 @@ class TestEvidenceBundleVerificationReport(unittest.TestCase):
             self.assertIn("evidenceId", result)
 
     def test_error_report_unsupported_version(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["canonicalVersion"] = "gl-evidence-v99"
         result = eb_mod.verify_evidence_export_artifact(bundle)
@@ -1831,17 +1831,17 @@ class TestEvidenceBundleVerificationReport(unittest.TestCase):
         self.assertEqual(result["evidenceId"], "ex-029-a")
 
     def test_error_report_parse_error_code_added(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         self.assertIn("parse_error", eb_mod.VERIFY_ERROR_CODES)
 
     def test_verified_at_not_in_hash(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         result = eb_mod.verify_evidence_export_artifact(bundle)
         self.assertNotIn("verifiedAt", eb_mod.canonical_evidence_bundle(bundle))
 
     def test_success_report_no_secrets(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         result = eb_mod.verify_evidence_export_artifact(bundle)
         raw = json.dumps(result)
@@ -1850,7 +1850,7 @@ class TestEvidenceBundleVerificationReport(unittest.TestCase):
         self.assertNotIn("secret", raw.lower())
 
     def test_cli_exit_codes_unchanged(self):
-        import json, tempfile, os, subprocess, sys, backend.src.evidence_bundle as eb_mod
+        import json, tempfile, os, subprocess, sys, backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(bundle, f)
@@ -1871,7 +1871,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
     """GL-029 B: Evidence Completeness Checks."""
 
     def _base_bundle(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-029-b",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -1917,7 +1917,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         return bundle
 
     def test_completeness_all_checks_pass(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         result = eb_mod.check_evidence_completeness(bundle)
         self.assertTrue(result["complete"])
@@ -1932,7 +1932,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertEqual(result["errors"], [])
 
     def test_missing_execution_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         del bundle["execution"]
         result = eb_mod.check_evidence_completeness(bundle)
@@ -1940,7 +1940,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertIn("missing execution section", result["errors"])
 
     def test_grant_linkage_mismatch(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["grantId"] = "g-001"
         result = eb_mod.check_evidence_completeness(bundle)
@@ -1949,7 +1949,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertFalse(result["checks"]["grantLinkage"])
 
     def test_grant_request_linkage_required_missing(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["grantRequestId"] = "gr-001"
         result = eb_mod.check_evidence_completeness(bundle)
@@ -1958,7 +1958,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertEqual(result["checks"]["grantRequestLinkage"], "missing_required")
 
     def test_grant_request_linkage_present(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["grantRequestId"] = "gr-001"
         bundle["request"] = {"id": "gr-001"}
@@ -1969,7 +1969,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertEqual(result["warnings"], [])
 
     def test_request_without_grant_request_id_warns(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["request"] = {"id": "gr-001"}
         result = eb_mod.check_evidence_completeness(bundle)
@@ -1978,7 +1978,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertIn("request or approval present without grantRequestId", result["warnings"])
 
     def test_empty_audit_trail_warns(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["auditTrail"] = []
         result = eb_mod.check_evidence_completeness(bundle)
@@ -1987,7 +1987,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertFalse(result["checks"]["auditTrailPresent"])
 
     def test_audit_trail_unsorted_warns(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["auditTrail"] = [
             {"id": "ae-002", "timestamp": "2026-05-06T11:00:00Z"},
@@ -1998,7 +1998,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertIn("auditTrail is not chronologically sorted", result["warnings"])
 
     def test_audit_trail_duplicates_errors(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["auditTrail"] = [
             {"id": "ae-001", "timestamp": "2026-05-06T10:00:00Z"},
@@ -2009,7 +2009,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertIn("auditTrail contains duplicate events", result["errors"])
 
     def test_usage_limits_inconsistent_exhausted_false(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["errorCode"] = "grant_usage_exhausted"
         bundle["usageLimits"] = {"affectedOutcome": False}
@@ -2019,7 +2019,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertFalse(result["checks"]["usageLimitsConsistent"])
 
     def test_usage_limits_inconsistent_affected_no_code(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["errorCode"] = "no_grant"
         bundle["usageLimits"] = {"affectedOutcome": True}
@@ -2029,7 +2029,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertFalse(result["checks"]["usageLimitsConsistent"])
 
     def test_outcome_consistent_succeeded_with_error(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["result"] = "succeeded"
         bundle["execution"]["errorCode"] = "no_grant"
@@ -2038,7 +2038,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertIn("result is succeeded but errorCode is not null", result["errors"])
 
     def test_outcome_consistent_denied_without_error(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["result"] = "denied"
         bundle["execution"]["errorCode"] = None
@@ -2047,7 +2047,7 @@ class TestEvidenceCompleteness(unittest.TestCase):
         self.assertIn("result is denied but errorCode is null", result["errors"])
 
     def test_complete_true_when_no_errors(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["result"] = "succeeded"
         bundle["execution"]["errorCode"] = None
@@ -2062,7 +2062,7 @@ class TestDenialCodeConsistency(unittest.TestCase):
     """GL-029 C: Denial / Error-Code Consistency."""
 
     def _base_bundle(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-029-c",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -2093,7 +2093,7 @@ class TestDenialCodeConsistency(unittest.TestCase):
         return bundle
 
     def test_succeeded_requires_null_error_code(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["result"] = "succeeded"
         bundle["execution"]["errorCode"] = None
@@ -2103,7 +2103,7 @@ class TestDenialCodeConsistency(unittest.TestCase):
         self.assertEqual(result["errors"], [])
 
     def test_denied_requires_error_code(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["result"] = "denied"
         bundle["execution"]["errorCode"] = "no_grant"
@@ -2112,7 +2112,7 @@ class TestDenialCodeConsistency(unittest.TestCase):
         self.assertTrue(result["checks"]["resultMatchesErrorCode"])
 
     def test_denied_with_unknown_code_warns(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["errorCode"] = "unknown_reason_xyz"
         result = eb_mod.check_denial_code_consistency(bundle)
@@ -2120,7 +2120,7 @@ class TestDenialCodeConsistency(unittest.TestCase):
         self.assertIn("unknown error code: unknown_reason_xyz", result["warnings"])
 
     def test_succeeded_with_error_code_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["result"] = "succeeded"
         bundle["execution"]["errorCode"] = "no_grant"
@@ -2130,7 +2130,7 @@ class TestDenialCodeConsistency(unittest.TestCase):
         self.assertFalse(result["checks"]["resultMatchesErrorCode"])
 
     def test_denied_missing_error_code_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["result"] = "denied"
         bundle["execution"]["errorCode"] = None
@@ -2139,7 +2139,7 @@ class TestDenialCodeConsistency(unittest.TestCase):
         self.assertIn("result is denied but errorCode is missing", result["errors"])
 
     def test_failed_warns(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["result"] = "failed"
         bundle["execution"]["errorCode"] = "internal_error"
@@ -2148,20 +2148,20 @@ class TestDenialCodeConsistency(unittest.TestCase):
         self.assertIn("result is failed — manual review recommended", result["warnings"])
 
     def test_denial_reason_populated(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["errorCode"] = "grant_usage_exhausted"
         result = eb_mod.check_denial_code_consistency(bundle)
         self.assertEqual(result["denialReason"], "grant usage limit reached")
 
     def test_outcome_matches_bundle_data_no_grant(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         result = eb_mod.check_denial_code_consistency(bundle)
         self.assertTrue(result["checks"]["outcomeMatchesBundleData"])
 
     def test_outcome_matches_bundle_data_grant_missing(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["result"] = "succeeded"
         bundle["execution"]["errorCode"] = None
@@ -2171,7 +2171,7 @@ class TestDenialCodeConsistency(unittest.TestCase):
         self.assertIn("result succeeded but grant missing despite grantId", result["errors"])
 
     def test_grant_request_denied_with_grant_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["errorCode"] = "grant_request_denied"
         bundle["grant"] = {"id": "g-001"}
@@ -2180,7 +2180,7 @@ class TestDenialCodeConsistency(unittest.TestCase):
         self.assertIn("result denied with grant_request_denied but grant section present", result["errors"])
 
     def test_no_grant_with_grant_present_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["errorCode"] = "no_grant"
         bundle["grant"] = {"id": "g-001"}
@@ -2189,7 +2189,7 @@ class TestDenialCodeConsistency(unittest.TestCase):
         self.assertIn("result denied with no_grant but grant section present", result["errors"])
 
     def test_usage_exhausted_without_flag_fails(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["errorCode"] = "grant_usage_exhausted"
         bundle["usageLimits"] = {"affectedOutcome": False}
@@ -2198,13 +2198,13 @@ class TestDenialCodeConsistency(unittest.TestCase):
         self.assertIn("errorCode grant_usage_exhausted but usageLimits.affectedOutcome is false", result["errors"])
 
     def test_known_catalog_membership(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         for code in eb_mod.KNOWN_DENIAL_CODES:
             self.assertIsInstance(code, str)
             self.assertTrue(len(code) > 0)
 
     def test_unknown_result_value(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = self._base_bundle()
         bundle["execution"]["result"] = "weird"
         result = eb_mod.check_denial_code_consistency(bundle)
@@ -2216,7 +2216,7 @@ class TestEvidenceBundleSecurityBoundaries(unittest.TestCase):
     """GL-029 D: Security Boundary Regression Tests."""
 
     def test_completeness_no_secrets_leak(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "sec-001",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -2252,7 +2252,7 @@ class TestEvidenceBundleSecurityBoundaries(unittest.TestCase):
         self.assertNotIn("secret", raw)
 
     def test_denial_consistency_no_secrets_leak(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "sec-002",
             "generatedAt": "2026-05-06T10:00:00Z",
@@ -2288,7 +2288,7 @@ class TestEvidenceBundleSecurityBoundaries(unittest.TestCase):
         self.assertNotIn("secret", raw)
 
     def test_completeness_helper_never_crashes_on_null(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         for bad_bundle in [
             {},
             {"execution": None},
@@ -2303,7 +2303,7 @@ class TestEvidenceBundleSecurityBoundaries(unittest.TestCase):
                 self.fail(f"check_evidence_completeness crashed on {bad_bundle}: {exc}")
 
     def test_denial_consistency_never_crashes_on_null(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         for bad_bundle in [
             {},
             {"execution": None},
@@ -2318,7 +2318,7 @@ class TestEvidenceBundleSecurityBoundaries(unittest.TestCase):
                 self.fail(f"check_denial_code_consistency crashed on {bad_bundle}: {exc}")
 
     def test_verify_helper_never_crashes_on_bare_dict(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         for bad_bundle in [
             {},
             {"evidenceHash": "a" * 64},
@@ -2332,7 +2332,7 @@ class TestEvidenceBundleSecurityBoundaries(unittest.TestCase):
                 self.fail(f"verify_evidence_export_artifact crashed on {bad_bundle}: {exc}")
 
     def test_completeness_legacy_null_grant_request_is_warning(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "sec-003",
             "execution": {
@@ -2354,7 +2354,7 @@ class TestEvidenceBundleSecurityBoundaries(unittest.TestCase):
         self.assertEqual(result["warnings"], [])
 
     def test_completeness_does_not_mutate_bundle(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "sec-004",
             "execution": {
@@ -2377,7 +2377,7 @@ class TestEvidenceBundleCliJson(unittest.TestCase):
     """GL-029: CLI --json output tests."""
 
     def _base_bundle(self):
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         bundle = {
             "evidenceId": "ex-cli-json",
             "generatedAt": "2026-05-06T10:00:00Z",

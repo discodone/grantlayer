@@ -2,9 +2,9 @@
 
 import datetime
 from typing import Optional, Tuple, List
-from .db import execute, query_one, query_all
-from .models import Challenge, ChallengeResult
-from .validation import MAX_SHORT_ID_LENGTH, MAX_NAME_LENGTH, validate_string_length
+from ..core.db import execute, query_one, query_all
+from ..core.models import Challenge, ChallengeResult
+from ..core.validation import MAX_SHORT_ID_LENGTH, MAX_NAME_LENGTH, validate_string_length
 
 CHALLENGE_TTL_SECONDS = 300  # 5 minutes
 

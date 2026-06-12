@@ -33,7 +33,7 @@ class _BaseGl096(unittest.TestCase):
         self._orig_private_key_path = None
         self._orig_public_key_path = None
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         self.crypto_mod = crypto_mod
         self._orig_private_key_path = crypto_mod._PRIVATE_KEY_PATH
@@ -156,7 +156,7 @@ class TestGl096SigningVerificationPreserved(_BaseGl096):
         super().setUp()
         self._generate_keypair()
 
-        import src.models as models_mod
+        import backend.src.core.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 

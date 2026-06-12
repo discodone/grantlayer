@@ -127,32 +127,32 @@ def _reload_modules(db_path: str):
     os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
     os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
 
-    import backend.src.config as config_mod
+    import backend.src.core.config as config_mod
     importlib.reload(config_mod)
 
-    import backend.src.db as db_mod
+    import backend.src.core.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
 
-    import backend.src.models as models_mod
+    import backend.src.core.models as models_mod
     importlib.reload(models_mod)
 
-    import backend.src.operators as ops_mod
+    import backend.src.auth.operators as ops_mod
     importlib.reload(ops_mod)
 
-    import backend.src.auth as auth_mod
+    import backend.src.auth.auth as auth_mod
     importlib.reload(auth_mod)
 
-    import backend.src.grants as grants_mod
+    import backend.src.grants.grants as grants_mod
     importlib.reload(grants_mod)
 
-    import backend.src.grant_executions as exec_mod
+    import backend.src.grants.grant_executions as exec_mod
     importlib.reload(exec_mod)
 
-    import backend.src.audit_log as audit_mod
+    import backend.src.audit.audit_log as audit_mod
     importlib.reload(audit_mod)
 
-    import backend.src.evidence_verification as evidence_verification_mod
+    import backend.src.evidence.evidence_verification as evidence_verification_mod
     importlib.reload(evidence_verification_mod)
 
     return {

@@ -56,10 +56,10 @@ class _BaseGl110(unittest.TestCase):
             os.environ.pop(key, None)
 
         # Reload config with cleared env vars to ensure clean state
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         self.crypto_mod = crypto_mod
         self._orig_private_key_path = crypto_mod._PRIVATE_KEY_PATH
@@ -89,9 +89,9 @@ class _BaseGl110(unittest.TestCase):
         os.chmod(self.crypto_mod._PRIVATE_KEY_PATH, mode)
 
     def _reload_config_and_crypto(self):
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
-        import src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         self.crypto_mod = crypto_mod
 
@@ -403,7 +403,7 @@ class TestGl110SigningVerificationPreserved(_BaseGl110):
         super().setUp()
         self._generate_keypair()
 
-        import src.models as models_mod
+        import backend.src.core.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
@@ -506,25 +506,25 @@ class TestGl110CrossGlPreservation(unittest.TestCase):
     """Verify other GL behaviors are not broken by GL-110 changes."""
 
     def test_gl109_auth_module_preserved(self):
-        import src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.assertTrue(hasattr(auth_mod, "check_admin_token"))
         self.assertTrue(hasattr(auth_mod, "check_auth"))
 
     def test_gl108_audit_module_preserved(self):
-        import src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.assertTrue(hasattr(audit_mod, "append_event"))
         self.assertTrue(hasattr(audit_mod, "list_events"))
 
     def test_gl107_operator_lookup_preserved(self):
-        import src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.assertTrue(hasattr(ops_mod, "hash_token"))
         self.assertTrue(hasattr(ops_mod, "derive_token_lookup_hash"))
 
     def test_gl106_rate_limiter_preserved(self):
-        import src.rate_limiter as rl_mod
+        import backend.src.core.rate_limiter as rl_mod
         importlib.reload(rl_mod)
         self.assertTrue(hasattr(rl_mod, "RateLimiter"))
 
@@ -537,7 +537,7 @@ class TestGl110SecurityBoundary(unittest.TestCase):
     """Core security boundaries remain intact."""
 
     def test_crypto_signing_has_expected_exports(self):
-        import src.crypto_signing as cs
+        import backend.src.core.crypto_signing as cs
         importlib.reload(cs)
         self.assertTrue(hasattr(cs, "ensure_demo_keypair"))
         self.assertTrue(hasattr(cs, "load_private_key"))
@@ -546,7 +546,7 @@ class TestGl110SecurityBoundary(unittest.TestCase):
         self.assertTrue(hasattr(cs, "verify_grant_signature"))
 
     def test_no_new_network_calls_in_crypto_signing(self):
-        import src.crypto_signing as cs
+        import backend.src.core.crypto_signing as cs
         importlib.reload(cs)
         import inspect
         src_text = inspect.getsource(cs)

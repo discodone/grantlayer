@@ -34,8 +34,8 @@ _SKIP = unittest.skipUnless(
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 if _FASTAPI_AVAILABLE:
-    import backend.src.config as _cfg
-    import backend.src.db as _db
+    import backend.src.core.config as _cfg
+    import backend.src.core.db as _db
     from fastapi.testclient import TestClient
     from backend.src.api.app import create_app
 

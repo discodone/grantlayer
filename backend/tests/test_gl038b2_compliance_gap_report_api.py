@@ -32,18 +32,18 @@ class TestComplianceGapReportAPI(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db = db_mod
         self.db.init_db()
 
-        from backend.src.provenance import record_provenance_event
-        from backend.src.grant_executions import create_grant_execution
-        from backend.src.models import GrantExecution, Grant
-        from backend.src.grants import create_grant
-        from backend.src import evidence_persistence as evp
-        from backend.src.evidence_bundle import build_evidence_bundle
-        from backend.src import operators as ops
+        from backend.src.policy.provenance import record_provenance_event
+        from backend.src.grants.grant_executions import create_grant_execution
+        from backend.src.core.models import GrantExecution, Grant
+        from backend.src.grants.grants import create_grant
+        from backend.src.evidence import evidence_persistence as evp
+        from backend.src.evidence.evidence_bundle import build_evidence_bundle
+        from backend.src.auth import operators as ops
 
         self.record_event = record_provenance_event
         self.create_execution = create_grant_execution
@@ -96,7 +96,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
         self.evp.store_bundle(execution_id, bundle, stored_by=stored_by)
 
     def _insert_operator(self, op_id, name, role, token):
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         conn = db_mod.get_conn()
         try:
             conn.execute(
@@ -111,9 +111,9 @@ class TestComplianceGapReportAPI(unittest.TestCase):
     def _make_client(self):
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
-        import backend.src.db as bk_db
-        import backend.src.config as config_mod
-        import backend.src.auth as auth_mod
+        import backend.src.core.db as bk_db
+        import backend.src.core.config as config_mod
+        import backend.src.auth.auth as auth_mod
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         importlib.reload(config_mod)
@@ -230,7 +230,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             execution_id="ex-shape-1",
             grant_id="g-shape-1",
         )
-        from backend.src import evidence_verification as ev_mod
+        from backend.src.evidence import evidence_verification as ev_mod
         importlib.reload(ev_mod)
         ev_mod.verify_execution("ex-shape-1")
 
@@ -277,7 +277,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             execution_id="ex-clear",
             grant_id="g-clear",
         )
-        from backend.src import evidence_verification as ev_mod
+        from backend.src.evidence import evidence_verification as ev_mod
         importlib.reload(ev_mod)
         ev_mod.verify_execution("ex-clear")
 
@@ -331,7 +331,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             reason="Test",
         )
         self.create_grant(grant)
-        from backend.src.grants import revoke_grant
+        from backend.src.grants.grants import revoke_grant
         revoke_grant("g-blocked", "admin", "Emergency")
         self._make_execution("ex-blocked", grant_id="g-blocked")
         status, body = self._run_handler(

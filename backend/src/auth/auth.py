@@ -18,9 +18,9 @@ from __future__ import annotations
 import hmac
 import os
 from typing import Any
-from . import config
+from ..core import config
 from . import operators as ops
-from .db import query_one, query_all
+from ..core.db import query_one, query_all
 
 
 def admin_token_is_configured() -> bool:

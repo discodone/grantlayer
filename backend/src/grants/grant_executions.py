@@ -5,8 +5,8 @@ One row per protected action attempt.
 
 from typing import List, Optional
 import json
-from .db import execute, query_one, query_all
-from .models import GrantExecution
+from ..core.db import execute, query_one, query_all
+from ..core.models import GrantExecution
 
 
 def _row_to_grant_execution(row: dict | None) -> Optional[GrantExecution]:

@@ -11,11 +11,11 @@ import json
 import uuid
 from typing import Any, Optional
 
-from .models import Grant, GrantRequest
-from .provenance_summary import build_decision_provenance_summary
-from .grants import get_grant
-from .grant_requests import get_grant_request, get_grant_request_id_by_grant_id
-from .evidence_persistence import get_bundle_by_execution
+from ..core.models import Grant, GrantRequest
+from ..policy.provenance_summary import build_decision_provenance_summary
+from ..grants.grants import get_grant
+from ..grants.grant_requests import get_grant_request, get_grant_request_id_by_grant_id
+from ..evidence.evidence_persistence import get_bundle_by_execution
 
 
 def _iso_now() -> str:

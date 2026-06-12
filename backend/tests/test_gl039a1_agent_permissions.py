@@ -2,9 +2,9 @@
 
 import unittest
 
-from backend.src.policy_engine import evaluate_access
-from backend.src.models import AccessRequest, Grant
-from backend.src.agent_permissions import (
+from backend.src.policy.policy_engine import evaluate_access
+from backend.src.core.models import AccessRequest, Grant
+from backend.src.policy.agent_permissions import (
     evaluate_agent_permission,
     normalize_scope,
     scope_matches,

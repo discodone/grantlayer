@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from ...runtime_config import describe_runtime_config
+from ...core.runtime_config import describe_runtime_config
 from ..schemas import HealthResponse, ReadinessResponse
 
 router = APIRouter(tags=["health"])

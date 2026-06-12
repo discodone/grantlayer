@@ -2,7 +2,7 @@
 
 import unittest
 
-from backend.src.runtime_config import (
+from backend.src.core.runtime_config import (
     DEFAULT_MODE,
     PRODUCTION_LIKE_MODES,
     SUPPORTED_MODES,
@@ -176,15 +176,12 @@ class TestNoForbiddenFilesChanged(unittest.TestCase):
         import sys
 
         # Ensure we have a fresh import
-        if "backend.src.runtime_config" in sys.modules:
-            del sys.modules["backend.src.runtime_config"]
-        if "backend" in sys.modules:
-            del sys.modules["backend"]
-        if "backend.src" in sys.modules:
-            del sys.modules["backend.src"]
+        for _key in list(sys.modules):
+            if "backend.src.core.runtime_config" in _key or _key in ("backend", "backend.src", "backend.src.core"):
+                del sys.modules[_key]
 
         # Track imports by running the module in a limited way
-        import backend.src.runtime_config as rc
+        import backend.src.core.runtime_config as rc
         import ast
         import inspect
 

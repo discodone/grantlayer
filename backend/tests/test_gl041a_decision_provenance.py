@@ -10,7 +10,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.decision_provenance import (
+from backend.src.policy.decision_provenance import (
     build_decision_provenance_v2,
     RECORD_TYPE,
     RECORD_VERSION,
@@ -22,7 +22,7 @@ class TestDecisionProvenanceV2(unittest.TestCase):
 
     def test_module_import(self):
         """Test that the module imports successfully."""
-        import src.decision_provenance as dp_mod
+        import backend.src.policy.decision_provenance as dp_mod
         self.assertIsNotNone(dp_mod)
         self.assertTrue(hasattr(dp_mod, "build_decision_provenance_v2"))
         self.assertEqual(dp_mod.RECORD_TYPE, "decision_provenance")

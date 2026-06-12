@@ -36,15 +36,15 @@ class TestGL032ProductionReadiness(unittest.TestCase):
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
         self._orig_require_challenge = os.environ.get("GRANTLAYER_REQUIRE_CHALLENGE")
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
@@ -172,8 +172,8 @@ class TestGL032ProductionReadiness(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_health_response_contains_new_fields(self):
         # Build a simulated health payload (mirrors server.py logic)
-        from src.auth import admin_token_is_configured
-        import src.config as c
+        from backend.src.auth.auth import admin_token_is_configured
+        import backend.src.core.config as c
         importlib.reload(c)
 
         payload = {
@@ -215,10 +215,10 @@ class TestGL032ProductionReadiness(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_health_no_token_leakage(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "leak-me-not-42"
-        import src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
 
-        from src.auth import admin_token_is_configured
+        from backend.src.auth.auth import admin_token_is_configured
         payload = {
             "ok": True,
             "adminTokenConfigured": admin_token_is_configured(),

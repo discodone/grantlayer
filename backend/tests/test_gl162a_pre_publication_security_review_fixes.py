@@ -51,10 +51,10 @@ def _setup_test_db():
     tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     os.environ.setdefault("GRANTLAYER_DB", tmp.name)
     os.environ.setdefault("GRANTLAYER_ADMIN_TOKEN", "test-admin-token")
-    import backend.src.db as db_mod
+    import backend.src.core.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
-    import backend.src.config as config_mod
+    import backend.src.core.config as config_mod
     importlib.reload(config_mod)
     return config_mod, tmp.name
 
@@ -399,13 +399,13 @@ class TestGL162ARoleAllowlist(unittest.TestCase):
         cls._tmp_db_path = tmp.name
         os.environ["GRANTLAYER_DB"] = tmp.name
         os.environ.setdefault("GRANTLAYER_ADMIN_TOKEN", "test-admin-token")
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
-        import backend.src.grant_requests as gr_mod
+        import backend.src.grants.grant_requests as gr_mod
         importlib.reload(gr_mod)
         cls.gr_mod = gr_mod
-        import backend.src.models as models_mod
+        import backend.src.core.models as models_mod
         importlib.reload(models_mod)
         cls.models_mod = models_mod
 
@@ -449,7 +449,7 @@ class TestGL162ARoleAllowlist(unittest.TestCase):
 
     def test_role_allowlist_reachable_from_grant_requests(self):
         """grant_requests module must expose ALLOWED_GRANT_ROLES."""
-        import backend.src.grant_requests as gr_mod
+        import backend.src.grants.grant_requests as gr_mod
         self.assertTrue(
             hasattr(gr_mod, "ALLOWED_GRANT_ROLES"),
             "grant_requests module must expose ALLOWED_GRANT_ROLES"
@@ -457,9 +457,9 @@ class TestGL162ARoleAllowlist(unittest.TestCase):
 
     def test_role_length_validation_still_applies(self):
         """A role that exceeds MAX_ROLE_LENGTH must be rejected (length check precedes allowlist)."""
-        import backend.src.grant_requests as gr_mod
+        import backend.src.grants.grant_requests as gr_mod
         importlib.reload(gr_mod)
-        import backend.src.models as models_mod
+        import backend.src.core.models as models_mod
         request = models_mod.GrantRequest(
             subject_id="test-subject",
             role="a" * 200,

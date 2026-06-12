@@ -2,7 +2,7 @@
 
 import unittest
 
-from backend.src.policy_requirements import (
+from backend.src.policy.policy_requirements import (
     evaluate_policy_requirements,
     normalize_policy_pack,
     evaluate_required_evidence,
@@ -632,7 +632,11 @@ class TestNoDbAccess(unittest.TestCase):
 
 class TestExistingModulesUnchanged(unittest.TestCase):
     def test_existing_modules_still_importable(self):
-        from backend.src import policy_engine, grants, audit_log, challenges, demo_action
+        from backend.src.policy import policy_engine
+        from backend.src.grants import grants
+        from backend.src.audit import audit_log
+        from backend.src.auth import challenges
+        from backend.src.demo import demo_action
         self.assertTrue(callable(policy_engine.evaluate_access))
         self.assertTrue(callable(grants.create_grant))
         self.assertTrue(callable(audit_log.list_events))

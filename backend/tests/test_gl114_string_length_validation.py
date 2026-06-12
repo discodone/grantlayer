@@ -48,37 +48,37 @@ class _BaseGl114(unittest.TestCase):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "test-admin"
         os.environ["GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN"] = "bootstrap-token"
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.DB_PATH_OR_URL = self.tmp_db.name
         db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import backend.src.challenges as ch_mod
+        import backend.src.auth.challenges as ch_mod
         importlib.reload(ch_mod)
         self.ch_mod = ch_mod
 
-        import backend.src.grant_requests as requests_mod
+        import backend.src.grants.grant_requests as requests_mod
         importlib.reload(requests_mod)
         self.requests_mod = requests_mod
 
-        import backend.src.models as models_mod
+        import backend.src.core.models as models_mod
         importlib.reload(models_mod)
         self.models_mod = models_mod
 
@@ -123,7 +123,7 @@ class _BaseGl114(unittest.TestCase):
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
-        from backend.src.structured_logging import normalize_correlation_id
+        from backend.src.core.structured_logging import normalize_correlation_id
         if "X-Correlation-ID" in headers:
             headers["X-Correlation-ID"] = normalize_correlation_id(headers["X-Correlation-ID"])
         if "X-Request-ID" in headers:
@@ -184,7 +184,7 @@ class _BaseGl114(unittest.TestCase):
             ok, auth_status, auth_payload = self.auth_mod.check_auth(headers.get("Authorization"))
             if not ok:
                 resp_headers = {}
-                from backend.src.structured_logging import normalize_correlation_id
+                from backend.src.core.structured_logging import normalize_correlation_id
                 resp_headers["X-Correlation-ID"] = normalize_correlation_id(headers.get("X-Correlation-ID") or headers.get("X-Request-ID"))
                 trusted_origin = os.environ.get("GRANTLAYER_CORS_ALLOWED_ORIGINS")
                 if headers.get("Origin") and headers.get("Origin") == trusted_origin:
@@ -198,7 +198,7 @@ class _BaseGl114(unittest.TestCase):
                     "reason_code": auth_payload.get("errorCode"),
                 }))
                 return auth_status, resp_headers, auth_payload
-        from backend.src.structured_logging import normalize_correlation_id
+        from backend.src.core.structured_logging import normalize_correlation_id
         if "X-Correlation-ID" in headers:
             headers["X-Correlation-ID"] = normalize_correlation_id(headers["X-Correlation-ID"])
         if "X-Request-ID" in headers:
@@ -308,26 +308,26 @@ class TestGl114ValidationHelper(_BaseGl114):
     """Unit tests for validation.py helpers."""
 
     def test_validate_string_length_accepts_normal_string(self):
-        from backend.src.validation import validate_string_length
+        from backend.src.core.validation import validate_string_length
         validate_string_length("valid-string", "test_field", 256)
 
     def test_validate_string_length_accepts_empty_string(self):
-        from backend.src.validation import validate_string_length
+        from backend.src.core.validation import validate_string_length
         validate_string_length("", "test_field", 256)
 
     def test_validate_string_length_accepts_exact_boundary(self):
-        from backend.src.validation import validate_string_length
+        from backend.src.core.validation import validate_string_length
         validate_string_length("x" * 128, "test_field", 128)
 
     def test_validate_string_length_rejects_overlong(self):
-        from backend.src.validation import validate_string_length, ValidationError
+        from backend.src.core.validation import validate_string_length, ValidationError
         with self.assertRaises(ValidationError) as ctx:
             validate_string_length("x" * 129, "test_field", 128)
         self.assertIn("test_field", str(ctx.exception))
         self.assertIn("128", str(ctx.exception))
 
     def test_validate_string_length_error_does_not_echo_full_value(self):
-        from backend.src.validation import validate_string_length, ValidationError
+        from backend.src.core.validation import validate_string_length, ValidationError
         long_val = "x" * 5000
         with self.assertRaises(ValidationError) as ctx:
             validate_string_length(long_val, "test_field", 256)
@@ -335,25 +335,25 @@ class TestGl114ValidationHelper(_BaseGl114):
         self.assertNotIn(long_val, msg)
 
     def test_validate_string_length_rejects_non_string(self):
-        from backend.src.validation import validate_string_length, ValidationError
+        from backend.src.core.validation import validate_string_length, ValidationError
         with self.assertRaises(ValidationError):
             validate_string_length(123, "test_field", 256)
 
     def test_validate_optional_string_length_accepts_none(self):
-        from backend.src.validation import validate_optional_string_length
+        from backend.src.core.validation import validate_optional_string_length
         validate_optional_string_length(None, "test_field", 256)
 
     def test_validate_optional_string_length_accepts_normal_string(self):
-        from backend.src.validation import validate_optional_string_length
+        from backend.src.core.validation import validate_optional_string_length
         validate_optional_string_length("valid", "test_field", 256)
 
     def test_validate_optional_string_length_rejects_overlong(self):
-        from backend.src.validation import validate_optional_string_length, ValidationError
+        from backend.src.core.validation import validate_optional_string_length, ValidationError
         with self.assertRaises(ValidationError):
             validate_optional_string_length("x" * 129, "test_field", 128)
 
     def test_max_constants_present(self):
-        from backend.src import validation as v
+        from backend.src.core import validation as v
         self.assertEqual(v.MAX_SHORT_ID_LENGTH, 128)
         self.assertEqual(v.MAX_ROLE_LENGTH, 64)
         self.assertEqual(v.MAX_NAME_LENGTH, 256)
@@ -374,18 +374,18 @@ class TestGl114ChallengeLengthValidation(_BaseGl114):
         self.assertEqual(ch.resource, "repo-a")
 
     def test_create_challenge_rejects_overlong_subject_id(self):
-        from backend.src.validation import ValidationError
+        from backend.src.core.validation import ValidationError
         with self.assertRaises(ValidationError) as ctx:
             self.ch_mod.create_challenge("x" * 129, "read", "repo-a")
         self.assertIn("subject_id", str(ctx.exception))
 
     def test_create_challenge_rejects_overlong_action(self):
-        from backend.src.validation import ValidationError
+        from backend.src.core.validation import ValidationError
         with self.assertRaises(ValidationError):
             self.ch_mod.create_challenge("sub-1", "x" * 257, "repo-a")
 
     def test_create_challenge_rejects_overlong_resource(self):
-        from backend.src.validation import ValidationError
+        from backend.src.core.validation import ValidationError
         with self.assertRaises(ValidationError):
             self.ch_mod.create_challenge("sub-1", "read", "x" * 257)
 
@@ -416,7 +416,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
         self.assertEqual(created.subject_id, "sub-1")
 
     def test_create_grant_request_rejects_overlong_subject_id(self):
-        from backend.src.validation import ValidationError
+        from backend.src.core.validation import ValidationError
         req = self.models_mod.GrantRequest(
             subject_id="x" * 129,
             role="engineer",
@@ -432,7 +432,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
         self.assertIn("subject_id", str(ctx.exception))
 
     def test_create_grant_request_rejects_overlong_role(self):
-        from backend.src.validation import ValidationError
+        from backend.src.core.validation import ValidationError
         req = self.models_mod.GrantRequest(
             subject_id="sub-1",
             role="x" * 65,
@@ -447,7 +447,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             self.requests_mod.create_grant_request(req)
 
     def test_create_grant_request_rejects_overlong_action(self):
-        from backend.src.validation import ValidationError
+        from backend.src.core.validation import ValidationError
         req = self.models_mod.GrantRequest(
             subject_id="sub-1",
             role="engineer",
@@ -462,7 +462,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             self.requests_mod.create_grant_request(req)
 
     def test_create_grant_request_rejects_overlong_resource(self):
-        from backend.src.validation import ValidationError
+        from backend.src.core.validation import ValidationError
         req = self.models_mod.GrantRequest(
             subject_id="sub-1",
             role="engineer",
@@ -477,7 +477,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             self.requests_mod.create_grant_request(req)
 
     def test_create_grant_request_rejects_overlong_reason(self):
-        from backend.src.validation import ValidationError
+        from backend.src.core.validation import ValidationError
         req = self.models_mod.GrantRequest(
             subject_id="sub-1",
             role="engineer",
@@ -506,7 +506,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
         self.assertEqual(created.reason, "x" * 1000)
 
     def test_revoke_grant_request_rejects_overlong_reason(self):
-        from backend.src.validation import ValidationError
+        from backend.src.core.validation import ValidationError
         req = self.models_mod.GrantRequest(
             subject_id="sub-1",
             role="engineer",

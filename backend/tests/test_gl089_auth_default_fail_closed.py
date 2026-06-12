@@ -34,15 +34,15 @@ class _BaseGl089(unittest.TestCase):
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
         self._orig_runtime_mode = os.environ.get("GRANTLAYER_RUNTIME_MODE")
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
@@ -71,7 +71,7 @@ class _BaseGl089(unittest.TestCase):
         """Make an HTTP request via FastAPI TestClient."""
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
-        import backend.src.db as bk_db
+        import backend.src.core.db as bk_db
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
@@ -282,7 +282,7 @@ class TestGl089LegacyEndpointProtections(_BaseGl089):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = ""
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "true"
         self._reload_config()
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
     def test_get_grants_requires_auth_even_if_admin_token_unset(self):

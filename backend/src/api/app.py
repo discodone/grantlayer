@@ -8,9 +8,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .. import config
-from ..db import init_db
-from ..logging_utils import get_logger
+from ..core import config
+from ..core.db import init_db
+from ..core.logging_utils import get_logger
 from .routers import (
     auth,
     health,

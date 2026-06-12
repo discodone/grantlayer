@@ -7,8 +7,8 @@ from typing import Annotated, Any, Optional
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
-from ...challenges import create_challenge, list_challenges
-from ...validation import MAX_NAME_LENGTH, MAX_SHORT_ID_LENGTH, validate_string_length
+from ...auth.challenges import create_challenge, list_challenges
+from ...core.validation import MAX_NAME_LENGTH, MAX_SHORT_ID_LENGTH, validate_string_length
 from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(prefix="/challenges", tags=["challenges"])

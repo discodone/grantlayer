@@ -30,27 +30,27 @@ class TestOperatorModel(unittest.TestCase):
         self._orig_require_admin = os.environ.get("GRANTLAYER_REQUIRE_ADMIN_TOKEN")
 
         # Reset modules for clean state
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
@@ -77,8 +77,8 @@ class TestOperatorModel(unittest.TestCase):
     # Helpers
     # ──────────────────────────────────────────────
     def _insert_operator(self, op_id: str, name: str, role: str, token: str, active: int = 1):
-        import backend.src.db as db_mod
-        import backend.src.operators as ops_mod
+        import backend.src.core.db as db_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         conn = db_mod.get_conn()
         try:
@@ -97,7 +97,7 @@ class TestOperatorModel(unittest.TestCase):
         importlib.reload(self.config_mod)
         importlib.reload(self.auth_mod)
         self._insert_operator(op_id, name, role, f"{op_id}-token")
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         db_mod.init_db()
         importlib.reload(self.ops_mod)
 
@@ -131,7 +131,7 @@ class TestOperatorModel(unittest.TestCase):
         importlib.reload(self.auth_mod)
 
         # Re-init DB after config change
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         db_mod.init_db()
         importlib.reload(self.ops_mod)
 
@@ -150,7 +150,7 @@ class TestOperatorModel(unittest.TestCase):
         importlib.reload(self.config_mod)
         importlib.reload(self.auth_mod)
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         db_mod.init_db()
         importlib.reload(self.ops_mod)
 
@@ -173,7 +173,7 @@ class TestOperatorModel(unittest.TestCase):
         importlib.reload(self.config_mod)
         importlib.reload(self.auth_mod)
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         db_mod.init_db()
         importlib.reload(self.ops_mod)
 
@@ -192,7 +192,7 @@ class TestOperatorModel(unittest.TestCase):
     def test_valid_token_authenticates(self):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         importlib.reload(self.config_mod)
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         db_mod.init_db()
         importlib.reload(self.ops_mod)
         importlib.reload(self.auth_mod)
@@ -206,7 +206,7 @@ class TestOperatorModel(unittest.TestCase):
     def test_invalid_token_fails(self):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         importlib.reload(self.config_mod)
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         db_mod.init_db()
         importlib.reload(self.ops_mod)
         importlib.reload(self.auth_mod)
@@ -218,7 +218,7 @@ class TestOperatorModel(unittest.TestCase):
 
     def test_inactive_operator_fails(self):
         self._insert_operator("op-1", "Alice", "owner", "token-abc", active=0)
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         db_mod.init_db()
         importlib.reload(self.ops_mod)
 

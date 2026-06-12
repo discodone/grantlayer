@@ -24,7 +24,7 @@ import unittest
 # Ensure backend is on path when running the file directly.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from backend.src.structured_logging import (
+from backend.src.core.structured_logging import (
     DEFAULT_SERVICE_NAME,
     SUPPORTED_EVENT_TYPES,
     SUPPORTED_SEVERITIES,
@@ -604,7 +604,7 @@ class TestNoExternalDependencies(unittest.TestCase):
     """GL-078: structured_logging.py must import only standard library modules."""
 
     def test_module_imports_only_stdlib(self):
-        import backend.src.structured_logging as sl
+        import backend.src.core.structured_logging as sl
 
         source = inspect.getsource(sl)
         tree = ast.parse(source)

@@ -6,13 +6,13 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, HTTPException, Query
 
-from ... import config
-from ...grant_executions import (
+from ...core import config
+from ...grants.grant_executions import (
     get_grant_execution,
     list_grant_executions,
     list_grant_executions_for_grant,
 )
-from ...grants import get_grant
+from ...grants.grants import get_grant
 from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(tags=["executions"])

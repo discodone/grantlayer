@@ -30,13 +30,13 @@ class TestGL077HealthReadinessEndpoint(unittest.TestCase):
 
         self._orig_runtime_mode = os.environ.get("GRANTLAYER_RUNTIME_MODE")
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.DB_PATH_OR_URL = self.tmp_db.name
         db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
@@ -76,7 +76,7 @@ class TestGL077HealthReadinessEndpoint(unittest.TestCase):
             os.environ.pop("GRANTLAYER_RUNTIME_MODE", None)
         else:
             os.environ["GRANTLAYER_RUNTIME_MODE"] = runtime_mode
-        import backend.src.db as bk_db
+        import backend.src.core.db as bk_db
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
         from fastapi.testclient import TestClient

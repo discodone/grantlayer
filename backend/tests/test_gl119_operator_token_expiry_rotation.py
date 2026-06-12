@@ -55,21 +55,21 @@ class _BaseGl119(unittest.TestCase):
         self._orig_rate_limit_api = os.environ.get("GRANTLAYER_RATE_LIMIT_API")
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.DB_PATH_OR_URL = self.tmp_db.name
         db_mod.DB_PATH = self.tmp_db.name
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
@@ -153,7 +153,7 @@ class _BaseGl119(unittest.TestCase):
             ok, auth_status, auth_payload = self.auth_mod.check_auth(headers.get("Authorization"))
             if not ok:
                 resp_headers = {}
-                from backend.src.structured_logging import normalize_correlation_id
+                from backend.src.core.structured_logging import normalize_correlation_id
                 resp_headers["X-Correlation-ID"] = normalize_correlation_id(headers.get("X-Correlation-ID") or headers.get("X-Request-ID"))
                 trusted_origin = os.environ.get("GRANTLAYER_CORS_ALLOWED_ORIGINS")
                 if headers.get("Origin") and headers.get("Origin") == trusted_origin:
@@ -167,7 +167,7 @@ class _BaseGl119(unittest.TestCase):
                     "reason_code": auth_payload.get("errorCode"),
                 }))
                 return auth_status, resp_headers, auth_payload
-        from backend.src.structured_logging import normalize_correlation_id
+        from backend.src.core.structured_logging import normalize_correlation_id
         if "X-Correlation-ID" in headers:
             headers["X-Correlation-ID"] = normalize_correlation_id(headers["X-Correlation-ID"])
         if "X-Request-ID" in headers:
@@ -237,7 +237,7 @@ class _BaseGl119(unittest.TestCase):
         headers = {}
         if auth_header is not None:
             headers["Authorization"] = auth_header
-        from backend.src.structured_logging import normalize_correlation_id
+        from backend.src.core.structured_logging import normalize_correlation_id
         if "X-Correlation-ID" in headers:
             headers["X-Correlation-ID"] = normalize_correlation_id(headers["X-Correlation-ID"])
         if "X-Request-ID" in headers:
@@ -283,7 +283,7 @@ class TestGl119ExpiryBasics(_BaseGl119):
         os.environ["GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE"] = "owner"
         importlib.reload(self.config_mod)
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         db_mod.init_db()
         importlib.reload(self.ops_mod)
 
@@ -540,7 +540,7 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -555,7 +555,7 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -570,7 +570,7 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -585,7 +585,7 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -611,7 +611,7 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -640,7 +640,7 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -654,7 +654,7 @@ class TestGl119ServerPath(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -734,7 +734,7 @@ class TestGl119Migration(_BaseGl119):
 
     def test_baseline_contains_new_columns(self):
         """Fresh schema from baseline contains expires_at and rotated_at."""
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         db_mod.init_db()
         conn = db_mod.get_conn()
         try:
@@ -770,7 +770,7 @@ class TestGl119LeakagePrevention(_BaseGl119):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         os.environ.pop("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", None)
         importlib.reload(self.config_mod)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 

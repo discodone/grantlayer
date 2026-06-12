@@ -34,43 +34,43 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         self._orig_admin_token = os.environ.get("GRANTLAYER_ADMIN_TOKEN")
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
 
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import backend.src.grants as grants_mod
+        import backend.src.grants.grants as grants_mod
         importlib.reload(grants_mod)
         self.grants_mod = grants_mod
 
-        import backend.src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 
-        import backend.src.challenges as ch_mod
+        import backend.src.auth.challenges as ch_mod
         importlib.reload(ch_mod)
         self.ch_mod = ch_mod
 
-        import backend.src.demo_action as demo_mod
+        import backend.src.demo.demo_action as demo_mod
         importlib.reload(demo_mod)
         self.demo_mod = demo_mod
 
-        import backend.src.crypto_signing as crypto_mod
+        import backend.src.core.crypto_signing as crypto_mod
         importlib.reload(crypto_mod)
         crypto_mod.ensure_demo_keypair()
 
-        import backend.src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import backend.src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
-        import backend.src.evidence_bundle as eb_mod
+        import backend.src.evidence.evidence_bundle as eb_mod
         importlib.reload(eb_mod)
         self.eb_mod = eb_mod
 
@@ -108,7 +108,7 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
             conn.close()
 
     def _make_grant(self):
-        from backend.src.models import Grant
+        from backend.src.core.models import Grant
         g = Grant(
             subject_id="tech-01",
             role="technician",
@@ -169,11 +169,11 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         # Must reload config first so auth sees the new flag
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.operators as fresh_ops
+        import backend.src.auth.operators as fresh_ops
         importlib.reload(fresh_ops)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         ok, status, payload = fresh_auth.check_auth(None, required_roles=["owner"])
         self.assertFalse(ok)
@@ -187,11 +187,11 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         self._insert_operator("aud-01", "Auditor", "auditor", "token-aud")
         importlib.reload(self.config_mod)
-        import backend.src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
-        import backend.src.operators as fresh_ops
+        import backend.src.auth.operators as fresh_ops
         importlib.reload(fresh_ops)
-        import backend.src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         ok, status, payload = fresh_auth.check_auth(
             "Bearer token-aud", required_roles=["owner"]
@@ -267,7 +267,7 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         self.assertFalse(result["approved"])
         # Direct signature verification should fail
         fresh_grant = self.grants_mod.get_grant(g.id)
-        import backend.src.crypto_signing as cs
+        import backend.src.core.crypto_signing as cs
         importlib.reload(cs)
         sig_result = cs.verify_grant_signature(fresh_grant)
         self.assertNotEqual(sig_result, "valid")

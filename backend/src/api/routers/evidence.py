@@ -8,10 +8,10 @@ from urllib.parse import quote as _urlquote
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import Response
 
-from ...evidence_bundle import build_evidence_bundle, export_bundle_json
-from ...evidence_completeness import build_evidence_completeness_for_execution
-from ...evidence_verification import verify_execution
-from ...grant_executions import get_grant_execution
+from ...evidence.evidence_bundle import build_evidence_bundle, export_bundle_json
+from ...evidence.evidence_completeness import build_evidence_completeness_for_execution
+from ...evidence.evidence_verification import verify_execution
+from ...grants.grant_executions import get_grant_execution
 from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(prefix="/evidence/executions", tags=["evidence"])

@@ -39,19 +39,19 @@ class _BaseGl107(unittest.TestCase):
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
         self._orig_bootstrap_token = os.environ.get("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
 
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
 
-        import src.operators as ops_mod
+        import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
         self.ops_mod = ops_mod
 
-        import src.auth as auth_mod
+        import backend.src.auth.auth as auth_mod
         importlib.reload(auth_mod)
         self.auth_mod = auth_mod
 
@@ -104,9 +104,9 @@ class TestGl107AuthFlows(_BaseGl107):
         super().setUp()
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         importlib.reload(self.config_mod)
-        import src.config as fresh_config
+        import backend.src.core.config as fresh_config
         importlib.reload(fresh_config)
-        import src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
         self.auth_mod = fresh_auth
 
@@ -163,7 +163,7 @@ class TestGl107LookupHashStorage(_BaseGl107):
         os.environ["GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE"] = "owner"
         importlib.reload(self.config_mod)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         db_mod.init_db()
         importlib.reload(self.ops_mod)
 
@@ -328,7 +328,7 @@ class TestGl107LeakagePrevention(_BaseGl107):
     def test_auth_response_does_not_contain_token_or_hash(self):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         importlib.reload(self.config_mod)
-        import src.auth as fresh_auth
+        import backend.src.auth.auth as fresh_auth
         importlib.reload(fresh_auth)
 
         self._insert_operator_with_lookup("op-1", "Alice", "owner", "my-secret-token")

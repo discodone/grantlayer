@@ -89,7 +89,7 @@ class TestPostgresHealthFields(unittest.TestCase):
     """GL-035 PostgreSQL health fields appear with simulated backend."""
 
     def test_health_postgres_struct_has_new_fields(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         orig_backend = db_mod.DB_BACKEND
         orig_url = db_mod.DB_PATH_OR_URL
         try:
@@ -112,11 +112,11 @@ class TestPostgresBoundedRetry(unittest.TestCase):
     """GL-035 bounded retry on PostgreSQL connection failures."""
 
     def test_retry_max_defaults_to_five(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         self.assertEqual(db_mod._db_retry_max, 5)
 
     def test_retry_delay_defaults_to_one_second(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         self.assertEqual(db_mod._db_retry_delay, 1.0)
 
     def test_retry_max_env_override(self):
@@ -124,7 +124,7 @@ class TestPostgresBoundedRetry(unittest.TestCase):
         orig = os.environ.get("GRANTLAYER_DB_RETRY_MAX")
         os.environ["GRANTLAYER_DB_RETRY_MAX"] = "3"
         try:
-            import src.db as db_mod
+            import backend.src.core.db as db_mod
             importlib.reload(db_mod)
             self.assertEqual(db_mod._db_retry_max, 3)
         finally:
@@ -139,7 +139,7 @@ class TestPostgresBoundedRetry(unittest.TestCase):
         orig = os.environ.get("GRANTLAYER_DB_RETRY_DELAY")
         os.environ["GRANTLAYER_DB_RETRY_DELAY"] = "2.5"
         try:
-            import src.db as db_mod
+            import backend.src.core.db as db_mod
             importlib.reload(db_mod)
             self.assertEqual(db_mod._db_retry_delay, 2.5)
         finally:
@@ -151,7 +151,7 @@ class TestPostgresBoundedRetry(unittest.TestCase):
 
     def test_postgres_connection_raises_after_retries(self):
         """When PostgreSQL is unreachable, get_conn raises after max retries."""
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
 
         try:
@@ -188,7 +188,7 @@ class TestSecretSafety(unittest.TestCase):
     """GL-035 no DSN/password exposed in health, logs, exceptions."""
 
     def _health_never_contains(self, needle: str, backend: str, url: str):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         orig_backend = db_mod.DB_BACKEND
         orig_url = db_mod.DB_PATH_OR_URL
         try:
@@ -217,7 +217,7 @@ class TestSecretSafety(unittest.TestCase):
         )
 
     def test_exception_no_dsn_on_retry_exhaustion(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         orig_backend = db_mod.DB_BACKEND
         orig_url = db_mod.DB_PATH_OR_URL
         orig_max = db_mod._db_retry_max
@@ -249,21 +249,21 @@ class TestSQLiteRemainsDefault(unittest.TestCase):
     """GL-035 SQLite is still the default when GRANTLAYER_DATABASE_URL is unset."""
 
     def test_default_backend_is_sqlite(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         self.assertEqual(db_mod.DB_BACKEND, "sqlite")
 
     def test_default_db_path_is_file(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         self.assertTrue(db_mod.DB_PATH_OR_URL.endswith("grantlayer.db"))
 
     def test_health_kind_is_file_for_default(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         health = db_mod.get_db_health()
         self.assertEqual(health["dbPathKind"], "file")
 
     def test_sqlite_fallback_when_database_url_unset(self):
         """When GRANTLAYER_DATABASE_URL is unset, SQLite is used."""
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.assertEqual(db_mod.DB_BACKEND, "sqlite")
 
@@ -272,7 +272,7 @@ class TestInvalidUrlsFailCleanly(unittest.TestCase):
     """GL-035 invalid DB URLs fail without leaking secrets."""
 
     def test_unsupported_scheme_raises(self):
-        from src.db import _parse_database_url
+        from backend.src.core.db import _parse_database_url
         with self.assertRaises(RuntimeError) as ctx:
             _parse_database_url("mysql://user:secret_password@host/db")
         msg = str(ctx.exception)
@@ -281,7 +281,7 @@ class TestInvalidUrlsFailCleanly(unittest.TestCase):
 
     def test_empty_url_returns_sqlite(self):
         """Empty string is not an invalid URL per se; it's just not configured."""
-        from src.db import _parse_database_url
+        from backend.src.core.db import _parse_database_url
         backend, path = _parse_database_url("")
         self.assertEqual(backend, "sqlite")
 
@@ -339,7 +339,7 @@ class TestPostgresIntegrationWhenAvailable(unittest.TestCase):
             raise unittest.SkipTest(f"PostgreSQL not reachable: {exc}")
 
     def test_postgres_fresh_initializes_schema(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         orig_backend = db_mod.DB_BACKEND
         orig_url = db_mod.DB_PATH_OR_URL
@@ -355,7 +355,7 @@ class TestPostgresIntegrationWhenAvailable(unittest.TestCase):
             db_mod.DB_PATH_OR_URL = orig_url
 
     def test_postgres_migrations_idempotent(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         orig_backend = db_mod.DB_BACKEND
         orig_url = db_mod.DB_PATH_OR_URL
@@ -372,7 +372,7 @@ class TestPostgresIntegrationWhenAvailable(unittest.TestCase):
             db_mod.DB_PATH_OR_URL = orig_url
 
     def test_postgres_health_returns_pg_fields(self):
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         orig_backend = db_mod.DB_BACKEND
         orig_url = db_mod.DB_PATH_OR_URL

@@ -11,11 +11,11 @@ import datetime
 import hashlib
 import json
 
-from . import audit_log
-from . import grant_executions as execs
-from . import grant_requests as greps
-from . import grants
-from .models import GrantExecution, Grant, GrantRequest, AuditEvent
+from ..audit import audit_log
+from ..grants import grant_executions as execs
+from ..grants import grant_requests as greps
+from ..grants import grants
+from ..core.models import GrantExecution, Grant, GrantRequest, AuditEvent
 
 
 SAFE_AUDIT_FIELDS = [

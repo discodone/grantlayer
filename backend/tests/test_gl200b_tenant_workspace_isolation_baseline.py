@@ -59,29 +59,29 @@ def _reload_modules(db_path: str):
     os.environ["GRANTLAYER_DB"] = db_path
     os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-    import src.db as db_mod
+    import backend.src.core.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
 
-    import src.models as models_mod
+    import backend.src.core.models as models_mod
     importlib.reload(models_mod)
 
-    import src.operators as ops_mod
+    import backend.src.auth.operators as ops_mod
     importlib.reload(ops_mod)
 
-    import src.auth as auth_mod
+    import backend.src.auth.auth as auth_mod
     importlib.reload(auth_mod)
 
-    import src.grants as grants_mod
+    import backend.src.grants.grants as grants_mod
     importlib.reload(grants_mod)
 
-    import src.challenges as ch_mod
+    import backend.src.auth.challenges as ch_mod
     importlib.reload(ch_mod)
 
-    import src.grant_requests as gr_mod
+    import backend.src.grants.grant_requests as gr_mod
     importlib.reload(gr_mod)
 
-    import src.audit_log as audit_mod
+    import backend.src.audit.audit_log as audit_mod
     importlib.reload(audit_mod)
 
     return db_mod, models_mod, ops_mod, auth_mod, grants_mod, ch_mod, gr_mod, audit_mod
@@ -162,7 +162,7 @@ class TestMigrationColumns(unittest.TestCase):
     def test_migration_idempotent(self):
         """M-003: re-running migrations does not fail."""
         # Run migrations a second time via runner directly
-        from src.migrations import runner
+        from backend.src.migrations import runner
         conn = self.db_mod.get_conn()
         try:
             runner.run_migrations(conn)
@@ -171,8 +171,8 @@ class TestMigrationColumns(unittest.TestCase):
 
     def test_workspace_id_nullable(self):
         """workspace_id is nullable (reserved for GL-200C, not enforced)."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="sub1",
             role="viewer",
@@ -209,8 +209,8 @@ class TestTenantContextOnCreate(unittest.TestCase):
 
     def test_create_grant_stores_tenant_id(self):
         """Tenant context attached on grant create."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="sub1", role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -226,8 +226,8 @@ class TestTenantContextOnCreate(unittest.TestCase):
 
     def test_create_grant_default_tenant(self):
         """Grant created without tenant_id gets 'demo' default."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="sub2", role="viewer", action="read", resource="res2",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -243,7 +243,7 @@ class TestTenantContextOnCreate(unittest.TestCase):
 
     def test_create_challenge_stores_tenant_id(self):
         """Tenant context attached on challenge create."""
-        import src.challenges as ch
+        import backend.src.auth.challenges as ch
         challenge = ch.create_challenge("sub1", "read", "res1", tenant_id="tenant_beta")
         conn = self.db_mod.get_conn()
         try:
@@ -255,9 +255,9 @@ class TestTenantContextOnCreate(unittest.TestCase):
     def test_create_grant_request_stores_tenant_id(self):
         """Tenant context attached on grant_request create."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
-        import src.grant_requests as gr
+        import backend.src.grants.grant_requests as gr
         importlib.reload(gr)
-        from src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         req = GrantRequest(
             subject_id="sub1", role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -287,8 +287,8 @@ class TestCrossTenantListFiltering(unittest.TestCase):
             pass
 
     def _make_grant(self, tenant_id, subject="subA"):
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id=subject, role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -299,7 +299,7 @@ class TestCrossTenantListFiltering(unittest.TestCase):
 
     def test_list_grants_filtered_by_tenant(self):
         """T-001: list_grants(tenant_id='t1') excludes t2 grants."""
-        import src.grants as g
+        import backend.src.grants.grants as g
         g1 = self._make_grant("t1")
         g2 = self._make_grant("t2")
         result = g.list_grants(tenant_id="t1")
@@ -309,7 +309,7 @@ class TestCrossTenantListFiltering(unittest.TestCase):
 
     def test_list_grants_no_filter_returns_all(self):
         """list_grants() with no filter returns all (backward compat for internal use)."""
-        import src.grants as g
+        import backend.src.grants.grants as g
         g1 = self._make_grant("t1")
         g2 = self._make_grant("t2")
         result = g.list_grants()
@@ -319,7 +319,7 @@ class TestCrossTenantListFiltering(unittest.TestCase):
 
     def test_list_challenges_filtered_by_tenant(self):
         """list_challenges(tenant_id) excludes other tenants."""
-        import src.challenges as ch
+        import backend.src.auth.challenges as ch
         c1 = ch.create_challenge("s1", "act", "res1", tenant_id="t1")
         c2 = ch.create_challenge("s2", "act", "res2", tenant_id="t2")
         result = ch.list_challenges(tenant_id="t1")
@@ -330,9 +330,9 @@ class TestCrossTenantListFiltering(unittest.TestCase):
     def test_list_grant_requests_filtered_by_tenant(self):
         """T-005: list_grant_requests(tenant_id) excludes other tenants."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
-        import src.grant_requests as gr
+        import backend.src.grants.grant_requests as gr
         importlib.reload(gr)
-        from src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
 
         def _req(tenant):
             req = GrantRequest(
@@ -367,8 +367,8 @@ class TestCrossTenantLookupDenial(unittest.TestCase):
 
     def test_get_grant_cross_tenant_returns_none(self):
         """get_grant(id, tenant_id='t2') returns None for t1 grant."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="s1", role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -380,8 +380,8 @@ class TestCrossTenantLookupDenial(unittest.TestCase):
 
     def test_get_grant_same_tenant_succeeds(self):
         """get_grant(id, tenant_id='t1') finds grant owned by t1."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="s1", role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -394,7 +394,7 @@ class TestCrossTenantLookupDenial(unittest.TestCase):
 
     def test_get_challenge_cross_tenant_returns_none(self):
         """get_challenge(id, tenant_id='t2') returns None for t1 challenge."""
-        import src.challenges as ch
+        import backend.src.auth.challenges as ch
         c = ch.create_challenge("s1", "act", "res1", tenant_id="t1")
         result = ch.get_challenge(c.id, tenant_id="t2")
         self.assertIsNone(result)
@@ -402,9 +402,9 @@ class TestCrossTenantLookupDenial(unittest.TestCase):
     def test_get_grant_request_cross_tenant_returns_none(self):
         """get_grant_request(id, tenant_id='t2') returns None for t1 request."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
-        import src.grant_requests as gr
+        import backend.src.grants.grant_requests as gr
         importlib.reload(gr)
-        from src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         req = GrantRequest(
             subject_id="s1", role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -431,8 +431,8 @@ class TestCrossTenantMutationDenial(unittest.TestCase):
 
     def test_revoke_grant_cross_tenant_fails(self):
         """revoke_grant with wrong tenant_id returns False (no mutation)."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="s1", role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -449,8 +449,8 @@ class TestCrossTenantMutationDenial(unittest.TestCase):
 
     def test_revoke_grant_same_tenant_succeeds(self):
         """revoke_grant with correct tenant_id succeeds."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="s1", role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -463,9 +463,9 @@ class TestCrossTenantMutationDenial(unittest.TestCase):
     def test_approve_grant_request_cross_tenant_raises(self):
         """approve_grant_request with wrong tenant raises ValueError (not found)."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
-        import src.grant_requests as gr
+        import backend.src.grants.grant_requests as gr
         importlib.reload(gr)
-        from src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         req = GrantRequest(
             subject_id="s1", role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -478,9 +478,9 @@ class TestCrossTenantMutationDenial(unittest.TestCase):
     def test_deny_grant_request_cross_tenant_raises(self):
         """deny_grant_request with wrong tenant raises ValueError (not found)."""
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
-        import src.grant_requests as gr
+        import backend.src.grants.grant_requests as gr
         importlib.reload(gr)
-        from src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
         req = GrantRequest(
             subject_id="s1", role="viewer", action="read", resource="res1",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -507,8 +507,8 @@ class TestAuditTenantContext(unittest.TestCase):
 
     def test_audit_event_stores_tenant_id(self):
         """AU-001: audit event with tenant_id is stored and retrieved."""
-        import src.audit_log as al
-        from src.models import AuditEvent
+        import backend.src.audit.audit_log as al
+        from backend.src.core.models import AuditEvent
         event = AuditEvent(
             subject_id="op1", role="operator", action="test_action",
             resource="test/resource", approved=True, reason="test",
@@ -522,8 +522,8 @@ class TestAuditTenantContext(unittest.TestCase):
 
     def test_audit_event_no_tenant_id_is_legacy(self):
         """AU-002: audit event without tenant_id is accepted (legacy/system event)."""
-        import src.audit_log as al
-        from src.models import AuditEvent
+        import backend.src.audit.audit_log as al
+        from backend.src.core.models import AuditEvent
         event = AuditEvent(
             subject_id="system", role="system", action="health_check",
             resource="health", approved=True, reason="probe",
@@ -535,8 +535,8 @@ class TestAuditTenantContext(unittest.TestCase):
 
     def test_list_events_filtered_by_tenant(self):
         """T-003: list_events(tenant_id='t1') excludes t2 events."""
-        import src.audit_log as al
-        from src.models import AuditEvent
+        import backend.src.audit.audit_log as al
+        from backend.src.core.models import AuditEvent
         e1 = AuditEvent(
             subject_id="op1", role="operator", action="act1",
             resource="res1", approved=True, reason="r",
@@ -556,8 +556,8 @@ class TestAuditTenantContext(unittest.TestCase):
 
     def test_audit_to_dict_includes_tenant_id(self):
         """AuditEvent.to_dict() includes tenant_id and scope."""
-        import src.audit_log as al
-        from src.models import AuditEvent
+        import backend.src.audit.audit_log as al
+        from backend.src.core.models import AuditEvent
         event = AuditEvent(
             subject_id="op1", role="operator", action="act",
             resource="res", approved=True, reason="r",
@@ -586,8 +586,8 @@ class TestAuditHashChainIntegrity(unittest.TestCase):
 
     def test_chain_valid_with_tenant_id_events(self):
         """Hash chain is valid for events with tenant_id."""
-        import src.audit_log as al
-        from src.models import AuditEvent
+        import backend.src.audit.audit_log as al
+        from backend.src.core.models import AuditEvent
         for i in range(3):
             al.append_event(AuditEvent(
                 subject_id="op1", role="operator", action=f"act{i}",
@@ -600,8 +600,8 @@ class TestAuditHashChainIntegrity(unittest.TestCase):
 
     def test_chain_valid_with_mixed_events(self):
         """Hash chain valid for mix of pre-migration (no tenant_id) and new events."""
-        import src.audit_log as al
-        from src.models import AuditEvent
+        import backend.src.audit.audit_log as al
+        from backend.src.core.models import AuditEvent
         # Pre-migration event (no tenant_id)
         al.append_event(AuditEvent(
             subject_id="sys", role="system", action="bootstrap",
@@ -619,15 +619,15 @@ class TestAuditHashChainIntegrity(unittest.TestCase):
 
     def test_chain_valid_empty(self):
         """Hash chain valid for empty audit log."""
-        import src.audit_log as al
+        import backend.src.audit.audit_log as al
         result = al.verify_audit_hash_chain()
         self.assertTrue(result["valid"])
         self.assertEqual(result["checked"], 0)
 
     def test_chain_valid_no_tenant_events(self):
         """Hash chain valid for legacy events without tenant_id."""
-        import src.audit_log as al
-        from src.models import AuditEvent
+        import backend.src.audit.audit_log as al
+        from backend.src.core.models import AuditEvent
         for i in range(3):
             al.append_event(AuditEvent(
                 subject_id="op1", role="operator", action=f"legacy{i}",
@@ -655,14 +655,14 @@ class TestOperatorTenantContext(unittest.TestCase):
 
     def test_operator_has_tenant_id_field(self):
         """Operator object carries tenant_id."""
-        import src.operators as ops
+        import backend.src.auth.operators as ops
         importlib.reload(ops)
         op, token = ops.create_operator("Alice", "owner", "tok-alice-123", tenant_id="t_alice")
         self.assertEqual(op.tenant_id, "t_alice")
 
     def test_operator_to_dict_includes_tenant_id(self):
         """Operator.to_dict() includes tenantId."""
-        import src.operators as ops
+        import backend.src.auth.operators as ops
         importlib.reload(ops)
         op, token = ops.create_operator("Bob", "grant_admin", "tok-bob-456", tenant_id="t_bob")
         d = op.to_dict()
@@ -671,7 +671,7 @@ class TestOperatorTenantContext(unittest.TestCase):
 
     def test_authenticate_operator_returns_tenant_id(self):
         """authenticate_operator_with_reason returns operator with tenant_id."""
-        import src.operators as ops
+        import backend.src.auth.operators as ops
         importlib.reload(ops)
         op, token = ops.create_operator("Carol", "owner", token="tok-carol-789", tenant_id="t_carol")
         result, reason = ops.authenticate_operator_with_reason(f"Bearer {token}")
@@ -680,9 +680,9 @@ class TestOperatorTenantContext(unittest.TestCase):
 
     def test_check_auth_operator_mode_includes_tenant_id(self):
         """check_auth() includes tenant_id in payload when operator mode active."""
-        import src.operators as ops
-        import src.config as conf
-        import src.auth as auth
+        import backend.src.auth.operators as ops
+        import backend.src.core.config as conf
+        import backend.src.auth.auth as auth
         importlib.reload(ops)
         importlib.reload(conf)
         importlib.reload(auth)
@@ -694,7 +694,7 @@ class TestOperatorTenantContext(unittest.TestCase):
 
     def test_operator_row_reads_tenant_id(self):
         """Operator read back from DB has correct tenant_id."""
-        import src.operators as ops
+        import backend.src.auth.operators as ops
         importlib.reload(ops)
         op, token = ops.create_operator("Eve", "auditor", "tok-eve-111", tenant_id="t_eve")
         fetched = ops.get_operator_by_id(op.operator_id)
@@ -721,8 +721,8 @@ class TestAdminTokenDevTenant(unittest.TestCase):
 
     def test_check_auth_admin_token_returns_demo_tenant(self):
         """Admin token auth returns tenant_id='demo' (backward compat with legacy resources)."""
-        import src.auth as auth
-        import src.config as conf
+        import backend.src.auth.auth as auth
+        import backend.src.core.config as conf
         importlib.reload(conf)
         importlib.reload(auth)
         ok, status, payload = auth.check_auth("Bearer test-admin-token")
@@ -731,8 +731,8 @@ class TestAdminTokenDevTenant(unittest.TestCase):
 
     def test_check_admin_token_direct_returns_demo_tenant(self):
         """check_auth in legacy admin mode includes tenant_id='demo'."""
-        import src.auth as auth
-        import src.config as conf
+        import backend.src.auth.auth as auth
+        import backend.src.core.config as conf
         importlib.reload(conf)
         importlib.reload(auth)
         ok, status, payload = auth.check_auth("Bearer test-admin-token")
@@ -756,8 +756,8 @@ class TestLegacyBackfillIsolation(unittest.TestCase):
 
     def test_backfill_grants_get_demo_tenant(self):
         """Grants created without tenant_id are stored as 'demo' (backfill default)."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="legacy", role="viewer", action="read", resource="legacy_res",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -774,8 +774,8 @@ class TestLegacyBackfillIsolation(unittest.TestCase):
 
     def test_demo_tenant_grants_not_visible_to_other_tenants(self):
         """Demo/legacy grants with 'demo' tenant are not visible to 'prod' tenant."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="legacy", role="viewer", action="read", resource="legacy_res",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -789,8 +789,8 @@ class TestLegacyBackfillIsolation(unittest.TestCase):
 
     def test_demo_tenant_grants_visible_to_demo_tenant(self):
         """Demo/legacy grants with 'demo' tenant are visible to 'demo' tenant queries."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="legacy", role="viewer", action="read", resource="legacy_res",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -817,7 +817,7 @@ class TestHealthReadinessPublic(unittest.TestCase):
 
     def test_db_health_contains_no_tenant_data(self):
         """get_db_health() returns no tenant_id, no operator data."""
-        import src.db as db
+        import backend.src.core.db as db
         importlib.reload(db)
         health = db.get_db_health()
         self.assertNotIn("tenant_id", health)
@@ -862,8 +862,8 @@ class TestWorkspaceIdReserved(unittest.TestCase):
 
     def test_workspace_id_is_null_by_default(self):
         """workspace_id defaults to NULL (not enforced in GL-200B)."""
-        import src.grants as g
-        from src.models import Grant
+        import backend.src.grants.grants as g
+        from backend.src.core.models import Grant
         grant = Grant(
             subject_id="ws_test", role="viewer", action="read", resource="r",
             valid_from=_past_date(1), valid_until=_future_date(30),
@@ -896,10 +896,10 @@ class TestAuditGrantRequestTenantPropagation(unittest.TestCase):
 
     def test_deny_writes_audit_event_with_tenant_id(self):
         """deny_grant_request writes an audit event carrying the tenant_id."""
-        import src.grant_requests as gr
-        import src.audit_log as al
+        import backend.src.grants.grant_requests as gr
+        import backend.src.audit.audit_log as al
         importlib.reload(gr)
-        from src.models import GrantRequest
+        from backend.src.core.models import GrantRequest
 
         req = GrantRequest(
             subject_id="sub1", role="viewer", action="read", resource="r",

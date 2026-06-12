@@ -18,7 +18,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
 
     # ── Module location ─────────────────────────────────────────
     def test_module_is_importable(self):
-        from src import agent_permission_profiles as app
+        from backend.src.policy import agent_permission_profiles as app
         self.assertTrue(hasattr(app, "get_agent_permission_profile"))
         self.assertTrue(hasattr(app, "list_agent_permission_profiles"))
         self.assertTrue(hasattr(app, "expand_agent_permission_profiles"))
@@ -26,7 +26,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
 
     # ── get_agent_permission_profile ────────────────────────────
     def test_known_profile_auditor_readonly(self):
-        from src.agent_permission_profiles import get_agent_permission_profile
+        from backend.src.policy.agent_permission_profiles import get_agent_permission_profile
         profile = get_agent_permission_profile("auditor_readonly")
         self.assertIsNotNone(profile)
         self.assertEqual(profile["profileName"], "auditor_readonly")
@@ -40,34 +40,34 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
         self.assertEqual(profile["scopes"], expected)
 
     def test_known_profile_evidence_verifier(self):
-        from src.agent_permission_profiles import get_agent_permission_profile
+        from backend.src.policy.agent_permission_profiles import get_agent_permission_profile
         profile = get_agent_permission_profile("evidence_verifier")
         self.assertIsNotNone(profile)
         self.assertIn("evidence:verify", profile["scopes"])
         self.assertNotIn("admin:*", profile["scopes"])
 
     def test_known_profile_grant_operator_readonly(self):
-        from src.agent_permission_profiles import get_agent_permission_profile
+        from backend.src.policy.agent_permission_profiles import get_agent_permission_profile
         profile = get_agent_permission_profile("grant_operator_readonly")
         self.assertIsNotNone(profile)
         self.assertIn("grant:read", profile["scopes"])
         self.assertIn("evidence:read", profile["scopes"])
 
     def test_known_profile_compliance_reviewer(self):
-        from src.agent_permission_profiles import get_agent_permission_profile
+        from backend.src.policy.agent_permission_profiles import get_agent_permission_profile
         profile = get_agent_permission_profile("compliance_reviewer")
         self.assertIsNotNone(profile)
         self.assertIn("compliance_gap:read", profile["scopes"])
         self.assertIn("grant:read", profile["scopes"])
 
     def test_unknown_profile_returns_none(self):
-        from src.agent_permission_profiles import get_agent_permission_profile
+        from backend.src.policy.agent_permission_profiles import get_agent_permission_profile
         self.assertIsNone(get_agent_permission_profile("nonexistent_profile"))
         self.assertIsNone(get_agent_permission_profile(""))
         self.assertIsNone(get_agent_permission_profile("   "))
 
     def test_profile_name_is_case_insensitive(self):
-        from src.agent_permission_profiles import get_agent_permission_profile
+        from backend.src.policy.agent_permission_profiles import get_agent_permission_profile
         lower = get_agent_permission_profile("auditor_readonly")
         upper = get_agent_permission_profile("AUDITOR_READONLY")
         mixed = get_agent_permission_profile("Auditor_Readonly")
@@ -79,14 +79,14 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
 
     # ── list_agent_permission_profiles ──────────────────────────
     def test_list_profiles_returns_deterministic_order(self):
-        from src.agent_permission_profiles import list_agent_permission_profiles
+        from backend.src.policy.agent_permission_profiles import list_agent_permission_profiles
         profiles = list_agent_permission_profiles()
         names = [p["profileName"] for p in profiles]
         self.assertEqual(names, sorted(names))
         self.assertTrue(len(profiles) >= 4)
 
     def test_list_profiles_contains_all_built_ins(self):
-        from src.agent_permission_profiles import list_agent_permission_profiles
+        from backend.src.policy.agent_permission_profiles import list_agent_permission_profiles
         profiles = list_agent_permission_profiles()
         names = {p["profileName"] for p in profiles}
         self.assertIn("auditor_readonly", names)
@@ -96,7 +96,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
 
     # ── expand_agent_permission_profiles ────────────────────────
     def test_expand_multiple_profiles_returns_deduplicated_sorted_scopes(self):
-        from src.agent_permission_profiles import expand_agent_permission_profiles
+        from backend.src.policy.agent_permission_profiles import expand_agent_permission_profiles
         result = expand_agent_permission_profiles(["auditor_readonly", "evidence_verifier"])
         scopes = result["scopes"]
         self.assertEqual(scopes, sorted(set(scopes)))
@@ -105,7 +105,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
         self.assertIn("auditor_report:read", scopes)
 
     def test_expand_duplicate_profile_names_do_not_duplicate_scopes(self):
-        from src.agent_permission_profiles import expand_agent_permission_profiles
+        from backend.src.policy.agent_permission_profiles import expand_agent_permission_profiles
         result = expand_agent_permission_profiles(
             ["auditor_readonly", "auditor_readonly"]
         )
@@ -113,7 +113,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
         self.assertEqual(len(scopes), len(set(scopes)))
 
     def test_expand_unknown_profile_adds_warning(self):
-        from src.agent_permission_profiles import expand_agent_permission_profiles
+        from backend.src.policy.agent_permission_profiles import expand_agent_permission_profiles
         result = expand_agent_permission_profiles(["auditor_readonly", "unknown_xyz"])
         self.assertIn("evidence:read", result["scopes"])
         self.assertTrue(
@@ -122,7 +122,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
         )
 
     def test_expand_empty_list_returns_empty(self):
-        from src.agent_permission_profiles import expand_agent_permission_profiles
+        from backend.src.policy.agent_permission_profiles import expand_agent_permission_profiles
         result = expand_agent_permission_profiles([])
         self.assertEqual(result["scopes"], [])
         self.assertEqual(result["scopeCount"], 0)
@@ -130,7 +130,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
 
     # ── Security / validation ───────────────────────────────────
     def test_no_builtin_profile_contains_admin_star(self):
-        from src.agent_permission_profiles import (
+        from backend.src.policy.agent_permission_profiles import (
             list_agent_permission_profiles,
             expand_agent_permission_profiles,
         )
@@ -142,8 +142,8 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
         self.assertNotIn("admin:*", expanded["scopes"])
 
     def test_no_builtin_profile_contains_malformed_scopes(self):
-        from src.agent_permission_profiles import list_agent_permission_profiles
-        from src.agent_permissions import _is_valid_format
+        from backend.src.policy.agent_permission_profiles import list_agent_permission_profiles
+        from backend.src.policy.agent_permissions import _is_valid_format
         profiles = list_agent_permission_profiles()
         for profile in profiles:
             for scope in profile["scopes"]:
@@ -153,8 +153,8 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
                 )
 
     def test_profile_scopes_work_with_evaluate_agent_permission(self):
-        from src.agent_permission_profiles import get_agent_permission_profile
-        from src.agent_permissions import evaluate_agent_permission
+        from backend.src.policy.agent_permission_profiles import get_agent_permission_profile
+        from backend.src.policy.agent_permissions import evaluate_agent_permission
         profile = get_agent_permission_profile("auditor_readonly")
         for scope in profile["scopes"]:
             result = evaluate_agent_permission(
@@ -167,7 +167,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
 
     # ── Response shape ──────────────────────────────────────────
     def test_profile_result_has_minimum_fields(self):
-        from src.agent_permission_profiles import get_agent_permission_profile
+        from backend.src.policy.agent_permission_profiles import get_agent_permission_profile
         profile = get_agent_permission_profile("auditor_readonly")
         self.assertIn("profileName", profile)
         self.assertIn("description", profile)
@@ -179,7 +179,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
         self.assertIsInstance(profile["warnings"], list)
 
     def test_expand_result_has_minimum_fields(self):
-        from src.agent_permission_profiles import expand_agent_permission_profiles
+        from backend.src.policy.agent_permission_profiles import expand_agent_permission_profiles
         result = expand_agent_permission_profiles(["auditor_readonly"])
         self.assertIn("scopes", result)
         self.assertIn("scopeCount", result)
@@ -188,7 +188,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
 
     # ── Secrets safety ──────────────────────────────────────────
     def test_profile_response_does_not_expose_secrets(self):
-        from src.agent_permission_profiles import (
+        from backend.src.policy.agent_permission_profiles import (
             get_agent_permission_profile,
             list_agent_permission_profiles,
             expand_agent_permission_profiles,
@@ -201,7 +201,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
 
     # ── build_agent_permission_profile_result ───────────────────
     def test_build_result_validates_unknown_scopes(self):
-        from src.agent_permission_profiles import build_agent_permission_profile_result
+        from backend.src.policy.agent_permission_profiles import build_agent_permission_profile_result
         result = build_agent_permission_profile_result(
             profile_name="test",
             scopes=["evidence:read", "unknown:action", "badscope"],
@@ -212,7 +212,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
         self.assertTrue(len(result["warnings"]) >= 1)
 
     def test_build_result_deduplicates_scopes(self):
-        from src.agent_permission_profiles import build_agent_permission_profile_result
+        from backend.src.policy.agent_permission_profiles import build_agent_permission_profile_result
         result = build_agent_permission_profile_result(
             profile_name="test",
             scopes=["evidence:read", "evidence:read"],
@@ -221,7 +221,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
         self.assertEqual(result["scopeCount"], 1)
 
     def test_build_result_with_description(self):
-        from src.agent_permission_profiles import build_agent_permission_profile_result
+        from backend.src.policy.agent_permission_profiles import build_agent_permission_profile_result
         result = build_agent_permission_profile_result(
             profile_name="test",
             scopes=["evidence:read"],
@@ -230,7 +230,7 @@ class TestAgentPermissionScopeProfiles(unittest.TestCase):
         self.assertEqual(result["description"], "A test profile.")
 
     def test_build_result_without_description_defaults_to_empty(self):
-        from src.agent_permission_profiles import build_agent_permission_profile_result
+        from backend.src.policy.agent_permission_profiles import build_agent_permission_profile_result
         result = build_agent_permission_profile_result(
             profile_name="test",
             scopes=["evidence:read"],

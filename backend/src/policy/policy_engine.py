@@ -5,7 +5,7 @@ Fail-closed: any ambiguity results in denial.
 
 import datetime
 from typing import List
-from .models import AccessRequest, Grant, PolicyResult
+from ..core.models import AccessRequest, Grant, PolicyResult
 
 
 def _parse_iso(ts: str) -> datetime.datetime:

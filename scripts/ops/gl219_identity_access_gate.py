@@ -45,12 +45,12 @@ REQUIRED_PATHS = [
     "AGENTS.md",
     "llms.txt",
     "llms-full.txt",
-    "backend/src/auth.py",
-    "backend/src/config.py",
-    "backend/src/operators.py",
-    "backend/src/audit_log.py",
-    "backend/src/db.py",
-    "backend/src/models.py",
+    "backend/src/auth/auth.py",
+    "backend/src/core/config.py",
+    "backend/src/auth/operators.py",
+    "backend/src/audit/audit_log.py",
+    "backend/src/core/db.py",
+    "backend/src/core/models.py",
     "scripts/ops/gl216_production_operations_gate.py",
     "scripts/ops/gl218_public_export_safety_scan.py",
     "scripts/verify-first-output.sh",
@@ -72,8 +72,8 @@ def _repo_root() -> Path:
 
 def _load_posture():
     root = _repo_root()
-    sys.path.insert(0, str(root / "backend"))
-    from src.identity_access import describe_identity_access_posture
+    sys.path.insert(0, str(root))
+    from backend.src.auth.identity_access import describe_identity_access_posture
 
     return describe_identity_access_posture()
 

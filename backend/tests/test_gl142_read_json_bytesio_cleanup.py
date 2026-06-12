@@ -44,10 +44,10 @@ def _load_modules():
     tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     os.environ.setdefault("GRANTLAYER_DB", tmp.name)
     os.environ.setdefault("GRANTLAYER_ADMIN_TOKEN", "test-admin-token")
-    import backend.src.db as db_mod
+    import backend.src.core.db as db_mod
     importlib.reload(db_mod)
     db_mod.init_db()
-    import backend.src.config as config_mod
+    import backend.src.core.config as config_mod
     importlib.reload(config_mod)
     return config_mod, tmp.name
 
@@ -403,10 +403,10 @@ class TestGl142Gl139Preserved(unittest.TestCase):
         self._tmp_db = tmp.name
         self._orig_db = os.environ.get("GRANTLAYER_DB")
         os.environ["GRANTLAYER_DB"] = self._tmp_db
-        import backend.src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         db_mod.init_db()
-        import backend.src.audit_log as audit_mod
+        import backend.src.audit.audit_log as audit_mod
         importlib.reload(audit_mod)
         self.audit_mod = audit_mod
 

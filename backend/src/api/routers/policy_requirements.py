@@ -6,7 +6,7 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header
 
-from ...policy_requirements import evaluate_policy_requirements
+from ...policy.policy_requirements import evaluate_policy_requirements
 from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(prefix="/policy-requirements", tags=["policy-requirements"])

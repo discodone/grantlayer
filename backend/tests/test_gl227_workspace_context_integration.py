@@ -34,12 +34,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
-    import backend.src.db as _db
-    import backend.src.config as _cfg
-    import backend.src.operators as _ops
+    import backend.src.core.db as _db
+    import backend.src.core.config as _cfg
+    import backend.src.auth.operators as _ops
     from fastapi.testclient import TestClient
     from backend.src.api.app import create_app
-    from backend.src.auth import resolve_workspace_context
+    from backend.src.auth.auth import resolve_workspace_context
     _SKIP = lambda cls: cls  # noqa: E731
 except ImportError:
     _SKIP = unittest.skip("FastAPI/backend not available")
@@ -294,8 +294,8 @@ class TestGetGrantsLegacyMode(_Base):
 
     def test_get_grants_legacy_tenant_is_demo(self):
         """Legacy mode: tenant_id should resolve to 'demo'."""
-        from backend.src.models import Grant
-        import backend.src.grants as _grants
+        from backend.src.core.models import Grant
+        import backend.src.grants.grants as _grants
         g = Grant(
             subject_id="s1", role="r1", action="a1", resource="res1",
             valid_from=_past(10), valid_until=_future(10),
@@ -310,8 +310,8 @@ class TestGetGrantsLegacyMode(_Base):
 
     def test_get_grants_other_tenant_not_visible_in_legacy(self):
         """Grants created for a different tenant are not returned in demo-mode listing."""
-        from backend.src.models import Grant
-        import backend.src.grants as _grants
+        from backend.src.core.models import Grant
+        import backend.src.grants.grants as _grants
         g_other = Grant(
             subject_id="s-other", role="r1", action="a1", resource="res1",
             valid_from=_past(10), valid_until=_future(10),
@@ -353,8 +353,8 @@ class TestGetGrantsOperatorMode(_Base):
     def test_get_grants_tenant_isolation(self):
         """Grants from another tenant are not visible to this operator."""
         op_id, token = self._op(name="owner3", role="grant_admin", token="tok-ws006b", ws_id="ws-006b")
-        from backend.src.models import Grant
-        import backend.src.grants as _grants
+        from backend.src.core.models import Grant
+        import backend.src.grants.grants as _grants
         g_other = Grant(
             subject_id="s-other", role="r1", action="a1", resource="res1",
             valid_from=_past(10), valid_until=_future(10),
@@ -465,8 +465,8 @@ class TestRevokeGrantWorkspaceContext(_Base):
     def test_revoke_grant_single_membership_200(self):
         """Operator with workspace membership can revoke a grant in their tenant."""
         op_id, token = self._op(name="owner7", role="grant_admin", token="tok-ws010a", ws_id="ws-010a")
-        from backend.src.models import Grant
-        import backend.src.grants as _grants
+        from backend.src.core.models import Grant
+        import backend.src.grants.grants as _grants
         g = Grant(
             subject_id="s1", role="r1", action="a1", resource="res1",
             valid_from=_past(10), valid_until=_future(30),
@@ -487,8 +487,8 @@ class TestRevokeGrantWorkspaceContext(_Base):
         op_id = "op-nows-010"
         _insert_operator(op_id, "nows10", "grant_admin", "tok-nows-010", tenant_id="t1")
         _insert_workspace("ws-sentinel-010", "t1")
-        from backend.src.models import Grant
-        import backend.src.grants as _grants
+        from backend.src.core.models import Grant
+        import backend.src.grants.grants as _grants
         g = Grant(
             subject_id="s1", role="r1", action="a1", resource="res1",
             valid_from=_past(10), valid_until=_future(30),
@@ -512,8 +512,8 @@ class TestRevokeGrantWorkspaceContext(_Base):
         _insert_workspace("ws-010b", "t1")
         _insert_member("ws-010b", op_id, role="workspace_readonly")
 
-        from backend.src.models import Grant
-        import backend.src.grants as _grants
+        from backend.src.core.models import Grant
+        import backend.src.grants.grants as _grants
         g = Grant(
             subject_id="s1", role="r1", action="a1", resource="res1",
             valid_from=_past(10), valid_until=_future(30),
@@ -567,8 +567,8 @@ class TestTenantIdFromWorkspaceContext(_Base):
         """Workspace context provides tenant_id that matches operator's registered tenant."""
         op_id, token = self._op(name="owner9", role="grant_admin", token="tok-ws012a",
                                 tenant_id="tenant-abc", ws_id="ws-012a")
-        from backend.src.models import Grant
-        import backend.src.grants as _grants
+        from backend.src.core.models import Grant
+        import backend.src.grants.grants as _grants
         g = Grant(
             subject_id="s1", role="r1", action="a1", resource="res1",
             valid_from=_past(10), valid_until=_future(30),
@@ -633,8 +633,8 @@ class TestCrossTenantIsolationPreserved(_Base):
         """After GL-227, cross-tenant grant isolation is still enforced."""
         op_id, token = self._op(name="owner10", role="grant_admin", token="tok-ws014a",
                                 tenant_id="tenant-014", ws_id="ws-014a")
-        from backend.src.models import Grant
-        import backend.src.grants as _grants
+        from backend.src.core.models import Grant
+        import backend.src.grants.grants as _grants
         g_mine = Grant(
             subject_id="s1", role="r1", action="a1", resource="res1",
             valid_from=_past(10), valid_until=_future(30),
@@ -675,7 +675,7 @@ class TestSafetyConfirmations(unittest.TestCase):
         """server.py imports resolve_workspace_context from auth."""
         import importlib
         import tempfile
-        import backend.src.db as _db_inner
+        import backend.src.core.db as _db_inner
         tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         tmp.close()
         orig_db = os.environ.get("GRANTLAYER_DB")
@@ -684,7 +684,7 @@ class TestSafetyConfirmations(unittest.TestCase):
             _db_inner.DB_PATH_OR_URL = tmp.name
             _db_inner.DB_PATH = tmp.name
             _db_inner.init_db()
-            from backend.src.auth import resolve_workspace_context, check_workspace_resource_access
+            from backend.src.auth.auth import resolve_workspace_context, check_workspace_resource_access
             self.assertTrue(callable(resolve_workspace_context))
             self.assertTrue(callable(check_workspace_resource_access))
         finally:

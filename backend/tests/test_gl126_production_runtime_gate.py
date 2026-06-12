@@ -96,25 +96,25 @@ class TestGl126RuntimeModeRecognition(unittest.TestCase):
     """Verify recognized runtime modes and production-like classification."""
 
     def test_all_supported_modes_documented(self):
-        from backend.src.runtime_config import SUPPORTED_MODES
+        from backend.src.core.runtime_config import SUPPORTED_MODES
         expected = {"local", "test", "demo", "staging", "production"}
         self.assertEqual(SUPPORTED_MODES, expected)
 
     def test_production_like_modes_recognized(self):
-        from backend.src.runtime_config import PRODUCTION_LIKE_MODES, is_production_like
+        from backend.src.core.runtime_config import PRODUCTION_LIKE_MODES, is_production_like
         self.assertEqual(PRODUCTION_LIKE_MODES, {"staging", "production"})
         for mode in PRODUCTION_LIKE_MODES:
             with self.subTest(mode=mode):
                 self.assertTrue(is_production_like(mode=mode))
 
     def test_local_test_demo_are_not_production_like(self):
-        from backend.src.runtime_config import is_production_like
+        from backend.src.core.runtime_config import is_production_like
         for mode in ("local", "test", "demo"):
             with self.subTest(mode=mode):
                 self.assertFalse(is_production_like(mode=mode))
 
     def test_unsupported_mode_raises_value_error(self):
-        from backend.src.runtime_config import is_production_like
+        from backend.src.core.runtime_config import is_production_like
         with self.assertRaises(ValueError) as ctx:
             is_production_like(mode="unknown")
         self.assertIn("Unsupported runtime mode", str(ctx.exception))
@@ -143,7 +143,7 @@ class TestGl126ProductionLikeConfigGate(unittest.TestCase):
                 os.environ[key] = orig
 
     def _reload_config(self):
-        import backend.src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         return config_mod
 
@@ -224,7 +224,7 @@ class TestGl126ProductionLikeConfigGate(unittest.TestCase):
         )
 
     def test_local_mode_can_run_without_strict_config(self):
-        from backend.src.runtime_config import is_production_like
+        from backend.src.core.runtime_config import is_production_like
         os.environ["GRANTLAYER_RUNTIME_MODE"] = "local"
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
@@ -241,7 +241,7 @@ class TestGl126ProductionLikeConfigGate(unittest.TestCase):
         self.assertFalse(is_production_like(mode=config.RUNTIME_MODE))
 
     def test_test_mode_can_run_without_strict_config(self):
-        from backend.src.runtime_config import is_production_like
+        from backend.src.core.runtime_config import is_production_like
         os.environ["GRANTLAYER_RUNTIME_MODE"] = "test"
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
@@ -252,7 +252,7 @@ class TestGl126ProductionLikeConfigGate(unittest.TestCase):
         self.assertFalse(is_production_like(mode=config.RUNTIME_MODE))
 
     def test_demo_mode_can_run_without_strict_config(self):
-        from backend.src.runtime_config import is_production_like
+        from backend.src.core.runtime_config import is_production_like
         os.environ["GRANTLAYER_RUNTIME_MODE"] = "demo"
         os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
@@ -289,7 +289,7 @@ class TestGl126SecretRedaction(unittest.TestCase):
     """Verify secret values are redacted in runtime metadata output."""
 
     def test_describe_runtime_config_does_not_expose_db_url(self):
-        from backend.src.runtime_config import describe_runtime_config
+        from backend.src.core.runtime_config import describe_runtime_config
         env = {
             "GRANTLAYER_RUNTIME_MODE": "staging",
             "GRANTLAYER_DATABASE_URL": "postgres://user:secret_pass@localhost/db",
@@ -300,7 +300,7 @@ class TestGl126SecretRedaction(unittest.TestCase):
         self.assertNotIn("postgres://", result_str)
 
     def test_describe_runtime_config_does_not_expose_private_key(self):
-        from backend.src.runtime_config import describe_runtime_config
+        from backend.src.core.runtime_config import describe_runtime_config
         env = {
             "GRANTLAYER_RUNTIME_MODE": "production",
             "GRANTLAYER_SIGNING_PRIVATE_KEY": "FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE",
@@ -310,7 +310,7 @@ class TestGl126SecretRedaction(unittest.TestCase):
         self.assertNotIn("FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE", result_str)
 
     def test_describe_runtime_config_does_not_expose_operator_token(self):
-        from backend.src.runtime_config import describe_runtime_config
+        from backend.src.core.runtime_config import describe_runtime_config
         env = {
             "GRANTLAYER_RUNTIME_MODE": "production",
             "GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN": "op-bootstrap-secret-123",
@@ -320,7 +320,7 @@ class TestGl126SecretRedaction(unittest.TestCase):
         self.assertNotIn("op-bootstrap-secret-123", result_str)
 
     def test_describe_runtime_config_does_not_expose_passphrase(self):
-        from backend.src.runtime_config import describe_runtime_config
+        from backend.src.core.runtime_config import describe_runtime_config
         env = {
             "GRANTLAYER_RUNTIME_MODE": "production",
             "GRANTLAYER_SIGNING_PRIVATE_KEY_PASSPHRASE": "my-passphrase-42",

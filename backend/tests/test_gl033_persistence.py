@@ -33,7 +33,7 @@ class TestGL033Persistence(unittest.TestCase):
         if self._orig_url is not None:
             os.environ.pop("GRANTLAYER_DATABASE_URL", None)
 
-        import src.db as db_mod
+        import backend.src.core.db as db_mod
         importlib.reload(db_mod)
         self.db_mod = db_mod
 
@@ -209,7 +209,7 @@ class TestGL033Persistence(unittest.TestCase):
     def test_db_configured_reflects_database_url(self):
         os.environ.pop("GRANTLAYER_DB", None)
         os.environ.pop("GRANTLAYER_DATABASE_URL", None)
-        import src.config as config_mod
+        import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         # Neither set; default is used but dbConfigured should be False
         self.assertFalse(bool(config_mod.GRANTLAYER_DB or config_mod.GRANTLAYER_DATABASE_URL))
