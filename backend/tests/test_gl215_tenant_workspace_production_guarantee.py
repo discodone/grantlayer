@@ -155,9 +155,6 @@ def _reload_modules(db_path: str):
     import backend.src.evidence_verification as evidence_verification_mod
     importlib.reload(evidence_verification_mod)
 
-    import backend.src.server as server_mod
-    importlib.reload(server_mod)
-
     return {
         "config": config_mod,
         "db": db_mod,
@@ -167,12 +164,10 @@ def _reload_modules(db_path: str):
         "grants": grants_mod,
         "executions": exec_mod,
         "audit": audit_mod,
-        "server": server_mod,
     }
 
 
 def _run_handler(
-    server_mod,
     path: str,
     method: str = "GET",
     auth_header: str | None = None,
@@ -327,7 +322,6 @@ class _BaseGL215Runtime(unittest.TestCase):
         self.grants = self.mods["grants"]
         self.executions = self.mods["executions"]
         self.db = self.mods["db"]
-        self.server = self.mods["server"]
         self.op_a, self.token_a = self.ops.create_operator(
             "tenant-a-owner", "owner", "gl215-token-a", tenant_id="tenant_a"
         )
@@ -391,9 +385,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
         ]
         for route in routes:
             with self.subTest(route=route):
-                status, body, _ = _run_handler(
-                    self.server,
-                    route,
+                status, body, _ = _run_handler(route,
                     method="GET",
                     auth_header=self._auth_b(),
                 )
@@ -421,9 +413,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
                 "synthetic",
             ),
         )
-        status, body, _ = _run_handler(
-            self.server,
-            f"/evidence/executions/{execution.id}/verify",
+        status, body, _ = _run_handler(f"/evidence/executions/{execution.id}/verify",
             method="GET",
             auth_header=self._auth_b(),
         )
@@ -438,12 +428,9 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
     def test_demo_tamper_cross_tenant_mutation_denied(self):
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "true"
         mods = _reload_modules(self.db_path)
-        self.server = mods["server"]
         self.grants = mods["grants"]
         grant = self._make_grant("tenant_a")
-        status, body, _ = _run_handler(
-            self.server,
-            f"/demo/tamper-grant/{grant.id}",
+        status, body, _ = _run_handler(f"/demo/tamper-grant/{grant.id}",
             method="POST",
             auth_header=self._auth_b(),
             body=b"{}",
@@ -466,9 +453,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
             "tenantId": "tenant_b",
             "workspaceId": "workspace_b",
         }
-        status, body, _ = _run_handler(
-            self.server,
-            "/grants",
+        status, body, _ = _run_handler("/grants",
             method="POST",
             auth_header=self._auth_a(),
             body=json.dumps(payload).encode(),
@@ -482,9 +467,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
         self.assertIsNone(row["workspace_id"])
 
     def test_operator_admin_audit_events_preserve_safe_tenant_context(self):
-        status, body, _ = _run_handler(
-            self.server,
-            "/admin/operators",
+        status, body, _ = _run_handler("/admin/operators",
             method="POST",
             auth_header=f"Bearer {ADMIN_TOKEN}",
             body=json.dumps({
@@ -513,7 +496,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
 
     def test_health_and_readiness_public_behavior_preserved(self):
         for route in ["/health", "/readiness"]:
-            status, body, _ = _run_handler(self.server, route, method="GET")
+            status, body, _ = _run_handler(route, method="GET")
             self.assertIn(status, {200, 503})
             self.assertNotIn("tenantId", body)
             self.assertNotIn("workspaceId", body)
