@@ -8,6 +8,19 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import sys
+from contextvars import ContextVar
+from datetime import datetime, timezone
+from typing import Any
+
+_correlation_id_var: ContextVar[str | None] = ContextVar(
+    "grantlayer_correlation_id",
+    default=None,
+)
+_LOGGING_CONFIGURED = False
+_LOG_LEVEL_ENV = "GRANTLAYER_LOG_LEVEL"
+_DEFAULT_LOG_LEVEL = "INFO"
 
 # ──────────────────────────────────────────────────────────────
 # Field allowlists / blocklists
@@ -21,6 +34,7 @@ _SAFE_FIELDS: set[str] = {
     "method",
     "path",
     "status_code",
+    "duration_ms",
     "correlation_id",
     "request_id",
     "exception_type",
@@ -62,7 +76,23 @@ _REDACTED = "[REDACTED]"
 
 def get_logger(name: str) -> logging.Logger:
     """Return a stdlib logger for the given name."""
+    _configure_logging()
     return logging.getLogger(name)
+
+
+def get_correlation_id() -> str | None:
+    """Return the current request correlation ID, if one is available."""
+    return _correlation_id_var.get()
+
+
+def set_correlation_id(correlation_id: str):
+    """Set the current request correlation ID and return a reset token."""
+    return _correlation_id_var.set(correlation_id)
+
+
+def reset_correlation_id(token) -> None:
+    """Reset the current request correlation ID from a contextvars token."""
+    _correlation_id_var.reset(token)
 
 
 def sanitize_log_fields(fields: dict) -> dict:
@@ -128,15 +158,104 @@ def safe_log(logger: logging.Logger, level: str, event: str, **fields) -> None:
     - Never raises — fails safe.
     """
     try:
+        current_correlation_id = get_correlation_id()
+        if "correlation_id" not in fields and current_correlation_id is not None:
+            fields["correlation_id"] = current_correlation_id
+
         payload = build_log_record(event, **fields)
+        extra = sanitize_log_fields(fields)
+        extra["event"] = event
         log_method = getattr(logger, level.lower(), logger.info)
-        log_method("%s", payload)
+        log_method("%s", payload, extra=extra)
     except Exception:
         # Failsafe: log the absolute minimum without any user data
         try:
             logger.error("safe_log_failed event=%s", event)
         except Exception:
             pass
+
+
+# ──────────────────────────────────────────────────────────────
+# JSON formatter / logging configuration
+# ──────────────────────────────────────────────────────────────
+
+class _JsonFormatter(logging.Formatter):
+    """Format log records as GrantLayer JSON log lines."""
+
+    _reserved = {
+        "args",
+        "asctime",
+        "created",
+        "exc_info",
+        "exc_text",
+        "filename",
+        "funcName",
+        "levelname",
+        "levelno",
+        "lineno",
+        "message",
+        "module",
+        "msecs",
+        "msg",
+        "name",
+        "pathname",
+        "process",
+        "processName",
+        "relativeCreated",
+        "stack_info",
+        "taskName",
+        "thread",
+        "threadName",
+    }
+
+    def format(self, record: logging.LogRecord) -> str:
+        correlation_id = getattr(record, "correlation_id", None) or get_correlation_id()
+        payload: dict[str, Any] = {
+            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc)
+            .isoformat()
+            .replace("+00:00", "Z"),
+            "level": record.levelname,
+            "message": record.getMessage(),
+            "correlation_id": correlation_id,
+            "module": record.name,
+        }
+
+        for key, value in record.__dict__.items():
+            if key in self._reserved or key in payload:
+                continue
+            if key.lower() in _SENSITIVE_FIELDS:
+                payload[key] = _REDACTED
+            else:
+                payload[key] = _safe_value(value)
+
+        if record.exc_info:
+            payload["exception_type"] = record.exc_info[0].__name__
+
+        return json.dumps(payload, sort_keys=False, default=_safe_default, separators=(",", ":"))
+
+
+def _configure_logging() -> None:
+    """Configure process-wide stdlib logging once."""
+    global _LOGGING_CONFIGURED
+    if _LOGGING_CONFIGURED:
+        return
+
+    level_name = os.getenv(_LOG_LEVEL_ENV, _DEFAULT_LOG_LEVEL).strip().upper()
+    level = getattr(logging, level_name, logging.INFO)
+    if not isinstance(level, int):
+        level = logging.INFO
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(level)
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(_JsonFormatter())
+    handler.setLevel(level)
+
+    root_logger.handlers.clear()
+    root_logger.addHandler(handler)
+
+    _LOGGING_CONFIGURED = True
 
 
 # ──────────────────────────────────────────────────────────────

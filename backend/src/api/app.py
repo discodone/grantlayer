@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -10,7 +11,8 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 from ..core import config
 from ..core.db import init_db
-from ..core.logging_utils import get_logger
+from ..core.logging_utils import get_logger, reset_correlation_id, set_correlation_id
+from ..core.structured_logging import normalize_correlation_id
 from .routers import (
     auth,
     health,
@@ -69,8 +71,52 @@ def create_app() -> FastAPI:
             CORSMiddleware,
             allow_origins=list(config.CORS_ALLOWED_ORIGINS),
             allow_methods=["GET", "POST", "OPTIONS"],
-            allow_headers=["Content-Type", "Authorization"],
+            allow_headers=["Content-Type", "Authorization", "X-Correlation-ID"],
         )
+
+    # Request logging and correlation ID propagation
+    @app.middleware("http")
+    async def _request_logging(request: Request, call_next):
+        correlation_id = normalize_correlation_id(request.headers.get("X-Correlation-ID"))
+        token = set_correlation_id(correlation_id)
+        started = time.perf_counter()
+        status_code = 500
+        had_exception = False
+
+        try:
+            response = await call_next(request)
+            status_code = response.status_code
+            response.headers["X-Correlation-ID"] = correlation_id
+            return response
+        except Exception:
+            had_exception = True
+            duration_ms = round((time.perf_counter() - started) * 1000, 2)
+            _logger.error(
+                "api_request",
+                extra={
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": status_code,
+                    "duration_ms": duration_ms,
+                    "correlation_id": correlation_id,
+                },
+                exc_info=True,
+            )
+            raise
+        finally:
+            duration_ms = round((time.perf_counter() - started) * 1000, 2)
+            if not had_exception:
+                _logger.info(
+                    "api_request",
+                    extra={
+                        "method": request.method,
+                        "path": request.url.path,
+                        "status_code": status_code,
+                        "duration_ms": duration_ms,
+                        "correlation_id": correlation_id,
+                    },
+                )
+            reset_correlation_id(token)
 
     # Security headers on every response
     @app.middleware("http")
