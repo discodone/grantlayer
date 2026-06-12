@@ -26,7 +26,9 @@ def create_challenge(
         resource=resource,
         expires_at=expires.isoformat().replace("+00:00", "Z"),
     )
-    effective_tenant = tenant_id or "demo"
+    if tenant_id is None:
+        raise ValueError("tenant_id is required")
+    effective_tenant = tenant_id
     execute(
         """INSERT INTO challenges
            (id, subject_id, action, resource, created_at, expires_at, used_at, status, tenant_id)

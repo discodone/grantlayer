@@ -78,7 +78,7 @@ class TestGrantExecutionModel(unittest.TestCase):
             reason="Routine maintenance",
             **kwargs,
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     # ──────────────────────────────────────────────
@@ -87,7 +87,8 @@ class TestGrantExecutionModel(unittest.TestCase):
     def test_successful_execution_recorded(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertTrue(result["approved"])
         self.assertIn("executionId", result)
@@ -107,7 +108,8 @@ class TestGrantExecutionModel(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_denied_execution_recorded_no_grant(self):
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertIn("executionId", result)
@@ -128,7 +130,8 @@ class TestGrantExecutionModel(unittest.TestCase):
         importlib.reload(self.demo_mod)
         self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertIn("executionId", result)
@@ -147,10 +150,11 @@ class TestGrantExecutionModel(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_CHALLENGE"] = "true"
         importlib.reload(self.demo_mod)
         self._make_grant()
-        c = self.ch_mod.create_challenge("tech-01", "restart-service", "customer-env-a")
+        c = self.ch_mod.create_challenge("tech-01", "restart-service", "customer-env-a", tenant_id="demo")
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
+            tenant_id="demo",
         )
         self.assertTrue(result["approved"])
         execs = self.exec_mod.list_grant_executions()
@@ -176,7 +180,8 @@ class TestGrantExecutionModel(unittest.TestCase):
         self.demo_mod.list_grants = broken_list_grants
         try:
             result = self.demo_mod.handle_demo_action(
-                "tech-01", "technician", "restart-service", "customer-env-a"
+                "tech-01", "technician", "restart-service", "customer-env-a",
+                tenant_id="demo",
             )
             self.assertFalse(result["approved"])
             self.assertIn("executionId", result)
@@ -209,11 +214,12 @@ class TestGrantExecutionModel(unittest.TestCase):
             requested_by="admin-1",
             reason="Request test",
         )
-        created_req = gr_mod.create_grant_request(req)
-        updated_req, grant = gr_mod.approve_grant_request(created_req.id, "approver-1")
+        created_req = gr_mod.create_grant_request(req, tenant_id="demo")
+        updated_req, grant = gr_mod.approve_grant_request(created_req.id, "approver-1", tenant_id="demo")
 
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertTrue(result["approved"])
 
@@ -231,6 +237,7 @@ class TestGrantExecutionModel(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             operator_id="op-123",
+            tenant_id="demo",
         )
         self.assertTrue(result["approved"])
         execs = self.exec_mod.list_grant_executions()
@@ -242,7 +249,8 @@ class TestGrantExecutionModel(unittest.TestCase):
     def test_execution_audit_event_id_linked(self):
         self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertTrue(result["approved"])
         self.assertIn("auditEventId", result)
@@ -340,7 +348,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             created_by="admin",
             reason="Routine maintenance",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     def _http_get(self, path, auth_token=None):
@@ -358,7 +366,8 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
         g = self._make_grant()
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
 
         status, data = self._http_get("/v1/grant-executions", auth_token="auditor-token")
@@ -374,7 +383,8 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
         self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         execution_id = result["executionId"]
 
@@ -391,7 +401,8 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
         g = self._make_grant()
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
 
         status, data = self._http_get(
@@ -408,7 +419,8 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
         g1 = self._make_grant()
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
 
         status, data = self._http_get(
@@ -427,10 +439,12 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             operator_id="op-123",
+            tenant_id="demo",
         )
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             operator_id="op-456",
+            tenant_id="demo",
         )
 
         status, data = self._http_get(

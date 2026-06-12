@@ -173,7 +173,7 @@ def _row_to_operator(row: dict | None) -> Operator | None:
         created_at=row["created_at"],
         expires_at=row.get("expires_at"),
         rotated_at=row.get("rotated_at"),
-        tenant_id=row.get("tenant_id") or "demo",
+        tenant_id=row["tenant_id"],
     )
 
 

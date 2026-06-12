@@ -118,7 +118,7 @@ class _BaseGl099(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = self.models_mod.GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _create_old_request(self, **kwargs):
         """Helper to create a grant request with a created_at in the past."""
@@ -140,7 +140,7 @@ class _BaseGl099(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = self.models_mod.GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _insert_operator(self, op_id, name, role, token):
         conn = self.db_mod.get_conn()
@@ -208,7 +208,7 @@ class TestGl099ApprovalTransactionalConsistency(_BaseGl099):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.approve_grant_request(req.id, "approver-1")
+                self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         finally:
             self.audit_mod.append_event = original_append
 
@@ -228,7 +228,7 @@ class TestGl099ApprovalTransactionalConsistency(_BaseGl099):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.approve_grant_request(req.id, "approver-1")
+                self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         finally:
             self.audit_mod.append_event = self.audit_mod.append_event
 
@@ -238,7 +238,7 @@ class TestGl099ApprovalTransactionalConsistency(_BaseGl099):
     def test_valid_approval_still_succeeds_and_emits_audit(self):
         """Successful approval must create request, grant, and audit event."""
         req = self._create_request()
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1")
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
 
         self.assertEqual(updated_req.status, "approved")
         self.assertEqual(updated_req.approved_by, "approver-1")
@@ -260,7 +260,7 @@ class TestGl099ApprovalTransactionalConsistency(_BaseGl099):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError) as ctx:
-                self.requests_mod.approve_grant_request(req.id, "approver-1")
+                self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
             self.assertIn("audit failure", str(ctx.exception))
         finally:
             self.audit_mod.append_event = self.audit_mod.append_event
@@ -275,7 +275,7 @@ class TestGl099ApprovalTransactionalConsistency(_BaseGl099):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError) as ctx:
-                self.requests_mod.approve_grant_request(req.id, "approver-1")
+                self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
             msg = str(ctx.exception)
             leak_terms = ["traceback", "stack", "token", "secret", "password", "GRANTLAYER", "postgres", "sqlite"]
             for term in leak_terms:
@@ -294,7 +294,7 @@ class TestGl099RevokeTransactionalConsistency(_BaseGl099):
     def test_revoke_audit_failure_prevents_committed_state(self):
         """If revoke audit write fails, request must remain approved."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
 
         original_append = self.audit_mod.append_event
         def failing_append(event, conn=None):
@@ -303,7 +303,7 @@ class TestGl099RevokeTransactionalConsistency(_BaseGl099):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+                self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
         finally:
             self.audit_mod.append_event = original_append
 
@@ -316,7 +316,7 @@ class TestGl099RevokeTransactionalConsistency(_BaseGl099):
     def test_revoke_audit_failure_does_not_revoke_grant(self):
         """If revoke audit write fails, linked grant must not be revoked."""
         req = self._create_request()
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1")
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
 
         def failing_append(event, conn=None):
             raise RuntimeError("Simulated audit log failure")
@@ -324,7 +324,7 @@ class TestGl099RevokeTransactionalConsistency(_BaseGl099):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+                self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
         finally:
             self.audit_mod.append_event = self.audit_mod.append_event
 
@@ -334,8 +334,8 @@ class TestGl099RevokeTransactionalConsistency(_BaseGl099):
     def test_valid_revoke_still_succeeds_and_emits_audit(self):
         """Successful revoke must update state and emit audit event."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
-        updated = self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
+        updated = self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
 
         self.assertEqual(updated.status, "revoked")
         self.assertEqual(updated.revoked_by, "revoker-1")
@@ -349,7 +349,7 @@ class TestGl099RevokeTransactionalConsistency(_BaseGl099):
     def test_revoke_failure_is_surfaced(self):
         """Revoke failure must propagate the exception."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
 
         def failing_append(event, conn=None):
             raise RuntimeError("audit failure")
@@ -357,7 +357,7 @@ class TestGl099RevokeTransactionalConsistency(_BaseGl099):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError) as ctx:
-                self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+                self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
             self.assertIn("audit failure", str(ctx.exception))
         finally:
             self.audit_mod.append_event = self.audit_mod.append_event
@@ -440,7 +440,7 @@ class TestGl099Gl092SemanticsPreserved(_BaseGl099):
     def test_deny_audit_still_approved_false(self):
         """Deny audit must still have approved=False."""
         req = self._create_request()
-        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         deny_events = [e for e in events if e.action == "deny_grant_request"]
         self.assertEqual(len(deny_events), 1)
@@ -449,8 +449,8 @@ class TestGl099Gl092SemanticsPreserved(_BaseGl099):
     def test_revoke_audit_still_approved_false(self):
         """Revoke audit must still have approved=False."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
-        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
+        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         revoke_events = [e for e in events if e.action == "revoke_grant_request"]
         self.assertEqual(len(revoke_events), 1)
@@ -459,7 +459,7 @@ class TestGl099Gl092SemanticsPreserved(_BaseGl099):
     def test_approve_audit_still_approved_true(self):
         """Approve audit must still have approved=True."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         approve_events = [e for e in events if e.action == "approve_grant_request"]
         self.assertEqual(len(approve_events), 1)
@@ -477,14 +477,14 @@ class TestGl099Gl097Preserved(_BaseGl099):
         """Self-approval must still be rejected."""
         req = self._create_request(requested_by="operator-a")
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.approve_grant_request(req.id, "operator-a")
+            self.requests_mod.approve_grant_request(req.id, "operator-a", tenant_id="demo")
         self.assertIn("Self-approval is not permitted", str(ctx.exception))
 
     def test_self_approval_leaves_request_unapproved(self):
         """Self-approval rejection must not mutate request state."""
         req = self._create_request(requested_by="operator-a")
         try:
-            self.requests_mod.approve_grant_request(req.id, "operator-a")
+            self.requests_mod.approve_grant_request(req.id, "operator-a", tenant_id="demo")
         except ValueError:
             pass
         req_after = self.requests_mod.get_grant_request(req.id)
@@ -495,7 +495,7 @@ class TestGl099Gl097Preserved(_BaseGl099):
         """Self-approval rejection must not create a misleading approval audit event."""
         req = self._create_request(requested_by="operator-a")
         try:
-            self.requests_mod.approve_grant_request(req.id, "operator-a")
+            self.requests_mod.approve_grant_request(req.id, "operator-a", tenant_id="demo")
         except ValueError:
             pass
         events = self.audit_mod.list_events(limit=10)
@@ -507,7 +507,7 @@ class TestGl099Gl097Preserved(_BaseGl099):
         req = self._create_request()
         reason = "x" * (self.requests_mod.MAX_DENIAL_REASON_LENGTH + 1)
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.deny_grant_request(req.id, "denier-1", reason)
+            self.requests_mod.deny_grant_request(req.id, "denier-1", reason, tenant_id="demo")
         self.assertIn("exceeds maximum length", str(ctx.exception))
 
     def test_overlong_denial_leaves_state_unchanged(self):
@@ -515,7 +515,7 @@ class TestGl099Gl097Preserved(_BaseGl099):
         req = self._create_request()
         reason = "x" * (self.requests_mod.MAX_DENIAL_REASON_LENGTH + 1)
         try:
-            self.requests_mod.deny_grant_request(req.id, "denier-1", reason)
+            self.requests_mod.deny_grant_request(req.id, "denier-1", reason, tenant_id="demo")
         except ValueError:
             pass
         req_after = self.requests_mod.get_grant_request(req.id)
@@ -527,7 +527,7 @@ class TestGl099Gl097Preserved(_BaseGl099):
         req = self._create_request()
         reason = "x" * (self.requests_mod.MAX_DENIAL_REASON_LENGTH + 1)
         try:
-            self.requests_mod.deny_grant_request(req.id, "denier-1", reason)
+            self.requests_mod.deny_grant_request(req.id, "denier-1", reason, tenant_id="demo")
         except ValueError:
             pass
         events = self.audit_mod.list_events(limit=10)
@@ -546,14 +546,14 @@ class TestGl099Gl098Preserved(_BaseGl099):
         """Expired pending requests must still be rejected at approval time."""
         req = self._create_old_request()
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.approve_grant_request(req.id, "approver-1")
+            self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         self.assertIn("expired", str(ctx.exception).lower())
 
     def test_expired_approval_leaves_state_unchanged(self):
         """Approval rejection of expired request must not mutate state."""
         req = self._create_old_request()
         try:
-            self.requests_mod.approve_grant_request(req.id, "approver-1")
+            self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         except ValueError:
             pass
         req_after = self.requests_mod.get_grant_request(req.id)
@@ -564,7 +564,7 @@ class TestGl099Gl098Preserved(_BaseGl099):
         """Approval rejection of expired request must not create misleading audit."""
         req = self._create_old_request()
         try:
-            self.requests_mod.approve_grant_request(req.id, "approver-1")
+            self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         except ValueError:
             pass
         events = self.audit_mod.list_events(limit=10)
@@ -575,7 +575,7 @@ class TestGl099Gl098Preserved(_BaseGl099):
         """Expired approval error must be deterministic and safe."""
         req = self._create_old_request()
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.approve_grant_request(req.id, "approver-1")
+            self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         msg = str(ctx.exception)
         self.assertEqual(msg, "Grant request has expired")
         leak_terms = ["traceback", "stack", "token", "secret", "password", "GRANTLAYER", "postgres", "sqlite"]

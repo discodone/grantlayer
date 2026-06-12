@@ -34,7 +34,9 @@ def handle_demo_action(
     tenant_id: Optional[str] = None,
 ) -> dict:
     require_challenge = _get_env_bool("GRANTLAYER_REQUIRE_CHALLENGE")
-    effective_tenant = tenant_id or "demo"
+    if tenant_id is None:
+        raise ValueError("tenant_id is required")
+    effective_tenant = tenant_id
 
     # Pre-allocate execution record for every attempt
     execution = GrantExecution(

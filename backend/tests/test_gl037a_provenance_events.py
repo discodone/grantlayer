@@ -314,7 +314,7 @@ class TestProvenanceEvents(unittest.TestCase):
             created_by="test",
             reason="test",
         )
-        create_grant(grant)
+        create_grant(grant, tenant_id="demo")
         self.assertIsNotNone(grant.id)
 
 

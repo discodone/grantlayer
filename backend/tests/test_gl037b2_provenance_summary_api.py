@@ -84,7 +84,7 @@ class TestProvenanceSummaryAPI(unittest.TestCase):
             result="succeeded",
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex)
+        self.create_execution(ex, tenant_id="demo")
         return ex
 
     def _archive_evidence(self, execution_id: str, stored_by: str | None = None):

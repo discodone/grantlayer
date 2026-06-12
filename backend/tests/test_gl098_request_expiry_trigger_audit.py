@@ -113,7 +113,7 @@ class _BaseGl098(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = self.models_mod.GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _create_old_request(self, **kwargs):
         """Helper to create a grant request with a created_at in the past."""
@@ -135,7 +135,7 @@ class _BaseGl098(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = self.models_mod.GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _insert_operator(self, op_id, name, role, token):
         conn = self.db_mod.get_conn()
@@ -211,7 +211,7 @@ class TestGl098ExpireOldRequests(_BaseGl098):
     def test_approved_requests_not_incorrectly_expired(self):
         """Approved requests must not be transitioned to expired."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         count = self.requests_mod.expire_old_requests()
         self.assertEqual(count, 0)
         req_after = self.requests_mod.get_grant_request(req.id)
@@ -220,7 +220,7 @@ class TestGl098ExpireOldRequests(_BaseGl098):
     def test_denied_requests_not_incorrectly_expired(self):
         """Denied requests must not be transitioned to expired."""
         req = self._create_old_request()
-        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
         count = self.requests_mod.expire_old_requests()
         self.assertEqual(count, 0)
         req_after = self.requests_mod.get_grant_request(req.id)
@@ -229,8 +229,8 @@ class TestGl098ExpireOldRequests(_BaseGl098):
     def test_revoked_requests_not_incorrectly_expired(self):
         """Revoked requests must not be transitioned to expired."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
-        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
+        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
         count = self.requests_mod.expire_old_requests()
         self.assertEqual(count, 0)
         req_after = self.requests_mod.get_grant_request(req.id)
@@ -248,14 +248,14 @@ class TestGl098ExpiredRequestCannotBeApproved(_BaseGl098):
         """An expired pending request must be rejected by approve_grant_request."""
         req = self._create_old_request()
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.approve_grant_request(req.id, "approver-1")
+            self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         self.assertIn("expired", str(ctx.exception).lower())
 
     def test_approval_of_expired_leaves_state_unchanged(self):
         """Approval rejection of expired request must not mutate state."""
         req = self._create_old_request()
         try:
-            self.requests_mod.approve_grant_request(req.id, "approver-1")
+            self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         except ValueError:
             pass
         req_after = self.requests_mod.get_grant_request(req.id)
@@ -267,7 +267,7 @@ class TestGl098ExpiredRequestCannotBeApproved(_BaseGl098):
         """Approval rejection of expired request must not create misleading audit."""
         req = self._create_old_request()
         try:
-            self.requests_mod.approve_grant_request(req.id, "approver-1")
+            self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         except ValueError:
             pass
         events = self.audit_mod.list_events(limit=10)
@@ -277,7 +277,7 @@ class TestGl098ExpiredRequestCannotBeApproved(_BaseGl098):
     def test_valid_non_expired_approval_still_succeeds(self):
         """Non-expired requests must still be approvable."""
         req = self._create_request()
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1")
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         self.assertEqual(updated_req.status, "approved")
         self.assertEqual(updated_req.approved_by, "approver-1")
         self.assertIsNotNone(grant)
@@ -286,7 +286,7 @@ class TestGl098ExpiredRequestCannotBeApproved(_BaseGl098):
         """Expired approval error must be deterministic and safe."""
         req = self._create_old_request()
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.approve_grant_request(req.id, "approver-1")
+            self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         msg = str(ctx.exception)
         self.assertEqual(msg, "Grant request has expired")
         leak_terms = ["traceback", "stack", "token", "secret", "password", "GRANTLAYER", "postgres", "sqlite"]
@@ -382,14 +382,14 @@ class TestGl098Gl097Preserved(_BaseGl098):
         """Self-approval must still be rejected."""
         req = self._create_request(requested_by="operator-a")
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.approve_grant_request(req.id, "operator-a")
+            self.requests_mod.approve_grant_request(req.id, "operator-a", tenant_id="demo")
         self.assertIn("Self-approval is not permitted", str(ctx.exception))
 
     def test_self_approval_leaves_request_unapproved(self):
         """Self-approval rejection must not mutate request state."""
         req = self._create_request(requested_by="operator-a")
         try:
-            self.requests_mod.approve_grant_request(req.id, "operator-a")
+            self.requests_mod.approve_grant_request(req.id, "operator-a", tenant_id="demo")
         except ValueError:
             pass
         req_after = self.requests_mod.get_grant_request(req.id)
@@ -401,7 +401,7 @@ class TestGl098Gl097Preserved(_BaseGl098):
         req = self._create_request()
         reason = "x" * (self.requests_mod.MAX_DENIAL_REASON_LENGTH + 1)
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.deny_grant_request(req.id, "denier-1", reason)
+            self.requests_mod.deny_grant_request(req.id, "denier-1", reason, tenant_id="demo")
         self.assertIn("exceeds maximum length", str(ctx.exception))
 
     def test_denial_reason_length_leaves_state_unchanged(self):
@@ -409,7 +409,7 @@ class TestGl098Gl097Preserved(_BaseGl098):
         req = self._create_request()
         reason = "x" * (self.requests_mod.MAX_DENIAL_REASON_LENGTH + 1)
         try:
-            self.requests_mod.deny_grant_request(req.id, "denier-1", reason)
+            self.requests_mod.deny_grant_request(req.id, "denier-1", reason, tenant_id="demo")
         except ValueError:
             pass
         req_after = self.requests_mod.get_grant_request(req.id)
@@ -427,7 +427,7 @@ class TestGl098Gl092Preserved(_BaseGl098):
     def test_deny_audit_still_approved_false(self):
         """Deny audit must still have approved=False."""
         req = self._create_request()
-        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         deny_events = [e for e in events if e.action == "deny_grant_request"]
         self.assertEqual(len(deny_events), 1)
@@ -436,8 +436,8 @@ class TestGl098Gl092Preserved(_BaseGl098):
     def test_revoke_audit_still_approved_false(self):
         """Revoke audit must still have approved=False."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
-        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
+        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         revoke_events = [e for e in events if e.action == "revoke_grant_request"]
         self.assertEqual(len(revoke_events), 1)
@@ -446,7 +446,7 @@ class TestGl098Gl092Preserved(_BaseGl098):
     def test_approve_audit_still_approved_true(self):
         """Approve audit must still have approved=True."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         approve_events = [e for e in events if e.action == "approve_grant_request"]
         self.assertEqual(len(approve_events), 1)

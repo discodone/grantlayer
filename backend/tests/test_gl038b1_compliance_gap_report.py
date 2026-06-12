@@ -70,7 +70,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             executed_at="2026-05-11T10:00:00Z",
             **overrides,
         )
-        self.create_execution(ex)
+        self.create_execution(ex, tenant_id="demo")
         return ex
 
     def _archive_evidence(self, execution_id: str, stored_by: str | None = None):
@@ -95,7 +95,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             payload_hash="abcd1234" * 8,
             **overrides,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
 
     # ── Module location ─────────────────────────────────────
     def test_builder_lives_in_compliance_gap_report_module(self):
@@ -303,7 +303,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             created_by="admin",
             reason="Test",
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         from backend.src.grants.grants import revoke_grant
         revoke_grant("g-revoked-gap", "admin", "Emergency")
         self._make_execution("ex-revoked-gap", grant_id="g-revoked-gap")
@@ -327,7 +327,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             created_by="admin",
             reason="Test",
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         from backend.src.core.db import execute
         execute(
             "UPDATE grants SET signature = NULL, signing_key_id = NULL, payload_hash = NULL WHERE id = ?",
@@ -351,7 +351,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             error_code="no_grant",
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex)
+        self.create_execution(ex, tenant_id="demo")
         result = self.build("ex-denied-gap")
         self.assertIsNotNone(result)
         self.assertEqual(result["overallStatus"], "blocked")

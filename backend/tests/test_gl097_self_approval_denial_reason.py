@@ -107,7 +107,7 @@ class _BaseGl097(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = self.models_mod.GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _insert_operator(self, op_id, name, role, token):
         conn = self.db_mod.get_conn()
@@ -168,14 +168,14 @@ class TestGl097SelfApprovalGuard(_BaseGl097):
         """Identifiable requester==approver approval must be rejected."""
         req = self._create_request(requested_by="operator-a")
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.approve_grant_request(req.id, "operator-a")
+            self.requests_mod.approve_grant_request(req.id, "operator-a", tenant_id="demo")
         self.assertIn("Self-approval is not permitted", str(ctx.exception))
 
     def test_self_approval_leaves_request_unapproved(self):
         """Self-approval rejection must not mutate request state."""
         req = self._create_request(requested_by="operator-a")
         try:
-            self.requests_mod.approve_grant_request(req.id, "operator-a")
+            self.requests_mod.approve_grant_request(req.id, "operator-a", tenant_id="demo")
         except ValueError:
             pass
 
@@ -189,7 +189,7 @@ class TestGl097SelfApprovalGuard(_BaseGl097):
         """Self-approval rejection must not create a misleading approval audit event."""
         req = self._create_request(requested_by="operator-a")
         try:
-            self.requests_mod.approve_grant_request(req.id, "operator-a")
+            self.requests_mod.approve_grant_request(req.id, "operator-a", tenant_id="demo")
         except ValueError:
             pass
 
@@ -200,7 +200,7 @@ class TestGl097SelfApprovalGuard(_BaseGl097):
     def test_approval_by_different_approver_succeeds(self):
         """Approval by a different approver must still work."""
         req = self._create_request(requested_by="operator-a")
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "operator-b")
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "operator-b", tenant_id="demo")
         self.assertEqual(updated_req.status, "approved")
         self.assertEqual(updated_req.approved_by, "operator-b")
         self.assertIsNotNone(grant)
@@ -209,7 +209,7 @@ class TestGl097SelfApprovalGuard(_BaseGl097):
         """Self-approval error must be deterministic and safe."""
         req = self._create_request(requested_by="operator-a")
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.approve_grant_request(req.id, "operator-a")
+            self.requests_mod.approve_grant_request(req.id, "operator-a", tenant_id="demo")
         msg = str(ctx.exception)
         self.assertEqual(msg, "Self-approval is not permitted")
         leak_terms = ["traceback", "stack", "token", "secret", "password", "GRANTLAYER", "postgres", "sqlite"]
@@ -227,7 +227,7 @@ class TestGl097DenialReasonLength(_BaseGl097):
     def test_denial_with_acceptable_reason_succeeds(self):
         """Denial with a reason at or below the limit must succeed."""
         req = self._create_request()
-        updated = self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+        updated = self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
         self.assertEqual(updated.status, "denied")
         self.assertEqual(updated.denied_by, "denier-1")
         self.assertEqual(updated.denial_reason, "Not allowed")
@@ -236,7 +236,7 @@ class TestGl097DenialReasonLength(_BaseGl097):
         """Denial with a reason exactly at the max length must succeed."""
         req = self._create_request()
         reason = "x" * self.requests_mod.MAX_DENIAL_REASON_LENGTH
-        updated = self.requests_mod.deny_grant_request(req.id, "denier-1", reason)
+        updated = self.requests_mod.deny_grant_request(req.id, "denier-1", reason, tenant_id="demo")
         self.assertEqual(updated.status, "denied")
         self.assertEqual(updated.denial_reason, reason)
 
@@ -245,7 +245,7 @@ class TestGl097DenialReasonLength(_BaseGl097):
         req = self._create_request()
         reason = "x" * (self.requests_mod.MAX_DENIAL_REASON_LENGTH + 1)
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.deny_grant_request(req.id, "denier-1", reason)
+            self.requests_mod.deny_grant_request(req.id, "denier-1", reason, tenant_id="demo")
         self.assertIn("exceeds maximum length", str(ctx.exception))
 
     def test_overlong_denial_reason_leaves_state_unchanged(self):
@@ -253,7 +253,7 @@ class TestGl097DenialReasonLength(_BaseGl097):
         req = self._create_request()
         reason = "x" * (self.requests_mod.MAX_DENIAL_REASON_LENGTH + 1)
         try:
-            self.requests_mod.deny_grant_request(req.id, "denier-1", reason)
+            self.requests_mod.deny_grant_request(req.id, "denier-1", reason, tenant_id="demo")
         except ValueError:
             pass
 
@@ -268,7 +268,7 @@ class TestGl097DenialReasonLength(_BaseGl097):
         req = self._create_request()
         reason = "x" * (self.requests_mod.MAX_DENIAL_REASON_LENGTH + 1)
         try:
-            self.requests_mod.deny_grant_request(req.id, "denier-1", reason)
+            self.requests_mod.deny_grant_request(req.id, "denier-1", reason, tenant_id="demo")
         except ValueError:
             pass
 
@@ -279,7 +279,7 @@ class TestGl097DenialReasonLength(_BaseGl097):
     def test_empty_denial_reason_preserved(self):
         """Empty denial reason behavior at the module layer must be preserved."""
         req = self._create_request()
-        updated = self.requests_mod.deny_grant_request(req.id, "denier-1", "")
+        updated = self.requests_mod.deny_grant_request(req.id, "denier-1", "", tenant_id="demo")
         self.assertEqual(updated.status, "denied")
         self.assertEqual(updated.denial_reason, "")
 
@@ -288,7 +288,7 @@ class TestGl097DenialReasonLength(_BaseGl097):
         req = self._create_request()
         reason = "x" * (self.requests_mod.MAX_DENIAL_REASON_LENGTH + 1)
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.deny_grant_request(req.id, "denier-1", reason)
+            self.requests_mod.deny_grant_request(req.id, "denier-1", reason, tenant_id="demo")
         msg = str(ctx.exception)
         self.assertIn("1000", msg)
         leak_terms = ["traceback", "stack", "token", "secret", "password", "GRANTLAYER", "postgres", "sqlite"]
@@ -356,8 +356,8 @@ class TestGl097PriorGLRegressions(_BaseGl097):
             requested_by="admin-1",
             reason="Routine maintenance",
         )
-        created = requests_mod.create_grant_request(req)
-        denied = requests_mod.deny_grant_request(created.id, "denier-1", "Not allowed")
+        created = requests_mod.create_grant_request(req, tenant_id="demo")
+        denied = requests_mod.deny_grant_request(created.id, "denier-1", "Not allowed", tenant_id="demo")
         self.assertEqual(denied.status, "denied")
 
     @unittest.skip("server.py deleted in GL-240")

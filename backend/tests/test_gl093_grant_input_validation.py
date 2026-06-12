@@ -561,8 +561,8 @@ class TestGl093PriorGLRegressions(_BaseGl093):
             requested_by="admin-1",
             reason="Routine maintenance",
         )
-        created = requests_mod.create_grant_request(req)
-        denied = requests_mod.deny_grant_request(created.id, "denier-1", "Not allowed")
+        created = requests_mod.create_grant_request(req, tenant_id="demo")
+        denied = requests_mod.deny_grant_request(created.id, "denier-1", "Not allowed", tenant_id="demo")
         self.assertEqual(denied.status, "denied")
 
     @unittest.skip("server.py deleted in GL-240")

@@ -85,8 +85,9 @@ def issue_token(request: Request, body: TokenRequest) -> Any:
             },
         )
 
-    # Determine tenant_id from auth payload or fall back to operator_id.
-    tenant_id = payload.get("tenant_id") or "demo"
+    # When check_admin_token succeeds (no operator found), payload has no tenant_id.
+    # Admin-token auth is bound to "demo" for backward compat; operator auth uses op.tenant_id.
+    tenant_id = payload.get("tenant_id") if payload.get("tenant_id") else "demo"
     role = "owner"
     if config.ENABLE_OPERATOR_MODEL:
         op = payload.get("operator", {})

@@ -73,7 +73,7 @@ class TestCreateGrantAtomicSignature(unittest.TestCase):
             reason="GL‑050 test",
         )
 
-        created = create_grant(grant)
+        created = create_grant(grant, tenant_id="demo")
 
         # All three signature-related fields must be present on the returned object
         self.assertIsNotNone(created.signature)
@@ -132,7 +132,7 @@ class TestCreateGrantAtomicSignature(unittest.TestCase):
                 created_by="admin",
                 reason="GL‑050 atomic test",
             )
-            created = create_grant(grant)
+            created = create_grant(grant, tenant_id="demo")
 
             # Query the raw row
             cur = conn.execute(
@@ -178,7 +178,7 @@ class TestCreateGrantAtomicSignature(unittest.TestCase):
                 created_by="admin",
                 reason="GL‑050 null‑safety test",
             )
-            create_grant(grant)
+            create_grant(grant, tenant_id="demo")
 
             # Count grants where any of the three signature fields is NULL
             cur = conn.execute("""

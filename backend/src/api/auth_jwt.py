@@ -210,7 +210,11 @@ def validate_jwt_header(
     try:
         payload = decode_token(token.strip(), secret)
         if "tenant_id" not in payload:
-            payload["tenant_id"] = "demo"
+            return False, 400, {
+                "error": "jwt_missing_tenant",
+                "errorCode": "jwt_missing_tenant",
+                "reason": "JWT is missing required tenant_id claim.",
+            }
         return True, 200, payload
     except JWTExpiredError:
         return False, 401, {

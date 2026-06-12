@@ -54,7 +54,9 @@ def create_grant_request(
     validate_string_length(request.action, "action", MAX_NAME_LENGTH)
     validate_string_length(request.resource, "resource", MAX_NAME_LENGTH)
     validate_string_length(request.reason, "reason", MAX_REASON_LENGTH)
-    effective_tenant = tenant_id or "demo"
+    if tenant_id is None:
+        raise ValueError("tenant_id is required")
+    effective_tenant = tenant_id
     db.execute(
         """
         INSERT INTO grant_requests (
@@ -161,7 +163,9 @@ def approve_grant_request(
         # Start transaction
         conn.execute("BEGIN TRANSACTION")
 
-        effective_tenant = tenant_id or "demo"
+        if tenant_id is None:
+            raise ValueError("tenant_id is required")
+        effective_tenant = tenant_id
 
         # Create the actual grant from the request
         grant = Grant(
@@ -237,7 +241,9 @@ def deny_grant_request(
         # Denial reason length guard
         validate_string_length(reason, "reason", MAX_REASON_LENGTH)
 
-        effective_tenant = tenant_id or "demo"
+        if tenant_id is None:
+            raise ValueError("tenant_id is required")
+        effective_tenant = tenant_id
 
         # Start transaction
         conn.execute("BEGIN TRANSACTION")
@@ -298,7 +304,9 @@ def revoke_grant_request(
                 f"Cannot revoke grant request {request_id} with status {request.status}"
             )
 
-        effective_tenant = tenant_id or "demo"
+        if tenant_id is None:
+            raise ValueError("tenant_id is required")
+        effective_tenant = tenant_id
 
         # Start transaction
         conn.execute("BEGIN TRANSACTION")

@@ -149,10 +149,10 @@ class TestGrantExecutionTenantContext(unittest.TestCase):
         finally:
             conn.close()
 
-    def test_ex002_create_defaults_to_demo(self):
-        """EX-002: create_grant_execution without tenant_id defaults to 'demo'."""
+    def test_ex002_create_with_explicit_demo_tenant(self):
+        """EX-002: create_grant_execution with tenant_id='demo' stores under 'demo' tenant."""
         ex = self._make_execution()
-        self.exec_mod.create_grant_execution(ex)
+        self.exec_mod.create_grant_execution(ex, tenant_id="demo")
         conn = self.db_mod.get_conn()
         try:
             row = conn.execute(
@@ -395,13 +395,14 @@ class TestDemoActionTenantPropagation(unittest.TestCase):
             self.assertIsNotNone(event)
             self.assertEqual(event.tenant_id, "tenant_x")
 
-    def test_da005_demo_action_default_tenant_is_demo(self):
-        """DA-005: demo_action without tenant_id defaults to 'demo' tenant."""
+    def test_da005_demo_action_with_demo_tenant(self):
+        """DA-005: demo_action with explicit tenant_id='demo' stores under 'demo' tenant."""
         result = self.demo_mod.handle_demo_action(
             subject_id="agent-1",
             role="viewer",
             action="read",
             resource="res/1",
+            tenant_id="demo",
         )
         exec_id = result.get("executionId")
         if exec_id:
@@ -679,16 +680,23 @@ class TestTenantContextDerivation(unittest.TestCase):
             importlib.reload(cfg)
             importlib.reload(auth_ctx2)
 
-    def test_ctx003_get_tenant_id_falls_back_to_demo(self):
-        """CTX-003: _get_tenant_id falls back to 'demo' for missing or empty tenant_id."""
-        # Simulate the helper logic directly
-        # Empty payload → 'demo'
-        result = {"tenant_id": None}.get("tenant_id") or "demo"
-        self.assertEqual(result, "demo")
-
-        # Explicit tenant → used
-        result2 = {"tenant_id": "tenant_explicit"}.get("tenant_id") or "demo"
-        self.assertEqual(result2, "tenant_explicit")
+    def test_ctx003_tenant_id_required_no_fallback(self):
+        """CTX-003: tenant_id must be explicit; None raises ValueError (no silent 'demo' fallback)."""
+        import backend.src.grants.grants as grants_mod
+        from backend.src.core.models import Grant
+        import datetime
+        g = Grant(
+            subject_id="ctx003-sub",
+            role="viewer",
+            action="read",
+            resource="res/ctx003",
+            valid_from=(datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)).isoformat(),
+            valid_until=(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=30)).isoformat(),
+            created_by="ctx003-op",
+            reason="ctx003",
+        )
+        with self.assertRaises(ValueError):
+            grants_mod.create_grant(g, tenant_id=None)
 
     def test_ctx004_operator_different_tenants_isolated(self):
         """CTX-004: Two operators from different tenants cannot see each other's resources."""

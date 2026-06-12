@@ -158,13 +158,14 @@ class TestProductCoreE2EFlow(unittest.TestCase):
             requested_by=self.OPERATOR_ID,
             reason="GL-052 E2E test request",
         )
-        created_req = self.greps_mod.create_grant_request(request)
+        created_req = self.greps_mod.create_grant_request(request, tenant_id="demo")
         self.assertEqual(created_req.status, "requested")
         self.assertEqual(created_req.subject_id, self.SUBJECT_ID)
 
         # ── 2. Approval + 3. Grant Creation ────────────────────────────
         updated_req, grant = self.greps_mod.approve_grant_request(
-            created_req.id, self.APPROVER_ID
+            created_req.id, self.APPROVER_ID,
+            tenant_id="demo",
         )
         self.assertEqual(updated_req.status, "approved")
         self.assertEqual(updated_req.grant_id, grant.id)
@@ -197,7 +198,7 @@ class TestProductCoreE2EFlow(unittest.TestCase):
             executed_at=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
             metadata_json=json.dumps({"workflowId": self.WORKFLOW_ID}),
         )
-        created_exec = self.execs_mod.create_grant_execution(execution)
+        created_exec = self.execs_mod.create_grant_execution(execution, tenant_id="demo")
         self.assertEqual(created_exec.id, execution.id)
         self.assertEqual(created_exec.grant_id, grant.id)
         self.assertEqual(created_exec.result, "succeeded")

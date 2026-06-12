@@ -118,7 +118,7 @@ class TestGrantRequests(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
     
     # ─────────────────────────────────────────────────────
     # Grant Request CRUD Tests
@@ -136,7 +136,7 @@ class TestGrantRequests(unittest.TestCase):
             requested_by="admin-1",
             reason="Routine maintenance",
         )
-        created = self.requests_mod.create_grant_request(req)
+        created = self.requests_mod.create_grant_request(req, tenant_id="demo")
         self.assertEqual(created.subject_id, "tech-01")
         self.assertEqual(created.role, "technician")
         self.assertEqual(created.status, "requested")
@@ -179,10 +179,10 @@ class TestGrantRequests(unittest.TestCase):
         r3 = self._create_request()
         
         # Approve one request
-        self.requests_mod.approve_grant_request(r1.id, "approver-1")
+        self.requests_mod.approve_grant_request(r1.id, "approver-1", tenant_id="demo")
         
         # Deny one request
-        self.requests_mod.deny_grant_request(r2.id, "approver-1", "Denied for test")
+        self.requests_mod.deny_grant_request(r2.id, "approver-1", "Denied for test", tenant_id="demo")
         
         # List by status
         requested = self.requests_mod.list_grant_requests(status_filter="requested")
@@ -205,7 +205,7 @@ class TestGrantRequests(unittest.TestCase):
         req = self._create_request()
         
         # Approve the request
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1")
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         
         # Check the request was updated correctly
         self.assertEqual(updated_req.status, "approved")
@@ -228,25 +228,25 @@ class TestGrantRequests(unittest.TestCase):
     def test_approve_nonexistent_grant_request(self):
         """Test approving a non-existent grant request."""
         with self.assertRaises(ValueError):
-            self.requests_mod.approve_grant_request("non-existent-id", "approver-1")
+            self.requests_mod.approve_grant_request("non-existent-id", "approver-1", tenant_id="demo")
     
     def test_approve_non_requested_grant_request(self):
         """Test approving a grant request that's not in 'requested' state."""
         req = self._create_request()
         
         # Deny the request first
-        self.requests_mod.deny_grant_request(req.id, "approver-1", "Denied for test")
+        self.requests_mod.deny_grant_request(req.id, "approver-1", "Denied for test", tenant_id="demo")
         
         # Try to approve it
         with self.assertRaises(ValueError):
-            self.requests_mod.approve_grant_request(req.id, "approver-1")
+            self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
     
     def test_deny_grant_request(self):
         """Test denying a grant request."""
         req = self._create_request()
         
         # Deny the request
-        updated_req = self.requests_mod.deny_grant_request(req.id, "approver-1", "Denied for test")
+        updated_req = self.requests_mod.deny_grant_request(req.id, "approver-1", "Denied for test", tenant_id="demo")
         
         # Check the request was updated correctly
         self.assertEqual(updated_req.status, "denied")
@@ -257,29 +257,30 @@ class TestGrantRequests(unittest.TestCase):
     def test_deny_nonexistent_grant_request(self):
         """Test denying a non-existent grant request."""
         with self.assertRaises(ValueError):
-            self.requests_mod.deny_grant_request("non-existent-id", "approver-1", "Denied for test")
+            self.requests_mod.deny_grant_request("non-existent-id", "approver-1", "Denied for test", tenant_id="demo")
     
     def test_deny_non_requested_grant_request(self):
         """Test denying a grant request that's not in 'requested' state."""
         req = self._create_request()
         
         # Approve the request first
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         
         # Try to deny it
         with self.assertRaises(ValueError):
-            self.requests_mod.deny_grant_request(req.id, "approver-1", "Denied for test")
+            self.requests_mod.deny_grant_request(req.id, "approver-1", "Denied for test", tenant_id="demo")
     
     def test_revoke_approved_grant_request(self):
         """Test revoking an approved grant request also revokes the grant."""
         req = self._create_request()
         
         # Approve the request
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1")
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         
         # Revoke the request
         revoked_req = self.requests_mod.revoke_grant_request(
-            req.id, "admin-1", "Security concern"
+            req.id, "admin-1", "Security concern",
+            tenant_id="demo",
         )
         
         # Check the request was revoked
@@ -300,7 +301,7 @@ class TestGrantRequests(unittest.TestCase):
         
         # Try to revoke it
         with self.assertRaises(ValueError):
-            self.requests_mod.revoke_grant_request(req.id, "admin-1", "Security concern")
+            self.requests_mod.revoke_grant_request(req.id, "admin-1", "Security concern", tenant_id="demo")
     
     def test_expire_stale_grant_requests(self):
         """Test expiring old grant requests."""
@@ -319,7 +320,7 @@ class TestGrantRequests(unittest.TestCase):
             created_at=old_time,
             updated_at=old_time
         )
-        self.requests_mod.create_grant_request(req)
+        self.requests_mod.create_grant_request(req, tenant_id="demo")
         
         # Run the expiry function
         count = self.requests_mod.expire_old_requests()
@@ -446,11 +447,11 @@ class TestGrantRequests(unittest.TestCase):
         req = self._create_request()
         
         # Approve one
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         
         # Create and deny another
         req2 = self._create_request()
-        self.requests_mod.deny_grant_request(req2.id, "approver-1", "Denied for test")
+        self.requests_mod.deny_grant_request(req2.id, "approver-1", "Denied for test", tenant_id="demo")
         
         # Check audit events
         events = self.audit_mod.list_events()

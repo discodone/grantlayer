@@ -80,7 +80,7 @@ class _BaseGl111(unittest.TestCase):
             created_by="admin",
             reason="Routine maintenance",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     def _secret_message(self):
@@ -104,7 +104,8 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod, "list_grants", side_effect=RuntimeError(self._secret_message())
             ):
                 result = self.demo_mod.handle_demo_action(
-                    "tech-01", "technician", "restart-service", "customer-env-a"
+                    "tech-01", "technician", "restart-service", "customer-env-a",
+                    tenant_id="demo",
                 )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "internal_handler_error")
@@ -119,7 +120,8 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod, "list_grants", side_effect=RuntimeError("boom")
             ):
                 self.demo_mod.handle_demo_action(
-                    "tech-01", "technician", "restart-service", "customer-env-a"
+                    "tech-01", "technician", "restart-service", "customer-env-a",
+                    tenant_id="demo",
                 )
         log_str = "\n".join(cm.output)
         self.assertIn("component=demo_action", log_str)
@@ -132,7 +134,8 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod, "list_grants", side_effect=ValueError("boom")
             ):
                 self.demo_mod.handle_demo_action(
-                    "tech-01", "technician", "restart-service", "customer-env-a"
+                    "tech-01", "technician", "restart-service", "customer-env-a",
+                    tenant_id="demo",
                 )
         log_str = "\n".join(cm.output)
         self.assertIn("exception_type=ValueError", log_str)
@@ -144,7 +147,8 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod, "list_grants", side_effect=RuntimeError(self._secret_message())
             ):
                 self.demo_mod.handle_demo_action(
-                    "tech-01", "technician", "restart-service", "customer-env-a"
+                    "tech-01", "technician", "restart-service", "customer-env-a",
+                    tenant_id="demo",
                 )
         log_str = "\n".join(cm.output)
         self.assertNotIn("admin-token-secret-value", log_str)
@@ -157,7 +161,8 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod, "list_grants", side_effect=RuntimeError(self._secret_message())
             ):
                 self.demo_mod.handle_demo_action(
-                    "tech-01", "technician", "restart-service", "customer-env-a"
+                    "tech-01", "technician", "restart-service", "customer-env-a",
+                    tenant_id="demo",
                 )
         log_str = "\n".join(cm.output)
         self.assertNotIn("PRIVATE KEY MATERIAL", log_str)
@@ -169,7 +174,8 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod, "list_grants", side_effect=RuntimeError(self._secret_message())
             ):
                 self.demo_mod.handle_demo_action(
-                    "tech-01", "technician", "restart-service", "customer-env-a"
+                    "tech-01", "technician", "restart-service", "customer-env-a",
+                    tenant_id="demo",
                 )
         log_str = "\n".join(cm.output)
         self.assertNotIn("passphrase-secret", log_str)
@@ -181,7 +187,8 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod, "list_grants", side_effect=RuntimeError(self._secret_message())
             ):
                 self.demo_mod.handle_demo_action(
-                    "tech-01", "technician", "restart-service", "customer-env-a"
+                    "tech-01", "technician", "restart-service", "customer-env-a",
+                    tenant_id="demo",
                 )
         log_str = "\n".join(cm.output)
         self.assertNotIn("raw-request-body-secret", log_str)
@@ -193,7 +200,8 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod, "list_grants", side_effect=RuntimeError(self._secret_message())
             ):
                 self.demo_mod.handle_demo_action(
-                    "tech-01", "technician", "restart-service", "customer-env-a"
+                    "tech-01", "technician", "restart-service", "customer-env-a",
+                    tenant_id="demo",
                 )
         log_str = "\n".join(cm.output)
         self.assertNotIn("signature-secret", log_str)
@@ -205,7 +213,8 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod, "list_grants", side_effect=RuntimeError(self._secret_message())
             ):
                 result = self.demo_mod.handle_demo_action(
-                    "tech-01", "technician", "restart-service", "customer-env-a"
+                    "tech-01", "technician", "restart-service", "customer-env-a",
+                    tenant_id="demo",
                 )
         result_str = json.dumps(result)
         self.assertNotIn("admin-token-secret-value", result_str)
@@ -226,7 +235,8 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod, "list_grants", side_effect=RuntimeError("boom")
             ):
                 result = self.demo_mod.handle_demo_action(
-                    "tech-01", "technician", "restart-service", "customer-env-a"
+                    "tech-01", "technician", "restart-service", "customer-env-a",
+                    tenant_id="demo",
                 )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "internal_handler_error")

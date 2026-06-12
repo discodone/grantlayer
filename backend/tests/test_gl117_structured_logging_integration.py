@@ -499,7 +499,7 @@ class TestGl117DemoActionPreserved(_BaseGl117):
             created_by="admin",
             reason="Routine maintenance",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
 
     def test_demo_action_exception_logging_preserved(self):
         with self.assertLogs(self.demo_mod.logger, level="ERROR") as cm:

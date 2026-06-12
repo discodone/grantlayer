@@ -119,7 +119,7 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
             created_by="admin",
             reason="Routine maintenance",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     # ──────────────────────────────────────────────
@@ -227,7 +227,8 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
     def test_evidence_bundle_does_not_expose_secrets(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         bundle_str = json.dumps(bundle)
@@ -247,7 +248,8 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         importlib.reload(self.demo_mod)
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "challenge_required")
@@ -261,7 +263,8 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         # Tamper the grant (role changed → no longer matches request)
         self.grants_mod.tamper_grant(g.id)
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         # Tampered grant is blocked (either via signature mismatch or role mismatch)
         self.assertFalse(result["approved"])

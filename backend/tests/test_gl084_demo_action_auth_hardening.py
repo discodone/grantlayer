@@ -150,7 +150,7 @@ class _BaseGl084(unittest.TestCase):
             created_by="owner-1",
             reason="test",
         )
-        self.grants_mod.create_grant(grant)
+        self.grants_mod.create_grant(grant, tenant_id="demo")
         return grant
 
 

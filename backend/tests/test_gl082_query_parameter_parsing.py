@@ -281,7 +281,7 @@ class TestGl082GrantExecutionsForGrant(_BaseGl082):
             created_by="admin",
             reason="test",
         )
-        self.grant = grants_mod.create_grant(g)
+        self.grant = grants_mod.create_grant(g, tenant_id="demo")
 
     def test_valid_limit_returns_200(self):
         handler = self._make_handler(

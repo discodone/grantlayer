@@ -185,12 +185,13 @@ class TestValidateJwtHeader(unittest.TestCase):
         self.assertEqual(payload["sub"], "dev")
         self.assertEqual(payload["tenant_id"], "demo")
 
-    def test_default_tenant_added_when_missing(self):
+    def test_missing_tenant_rejected(self):
         with self._with_secret(self._SECRET):
             token = encode_token({"sub": "dev"}, self._SECRET)
             ok, status, payload = validate_jwt_header(f"Bearer {token}")
-        self.assertTrue(ok)
-        self.assertEqual(payload["tenant_id"], "demo")
+        self.assertFalse(ok)
+        self.assertEqual(status, 400)
+        self.assertEqual(payload["errorCode"], "jwt_missing_tenant")
 
     def test_missing_header_returns_401(self):
         with self._with_secret(self._SECRET):

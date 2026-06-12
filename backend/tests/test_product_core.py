@@ -90,7 +90,7 @@ class TestProductCoreHardening(unittest.TestCase):
             created_by="admin",
             reason="Routine maintenance",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     # ──────────────────────────────────────────────
@@ -125,7 +125,8 @@ class TestProductCoreHardening(unittest.TestCase):
         importlib.reload(self.demo_mod)
         self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "challenge_required")
@@ -139,10 +140,11 @@ class TestProductCoreHardening(unittest.TestCase):
         import importlib
         importlib.reload(self.demo_mod)
         self._make_grant()
-        c = self.ch_mod.create_challenge("tech-01", "restart-service", "customer-env-a")
+        c = self.ch_mod.create_challenge("tech-01", "restart-service", "customer-env-a", tenant_id="demo")
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
+            tenant_id="demo",
         )
         self.assertTrue(result["approved"])
         self.assertEqual(result.get("challengeId"), c.id)
@@ -215,7 +217,8 @@ class TestProductCoreHardening(unittest.TestCase):
         importlib.reload(self.demo_mod)
         self._make_grant()
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         events = self.audit_mod.list_events()
         self.assertEqual(len(events), 1)

@@ -471,7 +471,7 @@ class TestGL162ARoleAllowlist(unittest.TestCase):
             reason="test",
         )
         with self.assertRaises(ValueError):
-            gr_mod.create_grant_request(request)
+            gr_mod.create_grant_request(request, tenant_id="demo")
 
     @unittest.skip("server.py deleted in GL-240")
     def test_role_error_message_is_safe(self):

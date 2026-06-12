@@ -60,7 +60,9 @@ def create_grant(grant: Grant, conn=None, tenant_id: Optional[str] = None) -> Gr
     grant.payload_hash = hash_hex
     grant.signing_key_id = key_id
 
-    effective_tenant = tenant_id or "demo"
+    if tenant_id is None:
+        raise ValueError("tenant_id is required")
+    effective_tenant = tenant_id
 
     sql = """INSERT INTO grants
            (id, subject_id, role, action, resource, valid_from, valid_until,

@@ -606,6 +606,7 @@ class TestGL203CPrototypeFakeTransport(unittest.TestCase):
             valid_until="2026-12-31T23:59:59Z",
             created_by="gl203c-demo-admin",
             reason="GL-203C prototype test",
+            tenant_id="demo",
         )
         req = transport.calls[0]
         self.assertEqual(req.get_method(), "POST")

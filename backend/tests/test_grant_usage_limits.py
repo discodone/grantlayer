@@ -73,7 +73,7 @@ class TestGrantUsageLimits(unittest.TestCase):
             max_uses=max_uses,
             **kwargs,
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     # ──────────────────────────────────────────────
@@ -83,7 +83,8 @@ class TestGrantUsageLimits(unittest.TestCase):
         g = self._make_grant(max_uses=None)
         for i in range(3):
             result = self.demo_mod.handle_demo_action(
-                "tech-01", "technician", "restart-service", "customer-env-a"
+                "tech-01", "technician", "restart-service", "customer-env-a",
+                tenant_id="demo",
             )
             self.assertTrue(result["approved"], f"Use {i+1} should be approved")
 
@@ -96,7 +97,8 @@ class TestGrantUsageLimits(unittest.TestCase):
     def test_one_time_grant_allows_exactly_one_use(self):
         g = self._make_grant(max_uses=1)
         r1 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertTrue(r1["approved"])
 
@@ -104,7 +106,8 @@ class TestGrantUsageLimits(unittest.TestCase):
         self.assertEqual(refreshed.use_count, 1)
 
         r2 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(r2["approved"])
         self.assertEqual(r2["reason"], "grant_usage_exhausted")
@@ -116,7 +119,8 @@ class TestGrantUsageLimits(unittest.TestCase):
         g = self._make_grant(max_uses=3)
         for i in range(3):
             result = self.demo_mod.handle_demo_action(
-                "tech-01", "technician", "restart-service", "customer-env-a"
+                "tech-01", "technician", "restart-service", "customer-env-a",
+                tenant_id="demo",
             )
             self.assertTrue(result["approved"], f"Use {i+1} should be approved")
 
@@ -124,7 +128,8 @@ class TestGrantUsageLimits(unittest.TestCase):
         self.assertEqual(refreshed.use_count, 3)
 
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "grant_usage_exhausted")
@@ -135,7 +140,8 @@ class TestGrantUsageLimits(unittest.TestCase):
     def test_exhausted_grant_fails_closed(self):
         self._make_grant(max_uses=0)
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "grant_usage_exhausted")
@@ -146,12 +152,14 @@ class TestGrantUsageLimits(unittest.TestCase):
     def test_exhausted_attempt_creates_denied_execution(self):
         self._make_grant(max_uses=1)
         r1 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertTrue(r1["approved"])
 
         r2 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(r2["approved"])
 
@@ -167,10 +175,12 @@ class TestGrantUsageLimits(unittest.TestCase):
     def test_exhausted_attempt_is_audit_logged(self):
         self._make_grant(max_uses=1)
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
 
         events = self.audit_mod.list_events()
@@ -186,7 +196,8 @@ class TestGrantUsageLimits(unittest.TestCase):
         g = self._make_grant(max_uses=3)
         # Wrong role → denied by policy engine, not usage
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "wrong-role", "restart-service", "customer-env-a"
+            "tech-01", "wrong-role", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
 
@@ -204,7 +215,8 @@ class TestGrantUsageLimits(unittest.TestCase):
         self.demo_mod.list_grants = self.grants_mod.list_grants
         try:
             result = self.demo_mod.handle_demo_action(
-                "tech-01", "technician", "restart-service", "customer-env-a"
+                "tech-01", "technician", "restart-service", "customer-env-a",
+                tenant_id="demo",
             )
             self.assertFalse(result["approved"])
             self.assertEqual(result["reason"], "internal_handler_error")
@@ -220,7 +232,8 @@ class TestGrantUsageLimits(unittest.TestCase):
     # ──────────────────────────────────────────────
     def test_no_grant_attempt_does_not_increment(self):
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         execs = self.exec_mod.list_grant_executions()
@@ -340,9 +353,10 @@ class TestGrantUsageLimits(unittest.TestCase):
             reason="Routine maintenance",
             max_uses=3,
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertIn("expired", result["reason"].lower())
@@ -357,7 +371,8 @@ class TestGrantUsageLimits(unittest.TestCase):
         g = self._make_grant(max_uses=3)
         self.grants_mod.revoke_grant(g.id, "admin", "test revoke")
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertIn("revoked", result["reason"].lower())

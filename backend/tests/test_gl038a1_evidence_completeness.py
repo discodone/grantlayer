@@ -69,7 +69,7 @@ class TestEvidenceCompletenessBuilder(unittest.TestCase):
             result="succeeded",
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex)
+        self.create_execution(ex, tenant_id="demo")
         return ex
 
     def _archive_evidence(self, execution_id: str, stored_by: str | None = None):
@@ -93,7 +93,7 @@ class TestEvidenceCompletenessBuilder(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
 
     # ── Module location ─────────────────────────────────────
     def test_builder_lives_in_evidence_completeness_module(self):

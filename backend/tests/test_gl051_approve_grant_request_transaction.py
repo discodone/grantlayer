@@ -1,6 +1,6 @@
 """Tests for GL-051 approve_grant_request transaction consistency.
 
-Ensures approve_grant_request() is atomic:
+Ensures approve_grant_request(, tenant_id="demo") is atomic:
 - Grant creation and grant request approval/update/linking must succeed together
   or both must roll back
 - No orphan grant may remain if approval flow fails
@@ -78,7 +78,7 @@ class TestApproveGrantRequestTransaction(unittest.TestCase):
             requested_by="req-01",
             reason="GL-051 test",
         )
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _count_grants(self):
         db_path = os.environ["GRANTLAYER_DB"]
@@ -95,7 +95,8 @@ class TestApproveGrantRequestTransaction(unittest.TestCase):
     def test_successful_approval_creates_and_links_grant(self):
         req = self._create_request()
         updated_req, grant = self.requests_mod.approve_grant_request(
-            req.id, "approver-1"
+            req.id, "approver-1",
+            tenant_id="demo",
         )
 
         self.assertEqual(updated_req.status, "approved")
@@ -128,7 +129,7 @@ class TestApproveGrantRequestTransaction(unittest.TestCase):
         self.grants_mod._sign_grant = failing_sign_grant
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.approve_grant_request(req.id, "approver-1")
+                self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         finally:
             self.grants_mod._sign_grant = original_sign_grant
 
@@ -158,7 +159,7 @@ class TestApproveGrantRequestTransaction(unittest.TestCase):
         gr_mod.datetime.datetime = FailingDateTime
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.approve_grant_request(req.id, "approver-1")
+                self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         finally:
             gr_mod.datetime.datetime = original_datetime_class
 
@@ -177,7 +178,8 @@ class TestApproveGrantRequestTransaction(unittest.TestCase):
     def test_approved_grant_has_signature_fields(self):
         req = self._create_request()
         updated_req, grant = self.requests_mod.approve_grant_request(
-            req.id, "approver-1"
+            req.id, "approver-1",
+            tenant_id="demo",
         )
 
         # Returned grant must have signature fields populated

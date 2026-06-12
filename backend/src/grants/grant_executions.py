@@ -35,7 +35,9 @@ def create_grant_execution(
     tenant_id: Optional[str] = None,
 ) -> GrantExecution:
     """Insert a new grant execution record."""
-    effective_tenant = tenant_id or "demo"
+    if tenant_id is None:
+        raise ValueError("tenant_id is required")
+    effective_tenant = tenant_id
     execute(
         """
         INSERT INTO grant_executions (

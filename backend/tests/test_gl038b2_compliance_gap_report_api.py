@@ -86,7 +86,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             result="succeeded",
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex)
+        self.create_execution(ex, tenant_id="demo")
         return ex
 
     def _archive_evidence(self, execution_id: str, stored_by: str | None = None):
@@ -219,7 +219,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._archive_evidence("ex-shape-1")
         self.record_event(
             event_type="policy_evaluated",
@@ -266,7 +266,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._archive_evidence("ex-clear")
         self.record_event(
             event_type="policy_evaluated",
@@ -307,7 +307,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._archive_evidence("ex-partial")
         # No provenance events → missing_provenance_events gap (low severity)
         status, body = self._run_handler(
@@ -330,7 +330,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             created_by="admin",
             reason="Test",
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         from backend.src.grants.grants import revoke_grant
         revoke_grant("g-blocked", "admin", "Emergency")
         self._make_execution("ex-blocked", grant_id="g-blocked")
@@ -361,7 +361,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._archive_evidence("ex-det-on")
         self.record_event(
             event_type="policy_evaluated",
@@ -395,7 +395,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         status, body = self._run_handler(
             "/v1/compliance/gaps/executions/ex-det-off?includeDetails=false",
             auth="Bearer test-admin-token"
@@ -425,7 +425,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._archive_evidence("ex-sec-1")
         self.record_event(
             event_type="policy_evaluated",
@@ -461,7 +461,7 @@ class TestComplianceGapReportAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._archive_evidence("ex-nobundle")
         self.record_event(
             event_type="policy_evaluated",

@@ -145,20 +145,20 @@ class TestAuditEvents(unittest.TestCase):
 
     def _add_valid_grant(self):
         g = _make_grant()
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     # 6. Audit event created for approved attempt
     def test_audit_event_created_for_approved(self):
         self._add_valid_grant()
-        self.demo_mod.handle_demo_action("tech-01", "technician", "restart-service", "customer-env-a")
+        self.demo_mod.handle_demo_action("tech-01", "technician", "restart-service", "customer-env-a", tenant_id="demo")
         events = self.audit_mod.list_events()
         self.assertEqual(len(events), 1)
         self.assertTrue(events[0].approved)
 
     # 7. Audit event created for denied attempt
     def test_audit_event_created_for_denied(self):
-        self.demo_mod.handle_demo_action("tech-01", "technician", "restart-service", "customer-env-a")
+        self.demo_mod.handle_demo_action("tech-01", "technician", "restart-service", "customer-env-a", tenant_id="demo")
         events = self.audit_mod.list_events()
         self.assertEqual(len(events), 1)
         self.assertFalse(events[0].approved)
@@ -196,11 +196,11 @@ class TestChallengeFlow(unittest.TestCase):
 
     def _add_valid_grant(self):
         g = _make_grant()
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     def _make_challenge(self, action="restart-service", resource="customer-env-a"):
-        return self.ch_mod.create_challenge("tech-01", action, resource)
+        return self.ch_mod.create_challenge("tech-01", action, resource, tenant_id="demo")
 
     # 1. Challenge can be created
     def test_challenge_can_be_created(self):
@@ -219,6 +219,7 @@ class TestChallengeFlow(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
+            tenant_id="demo",
         )
         self.assertTrue(result["approved"])
         self.assertEqual(result.get("challengeId"), c.id)
@@ -231,12 +232,14 @@ class TestChallengeFlow(unittest.TestCase):
         r1 = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
+            tenant_id="demo",
         )
         self.assertTrue(r1["approved"])
         # Second use: blocked
         r2 = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
+            tenant_id="demo",
         )
         self.assertFalse(r2["approved"])
         self.assertEqual(r2.get("challengeResult"), "already_used")
@@ -258,6 +261,7 @@ class TestChallengeFlow(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result.get("challengeResult"), "expired")
@@ -269,6 +273,7 @@ class TestChallengeFlow(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result.get("challengeResult"), "mismatch")
@@ -280,6 +285,7 @@ class TestChallengeFlow(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result.get("challengeResult"), "mismatch")
@@ -291,6 +297,7 @@ class TestChallengeFlow(unittest.TestCase):
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
+            tenant_id="demo",
         )
         events = self.audit_mod.list_events()
         self.assertEqual(len(events), 1)
@@ -304,6 +311,7 @@ class TestChallengeFlow(unittest.TestCase):
         self._add_valid_grant()
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         events = self.audit_mod.list_events()
         self.assertEqual(len(events), 1)
@@ -347,7 +355,7 @@ class TestGrantSignatures(unittest.TestCase):
 
     def _make_signed_grant(self, **kwargs):
         g = _make_grant(**kwargs)
-        return self.grants_mod.create_grant(g)
+        return self.grants_mod.create_grant(g, tenant_id="demo")
 
     def _make_unsigned_grant(self, **kwargs):
         """Insert grant directly without signing (simulates legacy data)."""
@@ -379,7 +387,8 @@ class TestGrantSignatures(unittest.TestCase):
     def test_valid_signed_grant_allows_action(self):
         self._make_signed_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertTrue(result["approved"])
         self.assertEqual(result.get("grantSignatureResult"), "valid")
@@ -388,7 +397,8 @@ class TestGrantSignatures(unittest.TestCase):
     def test_unsigned_legacy_grant_is_blocked(self):
         self._make_unsigned_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result.get("grantSignatureResult"), "missing")
@@ -404,7 +414,8 @@ class TestGrantSignatures(unittest.TestCase):
         finally:
             conn.close()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "admin", "restart-service", "customer-env-a"
+            "tech-01", "admin", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertIn(result.get("grantSignatureResult"), ("invalid", "hash_mismatch"))
@@ -419,7 +430,8 @@ class TestGrantSignatures(unittest.TestCase):
         finally:
             conn.close()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "delete-all", "customer-env-a"
+            "tech-01", "technician", "delete-all", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertIn(result.get("grantSignatureResult"), ("invalid", "hash_mismatch"))
@@ -434,7 +446,8 @@ class TestGrantSignatures(unittest.TestCase):
         finally:
             conn.close()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-z"
+            "tech-01", "technician", "restart-service", "customer-env-z",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertIn(result.get("grantSignatureResult"), ("invalid", "hash_mismatch"))
@@ -444,7 +457,8 @@ class TestGrantSignatures(unittest.TestCase):
         g = self._make_signed_grant()
         self.grants_mod.revoke_grant(g.id, "admin", "Test revoke")
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertIn("revoked", result.get("reason", "").lower())
@@ -453,7 +467,8 @@ class TestGrantSignatures(unittest.TestCase):
     def test_expired_signed_grant_is_blocked(self):
         self._make_signed_grant(valid_until="2020-01-01T00:00:00Z")
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertIn("expired", result.get("reason", "").lower())
@@ -462,7 +477,8 @@ class TestGrantSignatures(unittest.TestCase):
     def test_audit_event_records_grant_signature_result(self):
         self._make_signed_grant()
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         events = self.audit_mod.list_events()
         self.assertEqual(len(events), 1)
@@ -516,7 +532,7 @@ class TestTamperAndVerify(unittest.TestCase):
 
     def _add_valid_grant(self):
         g = _make_grant()
-        return self.grants_mod.create_grant(g)
+        return self.grants_mod.create_grant(g, tenant_id="demo")
 
     # 1. Tamper endpoint changes a grant field without re-signing
     def test_tamper_changes_grant_without_resigning(self):
@@ -538,7 +554,8 @@ class TestTamperAndVerify(unittest.TestCase):
         g = self._add_valid_grant()
         # Confirm action works before tamper
         r1 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertTrue(r1["approved"])
         self.assertEqual(r1.get("grantSignatureResult"), "valid")
@@ -546,7 +563,8 @@ class TestTamperAndVerify(unittest.TestCase):
         self.grants_mod.tamper_grant(g.id)
         # Must use tampered role to match the grant in the policy engine
         r2 = self.demo_mod.handle_demo_action(
-            "tech-01", "tampered-role", "restart-service", "customer-env-a"
+            "tech-01", "tampered-role", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(r2["approved"])
         self.assertIn(r2.get("grantSignatureResult"), ("hash_mismatch", "invalid"))
@@ -557,7 +575,8 @@ class TestTamperAndVerify(unittest.TestCase):
         g = self._add_valid_grant()
         self.grants_mod.tamper_grant(g.id)
         self.demo_mod.handle_demo_action(
-            "tech-01", "tampered-role", "restart-service", "customer-env-a"
+            "tech-01", "tampered-role", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         events = self.audit_mod.list_events()
         self.assertEqual(len(events), 1)
@@ -576,7 +595,8 @@ class TestTamperAndVerify(unittest.TestCase):
         self.grants_mod.tamper_grant(g.id)
         # Request with original role=technician — grant has role=tampered-role now
         r = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(r["approved"])
         # No matching grant → signature check not triggered

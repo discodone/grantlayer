@@ -151,7 +151,7 @@ class _BaseGl102(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = self.models_mod.GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _append_audit_event(self, event_id, action="test_action", approved=True):
         event = self.models_mod.AuditEvent(
@@ -483,7 +483,7 @@ class TestGl102Gl099Preserved(_BaseGl102):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.approve_grant_request(req.id, "approver-1")
+                self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         finally:
             self.audit_mod.append_event = original_append
 
@@ -496,7 +496,7 @@ class TestGl102Gl099Preserved(_BaseGl102):
     def test_revoke_audit_failure_rolls_back_state(self):
         """If audit append fails during revoke, request must stay approved."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
 
         original_append = self.audit_mod.append_event
 
@@ -508,7 +508,7 @@ class TestGl102Gl099Preserved(_BaseGl102):
         self.audit_mod.append_event = failing_revoke_append
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.revoke_grant_request(req.id, "approver-1", "Test")
+                self.requests_mod.revoke_grant_request(req.id, "approver-1", "Test", tenant_id="demo")
         finally:
             self.audit_mod.append_event = original_append
 
@@ -518,7 +518,7 @@ class TestGl102Gl099Preserved(_BaseGl102):
     def test_valid_approval_still_succeeds_and_emits_audit(self):
         """Successful approval must create request, grant, and audit event."""
         req = self._create_request()
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1")
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
 
         self.assertEqual(updated_req.status, "approved")
         self.assertIsNotNone(grant)
@@ -573,7 +573,7 @@ class TestGl102Gl092Preserved(_BaseGl102):
     def test_deny_audit_still_approved_false(self):
         """Deny audit must still have approved=False."""
         req = self._create_request()
-        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         deny_events = [e for e in events if e.action == "deny_grant_request"]
         self.assertEqual(len(deny_events), 1)
@@ -582,8 +582,8 @@ class TestGl102Gl092Preserved(_BaseGl102):
     def test_revoke_audit_still_approved_false(self):
         """Revoke audit must still have approved=False."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
-        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
+        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         revoke_events = [e for e in events if e.action == "revoke_grant_request"]
         self.assertEqual(len(revoke_events), 1)
@@ -592,7 +592,7 @@ class TestGl102Gl092Preserved(_BaseGl102):
     def test_approve_audit_still_approved_true(self):
         """Approve audit must still have approved=True."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         approve_events = [e for e in events if e.action == "approve_grant_request"]
         self.assertEqual(len(approve_events), 1)
@@ -618,7 +618,7 @@ class TestGl102Gl100Preserved(_BaseGl102):
             created_by="admin",
             reason="Direct grant for testing",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         result = self.grants_mod.tamper_grant(g.id)
         self.assertIsNotNone(result)
         self.assertTrue(result.get("ok"))
@@ -638,9 +638,10 @@ class TestGl102Gl100Preserved(_BaseGl102):
             created_by="admin",
             reason="Direct grant for testing",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         events = self.audit_mod.list_events(limit=10)
         self.assertEqual(len(events), 1)

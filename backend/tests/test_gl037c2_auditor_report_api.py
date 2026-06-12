@@ -91,7 +91,7 @@ class TestAuditorReportAPI(unittest.TestCase):
             error_code=error_code,
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex)
+        self.create_execution(ex, tenant_id="demo")
         return ex
 
     def _archive_evidence(self, execution_id: str, stored_by: str | None = None):
@@ -251,7 +251,7 @@ class TestAuditorReportAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._make_execution("ex-grant", grant_id="g-link")
         status, body = self._run_handler(
             "/v1/auditor/reports/executions/ex-grant",
@@ -275,7 +275,7 @@ class TestAuditorReportAPI(unittest.TestCase):
             created_by="admin",
             reason="Test",
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         req = self.GrantRequest(
             id="req-1",
             subject_id="sub-1",
@@ -291,7 +291,7 @@ class TestAuditorReportAPI(unittest.TestCase):
             approved_at="2026-01-01T10:00:00Z",
             grant_id="g-req",
         )
-        self.create_grant_request(req)
+        self.create_grant_request(req, tenant_id="demo")
         from backend.src.core.db import execute
         execute(
             "UPDATE grant_requests SET grant_id = ? WHERE id = ?",

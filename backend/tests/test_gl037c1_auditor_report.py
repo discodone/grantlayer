@@ -75,7 +75,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             result="succeeded",
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex)
+        self.create_execution(ex, tenant_id="demo")
         return ex
 
     def _archive_evidence(self, execution_id: str, stored_by: str | None = None):
@@ -160,7 +160,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._make_execution("ex-grant", grant_id="g-link")
         result = self.build("ex-grant")
         self.assertIsNotNone(result)
@@ -190,7 +190,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             created_by="admin",
             reason="Test",
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         req = self.GrantRequest(
             id="req-1",
             subject_id="sub-1",
@@ -206,7 +206,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             approved_at="2026-01-01T10:00:00Z",
             grant_id="g-req",
         )
-        self.create_grant_request(req)
+        self.create_grant_request(req, tenant_id="demo")
         from backend.src.core.db import execute
         execute(
             "UPDATE grant_requests SET grant_id = ? WHERE id = ?",
@@ -231,7 +231,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             created_by="admin",
             reason="Test",
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._make_execution("ex-noreq", grant_id="g-noreq")
         result = self.build("ex-noreq")
         self.assertIsNotNone(result)
@@ -276,7 +276,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             error_code="no_grant",
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex)
+        self.create_execution(ex, tenant_id="demo")
         result = self.build("ex-denied")
         self.assertIsNotNone(result)
         self.assertIn("execution_denied", " ".join(result["findings"]))
@@ -295,7 +295,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             created_by="admin",
             reason="Test",
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         from backend.src.grants.grants import revoke_grant
         revoke_grant("g-revoked", "admin", "Emergency")
         self._make_execution("ex-revoked", grant_id="g-revoked")
@@ -316,7 +316,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             created_by="admin",
             reason="Test",
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         from backend.src.core.db import execute
         execute(
             "UPDATE grants SET signature = NULL, signing_key_id = NULL, payload_hash = NULL WHERE id = ?",
@@ -340,7 +340,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             created_by="admin",
             reason="Test",
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         req = self.GrantRequest(
             id="req-deny",
             subject_id="sub-1",
@@ -357,7 +357,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             denial_reason="Not approved",
             grant_id="g-reqdeny",
         )
-        self.create_grant_request(req)
+        self.create_grant_request(req, tenant_id="demo")
         from backend.src.core.db import execute
         execute(
             "UPDATE grant_requests SET grant_id = ? WHERE id = ?",

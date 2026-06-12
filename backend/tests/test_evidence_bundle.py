@@ -127,7 +127,7 @@ class TestEvidenceBundle(unittest.TestCase):
         )
         defaults.update(kwargs)
         g = Grant(**defaults)
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     def _setup_operator(self, op_id, name, role, token=None):
@@ -203,7 +203,7 @@ class TestEvidenceBundle(unittest.TestCase):
             policy_result="no_grant",
             error_code="no_grant",
         )
-        self.execs_mod.create_grant_execution(ex)
+        self.execs_mod.create_grant_execution(ex, tenant_id="demo")
         bundle = self.eb_mod.build_evidence_bundle(ex.id)
         self.assertIsNotNone(bundle)
         self.assertEqual(bundle["evidenceId"], ex.id)
@@ -227,7 +227,8 @@ class TestEvidenceBundle(unittest.TestCase):
         g = self._make_grant()
         # Run a demo action to create an execution linked to the grant
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         bundle = self.eb_mod.build_evidence_bundle(ex_id)
@@ -264,12 +265,13 @@ class TestEvidenceBundle(unittest.TestCase):
             requested_by="req-1",
             reason="Emergency",
         )
-        self.greps_mod.create_grant_request(req)
-        approved_req, grant = self.greps_mod.approve_grant_request(req.id, "owner-1")
+        self.greps_mod.create_grant_request(req, tenant_id="demo")
+        approved_req, grant = self.greps_mod.approve_grant_request(req.id, "owner-1", tenant_id="demo")
 
         # Execute action with the newly created grant
         result = self.demo_mod.handle_demo_action(
-            "tech-02", "senior-engineer", "restart-service", "customer-env-b"
+            "tech-02", "senior-engineer", "restart-service", "customer-env-b",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         bundle = self.eb_mod.build_evidence_bundle(ex_id)
@@ -306,8 +308,8 @@ class TestEvidenceBundle(unittest.TestCase):
             requested_by="req-1",
             reason="Testing denial",
         )
-        self.greps_mod.create_grant_request(req)
-        denied_req = self.greps_mod.deny_grant_request(req.id, "owner-1", "Not needed")
+        self.greps_mod.create_grant_request(req, tenant_id="demo")
+        denied_req = self.greps_mod.deny_grant_request(req.id, "owner-1", "Not needed", tenant_id="demo")
 
         # Manually create an execution linked to the denied request (no grant)
         from backend.src.core.models import GrantExecution
@@ -319,7 +321,7 @@ class TestEvidenceBundle(unittest.TestCase):
             policy_result="grant_request_denied",
             error_code="grant_request_denied",
         )
-        self.execs_mod.create_grant_execution(ex)
+        self.execs_mod.create_grant_execution(ex, tenant_id="demo")
 
         bundle = self.eb_mod.build_evidence_bundle(ex.id)
         self.assertIsNotNone(bundle)
@@ -341,11 +343,13 @@ class TestEvidenceBundle(unittest.TestCase):
         g = self._make_grant(max_uses=1)
         # First use consumes the single use
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         # Second use should be denied due to exhaustion
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertEqual(result["reason"], "grant_usage_exhausted")
         ex_id = result["executionId"]
@@ -360,7 +364,8 @@ class TestEvidenceBundle(unittest.TestCase):
     def test_bundle_does_not_expose_secrets(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         raw = json.dumps(bundle)
@@ -390,7 +395,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth="Bearer legacy-token")
@@ -408,7 +414,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         # Missing token
@@ -425,7 +432,8 @@ class TestEvidenceBundle(unittest.TestCase):
         tok = self._setup_operator("owner-1", "Owner One", "owner")
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
@@ -439,7 +447,8 @@ class TestEvidenceBundle(unittest.TestCase):
         tok = self._setup_operator("auditor-1", "Auditor One", "auditor")
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
@@ -453,7 +462,8 @@ class TestEvidenceBundle(unittest.TestCase):
         tok = self._setup_operator("demo-1", "Demo One", "demo_operator")
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
@@ -469,7 +479,8 @@ class TestEvidenceBundle(unittest.TestCase):
         self._setup_operator("owner-1", "Owner", "owner")  # just enable model
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=None)
@@ -484,7 +495,8 @@ class TestEvidenceBundle(unittest.TestCase):
     def test_bundle_shape(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         self.assertIn("evidenceId", bundle)
@@ -521,7 +533,8 @@ class TestEvidenceBundle(unittest.TestCase):
     def test_audit_trail_deduplicates_primary_event(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         audit_trail = bundle["auditTrail"]
@@ -538,7 +551,8 @@ class TestEvidenceBundle(unittest.TestCase):
     def test_bundle_has_evidence_hash_fields(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         self.assertIn("evidenceHash", bundle)
@@ -556,7 +570,8 @@ class TestEvidenceBundle(unittest.TestCase):
     def test_bundle_evidence_hash_is_deterministic(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle1 = self.eb_mod.build_evidence_bundle(result["executionId"])
         bundle2 = self.eb_mod.build_evidence_bundle(result["executionId"])
@@ -568,7 +583,8 @@ class TestEvidenceBundle(unittest.TestCase):
     def test_bundle_evidence_hash_changes_with_data_change(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         original_hash = bundle["evidenceHash"]
@@ -583,7 +599,8 @@ class TestEvidenceBundle(unittest.TestCase):
     def test_canonical_form_excludes_generated_and_hash_meta(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         canonical = self.eb_mod.canonical_evidence_bundle(bundle)
@@ -601,10 +618,12 @@ class TestEvidenceBundle(unittest.TestCase):
         g = self._make_grant()
         # Multiple executions create multiple audit events
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         result2 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result2["executionId"])
         audit_trail = bundle["auditTrail"]
@@ -618,7 +637,8 @@ class TestEvidenceBundle(unittest.TestCase):
     def test_bundle_is_export_ready(self):
         g = self._make_grant(max_uses=5)
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
 
@@ -663,7 +683,7 @@ class TestEvidenceBundle(unittest.TestCase):
             policy_result="no_grant",
             error_code="no_grant",
         )
-        self.execs_mod.create_grant_execution(ex)
+        self.execs_mod.create_grant_execution(ex, tenant_id="demo")
         bundle1 = self.eb_mod.build_evidence_bundle(ex.id)
         bundle2 = self.eb_mod.build_evidence_bundle(ex.id)
         self.assertEqual(bundle1["evidenceHash"], bundle2["evidenceHash"])
@@ -689,8 +709,8 @@ class TestEvidenceBundle(unittest.TestCase):
             requested_by="req-1",
             reason="Testing denial",
         )
-        self.greps_mod.create_grant_request(req)
-        denied_req = self.greps_mod.deny_grant_request(req.id, "owner-1", "Not needed")
+        self.greps_mod.create_grant_request(req, tenant_id="demo")
+        denied_req = self.greps_mod.deny_grant_request(req.id, "owner-1", "Not needed", tenant_id="demo")
 
         from backend.src.core.models import GrantExecution
         ex = GrantExecution(
@@ -701,7 +721,7 @@ class TestEvidenceBundle(unittest.TestCase):
             policy_result="grant_request_denied",
             error_code="grant_request_denied",
         )
-        self.execs_mod.create_grant_execution(ex)
+        self.execs_mod.create_grant_execution(ex, tenant_id="demo")
 
         bundle1 = self.eb_mod.build_evidence_bundle(ex.id)
         bundle2 = self.eb_mod.build_evidence_bundle(ex.id)
@@ -716,11 +736,13 @@ class TestEvidenceBundle(unittest.TestCase):
         g = self._make_grant(max_uses=1)
         # First use allows
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         # Second use denied due to exhaustion
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertEqual(result["reason"], "grant_usage_exhausted")
         ex_id = result["executionId"]
@@ -763,7 +785,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -780,7 +803,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -799,7 +823,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -822,7 +847,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -841,7 +867,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
 
@@ -865,7 +892,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -884,7 +912,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -906,7 +935,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
 
@@ -929,7 +959,8 @@ class TestEvidenceBundle(unittest.TestCase):
         tok = self._setup_operator("owner-1", "Owner One", "owner")
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
@@ -942,7 +973,8 @@ class TestEvidenceBundle(unittest.TestCase):
         tok = self._setup_operator("admin-1", "Admin One", "grant_admin")
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
@@ -955,7 +987,8 @@ class TestEvidenceBundle(unittest.TestCase):
         tok = self._setup_operator("auditor-1", "Auditor One", "auditor")
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
@@ -968,7 +1001,8 @@ class TestEvidenceBundle(unittest.TestCase):
         tok = self._setup_operator("demo-1", "Demo One", "demo_operator")
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
@@ -985,7 +1019,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer legacy-token")
@@ -1002,7 +1037,8 @@ class TestEvidenceBundle(unittest.TestCase):
 
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         ex_id = result["executionId"]
         # Missing auth
@@ -1517,9 +1553,10 @@ class TestEvidenceBundleVerification(unittest.TestCase):
             created_by="admin",
             reason="Routine maintenance",
         )
-        grants_mod.create_grant(g)
+        grants_mod.create_grant(g, tenant_id="demo")
         result = demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = eb_mod.build_evidence_bundle(result["executionId"])
         verify_result = eb_mod.verify_evidence_export_artifact(bundle)

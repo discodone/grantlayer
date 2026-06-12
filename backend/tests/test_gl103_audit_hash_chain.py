@@ -644,7 +644,7 @@ class TestGl103Gl099Preserved(_BaseGl103):
             requested_by="admin-1",
             reason="Routine maintenance",
         )
-        req = self.requests_mod.create_grant_request(req)
+        req = self.requests_mod.create_grant_request(req, tenant_id="demo")
 
         original_append = self.audit_mod.append_event
 
@@ -654,7 +654,7 @@ class TestGl103Gl099Preserved(_BaseGl103):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.approve_grant_request(req.id, "approver-1")
+                self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         finally:
             self.audit_mod.append_event = original_append
 
@@ -675,8 +675,8 @@ class TestGl103Gl099Preserved(_BaseGl103):
             requested_by="admin-1",
             reason="Routine maintenance",
         )
-        req = self.requests_mod.create_grant_request(req)
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1")
+        req = self.requests_mod.create_grant_request(req, tenant_id="demo")
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
 
         self.assertEqual(updated_req.status, "approved")
         self.assertIsNotNone(grant)
@@ -712,7 +712,7 @@ class TestGl103Gl098Preserved(_BaseGl103):
             created_at=old_time,
             updated_at=old_time,
         )
-        req = self.requests_mod.create_grant_request(req)
+        req = self.requests_mod.create_grant_request(req, tenant_id="demo")
         count = self.requests_mod.expire_old_requests()
         self.assertEqual(count, 1)
         events = self.audit_mod.list_events(limit=10)
@@ -739,8 +739,8 @@ class TestGl103Gl092Preserved(_BaseGl103):
             requested_by="admin-1",
             reason="Routine maintenance",
         )
-        req = self.requests_mod.create_grant_request(req)
-        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+        req = self.requests_mod.create_grant_request(req, tenant_id="demo")
+        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         deny_events = [e for e in events if e.action == "deny_grant_request"]
         self.assertEqual(len(deny_events), 1)
@@ -758,9 +758,9 @@ class TestGl103Gl092Preserved(_BaseGl103):
             requested_by="admin-1",
             reason="Routine maintenance",
         )
-        req = self.requests_mod.create_grant_request(req)
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
-        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+        req = self.requests_mod.create_grant_request(req, tenant_id="demo")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
+        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
         events = self.audit_mod.list_events(limit=10)
         revoke_events = [e for e in events if e.action == "revoke_grant_request"]
         self.assertEqual(len(revoke_events), 1)
@@ -786,7 +786,7 @@ class TestGl103Gl100Preserved(_BaseGl103):
             created_by="admin",
             reason="Direct grant for testing",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         result = self.grants_mod.tamper_grant(g.id)
         self.assertIsNotNone(result)
         self.assertTrue(result.get("ok"))
@@ -805,9 +805,10 @@ class TestGl103Gl100Preserved(_BaseGl103):
             created_by="admin",
             reason="Direct grant for testing",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         events = self.audit_mod.list_events(limit=10)
         self.assertEqual(len(events), 1)

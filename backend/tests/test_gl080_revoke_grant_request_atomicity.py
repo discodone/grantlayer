@@ -1,6 +1,6 @@
 """Tests for GL-080 revoke_grant_request atomicity.
 
-Ensures that revoke_grant_request() performs linked grant revoke and
+Ensures that revoke_grant_request(, tenant_id="demo") performs linked grant revoke and
 grant request status update atomically in a single transaction.
 """
 
@@ -72,12 +72,12 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _create_and_approve_request(self, operator_id="approver-1"):
         """Create and approve a request, returning (request, grant)."""
         req = self._create_request()
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, operator_id)
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, operator_id, tenant_id="demo")
         return updated_req, grant
 
     # ------------------------------------------------------------------
@@ -87,7 +87,8 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
         """Revoking an approved request revokes both request and linked grant."""
         req, grant = self._create_and_approve_request()
         revoked_req = self.requests_mod.revoke_grant_request(
-            req.id, "admin-1", "Security concern"
+            req.id, "admin-1", "Security concern",
+            tenant_id="demo",
         )
 
         self.assertEqual(revoked_req.status, "revoked")
@@ -128,7 +129,8 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
         try:
             with self.assertRaises(RuntimeError):
                 self.requests_mod.revoke_grant_request(
-                    req.id, "admin-1", "Security concern"
+                    req.id, "admin-1", "Security concern",
+                    tenant_id="demo",
                 )
         finally:
             db_mod.get_conn = original_get_conn
@@ -161,7 +163,8 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
         try:
             with self.assertRaises(RuntimeError):
                 self.requests_mod.revoke_grant_request(
-                    req.id, "admin-1", "Security concern"
+                    req.id, "admin-1", "Security concern",
+                    tenant_id="demo",
                 )
         finally:
             self.grants_mod.revoke_grant = original_revoke_grant
@@ -219,7 +222,7 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
     def test_approve_grant_request_regression(self):
         """Existing approve_grant_request atomic behavior remains intact."""
         req = self._create_request()
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1")
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
 
         self.assertEqual(updated_req.status, "approved")
         self.assertEqual(updated_req.grant_id, grant.id)

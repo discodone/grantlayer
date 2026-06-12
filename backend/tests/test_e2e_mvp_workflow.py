@@ -131,18 +131,19 @@ class TestE2EMvpWorkflow(unittest.TestCase):
             requested_by="req-01",
             reason="Routine maintenance",
         )
-        created = self.greps_mod.create_grant_request(request)
+        created = self.greps_mod.create_grant_request(request, tenant_id="demo")
         self.assertEqual(created.status, "requested")
 
         # Step 2: Approve request
-        updated, grant = self.greps_mod.approve_grant_request(created.id, "app-01")
+        updated, grant = self.greps_mod.approve_grant_request(created.id, "app-01", tenant_id="demo")
         self.assertEqual(updated.status, "approved")
         self.assertIsNotNone(updated.grant_id)
         self.assertIsNotNone(grant)
 
         # Step 3: Execute demo action
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertTrue(result["approved"], f"Demo action denied: {result}")
         self.assertIsNotNone(result["executionId"])
@@ -197,16 +198,17 @@ class TestE2EMvpWorkflow(unittest.TestCase):
             requested_by="req-01",
             reason="Routine maintenance",
         )
-        created = self.greps_mod.create_grant_request(request)
+        created = self.greps_mod.create_grant_request(request, tenant_id="demo")
 
         # Deny the request
-        updated = self.greps_mod.deny_grant_request(created.id, "den-01", "Not authorized")
+        updated = self.greps_mod.deny_grant_request(created.id, "den-01", "Not authorized", tenant_id="demo")
         self.assertEqual(updated.status, "denied")
         self.assertIsNone(updated.grant_id)
 
         # No grant exists, so execution should be denied
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
 
@@ -238,11 +240,12 @@ class TestE2EMvpWorkflow(unittest.TestCase):
             created_by="owner-01",
             reason="Direct grant",
         )
-        self.grants_mod.create_grant(grant)
+        self.grants_mod.create_grant(grant, tenant_id="demo")
 
         # Execute succeeds
         result1 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertTrue(result1["approved"], f"First execution denied: {result1}")
 
@@ -252,7 +255,8 @@ class TestE2EMvpWorkflow(unittest.TestCase):
 
         # Execute fails after revoke
         result2 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result2["approved"])
         self.assertIn("revoked", result2["reason"].lower())
@@ -276,12 +280,13 @@ class TestE2EMvpWorkflow(unittest.TestCase):
             created_by="owner-01",
             reason="Direct grant",
         )
-        self.grants_mod.create_grant(grant)
+        self.grants_mod.create_grant(grant, tenant_id="demo")
 
-        challenge = self.ch_mod.create_challenge("tech-01", "restart-service", "customer-env-a")
+        challenge = self.ch_mod.create_challenge("tech-01", "restart-service", "customer-env-a", tenant_id="demo")
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=challenge.id,
+            tenant_id="demo",
         )
         self.assertTrue(result["approved"], f"Execution denied: {result}")
         self.assertEqual(result["challengeId"], challenge.id)
@@ -308,10 +313,11 @@ class TestE2EMvpWorkflow(unittest.TestCase):
             created_by="owner-01",
             reason="Direct grant",
         )
-        self.grants_mod.create_grant(grant)
+        self.grants_mod.create_grant(grant, tenant_id="demo")
 
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "challenge_required")

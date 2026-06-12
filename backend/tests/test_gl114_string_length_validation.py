@@ -368,7 +368,7 @@ class TestGl114ChallengeLengthValidation(_BaseGl114):
     """Tests for challenge creation string length validation."""
 
     def test_create_challenge_accepts_normal_strings(self):
-        ch = self.ch_mod.create_challenge("sub-1", "read", "repo-a")
+        ch = self.ch_mod.create_challenge("sub-1", "read", "repo-a", tenant_id="demo")
         self.assertEqual(ch.subject_id, "sub-1")
         self.assertEqual(ch.action, "read")
         self.assertEqual(ch.resource, "repo-a")
@@ -376,21 +376,21 @@ class TestGl114ChallengeLengthValidation(_BaseGl114):
     def test_create_challenge_rejects_overlong_subject_id(self):
         from backend.src.core.validation import ValidationError
         with self.assertRaises(ValidationError) as ctx:
-            self.ch_mod.create_challenge("x" * 129, "read", "repo-a")
+            self.ch_mod.create_challenge("x" * 129, "read", "repo-a", tenant_id="demo")
         self.assertIn("subject_id", str(ctx.exception))
 
     def test_create_challenge_rejects_overlong_action(self):
         from backend.src.core.validation import ValidationError
         with self.assertRaises(ValidationError):
-            self.ch_mod.create_challenge("sub-1", "x" * 257, "repo-a")
+            self.ch_mod.create_challenge("sub-1", "x" * 257, "repo-a", tenant_id="demo")
 
     def test_create_challenge_rejects_overlong_resource(self):
         from backend.src.core.validation import ValidationError
         with self.assertRaises(ValidationError):
-            self.ch_mod.create_challenge("sub-1", "read", "x" * 257)
+            self.ch_mod.create_challenge("sub-1", "read", "x" * 257, tenant_id="demo")
 
     def test_create_challenge_boundary_length_accepted(self):
-        ch = self.ch_mod.create_challenge("x" * 128, "x" * 256, "x" * 256)
+        ch = self.ch_mod.create_challenge("x" * 128, "x" * 256, "x" * 256, tenant_id="demo")
         self.assertEqual(ch.subject_id, "x" * 128)
 
 
@@ -412,7 +412,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             requested_by="admin-1",
             reason="test",
         )
-        created = self.requests_mod.create_grant_request(req)
+        created = self.requests_mod.create_grant_request(req, tenant_id="demo")
         self.assertEqual(created.subject_id, "sub-1")
 
     def test_create_grant_request_rejects_overlong_subject_id(self):
@@ -428,7 +428,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             reason="test",
         )
         with self.assertRaises(ValidationError) as ctx:
-            self.requests_mod.create_grant_request(req)
+            self.requests_mod.create_grant_request(req, tenant_id="demo")
         self.assertIn("subject_id", str(ctx.exception))
 
     def test_create_grant_request_rejects_overlong_role(self):
@@ -444,7 +444,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             reason="test",
         )
         with self.assertRaises(ValidationError):
-            self.requests_mod.create_grant_request(req)
+            self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def test_create_grant_request_rejects_overlong_action(self):
         from backend.src.core.validation import ValidationError
@@ -459,7 +459,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             reason="test",
         )
         with self.assertRaises(ValidationError):
-            self.requests_mod.create_grant_request(req)
+            self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def test_create_grant_request_rejects_overlong_resource(self):
         from backend.src.core.validation import ValidationError
@@ -474,7 +474,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             reason="test",
         )
         with self.assertRaises(ValidationError):
-            self.requests_mod.create_grant_request(req)
+            self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def test_create_grant_request_rejects_overlong_reason(self):
         from backend.src.core.validation import ValidationError
@@ -489,7 +489,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             reason="x" * 1001,
         )
         with self.assertRaises(ValidationError):
-            self.requests_mod.create_grant_request(req)
+            self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def test_create_grant_request_boundary_length_accepted(self):
         req = self.models_mod.GrantRequest(
@@ -502,7 +502,7 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             requested_by="admin-1",
             reason="x" * 1000,
         )
-        created = self.requests_mod.create_grant_request(req)
+        created = self.requests_mod.create_grant_request(req, tenant_id="demo")
         self.assertEqual(created.reason, "x" * 1000)
 
     def test_revoke_grant_request_rejects_overlong_reason(self):
@@ -518,9 +518,9 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             reason="test",
             status="approved",
         )
-        created = self.requests_mod.create_grant_request(req)
+        created = self.requests_mod.create_grant_request(req, tenant_id="demo")
         with self.assertRaises(ValidationError) as ctx:
-            self.requests_mod.revoke_grant_request(created.id, "admin-1", "x" * 1001)
+            self.requests_mod.revoke_grant_request(created.id, "admin-1", "x" * 1001, tenant_id="demo")
         self.assertIn("reason", str(ctx.exception))
 
     def test_revoke_grant_request_boundary_reason_accepted(self):
@@ -535,8 +535,8 @@ class TestGl114GrantRequestModuleValidation(_BaseGl114):
             reason="test",
             status="approved",
         )
-        created = self.requests_mod.create_grant_request(req)
-        result = self.requests_mod.revoke_grant_request(created.id, "admin-1", "x" * 1000)
+        created = self.requests_mod.create_grant_request(req, tenant_id="demo")
+        result = self.requests_mod.revoke_grant_request(created.id, "admin-1", "x" * 1000, tenant_id="demo")
         self.assertEqual(result.revoked_reason, "x" * 1000)
 
 
@@ -751,7 +751,7 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
             valid_from="2026-01-01T00:00:00Z", valid_until="2099-12-31T23:59:59Z",
             created_by="admin-1", reason="test",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         payload = {"revokedBy": "admin-1", "reason": "x" * 1001}
         body = json.dumps(payload).encode()
         handler = self._make_raw_handler(f"/v1/grants/{g.id}/revoke", method="POST", auth_header="Bearer owner-token", body=body)
@@ -767,7 +767,7 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
             valid_from="2026-01-01T00:00:00Z", valid_until="2099-12-31T23:59:59Z",
             created_by="admin-1", reason="test",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         payload = {"revokedBy": "admin-1", "reason": "x" * 1000}
         body = json.dumps(payload).encode()
         handler = self._make_raw_handler(f"/v1/grants/{g.id}/revoke", method="POST", auth_header="Bearer owner-token", body=body)
@@ -787,7 +787,7 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
             requested_by="owner-1",
             reason="test",
         )
-        created = self.requests_mod.create_grant_request(req)
+        created = self.requests_mod.create_grant_request(req, tenant_id="demo")
         payload = {"reason": "x" * 1001}
         body = json.dumps(payload).encode()
         handler = self._make_raw_handler(
@@ -814,7 +814,7 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
             requested_by="owner-1",
             reason="test",
         )
-        created = self.requests_mod.create_grant_request(req)
+        created = self.requests_mod.create_grant_request(req, tenant_id="demo")
         payload = {"reason": "x" * 1000}
         body = json.dumps(payload).encode()
         handler = self._make_raw_handler(

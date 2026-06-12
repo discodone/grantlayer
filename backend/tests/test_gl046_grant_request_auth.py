@@ -93,7 +93,7 @@ class _BaseGl046(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _make_client(self):
         from fastapi.testclient import TestClient

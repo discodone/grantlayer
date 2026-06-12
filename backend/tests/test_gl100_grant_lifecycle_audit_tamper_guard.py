@@ -2,10 +2,10 @@
 
 Covers:
 1.  Grant creation audit via approval flow (action="approve_grant_request")
-2.  Direct create_grant() produces no audit — coverage is intentional via approval
+2.  Direct create_grant(, tenant_id="demo") produces no audit — coverage is intentional via approval
 3.  Approval audit has approved=True
 4.  Valid grant creation succeeds
-5.  Grant revoke audit via revoke_grant_request (action="revoke_grant_request")
+5.  Grant revoke audit via revoke_grant_request (action="revoke_grant_request", tenant_id="demo")
 6.  Revoke audit has approved=False
 7.  Direct revoke_grant() produces no audit — coverage is intentional via request
 8.  Valid revoke succeeds
@@ -124,7 +124,7 @@ class _BaseGl100(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = self.models_mod.GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _create_old_request(self, **kwargs):
         old_time = (
@@ -144,7 +144,7 @@ class _BaseGl100(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = self.models_mod.GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _insert_operator(self, op_id, name, role, token):
         conn = self.db_mod.get_conn()
@@ -173,7 +173,7 @@ class _BaseGl100(unittest.TestCase):
         )
         defaults.update(kwargs)
         g = self.models_mod.Grant(**defaults)
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     def _make_handler(self, path, method="GET", auth_header=None, body=b"", content_length=None):
@@ -222,7 +222,7 @@ class TestGrantCreationAudit(_BaseGl100):
     def test_approval_flow_creates_approve_grant_request_audit(self):
         """Approving a request creates an audit event with action=approve_grant_request."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         events = self.audit_mod.list_events()
         actions = [e.action for e in events]
         self.assertIn("approve_grant_request", actions)
@@ -230,14 +230,14 @@ class TestGrantCreationAudit(_BaseGl100):
     def test_approval_audit_has_approved_true(self):
         """Approval audit event has approved=True."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         events = self.audit_mod.list_events()
         approve_events = [e for e in events if e.action == "approve_grant_request"]
         self.assertEqual(len(approve_events), 1)
         self.assertTrue(approve_events[0].approved)
 
     def test_direct_create_grant_produces_no_audit_event(self):
-        """Calling create_grant() directly produces no audit event.
+        """Calling create_grant(, tenant_id="demo") directly produces no audit event.
 
         Audit coverage for grant creation flows exclusively through
         approve_grant_request in grant_requests.py (GL-099 pattern).
@@ -268,14 +268,14 @@ class TestGrantRevokeAudit(_BaseGl100):
     """Grant revoke audit: audited via revoke_grant_request, no inline audit in revoke_grant."""
 
     def _approve(self, req_id, approver="approver-1"):
-        _, grant = self.requests_mod.approve_grant_request(req_id, approver)
+        _, grant = self.requests_mod.approve_grant_request(req_id, approver, tenant_id="demo")
         return grant
 
     def test_revoke_request_creates_revoke_grant_request_audit(self):
         """Revoking a request creates an audit event with action=revoke_grant_request."""
         req = self._create_request()
         self._approve(req.id)
-        self.requests_mod.revoke_grant_request(req.id, "approver-1", "Test revoke")
+        self.requests_mod.revoke_grant_request(req.id, "approver-1", "Test revoke", tenant_id="demo")
         events = self.audit_mod.list_events()
         actions = [e.action for e in events]
         self.assertIn("revoke_grant_request", actions)
@@ -284,7 +284,7 @@ class TestGrantRevokeAudit(_BaseGl100):
         """Revoke audit event has approved=False."""
         req = self._create_request()
         self._approve(req.id)
-        self.requests_mod.revoke_grant_request(req.id, "approver-1", "Test revoke")
+        self.requests_mod.revoke_grant_request(req.id, "approver-1", "Test revoke", tenant_id="demo")
         events = self.audit_mod.list_events()
         revoke_events = [e for e in events if e.action == "revoke_grant_request"]
         self.assertEqual(len(revoke_events), 1)
@@ -309,12 +309,13 @@ class TestGrantRevokeAudit(_BaseGl100):
         req = self._create_request()
         _, grant = self._approve(req.id), None
         req_after, grant = self.requests_mod.approve_grant_request(
-            self._create_request().id, "approver-1"
+            self._create_request().id, "approver-1",
+            tenant_id="demo",
         )
         # Use a fresh request for a clean single-revoke test
         req2 = self._create_request()
-        _, g2 = self.requests_mod.approve_grant_request(req2.id, "approver-1")
-        updated = self.requests_mod.revoke_grant_request(req2.id, "approver-1", "Clean revoke")
+        _, g2 = self.requests_mod.approve_grant_request(req2.id, "approver-1", tenant_id="demo")
+        updated = self.requests_mod.revoke_grant_request(req2.id, "approver-1", "Clean revoke", tenant_id="demo")
         self.assertEqual(updated.status, "revoked")
         stored_grant = self.grants_mod.get_grant(g2.id)
         self.assertTrue(stored_grant.revoked)
@@ -322,13 +323,13 @@ class TestGrantRevokeAudit(_BaseGl100):
     def test_no_duplicate_revoke_audit_through_request(self):
         """One revoke_grant_request produces exactly one revoke audit event."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         # Clear approval audit baseline
         approve_events = [e for e in self.audit_mod.list_events()
                           if e.action == "approve_grant_request"]
         self.assertEqual(len(approve_events), 1)
 
-        self.requests_mod.revoke_grant_request(req.id, "approver-1", "Single revoke")
+        self.requests_mod.revoke_grant_request(req.id, "approver-1", "Single revoke", tenant_id="demo")
         revoke_events = [e for e in self.audit_mod.list_events()
                          if e.action == "revoke_grant_request"]
         self.assertEqual(len(revoke_events), 1,
@@ -342,12 +343,12 @@ class TestGrantRevokeAudit(_BaseGl100):
 class TestGrantConsumeAudit(_BaseGl100):
     """Grant consume audit: covered through demo_action workflow, not inline in try_consume_grant_use.
 
-    try_consume_grant_use() is called from demo_action.handle_demo_action() when a matching
+    try_consume_grant_use(, tenant_id="demo") is called from demo_action.handle_demo_action() when a matching
     grant is found. The demo_action flow already creates a comprehensive audit event with
     matched_grant_id set. Adding a second audit inside try_consume_grant_use would duplicate
     events and break existing test_grant_usage_limits and test_policy_engine tests.
     The absence of inline audit in try_consume_grant_use is intentional, mirroring the
-    create_grant (covered via approve_grant_request) and revoke_grant (covered via
+    create_grant (covered via approve_grant_request, tenant_id="demo") and revoke_grant (covered via
     revoke_grant_request) patterns.
     """
 
@@ -355,7 +356,7 @@ class TestGrantConsumeAudit(_BaseGl100):
         """Calling try_consume_grant_use() directly produces no audit event.
 
         Audit coverage for grant consumption flows exclusively through
-        demo_action.handle_demo_action() which logs its own audit event
+        demo_action.handle_demo_action(, tenant_id="demo") which logs its own audit event
         with matched_grant_id. This test documents that the absence is
         intentional, not a gap.
         """
@@ -399,7 +400,8 @@ class TestGrantConsumeAudit(_BaseGl100):
 
         g = self._make_grant(max_uses=5)
         demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         events = self.audit_mod.list_events()
         self.assertEqual(len(events), 1)
@@ -511,7 +513,7 @@ class TestGL099RegressionGL100(_BaseGl100):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.approve_grant_request(req.id, "approver-1")
+                self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         finally:
             self.audit_mod.append_event = original_append
 
@@ -524,7 +526,7 @@ class TestGL099RegressionGL100(_BaseGl100):
     def test_revoke_audit_failure_rolls_back_state(self):
         """If audit append fails during revoke, request must stay in approved state."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
 
         original_append = self.audit_mod.append_event
 
@@ -536,7 +538,7 @@ class TestGL099RegressionGL100(_BaseGl100):
         self.audit_mod.append_event = failing_revoke_append
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.revoke_grant_request(req.id, "approver-1", "Test")
+                self.requests_mod.revoke_grant_request(req.id, "approver-1", "Test", tenant_id="demo")
         finally:
             self.audit_mod.append_event = original_append
 
@@ -556,7 +558,7 @@ class TestGL098RegressionGL100(_BaseGl100):
         """Approving a request older than the expiry threshold raises ValueError."""
         req = self._create_old_request()
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.approve_grant_request(req.id, "approver-1")
+            self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         self.assertIn("expired", str(ctx.exception).lower())
 
 
@@ -571,7 +573,7 @@ class TestGL097RegressionGL100(_BaseGl100):
         """Operator cannot approve their own request."""
         req = self._create_request(requested_by="same-operator")
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.approve_grant_request(req.id, "same-operator")
+            self.requests_mod.approve_grant_request(req.id, "same-operator", tenant_id="demo")
         self.assertIn("self", str(ctx.exception).lower())
 
     def test_denial_reason_length_enforced(self):
@@ -579,7 +581,7 @@ class TestGL097RegressionGL100(_BaseGl100):
         req = self._create_request()
         long_reason = "x" * 1001
         with self.assertRaises(ValueError) as ctx:
-            self.requests_mod.deny_grant_request(req.id, "denier-1", long_reason)
+            self.requests_mod.deny_grant_request(req.id, "denier-1", long_reason, tenant_id="demo")
         self.assertIn("1000", str(ctx.exception))
 
 
@@ -593,7 +595,7 @@ class TestGL092RegressionGL100(_BaseGl100):
     def test_deny_audit_has_approved_false(self):
         """deny_grant_request creates audit with approved=False."""
         req = self._create_request()
-        self.requests_mod.deny_grant_request(req.id, "denier-1", "Policy violation")
+        self.requests_mod.deny_grant_request(req.id, "denier-1", "Policy violation", tenant_id="demo")
         events = self.audit_mod.list_events()
         deny_events = [e for e in events if e.action == "deny_grant_request"]
         self.assertEqual(len(deny_events), 1)
@@ -602,7 +604,7 @@ class TestGL092RegressionGL100(_BaseGl100):
     def test_approve_audit_has_approved_true(self):
         """approve_grant_request creates audit with approved=True, distinguishable from deny/revoke."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
         events = self.audit_mod.list_events()
         approve_events = [e for e in events if e.action == "approve_grant_request"]
         self.assertEqual(len(approve_events), 1)
@@ -611,8 +613,8 @@ class TestGL092RegressionGL100(_BaseGl100):
     def test_revoke_audit_distinct_from_approve(self):
         """revoke audit has approved=False, clearly distinct from approve audit."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
-        self.requests_mod.revoke_grant_request(req.id, "approver-1", "No longer needed")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
+        self.requests_mod.revoke_grant_request(req.id, "approver-1", "No longer needed", tenant_id="demo")
         events = self.audit_mod.list_events()
         approve_events = [e for e in events if e.action == "approve_grant_request"]
         revoke_events = [e for e in events if e.action == "revoke_grant_request"]

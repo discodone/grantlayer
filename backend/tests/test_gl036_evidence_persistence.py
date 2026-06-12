@@ -116,7 +116,7 @@ class TestEvidencePersistenceFoundation(unittest.TestCase):
         )
         defaults.update(kwargs)
         g = Grant(**defaults)
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     def _build_test_bundle(self, execution_id="ex-1", grant_id=None, grant_request_id=None):

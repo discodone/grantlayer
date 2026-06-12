@@ -86,7 +86,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
             result="succeeded",
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex)
+        self.create_execution(ex, tenant_id="demo")
         return ex
 
     def _archive_evidence(self, execution_id: str, stored_by: str | None = None):
@@ -219,7 +219,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._archive_evidence("ex-shape-1")
         self.record_event(
             event_type="policy_evaluated",
@@ -302,7 +302,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._archive_evidence("ex-complete")
         self.record_event(
             event_type="policy_evaluated",
@@ -362,7 +362,7 @@ class TestEvidenceCompletenessAPI(unittest.TestCase):
             signing_key_id="demo-ed25519-v1",
             payload_hash="abcd1234" * 8,
         )
-        self.create_grant(grant)
+        self.create_grant(grant, tenant_id="demo")
         self._archive_evidence("ex-sec-1")
         self.record_event(
             event_type="policy_evaluated",

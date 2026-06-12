@@ -119,7 +119,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
             created_by="admin",
             reason="Routine maintenance",
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
         return g
 
     # ──────────────────────────────────────────────
@@ -128,7 +128,8 @@ class TestEvidenceAuditContract(unittest.TestCase):
     def test_evidence_bundle_contains_all_required_fields(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
 
@@ -146,7 +147,8 @@ class TestEvidenceAuditContract(unittest.TestCase):
     def test_evidence_hash_is_valid_sha256_hex(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         h = bundle["evidenceHash"]
@@ -160,7 +162,8 @@ class TestEvidenceAuditContract(unittest.TestCase):
     def test_canonical_version_and_algorithm_frozen(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         self.assertEqual(bundle["canonicalVersion"], "gl-evidence-v1")
@@ -172,7 +175,8 @@ class TestEvidenceAuditContract(unittest.TestCase):
     def test_audit_trail_non_empty_for_executed_actions(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         self.assertIsInstance(bundle["auditTrail"], list)
@@ -185,10 +189,12 @@ class TestEvidenceAuditContract(unittest.TestCase):
         g = self._make_grant()
         # Execute twice to generate multiple audit events
         self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         audit_trail = bundle["auditTrail"]
@@ -201,7 +207,8 @@ class TestEvidenceAuditContract(unittest.TestCase):
     def test_export_json_is_valid_and_deterministic(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         export1 = self.eb_mod.export_bundle_json(bundle)
@@ -216,7 +223,8 @@ class TestEvidenceAuditContract(unittest.TestCase):
     def test_export_artifact_includes_correct_headers_contract(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         evidence_hash = bundle.get("evidenceHash", "")
@@ -242,7 +250,8 @@ class TestEvidenceAuditContract(unittest.TestCase):
     def test_evidence_hash_matches_between_endpoint_and_export(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         hash_from_bundle = bundle["evidenceHash"]
@@ -262,7 +271,8 @@ class TestEvidenceAuditContract(unittest.TestCase):
     def test_grant_signature_result_present_when_applicable(self):
         g = self._make_grant()
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         self.assertIn("grantSignatureResult", bundle["grant"])
@@ -285,11 +295,12 @@ class TestEvidenceAuditContract(unittest.TestCase):
             reason="One-time use",
             max_uses=1,
         )
-        self.grants_mod.create_grant(g)
+        self.grants_mod.create_grant(g, tenant_id="demo")
 
         # First execution succeeds
         result1 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertTrue(result1["approved"])
         bundle1 = self.eb_mod.build_evidence_bundle(result1["executionId"])
@@ -297,7 +308,8 @@ class TestEvidenceAuditContract(unittest.TestCase):
 
         # Second execution is denied due to usage exhaustion
         result2 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a"
+            "tech-01", "technician", "restart-service", "customer-env-a",
+            tenant_id="demo",
         )
         self.assertFalse(result2["approved"])
         bundle2 = self.eb_mod.build_evidence_bundle(result2["executionId"])

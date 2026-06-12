@@ -224,8 +224,8 @@ class TestTenantContextOnCreate(unittest.TestCase):
         finally:
             conn.close()
 
-    def test_create_grant_default_tenant(self):
-        """Grant created without tenant_id gets 'demo' default."""
+    def test_create_grant_explicit_demo_tenant(self):
+        """Grant created with explicit tenant_id='demo' is stored under 'demo' tenant."""
         import backend.src.grants.grants as g
         from backend.src.core.models import Grant
         grant = Grant(
@@ -233,7 +233,7 @@ class TestTenantContextOnCreate(unittest.TestCase):
             valid_from=_past_date(1), valid_until=_future_date(30),
             created_by="op1", reason="test",
         )
-        g.create_grant(grant)
+        g.create_grant(grant, tenant_id="demo")
         conn = self.db_mod.get_conn()
         try:
             row = conn.execute("SELECT tenant_id FROM grants WHERE id = ?", (grant.id,)).fetchone()
@@ -755,7 +755,7 @@ class TestLegacyBackfillIsolation(unittest.TestCase):
             pass
 
     def test_backfill_grants_get_demo_tenant(self):
-        """Grants created without tenant_id are stored as 'demo' (backfill default)."""
+        """Grants created with explicit tenant_id='demo' are stored under 'demo' tenant."""
         import backend.src.grants.grants as g
         from backend.src.core.models import Grant
         grant = Grant(
@@ -763,8 +763,7 @@ class TestLegacyBackfillIsolation(unittest.TestCase):
             valid_from=_past_date(1), valid_until=_future_date(30),
             created_by="system", reason="legacy",
         )
-        # No tenant_id → should use 'demo' default
-        g.create_grant(grant)
+        g.create_grant(grant, tenant_id="demo")
         conn = self.db_mod.get_conn()
         try:
             row = conn.execute("SELECT tenant_id FROM grants WHERE id = ?", (grant.id,)).fetchone()
@@ -781,7 +780,7 @@ class TestLegacyBackfillIsolation(unittest.TestCase):
             valid_from=_past_date(1), valid_until=_future_date(30),
             created_by="system", reason="legacy",
         )
-        g.create_grant(grant)
+        g.create_grant(grant, tenant_id="demo")
         # A 'prod' tenant cannot see demo data
         result = g.list_grants(tenant_id="prod")
         ids = [r.id for r in result]
@@ -796,7 +795,7 @@ class TestLegacyBackfillIsolation(unittest.TestCase):
             valid_from=_past_date(1), valid_until=_future_date(30),
             created_by="system", reason="legacy",
         )
-        g.create_grant(grant)
+        g.create_grant(grant, tenant_id="demo")
         result = g.list_grants(tenant_id="demo")
         ids = [r.id for r in result]
         self.assertIn(grant.id, ids)

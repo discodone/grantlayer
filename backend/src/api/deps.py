@@ -40,8 +40,8 @@ def resolve_auth_and_workspace(
     if ws_status != 200:
         error_code = ws_ctx.get("errorCode", "")
         if error_code in ("no_workspace_membership", "workspace_id_required"):
-            tenant_id = payload.get("tenant_id") or "demo"
-            if tenant_id != "demo":
+            tenant_id = payload.get("tenant_id")
+            if tenant_id:
                 from ..core.db import query_all as _qa
                 tenant_has_ws = _qa(
                     "SELECT id FROM workspaces WHERE tenant_id = ? AND status = 'active' LIMIT 1",

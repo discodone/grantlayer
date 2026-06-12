@@ -100,12 +100,12 @@ class _BaseGl092(unittest.TestCase):
         )
         defaults.update(kwargs)
         req = self.models_mod.GrantRequest(**defaults)
-        return self.requests_mod.create_grant_request(req)
+        return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _create_and_approve_request(self, operator_id="approver-1"):
         """Create and approve a request, returning (request, grant)."""
         req = self._create_request()
-        updated_req, grant = self.requests_mod.approve_grant_request(req.id, operator_id)
+        updated_req, grant = self.requests_mod.approve_grant_request(req.id, operator_id, tenant_id="demo")
         return updated_req, grant
 
     def _make_client(self):
@@ -175,7 +175,7 @@ class TestGl092DenyRollbackHardening(_BaseGl092):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+                self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
         finally:
             self.audit_mod.append_event = original_append
 
@@ -195,7 +195,7 @@ class TestGl092DenyRollbackHardening(_BaseGl092):
         self.audit_mod.append_event = failing_append
         try:
             with self.assertRaises(RuntimeError) as ctx:
-                self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+                self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
             self.assertIn("audit failure", str(ctx.exception))
         finally:
             self.audit_mod.append_event = self.audit_mod.append_event
@@ -203,7 +203,7 @@ class TestGl092DenyRollbackHardening(_BaseGl092):
     def test_successful_denies_create_correct_audit_semantics(self):
         """Successful deny must create audit event with approved=False."""
         req = self._create_request()
-        updated = self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+        updated = self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
 
         self.assertEqual(updated.status, "denied")
         self.assertEqual(updated.denied_by, "denier-1")
@@ -224,7 +224,7 @@ class TestGl092DenyAuditSemantics(_BaseGl092):
     def test_deny_audit_no_approved_true(self):
         """Deny audit event must never contain approved=True."""
         req = self._create_request()
-        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+        self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
 
         events = self.audit_mod.list_events(limit=10)
         for e in events:
@@ -234,9 +234,9 @@ class TestGl092DenyAuditSemantics(_BaseGl092):
     def test_deny_audit_distinguishable_from_approval(self):
         """Deny audit event must be distinguishable from approval."""
         req = self._create_request()
-        denied = self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed")
+        denied = self.requests_mod.deny_grant_request(req.id, "denier-1", "Not allowed", tenant_id="demo")
         req2 = self._create_request(subject_id="tech-02")
-        approved, grant = self.requests_mod.approve_grant_request(req2.id, "approver-1")
+        approved, grant = self.requests_mod.approve_grant_request(req2.id, "approver-1", tenant_id="demo")
 
         events = self.audit_mod.list_events(limit=10)
         deny = [e for e in events if e.action == "deny_grant_request"]
@@ -258,7 +258,7 @@ class TestGl092RevokeAuditSemantics(_BaseGl092):
     def test_revoke_audit_no_approved_true(self):
         """Revoke audit event must never contain approved=True."""
         req, grant = self._create_and_approve_request()
-        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
 
         events = self.audit_mod.list_events(limit=10)
         for e in events:
@@ -268,7 +268,7 @@ class TestGl092RevokeAuditSemantics(_BaseGl092):
     def test_revoke_audit_distinguishable_from_approval(self):
         """Revoke audit event must be distinguishable from approval."""
         req, grant = self._create_and_approve_request()
-        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern")
+        self.requests_mod.revoke_grant_request(req.id, "revoker-1", "Security concern", tenant_id="demo")
 
         events = self.audit_mod.list_events(limit=10)
         revoke = [e for e in events if e.action == "revoke_grant_request"]
@@ -290,7 +290,7 @@ class TestGl092ApprovalAuditSemanticsPreserved(_BaseGl092):
     def test_approval_audit_still_approved_true(self):
         """Approve audit must still have approved=True."""
         req = self._create_request()
-        self.requests_mod.approve_grant_request(req.id, "approver-1")
+        self.requests_mod.approve_grant_request(req.id, "approver-1", tenant_id="demo")
 
         events = self.audit_mod.list_events(limit=10)
         approve = [e for e in events if e.action == "approve_grant_request"]
@@ -308,7 +308,7 @@ class TestGl092RevokeAtomicityPreserved(_BaseGl092):
     def test_atomic_revoke_still_works(self):
         """Successful revoke must update both grant and request."""
         req, grant = self._create_and_approve_request()
-        revoked = self.requests_mod.revoke_grant_request(req.id, "admin-1", "Security concern")
+        revoked = self.requests_mod.revoke_grant_request(req.id, "admin-1", "Security concern", tenant_id="demo")
 
         self.assertEqual(revoked.status, "revoked")
         grant_after = self.grants_mod.get_grant(grant.id)
@@ -335,7 +335,7 @@ class TestGl092RevokeAtomicityPreserved(_BaseGl092):
         self.db_mod.get_conn = patched_get_conn
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.revoke_grant_request(req.id, "admin-1", "Security concern")
+                self.requests_mod.revoke_grant_request(req.id, "admin-1", "Security concern", tenant_id="demo")
         finally:
             self.db_mod.get_conn = original_get_conn
 
@@ -356,7 +356,7 @@ class TestGl092RevokeAtomicityPreserved(_BaseGl092):
         self.requests_mod.grants.revoke_grant = failing_revoke_grant
         try:
             with self.assertRaises(RuntimeError):
-                self.requests_mod.revoke_grant_request(req.id, "admin-1", "Security concern")
+                self.requests_mod.revoke_grant_request(req.id, "admin-1", "Security concern", tenant_id="demo")
         finally:
             self.grants_mod.revoke_grant = original_revoke_grant
             self.requests_mod.grants.revoke_grant = original_revoke_grant
