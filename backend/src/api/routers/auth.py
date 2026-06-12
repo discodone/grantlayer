@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from ..auth_jwt import encode_token, is_jwt_enabled, _get_jwt_secret
@@ -28,7 +29,7 @@ class TokenResponse(BaseModel):
 
 
 @router.post("/token", response_model=TokenResponse)
-def issue_token(body: TokenRequest) -> Any:
+def issue_token(request: Request, body: TokenRequest) -> Any:
     """Exchange operator credentials for a JWT Bearer token.
 
     The `secret` field accepts either the GRANTLAYER_ADMIN_TOKEN or, when
@@ -37,6 +38,21 @@ def issue_token(body: TokenRequest) -> Any:
     Returns a signed HS256 JWT valid for 1 hour.  Requires
     GRANTLAYER_JWT_SECRET to be set in the environment.
     """
+    rate_limiter = getattr(request.app.state, "auth_rate_limiter", None)
+    if rate_limiter is not None:
+        client_ip = request.client.host if request.client else "unknown"
+        allowed, retry_after = rate_limiter.check(client_ip, "auth")
+        if not allowed:
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "error": "rate_limit_exceeded",
+                    "errorCode": "rate_limit_exceeded",
+                    "reason": f"Too many requests. Retry after {retry_after} seconds.",
+                },
+                headers={"Retry-After": str(retry_after)},
+            )
+
     if not is_jwt_enabled():
         raise HTTPException(
             status_code=501,
