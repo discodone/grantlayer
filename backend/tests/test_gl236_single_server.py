@@ -139,6 +139,13 @@ class _GL236TestBase(unittest.TestCase):
     """Shared setup: isolated temp DB + JWT + admin token."""
 
     def setUp(self):
+        import importlib, sys as _sys
+        os.environ["GRANTLAYER_RUNTIME_MODE"] = "test"
+        os.environ["GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"] = "true"
+        for _mod_name in list(_sys.modules.keys()):
+            if "backend.src.core.config" in _mod_name or "backend.src.core.crypto" in _mod_name:
+                importlib.reload(_sys.modules[_mod_name])
+
         self._orig_db_path = _db.DB_PATH_OR_URL
         self._orig_enable_operator = _cfg.ENABLE_OPERATOR_MODEL
         self._orig_allow_plaintext = _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE
@@ -147,7 +154,6 @@ class _GL236TestBase(unittest.TestCase):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = _ADMIN_TOKEN
         os.environ["GRANTLAYER_REQUIRE_ADMIN_TOKEN"] = "false"
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "false"
-        os.environ["GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"] = "true"
 
         _cfg.ENABLE_OPERATOR_MODEL = False
         _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
@@ -168,7 +174,8 @@ class _GL236TestBase(unittest.TestCase):
         _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = self._orig_allow_plaintext
         for key in ("GRANTLAYER_JWT_SECRET", "GRANTLAYER_ADMIN_TOKEN",
                     "GRANTLAYER_REQUIRE_ADMIN_TOKEN", "GRANTLAYER_ENABLE_OPERATOR_MODEL",
-                    "GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"):
+                    "GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE",
+                    "GRANTLAYER_RUNTIME_MODE"):
             os.environ.pop(key, None)
         try:
             os.unlink(self._db_file)
