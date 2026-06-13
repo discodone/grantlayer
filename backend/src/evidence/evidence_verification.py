@@ -1,11 +1,10 @@
 """GrantLayer MVP — Evidence Verification Core."""
 
-from typing import Any
 import datetime
+from typing import Any
 
 from . import evidence_persistence
-from .evidence_bundle import check_evidence_completeness, check_denial_code_consistency
-
+from .evidence_bundle import check_denial_code_consistency, check_evidence_completeness
 
 VerificationStatus = {"valid", "invalid", "missing_data", "unsupported_version"}
 

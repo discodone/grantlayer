@@ -6,9 +6,9 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, HTTPException, Query
 
+from ...grants.grant_executions import get_grant_execution
 from ...policy.compliance_gap_report import build_compliance_gap_report_for_execution
 from ...policy.compliance_readiness import build_compliance_readiness_summary
-from ...grants.grant_executions import get_grant_execution
 from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(prefix="/compliance", tags=["compliance"])

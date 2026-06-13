@@ -13,7 +13,6 @@ from typing import Any
 
 from ..core.runtime_config import PRODUCTION_LIKE_MODES, get_runtime_mode
 
-
 EXTERNAL_IDENTITY_ENABLE_FLAGS: tuple[str, ...] = (
     "GRANTLAYER_ENABLE_OAUTH",
     "GRANTLAYER_ENABLE_OIDC",

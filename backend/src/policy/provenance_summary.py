@@ -9,10 +9,10 @@ from __future__ import annotations
 import datetime
 from typing import Any, Optional
 
-from ..core.models import GrantExecution, ProvenanceEvent, EvidenceBundle
-from . import provenance as prov
-from ..grants import grant_executions as execs
+from ..core.models import GrantExecution, ProvenanceEvent
 from ..evidence import evidence_persistence as evp
+from ..grants import grant_executions as execs
+from . import provenance as prov
 
 
 def _iso_now() -> str:

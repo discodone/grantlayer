@@ -9,11 +9,9 @@ from __future__ import annotations
 from typing import Optional
 
 from .agent_permissions import (
-    KNOWN_SCOPES,
-    normalize_scope,
     _is_known_scope,
+    normalize_scope,
 )
-
 
 _PROFILE_VERSION = "gl-scope-profile-v1"
 

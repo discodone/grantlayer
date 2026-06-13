@@ -6,8 +6,12 @@ from typing import Optional
 
 from fastapi import HTTPException
 
-from ..core import config
-from ..auth.auth import check_auth, check_admin_token, resolve_workspace_context, check_workspace_resource_access
+from ..auth.auth import (
+    check_admin_token,
+    check_auth,
+    check_workspace_resource_access,
+    resolve_workspace_context,
+)
 from .auth_jwt import validate_jwt_header
 
 

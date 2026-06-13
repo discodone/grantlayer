@@ -15,24 +15,24 @@ from ..core.logging_utils import get_logger, reset_correlation_id, set_correlati
 from ..core.rate_limiter import RateLimiter
 from ..core.structured_logging import normalize_correlation_id
 from .routers import (
-    auth,
-    health,
-    grants,
-    grant_requests,
-    audit_events,
-    executions,
-    evidence,
-    provenance,
-    auditor,
-    compliance,
-    operators_me,
     admin,
-    challenges,
     agent_permissions,
     approvals,
+    audit_events,
+    auditor,
+    auth,
+    challenges,
+    compliance,
     decision_provenance,
-    policy_requirements,
     demo,
+    evidence,
+    executions,
+    grant_requests,
+    grants,
+    health,
+    operators_me,
+    policy_requirements,
+    provenance,
 )
 
 _logger = get_logger("grantlayer.fastapi")

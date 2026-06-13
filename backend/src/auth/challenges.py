@@ -1,10 +1,11 @@
 """GrantLayer MVP — Challenge store and validation."""
 
 import datetime
-from typing import Optional, Tuple, List
-from ..core.db import execute, query_one, query_all
+from typing import Optional, Tuple
+
+from ..core.db import execute, query_all, query_one
 from ..core.models import Challenge, ChallengeResult
-from ..core.validation import MAX_SHORT_ID_LENGTH, MAX_NAME_LENGTH, validate_string_length
+from ..core.validation import MAX_NAME_LENGTH, MAX_SHORT_ID_LENGTH, validate_string_length
 
 CHALLENGE_TTL_SECONDS = 300  # 5 minutes
 

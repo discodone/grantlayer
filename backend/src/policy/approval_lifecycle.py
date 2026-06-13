@@ -15,7 +15,6 @@ from __future__ import annotations
 import json
 from typing import Any, Optional
 
-
 # ── status constants ──
 _STATUS_NOT_REQUIRED = "not_required"
 _STATUS_PENDING = "pending"

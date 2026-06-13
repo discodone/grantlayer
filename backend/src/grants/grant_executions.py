@@ -4,8 +4,8 @@ One row per protected action attempt.
 """
 
 from typing import List, Optional
-import json
-from ..core.db import execute, query_one, query_all
+
+from ..core.db import execute, query_all, query_one
 from ..core.models import GrantExecution
 
 

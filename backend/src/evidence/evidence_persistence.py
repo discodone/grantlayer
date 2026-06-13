@@ -6,13 +6,12 @@ verification, lookup, and integrity checking.
 No mutation after storage. No deletion. No secrets in stored bundles.
 """
 
-from typing import Optional, Any
 import datetime
 import json
+from typing import Any, Optional
 
 from ..core import db
 from ..core.models import EvidenceBundle
-
 
 STORE_ERROR_CODES = {"already_stored", "execution_not_found", "hash_mismatch", "invalid_bundle"}
 

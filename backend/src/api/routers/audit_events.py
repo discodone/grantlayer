@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Optional
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Header, Query
 
 from ...audit.audit_log import list_events
 from ..deps import resolve_auth_and_workspace

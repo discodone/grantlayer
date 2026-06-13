@@ -5,16 +5,12 @@ from __future__ import annotations
 import datetime
 from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Header, HTTPException
 
+from ...audit import audit_log as _audit_log
 from ...core import config
 from ...core.crypto_signing import verify_grant_signature
-from ..deps import resolve_auth_and_workspace
-from ...grants.grant_requests import ALLOWED_GRANT_ROLES
-from ...grants.grants import create_grant, get_grant, list_grants
 from ...core.models import AuditEvent, Grant
-from ...audit import audit_log as _audit_log
 from ...core.validation import (
     MAX_NAME_LENGTH,
     MAX_REASON_LENGTH,
@@ -22,7 +18,10 @@ from ...core.validation import (
     MAX_SHORT_ID_LENGTH,
     validate_string_length,
 )
-from ..schemas import ErrorResponse, GrantCreateRequest, GrantResponse
+from ...grants.grant_requests import ALLOWED_GRANT_ROLES
+from ...grants.grants import create_grant, get_grant, list_grants
+from ..deps import resolve_auth_and_workspace
+from ..schemas import GrantCreateRequest, GrantResponse
 
 router = APIRouter(prefix="/grants", tags=["grants"])
 

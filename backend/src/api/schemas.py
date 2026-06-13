@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 from ..core.validation import (
-    MAX_SHORT_ID_LENGTH,
-    MAX_ROLE_LENGTH,
     MAX_NAME_LENGTH,
     MAX_REASON_LENGTH,
+    MAX_ROLE_LENGTH,
+    MAX_SHORT_ID_LENGTH,
 )
-
 
 # ── Health / Readiness ─────────────────────────────────────────────────────
 
@@ -169,6 +169,7 @@ class ErrorResponse(BaseModel):
 # ── Shared validators ──────────────────────────────────────────────────────
 
 import datetime as _dt
+
 from fastapi import HTTPException as _HTTPException
 
 

@@ -3,11 +3,10 @@
 Minimal migration system: file-based, no ORM, SQLite and PostgreSQL support.
 """
 
-import importlib.util
-import inspect
-import os
 import datetime
-from typing import List, Tuple, Any
+import importlib.util
+import os
+from typing import Any, List, Tuple
 
 _MIGRATIONS_DIR = os.path.dirname(os.path.abspath(__file__))
 

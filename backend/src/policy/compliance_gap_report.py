@@ -11,7 +11,6 @@ from typing import Any, Optional
 
 from ..evidence.evidence_completeness import build_evidence_completeness_for_execution
 
-
 _REPORT_VERSION = "gl-compliance-gap-v1"
 
 

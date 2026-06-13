@@ -7,7 +7,6 @@ the new column.
 Compatible with SQLite and PostgreSQL backends.
 """
 
-import sqlite3
 
 version = "0007_gl107_operator_token_lookup"
 
