@@ -17,11 +17,10 @@ returns (None, None, None) so callers fall back to legacy static-token auth.
 from __future__ import annotations
 
 import base64
-import hashlib
-import hmac
-import json
 import os
 import time
+
+import jwt as _pyjwt
 
 # ──────────────────────────────────────────────
 # Custom exceptions
@@ -40,7 +39,7 @@ class JWTInvalidError(JWTError):
 
 
 # ──────────────────────────────────────────────
-# Internal helpers
+# Internal helpers (kept for test-side token crafting)
 # ──────────────────────────────────────────────
 
 _DEFAULT_TTL_HOURS: int = 1
@@ -55,15 +54,6 @@ def _b64url_decode(s: str) -> bytes:
     return base64.urlsafe_b64decode(s + "=" * padding)
 
 
-def _sign_hs256(signing_input: str, secret: str) -> str:
-    raw = hmac.digest(
-        secret.encode("utf-8"),
-        signing_input.encode("utf-8"),
-        hashlib.sha256,
-    )
-    return _b64url_encode(raw)
-
-
 def _sign_rs256(signing_input: str, private_key_pem: bytes) -> str:
     from cryptography.hazmat.primitives import hashes, serialization
     from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
@@ -74,19 +64,6 @@ def _sign_rs256(signing_input: str, private_key_pem: bytes) -> str:
         hashes.SHA256(),
     )
     return _b64url_encode(sig_bytes)
-
-
-def _verify_rs256(signing_input: str, sig_b64: str, public_key_pem: bytes) -> bool:
-    from cryptography.exceptions import InvalidSignature
-    from cryptography.hazmat.primitives import hashes, serialization
-    from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
-    public_key = serialization.load_pem_public_key(public_key_pem)
-    sig_bytes = _b64url_decode(sig_b64)
-    try:
-        public_key.verify(sig_bytes, signing_input.encode("utf-8"), asym_padding.PKCS1v15(), hashes.SHA256())
-        return True
-    except InvalidSignature:
-        return False
 
 
 # ──────────────────────────────────────────────
@@ -151,42 +128,29 @@ def encode_token(
     """Return a signed HS256 JWT string."""
     if not secret:
         raise ValueError("JWT secret must not be empty.")
-    header = _b64url_encode(json.dumps({"alg": "HS256", "typ": "JWT"}, separators=(",", ":")).encode())
     now = int(time.time())
     full_payload = {**payload, "iat": now, "exp": now + ttl_hours * 3600}
-    body = _b64url_encode(json.dumps(full_payload, separators=(",", ":")).encode())
-    signing_input = f"{header}.{body}"
-    sig = _sign_hs256(signing_input, secret)
-    return f"{signing_input}.{sig}"
+    return _pyjwt.encode(full_payload, secret, algorithm="HS256")
 
 
 def decode_token(token: str, secret: str) -> dict:
     """Decode and verify an HS256 JWT."""
     if not secret:
         raise JWTInvalidError("JWT secret must not be empty.")
-    parts = token.split(".")
-    if len(parts) != 3:
-        raise JWTInvalidError("JWT must have exactly three dot-separated parts.")
-    header_b64, payload_b64, sig_b64 = parts
-    signing_input = f"{header_b64}.{payload_b64}"
-    expected_sig = _sign_hs256(signing_input, secret)
-    if not hmac.compare_digest(sig_b64, expected_sig):
-        raise JWTInvalidError("JWT signature verification failed.")
     try:
-        header_data = json.loads(_b64url_decode(header_b64))
-    except Exception as exc:
-        raise JWTInvalidError("JWT header is not valid JSON.") from exc
-    alg = header_data.get("alg", "")
-    if alg != "HS256":
-        raise JWTInvalidError(f"Unsupported JWT algorithm: {alg!r}. Expected HS256.")
-    try:
-        payload = json.loads(_b64url_decode(payload_b64))
-    except Exception as exc:
-        raise JWTInvalidError("JWT payload is not valid JSON.") from exc
-    exp = payload.get("exp")
-    if exp is not None and int(time.time()) > int(exp):
-        raise JWTExpiredError("JWT token has expired.")
-    return payload
+        # Algorithm confusion guard: reject tokens claiming a different alg
+        header = _pyjwt.get_unverified_header(token)
+        if header.get("alg") != "HS256":
+            raise JWTInvalidError(
+                f"Unsupported JWT algorithm: {header.get('alg')!r}. Expected HS256."
+            )
+        return _pyjwt.decode(token, secret, algorithms=["HS256"])
+    except JWTInvalidError:
+        raise
+    except _pyjwt.ExpiredSignatureError as exc:
+        raise JWTExpiredError("JWT token has expired.") from exc
+    except _pyjwt.InvalidTokenError as exc:
+        raise JWTInvalidError(str(exc)) from exc
 
 
 # ──────────────────────────────────────────────
@@ -201,41 +165,29 @@ def encode_token_rs256(
     """Return a signed RS256 JWT string."""
     if not private_key_pem:
         raise ValueError("RS256 private key PEM must not be empty.")
-    header = _b64url_encode(json.dumps({"alg": "RS256", "typ": "JWT"}, separators=(",", ":")).encode())
     now = int(time.time())
     full_payload = {**payload, "iat": now, "exp": now + ttl_hours * 3600}
-    body = _b64url_encode(json.dumps(full_payload, separators=(",", ":")).encode())
-    signing_input = f"{header}.{body}"
-    sig = _sign_rs256(signing_input, private_key_pem)
-    return f"{signing_input}.{sig}"
+    return _pyjwt.encode(full_payload, private_key_pem, algorithm="RS256")
 
 
 def decode_token_rs256(token: str, public_key_pem: bytes) -> dict:
     """Decode and verify an RS256 JWT."""
     if not public_key_pem:
         raise JWTInvalidError("RS256 public key PEM must not be empty.")
-    parts = token.split(".")
-    if len(parts) != 3:
-        raise JWTInvalidError("JWT must have exactly three dot-separated parts.")
-    header_b64, payload_b64, sig_b64 = parts
-    signing_input = f"{header_b64}.{payload_b64}"
     try:
-        header_data = json.loads(_b64url_decode(header_b64))
-    except Exception as exc:
-        raise JWTInvalidError("JWT header is not valid JSON.") from exc
-    alg = header_data.get("alg", "")
-    if alg != "RS256":
-        raise JWTInvalidError(f"Unsupported JWT algorithm: {alg!r}. Expected RS256.")
-    if not _verify_rs256(signing_input, sig_b64, public_key_pem):
-        raise JWTInvalidError("JWT signature verification failed.")
-    try:
-        payload = json.loads(_b64url_decode(payload_b64))
-    except Exception as exc:
-        raise JWTInvalidError("JWT payload is not valid JSON.") from exc
-    exp = payload.get("exp")
-    if exp is not None and int(time.time()) > int(exp):
-        raise JWTExpiredError("JWT token has expired.")
-    return payload
+        # Algorithm confusion guard: reject tokens claiming a different alg
+        header = _pyjwt.get_unverified_header(token)
+        if header.get("alg") != "RS256":
+            raise JWTInvalidError(
+                f"Unsupported JWT algorithm: {header.get('alg')!r}. Expected RS256."
+            )
+        return _pyjwt.decode(token, public_key_pem, algorithms=["RS256"])
+    except JWTInvalidError:
+        raise
+    except _pyjwt.ExpiredSignatureError as exc:
+        raise JWTExpiredError("JWT token has expired.") from exc
+    except _pyjwt.InvalidTokenError as exc:
+        raise JWTInvalidError(str(exc)) from exc
 
 
 # ──────────────────────────────────────────────
