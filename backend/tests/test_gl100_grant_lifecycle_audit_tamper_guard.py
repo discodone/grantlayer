@@ -445,9 +445,12 @@ class TestTamperGrantGuard(_BaseGl100):
             data = {}
         if isinstance(data, dict) and isinstance(data.get("detail"), dict):
             data = data["detail"]
-        self.assertEqual(resp.status_code, 403)
+        # GL-262: when ENABLE_DEMO_ENDPOINTS=false the router is not mounted → 404.
+        # Pre-GL-262 it was 403 demo_endpoints_disabled. Accept both.
+        self.assertIn(resp.status_code, [403, 404])
         self._assert_gl030_full(data)
-        self.assertEqual(data.get("errorCode"), "demo_endpoints_disabled")
+        if resp.status_code == 403:
+            self.assertEqual(data.get("errorCode"), "demo_endpoints_disabled")
 
     def test_tamper_endpoint_accessible_when_enabled(self):
         """POST /demo/tamper-grant/{id} returns 200 when ENABLE_DEMO_ENDPOINTS=true and authed."""
