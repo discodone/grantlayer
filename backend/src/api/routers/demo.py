@@ -15,7 +15,9 @@ from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(tags=["demo"])
 
-_DEMO_DISABLED = {"error": "Demo endpoints are disabled", "errorCode": "demo_endpoints_disabled", "reason": "Demo endpoints are not enabled on this instance."}
+# Registered only when GRANTLAYER_ENABLE_DEMO_ENDPOINTS=true (see app.py).
+# Kept separate so demo-action (always available) is not gated.
+tamper_router = APIRouter(tags=["demo"])
 
 
 class DemoActionRequest(BaseModel):
@@ -28,14 +30,12 @@ class DemoActionRequest(BaseModel):
     model_config = {"populate_by_name": True}
 
 
-@router.post("/demo/tamper-grant/{grant_id}")
+@tamper_router.post("/demo/tamper-grant/{grant_id}")
 def tamper_grant_endpoint(
     grant_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ) -> Any:
-    if not config.ENABLE_DEMO_ENDPOINTS:
-        raise HTTPException(status_code=403, detail=_DEMO_DISABLED)
     _, ws_ctx = resolve_auth_and_workspace(
         authorization,
         required_roles=["owner", "demo_operator"],
