@@ -22,17 +22,24 @@ cd grantlayer
 cp .env.example .env
 ```
 
-Open `.env` and set `GRANTLAYER_JWT_SECRET` to a random secret:
+Generate an RS256 key pair and add it to your `.env` file:
 
 ```bash
-# Generate a secret and paste it into .env
-python3 -c "import secrets; print(secrets.token_hex(32))"
+# Generate key pair
+openssl genrsa -out private.pem 2048
+openssl rsa -in private.pem -pubout -out public.pem
+
+# Base64-encode and copy into .env
+export GRANTLAYER_JWT_PRIVATE_KEY=$(base64 -w0 private.pem)
+export GRANTLAYER_JWT_PUBLIC_KEY=$(base64 -w0 public.pem)
+echo "GRANTLAYER_JWT_PRIVATE_KEY=$GRANTLAYER_JWT_PRIVATE_KEY" >> .env
+echo "GRANTLAYER_JWT_PUBLIC_KEY=$GRANTLAYER_JWT_PUBLIC_KEY" >> .env
 ```
 
-> **Required:** If `GRANTLAYER_JWT_SECRET` is not set, the stack starts in legacy
-> admin-token mode. Steps 4–7 (token generation and all authenticated API calls)
-> will fail with `admin_token_required` or `admin_token_invalid`. Set the secret
-> before running `docker compose up`.
+> **Required:** JWT key material must be configured before starting the stack.
+> Without RS256 keys (or a legacy `GRANTLAYER_JWT_SECRET` for HS256), the stack
+> starts in legacy admin-token mode and Steps 4–7 will fail with
+> `admin_token_required` or `admin_token_invalid`.
 
 ---
 
@@ -260,7 +267,9 @@ Check logs:
 docker compose logs api
 ```
 
-Common cause: `GRANTLAYER_JWT_SECRET` is not set in `.env`.
+Common causes:
+- RS256 key pair not set: `GRANTLAYER_JWT_PRIVATE_KEY` / `GRANTLAYER_JWT_PUBLIC_KEY` missing from `.env`
+- Legacy HS256 mode: `GRANTLAYER_JWT_SECRET` is empty (if using `GRANTLAYER_JWT_ALGORITHM=HS256`)
 
 ### Port 80/443 already in use
 Change the port mapping in `docker-compose.yml`:
@@ -299,7 +308,7 @@ docker compose up -d
 
 ## JWT Authentication — Notes
 
-GrantLayer uses **HS256 JWTs** by default (dev/demo). Each token encodes:
+GrantLayer uses **RS256 JWTs** by default (asymmetric key pair). Each token encodes:
 
 | Claim | Value |
 |-------|-------|
@@ -309,10 +318,16 @@ GrantLayer uses **HS256 JWTs** by default (dev/demo). Each token encodes:
 | `iat` | issued-at (Unix timestamp) |
 | `exp` | expiry (default: 1 hour) |
 
-**For production**, consider:
+Set `GRANTLAYER_JWT_PRIVATE_KEY` (base64-encoded PEM) for signing and
+`GRANTLAYER_JWT_PUBLIC_KEY` (base64-encoded PEM) for verification. See Step 1
+for key generation commands.
+
+**For production**, also consider:
 - Shorter TTLs (15–30 min) with refresh tokens
-- RS256 with asymmetric keys (switch to [PyJWT](https://pyjwt.readthedocs.io/) and set `GRANTLAYER_JWT_ALGORITHM=RS256`)
 - A dedicated identity provider (Auth0, Okta, Keycloak)
+
+**Legacy HS256:** Set `GRANTLAYER_JWT_ALGORITHM=HS256` and `GRANTLAYER_JWT_SECRET`
+to use symmetric signatures. Not recommended for production.
 
 ---
 
