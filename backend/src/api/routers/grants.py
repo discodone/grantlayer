@@ -91,7 +91,8 @@ def list_grants_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    grants = list_grants(tenant_id=tenant_id)
+    workspace_id = ws_ctx.get("workspace_id")
+    grants = list_grants(tenant_id=tenant_id, workspace_id=workspace_id)
     return [_grant_to_response(g) for g in grants]
 
 
@@ -108,7 +109,8 @@ def get_grant_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    grant = get_grant(grant_id, tenant_id=tenant_id)
+    workspace_id = ws_ctx.get("workspace_id")
+    grant = get_grant(grant_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if grant is None:
         raise HTTPException(
             status_code=404,
@@ -139,6 +141,7 @@ def create_grant_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
+    workspace_id = ws_ctx.get("workspace_id")
 
     # Validate that string fields are non-empty
     for alias, value in (
@@ -205,7 +208,7 @@ def create_grant_endpoint(
         reason=body.reason,
         max_uses=body.max_uses,
     )
-    create_grant(grant, tenant_id=tenant_id)
+    create_grant(grant, tenant_id=tenant_id, workspace_id=workspace_id)
     _audit_log.append_event(
         AuditEvent(
             subject_id=grant.subject_id,

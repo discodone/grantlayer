@@ -464,7 +464,9 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
             (body["id"],),
         )
         self.assertEqual(row["tenant_id"], "tenant_a")
-        self.assertIsNone(row["workspace_id"])
+        # GL-260: workspace_id is now written from server-side context, never from request body.
+        # The request body sent workspaceId="workspace_b" — that must be ignored.
+        self.assertNotEqual(row["workspace_id"], "workspace_b")
 
     def test_operator_admin_audit_events_preserve_safe_tenant_context(self):
         status, body, _ = _run_handler("/v1/admin/operators",

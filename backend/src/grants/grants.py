@@ -31,29 +31,51 @@ def _row_to_grant(row: dict) -> Grant:
     )
 
 
-def list_grants(tenant_id: Optional[str] = None) -> List[Grant]:
+def list_grants(
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
+) -> List[Grant]:
+    conditions: list[str] = []
+    params: list = []
     if tenant_id is not None:
-        rows = query_all(
-            "SELECT * FROM grants WHERE tenant_id = ? ORDER BY created_at DESC",
-            (tenant_id,),
-        )
-    else:
-        rows = query_all("SELECT * FROM grants ORDER BY created_at DESC")
-    return [_row_to_grant(r) for r in rows]
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        params.append(workspace_id)
+    sql = "SELECT * FROM grants"
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    sql += " ORDER BY created_at DESC"
+    return [_row_to_grant(r) for r in query_all(sql, tuple(params))]
 
 
-def get_grant(grant_id: str, tenant_id: Optional[str] = None) -> Optional[Grant]:
+def get_grant(
+    grant_id: str,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
+) -> Optional[Grant]:
+    conditions = ["id = ?"]
+    params: list = [grant_id]
     if tenant_id is not None:
-        row = query_one(
-            "SELECT * FROM grants WHERE id = ? AND tenant_id = ?",
-            (grant_id, tenant_id),
-        )
-    else:
-        row = query_one("SELECT * FROM grants WHERE id = ?", (grant_id,))
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        params.append(workspace_id)
+    row = query_one(
+        "SELECT * FROM grants WHERE " + " AND ".join(conditions),
+        tuple(params),
+    )
     return _row_to_grant(row) if row else None
 
 
-def create_grant(grant: Grant, conn=None, tenant_id: Optional[str] = None) -> Grant:
+def create_grant(
+    grant: Grant,
+    conn=None,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
+) -> Grant:
     # Generate signature before inserting to ensure atomic creation
     sig_hex, hash_hex, key_id = _sign_grant(grant)
     grant.signature = sig_hex
@@ -67,14 +89,14 @@ def create_grant(grant: Grant, conn=None, tenant_id: Optional[str] = None) -> Gr
     sql = """INSERT INTO grants
            (id, subject_id, role, action, resource, valid_from, valid_until,
             created_by, reason, revoked, created_at, max_uses, use_count,
-            signature, signing_key_id, payload_hash, tenant_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)"""
+            signature, signing_key_id, payload_hash, tenant_id, workspace_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)"""
     params = (
         grant.id, grant.subject_id, grant.role, grant.action,
         grant.resource, grant.valid_from, grant.valid_until,
         grant.created_by, grant.reason, grant.created_at,
         grant.max_uses, grant.use_count,
-        sig_hex, key_id, hash_hex, effective_tenant,
+        sig_hex, key_id, hash_hex, effective_tenant, workspace_id,
     )
 
     if conn is not None:
@@ -117,22 +139,25 @@ def revoke_grant(
     reason: str,
     conn=None,
     tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
 ) -> bool:
     revoked_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+    conditions = ["id = ?", "revoked = 0"]
+    params: list = [revoked_by, reason, revoked_at, grant_id]
     if tenant_id is not None:
-        sql = """UPDATE grants
-               SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?
-               WHERE id = ? AND tenant_id = ? AND revoked = 0"""
-        params = (revoked_by, reason, revoked_at, grant_id, tenant_id)
-    else:
-        sql = """UPDATE grants
-               SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?
-               WHERE id = ? AND revoked = 0"""
-        params = (revoked_by, reason, revoked_at, grant_id)
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        params.append(workspace_id)
+    sql = (
+        "UPDATE grants SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?"
+        " WHERE " + " AND ".join(conditions)
+    )
     if conn is not None:
-        cur = conn.execute(sql, params)
+        cur = conn.execute(sql, tuple(params))
         return (cur.rowcount or 0) > 0
-    rowcount = execute(sql, params)
+    rowcount = execute(sql, tuple(params))
     return rowcount > 0
 
 
