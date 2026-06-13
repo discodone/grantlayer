@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from ..auth_jwt import encode_token, is_jwt_enabled, _get_jwt_secret
+from ..auth_jwt import sign_token, is_jwt_enabled
 from ...auth.auth import check_auth, check_admin_token
 from ...core import config
 
@@ -35,8 +35,9 @@ def issue_token(request: Request, body: TokenRequest) -> Any:
     The `secret` field accepts either the GRANTLAYER_ADMIN_TOKEN or, when
     the operator model is enabled, an active operator Bearer token.
 
-    Returns a signed HS256 JWT valid for 1 hour.  Requires
-    GRANTLAYER_JWT_SECRET to be set in the environment.
+    Returns a signed JWT valid for 1 hour.  Algorithm is determined by
+    GRANTLAYER_JWT_ALGORITHM (default RS256).  Requires the matching key
+    material to be set in the environment.
     """
     rate_limiter = getattr(request.app.state, "auth_rate_limiter", None)
     if rate_limiter is not None:
@@ -60,8 +61,8 @@ def issue_token(request: Request, body: TokenRequest) -> Any:
                 "error": "jwt_not_configured",
                 "errorCode": "jwt_not_configured",
                 "reason": (
-                    "GRANTLAYER_JWT_SECRET is not set. "
-                    "Add it to .env to enable JWT token issuance."
+                    "JWT signing key is not configured. "
+                    "Set GRANTLAYER_JWT_PRIVATE_KEY (RS256) or GRANTLAYER_JWT_SECRET (HS256)."
                 ),
             },
         )
@@ -94,11 +95,19 @@ def issue_token(request: Request, body: TokenRequest) -> Any:
         role = op.get("role", "owner")
         tenant_id = op.get("tenantId") or tenant_id
 
-    secret = _get_jwt_secret()
-    token = encode_token(
-        {"sub": body.operator_id, "tenant_id": tenant_id, "role": role},
-        secret,
-        ttl_hours=_TTL_HOURS,
-    )
+    try:
+        token = sign_token(
+            {"sub": body.operator_id, "tenant_id": tenant_id, "role": role},
+            ttl_hours=_TTL_HOURS,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=501,
+            detail={
+                "error": "jwt_signing_key_missing",
+                "errorCode": "jwt_signing_key_missing",
+                "reason": str(exc),
+            },
+        ) from exc
 
     return TokenResponse(access_token=token)

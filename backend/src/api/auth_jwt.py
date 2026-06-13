@@ -1,15 +1,18 @@
 """JWT authentication for the GrantLayer FastAPI layer.
 
-Algorithm: HS256 (default) — suitable for single-server dev/demo.
-Production option: use RS256 with GRANTLAYER_JWT_ALGORITHM=RS256 and supply
-  GRANTLAYER_JWT_PUBLIC_KEY / GRANTLAYER_JWT_PRIVATE_KEY (PEM strings).
-  RS256 is not implemented here; switch to PyJWT when upgrading to RS256.
+Algorithm: RS256 (default) — recommended for production.
+  Set GRANTLAYER_JWT_PRIVATE_KEY (base64-encoded PEM) for token signing.
+  Set GRANTLAYER_JWT_PUBLIC_KEY  (base64-encoded PEM) for token verification.
+  Generate keys:
+    openssl genrsa -out private.pem 2048
+    openssl rsa -in private.pem -pubout -out public.pem
+    export GRANTLAYER_JWT_PRIVATE_KEY=$(base64 -w0 private.pem)
+    export GRANTLAYER_JWT_PUBLIC_KEY=$(base64 -w0 public.pem)
 
-Backward compat: when GRANTLAYER_JWT_SECRET is not set, validate_jwt_header()
-returns (None, None, None) so the caller falls back to the existing
-static-token / operator-model auth path transparently.
+Legacy HS256: set GRANTLAYER_JWT_ALGORITHM=HS256 and GRANTLAYER_JWT_SECRET.
 
-Implemented with stdlib only (hmac + hashlib + base64 + json).
+Backward compat: when no key material is configured, validate_jwt_header()
+returns (None, None, None) so callers fall back to legacy static-token auth.
 """
 from __future__ import annotations
 
@@ -42,8 +45,6 @@ class JWTInvalidError(JWTError):
 # ──────────────────────────────────────────────
 
 _DEFAULT_TTL_HOURS: int = 1
-_ALGORITHM: str = "HS256"
-_SUPPORTED_ALGORITHMS: frozenset = frozenset({"HS256"})
 
 
 def _b64url_encode(data: bytes) -> str:
@@ -55,7 +56,7 @@ def _b64url_decode(s: str) -> bytes:
     return base64.urlsafe_b64decode(s + "=" * padding)
 
 
-def _sign(signing_input: str, secret: str) -> str:
+def _sign_hs256(signing_input: str, secret: str) -> str:
     raw = hmac.digest(
         secret.encode("utf-8"),
         signing_input.encode("utf-8"),
@@ -64,21 +65,83 @@ def _sign(signing_input: str, secret: str) -> str:
     return _b64url_encode(raw)
 
 
+def _sign_rs256(signing_input: str, private_key_pem: bytes) -> str:
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
+    private_key = serialization.load_pem_private_key(private_key_pem, password=None)
+    sig_bytes = private_key.sign(
+        signing_input.encode("utf-8"),
+        asym_padding.PKCS1v15(),
+        hashes.SHA256(),
+    )
+    return _b64url_encode(sig_bytes)
+
+
+def _verify_rs256(signing_input: str, sig_b64: str, public_key_pem: bytes) -> bool:
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
+    from cryptography.exceptions import InvalidSignature
+    public_key = serialization.load_pem_public_key(public_key_pem)
+    sig_bytes = _b64url_decode(sig_b64)
+    try:
+        public_key.verify(sig_bytes, signing_input.encode("utf-8"), asym_padding.PKCS1v15(), hashes.SHA256())
+        return True
+    except InvalidSignature:
+        return False
+
+
 # ──────────────────────────────────────────────
 # Config helpers
 # ──────────────────────────────────────────────
+
+def _get_algorithm() -> str:
+    explicit = os.environ.get("GRANTLAYER_JWT_ALGORITHM", "").upper()
+    if explicit:
+        return explicit
+    # Backward compat: if only GRANTLAYER_JWT_SECRET is present with no RS256 keys,
+    # default to HS256 so existing deployments with only a secret continue to work.
+    if os.environ.get("GRANTLAYER_JWT_SECRET", "").strip():
+        if not (os.environ.get("GRANTLAYER_JWT_PUBLIC_KEY", "").strip()
+                or os.environ.get("GRANTLAYER_JWT_PRIVATE_KEY", "").strip()):
+            return "HS256"
+    return "RS256"
+
 
 def _get_jwt_secret() -> str | None:
     return os.environ.get("GRANTLAYER_JWT_SECRET", "").strip() or None
 
 
+def _get_private_key_pem() -> bytes | None:
+    b64 = os.environ.get("GRANTLAYER_JWT_PRIVATE_KEY", "").strip()
+    if not b64:
+        return None
+    try:
+        return base64.b64decode(b64)
+    except Exception:
+        return None
+
+
+def _get_public_key_pem() -> bytes | None:
+    b64 = os.environ.get("GRANTLAYER_JWT_PUBLIC_KEY", "").strip()
+    if not b64:
+        return None
+    try:
+        return base64.b64decode(b64)
+    except Exception:
+        return None
+
+
 def is_jwt_enabled() -> bool:
-    """True when GRANTLAYER_JWT_SECRET is set in the environment."""
-    return bool(_get_jwt_secret())
+    """True when JWT auth is configured (can verify tokens)."""
+    algo = _get_algorithm()
+    if algo == "HS256":
+        return bool(_get_jwt_secret())
+    # RS256: enabled when public key (for verification) or private key (can derive public) is set
+    return bool(_get_public_key_pem() or _get_private_key_pem())
 
 
 # ──────────────────────────────────────────────
-# Encode / decode
+# HS256 encode / decode (backward compat)
 # ──────────────────────────────────────────────
 
 def encode_token(
@@ -86,63 +149,122 @@ def encode_token(
     secret: str,
     ttl_hours: int = _DEFAULT_TTL_HOURS,
 ) -> str:
-    """Return a signed HS256 JWT string.
-
-    Adds iat and exp claims automatically.  Caller-supplied iat/exp are
-    overwritten so TTL is always authoritative.
-    """
+    """Return a signed HS256 JWT string."""
     if not secret:
         raise ValueError("JWT secret must not be empty.")
-
     header = _b64url_encode(json.dumps({"alg": "HS256", "typ": "JWT"}, separators=(",", ":")).encode())
     now = int(time.time())
     full_payload = {**payload, "iat": now, "exp": now + ttl_hours * 3600}
     body = _b64url_encode(json.dumps(full_payload, separators=(",", ":")).encode())
     signing_input = f"{header}.{body}"
-    sig = _sign(signing_input, secret)
+    sig = _sign_hs256(signing_input, secret)
     return f"{signing_input}.{sig}"
 
 
 def decode_token(token: str, secret: str) -> dict:
-    """Decode and verify a HS256 JWT.
-
-    Raises:
-        JWTExpiredError: if exp claim is in the past.
-        JWTInvalidError: if the token is malformed or the signature is wrong.
-    """
+    """Decode and verify an HS256 JWT."""
     if not secret:
         raise JWTInvalidError("JWT secret must not be empty.")
-
     parts = token.split(".")
     if len(parts) != 3:
         raise JWTInvalidError("JWT must have exactly three dot-separated parts.")
-
     header_b64, payload_b64, sig_b64 = parts
     signing_input = f"{header_b64}.{payload_b64}"
-
-    expected_sig = _sign(signing_input, secret)
+    expected_sig = _sign_hs256(signing_input, secret)
     if not hmac.compare_digest(sig_b64, expected_sig):
         raise JWTInvalidError("JWT signature verification failed.")
-
     try:
         header_data = json.loads(_b64url_decode(header_b64))
     except Exception as exc:
         raise JWTInvalidError("JWT header is not valid JSON.") from exc
-
     alg = header_data.get("alg", "")
-    if alg not in _SUPPORTED_ALGORITHMS:
-        raise JWTInvalidError(f"Unsupported JWT algorithm: {alg!r}. Only HS256 is supported.")
-
+    if alg != "HS256":
+        raise JWTInvalidError(f"Unsupported JWT algorithm: {alg!r}. Expected HS256.")
     try:
         payload = json.loads(_b64url_decode(payload_b64))
     except Exception as exc:
         raise JWTInvalidError("JWT payload is not valid JSON.") from exc
-
     exp = payload.get("exp")
     if exp is not None and int(time.time()) > int(exp):
         raise JWTExpiredError("JWT token has expired.")
-
     return payload
+
+
+# ──────────────────────────────────────────────
+# RS256 encode / decode
+# ──────────────────────────────────────────────
+
+def encode_token_rs256(
+    payload: dict,
+    private_key_pem: bytes,
+    ttl_hours: int = _DEFAULT_TTL_HOURS,
+) -> str:
+    """Return a signed RS256 JWT string."""
+    if not private_key_pem:
+        raise ValueError("RS256 private key PEM must not be empty.")
+    header = _b64url_encode(json.dumps({"alg": "RS256", "typ": "JWT"}, separators=(",", ":")).encode())
+    now = int(time.time())
+    full_payload = {**payload, "iat": now, "exp": now + ttl_hours * 3600}
+    body = _b64url_encode(json.dumps(full_payload, separators=(",", ":")).encode())
+    signing_input = f"{header}.{body}"
+    sig = _sign_rs256(signing_input, private_key_pem)
+    return f"{signing_input}.{sig}"
+
+
+def decode_token_rs256(token: str, public_key_pem: bytes) -> dict:
+    """Decode and verify an RS256 JWT."""
+    if not public_key_pem:
+        raise JWTInvalidError("RS256 public key PEM must not be empty.")
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise JWTInvalidError("JWT must have exactly three dot-separated parts.")
+    header_b64, payload_b64, sig_b64 = parts
+    signing_input = f"{header_b64}.{payload_b64}"
+    try:
+        header_data = json.loads(_b64url_decode(header_b64))
+    except Exception as exc:
+        raise JWTInvalidError("JWT header is not valid JSON.") from exc
+    alg = header_data.get("alg", "")
+    if alg != "RS256":
+        raise JWTInvalidError(f"Unsupported JWT algorithm: {alg!r}. Expected RS256.")
+    if not _verify_rs256(signing_input, sig_b64, public_key_pem):
+        raise JWTInvalidError("JWT signature verification failed.")
+    try:
+        payload = json.loads(_b64url_decode(payload_b64))
+    except Exception as exc:
+        raise JWTInvalidError("JWT payload is not valid JSON.") from exc
+    exp = payload.get("exp")
+    if exp is not None and int(time.time()) > int(exp):
+        raise JWTExpiredError("JWT token has expired.")
+    return payload
+
+
+# ──────────────────────────────────────────────
+# Env-driven signing (used by /auth/token router)
+# ──────────────────────────────────────────────
+
+def sign_token(payload: dict, ttl_hours: int = _DEFAULT_TTL_HOURS) -> str:
+    """Issue a JWT using the algorithm and key material from environment variables."""
+    algo = _get_algorithm()
+    if algo == "HS256":
+        secret = _get_jwt_secret()
+        if not secret:
+            raise ValueError(
+                "GRANTLAYER_JWT_SECRET is not set. "
+                "Export it before generating a token:\n"
+                "  export GRANTLAYER_JWT_SECRET=$(python3 -c \"import secrets; print(secrets.token_hex(32))\")"
+            )
+        return encode_token(payload, secret, ttl_hours)
+    else:  # RS256
+        pem = _get_private_key_pem()
+        if not pem:
+            raise ValueError(
+                "GRANTLAYER_JWT_PRIVATE_KEY is not set. "
+                "Generate a key pair and export it:\n"
+                "  openssl genrsa -out private.pem 2048\n"
+                "  export GRANTLAYER_JWT_PRIVATE_KEY=$(base64 -w0 private.pem)"
+            )
+        return encode_token_rs256(payload, pem, ttl_hours)
 
 
 # ──────────────────────────────────────────────
@@ -156,7 +278,7 @@ def create_dev_token(
     sub: str = "dev-operator",
     role: str = "owner",
 ) -> str:
-    """Generate a dev/demo JWT. Not for production use.
+    """Generate a dev/demo HS256 JWT. Not for production use.
 
     Reads GRANTLAYER_JWT_SECRET from the environment when secret is None.
     """
@@ -187,6 +309,10 @@ def validate_jwt_header(
     - (None, None, None)   — JWT auth not configured; fall back to legacy auth.
     - (True,  200, payload) — valid JWT; payload contains the decoded claims.
     - (False, 4xx, error)  — JWT configured but token is missing or invalid.
+
+    The algorithm is determined by GRANTLAYER_JWT_ALGORITHM (default RS256).
+    The JWT header's alg claim is validated against the configured algorithm
+    to prevent algorithm-confusion attacks.
     """
     if not is_jwt_enabled():
         return None, None, None
@@ -206,9 +332,28 @@ def validate_jwt_header(
             "reason": "Authorization header must use Bearer scheme with a JWT.",
         }
 
-    secret = _get_jwt_secret()
+    algo = _get_algorithm()
     try:
-        payload = decode_token(token.strip(), secret)
+        if algo == "HS256":
+            secret = _get_jwt_secret()
+            payload = decode_token(token.strip(), secret)
+        else:  # RS256
+            pub_pem = _get_public_key_pem()
+            if not pub_pem:
+                # Only private key is set — derive public key for verification
+                priv_pem = _get_private_key_pem()
+                if not priv_pem:
+                    return False, 500, {
+                        "error": "jwt_misconfigured",
+                        "errorCode": "jwt_misconfigured",
+                        "reason": "Neither GRANTLAYER_JWT_PUBLIC_KEY nor GRANTLAYER_JWT_PRIVATE_KEY is set.",
+                    }
+                from cryptography.hazmat.primitives import serialization
+                from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+                priv_key = serialization.load_pem_private_key(priv_pem, password=None)
+                pub_pem = priv_key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+            payload = decode_token_rs256(token.strip(), pub_pem)
+
         if "tenant_id" not in payload:
             return False, 400, {
                 "error": "jwt_missing_tenant",
