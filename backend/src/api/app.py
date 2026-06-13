@@ -207,6 +207,8 @@ def create_app() -> FastAPI:
     app.include_router(decision_provenance.router, prefix="/v1")
     app.include_router(policy_requirements.router, prefix="/v1")
     app.include_router(demo.router, prefix="/v1")
+    if config.ENABLE_DEMO_ENDPOINTS:
+        app.include_router(demo.tamper_router, prefix="/v1")
 
     # Backward-compat redirects: unversioned paths → /v1/ (307 Temporary Redirect)
     _COMPAT_PREFIXES = [
