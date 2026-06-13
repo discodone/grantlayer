@@ -8,9 +8,15 @@ from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from ...core import config
+from ...core.validation import (
+    MAX_NAME_LENGTH,
+    MAX_ROLE_LENGTH,
+    MAX_SHORT_ID_LENGTH,
+    validate_optional_string_length,
+    validate_string_length,
+)
 from ...demo.demo_action import handle_demo_action
 from ...grants.grants import tamper_grant
-from ...core.validation import MAX_NAME_LENGTH, MAX_ROLE_LENGTH, MAX_SHORT_ID_LENGTH, validate_string_length, validate_optional_string_length
 from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(tags=["demo"])

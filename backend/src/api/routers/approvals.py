@@ -6,7 +6,10 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, HTTPException
 
-from ...policy.approval_lifecycle import build_approval_request_lifecycle, transition_approval_request
+from ...policy.approval_lifecycle import (
+    build_approval_request_lifecycle,
+    transition_approval_request,
+)
 from ...policy.approval_rules import evaluate_approval_requirements
 from ..deps import resolve_auth_and_workspace
 

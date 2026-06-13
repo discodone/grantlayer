@@ -13,10 +13,9 @@ Security rules:
 from __future__ import annotations
 
 import os
-import warnings
 
-from .runtime_config import get_runtime_mode, PRODUCTION_LIKE_MODES
 from ..auth.identity_access import external_identity_startup_errors
+from .runtime_config import PRODUCTION_LIKE_MODES, get_runtime_mode
 
 # ──────────────────────────────────────────────────────────────
 # Placeholder/weak token detection constants

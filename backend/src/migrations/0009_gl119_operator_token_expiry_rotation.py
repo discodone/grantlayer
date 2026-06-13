@@ -6,7 +6,6 @@ operator token expiry and rotation support.
 Compatible with SQLite and PostgreSQL backends.
 """
 
-import sqlite3
 
 version = "0009_gl119_operator_token_expiry_rotation"
 

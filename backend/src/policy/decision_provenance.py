@@ -299,34 +299,26 @@ def build_decision_provenance_v2(
 
     # --- Approval signal and readiness ---------------------------
     approval_signals = []
-    approval_readiness = None
     if approval_requirement is not None:
         req_decision = approval_requirement.get("decision")
         if req_decision == "blocked":
             approval_signals.append("blocked")
-            approval_readiness = "blocked"
             blockers.append("approval_requirement_blocked")
         elif req_decision == "denied":
             approval_signals.append("denied")
-            approval_readiness = "blocked"
             blockers.append("approval_requirement_denied")
         elif req_decision == "approved":
             approval_signals.append("approved")
-            approval_readiness = "ready"
         elif req_decision == "pending":
             approval_signals.append("pending")
-            approval_readiness = "needs_attention"
             blockers.append("approval_requirement_pending")
         elif approval_requirement.get("required") is True:
             approval_signals.append("required")
-            approval_readiness = "needs_attention"
             blockers.append("approval_required")
         else:
             approval_signals.append("not_required")
-            approval_readiness = "ready"
     else:
         approval_signals.append("missing")
-        approval_readiness = "not_assessed"
         missing_inputs.append("approval_requirement")
 
     # Approval lifecycle overrides
@@ -335,18 +327,14 @@ def build_decision_provenance_v2(
         if lifecycle_status == "blocked":
             blockers.append("approval_lifecycle_blocked")
             approval_signals.append("blocked")
-            approval_readiness = "blocked"
         elif lifecycle_status == "denied":
             blockers.append("approval_lifecycle_denied")
             approval_signals.append("denied")
-            approval_readiness = "blocked"
         elif lifecycle_status == "pending":
             approval_signals.append("pending")
-            approval_readiness = "needs_attention"
             blockers.append("approval_lifecycle_pending")
         elif lifecycle_status == "approved":
             approval_signals.append("approved")
-            approval_readiness = "ready"
 
     # Approval signal priority: blocked > denied > pending > required > approved > not_required > missing
     for priority in ["blocked", "denied", "pending", "required"]:

@@ -17,10 +17,10 @@ from __future__ import annotations
 
 import hmac
 import os
-from typing import Any
+
 from ..core import config
+from ..core.db import query_all, query_one
 from . import operators as ops
-from ..core.db import query_one, query_all
 
 
 def admin_token_is_configured() -> bool:

@@ -33,12 +33,10 @@ Design:
 
 from __future__ import annotations
 
-import re
-from typing import Optional, Any
+from typing import Any, Optional
 
-from .agent_permissions import evaluate_agent_permission
 from .agent_permission_profiles import expand_agent_permission_profiles
-
+from .agent_permissions import evaluate_agent_permission
 
 # ──────────────────────────────────────────────
 # Main resolver

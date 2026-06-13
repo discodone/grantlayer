@@ -9,22 +9,20 @@ lifecycle entity from grants themselves. A grant request can be:
 - expired (auto-transitions after TTL)
 """
 
-import sqlite3
 import datetime
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional, Tuple
 
-from ..core import db
-from . import grants
 from ..audit import audit_log
-from ..core.models import GrantRequest, Grant, AuditEvent
+from ..core import db
+from ..core.models import AuditEvent, Grant, GrantRequest
 from ..core.validation import (
-    MAX_SHORT_ID_LENGTH,
-    MAX_ROLE_LENGTH,
     MAX_NAME_LENGTH,
     MAX_REASON_LENGTH,
+    MAX_ROLE_LENGTH,
+    MAX_SHORT_ID_LENGTH,
     validate_string_length,
 )
-
+from . import grants
 
 MAX_DENIAL_REASON_LENGTH = MAX_REASON_LENGTH  # single source of truth; alias kept for tests
 

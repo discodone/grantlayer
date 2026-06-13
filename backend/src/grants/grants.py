@@ -2,9 +2,10 @@
 
 import datetime
 from typing import List, Optional
-from ..core.db import get_conn, execute, query_one, query_all
-from ..core.models import Grant
+
 from ..core.crypto_signing import sign_grant as _sign_grant
+from ..core.db import execute, query_all, query_one
+from ..core.models import Grant
 
 
 def _row_to_grant(row: dict) -> Grant:

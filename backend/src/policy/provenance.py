@@ -7,12 +7,10 @@ No update / delete operations.
 from __future__ import annotations
 
 import json
-import uuid
 from typing import Optional
 
-from ..core.db import execute, query_one, query_all
+from ..core.db import execute, query_all, query_one
 from ..core.models import ProvenanceEvent
-
 
 # ──────────────────────────────────────────────────────────────
 # Validation helpers

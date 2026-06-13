@@ -4,9 +4,9 @@ import hashlib
 import json
 from threading import RLock
 from typing import List, Optional
-from ..core.db import execute, query_one, query_all, DB_BACKEND, get_conn
-from ..core.models import AuditEvent
 
+from ..core.db import DB_BACKEND, execute, get_conn, query_all, query_one
+from ..core.models import AuditEvent
 
 # ──────────────────────────────────────────────────────────────
 # Process-local write lock — SQLite fallback for in-process safety

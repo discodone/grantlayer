@@ -23,7 +23,6 @@ import json
 import os
 import time
 
-
 # ──────────────────────────────────────────────
 # Custom exceptions
 # ──────────────────────────────────────────────
@@ -78,9 +77,9 @@ def _sign_rs256(signing_input: str, private_key_pem: bytes) -> str:
 
 
 def _verify_rs256(signing_input: str, sig_b64: str, public_key_pem: bytes) -> bool:
+    from cryptography.exceptions import InvalidSignature
     from cryptography.hazmat.primitives import hashes, serialization
     from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
-    from cryptography.exceptions import InvalidSignature
     public_key = serialization.load_pem_public_key(public_key_pem)
     sig_bytes = _b64url_decode(sig_b64)
     try:

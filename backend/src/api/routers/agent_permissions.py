@@ -6,9 +6,12 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, HTTPException
 
-from ...policy.agent_permissions import evaluate_agent_permission
 from ...policy.agent_permission_assignments import resolve_agent_permission_assignment
-from ...policy.agent_permission_profiles import get_agent_permission_profile, list_agent_permission_profiles
+from ...policy.agent_permission_profiles import (
+    get_agent_permission_profile,
+    list_agent_permission_profiles,
+)
+from ...policy.agent_permissions import evaluate_agent_permission
 from ..deps import resolve_auth_and_workspace
 
 router = APIRouter(prefix="/agent-permissions", tags=["agent-permissions"])

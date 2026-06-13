@@ -14,15 +14,14 @@ Admin/Operator Tenant Control Plane hardening:
 
 from __future__ import annotations
 
+import datetime
 import hashlib
 import hmac
 import secrets
 import uuid
-import datetime
 from typing import Optional
 
-from ..core.db import get_conn, execute, query_one, query_all
-
+from ..core.db import get_conn, query_all, query_one
 
 # ──────────────────────────────────────────────────────────────
 # PBKDF2 token hashing (stdlib only)

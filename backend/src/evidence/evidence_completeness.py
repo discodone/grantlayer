@@ -11,7 +11,6 @@ from typing import Any, Optional
 
 from ..audit.auditor_report import build_auditor_report_for_execution
 
-
 # Mapping of auditor-report findings considered "critical compliance gaps"
 _CRITICAL_FINDING_PREFIXES = (
     "execution_denied",
@@ -46,8 +45,6 @@ def _extract_critical_gaps(findings: list[str]) -> list[str]:
         lower = finding.lower()
         for prefix in _CRITICAL_FINDING_PREFIXES:
             if lower.startswith(prefix):
-                # Normalise to snake_case gap id
-                gap_id = prefix.replace("grant_request_", "request_").replace("grant_", "")
                 # Ensure we keep the full semantic name for clarity
                 if prefix == "execution_denied":
                     gaps.append("execution_denied")
@@ -129,7 +126,6 @@ def build_evidence_completeness_for_execution(
     # Verification status
     verification_status = verification.get("status")
     evidence_verified = evidence_present and verification_status == "valid"
-    evidence_unverified = evidence_present and verification_status in ("invalid", None, "missing_data", "unsupported_version")
 
     if evidence_present:
         if verification_status == "invalid":

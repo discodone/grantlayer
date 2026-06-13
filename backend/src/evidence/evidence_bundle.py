@@ -6,17 +6,16 @@ with a deterministic integrity hash.
 No mutation, no new tables, no migrations.
 """
 
-from typing import Optional, Any
 import datetime
 import hashlib
 import json
+from typing import Any, Optional
 
 from ..audit import audit_log
+from ..core.models import AuditEvent, Grant, GrantRequest
 from ..grants import grant_executions as execs
 from ..grants import grant_requests as greps
 from ..grants import grants
-from ..core.models import GrantExecution, Grant, GrantRequest, AuditEvent
-
 
 SAFE_AUDIT_FIELDS = [
     "id",

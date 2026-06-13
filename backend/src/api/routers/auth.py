@@ -8,9 +8,9 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from ..auth_jwt import sign_token, is_jwt_enabled
-from ...auth.auth import check_auth, check_admin_token
+from ...auth.auth import check_admin_token, check_auth
 from ...core import config
+from ..auth_jwt import is_jwt_enabled, sign_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
