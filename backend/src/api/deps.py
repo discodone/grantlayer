@@ -52,8 +52,13 @@ def resolve_auth_and_workspace(
                     (tenant_id,),
                 )
                 if not tenant_has_ws:
+                    # No workspaces configured for this tenant → workspace isolation is not
+                    # active yet. Use workspace_id=None so query layers apply no workspace
+                    # filter (all tenant-scoped records are visible).  Once workspaces are
+                    # created (and the migration backfills workspace_id='default'), operators
+                    # must supply an explicit X-Workspace-Id to get the strict filter.
                     ws_ctx = {
-                        "workspace_id": "default",
+                        "workspace_id": None,
                         "tenant_id": tenant_id,
                         "workspace_member_role": None,
                         "cross_workspace_access": False,

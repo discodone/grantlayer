@@ -81,7 +81,7 @@ def get_grant_execution(
         conditions.append("tenant_id = ?")
         params.append(tenant_id)
     if workspace_id is not None:
-        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        conditions.append("workspace_id = ?")
         params.append(workspace_id)
     row = query_one(
         "SELECT * FROM grant_executions WHERE " + " AND ".join(conditions),
@@ -105,7 +105,7 @@ def list_grant_executions(
         conditions.append("tenant_id = ?")
         params.append(tenant_id)
     if workspace_id is not None:
-        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        conditions.append("workspace_id = ?")
         params.append(workspace_id)
     if grant_id is not None:
         conditions.append("grant_id = ?")

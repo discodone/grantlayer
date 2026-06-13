@@ -180,12 +180,13 @@ class TestResolveWorkspaceLegacyMode(_Base):
     OPERATOR_MODE = False
 
     def test_resolve_workspace_legacy_no_operator_id(self):
-        """No operator_id in payload → demo workspace, status 200."""
+        """No operator_id in payload → no workspace filter (None), status 200."""
         auth_payload = {"tenant_id": "demo"}
         ws_id, status, ctx = resolve_workspace_context(auth_payload)
         self.assertEqual(status, 200)
         self.assertIsNotNone(ctx)
-        self.assertEqual(ctx["workspace_id"], "default")
+        # GL-281: legacy mode returns workspace_id=None (no workspace filter)
+        self.assertIsNone(ctx["workspace_id"])
         self.assertEqual(ctx["tenant_id"], "demo")
         self.assertEqual(ctx["resolution_mode"], "legacy_demo")
 
@@ -574,7 +575,8 @@ class TestTenantIdFromWorkspaceContext(_Base):
             valid_from=_past(10), valid_until=_future(30),
             created_by="admin", reason="test",
         )
-        _grants.create_grant(g, tenant_id="tenant-abc")
+        # GL-281: grant must be in the operator's workspace to be visible with strict filter
+        _grants.create_grant(g, tenant_id="tenant-abc", workspace_id="ws-012a")
 
         g_other = Grant(
             subject_id="s2", role="r2", action="a2", resource="res2",
@@ -640,7 +642,8 @@ class TestCrossTenantIsolationPreserved(_Base):
             valid_from=_past(10), valid_until=_future(30),
             created_by="admin", reason="mine",
         )
-        _grants.create_grant(g_mine, tenant_id="tenant-014")
+        # GL-281: grant must be in the operator's workspace to be visible with strict filter
+        _grants.create_grant(g_mine, tenant_id="tenant-014", workspace_id="ws-014a")
 
         g_other = Grant(
             subject_id="s2", role="r2", action="a2", resource="res2",
