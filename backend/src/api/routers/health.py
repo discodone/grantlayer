@@ -1,21 +1,75 @@
 """Health and readiness endpoints."""
 
-from fastapi import APIRouter
+from __future__ import annotations
+
+import os
+import time
+
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+from ...core.db import get_db_health, query_one
 from ...core.runtime_config import describe_runtime_config
-from ..schemas import HealthResponse, ReadinessResponse
+from ..schemas import ReadinessResponse
 
 router = APIRouter(tags=["health"])
 
+_VERSION = "0.4.0"
 
-@router.get("/health", response_model=HealthResponse, response_model_by_alias=True)
-def health() -> HealthResponse:
-    return HealthResponse(
-        status="ok",
-        service="grantlayer",
-        checkType="liveness",
-    )
+_ALEMBIC_INI = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "alembic.ini")
+)
+
+
+def _signing_key_status() -> str:
+    from ..auth_jwt import is_jwt_enabled
+    return "present" if is_jwt_enabled() else "absent"
+
+
+def _migration_revision() -> str:
+    try:
+        row = query_one("SELECT version_num FROM alembic_version LIMIT 1")
+        if row is None:
+            return "no revision"
+        rev = row["version_num"]
+        try:
+            from alembic.config import Config
+            from alembic.script import ScriptDirectory
+            cfg = Config(_ALEMBIC_INI)
+            scripts = ScriptDirectory.from_config(cfg)
+            if rev in scripts.get_heads():
+                return f"{rev} (head)"
+        except Exception:
+            pass
+        return rev
+    except Exception as e:
+        return f"error: {e}"
+
+
+@router.get("/health")
+def health(request: Request):
+    try:
+        db_health = get_db_health()
+        db_status = "ok" if db_health.get("dbConnected") else "error: unreachable"
+    except Exception as e:
+        db_status = f"error: {e}"
+
+    try:
+        start = request.app.state.start_time
+    except AttributeError:
+        start = None
+    uptime = int(time.time() - start) if start is not None else 0
+
+    return {
+        "status": "ok" if db_status == "ok" else "degraded",
+        "service": "grantlayer",
+        "checkType": "liveness",
+        "version": _VERSION,
+        "uptime_seconds": uptime,
+        "database": db_status,
+        "signing_key": _signing_key_status(),
+        "migrations": _migration_revision(),
+    }
 
 
 @router.get(

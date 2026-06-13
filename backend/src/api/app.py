@@ -48,6 +48,7 @@ _SECURITY_HEADERS = {
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
     """Initialize DB on startup."""
+    app.state.start_time = time.time()
     init_db()
     _logger.info("GrantLayer FastAPI layer started (Phase 2)")
     yield
