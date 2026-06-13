@@ -97,7 +97,7 @@ def get_grant_request(
         conditions.append("tenant_id = ?")
         params.append(tenant_id)
     if workspace_id is not None:
-        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        conditions.append("workspace_id = ?")
         params.append(workspace_id)
     row = db.query_one(
         "SELECT * FROM grant_requests WHERE " + " AND ".join(conditions),
@@ -120,7 +120,7 @@ def list_grant_requests(
         conditions.append("tenant_id = ?")
         params.append(tenant_id)
     if workspace_id is not None:
-        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        conditions.append("workspace_id = ?")
         params.append(workspace_id)
     if status_filter is not None:
         conditions.append("status = ?")

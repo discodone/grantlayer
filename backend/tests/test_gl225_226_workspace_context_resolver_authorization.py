@@ -165,8 +165,9 @@ class TestWorkspaceContextResolverLegacy(unittest.TestCase):
         auth_payload = {"tenant_id": "demo"}  # no "operator" key
         ws_id, status, ctx = resolve_workspace_context(auth_payload)
         self.assertEqual(status, 200)
-        self.assertEqual(ws_id, "default")
-        self.assertEqual(ctx["workspace_id"], "default")
+        # GL-281: legacy/demo mode returns workspace_id=None (no workspace filter)
+        self.assertIsNone(ws_id)
+        self.assertIsNone(ctx["workspace_id"])
         self.assertEqual(ctx["tenant_id"], "demo")
         self.assertEqual(ctx["resolution_mode"], "legacy_demo")
         self.assertFalse(ctx["cross_workspace_access"])
@@ -176,7 +177,6 @@ class TestWorkspaceContextResolverLegacy(unittest.TestCase):
         auth_payload = {"operator": {}, "tenant_id": "demo"}
         ws_id, status, ctx = resolve_workspace_context(auth_payload)
         self.assertEqual(status, 200)
-        self.assertEqual(ws_id, "default")
         self.assertEqual(ctx["resolution_mode"], "legacy_demo")
 
     def test_legacy_operator_none_resolves_demo(self):
@@ -184,7 +184,7 @@ class TestWorkspaceContextResolverLegacy(unittest.TestCase):
         auth_payload = {"operator": None, "tenant_id": "demo"}
         ws_id, status, ctx = resolve_workspace_context(auth_payload)
         self.assertEqual(status, 200)
-        self.assertEqual(ws_id, "default")
+        self.assertIsNone(ws_id)  # GL-281: no workspace filter in legacy mode
 
 
 class TestWorkspaceContextResolverSingleMembership(unittest.TestCase):
@@ -426,7 +426,9 @@ class TestWorkspaceContextResolverCrossWorkspaceRole(unittest.TestCase):
         with _PatchedDB(conn2):
             ws_id, status, ctx = resolve_workspace_context(payload)
         self.assertEqual(status, 200)
-        self.assertEqual(ws_id, "default")
+        # GL-281: cross-workspace owner in demo tenant without explicit workspace_id
+        # returns workspace_id=None (no workspace filter — sees all tenant records).
+        self.assertIsNone(ws_id)
         self.assertEqual(ctx["resolution_mode"], "cross_workspace_role_demo_fallback")
         conn2.close()
 
@@ -782,13 +784,13 @@ class TestDemoSyntheticCompatibility(unittest.TestCase):
         from backend.src.auth.auth import resolve_workspace_context
         ws_id, status, ctx = resolve_workspace_context({})
         self.assertEqual(status, 200)
-        self.assertEqual(ws_id, "default")
+        self.assertIsNone(ws_id)  # GL-281: no filter in legacy/demo mode
 
     def test_demo_mode_tenant_id_missing(self):
         from backend.src.auth.auth import resolve_workspace_context
         ws_id, status, ctx = resolve_workspace_context({"tenant_id": None})
         self.assertEqual(status, 200)
-        self.assertEqual(ws_id, "default")
+        self.assertIsNone(ws_id)  # GL-281: no filter in legacy/demo mode
 
     def test_check_access_no_resource_workspace_id(self):
         from backend.src.auth.auth import check_workspace_resource_access

@@ -42,7 +42,7 @@ def list_grants(
         conditions.append("tenant_id = ?")
         params.append(tenant_id)
     if workspace_id is not None:
-        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        conditions.append("workspace_id = ?")
         params.append(workspace_id)
     sql = "SELECT * FROM grants"
     if conditions:
@@ -62,7 +62,7 @@ def get_grant(
         conditions.append("tenant_id = ?")
         params.append(tenant_id)
     if workspace_id is not None:
-        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        conditions.append("workspace_id = ?")
         params.append(workspace_id)
     row = query_one(
         "SELECT * FROM grants WHERE " + " AND ".join(conditions),
@@ -149,7 +149,7 @@ def revoke_grant(
         conditions.append("tenant_id = ?")
         params.append(tenant_id)
     if workspace_id is not None:
-        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        conditions.append("workspace_id = ?")
         params.append(workspace_id)
     sql = (
         "UPDATE grants SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?"

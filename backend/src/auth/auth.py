@@ -209,16 +209,17 @@ def resolve_workspace_context(
 
     # ── Legacy / demo mode (no operator model) ─────────────────
     if not operator_id:
-        # Legacy admin-token path: bind to demo workspace, no membership check.
-        ws_id = _DEMO_WORKSPACE_ID
+        # Legacy admin-token path: no workspace filter (workspace_id=None means
+        # "all tenant-scoped records visible"). Workspace isolation is not active
+        # in this mode.
         ctx: dict = {
-            "workspace_id": ws_id,
+            "workspace_id": None,
             "tenant_id": _DEMO_TENANT_ID,
             "workspace_member_role": None,
             "cross_workspace_access": False,
             "resolution_mode": "legacy_demo",
         }
-        return ws_id, 200, ctx
+        return None, 200, ctx
 
     # ── Operator model ──────────────────────────────────────────
 
@@ -250,8 +251,7 @@ def resolve_workspace_context(
             }
 
         if is_cross_workspace:
-            # Cross-workspace roles may access any tenant workspace.
-            # This is explicit and auditable — not silent.
+            # Cross-workspace roles: client explicitly specified workspace_id → use it.
             ctx = {
                 "workspace_id": client_workspace_id,
                 "tenant_id": tenant_id,
@@ -280,17 +280,18 @@ def resolve_workspace_context(
 
     # No client_workspace_id supplied: auto-resolve from membership.
     if is_cross_workspace:
-        # Cross-workspace roles without a specific workspace_id → use demo workspace
-        # for demo tenant, else fail (they must specify which workspace they intend).
+        # Cross-workspace roles without a specific workspace_id → no workspace filter
+        # (workspace_id=None) for demo tenant so all tenant-scoped records are visible.
+        # Non-demo tenants must supply an explicit workspace_id.
         if tenant_id == _DEMO_TENANT_ID:
             ctx = {
-                "workspace_id": _DEMO_WORKSPACE_ID,
+                "workspace_id": None,
                 "tenant_id": tenant_id,
                 "workspace_member_role": None,
                 "cross_workspace_access": True,
                 "resolution_mode": "cross_workspace_role_demo_fallback",
             }
-            return _DEMO_WORKSPACE_ID, 200, ctx
+            return None, 200, ctx
         return None, 400, {
             "error": "workspace_id_required",
             "errorCode": "workspace_id_required",
@@ -306,14 +307,17 @@ def resolve_workspace_context(
 
     if not active:
         if tenant_id == _DEMO_TENANT_ID:
+            # Operator in demo tenant with no workspace memberships → no workspace filter
+            # (workspace_id=None) so all tenant-scoped records are visible.  Workspace
+            # isolation activates once the operator joins a workspace.
             ctx = {
-                "workspace_id": _DEMO_WORKSPACE_ID,
+                "workspace_id": None,
                 "tenant_id": _DEMO_TENANT_ID,
                 "workspace_member_role": None,
                 "cross_workspace_access": False,
                 "resolution_mode": "demo_tenant_fallback",
             }
-            return _DEMO_WORKSPACE_ID, 200, ctx
+            return None, 200, ctx
         return None, 403, {
             "error": "no_workspace_membership",
             "errorCode": "no_workspace_membership",
@@ -387,6 +391,17 @@ def check_workspace_resource_access(
             "errorCode": "cross_tenant_access_denied",
             "reason": "Cross-tenant resource access is not permitted.",
         }
+
+    # Caller has no workspace scope (legacy/demo mode with no workspace isolation configured).
+    # Allow access to all resources — workspace isolation is not active in this context.
+    if caller_workspace_id is None:
+        if require_mutation and workspace_member_role == "workspace_readonly":
+            return False, 403, {
+                "error": "workspace_role_insufficient",
+                "errorCode": "workspace_role_insufficient",
+                "reason": "Your workspace role does not permit write operations.",
+            }
+        return True, 200, {}
 
     # Normalize: None resource_workspace_id is treated as same-workspace for backward compat
     # (pre-migration rows may lack workspace_id).
