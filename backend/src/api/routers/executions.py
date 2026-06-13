@@ -40,11 +40,13 @@ def list_executions_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
+    workspace_id = ws_ctx.get("workspace_id")
     executions = list_grant_executions(
         grant_id=grant_id,
         operator_id=operator_id,
         limit=limit,
         tenant_id=tenant_id,
+        workspace_id=workspace_id,
     )
     return [e.to_dict() for e in executions]
 
@@ -62,7 +64,8 @@ def get_execution_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    execution = get_grant_execution(execution_id, tenant_id=tenant_id)
+    workspace_id = ws_ctx.get("workspace_id")
+    execution = get_grant_execution(execution_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if execution is None:
         raise HTTPException(
             status_code=404,
@@ -85,11 +88,12 @@ def list_executions_for_grant_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    grant = get_grant(grant_id, tenant_id=tenant_id)
+    workspace_id = ws_ctx.get("workspace_id")
+    grant = get_grant(grant_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if grant is None:
         raise HTTPException(
             status_code=404,
             detail={"error": "Grant not found", "errorCode": "grant_not_found", "reason": "The requested grant does not exist."},
         )
-    executions = list_grant_executions_for_grant(grant_id, limit=limit, tenant_id=tenant_id)
+    executions = list_grant_executions_for_grant(grant_id, limit=limit, tenant_id=tenant_id, workspace_id=workspace_id)
     return [e.to_dict() for e in executions]

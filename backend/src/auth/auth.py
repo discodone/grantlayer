@@ -203,8 +203,9 @@ def resolve_workspace_context(
     """
     tenant_id: str = auth_payload.get("tenant_id") or _DEMO_TENANT_ID
     operator: dict = auth_payload.get("operator") or {}
-    operator_id: str | None = operator.get("operatorId")
-    operator_role: str | None = operator.get("role")
+    # JWT tokens carry identity in "sub"; operator-model tokens carry it in operator.operatorId
+    operator_id: str | None = operator.get("operatorId") or auth_payload.get("sub")
+    operator_role: str | None = operator.get("role") or auth_payload.get("role")
 
     # ── Legacy / demo mode (no operator model) ─────────────────
     if not operator_id:

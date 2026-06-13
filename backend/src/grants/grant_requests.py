@@ -46,7 +46,9 @@ ALLOWED_GRANT_ROLES: frozenset[str] = frozenset({
 
 
 def create_grant_request(
-    request: GrantRequest, tenant_id: Optional[str] = None
+    request: GrantRequest,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
 ) -> GrantRequest:
     """Create a new grant request in the 'requested' state."""
     validate_string_length(request.subject_id, "subject_id", MAX_SHORT_ID_LENGTH)
@@ -61,8 +63,9 @@ def create_grant_request(
         """
         INSERT INTO grant_requests (
             id, subject_id, role, action, resource, valid_from, valid_until,
-            requested_by, reason, status, created_at, updated_at, tenant_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            requested_by, reason, status, created_at, updated_at, tenant_id,
+            workspace_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             request.id,
@@ -78,49 +81,57 @@ def create_grant_request(
             request.created_at,
             request.updated_at,
             effective_tenant,
+            workspace_id,
         ),
     )
     return request
 
 
 def get_grant_request(
-    request_id: str, tenant_id: Optional[str] = None
+    request_id: str,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
 ) -> Optional[GrantRequest]:
     """Get a single grant request by ID."""
+    conditions = ["id = ?"]
+    params: list = [request_id]
     if tenant_id is not None:
-        row = db.query_one(
-            "SELECT * FROM grant_requests WHERE id = ? AND tenant_id = ?",
-            (request_id, tenant_id),
-        )
-    else:
-        row = db.query_one("SELECT * FROM grant_requests WHERE id = ?", (request_id,))
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        params.append(workspace_id)
+    row = db.query_one(
+        "SELECT * FROM grant_requests WHERE " + " AND ".join(conditions),
+        tuple(params),
+    )
     if not row:
         return None
     return _row_to_grant_request(row)
 
 
 def list_grant_requests(
-    status_filter: Optional[str] = None, tenant_id: Optional[str] = None
+    status_filter: Optional[str] = None,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
 ) -> List[GrantRequest]:
-    """List grant requests, optionally filtered by status and/or tenant."""
-    if tenant_id is not None and status_filter:
-        rows = db.query_all(
-            "SELECT * FROM grant_requests WHERE status = ? AND tenant_id = ? ORDER BY created_at DESC",
-            (status_filter, tenant_id),
-        )
-    elif tenant_id is not None:
-        rows = db.query_all(
-            "SELECT * FROM grant_requests WHERE tenant_id = ? ORDER BY created_at DESC",
-            (tenant_id,),
-        )
-    elif status_filter:
-        rows = db.query_all(
-            "SELECT * FROM grant_requests WHERE status = ? ORDER BY created_at DESC",
-            (status_filter,),
-        )
-    else:
-        rows = db.query_all("SELECT * FROM grant_requests ORDER BY created_at DESC")
-
+    """List grant requests, optionally filtered by status, tenant, and workspace."""
+    conditions: list[str] = []
+    params: list = []
+    if tenant_id is not None:
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("(workspace_id = ? OR workspace_id IS NULL)")
+        params.append(workspace_id)
+    if status_filter is not None:
+        conditions.append("status = ?")
+        params.append(status_filter)
+    sql = "SELECT * FROM grant_requests"
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    sql += " ORDER BY created_at DESC"
+    rows = db.query_all(sql, tuple(params))
     return [_row_to_grant_request(row) for row in rows]
 
 
@@ -133,7 +144,10 @@ def _is_request_expired(request: GrantRequest) -> bool:
 
 
 def approve_grant_request(
-    request_id: str, operator_id: str, tenant_id: Optional[str] = None
+    request_id: str,
+    operator_id: str,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
 ) -> Tuple[GrantRequest, Grant]:
     """Approve a grant request, creating the actual grant.
 
@@ -141,8 +155,8 @@ def approve_grant_request(
     """
     conn = db.get_conn()
     try:
-        # Get the request (scoped to tenant if provided)
-        request = get_grant_request(request_id, tenant_id=tenant_id)
+        # Get the request (scoped to tenant/workspace if provided)
+        request = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
         if not request:
             raise ValueError(f"Grant request {request_id} not found")
 
@@ -167,7 +181,7 @@ def approve_grant_request(
             raise ValueError("tenant_id is required")
         effective_tenant = tenant_id
 
-        # Create the actual grant from the request
+        # Create the actual grant from the request (inherit workspace_id from request)
         grant = Grant(
             subject_id=request.subject_id,
             role=request.role,
@@ -180,7 +194,7 @@ def approve_grant_request(
         )
 
         # Save the grant using the shared transaction connection
-        grants.create_grant(grant, conn=conn, tenant_id=effective_tenant)
+        grants.create_grant(grant, conn=conn, tenant_id=effective_tenant, workspace_id=workspace_id)
 
         # Update the request to approved state
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
@@ -222,13 +236,17 @@ def approve_grant_request(
 
 
 def deny_grant_request(
-    request_id: str, operator_id: str, reason: str, tenant_id: Optional[str] = None
+    request_id: str,
+    operator_id: str,
+    reason: str,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
 ) -> GrantRequest:
     """Deny a grant request without creating a grant."""
     conn = db.get_conn()
     try:
-        # Get the request (scoped to tenant if provided)
-        request = get_grant_request(request_id, tenant_id=tenant_id)
+        # Get the request (scoped to tenant/workspace if provided)
+        request = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
         if not request:
             raise ValueError(f"Grant request {request_id} not found")
 
@@ -287,14 +305,18 @@ def deny_grant_request(
 
 
 def revoke_grant_request(
-    request_id: str, operator_id: str, reason: str, tenant_id: Optional[str] = None
+    request_id: str,
+    operator_id: str,
+    reason: str,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
 ) -> GrantRequest:
     """Revoke a previously approved grant request."""
     validate_string_length(reason, "reason", MAX_REASON_LENGTH)
     conn = db.get_conn()
     try:
-        # Get the request (scoped to tenant if provided)
-        request = get_grant_request(request_id, tenant_id=tenant_id)
+        # Get the request (scoped to tenant/workspace if provided)
+        request = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
         if not request:
             raise ValueError(f"Grant request {request_id} not found")
 
@@ -316,7 +338,7 @@ def revoke_grant_request(
             grants.revoke_grant(
                 request.grant_id, operator_id,
                 f"Revoked from request: {reason}", conn=conn,
-                tenant_id=effective_tenant,
+                tenant_id=effective_tenant, workspace_id=workspace_id,
             )
 
         # Update the request to revoked state

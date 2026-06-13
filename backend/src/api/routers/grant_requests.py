@@ -67,6 +67,7 @@ def list_grant_requests_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
+    workspace_id = ws_ctx.get("workspace_id")
     if status is not None and status not in VALID_REQUEST_STATUSES:
         raise HTTPException(
             status_code=400,
@@ -76,7 +77,7 @@ def list_grant_requests_endpoint(
                 "reason": f"status must be one of: {sorted(VALID_REQUEST_STATUSES)}",
             },
         )
-    requests = list_grant_requests(status_filter=status, tenant_id=tenant_id)
+    requests = list_grant_requests(status_filter=status, tenant_id=tenant_id, workspace_id=workspace_id)
     return [GrantRequestResponse.from_grant_request(r).model_dump(by_alias=True) for r in requests]
 
 
@@ -92,7 +93,8 @@ def get_grant_request_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    req = get_grant_request(request_id, tenant_id=tenant_id)
+    workspace_id = ws_ctx.get("workspace_id")
+    req = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if req is None:
         raise HTTPException(
             status_code=404,
@@ -119,6 +121,7 @@ def create_grant_request_endpoint(
     )
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
+    workspace_id = ws_ctx.get("workspace_id")
 
     if not operator_id:
         raise HTTPException(
@@ -180,7 +183,7 @@ def create_grant_request_endpoint(
         requested_by=operator_id,
         reason=body.reason,
     )
-    created = create_grant_request(req, tenant_id=tenant_id)
+    created = create_grant_request(req, tenant_id=tenant_id, workspace_id=workspace_id)
     return GrantRequestResponse.from_grant_request(created).model_dump(by_alias=True)
 
 
@@ -198,8 +201,9 @@ def approve_grant_request_endpoint(
     )
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
+    workspace_id = ws_ctx.get("workspace_id")
 
-    req = get_grant_request(request_id, tenant_id=tenant_id)
+    req = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if req is None:
         raise HTTPException(
             status_code=404,
@@ -221,7 +225,7 @@ def approve_grant_request_endpoint(
     enforce_workspace_mutation(ws_ctx)
 
     try:
-        updated_req, new_grant = approve_grant_request(request_id, operator_id, tenant_id=tenant_id)
+        updated_req, new_grant = approve_grant_request(request_id, operator_id, tenant_id=tenant_id, workspace_id=workspace_id)
         return {
             "ok": True,
             "request": GrantRequestResponse.from_grant_request(updated_req).model_dump(by_alias=True),
@@ -249,8 +253,9 @@ def deny_grant_request_endpoint(
     )
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
+    workspace_id = ws_ctx.get("workspace_id")
 
-    req = get_grant_request(request_id, tenant_id=tenant_id)
+    req = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if req is None:
         raise HTTPException(
             status_code=404,
@@ -274,7 +279,7 @@ def deny_grant_request_endpoint(
     enforce_workspace_mutation(ws_ctx)
 
     try:
-        updated_req = deny_grant_request(request_id, operator_id, body.reason, tenant_id=tenant_id)
+        updated_req = deny_grant_request(request_id, operator_id, body.reason, tenant_id=tenant_id, workspace_id=workspace_id)
         return {"ok": True, "request": GrantRequestResponse.from_grant_request(updated_req).model_dump(by_alias=True)}
     except ValueError as exc:
         raise HTTPException(
