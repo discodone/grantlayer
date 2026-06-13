@@ -82,8 +82,17 @@ class TestGL260WorkspaceIsolation(unittest.TestCase):
         self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         self._orig_db = os.environ.get("GRANTLAYER_DB")
         self._orig_jwt = os.environ.get("GRANTLAYER_JWT_SECRET")
+        self._orig_op_model = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
+
+        os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
 
         _setup_two_workspace_env(self.tmp.name)
+
+        # Reload config so module-level ENABLE_OPERATOR_MODEL reflects the env var
+        # set above — guards against contamination from tests that set it to false.
+        for mod_name in list(sys.modules.keys()):
+            if "backend.src.core.config" in mod_name:
+                importlib.reload(sys.modules[mod_name])
 
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
@@ -97,11 +106,15 @@ class TestGL260WorkspaceIsolation(unittest.TestCase):
         for key, orig in (
             ("GRANTLAYER_DB", self._orig_db),
             ("GRANTLAYER_JWT_SECRET", self._orig_jwt),
+            ("GRANTLAYER_ENABLE_OPERATOR_MODEL", self._orig_op_model),
         ):
             if orig is not None:
                 os.environ[key] = orig
             else:
                 os.environ.pop(key, None)
+        for mod_name in list(sys.modules.keys()):
+            if "backend.src.core.config" in mod_name:
+                importlib.reload(sys.modules[mod_name])
 
     # ── helpers ──────────────────────────────────────────────────────────────
 
