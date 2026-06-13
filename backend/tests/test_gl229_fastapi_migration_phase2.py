@@ -570,9 +570,11 @@ class TestDemoEndpointsDisabled(_GL229TestBase):
     _demo_endpoints = False
 
     def test_tamper_grant_disabled_403(self):
+        # GL-262: router not mounted when disabled → 404; pre-GL-262 was 403.
         resp = self.client.post("/v1/demo/tamper-grant/some-grant-id")
-        self.assertEqual(resp.status_code, 403)
-        self.assertIn("demo_endpoints_disabled", str(resp.json()))
+        self.assertIn(resp.status_code, [403, 404])
+        if resp.status_code == 403:
+            self.assertIn("demo_endpoints_disabled", str(resp.json()))
 
 
 @_SKIP
@@ -673,7 +675,8 @@ class TestRouteCount(_GL229TestBase):
             "/v1/approvals/evaluate",
             "/v1/decision-provenance/v2/build",
             "/v1/policy-requirements/evaluate",
-            "/v1/demo/tamper-grant/{grant_id}",
+            # /v1/demo/tamper-grant/{grant_id} excluded: GL-262 made it conditional
+            # on ENABLE_DEMO_ENDPOINTS=true, so it is absent in default app instances.
             "/v1/demo-action",
         }
         for path in expected:
