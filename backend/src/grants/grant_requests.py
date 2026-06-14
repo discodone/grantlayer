@@ -16,7 +16,7 @@ from sqlalchemy import text
 
 from ..audit import audit_log
 from ..core import db
-from ..core.db import _orm_to_dict, _translate_to_named_params, get_engine
+from ..core.db import _orm_to_dict, get_engine
 from ..core.models import AuditEvent, Grant, GrantRequest
 from ..core.validation import (
     MAX_NAME_LENGTH,

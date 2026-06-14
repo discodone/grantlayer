@@ -21,8 +21,9 @@ import secrets
 import uuid
 from typing import Optional
 
-from ..core.db import execute, get_engine, query_all, query_one
 from sqlalchemy import text
+
+from ..core.db import execute, get_engine, query_all, query_one
 
 # ──────────────────────────────────────────────────────────────
 # PBKDF2 token hashing (stdlib only)

@@ -3,10 +3,16 @@
 import datetime
 from typing import List, Optional
 
-from ..core.crypto_signing import sign_grant as _sign_grant
-from ..core.db import _ConnectionWrapper, execute, get_engine, query_all, query_one
-from ..core.db import _translate_to_named_params
 from sqlalchemy import text
+
+from ..core.crypto_signing import sign_grant as _sign_grant
+from ..core.db import (
+    _ConnectionWrapper,
+    _translate_to_named_params,
+    execute,
+    query_all,
+    query_one,
+)
 from ..core.models import Grant
 
 _DEMO_WORKSPACE_ID = "default"

@@ -12,7 +12,6 @@ from ..core.db import (
     _ConnectionWrapper,
     _translate_to_named_params,
     execute,
-    get_conn,
     get_engine,
     query_all,
     query_one,
