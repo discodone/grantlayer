@@ -309,7 +309,7 @@ class TestGl111Preservation(_BaseGl111):
         from backend.src.api.app import create_app
 
         app = create_app()
-        paths = {route.path for route in app.routes}
+        paths = {p for route in app.routes if (p := getattr(route, "path", None)) is not None}
         self.assertIn("/v1/demo-action", paths)
 
 
