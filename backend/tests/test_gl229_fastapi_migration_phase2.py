@@ -642,7 +642,7 @@ class TestRouteCount(_GL229TestBase):
         """Verify the expected GL-229 routes exist in the app."""
         from backend.src.api.app import create_app as _create
         app = _create()
-        paths = {r.path for r in app.routes if hasattr(r, "path")}
+        paths = set(app.openapi()["paths"].keys())
         expected = {
             "/v1/audit-events",
             "/v1/grant-requests",

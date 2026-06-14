@@ -21,6 +21,8 @@
 
 set -euo pipefail
 
+export TMPDIR=/home/adminuser/tmp
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
@@ -38,7 +40,7 @@ echo "Runner: pytest -n auto -m 'not doc_guard and not scope_guard'"
 echo ""
 python3 -m pytest backend/tests/ -n auto \
     -m "not doc_guard and not scope_guard" \
-    -o cache_dir=/tmp/grantlayer-pytest-cache \
+    -o cache_dir=/home/adminuser/tmp/grantlayer-pytest-cache \
     --tb=short -q || EXIT_CODE=$?
 
 echo ""

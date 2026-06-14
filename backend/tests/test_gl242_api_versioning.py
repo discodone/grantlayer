@@ -195,7 +195,7 @@ class TestRouteCountSanity(_Base):
     """Sanity-check that enough routes were wired under /v1/."""
 
     def test_minimum_v1_route_count(self):
-        routes = [r.path for r in self.app.routes if r.path.startswith("/v1/")]
+        routes = [p for p in self.app.openapi()["paths"].keys() if p.startswith("/v1/")]
         self.assertGreater(len(routes), 30, f"Expected >30 /v1/ routes, got {len(routes)}: {routes[:5]}...")
 
 

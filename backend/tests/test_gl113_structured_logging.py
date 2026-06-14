@@ -502,7 +502,8 @@ class TestGl113CrossGlPreservation(unittest.TestCase):
         from backend.src.api.app import create_app
 
         app = create_app()
-        self.assertTrue(any(route.path == "/health" for route in app.routes))
+        paths = set(app.openapi()["paths"].keys())
+        self.assertIn("/health", paths)
 
 
 # ═══════════════════════════════════════════════════════════════════════
