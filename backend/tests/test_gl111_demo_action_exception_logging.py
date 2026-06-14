@@ -308,17 +308,8 @@ class TestGl111Preservation(_BaseGl111):
     def test_no_endpoint_changes(self):
         from backend.src.api.app import create_app
 
-        def get_all_paths(routes):
-            paths = set()
-            for route in routes:
-                if hasattr(route, "path"):
-                    paths.add(route.path)
-                if hasattr(route, "routes"):
-                    paths.update(get_all_paths(route.routes))
-            return paths
-
         app = create_app()
-        paths = get_all_paths(app.routes)
+        paths = set(app.openapi()["paths"].keys())
         self.assertIn("/v1/demo-action", paths)
 
 
