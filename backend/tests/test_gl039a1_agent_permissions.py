@@ -174,7 +174,7 @@ class TestAgentPermissionScopeEvaluator(unittest.TestCase):
             resource="file-1",
         )
         import datetime
-        result = evaluate_access(request, [grant], datetime.datetime.utcnow())
+        result = evaluate_access(request, [grant], datetime.datetime.now(datetime.timezone.utc))
         self.assertTrue(result.approved)
 
     def test_case_insensitive_scope_matching(self):

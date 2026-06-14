@@ -10,7 +10,8 @@ from ..core.models import AccessRequest, Grant, PolicyResult
 
 
 def _parse_iso(ts: str) -> datetime.datetime:
-    ts = ts.rstrip("Z")
+    if ts.endswith("Z"):
+        ts = ts[:-1] + "+00:00"
     return datetime.datetime.fromisoformat(ts)
 
 
@@ -30,6 +31,10 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
     candidate — a later valid grant can still approve access.  The best
     (most specific) denial reason is returned if no grant approves.
     """
+    # Normalize naive 'now' to UTC for comparison with aware parsed datetimes
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=datetime.timezone.utc)
+
     candidates = [g for g in grants if g.subject_id == request.subject_id]
 
     if not candidates:

@@ -5,7 +5,18 @@ import json
 from threading import RLock
 from typing import List, Optional
 
-from ..core.db import DB_BACKEND, execute, get_conn, query_all, query_one
+from sqlalchemy import text
+
+from ..core.db import (
+    DB_BACKEND,
+    _ConnectionWrapper,
+    _translate_to_named_params,
+    execute,
+    get_conn,
+    get_engine,
+    query_all,
+    query_one,
+)
 from ..core.models import AuditEvent
 
 # ──────────────────────────────────────────────────────────────
@@ -34,7 +45,10 @@ def _get_latest_row_hash(conn=None) -> Optional[str]:
         "ORDER BY timestamp DESC, rowid DESC LIMIT 1"
     )
     if conn is not None:
-        row = conn.execute(sql).fetchone()
+        if isinstance(conn, _ConnectionWrapper):
+            row = conn.execute(sql).fetchone()
+        else:
+            row = conn.execute(text(sql)).fetchone()
     else:
         row = query_one(sql)
     if row is None:
@@ -324,14 +338,15 @@ def append_event(event: AuditEvent, conn=None) -> None:
 
 def _append_event_postgres(event: AuditEvent) -> None:
     """PostgreSQL path: advisory lock serializes across all workers."""
-    conn = get_conn()
+    conn = get_engine().connect()
     try:
         # Acquire a cluster-wide transaction-scoped exclusive advisory lock.
         # Released automatically when the transaction commits or rolls back.
-        conn.execute(f"SELECT pg_advisory_xact_lock({_PG_AUDIT_CHAIN_LOCK_KEY})")
+        conn.execute(text(f"SELECT pg_advisory_xact_lock({_PG_AUDIT_CHAIN_LOCK_KEY})"))
         prev_hash = _get_latest_row_hash(conn)
         row_hash = _compute_row_hash(event, prev_hash)
-        conn.execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
+        sql, param_dict = _translate_to_named_params(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
+        conn.execute(text(sql), param_dict)
         conn.commit()
         event.row_hash = row_hash
         event.prev_hash = prev_hash
@@ -348,7 +363,11 @@ def _append_event_sqlite(event: AuditEvent, conn=None) -> None:
         prev_hash = _get_latest_row_hash(conn)
         row_hash = _compute_row_hash(event, prev_hash)
         if conn is not None:
-            conn.execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
+            if isinstance(conn, _ConnectionWrapper):
+                conn.execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
+            else:
+                sql, param_dict = _translate_to_named_params(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
+                conn.execute(text(sql), param_dict)
         else:
             execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
         event.row_hash = row_hash

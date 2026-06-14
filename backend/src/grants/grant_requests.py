@@ -12,8 +12,11 @@ lifecycle entity from grants themselves. A grant request can be:
 import datetime
 from typing import List, Optional, Tuple
 
+from sqlalchemy import text
+
 from ..audit import audit_log
 from ..core import db
+from ..core.db import _orm_to_dict, _translate_to_named_params, get_engine
 from ..core.models import AuditEvent, Grant, GrantRequest
 from ..core.validation import (
     MAX_NAME_LENGTH,
@@ -182,7 +185,7 @@ def approve_grant_request(
 
     Returns both the updated request and the newly created grant.
     """
-    conn = db.get_conn()
+    conn = get_engine().connect()
     try:
         # Get the request (scoped to tenant/workspace if provided)
         request = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
@@ -203,9 +206,6 @@ def approve_grant_request(
         if request.requested_by == operator_id:
             raise ValueError("Self-approval is not permitted")
 
-        # Start transaction
-        conn.execute("BEGIN TRANSACTION")
-
         if tenant_id is None:
             raise ValueError("tenant_id is required")
         effective_tenant = tenant_id
@@ -223,46 +223,47 @@ def approve_grant_request(
             reason=f"Approved from request {request_id}: {request.reason}",
         )
 
-        # Save the grant using the shared transaction connection
-        grants.create_grant(grant, conn=conn, tenant_id=effective_tenant, workspace_id=effective_workspace)
+        # Start transaction
+        with conn.begin():
+            # Save the grant using the shared transaction connection
+            grants.create_grant(grant, conn=conn, tenant_id=effective_tenant, workspace_id=effective_workspace)
 
-        # Update the request to approved state
-        now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-        conn.execute(
+            # Update the request to approved state
+            now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+            sql = """
+                UPDATE grant_requests
+                SET status = :p1, approved_by = :p2, approved_at = :p3, grant_id = :p4, updated_at = :p5
+                WHERE id = :p6
             """
-            UPDATE grant_requests
-            SET status = ?, approved_by = ?, approved_at = ?, grant_id = ?, updated_at = ?
-            WHERE id = ?
-            """,
-            ("approved", operator_id, now, grant.id, now, request_id),
-        )
+            conn.execute(text(sql), {
+                "p1": "approved",
+                "p2": operator_id,
+                "p3": now,
+                "p4": grant.id,
+                "p5": now,
+                "p6": request_id,
+            })
 
-        # Log an audit event for the approval inside the same transaction
-        audit_log.append_event(
-            AuditEvent(
-                subject_id=operator_id,
-                role="operator",
-                action="approve_grant_request",
-                resource=f"grant_request/{request_id}",
-                approved=True,
-                reason=f"Grant request {request_id} approved",
-                tenant_id=effective_tenant,
-                scope="tenant",
-            ),
-            conn=conn,
-        )
-
-        # Commit the transaction
-        conn.commit()
+            # Log an audit event for the approval inside the same transaction
+            audit_log.append_event(
+                AuditEvent(
+                    subject_id=operator_id,
+                    role="operator",
+                    action="approve_grant_request",
+                    resource=f"grant_request/{request_id}",
+                    approved=True,
+                    reason=f"Grant request {request_id} approved",
+                    tenant_id=effective_tenant,
+                    scope="tenant",
+                ),
+                conn=conn,
+            )
 
         # Return the updated request and the newly created grant
         updated_request = get_grant_request(request_id)
         if updated_request is None:
             raise ValueError(f"Grant request {request_id} not found after approval")
         return updated_request, grant
-    except Exception as e:
-        conn.rollback()
-        raise e
     finally:
         conn.close()
 
@@ -275,7 +276,7 @@ def deny_grant_request(
     workspace_id: Optional[str] = None,
 ) -> GrantRequest:
     """Deny a grant request without creating a grant."""
-    conn = db.get_conn()
+    conn = get_engine().connect()
     try:
         # Get the request (scoped to tenant/workspace if provided)
         request = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
@@ -295,45 +296,43 @@ def deny_grant_request(
             raise ValueError("tenant_id is required")
         effective_tenant = tenant_id
 
-        # Start transaction
-        conn.execute("BEGIN TRANSACTION")
-
-        # Update the request to denied state
-        now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-        conn.execute(
+        with conn.begin():
+            # Update the request to denied state
+            now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+            sql = """
+                UPDATE grant_requests
+                SET status = :p1, denied_by = :p2, denied_at = :p3, denial_reason = :p4, updated_at = :p5
+                WHERE id = :p6
             """
-            UPDATE grant_requests
-            SET status = ?, denied_by = ?, denied_at = ?, denial_reason = ?, updated_at = ?
-            WHERE id = ?
-            """,
-            ("denied", operator_id, now, reason, now, request_id),
-        )
+            conn.execute(text(sql), {
+                "p1": "denied",
+                "p2": operator_id,
+                "p3": now,
+                "p4": reason,
+                "p5": now,
+                "p6": request_id,
+            })
 
-        # Log an audit event for the denial inside the same transaction
-        audit_log.append_event(
-            AuditEvent(
-                subject_id=operator_id,
-                role="operator",
-                action="deny_grant_request",
-                resource=f"grant_request/{request_id}",
-                approved=False,
-                reason=f"Grant request {request_id} denied: {reason}",
-                tenant_id=effective_tenant,
-                scope="tenant",
-            ),
-            conn=conn,
-        )
-
-        conn.commit()
+            # Log an audit event for the denial inside the same transaction
+            audit_log.append_event(
+                AuditEvent(
+                    subject_id=operator_id,
+                    role="operator",
+                    action="deny_grant_request",
+                    resource=f"grant_request/{request_id}",
+                    approved=False,
+                    reason=f"Grant request {request_id} denied: {reason}",
+                    tenant_id=effective_tenant,
+                    scope="tenant",
+                ),
+                conn=conn,
+            )
 
         # Return the updated request
         updated_request = get_grant_request(request_id)
         if updated_request is None:
             raise ValueError(f"Grant request {request_id} not found after denial")
         return updated_request
-    except Exception as e:
-        conn.rollback()
-        raise e
     finally:
         conn.close()
 
@@ -347,7 +346,7 @@ def revoke_grant_request(
 ) -> GrantRequest:
     """Revoke a previously approved grant request."""
     validate_string_length(reason, "reason", MAX_REASON_LENGTH)
-    conn = db.get_conn()
+    conn = get_engine().connect()
     try:
         # Get the request (scoped to tenant/workspace if provided)
         request = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
@@ -364,54 +363,51 @@ def revoke_grant_request(
             raise ValueError("tenant_id is required")
         effective_tenant = tenant_id
 
-        # Start transaction
-        conn.execute("BEGIN TRANSACTION")
+        with conn.begin():
+            # If there's an associated grant, revoke it too
+            if request.grant_id:
+                grants.revoke_grant(
+                    request.grant_id, operator_id,
+                    f"Revoked from request: {reason}", conn=conn,
+                    tenant_id=effective_tenant, workspace_id=workspace_id,
+                )
 
-        # If there's an associated grant, revoke it too
-        if request.grant_id:
-            grants.revoke_grant(
-                request.grant_id, operator_id,
-                f"Revoked from request: {reason}", conn=conn,
-                tenant_id=effective_tenant, workspace_id=workspace_id,
-            )
-
-        # Update the request to revoked state
-        now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-        conn.execute(
+            # Update the request to revoked state
+            now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+            sql = """
+                UPDATE grant_requests
+                SET status = :p1, revoked_by = :p2, revoked_at = :p3, revoked_reason = :p4, updated_at = :p5
+                WHERE id = :p6
             """
-            UPDATE grant_requests
-            SET status = ?, revoked_by = ?, revoked_at = ?, revoked_reason = ?, updated_at = ?
-            WHERE id = ?
-            """,
-            ("revoked", operator_id, now, reason, now, request_id),
-        )
+            conn.execute(text(sql), {
+                "p1": "revoked",
+                "p2": operator_id,
+                "p3": now,
+                "p4": reason,
+                "p5": now,
+                "p6": request_id,
+            })
 
-        # Log an audit event for the revocation inside the same transaction
-        audit_log.append_event(
-            AuditEvent(
-                subject_id=operator_id,
-                role="operator",
-                action="revoke_grant_request",
-                resource=f"grant_request/{request_id}",
-                approved=False,
-                reason=f"Grant request {request_id} revoked: {reason}",
-                tenant_id=effective_tenant,
-                scope="tenant",
-            ),
-            conn=conn,
-        )
-
-        # Commit the transaction
-        conn.commit()
+            # Log an audit event for the revocation inside the same transaction
+            audit_log.append_event(
+                AuditEvent(
+                    subject_id=operator_id,
+                    role="operator",
+                    action="revoke_grant_request",
+                    resource=f"grant_request/{request_id}",
+                    approved=False,
+                    reason=f"Grant request {request_id} revoked: {reason}",
+                    tenant_id=effective_tenant,
+                    scope="tenant",
+                ),
+                conn=conn,
+            )
 
         # Return the updated request
         updated_request = get_grant_request(request_id)
         if updated_request is None:
             raise ValueError(f"Grant request {request_id} not found after revocation")
         return updated_request
-    except Exception as e:
-        conn.rollback()
-        raise e
     finally:
         conn.close()
 
@@ -421,7 +417,7 @@ def expire_old_requests() -> int:
 
     Returns the number of requests expired.
     """
-    conn = db.get_conn()
+    conn = get_engine().connect()
     try:
         # Calculate the expiry cutoff time (24 hours ago)
         cutoff = (
@@ -430,34 +426,34 @@ def expire_old_requests() -> int:
 
         # Find requests to expire (include tenant_id for audit propagation)
         to_expire = conn.execute(
-            """
-            SELECT id, tenant_id FROM grant_requests
-            WHERE status = 'requested' AND created_at < ?
-            """,
-            (cutoff,),
+            text("""
+                SELECT id, tenant_id FROM grant_requests
+                WHERE status = 'requested' AND created_at < :p1
+            """),
+            {"p1": cutoff},
         ).fetchall()
 
         if not to_expire:
             return 0
 
-        # Start transaction
-        conn.execute("BEGIN TRANSACTION")
-
         # Update requests to expired state
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-        conn.executemany(
-            """
-            UPDATE grant_requests
-            SET status = 'expired', updated_at = ?
-            WHERE id = ?
-            """,
-            [(now, row["id"]) for row in to_expire],
-        )
+        for row in to_expire:
+            row = _orm_to_dict(row)
+            conn.execute(
+                text("""
+                    UPDATE grant_requests
+                    SET status = 'expired', updated_at = :p1
+                    WHERE id = :p2
+                """),
+                {"p1": now, "p2": row["id"]},
+            )
 
         # Create expiry audit events for each expired request,
         # propagating tenant_id so audit events are tenant-scoped.
         for row in to_expire:
-            row_tenant = row["tenant_id"] if hasattr(row, "__getitem__") else None
+            row = _orm_to_dict(row)
+            row_tenant = row["tenant_id"] if row.get("tenant_id") else None
             audit_log.append_event(
                 AuditEvent(
                     subject_id="system",

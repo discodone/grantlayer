@@ -88,7 +88,7 @@ def handle_demo_action(
         )
 
         grants = list_grants(tenant_id=effective_tenant)
-        now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+        now = datetime.datetime.now(datetime.timezone.utc)
         result: PolicyResult = evaluate_access(request, grants, now)
 
         # Sprint 2B: verify grant signature before proceeding

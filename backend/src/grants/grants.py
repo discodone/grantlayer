@@ -4,7 +4,9 @@ import datetime
 from typing import List, Optional
 
 from ..core.crypto_signing import sign_grant as _sign_grant
-from ..core.db import execute, query_all, query_one
+from ..core.db import _ConnectionWrapper, execute, get_engine, query_all, query_one
+from ..core.db import _translate_to_named_params
+from sqlalchemy import text
 from ..core.models import Grant
 
 _DEMO_WORKSPACE_ID = "default"
@@ -128,7 +130,11 @@ def create_grant(
     )
 
     if conn is not None:
-        conn.execute(sql, params)
+        if isinstance(conn, _ConnectionWrapper):
+            conn.execute(sql, params)
+        else:
+            sql_inner, param_dict = _translate_to_named_params(sql, params)
+            conn.execute(text(sql_inner), param_dict)
     else:
         execute(sql, params)
     return grant
@@ -183,8 +189,13 @@ def revoke_grant(
         " WHERE " + " AND ".join(conditions)
     )
     if conn is not None:
-        cur = conn.execute(sql, tuple(params))
-        return (cur.rowcount or 0) > 0
+        if isinstance(conn, _ConnectionWrapper):
+            cur = conn.execute(sql, tuple(params))
+            return (cur.rowcount or 0) > 0
+        else:
+            sql_inner, param_dict = _translate_to_named_params(sql, params)
+            result = conn.execute(text(sql_inner), param_dict)
+            return (result.rowcount or 0) > 0
     rowcount = execute(sql, tuple(params))
     return rowcount > 0
 

@@ -77,7 +77,8 @@ def _sanitize_context(context: Any) -> Optional[dict[str, Any]]:
 
 def _parse_iso(ts: str) -> Optional[datetime.datetime]:
     try:
-        ts = ts.rstrip("Z")
+        if ts.endswith("Z"):
+            ts = ts[:-1] + "+00:00"
         return datetime.datetime.fromisoformat(ts)
     except (ValueError, TypeError, AttributeError):
         return None
@@ -218,7 +219,7 @@ def evaluate_deadlines(
     if not raw_deadlines:
         return "none", blockers, warnings
 
-    current_time = now or datetime.datetime.utcnow()
+    current_time = now or datetime.datetime.now(datetime.timezone.utc)
     any_expired_required = False
     any_expired = False
     any_present = False

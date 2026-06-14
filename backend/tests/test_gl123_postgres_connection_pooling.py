@@ -31,6 +31,7 @@ def _make_fake_psycopg2_module():
     fake_extras.RealDictCursor = MagicMock()
 
     fake_psycopg2 = MagicMock()
+    fake_psycopg2.Error = Exception
     fake_psycopg2.extras = fake_extras
     fake_psycopg2.pool = fake_pool
     fake_psycopg2.OperationalError = Exception
@@ -196,32 +197,44 @@ class TestPoolInitialization(unittest.TestCase):
         orig_url = db_mod.DB_PATH_OR_URL
         orig_pool = db_mod._pg_pool
 
-        fake_psycopg2, fake_pool_instance = _make_fake_psycopg2_module()
-        fake_cursor = MagicMock()
-        fake_cursor.fetchone.return_value = None
-        fake_cursor.fetchall.return_value = []
-        fake_cursor.rowcount = 0
-        fake_raw_conn = MagicMock()
-        fake_raw_conn.cursor.return_value = fake_cursor
-        fake_pool_instance.getconn.return_value = fake_raw_conn
-
         try:
             db_mod.DB_BACKEND = "postgres"
-            db_mod.DB_PATH_OR_URL = "postgres://user:pass@localhost/db"
+            db_mod.DB_PATH_OR_URL = "postgresql://user:pass@localhost/db"
             db_mod._pg_pool = None
+            db_mod._sa_engine = None
+            db_mod._engine_url = None
 
-            with _patch_psycopg2(fake_psycopg2):
+            fake_conn = MagicMock()
+            fake_conn.execute.return_value.rowcount = 0
+            fake_conn.fetchone.return_value = None
+            fake_conn.fetchall.return_value = []
+            fake_conn.__enter__ = MagicMock(return_value=fake_conn)
+            def _fake_exit(*args):
+                fake_conn.close()
+                return False
+            fake_conn.__exit__ = _fake_exit
+
+            fake_engine = MagicMock()
+            fake_engine.connect.return_value = fake_conn
+
+            orig_get_engine = db_mod.get_engine
+            db_mod.get_engine = lambda: fake_engine
+            try:
                 db_mod.execute("SELECT 1")
                 db_mod.query_one("SELECT 1")
                 db_mod.query_all("SELECT 1")
                 db_mod.executemany("SELECT 1", [()])
-                # Each helper gets and returns a connection
-                self.assertEqual(fake_pool_instance.getconn.call_count, 4)
-                self.assertEqual(fake_pool_instance.putconn.call_count, 4)
+                # Each helper opens and closes a connection via get_engine().connect()
+                self.assertEqual(fake_engine.connect.call_count, 4)
+                self.assertEqual(fake_conn.close.call_count, 4)
+            finally:
+                db_mod.get_engine = orig_get_engine
         finally:
             db_mod.DB_BACKEND = orig_backend
             db_mod.DB_PATH_OR_URL = orig_url
             db_mod._pg_pool = orig_pool
+            db_mod._sa_engine = None
+            db_mod._engine_url = None
 
 
 class TestPoolRetryBehavior(unittest.TestCase):

@@ -13,7 +13,61 @@ import time
 from typing import Any
 from urllib.parse import urlparse
 
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import Session, sessionmaker
+
 from .. import migrations
+
+# ──────────────────────────────────────────────────────────────
+# SQLAlchemy engine (ORM layer)
+# ──────────────────────────────────────────────────────────────
+
+_sa_engine = None
+_engine_url = None
+
+
+def get_engine():
+    """Return the SQLAlchemy engine for the configured backend."""
+    global _sa_engine, _engine_url
+    url = DB_PATH_OR_URL
+    if DB_BACKEND == "postgres":
+        # SQLAlchemy requires 'postgresql://' not 'postgres://'
+        if url.startswith("postgres://"):
+            url = "postgresql" + url[8:]
+        current_url = url
+    else:
+        current_url = f"sqlite:///{url}"
+    if _sa_engine is None or _engine_url != current_url:
+        _engine_url = current_url
+        if DB_BACKEND == "postgres":
+            _sa_engine = create_engine(current_url)
+        else:
+            _sa_engine = create_engine(current_url)
+            from sqlalchemy import event
+
+            @event.listens_for(_sa_engine, "connect")
+            def _set_sqlite_pragma(dbapi_conn, connection_record):
+                cursor = dbapi_conn.cursor()
+                cursor.execute("PRAGMA journal_mode=WAL")
+                cursor.execute("PRAGMA foreign_keys=ON")
+                cursor.close()
+    return _sa_engine
+
+
+def get_session() -> Session:
+    """Return a new SQLAlchemy session."""
+    return Session(get_engine())
+
+
+_session_maker: Any = None
+
+
+def get_session_maker() -> Any:
+    """Return the thread-local session maker (factory)."""
+    global _session_maker
+    if _session_maker is None:
+        _session_maker = sessionmaker(bind=get_engine())
+    return _session_maker
 
 # ──────────────────────────────────────────────────────────────
 # Placeholder scanner
@@ -99,6 +153,85 @@ def _translate_placeholders(sql: str) -> tuple[str, int]:
         i += 1
 
     return "".join(result), count
+
+
+def _translate_to_named_params(sql: str, params: tuple) -> tuple[str, dict[str, Any]]:
+    """Translate SQLite ? placeholders to :p1, :p2 ... named placeholders.
+
+    Returns (translated_sql, param_dict) so the statement can be executed
+    via SQLAlchemy text() with a dict binding.
+    """
+    result: list[str] = []
+    i = 0
+    n = len(sql)
+    param_idx = 0
+    param_dict: dict[str, Any] = {}
+
+    while i < n:
+        ch = sql[i]
+
+        # Block comment /* */
+        if ch == "/" and i + 1 < n and sql[i + 1] == "*":
+            j = sql.find("*/", i + 2)
+            if j == -1:
+                result.append(sql[i:])
+                break
+            result.append(sql[i : j + 2])
+            i = j + 2
+            continue
+
+        # Line comment -- \n
+        if ch == "-" and i + 1 < n and sql[i + 1] == "-":
+            j = sql.find("\n", i + 2)
+            if j == -1:
+                result.append(sql[i:])
+                break
+            result.append(sql[i : j + 1])
+            i = j + 1
+            continue
+
+        # Single-quoted string literal
+        if ch == "'":
+            result.append("'")
+            i += 1
+            while i < n:
+                if sql[i] == "'" and i + 1 < n and sql[i + 1] == "'":
+                    result.append("''")
+                    i += 2
+                    continue
+                if sql[i] == "'":
+                    result.append("'")
+                    i += 1
+                    break
+                result.append(sql[i])
+                i += 1
+            continue
+
+        # Double-quoted identifier
+        if ch == '"':
+            result.append('"')
+            i += 1
+            while i < n and sql[i] != '"':
+                result.append(sql[i])
+                i += 1
+            if i < n:
+                result.append('"')
+                i += 1
+            continue
+
+        # Placeholder
+        if ch == "?":
+            param_idx += 1
+            key = f"p{param_idx}"
+            result.append(f":{key}")
+            param_dict[key] = params[param_idx - 1]
+            i += 1
+            continue
+
+        result.append(ch)
+        i += 1
+
+    return "".join(result), param_dict
 
 
 # ──────────────────────────────────────────────────────────────
@@ -340,47 +473,42 @@ def init_db() -> None:
 # ──────────────────────────────────────────────────────────────
 
 def execute(sql: str, params: tuple = ()) -> int:
-    """Execute INSERT/UPDATE/DELETE and return rowcount."""
-    conn = get_conn()
-    try:
-        cur = conn.execute(sql, params)
+    """Execute INSERT/UPDATE/DELETE via SQLAlchemy and return rowcount."""
+    sql, param_dict = _translate_to_named_params(sql, params)
+    with get_engine().connect() as conn:
+        result = conn.execute(text(sql), param_dict)
         conn.commit()
-        return cur.rowcount or 0
-    finally:
-        conn.close()
+        return result.rowcount or 0
 
 
 def query_one(sql: str, params: tuple = ()) -> dict[str, Any] | None:
-    """Execute a single-row SELECT and return a dict or None."""
-    conn = get_conn()
-    try:
-        cur = conn.execute(sql, params)
-        row = cur.fetchone()
-        return dict(row) if row else None
-    finally:
-        conn.close()
+    """Execute a single-row SELECT via SQLAlchemy and return a dict or None."""
+    sql, param_dict = _translate_to_named_params(sql, params)
+    with get_engine().connect() as conn:
+        result = conn.execute(text(sql), param_dict)
+        row = result.fetchone()
+        return _orm_to_dict(row) if row else None
 
 
 def query_all(sql: str, params: tuple = ()) -> list[dict[str, Any]]:
-    """Execute a multi-row SELECT and return a list of dicts."""
-    conn = get_conn()
-    try:
-        cur = conn.execute(sql, params)
-        rows = cur.fetchall()
-        return [dict(r) for r in rows]
-    finally:
-        conn.close()
+    """Execute a multi-row SELECT via SQLAlchemy and return a list of dicts."""
+    sql, param_dict = _translate_to_named_params(sql, params)
+    with get_engine().connect() as conn:
+        result = conn.execute(text(sql), param_dict)
+        rows = result.fetchall()
+        return [_orm_to_dict(r) for r in rows]
 
 
 def executemany(sql: str, params_list: list) -> int:
-    """Execute a statement against multiple parameter sets and return rowcount."""
-    conn = get_conn()
-    try:
-        cur = conn.executemany(sql, params_list)
+    """Execute a statement against multiple parameter sets via SQLAlchemy."""
+    with get_engine().connect() as conn:
+        total = 0
+        for params in params_list:
+            sql_inner, param_dict = _translate_to_named_params(sql, params)
+            result = conn.execute(text(sql_inner), param_dict)
+            total += result.rowcount or 0
         conn.commit()
-        return cur.rowcount or 0
-    finally:
-        conn.close()
+        return total
 
 
 # ──────────────────────────────────────────────────────────────
@@ -394,6 +522,25 @@ def _db_is_file() -> bool:
         and DB_PATH_OR_URL != ":memory:"
         and not DB_PATH_OR_URL.startswith("file::memory:")
     )
+
+
+def _orm_to_dict(row: Any) -> dict[str, Any] | None:
+    """Convert an ORM result or dict to a plain dict."""
+    if row is None:
+        return None
+    if isinstance(row, dict):
+        return dict(row)
+    # SQLAlchemy 2.0 Row objects
+    mapping = getattr(row, "_mapping", None)
+    if mapping is not None:
+        return dict(mapping)
+    d = {}
+    for key in getattr(row, "_fields", ()):
+        d[key] = getattr(row, key)
+    if not d and hasattr(row, "__dict__"):
+        d = dict(row.__dict__)
+        d.pop("_sa_instance_state", None)
+    return d
 
 
 def get_db_health() -> dict[str, Any]:
@@ -436,33 +583,32 @@ def get_db_health() -> dict[str, Any]:
 
     # dbConnected + journalMode + dbWritable + PostgreSQL fields
     try:
-        conn = get_conn()
-        try:
+        with get_engine().connect() as conn:
             # connected
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
             result["dbConnected"] = True
 
             # journal mode (SQLite only)
             if DB_BACKEND == "sqlite":
-                row = conn.execute("PRAGMA journal_mode").fetchone()
+                row = conn.execute(text("PRAGMA journal_mode")).fetchone()
                 if row:
                     result["journalMode"] = row[0]
 
             # writable — use a TEMP table so no persistent schema change
             if DB_BACKEND == "postgres":
-                conn.execute("CREATE TEMP TABLE _gl032_health_probe (id INTEGER)")
-                conn.execute("INSERT INTO _gl032_health_probe VALUES (1)")
-                conn.execute("DROP TABLE _gl032_health_probe")
+                conn.execute(text("CREATE TEMP TABLE _gl032_health_probe (id INTEGER)"))
+                conn.execute(text("INSERT INTO _gl032_health_probe VALUES (1)"))
+                conn.execute(text("DROP TABLE _gl032_health_probe"))
             else:
-                conn.execute("CREATE TEMP TABLE _gl032_health_probe (id INTEGER)")
-                conn.execute("INSERT INTO _gl032_health_probe VALUES (1)")
-                conn.execute("DROP TABLE _gl032_health_probe")
+                conn.execute(text("CREATE TEMP TABLE _gl032_health_probe (id INTEGER)"))
+                conn.execute(text("INSERT INTO _gl032_health_probe VALUES (1)"))
+                conn.execute(text("DROP TABLE _gl032_health_probe"))
             result["dbWritable"] = True
 
             # PostgreSQL version (available without elevated privileges)
             if DB_BACKEND == "postgres":
                 try:
-                    row = conn.execute("SELECT version()").fetchone()
+                    row = conn.execute(text("SELECT version()")).fetchone()
                     if row:
                         # version() returns e.g. "PostgreSQL 16.2 on ..."
                         version_str = row[0] if isinstance(row, dict) else row[0]
@@ -473,7 +619,7 @@ def get_db_health() -> dict[str, Any]:
 
                 # Backend PID (no elevated privileges needed)
                 try:
-                    row = conn.execute("SELECT pg_backend_pid()").fetchone()
+                    row = conn.execute(text("SELECT pg_backend_pid()")).fetchone()
                     if row:
                         result["pgBackendPid"] = row[0] if isinstance(row, dict) else row[0]
                 except Exception:
@@ -482,14 +628,12 @@ def get_db_health() -> dict[str, Any]:
                 # Active connections count (no elevated privileges needed for pg_stat_activity)
                 try:
                     row = conn.execute(
-                        "SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()"
+                        text("SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()")
                     ).fetchone()
                     if row:
                         result["pgActiveConnections"] = row[0] if isinstance(row, dict) else row[0]
                 except Exception:
                     pass
-        finally:
-            conn.close()
     except Exception:
         pass
 

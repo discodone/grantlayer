@@ -21,7 +21,8 @@ import secrets
 import uuid
 from typing import Optional
 
-from ..core.db import get_conn, query_all, query_one
+from ..core.db import execute, get_engine, query_all, query_one
+from sqlalchemy import text
 
 # ──────────────────────────────────────────────────────────────
 # PBKDF2 token hashing (stdlib only)
@@ -137,28 +138,27 @@ class Operator:
 # ──────────────────────────────────────────────────────────────
 
 def _init_operators_table() -> None:
-    conn = get_conn()
-    try:
+    with get_engine().connect() as conn:
         conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS operators (
-                id                TEXT PRIMARY KEY,
-                name              TEXT NOT NULL,
-                role              TEXT NOT NULL,
-                token_hash        TEXT NOT NULL,
-                token_lookup_hash TEXT,
-                active            INTEGER NOT NULL DEFAULT 1,
-                created_at        TEXT NOT NULL,
-                expires_at        TEXT,
-                rotated_at        TEXT,
-                tenant_id         TEXT NOT NULL DEFAULT 'demo',
-                workspace_id      TEXT DEFAULT NULL
-            );
-            """
+            text(
+                """
+                CREATE TABLE IF NOT EXISTS operators (
+                    id                TEXT PRIMARY KEY,
+                    name              TEXT NOT NULL,
+                    role              TEXT NOT NULL,
+                    token_hash        TEXT NOT NULL,
+                    token_lookup_hash TEXT,
+                    active            INTEGER NOT NULL DEFAULT 1,
+                    created_at        TEXT NOT NULL,
+                    expires_at        TEXT,
+                    rotated_at        TEXT,
+                    tenant_id         TEXT NOT NULL DEFAULT 'demo',
+                    workspace_id      TEXT DEFAULT NULL
+                );
+                """
+            )
         )
         conn.commit()
-    finally:
-        conn.close()
 
 
 def _row_to_operator(row: dict | None) -> Operator | None:
@@ -244,16 +244,11 @@ def revoke_operator(operator_id: str) -> bool:
     Admin-only revocation. Returns True if updated, False if not found.
     Revoked operators fail closed on authentication.
     """
-    conn = get_conn()
-    try:
-        cursor = conn.execute(
-            "UPDATE operators SET active = 0 WHERE id = ?",
-            (operator_id,),
-        )
-        conn.commit()
-        return cursor.rowcount > 0
-    finally:
-        conn.close()
+    rowcount = execute(
+        "UPDATE operators SET active = 0 WHERE id = ?",
+        (operator_id,),
+    )
+    return rowcount > 0
 
 
 def create_operator(
@@ -280,15 +275,21 @@ def create_operator(
         + datetime.timedelta(days=ttl_days)
     ).isoformat().replace("+00:00", "Z")
 
-    conn = get_conn()
+    conn = get_engine().connect()
     try:
         conn.execute(
-            """
-            INSERT INTO operators
-                (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at, tenant_id)
-            VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
-            """,
-            (op_id, name, role, token_hash, lookup, now, expires, tenant_id),
+            text(
+                """
+                INSERT INTO operators
+                    (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at, tenant_id)
+                VALUES (:p1, :p2, :p3, :p4, :p5, 1, :p6, :p7, :p8)
+                """
+            ),
+            {
+                "p1": op_id, "p2": name, "p3": role,
+                "p4": token_hash, "p5": lookup,
+                "p6": now, "p7": expires, "p8": tenant_id,
+            },
         )
         conn.commit()
     finally:
@@ -395,18 +396,26 @@ def rotate_operator_token(operator_id: str, ttl_days: int = DEFAULT_TOKEN_TTL_DA
         + datetime.timedelta(days=ttl_days)
     ).isoformat().replace("+00:00", "Z")
 
-    conn = get_conn()
+    conn = get_engine().connect()
     try:
         conn.execute(
-            """
-            UPDATE operators
-            SET token_hash = ?,
-                token_lookup_hash = ?,
-                rotated_at = ?,
-                expires_at = ?
-            WHERE id = ?
-            """,
-            (new_hash, new_lookup, now, expires, operator_id),
+            text(
+                """
+                UPDATE operators
+                SET token_hash = :p1,
+                    token_lookup_hash = :p2,
+                    rotated_at = :p3,
+                    expires_at = :p4
+                WHERE id = :p5
+                """
+            ),
+            {
+                "p1": new_hash,
+                "p2": new_lookup,
+                "p3": now,
+                "p4": expires,
+                "p5": operator_id,
+            },
         )
         conn.commit()
     finally:
@@ -428,11 +437,9 @@ def bootstrap_operator_if_needed() -> None:
     if not config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN:
         return
 
-    conn = get_conn()
+    conn = get_engine().connect()
     try:
-        count_row = conn.execute(
-            "SELECT COUNT(*) FROM operators"
-        ).fetchone()
+        count_row = conn.execute(text("SELECT COUNT(*) AS count FROM operators")).fetchone()
         count = count_row[0] if count_row else 0
         if count > 0:
             return
@@ -443,20 +450,22 @@ def bootstrap_operator_if_needed() -> None:
         ).isoformat().replace("+00:00", "Z")
 
         conn.execute(
-            """
-            INSERT INTO operators (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at, tenant_id)
-            VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
-            """,
-            (
-                config.GRANTLAYER_BOOTSTRAP_OPERATOR_ID,
-                config.GRANTLAYER_BOOTSTRAP_OPERATOR_NAME,
-                config.GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE,
-                hash_token(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
-                derive_token_lookup_hash(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
-                _now_utc_iso(),
-                expires,
-                "demo",
+            text(
+                """
+                INSERT INTO operators (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at, tenant_id)
+                VALUES (:p1, :p2, :p3, :p4, :p5, 1, :p6, :p7, :p8)
+                """
             ),
+            {
+                "p1": config.GRANTLAYER_BOOTSTRAP_OPERATOR_ID,
+                "p2": config.GRANTLAYER_BOOTSTRAP_OPERATOR_NAME,
+                "p3": config.GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE,
+                "p4": hash_token(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
+                "p5": derive_token_lookup_hash(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
+                "p6": _now_utc_iso(),
+                "p7": expires,
+                "p8": "demo",
+            },
         )
         conn.commit()
     finally:

@@ -318,26 +318,36 @@ class TestGl092RevokeAtomicityPreserved(_BaseGl092):
         """If request update fails during revoke, grant must not be revoked."""
         req, grant = self._create_and_approve_request()
 
-        original_get_conn = self.db_mod.get_conn
+        original_get_engine = self.db_mod.get_engine
 
-        def patched_get_conn():
-            conn = original_get_conn()
-            orig_execute = conn.execute
+        def patched_get_engine():
+            engine = original_get_engine()
+            orig_connect = engine.connect
 
-            def patched_execute(sql, params=None):
-                if isinstance(sql, str) and "UPDATE grant_requests" in sql:
-                    raise RuntimeError("Simulated request update failure")
-                return orig_execute(sql, params)
+            def patched_connect():
+                conn = orig_connect()
+                orig_execute = conn.execute
 
-            conn.execute = patched_execute
-            return conn
+                def patched_execute(sql, params=None, **kwargs):
+                    sql_str = sql
+                    if hasattr(sql, "text"):
+                        sql_str = sql.text
+                    if isinstance(sql_str, str) and "UPDATE grant_requests" in sql_str:
+                        raise RuntimeError("Simulated request update failure")
+                    return orig_execute(sql, params, **kwargs)
 
-        self.db_mod.get_conn = patched_get_conn
+                conn.execute = patched_execute
+                return conn
+
+            engine.connect = patched_connect
+            return engine
+
+        self.requests_mod.get_engine = patched_get_engine
         try:
             with self.assertRaises(RuntimeError):
                 self.requests_mod.revoke_grant_request(req.id, "admin-1", "Security concern", tenant_id="demo")
         finally:
-            self.db_mod.get_conn = original_get_conn
+            self.requests_mod.get_engine = original_get_engine
 
         grant_after = self.grants_mod.get_grant(grant.id)
         self.assertFalse(grant_after.revoked)

@@ -111,21 +111,32 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
         req, grant = self._create_and_approve_request()
 
         import backend.src.core.db as db_mod
-        original_get_conn = db_mod.get_conn
+        original_get_engine = db_mod.get_engine
 
-        def patched_get_conn():
-            conn = original_get_conn()
-            orig_execute = conn.execute
+        def patched_get_engine():
+            engine = original_get_engine()
+            orig_connect = engine.connect
 
-            def patched_execute(sql, params=None):
-                if isinstance(sql, str) and "UPDATE grant_requests" in sql:
-                    raise RuntimeError("Simulated request update failure")
-                return orig_execute(sql, params)
+            def patched_connect():
+                conn = orig_connect()
+                orig_execute = conn.execute
 
-            conn.execute = patched_execute
-            return conn
+                def patched_execute(sql, params=None, **kwargs):
+                    sql_str = sql
+                    if hasattr(sql, "text"):
+                        sql_str = sql.text
+                    if isinstance(sql_str, str) and "UPDATE grant_requests" in sql_str:
+                        raise RuntimeError("Simulated request update failure")
+                    return orig_execute(sql, params, **kwargs)
 
-        db_mod.get_conn = patched_get_conn
+                conn.execute = patched_execute
+                return conn
+
+            engine.connect = patched_connect
+            return engine
+
+        # Patch get_engine in the module where it is actually imported
+        self.requests_mod.get_engine = patched_get_engine
         try:
             with self.assertRaises(RuntimeError):
                 self.requests_mod.revoke_grant_request(
@@ -133,7 +144,7 @@ class TestRevokeGrantRequestAtomicity(unittest.TestCase):
                     tenant_id="demo",
                 )
         finally:
-            db_mod.get_conn = original_get_conn
+            self.requests_mod.get_engine = original_get_engine
 
         # Linked grant must NOT be revoked
         grant_after = self.grants_mod.get_grant(grant.id)

@@ -156,8 +156,11 @@ class TestPostgresAdvisoryLockPath(unittest.TestCase):
             backend = "postgres"
 
             def execute(self, sql, params=None):
-                if "pg_advisory_xact_lock" in sql:
-                    advisory_calls.append(sql)
+                sql_str = sql
+                if hasattr(sql, "text"):
+                    sql_str = sql.text
+                if isinstance(sql_str, str) and "pg_advisory_xact_lock" in sql_str:
+                    advisory_calls.append(sql_str)
                     return self
                 # Return a fake cursor-like for the hash SELECT
                 return _FakeCursor(None)
@@ -181,17 +184,18 @@ class TestPostgresAdvisoryLockPath(unittest.TestCase):
             def fetchone(self):
                 return self._row
 
+        class _FakeEngine:
+            def connect(self):
+                return _FakeConn()
+
         import unittest.mock as mock
 
-        orig_get_conn = self.al.get_conn
-        orig_execute = self.al.execute
-
-        fake_conn = _FakeConn()
+        fake_engine = _FakeEngine()
 
         def _fake_execute(sql, params=None):
             pass  # swallow the INSERT
 
-        with mock.patch.object(self.al, "get_conn", return_value=fake_conn), \
+        with mock.patch.object(self.al, "get_engine", return_value=fake_engine), \
              mock.patch.object(self.al, "execute", side_effect=_fake_execute), \
              mock.patch.object(self.al, "DB_BACKEND", "postgres"):
             self.al._append_event_postgres(_make_event())
