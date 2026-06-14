@@ -199,7 +199,7 @@ def revoke_grant(
             cur = conn.execute(sql, tuple(params))
             return (cur.rowcount or 0) > 0
         else:
-            sql_inner, param_dict = _translate_to_named_params(sql, params)
+            sql_inner, param_dict = _translate_to_named_params(sql, tuple(params))
             result = conn.execute(text(sql_inner), param_dict)
             return (result.rowcount or 0) > 0
     rowcount = execute(sql, tuple(params))

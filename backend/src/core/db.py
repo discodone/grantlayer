@@ -496,7 +496,7 @@ def query_all(sql: str, params: tuple = ()) -> list[dict[str, Any]]:
     with get_engine().connect() as conn:
         result = conn.execute(text(sql), param_dict)
         rows = result.fetchall()
-        return [_orm_to_dict(r) for r in rows]
+        return [d for r in rows if (d := _orm_to_dict(r)) is not None]
 
 
 def executemany(sql: str, params_list: list) -> int:

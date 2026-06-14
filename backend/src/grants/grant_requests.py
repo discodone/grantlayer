@@ -440,6 +440,8 @@ def expire_old_requests() -> int:
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
         for row in to_expire:
             row = _orm_to_dict(row)
+            if row is None:
+                continue
             conn.execute(
                 text("""
                     UPDATE grant_requests
@@ -453,6 +455,8 @@ def expire_old_requests() -> int:
         # propagating tenant_id so audit events are tenant-scoped.
         for row in to_expire:
             row = _orm_to_dict(row)
+            if row is None:
+                continue
             row_tenant = row["tenant_id"] if row.get("tenant_id") else None
             audit_log.append_event(
                 AuditEvent(

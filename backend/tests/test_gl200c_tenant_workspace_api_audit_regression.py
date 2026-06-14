@@ -65,6 +65,12 @@ def _make_db():
 def _reload_modules(db_path: str):
     os.environ["GRANTLAYER_DB"] = db_path
     os.environ.pop("GRANTLAYER_DATABASE_URL", None)
+    # Ensure plaintext key loading is allowed in test context regardless of
+    # what a prior xdist worker may have set via config reload.
+    os.environ["GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"] = "true"
+
+    import backend.src.core.config as config_mod
+    importlib.reload(config_mod)
 
     import backend.src.core.db as db_mod
     importlib.reload(db_mod)
@@ -228,6 +234,7 @@ class TestGrantScopedExecutionTenantContext(unittest.TestCase):
         self.exec_mod = mods[8]
 
     def tearDown(self):
+        os.environ.pop("GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE", None)
         try:
             os.unlink(self.db_path)
         except OSError:
@@ -307,6 +314,7 @@ class TestDemoActionTenantPropagation(unittest.TestCase):
         self.demo_mod = mods[9]
 
     def tearDown(self):
+        os.environ.pop("GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE", None)
         try:
             os.unlink(self.db_path)
         except OSError:

@@ -58,6 +58,12 @@ def _reload_modules(db_path: str):
     """Reload backend modules with a fresh isolated DB."""
     os.environ["GRANTLAYER_DB"] = db_path
     os.environ.pop("GRANTLAYER_DATABASE_URL", None)
+    # Ensure plaintext key loading is allowed in test context regardless of
+    # what a prior xdist worker may have set via config reload.
+    os.environ["GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"] = "true"
+
+    import backend.src.core.config as config_mod
+    importlib.reload(config_mod)
 
     import backend.src.core.db as db_mod
     importlib.reload(db_mod)
@@ -834,6 +840,7 @@ class TestWorkspaceIdReserved(unittest.TestCase):
         self.db_mod = self.mods[0]
 
     def tearDown(self):
+        os.environ.pop("GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE", None)
         try:
             os.unlink(self.db_path)
         except OSError:

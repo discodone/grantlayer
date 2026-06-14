@@ -226,6 +226,11 @@ class TestGL172READMEWording(unittest.TestCase):
 
 
 class TestGL172PublishWorktree(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        if not os.path.isdir(_PUBLISH_WORKTREE):
+            raise unittest.SkipTest(f"Publish worktree not present: {_PUBLISH_WORKTREE}")
+
     def test_publish_worktree_exists(self):
         self.assertTrue(
             os.path.isdir(_PUBLISH_WORKTREE),
