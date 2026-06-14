@@ -32,12 +32,14 @@ ALLOWED_CHANGED_FILES = {
     "docs/examples/gl214/production_iam_operator_control_completion.json",
 }
 
+EXPECTED_BRANCH = "gl-214-production-iam-operator-control-completion"
+
 REQUIRED_INPUT_SOURCES = [
     "docs/production_readiness_gap_report_v4.md",
     "docs/examples/gl213/production_readiness_gap_report_v4.json",
     "docs/public_external_review_readiness_gate_pack.md",
     "docs/examples/gl212/public_external_review_readiness_gate_pack.json",
-    "docs/sdk_pilot_production_gate.md",
+    "docs/internal/sdk_pilot_production_gate.md",
     "docs/examples/gl211/sdk_pilot_production_gate.json",
     "docs/live_postgres_validation_execution_gl206b.md",
     "docs/examples/gl206b/live_postgres_validation_execution_gl206b.json",
@@ -61,14 +63,14 @@ REQUIRED_INPUT_SOURCES = [
     "AGENTS.md",
     "llms.txt",
     "llms-full.txt",
-    "backend/src/auth.py",
-    "backend/src/config.py",
-    "backend/src/operators.py",
-    "backend/src/server.py",
-    "backend/src/audit_log.py",
-    "backend/src/db.py",
-    "backend/src/models.py",
-    "backend/src/grant_requests.py",
+    "backend/src/auth/auth.py",
+    "backend/src/core/config.py",
+    "backend/src/auth/operators.py",
+    "backend/src/api/app.py",
+    "backend/src/audit/audit_log.py",
+    "backend/src/core/db.py",
+    "backend/src/core/models.py",
+    "backend/src/grants/grant_requests.py",
     "backend/tests/",
     "scripts/ops/",
     "examples/grant_lifecycle_evidence_bundle.py",
@@ -140,6 +142,16 @@ def _reload_modules(db_path: str):
 
     import backend.src.audit.audit_log as audit_mod
     importlib.reload(audit_mod)
+
+    for module_name in (
+        "backend.src.api.deps",
+        "backend.src.api.routers.admin",
+        "backend.src.api.routers.operators_me",
+        "backend.src.api.app",
+    ):
+        module = sys.modules.get(module_name)
+        if module is not None:
+            importlib.reload(module)
 
     return config_mod, db_mod, ops_mod, auth_mod, audit_mod
 
@@ -429,10 +441,30 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
 
     def test_operator_tenant_id_cannot_be_overridden_by_header(self):
         op = self._create_operator(tenant_id="tenant-a")
+        self.db_mod.execute(
+            """
+            INSERT OR IGNORE INTO workspaces
+                (id, tenant_id, name, slug, owner_id, status, created_at, updated_at)
+            VALUES
+                (?, ?, ?, ?, ?, 'active', ?, ?)
+            """,
+            (
+                "gl214-tenant-a-default",
+                "tenant-a",
+                "Tenant A Default",
+                "gl214-tenant-a-default",
+                "system",
+                "2025-01-01T00:00:00Z",
+                "2025-01-01T00:00:00Z",
+            ),
+        )
         status, body, _raw = self._get(
             "/v1/operators/me",
             auth_header=f"Bearer {op['token']}",
-            extra_headers={"X-Tenant-ID": "tenant-b"},
+            extra_headers={
+                "X-Tenant-ID": "tenant-b",
+                "X-Workspace-Id": "gl214-tenant-a-default",
+            },
         )
         self.assertEqual(status, 200, body)
         self.assertEqual(body["tenantId"], "tenant-a")
@@ -517,6 +549,13 @@ class TestGL214ImplementationBehavior(_BaseGL214Server):
 
 @unittest.skipIf(os.environ.get('CI') == 'true', "Scope-guard test skipped in CI environment")
 class TestGL214ForbiddenChangeGuards(unittest.TestCase):
+    def setUp(self):
+        branch = _run_git(["rev-parse", "--abbrev-ref", "HEAD"])[0]
+        if branch != EXPECTED_BRANCH:
+            self.skipTest(
+                f"Scope guard skipped: not on {EXPECTED_BRANCH} (current: {branch})"
+            )
+
     def test_branch_diff_only_contains_allowed_files(self):
         changed = _branch_changed_files()
         self.assertEqual(changed, ALLOWED_CHANGED_FILES)

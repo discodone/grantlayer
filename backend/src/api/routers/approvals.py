@@ -16,7 +16,7 @@ from ..deps import resolve_auth_and_workspace
 router = APIRouter(prefix="/approvals", tags=["approvals"])
 
 
-@router.post("/lifecycle/build")
+@router.post("/lifecycle/build", response_model=dict[str, Any])
 def build_lifecycle(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -38,7 +38,7 @@ def build_lifecycle(
     )
 
 
-@router.post("/lifecycle/transition")
+@router.post("/lifecycle/transition", response_model=dict[str, Any])
 def transition_lifecycle(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -61,7 +61,7 @@ def transition_lifecycle(
     )
 
 
-@router.post("/evaluate")
+@router.post("/evaluate", response_model=dict[str, Any])
 def evaluate_approvals(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,

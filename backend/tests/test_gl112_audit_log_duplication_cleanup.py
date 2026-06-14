@@ -600,6 +600,18 @@ class TestGl112AuditInsertSelectPreserved(_BaseGl112):
 class TestGl112ScopeGuard(unittest.TestCase):
     """No migration, no new endpoint, no OpenAPI change."""
 
+    def setUp(self):
+        import subprocess
+        repo_root = pathlib.Path(__file__).parent.parent.parent
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        if result.stdout.strip() != "gl-112-audit-log-duplication-cleanup":
+            self.skipTest("Scope-guard test only valid on original GL-112 branch")
+
     def test_migration_count_unchanged(self):
         migrations_dir = pathlib.Path(__file__).parent.parent / "src" / "migrations"
         scripts = sorted(migrations_dir.glob("0*.py"))

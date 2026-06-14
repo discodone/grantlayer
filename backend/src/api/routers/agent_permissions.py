@@ -17,7 +17,7 @@ from ..deps import resolve_auth_and_workspace
 router = APIRouter(prefix="/agent-permissions", tags=["agent-permissions"])
 
 
-@router.get("/profiles")
+@router.get("/profiles", response_model=list[dict[str, Any]])
 def list_profiles(
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
@@ -25,7 +25,7 @@ def list_profiles(
     return list_agent_permission_profiles()
 
 
-@router.get("/profiles/{profile_name}")
+@router.get("/profiles/{profile_name}", response_model=dict[str, Any])
 def get_profile(
     profile_name: str,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -45,7 +45,7 @@ def get_profile(
     return profile
 
 
-@router.post("/evaluate")
+@router.post("/evaluate", response_model=dict[str, Any])
 def evaluate_permission(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -67,7 +67,7 @@ def evaluate_permission(
     )
 
 
-@router.post("/assignments/resolve")
+@router.post("/assignments/resolve", response_model=dict[str, Any])
 def resolve_assignment(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,

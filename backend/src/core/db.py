@@ -256,7 +256,7 @@ class _ConnectionWrapper:
 def get_conn() -> _ConnectionWrapper:
     """Return a connection wrapper for the configured backend.
 
-    For PostgreSQL, uses a SimpleConnectionPool with bounded retry
+    For PostgreSQL, uses a ThreadedConnectionPool with bounded retry
     on transient pool-creation failures. Connections are returned to the pool
     via wrapper.close() so existing finally-block patterns continue to work.
     """
@@ -264,7 +264,7 @@ def get_conn() -> _ConnectionWrapper:
         try:
             import psycopg2
             from psycopg2.extras import RealDictCursor
-            from psycopg2.pool import SimpleConnectionPool
+            from psycopg2.pool import ThreadedConnectionPool
         except ImportError as exc:
             raise RuntimeError(
                 "PostgreSQL is configured but psycopg2 is not installed. "
@@ -279,7 +279,7 @@ def get_conn() -> _ConnectionWrapper:
                     max_attempts = max(1, _db_retry_max)
                     for attempt in range(1, max_attempts + 1):
                         try:
-                            _pg_pool = SimpleConnectionPool(
+                            _pg_pool = ThreadedConnectionPool(
                                 max(1, _db_pool_min),
                                 max(1, _db_pool_max),
                                 DB_PATH_OR_URL,

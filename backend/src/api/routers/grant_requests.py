@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Optional
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from ...core import config
@@ -20,13 +20,14 @@ from ...grants.grant_requests import (
     ALLOWED_GRANT_ROLES,
     VALID_REQUEST_STATUSES,
     approve_grant_request,
+    count_grant_requests,
     create_grant_request,
     deny_grant_request,
     get_grant_request,
     list_grant_requests,
 )
 from ..deps import enforce_workspace_mutation, resolve_auth_and_workspace
-from ..schemas import GrantRequestResponse
+from ..schemas import DynamicResponse, GrantRequestListResponse, GrantRequestResponse
 from ..schemas import _validate_grant_dates as _validate_dates
 
 router = APIRouter(prefix="/grant-requests", tags=["grant-requests"])
@@ -55,9 +56,11 @@ class DenyRequest(BaseModel):
     reason: str = Field(max_length=MAX_REASON_LENGTH)
 
 
-@router.get("")
+@router.get("", response_model=GrantRequestListResponse, response_model_by_alias=True)
 def list_grant_requests_endpoint(
     status: Optional[str] = None,
+    limit: int = Query(default=100, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ) -> Any:
@@ -67,7 +70,7 @@ def list_grant_requests_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx.get("workspace_id")
+    workspace_id = ws_ctx["workspace_id"]
     if status is not None and status not in VALID_REQUEST_STATUSES:
         raise HTTPException(
             status_code=400,
@@ -77,11 +80,22 @@ def list_grant_requests_endpoint(
                 "reason": f"status must be one of: {sorted(VALID_REQUEST_STATUSES)}",
             },
         )
-    requests = list_grant_requests(status_filter=status, tenant_id=tenant_id, workspace_id=workspace_id)
-    return [GrantRequestResponse.from_grant_request(r).model_dump(by_alias=True) for r in requests]
+    requests = list_grant_requests(
+        status_filter=status,
+        tenant_id=tenant_id,
+        workspace_id=workspace_id,
+        limit=limit,
+        offset=offset,
+    )
+    return GrantRequestListResponse(
+        items=[GrantRequestResponse.from_grant_request(r) for r in requests],
+        total=count_grant_requests(status_filter=status, tenant_id=tenant_id, workspace_id=workspace_id),
+        limit=limit,
+        offset=offset,
+    )
 
 
-@router.get("/{request_id}")
+@router.get("/{request_id}", response_model=GrantRequestResponse, response_model_by_alias=True)
 def get_grant_request_endpoint(
     request_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -93,7 +107,7 @@ def get_grant_request_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx.get("workspace_id")
+    workspace_id = ws_ctx["workspace_id"]
     req = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if req is None:
         raise HTTPException(
@@ -104,10 +118,10 @@ def get_grant_request_endpoint(
                 "reason": "The requested grant request does not exist.",
             },
         )
-    return GrantRequestResponse.from_grant_request(req).model_dump(by_alias=True)
+    return GrantRequestResponse.from_grant_request(req)
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, response_model=GrantRequestResponse, response_model_by_alias=True)
 def create_grant_request_endpoint(
     body: GrantRequestCreateRequest,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -121,7 +135,12 @@ def create_grant_request_endpoint(
     )
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx.get("workspace_id")
+    workspace_id = ws_ctx["workspace_id"]
+    if not operator_id:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Cannot determine caller identity", "errorCode": "missing_caller_identity", "reason": "operator_id could not be resolved from the authentication token."},
+        )
 
     if not operator_id:
         raise HTTPException(
@@ -184,10 +203,10 @@ def create_grant_request_endpoint(
         reason=body.reason,
     )
     created = create_grant_request(req, tenant_id=tenant_id, workspace_id=workspace_id)
-    return GrantRequestResponse.from_grant_request(created).model_dump(by_alias=True)
+    return GrantRequestResponse.from_grant_request(created)
 
 
-@router.post("/{request_id}/approve")
+@router.post("/{request_id}/approve", response_model=DynamicResponse)
 def approve_grant_request_endpoint(
     request_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -201,7 +220,12 @@ def approve_grant_request_endpoint(
     )
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx.get("workspace_id")
+    workspace_id = ws_ctx["workspace_id"]
+    if not operator_id:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Cannot determine caller identity", "errorCode": "missing_caller_identity", "reason": "operator_id could not be resolved from the authentication token."},
+        )
 
     req = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if req is None:
@@ -238,7 +262,7 @@ def approve_grant_request_endpoint(
         ) from exc
 
 
-@router.post("/{request_id}/deny")
+@router.post("/{request_id}/deny", response_model=DynamicResponse)
 def deny_grant_request_endpoint(
     request_id: str,
     body: DenyRequest,
@@ -253,7 +277,12 @@ def deny_grant_request_endpoint(
     )
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx.get("workspace_id")
+    workspace_id = ws_ctx["workspace_id"]
+    if not operator_id:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Cannot determine caller identity", "errorCode": "missing_caller_identity", "reason": "operator_id could not be resolved from the authentication token."},
+        )
 
     req = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if req is None:

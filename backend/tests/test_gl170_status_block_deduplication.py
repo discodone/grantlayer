@@ -31,6 +31,8 @@ EXPECTED_CHANGED_FILES = {
     "docs/ten_minute_quickstart.md",
 }
 
+GL170_BRANCH = "gl-170-status-block-deduplication"
+
 
 def _read(path):
     return path.read_text(encoding="utf-8")
@@ -234,8 +236,8 @@ class TestGL170FirstOutputAndScope(unittest.TestCase):
             text=True,
             stdout=subprocess.PIPE,
         ).stdout.strip()
-        if branch == "main":
-            self.skipTest("Scope guard is branch-specific; skipping on main after merge.")
+        if branch != GL170_BRANCH:
+            self.skipTest(f"Not on {GL170_BRANCH} branch; skipping diff-based scope guard.")
 
         result = subprocess.run(
             ["git", "diff", "--name-only", "main...HEAD"],

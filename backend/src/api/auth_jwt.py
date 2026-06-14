@@ -19,6 +19,7 @@ from __future__ import annotations
 import base64
 import os
 import time
+from typing import cast
 
 import jwt as _pyjwt
 
@@ -57,7 +58,9 @@ def _b64url_decode(s: str) -> bytes:
 def _sign_rs256(signing_input: str, private_key_pem: bytes) -> str:
     from cryptography.hazmat.primitives import hashes, serialization
     from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
+    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
     private_key = serialization.load_pem_private_key(private_key_pem, password=None)
+    private_key = cast(RSAPrivateKey, private_key)
     sig_bytes = private_key.sign(
         signing_input.encode("utf-8"),
         asym_padding.PKCS1v15(),
@@ -287,6 +290,8 @@ def validate_jwt_header(
     try:
         if algo == "HS256":
             secret = _get_jwt_secret()
+            if secret is None:
+                raise ValueError("JWT secret is not configured.")
             payload = decode_token(token.strip(), secret)
         else:  # RS256
             pub_pem = _get_public_key_pem()

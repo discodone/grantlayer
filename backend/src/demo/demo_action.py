@@ -3,12 +3,12 @@
 import datetime
 import logging
 import os
-from typing import Optional
+from typing import Optional, cast
 
 from ..audit.audit_log import append_event
 from ..auth.challenges import validate_challenge
 from ..core.crypto_signing import verify_grant_signature
-from ..core.models import AccessRequest, AuditEvent, GrantExecution, PolicyResult
+from ..core.models import AccessRequest, AuditEvent, ChallengeResult, GrantExecution, PolicyResult
 from ..grants.grant_executions import (
     create_grant_execution,
     update_grant_execution_audit_event_id,
@@ -117,7 +117,7 @@ def handle_demo_action(
         resolved_challenge_id: Optional[str] = None
 
         if challenge_present:
-            c_result, c_id = validate_challenge(challenge_id, subject_id, action, resource, tenant_id=effective_tenant)
+            c_result, c_id = validate_challenge(cast(str, challenge_id), subject_id, action, resource, tenant_id=effective_tenant)
             challenge_result = c_result
             resolved_challenge_id = c_id
             # Fail-closed: invalid challenge blocks even a valid grant
@@ -159,7 +159,7 @@ def handle_demo_action(
             matched_grant_id=result.matched_grant_id,
             challenge_id=resolved_challenge_id,
             challenge_present=challenge_present,
-            challenge_result=challenge_result,
+            challenge_result=cast(ChallengeResult, challenge_result),
             grant_signature_result=grant_signature_result,
             tenant_id=effective_tenant,
             scope="tenant",

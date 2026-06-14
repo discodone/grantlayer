@@ -66,8 +66,12 @@ def _combine_effective_scopes(
         effective_scopes.append(scope)
 
     # Expand profiles (if any)
-    profile_scopes = []
-    profile_resolution = {"resolvedProfiles": [], "unresolvedProfiles": [], "warnings": []}
+    profile_scopes: list[str] = []
+    profile_resolution: dict[str, list[Any]] = {
+        "resolvedProfiles": [],
+        "unresolvedProfiles": [],
+        "warnings": [],
+    }
 
     if assigned_profiles:
         for profile in assigned_profiles:

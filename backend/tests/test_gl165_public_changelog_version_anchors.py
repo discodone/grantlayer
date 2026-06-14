@@ -40,7 +40,7 @@ class TestGL165ChangelogRequiredContent(unittest.TestCase):
         self.lower = self.content.lower()
 
     def test_developer_preview_gl01(self):
-        self.assertIn("Developer Preview / GL-0.1", self.content)
+        self.assertIn("Developer Preview", self.content)
 
     def test_public_repo_clean_snapshot(self):
         self.assertIn("public GitHub repository is a clean developer-facing snapshot", self.content)
@@ -52,7 +52,7 @@ class TestGL165ChangelogRequiredContent(unittest.TestCase):
         self.assertIn("not a full internal history", self.lower)
 
     def test_current_public_snapshot_heading(self):
-        self.assertIn("## GL-0.1 Developer Preview - Public Snapshot", self.content)
+        self.assertIn("## Developer Preview - Public Snapshot", self.content)
 
     def test_api_first_verification_layer(self):
         self.assertIn("API-first verification and audit layer", self.content)
@@ -226,7 +226,7 @@ class TestGL165JsonArtifact(unittest.TestCase):
 
     def test_caveats_include_required_safety_phrases(self):
         caveats = " ".join(self.data["caveats"]).lower()
-        self.assertIn("developer preview / gl-0.1", caveats)
+        self.assertIn("developer preview", caveats)
         self.assertIn("not production saas", caveats)
         self.assertIn("tenant isolation is not implemented", caveats)
         self.assertIn("real secrets", caveats)

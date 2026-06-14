@@ -375,8 +375,8 @@ class TestGrantRequests(unittest.TestCase):
         resp = client.get("/v1/grant-requests", headers={"Authorization": "Bearer approver-token"})
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["id"], request_id)
+        self.assertEqual(len(data["items"]), 1)
+        self.assertEqual(data["items"][0]["id"], request_id)
 
         # 3. Get a single grant request
         resp = client.get(f"/v1/grant-requests/{request_id}", headers={"Authorization": "Bearer approver-token"})

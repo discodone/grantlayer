@@ -6,15 +6,17 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, Query
 
-from ...audit.audit_log import list_events
+from ...audit.audit_log import count_events, list_events
 from ..deps import resolve_auth_and_workspace
+from ..schemas import AuditEventListResponse, AuditEventResponse
 
 router = APIRouter(tags=["audit"])
 
 
-@router.get("/audit-events")
+@router.get("/audit-events", response_model=AuditEventListResponse)
 def list_audit_events(
-    limit: Optional[int] = Query(default=200, ge=1, le=1000),
+    limit: int = Query(default=100, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ) -> Any:
@@ -24,5 +26,11 @@ def list_audit_events(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    events = list_events(limit=limit, tenant_id=tenant_id)
-    return [e.to_dict() for e in events]
+    workspace_id = ws_ctx["workspace_id"]
+    events = list_events(limit=limit, offset=offset, tenant_id=tenant_id, workspace_id=workspace_id)
+    return AuditEventListResponse(
+        items=[AuditEventResponse(**e.to_dict()) for e in events],
+        total=count_events(tenant_id=tenant_id, workspace_id=workspace_id),
+        limit=limit,
+        offset=offset,
+    )

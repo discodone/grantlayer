@@ -14,7 +14,7 @@ from ..deps import resolve_auth_and_workspace
 router = APIRouter(prefix="/compliance", tags=["compliance"])
 
 
-@router.get("/gaps/executions/{execution_id}")
+@router.get("/gaps/executions/{execution_id}", response_model=dict[str, Any])
 def compliance_gaps(
     execution_id: str,
     include_details: bool = Query(default=True, alias="includeDetails"),
@@ -41,7 +41,7 @@ def compliance_gaps(
     return report
 
 
-@router.post("/readiness/build")
+@router.post("/readiness/build", response_model=dict[str, Any])
 def build_readiness(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,

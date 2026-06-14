@@ -8,7 +8,7 @@ and deterministic metadata redaction. Dependency-free except Python standard lib
 import datetime
 import re
 import uuid
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping, Optional, TypeGuard
 
 DEFAULT_SERVICE_NAME = "grantlayer"
 
@@ -75,7 +75,7 @@ def generate_correlation_id() -> str:
     return uuid.uuid4().hex
 
 
-def _is_safe_id(value: Optional[str]) -> bool:
+def _is_safe_id(value: Optional[str]) -> TypeGuard[str]:
     """Check whether a string is a safe ID without generating a replacement."""
     if value is None:
         return False

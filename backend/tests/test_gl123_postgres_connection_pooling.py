@@ -3,7 +3,7 @@
 Covers:
 1. Pool env var defaults (min=2, max=10)
 2. Pool env var overrides are respected
-3. SimpleConnectionPool is initialized lazily on first use
+3. ThreadedConnectionPool is initialized lazily on first use
 4. Connections are returned to the pool via wrapper.close()
 5. SQLite path is completely unchanged
 6. Secret safety: DSN/password never exposed in pool failure messages
@@ -25,7 +25,7 @@ def _make_fake_psycopg2_module():
     fake_pool_instance = MagicMock()
     fake_pool_instance.getconn.return_value = MagicMock()
     fake_pool_instance.putconn = MagicMock()
-    fake_pool.SimpleConnectionPool.return_value = fake_pool_instance
+    fake_pool.ThreadedConnectionPool.return_value = fake_pool_instance
 
     fake_extras = MagicMock()
     fake_extras.RealDictCursor = MagicMock()
@@ -117,8 +117,8 @@ class TestPoolInitialization(unittest.TestCase):
                 conn = db_mod.get_conn()
                 self.assertIsNotNone(conn)
                 # Pool should have been created
-                fake_psycopg2.pool.SimpleConnectionPool.assert_called_once()
-                call_args = fake_psycopg2.pool.SimpleConnectionPool.call_args
+                fake_psycopg2.pool.ThreadedConnectionPool.assert_called_once()
+                call_args = fake_psycopg2.pool.ThreadedConnectionPool.call_args
                 self.assertEqual(call_args[0][0], 2)  # min
                 self.assertEqual(call_args[0][1], 10)  # max
                 self.assertEqual(call_args[1]["cursor_factory"], fake_psycopg2.extras.RealDictCursor)
@@ -177,7 +177,7 @@ class TestPoolInitialization(unittest.TestCase):
                 conn1 = db_mod.get_conn()
                 conn2 = db_mod.get_conn()
                 # Pool created only once
-                fake_psycopg2.pool.SimpleConnectionPool.assert_called_once()
+                fake_psycopg2.pool.ThreadedConnectionPool.assert_called_once()
                 # Two connections fetched
                 self.assertEqual(fake_pool_instance.getconn.call_count, 2)
                 conn1.close()
@@ -240,7 +240,7 @@ class TestPoolRetryBehavior(unittest.TestCase):
         fake_psycopg2.extras = MagicMock()
         fake_psycopg2.extras.RealDictCursor = MagicMock()
         fake_psycopg2.pool = MagicMock()
-        fake_psycopg2.pool.SimpleConnectionPool.side_effect = Exception("connection refused")
+        fake_psycopg2.pool.ThreadedConnectionPool.side_effect = Exception("connection refused")
         fake_psycopg2.OperationalError = Exception
 
         try:
@@ -259,7 +259,7 @@ class TestPoolRetryBehavior(unittest.TestCase):
                 self.assertNotIn("user", msg)
                 self.assertNotIn("pass", msg)
                 # Pool creation attempted twice
-                self.assertEqual(fake_psycopg2.pool.SimpleConnectionPool.call_count, 2)
+                self.assertEqual(fake_psycopg2.pool.ThreadedConnectionPool.call_count, 2)
         finally:
             db_mod.DB_BACKEND = orig_backend
             db_mod.DB_PATH_OR_URL = orig_url
@@ -346,7 +346,7 @@ class TestPoolMinMaxClamped(unittest.TestCase):
 
             with _patch_psycopg2(fake_psycopg2):
                 db_mod.get_conn()
-                call_args = fake_psycopg2.pool.SimpleConnectionPool.call_args
+                call_args = fake_psycopg2.pool.ThreadedConnectionPool.call_args
                 self.assertEqual(call_args[0][0], 1)  # clamped to 1
         finally:
             db_mod.DB_BACKEND = orig_backend

@@ -357,7 +357,7 @@ class TestGl086LegacyMode(_BaseGl086):
         handler = self._make_handler("/v1/grants", auth_header="Bearer legacy-admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     @unittest.skip("server.py-internal, pending GL-240")
     def test_auth_helper_not_duplicated_per_request(self):

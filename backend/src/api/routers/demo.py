@@ -18,6 +18,7 @@ from ...core.validation import (
 from ...demo.demo_action import handle_demo_action
 from ...grants.grants import tamper_grant
 from ..deps import resolve_auth_and_workspace
+from ..schemas import DynamicResponse
 
 router = APIRouter(tags=["demo"])
 
@@ -36,7 +37,7 @@ class DemoActionRequest(BaseModel):
     model_config = {"populate_by_name": True}
 
 
-@tamper_router.post("/demo/tamper-grant/{grant_id}")
+@tamper_router.post("/demo/tamper-grant/{grant_id}", response_model=DynamicResponse)
 def tamper_grant_endpoint(
     grant_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -57,7 +58,7 @@ def tamper_grant_endpoint(
     return result
 
 
-@router.post("/demo-action")
+@router.post("/demo-action", response_model=dict[str, Any])
 def demo_action_endpoint(
     body: DemoActionRequest,
     authorization: Annotated[Optional[str], Header()] = None,

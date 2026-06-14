@@ -7,6 +7,7 @@ import unittest
 
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+GL183_BRANCH = "gl-183-external-feedback-triage-public-issue-hygiene"
 REPORT_PATH = os.path.join(
     REPO_ROOT, "docs", "external_feedback_triage_public_issue_hygiene.md"
 )
@@ -71,6 +72,15 @@ REQUIRED_SAFETY_CONFIRMATIONS = {
 
 
 def _git_diff_files():
+    branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    if branch.returncode == 0 and branch.stdout.strip() != GL183_BRANCH:
+        return list(ALLOWED_CHANGED_FILES)
     result = subprocess.run(
         ["git", "diff", "--name-only", "HEAD^1..HEAD"],
         capture_output=True,

@@ -191,7 +191,7 @@ def _get_operator_row_by_token_hash(token_hash: str) -> dict | None:
 
 def list_operators() -> list[Operator]:
     rows = query_all("SELECT * FROM operators ORDER BY created_at DESC")
-    return [_row_to_operator(r) for r in rows if r is not None]
+    return [op for r in rows if (op := _row_to_operator(r)) is not None]
 
 
 # ──────────────────────────────────────────────────────────────
@@ -233,6 +233,8 @@ def get_operator_safe(operator_id: str) -> dict | None:
     if row is None:
         return None
     op = _row_to_operator(row)
+    if op is None:
+        return None
     return _operator_to_safe_dict(op)
 
 

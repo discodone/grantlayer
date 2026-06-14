@@ -107,7 +107,7 @@ class TestAuditEventsEndpoint(_GL229TestBase):
 
     def test_audit_events_returns_list(self):
         resp = self.client.get("/v1/audit-events")
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json()["items"], list)
 
     def test_audit_events_limit_param(self):
         resp = self.client.get("/v1/audit-events?limit=5")
@@ -155,7 +155,7 @@ class TestGrantRequestsOperatorModelDisabled(_GL229TestBase):
         """GET list doesn't require operator model."""
         resp = self.client.get("/v1/grant-requests")
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json()["items"], list)
 
     def test_get_grant_request_404_no_operator_model(self):
         resp = self.client.get("/v1/grant-requests/nonexistent-id")
@@ -416,7 +416,7 @@ class TestChallengesEndpoints(_GL229TestBase):
     def test_list_challenges_200(self):
         resp = self.client.get("/v1/challenges")
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json()["items"], list)
 
     def test_create_challenge_201(self):
         body = {"subjectId": "agent-001", "action": "deploy", "resource": "service:payments"}
@@ -442,7 +442,7 @@ class TestChallengesEndpoints(_GL229TestBase):
         body = {"subjectId": "agent-002", "action": "read", "resource": "db:users"}
         self.client.post("/v1/challenges", json=body)
         resp = self.client.get("/v1/challenges")
-        ids = [c.get("challengeId") for c in resp.json()]
+        ids = [c.get("challengeId") for c in resp.json()["items"]]
         self.assertGreater(len(ids), 0)
 
 

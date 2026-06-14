@@ -24,6 +24,8 @@ def _discovery() -> List[Tuple[str, str]]:
 def _load_module(filepath: str):
     """Load a migration module from an absolute file path."""
     spec = importlib.util.spec_from_file_location("migration", filepath)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load migration module: {filepath}")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod

@@ -229,7 +229,9 @@ class _JsonFormatter(logging.Formatter):
                 payload[key] = _safe_value(value)
 
         if record.exc_info:
-            payload["exception_type"] = record.exc_info[0].__name__
+            exc_type = record.exc_info[0]
+            if exc_type is not None:
+                payload["exception_type"] = exc_type.__name__
 
         return json.dumps(payload, sort_keys=False, default=_safe_default, separators=(",", ":"))
 

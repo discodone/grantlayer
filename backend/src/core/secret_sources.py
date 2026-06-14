@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import re
+from collections.abc import Iterable
 from typing import Mapping, Optional, Sequence
 
 REDACTED_SECRET_VALUE = "[REDACTED]"
@@ -233,10 +234,8 @@ def _validate_name_sequence(names: object) -> None:
     """Validate that *names* is an iterable of non-empty strings."""
     if names is None:
         raise ValueError("names must be a sequence of non-empty strings")
-    try:
-        iterable = iter(names)  # type: ignore[arg-type]
-    except TypeError as exc:
-        raise ValueError("names must be a sequence of non-empty strings") from exc
-    for name in iterable:
+    if not isinstance(names, Iterable):
+        raise ValueError("names must be a sequence of non-empty strings")
+    for name in names:
         if not isinstance(name, str) or not name.strip():
             raise ValueError("names must be a sequence of non-empty strings")

@@ -194,6 +194,8 @@ class TestGl094cNoBranchProductionChanges(unittest.TestCase):
         return result.stdout.strip().splitlines()
 
     def test_no_production_source_changes(self):
+        if self._current_branch() != "gl-094c-production-architecture-operations-review":
+            self.skipTest("Production-source diff check only valid on original GL-094C feature branch")
         changed = self._changed_files()
         violations = [
             f

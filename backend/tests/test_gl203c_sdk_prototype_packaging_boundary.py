@@ -606,7 +606,7 @@ class TestGL203CPrototypeFakeTransport(unittest.TestCase):
             valid_until="2026-12-31T23:59:59Z",
             created_by="gl203c-demo-admin",
             reason="GL-203C prototype test",
-            tenant_id="demo",
+            workspace_id="default",
         )
         req = transport.calls[0]
         self.assertEqual(req.get_method(), "POST")
@@ -615,6 +615,7 @@ class TestGL203CPrototypeFakeTransport(unittest.TestCase):
         self.assertEqual(body["subjectId"], "gl203c-demo-subject")
         self.assertEqual(body["role"], "technician")
         self.assertNotIn("tenantId", body, "Request body must not contain tenantId override")
+        self.assertEqual(req.get_header("X-workspace-id"), "default")
 
     def test_error_response_handled_safely(self):
         client, transport = self._client(token="token")
@@ -883,6 +884,12 @@ class TestGL203CScopeGuard(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 class TestGL203CPublishBoundary(unittest.TestCase):
+    def setUp(self):
+        branch = _current_branch()
+        if branch != EXPECTED_BRANCH:
+            self.skipTest(
+                f"Publish boundary skipped: not on {EXPECTED_BRANCH} (current: {branch})"
+            )
 
     def test_no_public_remote_push(self):
         result = subprocess.run(

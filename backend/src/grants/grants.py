@@ -7,6 +7,8 @@ from ..core.crypto_signing import sign_grant as _sign_grant
 from ..core.db import execute, query_all, query_one
 from ..core.models import Grant
 
+_DEMO_WORKSPACE_ID = "default"
+
 
 def _row_to_grant(row: dict) -> Grant:
     return Grant(
@@ -35,6 +37,8 @@ def _row_to_grant(row: dict) -> Grant:
 def list_grants(
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
+    limit: Optional[int] = None,
+    offset: int = 0,
 ) -> List[Grant]:
     conditions: list[str] = []
     params: list = []
@@ -48,7 +52,29 @@ def list_grants(
     if conditions:
         sql += " WHERE " + " AND ".join(conditions)
     sql += " ORDER BY created_at DESC"
+    if limit is not None:
+        sql += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
     return [_row_to_grant(r) for r in query_all(sql, tuple(params))]
+
+
+def count_grants(
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
+) -> int:
+    conditions: list[str] = []
+    params: list = []
+    if tenant_id is not None:
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("workspace_id = ?")
+        params.append(workspace_id)
+    sql = "SELECT COUNT(*) AS count FROM grants"
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    row = query_one(sql, tuple(params))
+    return int(row["count"]) if row else 0
 
 
 def get_grant(
@@ -86,6 +112,7 @@ def create_grant(
     if tenant_id is None:
         raise ValueError("tenant_id is required")
     effective_tenant = tenant_id
+    effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
 
     sql = """INSERT INTO grants
            (id, subject_id, role, action, resource, valid_from, valid_until,
@@ -97,7 +124,7 @@ def create_grant(
         grant.resource, grant.valid_from, grant.valid_until,
         grant.created_by, grant.reason, grant.created_at,
         grant.max_uses, grant.use_count,
-        sig_hex, key_id, hash_hex, effective_tenant, workspace_id,
+        sig_hex, key_id, hash_hex, effective_tenant, effective_workspace,
     )
 
     if conn is not None:

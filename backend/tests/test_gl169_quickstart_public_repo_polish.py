@@ -23,6 +23,8 @@ EXPECTED_CHANGED_FILES = {
     "docs/examples/gl169/quickstart_public_repo_polish.json",
 }
 
+GL169_BRANCH = "gl-169-quickstart-public-repo-polish"
+
 REQUIRED_ARTIFACT_FIELDS = {
     "issue_id",
     "title",
@@ -189,8 +191,8 @@ class TestGL169ScopeGuard(unittest.TestCase):
             text=True,
             stdout=subprocess.PIPE,
         ).stdout.strip()
-        if branch == "main":
-            self.skipTest("Scope guard is branch-specific; skipping on main after merge.")
+        if branch != GL169_BRANCH:
+            self.skipTest(f"Not on {GL169_BRANCH} branch; skipping diff-based scope guard.")
 
         result = subprocess.run(
             ["git", "diff", "--name-only", "origin/main...HEAD"],

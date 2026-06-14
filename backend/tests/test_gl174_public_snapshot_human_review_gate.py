@@ -32,6 +32,7 @@ _ALLOWED_CHANGED_FILES = {
     "docs/examples/gl174/public_snapshot_human_review_gate.json",
     "backend/tests/test_gl174_public_snapshot_human_review_gate.py",
 }
+_GL174_BRANCH = "gl-174-public-snapshot-human-review-gate"
 _FORBIDDEN_IN_ARTIFACTS = [
     r"anton\.hofer@web\.de",
     r"\+49[\s\-]?\d",
@@ -362,6 +363,14 @@ class TestGL174MarkdownContent(unittest.TestCase):
 
 class TestGL174ChangedFilesScope(unittest.TestCase):
     def test_changed_files_within_scope(self):
+        branch = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=_REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        if branch.returncode == 0 and branch.stdout.strip() != _GL174_BRANCH:
+            self.skipTest(f"Not on {_GL174_BRANCH} branch; skipping diff-based scope guard.")
         result = subprocess.run(
             ["git", "diff", "--name-only", "main...HEAD"],
             cwd=_REPO_ROOT,

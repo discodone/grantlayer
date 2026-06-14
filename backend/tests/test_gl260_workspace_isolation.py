@@ -180,7 +180,7 @@ class TestGL260WorkspaceIsolation(unittest.TestCase):
             headers={"Authorization": self._auth_b, "X-Workspace-Id": _WS_B},
         )
         self.assertEqual(resp.status_code, 200)
-        grant_ids = [g["id"] for g in resp.json()]
+        grant_ids = [g["id"] for g in resp.json()["items"]]
         # Workspace B's list must be empty — the grant belongs to workspace A
         self.assertEqual(grant_ids, [])
 
@@ -191,7 +191,7 @@ class TestGL260WorkspaceIsolation(unittest.TestCase):
             headers={"Authorization": self._auth_a, "X-Workspace-Id": _WS_A},
         )
         self.assertEqual(resp.status_code, 200)
-        grant_ids = [g["id"] for g in resp.json()]
+        grant_ids = [g["id"] for g in resp.json()["items"]]
         self.assertIn(grant_id, grant_ids)
 
     # ── grant requests: read isolation ───────────────────────────────────────
@@ -211,7 +211,7 @@ class TestGL260WorkspaceIsolation(unittest.TestCase):
             headers={"Authorization": self._auth_b, "X-Workspace-Id": _WS_B},
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), [])
+        self.assertEqual(resp.json()["items"], [])
 
     def test_op_a_list_includes_own_grant_request(self):
         req_id = self._create_grant_request_as_a()
@@ -220,7 +220,7 @@ class TestGL260WorkspaceIsolation(unittest.TestCase):
             headers={"Authorization": self._auth_a, "X-Workspace-Id": _WS_A},
         )
         self.assertEqual(resp.status_code, 200)
-        req_ids = [r["id"] for r in resp.json()]
+        req_ids = [r["id"] for r in resp.json()["items"]]
         self.assertIn(req_id, req_ids)
 
     # ── cross-workspace mutation denied ──────────────────────────────────────
@@ -243,10 +243,10 @@ class TestGL260WorkspaceIsolation(unittest.TestCase):
         )
         self.assertEqual(resp.status_code, 404)
 
-    # ── GL-281: legacy NULL workspace_id not visible ──────────────────────────
+    # ── legacy default workspace rows are isolated from explicit workspaces ───
 
-    def _insert_legacy_grant_null_workspace(self) -> str:
-        """Directly insert a grant with workspace_id=NULL (legacy data, no migration)."""
+    def _insert_legacy_grant_default_workspace(self) -> str:
+        """Directly insert a grant in the legacy default workspace."""
         import uuid
         from backend.src.core.db import execute
         grant_id = f"g_legacy_{uuid.uuid4().hex[:8]}"
@@ -258,37 +258,37 @@ class TestGL260WorkspaceIsolation(unittest.TestCase):
                 signature, signing_key_id, payload_hash, tenant_id, workspace_id)
                VALUES (?, 'legacy-agent', 'viewer', 'read', 'legacy-doc',
                        ?, ?, 'legacy-op', 'legacy row', 0, ?, NULL, 0,
-                       NULL, NULL, NULL, ?, NULL)""",
+                       NULL, NULL, NULL, ?, 'default')""",
             (grant_id, ts, "2099-01-01T00:00:00Z", ts, _TENANT),
         )
         return grant_id
 
     def test_legacy_null_workspace_grant_not_visible_to_workspace_a(self):
-        """GL-281: a grant with workspace_id=NULL must not bleed into workspace A."""
-        grant_id = self._insert_legacy_grant_null_workspace()
+        """A grant in the default workspace must not bleed into workspace A."""
+        grant_id = self._insert_legacy_grant_default_workspace()
         # List — must not appear in workspace A's list
         resp = self.client.get(
             "/v1/grants",
             headers={"Authorization": self._auth_a, "X-Workspace-Id": _WS_A},
         )
         self.assertEqual(resp.status_code, 200)
-        ids = [g["id"] for g in resp.json()]
-        self.assertNotIn(grant_id, ids, "Legacy NULL-workspace grant leaked into workspace A list")
+        ids = [g["id"] for g in resp.json()["items"]]
+        self.assertNotIn(grant_id, ids, "Legacy default-workspace grant leaked into workspace A list")
 
     def test_legacy_null_workspace_grant_not_visible_to_workspace_b(self):
-        """GL-281: a grant with workspace_id=NULL must not bleed into workspace B."""
-        grant_id = self._insert_legacy_grant_null_workspace()
+        """A grant in the default workspace must not bleed into workspace B."""
+        grant_id = self._insert_legacy_grant_default_workspace()
         resp = self.client.get(
             "/v1/grants",
             headers={"Authorization": self._auth_b, "X-Workspace-Id": _WS_B},
         )
         self.assertEqual(resp.status_code, 200)
-        ids = [g["id"] for g in resp.json()]
-        self.assertNotIn(grant_id, ids, "Legacy NULL-workspace grant leaked into workspace B list")
+        ids = [g["id"] for g in resp.json()["items"]]
+        self.assertNotIn(grant_id, ids, "Legacy default-workspace grant leaked into workspace B list")
 
     def test_legacy_null_workspace_grant_not_fetchable_by_id_from_workspace_a(self):
-        """GL-281: GET /grants/{id} with workspace filter must return 404 for NULL-workspace rows."""
-        grant_id = self._insert_legacy_grant_null_workspace()
+        """GET /grants/{id} with workspace filter must return 404 for default-workspace rows."""
+        grant_id = self._insert_legacy_grant_default_workspace()
         resp = self.client.get(
             f"/v1/grants/{grant_id}",
             headers={"Authorization": self._auth_a, "X-Workspace-Id": _WS_A},

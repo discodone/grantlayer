@@ -38,7 +38,7 @@ class TestGl138CheckAdminTokenCleanup(unittest.TestCase):
 
     def _auth_py_path(self):
         repo_root = pathlib.Path(__file__).with_suffix("").parent.parent.parent
-        return repo_root / "backend" / "src" / "auth.py"
+        return repo_root / "backend" / "src" / "auth" / "auth.py"
 
     # ──────────────────────────────────────────────
     # 1. AST: exactly one check_admin_token function

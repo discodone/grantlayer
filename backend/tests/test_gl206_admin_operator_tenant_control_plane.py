@@ -82,6 +82,15 @@ def _reload_modules(db_path: str):
     import backend.src.audit.audit_log as audit_mod
     importlib.reload(audit_mod)
 
+    for module_name in (
+        "backend.src.api.deps",
+        "backend.src.api.routers.grants",
+        "backend.src.api.app",
+    ):
+        module = sys.modules.get(module_name)
+        if module is not None:
+            importlib.reload(module)
+
     return config_mod, db_mod, models_mod, ops_mod, auth_mod, grants_mod, ch_mod, gr_mod, audit_mod
 
 
@@ -177,9 +186,15 @@ class _BaseGL206(unittest.TestCase):
         return _run_handler(path, method="POST",
                             auth_header=auth_header, body=body)
 
-    def _get(self, path: str, auth_header: str | None = None) -> tuple[int, dict]:
+    def _get(
+        self,
+        path: str,
+        auth_header: str | None = None,
+        extra_headers: dict | None = None,
+    ) -> tuple[int, dict]:
         return _run_handler(path, method="GET",
-                            auth_header=auth_header)
+                            auth_header=auth_header,
+                            extra_headers=extra_headers)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -679,11 +694,37 @@ class TestGL206TenantIsolation(_BaseGL206):
             name="HeaderTest", role="owner", token=token, tenant_id="real-tenant"
         )
         self.mods = _reload_modules(self.db_path)
+        db_mod = self.mods[1]
         self.ops_mod = self.mods[3]
+        conn = db_mod.get_conn()
+        try:
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO workspaces
+                    (id, tenant_id, name, slug, owner_id, status, created_at, updated_at)
+                VALUES
+                    (?, ?, ?, ?, ?, 'active', ?, ?)
+                """,
+                (
+                    "real-tenant-default",
+                    "real-tenant",
+                    "Real Tenant Default",
+                    "real-tenant-default",
+                    "system",
+                    "2025-01-01T00:00:00Z",
+                    "2025-01-01T00:00:00Z",
+                ),
+            )
+            conn.commit()
+        finally:
+            conn.close()
         # Try to override tenant via X-Tenant-ID header
         status, body = _run_handler("/v1/grants", method="GET",
             auth_header=f"Bearer {token}",
-            extra_headers={"X-Tenant-ID": "attacker-tenant"},
+            extra_headers={
+                "X-Tenant-ID": "attacker-tenant",
+                "X-Workspace-Id": "real-tenant-default",
+            },
         )
         # The request should succeed but the tenant context must be real-tenant, not attacker-tenant
         # We verify by checking the grants list was filtered for real-tenant, not attacker-tenant
@@ -820,7 +861,35 @@ class TestGL206RegressionPreservation(_BaseGL206):
         )
         self.mods = _reload_modules(self.db_path)
         self.ops_mod = self.mods[3]
+        db_mod = self.mods[1]
         grants_mod = self.mods[5]
+
+        conn = db_mod.get_conn()
+        try:
+            for workspace_id, tenant_id in (
+                ("gl206-a-default", "tenant-gl206-a"),
+                ("gl206-b-default", "tenant-gl206-b"),
+            ):
+                conn.execute(
+                    """
+                    INSERT OR IGNORE INTO workspaces
+                        (id, tenant_id, name, slug, owner_id, status, created_at, updated_at)
+                    VALUES
+                        (?, ?, ?, ?, ?, 'active', ?, ?)
+                    """,
+                    (
+                        workspace_id,
+                        tenant_id,
+                        workspace_id,
+                        workspace_id,
+                        "system",
+                        "2025-01-01T00:00:00Z",
+                        "2025-01-01T00:00:00Z",
+                    ),
+                )
+            conn.commit()
+        finally:
+            conn.close()
 
         # Create a grant for tenant-a
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -832,15 +901,27 @@ class TestGL206RegressionPreservation(_BaseGL206):
             resource="res-1", valid_from=valid_from, valid_until=valid_until,
             created_by="op-a", reason="test"
         )
-        grants_mod.create_grant(grant, tenant_id="tenant-gl206-a")
+        grants_mod.create_grant(
+            grant,
+            tenant_id="tenant-gl206-a",
+            workspace_id="gl206-a-default",
+        )
 
         # tenant-b should not see tenant-a's grant
-        status_a, body_a = self._get("/v1/grants", auth_header=f"Bearer {token_a}")
-        status_b, body_b = self._get("/v1/grants", auth_header=f"Bearer {token_b}")
+        status_a, body_a = self._get(
+            "/v1/grants",
+            auth_header=f"Bearer {token_a}",
+            extra_headers={"X-Workspace-Id": "gl206-a-default"},
+        )
+        status_b, body_b = self._get(
+            "/v1/grants",
+            auth_header=f"Bearer {token_b}",
+            extra_headers={"X-Workspace-Id": "gl206-b-default"},
+        )
         self.assertEqual(status_a, 200)
         self.assertEqual(status_b, 200)
-        self.assertGreater(len(body_a), 0, "Tenant-a should see its own grants")
-        self.assertEqual(len(body_b), 0, "Tenant-b must not see tenant-a grants")
+        self.assertGreater(len(body_a["items"]), 0, "Tenant-a should see its own grants")
+        self.assertEqual(len(body_b["items"]), 0, "Tenant-b must not see tenant-a grants")
 
     def test_regression_004_admin_token_fail_closed(self):
         """Wrong admin token on admin route → 401 or 403 (GL-201 regression)."""

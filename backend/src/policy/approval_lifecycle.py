@@ -318,7 +318,7 @@ def transition_approval_request(
             include_details=include_details,
         )
 
-    current_status = approval_request.get("status")
+    current_status = str(approval_request.get("status", ""))
 
     # ── guard: blocked -> reopen needs explicit flag ──
     if current_status == _STATUS_BLOCKED and transition == "reopen":

@@ -6,7 +6,7 @@
   "publicSnapshotModel": true,
   "sourceOfTruth": "internal-forgejo",
   "caveats": [
-    "GrantLayer is Developer Preview / GL-0.1.",
+    "GrantLayer is a Developer Preview snapshot.",
     "GrantLayer is not production SaaS.",
     "Tenant isolation is not implemented.",
     "GrantLayer is not a replacement for auditors, legal review, or institutional governance.",

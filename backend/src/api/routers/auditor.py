@@ -14,7 +14,7 @@ from ..deps import resolve_auth_and_workspace
 router = APIRouter(prefix="/auditor", tags=["auditor"])
 
 
-@router.get("/reports/executions/{execution_id}")
+@router.get("/reports/executions/{execution_id}", response_model=dict[str, Any])
 def get_auditor_report(
     execution_id: str,
     include_raw_evidence: bool = Query(default=False, alias="includeRawEvidence"),
@@ -41,7 +41,7 @@ def get_auditor_report(
     return report
 
 
-@router.post("/exports/build")
+@router.post("/exports/build", response_model=dict[str, Any])
 def build_auditor_export(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,

@@ -199,17 +199,17 @@ class TestGl083OperatorMode(_BaseGl083):
     def test_grants_owner_succeeds(self):
         resp = self.client.get("/v1/grants", headers=self._auth("owner-token"))
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json().get("items"), list)
 
     def test_grants_grant_admin_succeeds(self):
         resp = self.client.get("/v1/grants", headers=self._auth("admin-token"))
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json().get("items"), list)
 
     def test_grants_auditor_succeeds(self):
         resp = self.client.get("/v1/grants", headers=self._auth("auditor-token"))
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json().get("items"), list)
 
     def test_grants_demo_operator_forbidden(self):
         resp = self.client.get("/v1/grants", headers=self._auth("demo-token"))
@@ -308,7 +308,7 @@ class TestGl083LegacyMode(_BaseGl083):
     def test_grants_with_valid_admin_token_succeeds(self):
         resp = self.client.get("/v1/grants", headers=self._auth("legacy-admin-token"))
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json().get("items"), list)
 
     def test_grant_detail_with_valid_admin_token_succeeds(self):
         resp = self.client.get("/v1/grants/nonexistent-id", headers=self._auth("legacy-admin-token"))

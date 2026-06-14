@@ -244,7 +244,7 @@ class TestGl088OperatorMode(_BaseGl088):
         handler = self._make_handler("/v1/challenges", auth_header="Bearer owner-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_gl087_auth_error_response_shape_preserved(self):
         handler = self._make_handler("/v1/challenges", method="POST", body=self._challenge_body())
@@ -355,7 +355,7 @@ class TestGl088LegacyMode(_BaseGl088):
         handler = self._make_handler("/v1/challenges", auth_header="Bearer legacy-admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_gl084_demo_action_still_requires_auth(self):
         demo_body = json.dumps({

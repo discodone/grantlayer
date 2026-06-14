@@ -134,7 +134,7 @@ class TestGrantsAuthGuard(_GL228TestBase):
         """In demo mode (no token required) list should return 200."""
         resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json()["items"], list)
 
     def test_list_grants_requires_token_when_configured(self):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "test-secret-token-16x"
@@ -204,7 +204,7 @@ class TestGrantsCRUDDemoMode(_GL228TestBase):
         resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
         # At least one grant in the list
-        self.assertGreaterEqual(len(resp.json()), 1)
+        self.assertGreaterEqual(len(resp.json()["items"]), 1)
 
     def test_get_grant_by_id(self):
         create_resp = self.client.post("/v1/grants", json=self.VALID_BODY)
@@ -219,7 +219,7 @@ class TestGrantsCRUDDemoMode(_GL228TestBase):
 
     def test_list_grants_response_is_list(self):
         resp = self.client.get("/v1/grants")
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json()["items"], list)
 
 
 # ── Grants — validation errors ────────────────────────────────────────────

@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 
 from ...core.db import get_db_health, query_one
 from ...core.runtime_config import describe_runtime_config
-from ..schemas import ReadinessResponse
+from ..schemas import DynamicResponse, ReadinessResponse
 
 router = APIRouter(tags=["health"])
 
@@ -46,7 +46,7 @@ def _migration_revision() -> str:
         return f"error: {e}"
 
 
-@router.get("/health")
+@router.get("/health", response_model=DynamicResponse)
 def health(request: Request):
     try:
         db_health = get_db_health()
@@ -74,6 +74,7 @@ def health(request: Request):
 
 @router.get(
     "/readiness",
+    response_model=ReadinessResponse,
     responses={503: {"model": ReadinessResponse}},
 )
 def readiness():

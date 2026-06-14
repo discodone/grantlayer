@@ -548,7 +548,7 @@ class TestGl117LoggingFailureSafety(_BaseGl117):
             handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
             status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_auth_logging_failure_does_not_alter_http_behavior(self):
         with patch("backend.src.core.logging_utils.safe_log", side_effect=RuntimeError("log failure")):
@@ -581,7 +581,7 @@ class TestGl117ResponseSemanticsPreserved(_BaseGl117):
         handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_auth_failure_response_unchanged(self):
         handler = self._make_raw_handler("/v1/grants")

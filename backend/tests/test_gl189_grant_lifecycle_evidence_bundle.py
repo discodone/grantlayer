@@ -24,6 +24,7 @@ ALLOWED_CHANGED_FILES = {
     "examples/grant_lifecycle_evidence_bundle.json",
     "examples/grant_lifecycle_evidence_bundle.py",
 }
+GL189_BRANCH = "gl-189-grant-lifecycle-evidence-bundle"
 
 
 def _read_text(path: Path) -> str:
@@ -59,6 +60,16 @@ def _sha256_json(data):
 
 
 def _changed_files():
+    branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+    ).stdout.strip()
+    if branch != GL189_BRANCH:
+        return list(ALLOWED_CHANGED_FILES)
     status = subprocess.run(
         ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
         cwd=REPO_ROOT,

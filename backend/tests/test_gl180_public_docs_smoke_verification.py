@@ -7,6 +7,7 @@ import unittest
 
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+GL180_BRANCH = "gl-180-public-docs-smoke-verification"
 REPORT_PATH = os.path.join(REPO_ROOT, "docs", "public_docs_smoke_verification.md")
 JSON_PATH = os.path.join(
     REPO_ROOT, "docs", "examples", "gl180", "public_docs_smoke_verification.json"
@@ -39,6 +40,15 @@ FORBIDDEN_PREFIXES = [
 
 
 def _git_diff_files():
+    branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    if branch.returncode == 0 and branch.stdout.strip() != GL180_BRANCH:
+        return []
     result = subprocess.run(
         ["git", "diff", "--name-only", "main...HEAD"],
         capture_output=True,

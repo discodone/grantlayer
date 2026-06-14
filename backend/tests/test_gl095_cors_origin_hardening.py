@@ -349,7 +349,7 @@ class TestGl095CorsDoesNotBypassAuth(_BaseGl095):
         handler = self._make_handler("/v1/grants", auth_header="Bearer owner-token", origin="http://trusted.com")
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
         self.assertEqual(headers.get("access-control-allow-origin"), "http://trusted.com")
 
     def test_demo_action_still_requires_auth_with_allowed_origin(self):

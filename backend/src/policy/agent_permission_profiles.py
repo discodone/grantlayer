@@ -126,8 +126,9 @@ def list_agent_permission_profiles() -> list[dict]:
     ``get_agent_permission_profile``.
     """
     return [
-        get_agent_permission_profile(name)
+        profile
         for name in sorted(_BUILTIN_PROFILES.keys())
+        if (profile := get_agent_permission_profile(name)) is not None
     ]
 
 

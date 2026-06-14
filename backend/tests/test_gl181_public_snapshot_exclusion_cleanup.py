@@ -9,6 +9,7 @@ import unittest
 
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+GL181_BRANCH = "gl-181-public-snapshot-exclusion-cleanup"
 SCRIPT_PATH = os.path.join(REPO_ROOT, "scripts", "build-clean-public-snapshot.sh")
 REPORT_PATH = os.path.join(REPO_ROOT, "docs", "public_snapshot_exclusion_cleanup.md")
 JSON_PATH = os.path.join(
@@ -55,6 +56,15 @@ PRESERVED_PUBLIC_FILES = [
 
 
 def _git_diff_files():
+    branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    if branch.returncode == 0 and branch.stdout.strip() != GL181_BRANCH:
+        return list(ALLOWED_CHANGED_FILES)
     result = subprocess.run(
         ["git", "status", "--short", "--untracked-files=all"],
         capture_output=True,

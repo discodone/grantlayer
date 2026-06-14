@@ -188,7 +188,7 @@ class TestBug2GrantRequestsCamelCase(_Base):
         self._create_request()
         r = self.client.get("/v1/grant-requests", headers=self._auth())
         self.assertEqual(r.status_code, 200)
-        items = r.json()
+        items = r.json()["items"]
         self.assertGreater(len(items), 0)
         item = items[0]
         self.assertIn("subjectId", item)

@@ -102,6 +102,15 @@ def _reload_modules(db_path: str):
     import backend.src.auth.auth as auth_mod
     importlib.reload(auth_mod)
 
+    for module_name in (
+        "backend.src.api.deps",
+        "backend.src.api.routers.operators_me",
+        "backend.src.api.app",
+    ):
+        module = sys.modules.get(module_name)
+        if module is not None:
+            importlib.reload(module)
+
     return config_mod, db_mod, ops_mod, auth_mod
 
 
@@ -263,6 +272,28 @@ class TestGL208BackendBoundaries(unittest.TestCase):
         self.owner, self.owner_token = self.ops_mod.create_operator(
             "Owner", "owner", "owner-token-gl208", "tenant-a"
         )
+        conn = self.db_mod.get_conn()
+        try:
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO workspaces
+                    (id, tenant_id, name, slug, owner_id, status, created_at, updated_at)
+                VALUES
+                    (?, ?, ?, ?, ?, 'active', ?, ?)
+                """,
+                (
+                    "gl208-tenant-a-default",
+                    "tenant-a",
+                    "Tenant A Default",
+                    "gl208-tenant-a-default",
+                    "system",
+                    "2025-01-01T00:00:00Z",
+                    "2025-01-01T00:00:00Z",
+                ),
+            )
+            conn.commit()
+        finally:
+            conn.close()
 
     def tearDown(self):
         try:
@@ -322,7 +353,10 @@ class TestGL208BackendBoundaries(unittest.TestCase):
     def test_arbitrary_tenant_override_header_remains_unsupported(self):
         status, _, body = _run_handler("/v1/operators/me",
             auth_header=self._operator_auth(),
-            extra_headers={"X-Tenant-ID": "tenant-b"},
+            extra_headers={
+                "X-Tenant-ID": "tenant-b",
+                "X-Workspace-Id": "gl208-tenant-a-default",
+            },
         )
         self.assertEqual(status, 200)
         self.assertEqual(body.get("tenantId"), "tenant-a")

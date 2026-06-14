@@ -206,4 +206,4 @@ def list_provenance_events(
     params.append(limit)
 
     rows = query_all(sql, tuple(params))
-    return [_row_to_provenance_event(r) for r in rows if r is not None]
+    return [event for r in rows if (event := _row_to_provenance_event(r)) is not None]

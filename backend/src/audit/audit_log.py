@@ -362,18 +362,46 @@ def get_event(event_id: str) -> Optional[AuditEvent]:
     return _row_to_audit_event(row)
 
 
-def list_events(limit: int = 200, tenant_id: Optional[str] = None) -> List[AuditEvent]:
+def list_events(
+    limit: int = 200,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
+    offset: int = 0,
+) -> List[AuditEvent]:
+    conditions: list[str] = []
+    params: list = []
     if tenant_id is not None:
-        rows = query_all(
-            "SELECT * FROM audit_events WHERE tenant_id = ? ORDER BY timestamp DESC LIMIT ?",
-            (tenant_id, limit),
-        )
-    else:
-        rows = query_all(
-            "SELECT * FROM audit_events ORDER BY timestamp DESC LIMIT ?",
-            (limit,),
-        )
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("workspace_id = ?")
+        params.append(workspace_id)
+    sql = "SELECT * FROM audit_events"
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    sql += " ORDER BY timestamp DESC LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
+    rows = query_all(sql, tuple(params))
     return [_row_to_audit_event(r) for r in rows]
+
+
+def count_events(
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
+) -> int:
+    conditions: list[str] = []
+    params: list = []
+    if tenant_id is not None:
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("workspace_id = ?")
+        params.append(workspace_id)
+    sql = "SELECT COUNT(*) AS count FROM audit_events"
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    row = query_one(sql, tuple(params))
+    return int(row["count"]) if row else 0
 
 
 def list_events_by_grant(grant_id: str, limit: int = 50) -> List[AuditEvent]:

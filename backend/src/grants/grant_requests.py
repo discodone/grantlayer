@@ -42,6 +42,8 @@ ALLOWED_GRANT_ROLES: frozenset[str] = frozenset({
     "admin",
 })
 
+_DEMO_WORKSPACE_ID = "default"
+
 
 def create_grant_request(
     request: GrantRequest,
@@ -57,6 +59,7 @@ def create_grant_request(
     if tenant_id is None:
         raise ValueError("tenant_id is required")
     effective_tenant = tenant_id
+    effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
     db.execute(
         """
         INSERT INTO grant_requests (
@@ -79,7 +82,7 @@ def create_grant_request(
             request.created_at,
             request.updated_at,
             effective_tenant,
-            workspace_id,
+            effective_workspace,
         ),
     )
     return request
@@ -112,6 +115,8 @@ def list_grant_requests(
     status_filter: Optional[str] = None,
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
+    limit: Optional[int] = None,
+    offset: int = 0,
 ) -> List[GrantRequest]:
     """List grant requests, optionally filtered by status, tenant, and workspace."""
     conditions: list[str] = []
@@ -129,8 +134,34 @@ def list_grant_requests(
     if conditions:
         sql += " WHERE " + " AND ".join(conditions)
     sql += " ORDER BY created_at DESC"
+    if limit is not None:
+        sql += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
     rows = db.query_all(sql, tuple(params))
     return [_row_to_grant_request(row) for row in rows]
+
+
+def count_grant_requests(
+    status_filter: Optional[str] = None,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
+) -> int:
+    conditions: list[str] = []
+    params: list = []
+    if tenant_id is not None:
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("workspace_id = ?")
+        params.append(workspace_id)
+    if status_filter is not None:
+        conditions.append("status = ?")
+        params.append(status_filter)
+    sql = "SELECT COUNT(*) AS count FROM grant_requests"
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    row = db.query_one(sql, tuple(params))
+    return int(row["count"]) if row else 0
 
 
 def _is_request_expired(request: GrantRequest) -> bool:
@@ -178,6 +209,7 @@ def approve_grant_request(
         if tenant_id is None:
             raise ValueError("tenant_id is required")
         effective_tenant = tenant_id
+        effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
 
         # Create the actual grant from the request (inherit workspace_id from request)
         grant = Grant(
@@ -192,7 +224,7 @@ def approve_grant_request(
         )
 
         # Save the grant using the shared transaction connection
-        grants.create_grant(grant, conn=conn, tenant_id=effective_tenant, workspace_id=workspace_id)
+        grants.create_grant(grant, conn=conn, tenant_id=effective_tenant, workspace_id=effective_workspace)
 
         # Update the request to approved state
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
@@ -225,6 +257,8 @@ def approve_grant_request(
 
         # Return the updated request and the newly created grant
         updated_request = get_grant_request(request_id)
+        if updated_request is None:
+            raise ValueError(f"Grant request {request_id} not found after approval")
         return updated_request, grant
     except Exception as e:
         conn.rollback()
@@ -294,6 +328,8 @@ def deny_grant_request(
 
         # Return the updated request
         updated_request = get_grant_request(request_id)
+        if updated_request is None:
+            raise ValueError(f"Grant request {request_id} not found after denial")
         return updated_request
     except Exception as e:
         conn.rollback()
@@ -370,6 +406,8 @@ def revoke_grant_request(
 
         # Return the updated request
         updated_request = get_grant_request(request_id)
+        if updated_request is None:
+            raise ValueError(f"Grant request {request_id} not found after revocation")
         return updated_request
     except Exception as e:
         conn.rollback()

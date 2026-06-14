@@ -22,6 +22,7 @@ JSON_PATH = os.path.join(
 SCAN_SCRIPT_PATH = os.path.join(
     REPO_ROOT, "scripts", "ops", "gl218_public_export_safety_scan.py"
 )
+EXPECTED_BRANCH = "gl-218-public-external-review-export-safety-pack"
 
 REQUIRED_MD_SECTIONS = [
     "## Context",
@@ -680,6 +681,20 @@ class TestGL218ScanScript(unittest.TestCase):
 
 
 class TestGL218ScopeGuards(unittest.TestCase):
+    def setUp(self):
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        branch = result.stdout.strip()
+        if branch != EXPECTED_BRANCH:
+            self.skipTest(
+                f"Scope guard skipped: not on {EXPECTED_BRANCH} (current: {branch})"
+            )
+
     def test_only_allowed_files_changed(self):
         changed = _branch_changed_files()
         unexpected = changed - ALLOWED_CHANGED_FILES

@@ -209,17 +209,14 @@ def resolve_workspace_context(
 
     # ── Legacy / demo mode (no operator model) ─────────────────
     if not operator_id:
-        # Legacy admin-token path: no workspace filter (workspace_id=None means
-        # "all tenant-scoped records visible"). Workspace isolation is not active
-        # in this mode.
         ctx: dict = {
-            "workspace_id": None,
+            "workspace_id": _DEMO_WORKSPACE_ID,
             "tenant_id": _DEMO_TENANT_ID,
             "workspace_member_role": None,
             "cross_workspace_access": False,
             "resolution_mode": "legacy_demo",
         }
-        return None, 200, ctx
+        return _DEMO_WORKSPACE_ID, 200, ctx
 
     # ── Operator model ──────────────────────────────────────────
 
@@ -280,18 +277,15 @@ def resolve_workspace_context(
 
     # No client_workspace_id supplied: auto-resolve from membership.
     if is_cross_workspace:
-        # Cross-workspace roles without a specific workspace_id → no workspace filter
-        # (workspace_id=None) for demo tenant so all tenant-scoped records are visible.
-        # Non-demo tenants must supply an explicit workspace_id.
         if tenant_id == _DEMO_TENANT_ID:
             ctx = {
-                "workspace_id": None,
+                "workspace_id": _DEMO_WORKSPACE_ID,
                 "tenant_id": tenant_id,
                 "workspace_member_role": None,
                 "cross_workspace_access": True,
                 "resolution_mode": "cross_workspace_role_demo_fallback",
             }
-            return None, 200, ctx
+            return _DEMO_WORKSPACE_ID, 200, ctx
         return None, 400, {
             "error": "workspace_id_required",
             "errorCode": "workspace_id_required",
@@ -307,17 +301,14 @@ def resolve_workspace_context(
 
     if not active:
         if tenant_id == _DEMO_TENANT_ID:
-            # Operator in demo tenant with no workspace memberships → no workspace filter
-            # (workspace_id=None) so all tenant-scoped records are visible.  Workspace
-            # isolation activates once the operator joins a workspace.
             ctx = {
-                "workspace_id": None,
+                "workspace_id": _DEMO_WORKSPACE_ID,
                 "tenant_id": _DEMO_TENANT_ID,
                 "workspace_member_role": None,
                 "cross_workspace_access": False,
                 "resolution_mode": "demo_tenant_fallback",
             }
-            return None, 200, ctx
+            return _DEMO_WORKSPACE_ID, 200, ctx
         return None, 403, {
             "error": "no_workspace_membership",
             "errorCode": "no_workspace_membership",

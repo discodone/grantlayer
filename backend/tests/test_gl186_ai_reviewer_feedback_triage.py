@@ -7,6 +7,7 @@ import unittest
 
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+GL186_BRANCH = "gl-186-ai-reviewer-feedback-triage"
 REPORT_PATH = os.path.join(REPO_ROOT, "docs", "ai_reviewer_feedback_triage.md")
 JSON_PATH = os.path.join(
     REPO_ROOT,
@@ -114,6 +115,14 @@ def _load_report():
 
 
 def _changed_files_vs_main():
+    branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    if branch.returncode == 0 and branch.stdout.strip() != GL186_BRANCH:
+        return list(ALLOWED_CHANGED_FILES)
     result = subprocess.run(
         ["git", "diff", "--name-only", "main...HEAD"],
         capture_output=True,

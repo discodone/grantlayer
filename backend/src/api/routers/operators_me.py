@@ -12,13 +12,15 @@ from ..deps import resolve_auth_and_workspace
 router = APIRouter(tags=["operators"])
 
 
-@router.get("/operators/me")
+@router.get("/operators/me", response_model=dict[str, Any])
 def get_current_operator(
     authorization: Annotated[Optional[str], Header()] = None,
+    x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ) -> Any:
     auth_ctx, _ = resolve_auth_and_workspace(
         authorization,
         required_roles=["owner", "grant_admin", "auditor"],
+        workspace_id=x_workspace_id,
     )
     if not config.ENABLE_OPERATOR_MODEL:
         raise HTTPException(

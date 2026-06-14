@@ -186,6 +186,15 @@ class TestGL115FindingsJSON(unittest.TestCase):
 
 
 class TestGL115ScopeClean(unittest.TestCase):
+    def setUp(self):
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        if result.stdout.strip() != "gl-115-security-data-integrity-validation-review-gate":
+            self.skipTest("Scope-clean diff checks only valid on original GL-115 review branch")
 
     def _get_diff_files(self):
         files = _git_diff_files()

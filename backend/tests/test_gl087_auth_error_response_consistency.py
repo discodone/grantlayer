@@ -313,19 +313,19 @@ class TestGl087OperatorMode(_BaseGl087):
         handler = self._make_handler("/v1/grants", auth_header="Bearer owner-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_authorized_grant_admin_grants_succeeds(self):
         handler = self._make_handler("/v1/grants", auth_header="Bearer admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_authorized_auditor_audit_events_succeeds(self):
         handler = self._make_handler("/v1/audit-events", auth_header="Bearer auditor-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_authorized_owner_demo_action_succeeds(self):
         handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer owner-token", body=self._demo_body())
@@ -453,7 +453,7 @@ class TestGl087LegacyMode(_BaseGl087):
         handler = self._make_handler("/v1/grants", auth_header="Bearer legacy-admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_health_public(self):
         handler = self._make_handler("/health")

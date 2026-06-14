@@ -332,6 +332,17 @@ class TestGl139ThreadingHttpserverNotEnabled(unittest.TestCase):
 class TestGl139ScopeGuard(unittest.TestCase):
     """Diff scope limited to allowed files; branch-aware skip."""
 
+    def setUp(self):
+        repo_root = pathlib.Path(__file__).with_suffix("").parent.parent.parent
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        if result.stdout.strip() != "gl-139-audit-hash-chain-write-lock":
+            self.skipTest("Scope guard only valid on GL-139 feature branch")
+
     def test_git_diff_limited_to_allowed_files(self):
         repo_root = pathlib.Path(__file__).with_suffix("").parent.parent.parent
         result = subprocess.run(

@@ -95,6 +95,15 @@ def _reload_all(db_path: str):
     import backend.src.audit.audit_log as audit_mod
     importlib.reload(audit_mod)
 
+    for module_name in (
+        "backend.src.api.deps",
+        "backend.src.api.routers.grants",
+        "backend.src.api.app",
+    ):
+        module = sys.modules.get(module_name)
+        if module is not None:
+            importlib.reload(module)
+
     return db_mod, ops_mod, auth_mod, grants_mod, audit_mod
 
 
@@ -136,7 +145,15 @@ class _BaseGl201(unittest.TestCase):
         os.environ["GRANTLAYER_REQUIRE_CHALLENGE"] = "true"
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
 
-    def _run_handler(self, path, method="GET", auth_header=None, body=b"", origin=None):
+    def _run_handler(
+        self,
+        path,
+        method="GET",
+        auth_header=None,
+        body=b"",
+        origin=None,
+        workspace_id=None,
+    ):
         from fastapi.testclient import TestClient
         from backend.src.api.app import create_app
         _client = TestClient(create_app(), raise_server_exceptions=False)
@@ -145,6 +162,8 @@ class _BaseGl201(unittest.TestCase):
             headers["Authorization"] = auth_header
         if origin is not None:
             headers["Origin"] = origin
+        if workspace_id is not None:
+            headers["X-Workspace-Id"] = workspace_id
         if method == "GET":
             resp = _client.get(path, headers=headers)
         elif method == "POST":
@@ -415,8 +434,32 @@ class TestGl201AdminTokenHttpBehavior(_BaseGl201):
             token=token,
             tenant_id="gl201-test-tenant",
         )
+        self.db_mod = mods[0]
+        conn = self.db_mod.get_conn()
+        try:
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO workspaces
+                    (id, tenant_id, name, slug, owner_id, status, created_at, updated_at)
+                VALUES
+                    (?, ?, ?, ?, ?, 'active', ?, ?)
+                """,
+                (
+                    "gl201-default",
+                    "gl201-test-tenant",
+                    "Default",
+                    "gl201-default",
+                    "system",
+                    "2025-01-01T00:00:00Z",
+                    "2025-01-01T00:00:00Z",
+                ),
+            )
+            conn.commit()
+        finally:
+            conn.close()
         status, body = self._run_handler("/v1/grants", method="GET",
-                                         auth_header=f"Bearer {token}")
+                                         auth_header=f"Bearer {token}",
+                                         workspace_id="gl201-default")
         self.assertEqual(status, 200)
 
     def test_033_auth_error_body_does_not_contain_attempted_token(self):

@@ -247,6 +247,11 @@ class GrantLayerClient:
             headers.update(extra)
         return headers
 
+    def _workspace_headers(self, workspace_id: Optional[str]) -> Optional[Dict[str, str]]:
+        if workspace_id is None:
+            return None
+        return {"X-Workspace-Id": workspace_id}
+
     def _do_request(
         self,
         method: str,
@@ -321,13 +326,21 @@ class GrantLayerClient:
     # Core grant endpoints
     # -----------------------------------------------------------------------
 
-    def list_grants(self) -> GrantLayerResponse:
+    def list_grants(self, workspace_id: Optional[str] = None) -> GrantLayerResponse:
         """GET /v1/grants — list all grants. Requires auth."""
-        return self._do_request("GET", "/v1/grants")
+        return self._do_request(
+            "GET",
+            "/v1/grants",
+            extra_headers=self._workspace_headers(workspace_id),
+        )
 
-    def get_grant(self, grant_id: str) -> GrantLayerResponse:
+    def get_grant(self, grant_id: str, workspace_id: Optional[str] = None) -> GrantLayerResponse:
         """GET /v1/grants/{id} — get a single grant. Requires auth."""
-        return self._do_request("GET", f"/v1/grants/{grant_id}")
+        return self._do_request(
+            "GET",
+            f"/v1/grants/{grant_id}",
+            extra_headers=self._workspace_headers(workspace_id),
+        )
 
     def create_grant(
         self,
@@ -340,6 +353,7 @@ class GrantLayerClient:
         created_by: str,
         reason: str,
         max_uses: Optional[int] = None,
+        workspace_id: Optional[str] = None,
     ) -> GrantLayerResponse:
         """POST /v1/grants — create a new grant. Requires auth."""
         body: Dict[str, Any] = {
@@ -354,7 +368,12 @@ class GrantLayerClient:
         }
         if max_uses is not None:
             body["maxUses"] = max_uses
-        return self._do_request("POST", "/v1/grants", body=body)
+        return self._do_request(
+            "POST",
+            "/v1/grants",
+            body=body,
+            extra_headers=self._workspace_headers(workspace_id),
+        )
 
     def revoke_grant(
         self,

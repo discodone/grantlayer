@@ -398,7 +398,7 @@ class TestGl141ValidBehaviorPreserved(_BaseGl141Endpoint):
         handler = self._make_raw_handler("/v1/grants", auth_header="Bearer legacy-admin-gl141")
         status, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_explicit_true_missing_token_fails_closed(self):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
@@ -492,6 +492,9 @@ class TestGl141Gl139Preserved(unittest.TestCase):
 
 @unittest.skipIf(os.environ.get('CI') == 'true', "Scope-guard test skipped in CI environment")
 class TestGl141ScopeGuard(unittest.TestCase):
+    def setUp(self):
+        if self._current_branch() != "gl-141-operator-model-default":
+            self.skipTest("Scope guard only valid on GL-141 feature branch")
 
     def _current_branch(self):
         result = subprocess.run(

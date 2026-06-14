@@ -14,13 +14,13 @@ Covers:
 - Legacy/backfilled rows do not become globally accessible
 - Demo endpoint safety preserved (GL-190 guard)
 - Health/readiness endpoints remain public and carry no tenant data
-- workspace_id column reserved (nullable) but not enforced
+- workspace_id column reserved and backfilled to default
 - No production SaaS claim
 - No tenant isolation claimed as complete
 
 Design notes:
 - GL-200B implements Option A baseline: tenant_id on all business resource tables.
-- workspace_id is reserved (nullable) for GL-200C; not enforced here.
+- workspace_id is reserved for GL-200C and defaults to the demo workspace.
 - Cross-tenant resource lookups return None (functions) or 404 (HTTP).
 - Admin-token mode is bound to 'demo' tenant for dev/demo backward compatibility.
 - Existing chain events (tenant_id=None) are verified with legacy payload format.
@@ -169,8 +169,8 @@ class TestMigrationColumns(unittest.TestCase):
         finally:
             conn.close()
 
-    def test_workspace_id_nullable(self):
-        """workspace_id is nullable (reserved for GL-200C, not enforced)."""
+    def test_workspace_id_defaulted(self):
+        """workspace_id is defaulted after GL-283; NULL is no longer allowed."""
         import backend.src.grants.grants as g
         from backend.src.core.models import Grant
         grant = Grant(
@@ -184,11 +184,11 @@ class TestMigrationColumns(unittest.TestCase):
             reason="test",
         )
         g.create_grant(grant, tenant_id="t1")
-        # workspace_id should be NULL for new grants
+        # workspace_id should be the default workspace for new grants
         conn = self.db_mod.get_conn()
         try:
             row = conn.execute("SELECT workspace_id FROM grants WHERE id = ?", (grant.id,)).fetchone()
-            self.assertIsNone(row["workspace_id"])
+            self.assertEqual(row["workspace_id"], "default")
         finally:
             conn.close()
 
@@ -826,7 +826,7 @@ class TestHealthReadinessPublic(unittest.TestCase):
 
 
 class TestWorkspaceIdReserved(unittest.TestCase):
-    """workspace_id is reserved (nullable) but not enforced in GL-200B."""
+    """workspace_id is reserved and defaulted after GL-283."""
 
     def setUp(self):
         self.db_path = _make_db()
@@ -859,8 +859,8 @@ class TestWorkspaceIdReserved(unittest.TestCase):
         finally:
             conn.close()
 
-    def test_workspace_id_is_null_by_default(self):
-        """workspace_id defaults to NULL (not enforced in GL-200B)."""
+    def test_workspace_id_is_defaulted(self):
+        """workspace_id defaults to the demo workspace after GL-283."""
         import backend.src.grants.grants as g
         from backend.src.core.models import Grant
         grant = Grant(
@@ -872,7 +872,7 @@ class TestWorkspaceIdReserved(unittest.TestCase):
         conn = self.db_mod.get_conn()
         try:
             row = conn.execute("SELECT workspace_id FROM grants WHERE id = ?", (grant.id,)).fetchone()
-            self.assertIsNone(row["workspace_id"])
+            self.assertEqual(row["workspace_id"], "default")
         finally:
             conn.close()
 

@@ -15,6 +15,7 @@ def create_challenge(
     action: str,
     resource: str,
     tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
 ) -> Challenge:
     validate_string_length(subject_id, "subject_id", MAX_SHORT_ID_LENGTH)
     validate_string_length(action, "action", MAX_NAME_LENGTH)
@@ -30,14 +31,15 @@ def create_challenge(
     if tenant_id is None:
         raise ValueError("tenant_id is required")
     effective_tenant = tenant_id
+    effective_workspace = workspace_id if workspace_id is not None else "default"
     execute(
         """INSERT INTO challenges
-           (id, subject_id, action, resource, created_at, expires_at, used_at, status, tenant_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+           (id, subject_id, action, resource, created_at, expires_at, used_at, status, tenant_id, workspace_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             challenge.id, challenge.subject_id, challenge.action, challenge.resource,
             challenge.created_at, challenge.expires_at, challenge.used_at, challenge.status,
-            effective_tenant,
+            effective_tenant, effective_workspace,
         ),
     )
     return challenge
@@ -54,15 +56,48 @@ def get_challenge(challenge_id: str, tenant_id: Optional[str] = None) -> Optiona
     return _row_to_challenge(row) if row else None
 
 
-def list_challenges(tenant_id: Optional[str] = None) -> list:
+def list_challenges(
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
+    limit: Optional[int] = None,
+    offset: int = 0,
+) -> list:
+    conditions: list[str] = []
+    params: list = []
     if tenant_id is not None:
-        rows = query_all(
-            "SELECT * FROM challenges WHERE tenant_id = ? ORDER BY created_at DESC",
-            (tenant_id,),
-        )
-    else:
-        rows = query_all("SELECT * FROM challenges ORDER BY created_at DESC")
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("workspace_id = ?")
+        params.append(workspace_id)
+    sql = "SELECT * FROM challenges"
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    sql += " ORDER BY created_at DESC"
+    if limit is not None:
+        sql += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+    rows = query_all(sql, tuple(params))
     return [_row_to_challenge(r) for r in rows]
+
+
+def count_challenges(
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
+) -> int:
+    conditions: list[str] = []
+    params: list = []
+    if tenant_id is not None:
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("workspace_id = ?")
+        params.append(workspace_id)
+    sql = "SELECT COUNT(*) AS count FROM challenges"
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    row = query_one(sql, tuple(params))
+    return int(row["count"]) if row else 0
 
 
 def mark_used(challenge_id: str) -> None:

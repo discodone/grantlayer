@@ -13,6 +13,7 @@ from ...auth import operators as ops
 from ...core.logging_utils import get_logger, safe_log
 from ...core.models import AuditEvent
 from ..deps import require_admin
+from ..schemas import DynamicResponse
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -29,7 +30,7 @@ class OperatorCreateRequest(BaseModel):
     model_config = {"populate_by_name": True}
 
 
-@router.get("/operators")
+@router.get("/operators", response_model=list[dict[str, Any]])
 def list_operators_endpoint(
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
@@ -37,7 +38,7 @@ def list_operators_endpoint(
     return ops.list_operators_for_admin()
 
 
-@router.get("/operators/{operator_id}")
+@router.get("/operators/{operator_id}", response_model=dict[str, Any])
 def get_operator_endpoint(
     operator_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -52,7 +53,7 @@ def get_operator_endpoint(
     return op_safe
 
 
-@router.post("/operators", status_code=201)
+@router.post("/operators", status_code=201, response_model=DynamicResponse)
 def create_operator_endpoint(
     body: OperatorCreateRequest,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -113,7 +114,7 @@ def create_operator_endpoint(
     }
 
 
-@router.post("/operators/{operator_id}/revoke")
+@router.post("/operators/{operator_id}/revoke", response_model=DynamicResponse)
 def revoke_operator_endpoint(
     operator_id: str,
     authorization: Annotated[Optional[str], Header()] = None,

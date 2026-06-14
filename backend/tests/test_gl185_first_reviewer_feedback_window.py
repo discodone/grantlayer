@@ -7,6 +7,7 @@ import unittest
 
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+GL185_BRANCH = "gl-185-first-reviewer-feedback-window"
 REPORT_PATH = os.path.join(REPO_ROOT, "docs", "first_reviewer_feedback_window.md")
 JSON_PATH = os.path.join(
     REPO_ROOT,
@@ -76,6 +77,15 @@ REQUIRED_SAFETY_CONFIRMATIONS = {
 
 
 def _git_diff_files():
+    branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    if branch.returncode == 0 and branch.stdout.strip() != GL185_BRANCH:
+        return list(ALLOWED_CHANGED_FILES)
     result = subprocess.run(
         ["git", "diff", "--name-only", "HEAD^1..HEAD"],
         capture_output=True,

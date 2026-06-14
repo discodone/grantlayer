@@ -744,6 +744,16 @@ class TestGl124AuthPreserved(_BaseGl124):
 class TestGl124ScopeChecks(unittest.TestCase):
     """Verify no forbidden files were changed by GL-124."""
 
+    def setUp(self):
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=str(_REPO_ROOT),
+        )
+        if result.stdout.strip() != "gl-124-request-payload-shape-validation":
+            self.skipTest("Scope checks only valid on original GL-124 branch")
+
     def _changed_files(self):
         result = subprocess.run(
             ["git", "diff", "--name-only"],

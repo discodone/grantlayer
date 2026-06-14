@@ -12,7 +12,7 @@ from ..deps import resolve_auth_and_workspace
 router = APIRouter(prefix="/decision-provenance", tags=["decision-provenance"])
 
 
-@router.post("/v2/build")
+@router.post("/v2/build", response_model=dict[str, Any])
 def build_provenance_v2(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,

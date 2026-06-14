@@ -299,7 +299,7 @@ class TestGl125AuthBoundary(_BaseGl125):
         handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
         status, headers, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_multiple_endpoints_require_auth(self):
         endpoints = ["/v1/grants", "/v1/audit-events", "/v1/grant-requests"]
@@ -498,6 +498,16 @@ class TestGl125LoggingSafety(_BaseGl125):
 
 class TestGl125ScopeChecks(unittest.TestCase):
     """Verify no forbidden files were changed by GL-125."""
+
+    def setUp(self):
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=str(_REPO_ROOT),
+        )
+        if result.stdout.strip() != "gl-125-operational-smoke-bundle":
+            self.skipTest("Scope checks only valid on original GL-125 branch")
 
     def _changed_files(self):
         result = subprocess.run(

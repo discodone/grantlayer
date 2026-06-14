@@ -33,6 +33,7 @@ _ALLOWED_CHANGED_FILES = {
     "docs/examples/gl175/public_snapshot_visibility_decision_gate.json",
     "backend/tests/test_gl175_public_snapshot_visibility_decision_gate.py",
 }
+_GL175_BRANCH = "gl-175-public-snapshot-visibility-decision-gate"
 _FORBIDDEN_PATTERNS = [
     r"anton\.hofer@web\.de",
     r"eyJ[A-Za-z0-9_\-]{20,}\.[A-Za-z0-9_\-]{10,}\.",
@@ -357,6 +358,14 @@ class TestGL175CleanupApplied(unittest.TestCase):
 
 class TestGL175ChangedFilesScope(unittest.TestCase):
     def test_changed_files_within_scope(self):
+        branch = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=_REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        if branch.returncode == 0 and branch.stdout.strip() != _GL175_BRANCH:
+            self.skipTest(f"Not on {_GL175_BRANCH} branch; skipping diff-based scope guard.")
         result = subprocess.run(
             ["git", "diff", "--name-only", "main...HEAD"],
             cwd=_REPO_ROOT,

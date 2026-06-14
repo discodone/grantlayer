@@ -365,7 +365,7 @@ class TestGl091AuthBehaviorPreserved(_BaseGl091):
         handler = self._make_handler("/v1/grants", auth_header="Bearer owner-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_invalid_role_returns_403_safe_json(self):
         handler = self._make_handler("/v1/grants", auth_header="Bearer demo-token")
@@ -505,7 +505,7 @@ class TestGl091LegacyMode(_BaseGl091):
         handler = self._make_handler("/v1/grants", auth_header="Bearer legacy-admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
 
 class TestGl091NoForbiddenFilesChanged(unittest.TestCase):

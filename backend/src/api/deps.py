@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Optional, cast
 
 from fastapi import HTTPException
 
@@ -19,7 +19,7 @@ def resolve_auth_and_workspace(
     authorization: Optional[str],
     required_roles: list[str],
     workspace_id: Optional[str] = None,
-) -> tuple[dict, dict]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Authenticate and resolve workspace context.
 
     tries JWT first when GRANTLAYER_JWT_SECRET is set; falls back to
@@ -28,11 +28,12 @@ def resolve_auth_and_workspace(
     Returns (auth_ctx, ws_ctx).  Raises HTTPException on failure.
     """
     jwt_ok, jwt_status, jwt_result = validate_jwt_header(authorization)
+    payload: dict[str, Any]
     if jwt_ok is not None:
         # JWT auth is configured — use JWT result, do not fall through to legacy.
         if not jwt_ok:
-            raise HTTPException(status_code=jwt_status, detail=jwt_result)
-        payload = jwt_result
+            raise HTTPException(status_code=jwt_status or 401, detail=jwt_result)
+        payload = cast(dict[str, Any], jwt_result)
     else:
         # JWT not configured — use legacy static-token / operator-model auth.
         ok, http_status, payload = check_auth(authorization, required_roles=required_roles)
@@ -42,30 +43,17 @@ def resolve_auth_and_workspace(
     ws_id, ws_status, ws_ctx = resolve_workspace_context(payload, workspace_id)
 
     if ws_status != 200:
-        error_code = ws_ctx.get("errorCode", "")
-        if error_code in ("no_workspace_membership", "workspace_id_required"):
-            tenant_id = payload.get("tenant_id")
-            if tenant_id:
-                from ..core.db import query_all as _qa
-                tenant_has_ws = _qa(
-                    "SELECT id FROM workspaces WHERE tenant_id = ? AND status = 'active' LIMIT 1",
-                    (tenant_id,),
-                )
-                if not tenant_has_ws:
-                    # No workspaces configured for this tenant → workspace isolation is not
-                    # active yet. Use workspace_id=None so query layers apply no workspace
-                    # filter (all tenant-scoped records are visible).  Once workspaces are
-                    # created (and the migration backfills workspace_id='default'), operators
-                    # must supply an explicit X-Workspace-Id to get the strict filter.
-                    ws_ctx = {
-                        "workspace_id": None,
-                        "tenant_id": tenant_id,
-                        "workspace_member_role": None,
-                        "cross_workspace_access": False,
-                        "resolution_mode": "no_tenant_workspaces_fallback",
-                    }
-                    return payload, ws_ctx
         raise HTTPException(status_code=ws_status, detail=ws_ctx)
+
+    if ws_id is None or ws_ctx.get("workspace_id") is None:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "workspace_id is required",
+                "errorCode": "workspace_id_required",
+                "reason": "A valid workspace context is required.",
+            },
+        )
 
     return payload, ws_ctx
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
@@ -105,6 +105,15 @@ class GrantResponse(BaseModel):
         )
 
 
+class GrantListResponse(BaseModel):
+    items: list[GrantResponse]
+    total: int
+    limit: int
+    offset: int
+
+    model_config = {"populate_by_name": True}
+
+
 class GrantRequestResponse(BaseModel):
     id: str
     subject_id: str = Field(alias="subjectId")
@@ -156,6 +165,115 @@ class GrantRequestResponse(BaseModel):
             createdAt=d["created_at"],
             updatedAt=d["updated_at"],
         )
+
+
+class GrantRequestListResponse(BaseModel):
+    items: list[GrantRequestResponse]
+    total: int
+    limit: int
+    offset: int
+
+    model_config = {"populate_by_name": True}
+
+
+class AuditEventResponse(BaseModel):
+    id: str
+    timestamp: str
+    subject_id: str
+    role: str
+    action: str
+    resource: str
+    approved: bool
+    reason: str
+    matched_grant_id: Optional[str] = None
+    challenge_id: Optional[str] = None
+    challenge_present: bool
+    challenge_result: str
+    grant_signature_result: str
+    row_hash: Optional[str] = None
+    prev_hash: Optional[str] = None
+    tenant_id: Optional[str] = None
+    workspace_id: Optional[str] = None
+    scope: Optional[str] = None
+
+
+class AuditEventListResponse(BaseModel):
+    items: list[AuditEventResponse]
+    total: int
+    limit: int
+    offset: int
+
+
+class GrantExecutionResponse(BaseModel):
+    id: str
+    grant_id: Optional[str] = Field(default=None, alias="grantId")
+    grant_request_id: Optional[str] = Field(default=None, alias="grantRequestId")
+    operator_id: Optional[str] = Field(default=None, alias="operatorId")
+    action: str
+    resource: str
+    challenge_id: Optional[str] = Field(default=None, alias="challengeId")
+    challenge_result: Optional[str] = Field(default=None, alias="challengeResult")
+    policy_result: str = Field(alias="policyResult")
+    result: str
+    error_code: Optional[str] = Field(default=None, alias="errorCode")
+    executed_at: str = Field(alias="executedAt")
+    audit_event_id: Optional[str] = Field(default=None, alias="auditEventId")
+    metadata_json: Optional[str] = Field(default=None, alias="metadataJson")
+
+    model_config = {"populate_by_name": True}
+
+
+class GrantExecutionListResponse(BaseModel):
+    items: list[GrantExecutionResponse]
+    total: int
+    limit: int
+    offset: int
+
+    model_config = {"populate_by_name": True}
+
+
+class ChallengeResponse(BaseModel):
+    id: str
+    subject_id: str = Field(alias="subjectId")
+    action: str
+    resource: str
+    created_at: str = Field(alias="createdAt")
+    expires_at: str = Field(alias="expiresAt")
+    used_at: Optional[str] = Field(default=None, alias="usedAt")
+    status: str
+
+    model_config = {"populate_by_name": True}
+
+
+class ChallengeCreateResponse(BaseModel):
+    challenge_id: str = Field(alias="challengeId")
+    subject_id: str = Field(alias="subjectId")
+    action: str
+    resource: str
+    expires_at: str = Field(alias="expiresAt")
+
+    model_config = {"populate_by_name": True}
+
+
+class ChallengeListResponse(BaseModel):
+    items: list[ChallengeResponse]
+    total: int
+    limit: int
+    offset: int
+
+    model_config = {"populate_by_name": True}
+
+
+class OkResponse(BaseModel):
+    ok: bool
+
+
+class DynamicResponse(BaseModel):
+    model_config = {"extra": "allow"}
+
+
+class DictResponse(BaseModel):
+    data: dict[str, Any]
 
 
 class ErrorResponse(BaseModel):

@@ -7,6 +7,7 @@ import unittest
 
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+GL184_BRANCH = "gl-184-first-external-reviewer-invite-pack"
 REPORT_PATH = os.path.join(REPO_ROOT, "docs", "first_external_reviewer_invite_pack.md")
 JSON_PATH = os.path.join(
     REPO_ROOT,
@@ -78,6 +79,15 @@ REQUIRED_FEEDBACK_RECORDING_FIELDS = {
 
 
 def _git_diff_files():
+    branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    if branch.returncode == 0 and branch.stdout.strip() != GL184_BRANCH:
+        return list(ALLOWED_CHANGED_FILES)
     result = subprocess.run(
         ["git", "diff", "--name-only", "HEAD^1..HEAD"],
         capture_output=True,

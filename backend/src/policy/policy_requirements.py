@@ -9,7 +9,7 @@ No DB access.  No network calls.  No secrets exposed.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Optional
+from typing import Any, Optional, TypeGuard
 
 # ──────────────────────────────────────────────
 # Constants
@@ -58,7 +58,7 @@ def _dedupe(items: list[str]) -> list[str]:
     return list(dict.fromkeys(items))
 
 
-def _is_dict(value: Any) -> bool:
+def _is_dict(value: Any) -> TypeGuard[dict[str, Any]]:
     return isinstance(value, dict)
 
 

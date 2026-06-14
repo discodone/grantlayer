@@ -8,6 +8,8 @@ from typing import List, Optional
 from ..core.db import execute, query_all, query_one
 from ..core.models import GrantExecution
 
+_DEMO_WORKSPACE_ID = "default"
+
 
 def _row_to_grant_execution(row: dict | None) -> Optional[GrantExecution]:
     if row is None:
@@ -39,6 +41,7 @@ def create_grant_execution(
     if tenant_id is None:
         raise ValueError("tenant_id is required")
     effective_tenant = tenant_id
+    effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
     execute(
         """
         INSERT INTO grant_executions (
@@ -63,7 +66,7 @@ def create_grant_execution(
             execution.audit_event_id,
             execution.metadata_json,
             effective_tenant,
-            workspace_id,
+            effective_workspace,
         ),
     )
     return execution
@@ -95,6 +98,7 @@ def list_grant_executions(
     grant_request_id: Optional[str] = None,
     operator_id: Optional[str] = None,
     limit: int = 200,
+    offset: int = 0,
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
 ) -> List[GrantExecution]:
@@ -120,22 +124,54 @@ def list_grant_executions(
     base = "SELECT * FROM grant_executions"
     if conditions:
         base += " WHERE " + " AND ".join(conditions)
-    base += " ORDER BY executed_at DESC LIMIT ?"
-    params.append(limit)
+    base += " ORDER BY executed_at DESC LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
 
     rows = query_all(base, tuple(params))
-    return [_row_to_grant_execution(r) for r in rows]
+    return [e for e in (_row_to_grant_execution(r) for r in rows) if e is not None]
+
+
+def count_grant_executions(
+    grant_id: Optional[str] = None,
+    grant_request_id: Optional[str] = None,
+    operator_id: Optional[str] = None,
+    tenant_id: Optional[str] = None,
+    workspace_id: Optional[str] = None,
+) -> int:
+    conditions: list[str] = []
+    params: list = []
+    if tenant_id is not None:
+        conditions.append("tenant_id = ?")
+        params.append(tenant_id)
+    if workspace_id is not None:
+        conditions.append("workspace_id = ?")
+        params.append(workspace_id)
+    if grant_id is not None:
+        conditions.append("grant_id = ?")
+        params.append(grant_id)
+    if grant_request_id is not None:
+        conditions.append("grant_request_id = ?")
+        params.append(grant_request_id)
+    if operator_id is not None:
+        conditions.append("operator_id = ?")
+        params.append(operator_id)
+    sql = "SELECT COUNT(*) AS count FROM grant_executions"
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    row = query_one(sql, tuple(params))
+    return int(row["count"]) if row else 0
 
 
 def list_grant_executions_for_grant(
     grant_id: str,
     limit: int = 200,
+    offset: int = 0,
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
 ) -> List[GrantExecution]:
     """List executions for a specific grant, optionally scoped to tenant and workspace."""
     return list_grant_executions(
-        grant_id=grant_id, limit=limit, tenant_id=tenant_id, workspace_id=workspace_id
+        grant_id=grant_id, limit=limit, offset=offset, tenant_id=tenant_id, workspace_id=workspace_id
     )
 
 

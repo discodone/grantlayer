@@ -208,12 +208,12 @@ def build_decision_provenance_v2(
         result["decisionStatus"] = decision
 
     # ── Signals and readiness ──────────────────────────────────────
-    readiness = {}
-    signals = {}
+    readiness: dict[str, Any] = {}
+    signals: dict[str, str] = {}
     blockers: list[str] = []
     warnings: list[str] = []
     missing_inputs: list[str] = result["missingInputs"].copy()
-    audit_readiness = {}
+    audit_readiness: dict[str, Any] = {}
 
     # --- Evidence signal and readiness ----------------------------
     if evidence_completeness is not None:

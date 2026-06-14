@@ -131,7 +131,7 @@ class TestGl082AuditEvents(_BaseGl082):
         handler = self._make_handler("/v1/audit-events")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_limit_abc_returns_400(self):
         handler = self._make_handler("/v1/audit-events?limit=abc")
@@ -354,12 +354,12 @@ class TestGl082ParserDirectly(_BaseGl082):
     def test_parser_returns_default_for_missing(self):
         status, body = self._run_handler(self._make_handler("/v1/audit-events"))
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_parser_returns_int_for_valid(self):
         status, body = self._run_handler(self._make_handler("/v1/audit-events?limit=42"))
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_parser_raises_for_abc(self):
         status, body = self._run_handler(self._make_handler("/v1/audit-events?limit=abc"))
@@ -382,7 +382,7 @@ class TestGl082ParserDirectly(_BaseGl082):
     def test_parser_respects_custom_min_max(self):
         status, body = self._run_handler(self._make_handler("/v1/audit-events?limit=5"))
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
 
 class TestGl082OpenAPIContract(_BaseGl082):

@@ -799,7 +799,7 @@ class TestGl120LoggingFailureSafety(_BaseGl120):
             handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
             status, _, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_auth_logging_failure_preserves_403_role(self):
         self._insert_operator("auditor-1", "Auditor", "auditor", "auditor-token")
@@ -858,7 +858,7 @@ class TestGl120ResponseSemanticsPreserved(_BaseGl120):
         handler = self._make_raw_handler("/v1/grants", auth_header="Bearer owner-token")
         status, _, body = self._run_raw_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_gl117_structured_logging_preserved(self):
         logger = logging.getLogger("grantlayer.server")

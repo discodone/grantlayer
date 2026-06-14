@@ -296,7 +296,9 @@
       "id": "F-182-001",
       "severity": "info",
       "description": "No external feedback has been collected yet — this is the intake plan. Actual findings will be recorded in GL-183 after the first reviewer window.",
-      "status": "open"
+      "status": "open",
+      "recommendation": "Collect reviewer feedback during the intake window and triage it in GL-183.",
+      "blocking": false
     }
   ],
   "finding_counts_by_severity": {

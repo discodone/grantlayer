@@ -7,7 +7,7 @@ Private key is stored unencrypted at data/demo_ed25519_private_key.pem.
 import hashlib
 import os
 import stat
-from typing import Tuple
+from typing import Tuple, cast
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
@@ -78,7 +78,7 @@ def _load_private_key_from_bytes(key_data: bytes, passphrase: bytes | None) -> E
     Does not leak key material or passphrase values in exceptions.
     """
     try:
-        return load_pem_private_key(key_data, password=passphrase)
+        return cast(Ed25519PrivateKey, load_pem_private_key(key_data, password=passphrase))
     except TypeError as exc:
         exc_str = str(exc).lower()
         if "not given but private key is encrypted" in exc_str:
@@ -154,7 +154,7 @@ def load_private_key() -> Ed25519PrivateKey:
 
 def load_public_key() -> Ed25519PublicKey:
     with open(_PUBLIC_KEY_PATH, "rb") as f:
-        return load_pem_public_key(f.read())
+        return cast(Ed25519PublicKey, load_pem_public_key(f.read()))
 
 
 def canonical_grant_payload(grant: Grant) -> bytes:

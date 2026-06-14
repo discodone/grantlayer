@@ -155,6 +155,15 @@ def _reload_modules(db_path: str):
     import backend.src.evidence.evidence_verification as evidence_verification_mod
     importlib.reload(evidence_verification_mod)
 
+    for module_name in (
+        "backend.src.api.deps",
+        "backend.src.api.routers.grants",
+        "backend.src.api.app",
+    ):
+        module = sys.modules.get(module_name)
+        if module is not None:
+            importlib.reload(module)
+
     return {
         "config": config_mod,
         "db": db_mod,
@@ -328,6 +337,27 @@ class _BaseGL215Runtime(unittest.TestCase):
         self.op_b, self.token_b = self.ops.create_operator(
             "tenant-b-owner", "owner", "gl215-token-b", tenant_id="tenant_b"
         )
+        for workspace_id, tenant_id in (
+            ("workspace_a", "tenant_a"),
+            ("workspace_b", "tenant_b"),
+        ):
+            self.db.execute(
+                """
+                INSERT OR IGNORE INTO workspaces
+                    (id, tenant_id, name, slug, owner_id, status, created_at, updated_at)
+                VALUES
+                    (?, ?, ?, ?, ?, 'active', ?, ?)
+                """,
+                (
+                    workspace_id,
+                    tenant_id,
+                    workspace_id,
+                    workspace_id,
+                    "system",
+                    "2025-01-01T00:00:00Z",
+                    "2025-01-01T00:00:00Z",
+                ),
+            )
 
     def tearDown(self):
         try:
@@ -388,6 +418,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
                 status, body, _ = _run_handler(route,
                     method="GET",
                     auth_header=self._auth_b(),
+                    extra_headers={"X-Workspace-Id": "workspace_b"},
                 )
                 self.assertEqual(status, 404)
                 self.assertEqual(body.get("errorCode"), "execution_not_found")
@@ -416,6 +447,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
         status, body, _ = _run_handler(f"/v1/evidence/executions/{execution.id}/verify",
             method="GET",
             auth_header=self._auth_b(),
+            extra_headers={"X-Workspace-Id": "workspace_b"},
         )
         self.assertEqual(status, 404)
         self.assertEqual(body.get("errorCode"), "execution_not_found")
@@ -434,6 +466,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
             method="POST",
             auth_header=self._auth_b(),
             body=b"{}",
+            extra_headers={"X-Workspace-Id": "workspace_b"},
         )
         self.assertEqual(status, 404)
         self.assertEqual(body.get("errorCode"), "grant_not_found")
@@ -457,6 +490,7 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
             method="POST",
             auth_header=self._auth_a(),
             body=json.dumps(payload).encode(),
+            extra_headers={"X-Workspace-Id": "workspace_a"},
         )
         self.assertEqual(status, 201)
         row = self.db.query_one(
@@ -505,9 +539,15 @@ class TestGL215TenantWorkspaceRuntimeHardening(_BaseGL215Runtime):
 
 
 class TestGL215ForbiddenChangeGuards(unittest.TestCase):
+    def setUp(self):
+        branch = _run_git(["rev-parse", "--abbrev-ref", "HEAD"])[0]
+        if branch != "gl-215-tenant-workspace-production-guarantee":
+            self.skipTest(
+                "Scope guard skipped: not on gl-215-tenant-workspace-production-guarantee "
+                f"(current: {branch})"
+            )
+
     def test_changed_files_are_allowed_and_website_imports_excluded(self):
-        if _run_git(["rev-parse", "--abbrev-ref", "HEAD"])[0] != "gl-215-tenant-workspace-production-guarantee":
-            return
         changed = _branch_changed_files()
         disallowed = changed - ALLOWED_CHANGED_FILES
         self.assertFalse(disallowed, f"Unexpected changed files: {sorted(disallowed)}")

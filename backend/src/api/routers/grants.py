@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import datetime
-from typing import Annotated, List, Optional
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Query
 
 from ...audit import audit_log as _audit_log
 from ...core import config
@@ -19,9 +19,9 @@ from ...core.validation import (
     validate_string_length,
 )
 from ...grants.grant_requests import ALLOWED_GRANT_ROLES
-from ...grants.grants import create_grant, get_grant, list_grants
+from ...grants.grants import count_grants, create_grant, get_grant, list_grants
 from ..deps import resolve_auth_and_workspace
-from ..schemas import GrantCreateRequest, GrantResponse
+from ..schemas import GrantCreateRequest, GrantListResponse, GrantResponse
 
 router = APIRouter(prefix="/grants", tags=["grants"])
 
@@ -78,8 +78,10 @@ def _grant_to_response(grant: Grant) -> GrantResponse:
 # ── Endpoints ─────────────────────────────────────────────────────────────
 
 
-@router.get("", response_model=List[GrantResponse], response_model_by_alias=True)
+@router.get("", response_model=GrantListResponse, response_model_by_alias=True)
 def list_grants_endpoint(
+    limit: int = Query(default=100, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ):
@@ -90,9 +92,14 @@ def list_grants_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx.get("workspace_id")
-    grants = list_grants(tenant_id=tenant_id, workspace_id=workspace_id)
-    return [_grant_to_response(g) for g in grants]
+    workspace_id = ws_ctx["workspace_id"]
+    grants = list_grants(tenant_id=tenant_id, workspace_id=workspace_id, limit=limit, offset=offset)
+    return GrantListResponse(
+        items=[_grant_to_response(g) for g in grants],
+        total=count_grants(tenant_id=tenant_id, workspace_id=workspace_id),
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.get("/{grant_id}", response_model=GrantResponse, response_model_by_alias=True)
@@ -108,7 +115,7 @@ def get_grant_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx.get("workspace_id")
+    workspace_id = ws_ctx["workspace_id"]
     grant = get_grant(grant_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if grant is None:
         raise HTTPException(
@@ -140,7 +147,7 @@ def create_grant_endpoint(
         workspace_id=x_workspace_id,
     )
     tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx.get("workspace_id")
+    workspace_id = ws_ctx["workspace_id"]
 
     # Validate that string fields are non-empty
     for alias, value in (
@@ -219,6 +226,7 @@ def create_grant_endpoint(
             matched_grant_id=grant.id,
             grant_signature_result="valid",
             tenant_id=tenant_id,
+            workspace_id=workspace_id,
         )
     )
     return _grant_to_response(grant)

@@ -372,9 +372,9 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
 
         status, data = self._http_get("/v1/grant-executions", auth_token="auditor-token")
         self.assertEqual(status, 200)
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["grantId"], g.id)
-        self.assertEqual(data[0]["result"], "succeeded")
+        self.assertEqual(len(data["items"]), 1)
+        self.assertEqual(data["items"][0]["grantId"], g.id)
+        self.assertEqual(data["items"][0]["result"], "succeeded")
 
     # ──────────────────────────────────────────────
     # 9. GET /grant-executions/:id returns single record
@@ -409,8 +409,8 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             f"/v1/grants/{g.id}/executions", auth_token="auditor-token"
         )
         self.assertEqual(status, 200)
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["grantId"], g.id)
+        self.assertEqual(len(data["items"]), 1)
+        self.assertEqual(data["items"][0]["grantId"], g.id)
 
     # ──────────────────────────────────────────────
     # 11. GET /grant-executions filtered by grantId
@@ -427,8 +427,8 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             f"/v1/grant-executions?grantId={g1.id}", auth_token="auditor-token"
         )
         self.assertEqual(status, 200)
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["grantId"], g1.id)
+        self.assertEqual(len(data["items"]), 1)
+        self.assertEqual(data["items"][0]["grantId"], g1.id)
 
     # ──────────────────────────────────────────────
     # 12. GET /grant-executions filtered by operatorId
@@ -451,8 +451,8 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             "/v1/grant-executions?operatorId=op-123", auth_token="auditor-token"
         )
         self.assertEqual(status, 200)
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["operatorId"], "op-123")
+        self.assertEqual(len(data["items"]), 1)
+        self.assertEqual(data["items"][0]["operatorId"], "op-123")
 
     # ──────────────────────────────────────────────
     # 13. Unauthorized role cannot access executions

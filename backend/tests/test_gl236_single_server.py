@@ -283,7 +283,7 @@ class TestAuditEventsAfterGrant(_GL236TestBase):
             headers={"Authorization": f"Bearer {token}"},
         )
         self.assertEqual(resp.status_code, 200, resp.text)
-        events = resp.json()
+        events = resp.json()["items"]
         self.assertTrue(events, "Expected at least one audit event after grant creation")
         reasons = [e.get("reason", "") for e in events]
         grant_reasons = [r for r in reasons if "grant" in r.lower()]

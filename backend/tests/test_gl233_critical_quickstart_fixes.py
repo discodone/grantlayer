@@ -173,7 +173,7 @@ class TestAuditEventAfterGrantCreate(_GL233TestBase):
     def test_audit_events_empty_before_grant(self):
         resp = self.client.get("/v1/audit-events", headers=self._jwt_header())
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), [])
+        self.assertEqual(resp.json()["items"], [])
 
     def test_audit_event_created_after_grant(self):
         self.client.post(
@@ -183,7 +183,7 @@ class TestAuditEventAfterGrantCreate(_GL233TestBase):
         )
         resp = self.client.get("/v1/audit-events", headers=self._jwt_header())
         self.assertEqual(resp.status_code, 200)
-        events = resp.json()
+        events = resp.json()["items"]
         self.assertGreater(len(events), 0, "Audit events must not be empty after creating a grant")
 
     def test_audit_event_has_correct_subject_id(self):
@@ -192,7 +192,7 @@ class TestAuditEventAfterGrantCreate(_GL233TestBase):
             json=_GRANT_BODY,
             headers={**self._jwt_header(), "Content-Type": "application/json"},
         )
-        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()
+        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()["items"]
         subjects = [e.get("subjectId") or e.get("subject_id") for e in events]
         self.assertIn("agent-gl233", subjects)
 
@@ -202,7 +202,7 @@ class TestAuditEventAfterGrantCreate(_GL233TestBase):
             json=_GRANT_BODY,
             headers={**self._jwt_header(), "Content-Type": "application/json"},
         )
-        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()
+        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()["items"]
         self.assertTrue(any(e.get("approved") for e in events),
                         "Grant-create audit event must have approved=true")
 
@@ -213,7 +213,7 @@ class TestAuditEventAfterGrantCreate(_GL233TestBase):
             headers={**self._jwt_header(), "Content-Type": "application/json"},
         )
         grant_id = create_resp.json().get("id")
-        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()
+        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()["items"]
         matched_ids = [e.get("matchedGrantId") or e.get("matched_grant_id") for e in events]
         self.assertIn(grant_id, matched_ids,
                       "Audit event must reference the created grant's ID")
@@ -226,7 +226,7 @@ class TestAuditEventAfterGrantCreate(_GL233TestBase):
                 json=body,
                 headers={**self._jwt_header(), "Content-Type": "application/json"},
             )
-        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()
+        events = self.client.get("/v1/audit-events", headers=self._jwt_header()).json()["items"]
         self.assertGreaterEqual(len(events), 3)
 
     def test_grant_create_returns_201(self):
@@ -348,7 +348,7 @@ class TestEndToEndQuickstartFlow(_GL233TestBase):
         # Step 3: verify audit events
         audit_resp = self.client.get("/v1/audit-events", headers=headers)
         self.assertEqual(audit_resp.status_code, 200)
-        events = audit_resp.json()
+        events = audit_resp.json()["items"]
         self.assertGreater(len(events), 0, "Audit events must not be empty")
         grant_ids = [e.get("matchedGrantId") or e.get("matched_grant_id") for e in events]
         self.assertIn(grant_id, grant_ids, "Created grant must appear in audit events")

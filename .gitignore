@@ -17,6 +17,9 @@ env/
 data/*.db
 data/*.db-wal
 data/*.db-shm
+backend/data/*.db
+backend/data/*.db-wal
+backend/data/*.db-shm
 
 # Key / secret / certificate hygiene (GL-136)
 *.pem

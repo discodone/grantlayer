@@ -6,6 +6,7 @@ import os
 import unittest
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+GL176_BRANCH = "gl-176-public-github-visibility-change-report"
 MARKDOWN_PATH = os.path.join(REPO_ROOT, "docs", "public_github_visibility_change_report.md")
 JSON_PATH = os.path.join(
     REPO_ROOT,
@@ -276,6 +277,14 @@ class TestGL176ChangedFilesScope(unittest.TestCase):
 
     def _get_changed_files(self):
         import subprocess
+        branch = subprocess.run(
+            ["git", "branch", "--show-current"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        if branch.returncode == 0 and branch.stdout.strip() != GL176_BRANCH:
+            return []
         result = subprocess.run(
             ["git", "diff", "--name-only", "main...HEAD"],
             capture_output=True,

@@ -247,6 +247,10 @@ PUBLIC_EXPORT_EXCLUDE=(
     "docs/examples/gl187p/public_snapshot_correction_push_gl187.json"
     "docs/public_snapshot_correction_push_gl188.md"
     "docs/examples/gl188p/public_snapshot_correction_push_gl188.json"
+    # Later public-review triage artifacts preserve old internal labels for audit
+    # context and are not part of the clean developer-preview snapshot.
+    "docs/examples/gl186/ai_reviewer_feedback_triage.json"
+    "docs/examples/gl187/public_docs_post_public_stale_claim_cleanup.json"
 )
 
 TMPFILE=$(mktemp /tmp/gl161-file-list-XXXXXXXX.txt)
@@ -264,6 +268,7 @@ git -C "$REPO_ROOT" ls-files \
     | grep -v '^dist/' \
     | grep -v '^build/' \
     | grep -v '^backend/' \
+    | grep -v '^docs/internal/' \
     | grep -vFxf "$EXCLUDE_LISTFILE" \
     > "$TMPFILE" || true
 

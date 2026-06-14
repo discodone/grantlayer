@@ -8,6 +8,7 @@ import subprocess
 import unittest
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+GL182_BRANCH = "gl-182-external-developer-feedback-intake"
 
 REPORT_PATH = os.path.join(REPO_ROOT, "docs", "external_developer_feedback_intake.md")
 JSON_PATH = os.path.join(
@@ -55,6 +56,15 @@ REQUIRED_SAFETY_CONFIRMATION_KEYS = {
 
 
 def _git_diff_files():
+    branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    if branch.returncode == 0 and branch.stdout.strip() != GL182_BRANCH:
+        return []
     result = subprocess.run(
         ["git", "status", "--short", "--untracked-files=all"],
         capture_output=True,

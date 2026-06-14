@@ -95,7 +95,7 @@ class TestGl140Gl139LockPreserved(unittest.TestCase):
 
     def test_audit_lock_still_present(self):
         repo_root = pathlib.Path(__file__).with_suffix("").parent.parent.parent
-        audit_path = repo_root / "backend" / "src" / "audit_log.py"
+        audit_path = repo_root / "backend" / "src" / "audit" / "audit_log.py"
         source = audit_path.read_text(encoding="utf-8")
         self.assertIn(
             "_AUDIT_HASH_CHAIN_WRITE_LOCK",
@@ -105,7 +105,7 @@ class TestGl140Gl139LockPreserved(unittest.TestCase):
 
     def test_audit_lock_is_rlock_in_source(self):
         repo_root = pathlib.Path(__file__).with_suffix("").parent.parent.parent
-        audit_path = repo_root / "backend" / "src" / "audit_log.py"
+        audit_path = repo_root / "backend" / "src" / "audit" / "audit_log.py"
         source = audit_path.read_text(encoding="utf-8")
         self.assertIn(
             "RLock",
@@ -165,9 +165,11 @@ class TestGl140ScopeGuard(unittest.TestCase):
         )
         return [ln.strip() for ln in result.stdout.splitlines() if ln.strip()]
 
-    def test_git_diff_limited_to_allowed_files(self):
+    def setUp(self):
         if self._current_branch() != "gl-140-threading-http-server-enablement":
-            self.skipTest("Branch-wide diff check only valid on GL-140 feature branch")
+            self.skipTest("Scope guard only valid on GL-140 feature branch")
+
+    def test_git_diff_limited_to_allowed_files(self):
         allowed = {
             "backend/src/server.py",
             "backend/tests/test_gl140_threading_http_server_enablement.py",

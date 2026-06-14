@@ -1,10 +1,30 @@
 # GrantLayer
 
-GrantLayer is a verification, audit, and compliance layer for agentic grant and funding workflows. When AI agents prepare funding applications, evaluate eligibility, or trigger approval decisions, GrantLayer makes every step traceable, tamper-evident, and independently auditable. It is in **Developer Preview** — designed for local evaluation and controlled pilots.
+GrantLayer is a verification, audit, and compliance layer for agentic grant and funding workflows. When AI agents prepare funding applications, evaluate eligibility, or trigger approval decisions, GrantLayer makes every step traceable, tamper-evident, and independently auditable. It is in **Developer Preview** — local evaluation and controlled pilot only. It is not production SaaS; production SaaS readiness is not claimed. Tenant/workspace isolation is not implemented. No GitHub push and no repository visibility change are part of this local quickstart.
+
+---
+
+## Status
+
+| Area | Status |
+|------|--------|
+| Production SaaS readiness | Not claimed |
+| Tenant/workspace isolation | Not implemented |
+| Public GitHub release | Available |
+| Real customer data in examples | None; examples use synthetic/demo data only |
+| Real secrets in examples | None; use placeholders or generated local values only |
+
+Production SaaS readiness is not claimed. Tenant isolation is not implemented.
+Examples use no real secrets and no real customer data.
 
 ---
 
 ## Quickstart
+
+### Choose your path
+
+- **Path A:** run the first verifiable output quickstart below. It requires no backend and uses Python stdlib only.
+- **Path B:** run the backend quickstart with Docker Compose or local Python setup.
 
 Get the stack running in under 5 minutes:
 
@@ -18,6 +38,20 @@ curl -k https://localhost/health
 ```
 
 See [QUICKSTART.md](QUICKSTART.md) for the full walkthrough: token generation, creating grants, grant requests, and audit log export.
+
+See [CHANGELOG.md](CHANGELOG.md) for public snapshot version anchors and caveats.
+
+### First Verifiable Output Quickstart
+
+Run the first verifiable output quickstart:
+
+```bash
+python3 examples/first_verifiable_output.py --output /tmp/grantlayer_first_output.json
+```
+
+The generated file is `/tmp/grantlayer_first_output.json`. The committed deterministic reference output is `examples/first_verifiable_output.json`; see `docs/first_verifiable_output.md`.
+
+This path is local/demo only, requires no real secrets, requires no customer data, uses no real secrets, and uses no real customer data.
 
 ---
 

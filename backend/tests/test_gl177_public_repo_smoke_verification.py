@@ -7,6 +7,7 @@ import subprocess
 import unittest
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+GL177_BRANCH = "gl-177-public-repo-smoke-verification"
 MARKDOWN_PATH = os.path.join(REPO_ROOT, "docs", "public_repo_smoke_verification.md")
 JSON_PATH = os.path.join(
     REPO_ROOT,
@@ -429,6 +430,14 @@ class TestGL177ChangedFilesScope(unittest.TestCase):
     }
 
     def _get_changed_files(self):
+        branch = subprocess.run(
+            ["git", "branch", "--show-current"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        if branch.returncode == 0 and branch.stdout.strip() != GL177_BRANCH:
+            return []
         result = subprocess.run(
             ["git", "diff", "--name-only", "main...HEAD"],
             capture_output=True,

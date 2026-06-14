@@ -122,11 +122,17 @@ class _Base(unittest.TestCase):
             "GRANTLAYER_DB",
             "GRANTLAYER_ENABLE_OPERATOR_MODEL",
             "GRANTLAYER_JWT_SECRET",
+            "GRANTLAYER_JWT_PUBLIC_KEY",
+            "GRANTLAYER_JWT_PRIVATE_KEY",
+            "GRANTLAYER_JWT_ALGORITHM",
             "GRANTLAYER_RATE_LIMIT_AUTH",
             "GRANTLAYER_RATE_LIMIT_API",
         )}
 
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        os.environ.pop("GRANTLAYER_JWT_PUBLIC_KEY", None)
+        os.environ.pop("GRANTLAYER_JWT_PRIVATE_KEY", None)
+        os.environ.pop("GRANTLAYER_JWT_ALGORITHM", None)
         os.environ["GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"] = "true"
         _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
         os.environ["GRANTLAYER_RATE_LIMIT_AUTH"] = "1000"
@@ -180,13 +186,13 @@ class TestResolveWorkspaceLegacyMode(_Base):
     OPERATOR_MODE = False
 
     def test_resolve_workspace_legacy_no_operator_id(self):
-        """No operator_id in payload → no workspace filter (None), status 200."""
+        """No operator_id in payload resolves the default demo workspace."""
         auth_payload = {"tenant_id": "demo"}
         ws_id, status, ctx = resolve_workspace_context(auth_payload)
         self.assertEqual(status, 200)
         self.assertIsNotNone(ctx)
-        # GL-281: legacy mode returns workspace_id=None (no workspace filter)
-        self.assertIsNone(ctx["workspace_id"])
+        self.assertEqual(ws_id, "default")
+        self.assertEqual(ctx["workspace_id"], "default")
         self.assertEqual(ctx["tenant_id"], "demo")
         self.assertEqual(ctx["resolution_mode"], "legacy_demo")
 
@@ -291,7 +297,7 @@ class TestGetGrantsLegacyMode(_Base):
         """Legacy mode: no operator, no admin token required → 200."""
         resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json()["items"], list)
 
     def test_get_grants_legacy_tenant_is_demo(self):
         """Legacy mode: tenant_id should resolve to 'demo'."""
@@ -306,7 +312,7 @@ class TestGetGrantsLegacyMode(_Base):
 
         resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
-        ids = [item["id"] for item in resp.json()]
+        ids = [item["id"] for item in resp.json()["items"]]
         self.assertIn(g.id, ids)
 
     def test_get_grants_other_tenant_not_visible_in_legacy(self):
@@ -322,7 +328,7 @@ class TestGetGrantsLegacyMode(_Base):
 
         resp = self.client.get("/v1/grants")
         self.assertEqual(resp.status_code, 200)
-        ids = [item["id"] for item in resp.json()]
+        ids = [item["id"] for item in resp.json()["items"]]
         self.assertNotIn(g_other.id, ids)
 
 
@@ -340,7 +346,7 @@ class TestGetGrantsOperatorMode(_Base):
         op_id, token = self._op(name="owner2", role="grant_admin", token="tok-ws006a", ws_id="ws-006a")
         resp = self.client.get("/v1/grants", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json()["items"], list)
 
     def test_get_grants_operator_no_membership_403(self):
         """Operator with no workspace membership → GET /grants returns 403."""
@@ -365,7 +371,7 @@ class TestGetGrantsOperatorMode(_Base):
 
         resp = self.client.get("/v1/grants", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
-        ids = [item["id"] for item in resp.json()]
+        ids = [item["id"] for item in resp.json()["items"]]
         self.assertNotIn(g_other.id, ids)
 
 
@@ -419,7 +425,7 @@ class TestGetAuditEventsWorkspaceContext(_Base):
         op_id, token = self._op(name="owner5", role="grant_admin", token="tok-ws008a", ws_id="ws-008a")
         resp = self.client.get("/v1/audit-events", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json()["items"], list)
 
     def test_audit_events_no_membership_403(self):
         op_id = "op-nows-008"
@@ -443,7 +449,7 @@ class TestGetGrantRequestsWorkspaceContext(_Base):
         op_id, token = self._op(name="owner6", role="grant_admin", token="tok-ws009a", ws_id="ws-009a")
         resp = self.client.get("/v1/grant-requests", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json()["items"], list)
 
     def test_grant_requests_no_membership_403(self):
         op_id = "op-nows-009"
@@ -544,7 +550,7 @@ class TestGetChallengesWorkspaceContext(_Base):
         op_id, token = self._op(name="owner8", role="grant_admin", token="tok-ws011a", ws_id="ws-011a")
         resp = self.client.get("/v1/challenges", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.json()["items"], list)
 
     def test_challenges_no_membership_403(self):
         op_id = "op-nows-011"
@@ -587,7 +593,7 @@ class TestTenantIdFromWorkspaceContext(_Base):
 
         resp = self.client.get("/v1/grants", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
-        ids = [item["id"] for item in resp.json()]
+        ids = [item["id"] for item in resp.json()["items"]]
         self.assertIn(g.id, ids)
         self.assertNotIn(g_other.id, ids)
 
@@ -654,7 +660,7 @@ class TestCrossTenantIsolationPreserved(_Base):
 
         resp = self.client.get("/v1/grants", headers=self._header(token))
         self.assertEqual(resp.status_code, 200)
-        ids = [item["id"] for item in resp.json()]
+        ids = [item["id"] for item in resp.json()["items"]]
         self.assertIn(g_mine.id, ids)
         self.assertNotIn(g_other.id, ids)
 

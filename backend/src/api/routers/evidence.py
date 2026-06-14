@@ -32,7 +32,7 @@ def _check_execution_tenant(execution_id: str, tenant_id: str) -> None:
         )
 
 
-@router.get("/{execution_id}")
+@router.get("/{execution_id}", response_model=dict[str, Any])
 def get_evidence_bundle(
     execution_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -54,7 +54,7 @@ def get_evidence_bundle(
     return bundle
 
 
-@router.get("/{execution_id}/export")
+@router.get("/{execution_id}/export", response_model=dict[str, Any])
 def export_evidence_bundle(
     execution_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -89,7 +89,7 @@ def export_evidence_bundle(
     )
 
 
-@router.get("/{execution_id}/verify")
+@router.get("/{execution_id}/verify", response_model=dict[str, Any])
 def verify_evidence_bundle(
     execution_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
@@ -105,7 +105,7 @@ def verify_evidence_bundle(
     return verify_execution(execution_id)
 
 
-@router.get("/{execution_id}/completeness")
+@router.get("/{execution_id}/completeness", response_model=dict[str, Any])
 def evidence_completeness(
     execution_id: str,
     include_details: bool = Query(default=True, alias="includeDetails"),

@@ -176,19 +176,19 @@ class TestGl046OperatorMode(_BaseGl046):
         handler = self._make_handler("/v1/grant-requests", auth_header="Bearer owner-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_list_grant_admin_succeeds(self):
         handler = self._make_handler("/v1/grant-requests", auth_header="Bearer admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_list_auditor_succeeds(self):
         handler = self._make_handler("/v1/grant-requests", auth_header="Bearer auditor-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_detail_owner_succeeds(self):
         handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header="Bearer owner-token")
@@ -288,7 +288,7 @@ class TestGl046LegacyMode(_BaseGl046):
         handler = self._make_handler("/v1/grant-requests", auth_header="Bearer legacy-admin-token")
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
+        self.assertIsInstance(body.get("items"), list)
 
     def test_detail_with_valid_admin_token_succeeds(self):
         handler = self._make_handler(f"/v1/grant-requests/{self.request.id}", auth_header="Bearer legacy-admin-token")
