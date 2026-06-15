@@ -110,7 +110,7 @@ class TestGL170CanonicalCaveats(unittest.TestCase):
             "production saas readiness",
             "not claimed",
             "tenant/workspace isolation",
-            "not implemented",
+            "enforced",
             "public github release",
             "available",
             "real customer data in examples",
@@ -122,7 +122,7 @@ class TestGL170CanonicalCaveats(unittest.TestCase):
         combined = self.readme + " " + self.security
         for phrase in [
             "production saas readiness is not claimed",
-            "tenant isolation is not implemented",
+            "tenant/workspace isolation is enforced",
             "no real secrets",
             "no real customer data",
         ]:

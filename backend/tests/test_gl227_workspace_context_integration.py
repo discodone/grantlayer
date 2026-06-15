@@ -118,6 +118,9 @@ class _Base(unittest.TestCase):
         self._orig_enable_operator = _cfg.ENABLE_OPERATOR_MODEL
         self._orig_allow_plaintext = _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE
         self._orig_db_path = _db.DB_PATH_OR_URL
+        # Save the SA engine state so tearDown can clean up without leaking
+        self._orig_sa_engine = _db._sa_engine
+        self._orig_engine_url = _db._engine_url
         self._orig_env = {k: os.environ.get(k) for k in (
             "GRANTLAYER_DB",
             "GRANTLAYER_ENABLE_OPERATOR_MODEL",
@@ -127,12 +130,19 @@ class _Base(unittest.TestCase):
             "GRANTLAYER_JWT_ALGORITHM",
             "GRANTLAYER_RATE_LIMIT_AUTH",
             "GRANTLAYER_RATE_LIMIT_API",
+            # These can be set by other tests in the same xdist worker and
+            # cause legacy-mode unauthenticated requests to fail with 403.
+            "GRANTLAYER_REQUIRE_ADMIN_TOKEN",
+            "GRANTLAYER_ADMIN_TOKEN",
         )}
 
         os.environ.pop("GRANTLAYER_JWT_SECRET", None)
         os.environ.pop("GRANTLAYER_JWT_PUBLIC_KEY", None)
         os.environ.pop("GRANTLAYER_JWT_PRIVATE_KEY", None)
         os.environ.pop("GRANTLAYER_JWT_ALGORITHM", None)
+        # Ensure admin-token enforcement is off so unauthenticated demo requests pass.
+        os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
+        os.environ.pop("GRANTLAYER_ADMIN_TOKEN", None)
         os.environ["GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"] = "true"
         _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = True
         os.environ["GRANTLAYER_RATE_LIMIT_AUTH"] = "1000"
@@ -140,6 +150,12 @@ class _Base(unittest.TestCase):
 
         _cfg.ENABLE_OPERATOR_MODEL = self.OPERATOR_MODE
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true" if self.OPERATOR_MODE else "false"
+
+        # Reset the SQLAlchemy engine so this test gets a clean connection to
+        # its own temp DB, regardless of what a previous test in the same
+        # xdist worker may have left in the engine cache.
+        _db._sa_engine = None
+        _db._engine_url = None
 
         self.db_path = _make_db()
         os.environ["GRANTLAYER_DB"] = self.db_path
@@ -152,6 +168,15 @@ class _Base(unittest.TestCase):
     def tearDown(self):
         _cfg.ENABLE_OPERATOR_MODEL = self._orig_enable_operator
         _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = self._orig_allow_plaintext
+        # Dispose the test DB engine before restoring the original path so the
+        # next test gets a fresh engine rather than a connection to a deleted file.
+        if _db._sa_engine is not None:
+            try:
+                _db._sa_engine.dispose()
+            except Exception:
+                pass
+        _db._sa_engine = self._orig_sa_engine
+        _db._engine_url = self._orig_engine_url
         _db.DB_PATH_OR_URL = self._orig_db_path
         _db.DB_PATH = self._orig_db_path
         for k, v in self._orig_env.items():
