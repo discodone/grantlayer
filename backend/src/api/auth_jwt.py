@@ -307,6 +307,7 @@ def validate_jwt_header(
                 # priv_pem is guaranteed non-None here (checked above).
                 from cryptography.hazmat.primitives import serialization
                 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+                assert priv_pem is not None  # guaranteed by the check above
                 priv_key = serialization.load_pem_private_key(priv_pem, password=None)
                 pub_pem = priv_key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
             payload = decode_token_rs256(token.strip(), pub_pem)
