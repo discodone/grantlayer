@@ -63,6 +63,9 @@ def health(request: Request):
         start = None
     uptime = int(time.time() - start) if start is not None else 0
 
+    limiter = getattr(request.app.state, "auth_rate_limiter", None)
+    redis_status = limiter.redis_status if limiter is not None else "disabled"
+
     return {
         "status": "ok" if db_status == "ok" else "degraded",
         "service": "grantlayer",
@@ -72,6 +75,7 @@ def health(request: Request):
         "database": db_status,
         "signing_key": _signing_key_status(),
         "migrations": _migration_revision(),
+        "redis": redis_status,
     }
 
 

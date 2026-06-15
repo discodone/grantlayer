@@ -170,6 +170,11 @@ GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: bool = _env_bool(
 GRANTLAYER_RATE_LIMIT_AUTH: int = max(1, _env_int("GRANTLAYER_RATE_LIMIT_AUTH", 10))
 GRANTLAYER_RATE_LIMIT_API: int = max(1, _env_int("GRANTLAYER_RATE_LIMIT_API", 120))
 
+# Redis URL for the shared rate-limiter backend (optional).
+# When unset the in-process sliding-window fallback is used.
+_redis_url_raw: str = _env_str("GRANTLAYER_REDIS_URL", "")
+GRANTLAYER_REDIS_URL: str | None = _redis_url_raw if _redis_url_raw else None
+
 # ──────────────────────────────────────────────────────────────
 # Demo Endpoint Host Safety
 # ──────────────────────────────────────────────────────────────

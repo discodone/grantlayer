@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from ..core import config
 from ..core.db import init_db
 from ..core.logging_utils import get_logger, reset_correlation_id, set_correlation_id
-from ..core.rate_limiter import RateLimiter
+from ..core.rate_limiter import create_rate_limiter
 from ..core.structured_logging import normalize_correlation_id
 from .routers import (
     admin,
@@ -69,9 +69,10 @@ def create_app() -> FastAPI:
 
     # Per-app rate limiter — created here so each create_app() call (and each
     # test) gets an isolated instance with no shared state.
-    app.state.auth_rate_limiter = RateLimiter(
+    app.state.auth_rate_limiter = create_rate_limiter(
         auth_limit=config.GRANTLAYER_RATE_LIMIT_AUTH,
         window_seconds=60,
+        redis_url=config.GRANTLAYER_REDIS_URL,
     )
 
     # CORS — exact-match allowlist, no reflection
