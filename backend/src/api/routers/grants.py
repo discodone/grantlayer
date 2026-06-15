@@ -5,11 +5,13 @@ from __future__ import annotations
 import datetime
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from sqlalchemy.orm import Session
 
 from ...audit import audit_log as _audit_log
 from ...core import config
 from ...core.crypto_signing import verify_grant_signature
+from ...core.db import get_db
 from ...core.models import AuditEvent, Grant
 from ...core.validation import (
     MAX_NAME_LENGTH,
@@ -84,6 +86,7 @@ def list_grants_endpoint(
     offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
+    db: Session = Depends(get_db),
 ):
     """List all grants visible to the authenticated operator."""
     _, ws_ctx = resolve_auth_and_workspace(
@@ -93,10 +96,10 @@ def list_grants_endpoint(
     )
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
-    grants = list_grants(tenant_id=tenant_id, workspace_id=workspace_id, limit=limit, offset=offset)
+    grants = list_grants(tenant_id=tenant_id, workspace_id=workspace_id, limit=limit, offset=offset, session=db)
     return GrantListResponse(
         items=[_grant_to_response(g) for g in grants],
-        total=count_grants(tenant_id=tenant_id, workspace_id=workspace_id),
+        total=count_grants(tenant_id=tenant_id, workspace_id=workspace_id, session=db),
         limit=limit,
         offset=offset,
     )
@@ -107,6 +110,7 @@ def get_grant_endpoint(
     grant_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
+    db: Session = Depends(get_db),
 ):
     """Retrieve a single grant by ID."""
     _, ws_ctx = resolve_auth_and_workspace(
@@ -116,7 +120,7 @@ def get_grant_endpoint(
     )
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
-    grant = get_grant(grant_id, tenant_id=tenant_id, workspace_id=workspace_id)
+    grant = get_grant(grant_id, tenant_id=tenant_id, workspace_id=workspace_id, session=db)
     if grant is None:
         raise HTTPException(
             status_code=404,

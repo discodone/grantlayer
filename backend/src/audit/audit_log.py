@@ -9,7 +9,6 @@ from sqlalchemy import text
 
 from ..core.db import (
     DB_BACKEND,
-    _ConnectionWrapper,
     _translate_to_named_params,
     execute,
     get_engine,
@@ -44,14 +43,13 @@ def _get_latest_row_hash(conn=None) -> Optional[str]:
         "ORDER BY timestamp DESC, rowid DESC LIMIT 1"
     )
     if conn is not None:
-        if isinstance(conn, _ConnectionWrapper):
-            row = conn.execute(sql).fetchone()
-        else:
-            row = conn.execute(text(sql)).fetchone()
+        row = conn.execute(text(sql)).fetchone()
     else:
         row = query_one(sql)
     if row is None:
         return None
+    if hasattr(row, "_mapping"):
+        return row._mapping.get("row_hash")
     return row["row_hash"] if isinstance(row, dict) else row[0]
 
 
@@ -362,11 +360,8 @@ def _append_event_sqlite(event: AuditEvent, conn=None) -> None:
         prev_hash = _get_latest_row_hash(conn)
         row_hash = _compute_row_hash(event, prev_hash)
         if conn is not None:
-            if isinstance(conn, _ConnectionWrapper):
-                conn.execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
-            else:
-                sql, param_dict = _translate_to_named_params(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
-                conn.execute(text(sql), param_dict)
+            sql, param_dict = _translate_to_named_params(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
+            conn.execute(text(sql), param_dict)
         else:
             execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
         event.row_hash = row_hash

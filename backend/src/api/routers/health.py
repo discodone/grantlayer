@@ -7,8 +7,9 @@ import time
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
-from ...core.db import get_db_health, query_one
+from ...core.db import get_db_health, get_engine
 from ...core.runtime_config import describe_runtime_config
 from ..schemas import DynamicResponse, ReadinessResponse
 
@@ -28,10 +29,12 @@ def _signing_key_status() -> str:
 
 def _migration_revision() -> str:
     try:
-        row = query_one("SELECT version_num FROM alembic_version LIMIT 1")
+        with get_engine().connect() as conn:
+            result = conn.execute(text("SELECT version_num FROM alembic_version LIMIT 1"))
+            row = result.fetchone()
         if row is None:
             return "no revision"
-        rev = row["version_num"]
+        rev = row[0]
         try:
             from alembic.config import Config
             from alembic.script import ScriptDirectory

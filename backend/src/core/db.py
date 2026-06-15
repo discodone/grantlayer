@@ -10,6 +10,7 @@ import os
 import sqlite3
 import threading
 import time
+from collections.abc import Generator
 from typing import Any
 from urllib.parse import urlparse
 
@@ -60,14 +61,43 @@ def get_session() -> Session:
 
 
 _session_maker: Any = None
+_session_maker_engine: Any = None
 
 
 def get_session_maker() -> Any:
-    """Return the thread-local session maker (factory)."""
-    global _session_maker
-    if _session_maker is None:
-        _session_maker = sessionmaker(bind=get_engine())
+    """Return the session maker factory, rebuilding it when the engine changes.
+
+    Rebuilding on engine change is required for test isolation: tests swap
+    DB_PATH_OR_URL between runs, which causes get_engine() to return a new
+    engine.  The cached sessionmaker must follow.
+    """
+    global _session_maker, _session_maker_engine
+    engine = get_engine()
+    if _session_maker is None or _session_maker_engine is not engine:
+        _session_maker = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+        _session_maker_engine = engine
     return _session_maker
+
+
+def get_db() -> Generator[Session, None, None]:
+    """FastAPI dependency: yield a SQLAlchemy Session per request.
+
+    Usage in a router:
+        @router.get("/example")
+        def my_endpoint(db: Session = Depends(get_db)):
+            ...
+    """
+    SessionLocal = get_session_maker()
+    db = SessionLocal()
+    try:
+        yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
 
 # ──────────────────────────────────────────────────────────────
 # Placeholder scanner
@@ -330,12 +360,49 @@ class _ConnectionWrapper:
     def cursor(self) -> Any:
         return self._conn.cursor()
 
-    def execute(self, sql: str, parameters: Any = None) -> Any:
-        """Execute SQL and return the cursor."""
+    def execute(self, sql: Any, parameters: Any = None) -> Any:
+        """Execute SQL and return the cursor.
+
+        Accepts both plain SQL strings and SQLAlchemy text() clause elements
+        (with named :p1 parameters) for backward compatibility with code that
+        uses the SQLAlchemy connection interface.
+        """
+        from sqlalchemy import TextClause
+
+        if isinstance(sql, TextClause):
+            sql_str = sql.text
+            if isinstance(parameters, dict):
+                # Convert :p1, :p2 named params → positional ? params
+                pos_params: list[Any] = []
+                parts: list[str] = []
+                i = 0
+                while i < len(sql_str):
+                    if sql_str[i] == ":" and i + 1 < len(sql_str) and (
+                        sql_str[i + 1].isalpha() or sql_str[i + 1] == "_"
+                    ):
+                        j = i + 1
+                        while j < len(sql_str) and (sql_str[j].isalnum() or sql_str[j] == "_"):
+                            j += 1
+                        key = sql_str[i + 1 : j]
+                        if key in parameters:
+                            pos_params.append(parameters[key])
+                            parts.append("?")
+                            i = j
+                            continue
+                    parts.append(sql_str[i])
+                    i += 1
+                sql = "".join(parts)
+                parameters = tuple(pos_params)
+            else:
+                sql = sql_str
+                parameters = parameters or ()
+        else:
+            parameters = parameters or ()
+
         cur = self._conn.cursor()
         if self.backend == "postgres":
             sql, _ = _translate_placeholders(sql)
-        cur.execute(sql, parameters or ())
+        cur.execute(sql, parameters)
         return cur
 
     def executemany(self, sql: str, parameters: Any) -> Any:
