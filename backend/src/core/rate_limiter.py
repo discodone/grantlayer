@@ -13,6 +13,7 @@ import collections
 import threading
 import time
 import uuid
+from typing import Any, Optional
 
 try:
     import redis as _redis_lib
@@ -130,7 +131,7 @@ class RedisRateLimiter:
     ) -> None:
         self._redis_url = redis_url
         self._fallback = RateLimiter(auth_limit, api_limit, window_seconds)
-        self._redis = None
+        self._redis: Optional[Any] = None
         self._lock = threading.Lock()
         self._try_connect()
 
@@ -206,7 +207,7 @@ class RedisRateLimiter:
 
     def _redis_check(
         self,
-        r: object,
+        r: Any,
         client_ip: str,
         group: str,
         now: float | None = None,
@@ -218,7 +219,7 @@ class RedisRateLimiter:
         key = f"rl:{client_ip}:{group}"
         member = f"{now}:{uuid.uuid4()}"
 
-        result = r.eval(_LUA_SLIDING_WINDOW, 1, key, now, window, limit, member)  # type: ignore[union-attr]
+        result = r.eval(_LUA_SLIDING_WINDOW, 1, key, now, window, limit, member)
         allowed = int(result[0])
         retry_after = int(result[2])
 
@@ -235,9 +236,9 @@ class RedisRateLimiter:
             try:
                 cursor = 0
                 while True:
-                    cursor, keys = r.scan(cursor, match="rl:*", count=100)  # type: ignore[union-attr]
+                    cursor, keys = r.scan(cursor, match="rl:*", count=100)
                     if keys:
-                        r.delete(*keys)  # type: ignore[union-attr]
+                        r.delete(*keys)
                     if cursor == 0:
                         break
             except Exception:
