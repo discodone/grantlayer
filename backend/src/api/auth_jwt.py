@@ -268,8 +268,20 @@ def validate_jwt_header(
     The JWT header's alg claim is validated against the configured algorithm
     to prevent algorithm-confusion attacks.
     """
-    if not is_jwt_enabled():
-        return None, None, None
+    # Read all key material once to avoid TOCTOU race between is_jwt_enabled()
+    # and the per-key reads inside the validation logic.
+    algo = _get_algorithm()
+    secret = _get_jwt_secret()
+    pub_pem = _get_public_key_pem()
+    priv_pem = _get_private_key_pem()
+
+    # Determine whether JWT auth is actually configured using local copies.
+    if algo == "HS256":
+        if not secret:
+            return None, None, None
+    else:
+        if not (pub_pem or priv_pem):
+            return None, None, None
 
     if not auth_header:
         return False, 401, {
@@ -286,24 +298,13 @@ def validate_jwt_header(
             "reason": "Authorization header must use Bearer scheme with a JWT.",
         }
 
-    algo = _get_algorithm()
     try:
         if algo == "HS256":
-            secret = _get_jwt_secret()
-            if secret is None:
-                raise ValueError("JWT secret is not configured.")
-            payload = decode_token(token.strip(), secret)
+            payload = decode_token(token.strip(), secret)  # type: ignore[arg-type]
         else:  # RS256
-            pub_pem = _get_public_key_pem()
             if not pub_pem:
-                # Only private key is set — derive public key for verification
-                priv_pem = _get_private_key_pem()
-                if not priv_pem:
-                    return False, 500, {
-                        "error": "jwt_misconfigured",
-                        "errorCode": "jwt_misconfigured",
-                        "reason": "Neither GRANTLAYER_JWT_PUBLIC_KEY nor GRANTLAYER_JWT_PRIVATE_KEY is set.",
-                    }
+                # Only private key is available — derive public key for verification.
+                # priv_pem is guaranteed non-None here (checked above).
                 from cryptography.hazmat.primitives import serialization
                 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
                 priv_key = serialization.load_pem_private_key(priv_pem, password=None)

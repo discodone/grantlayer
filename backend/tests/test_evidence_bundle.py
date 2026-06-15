@@ -155,7 +155,9 @@ class TestEvidenceBundle(unittest.TestCase):
         import backend.src.core.db as bk_db
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
-        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        for k in ("GRANTLAYER_JWT_SECRET", "GRANTLAYER_JWT_PUBLIC_KEY",
+                  "GRANTLAYER_JWT_PRIVATE_KEY", "GRANTLAYER_JWT_ALGORITHM"):
+            os.environ.pop(k, None)
         return TestClient(create_app(), raise_server_exceptions=False)
 
     def _run_handler(self, path, method="GET", auth=None):
