@@ -1,19 +1,21 @@
 """GrantLayer MVP — Grant storage."""
 
 import datetime
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import text
 
 from ..core.crypto_signing import sign_grant as _sign_grant
 from ..core.db import (
-    _ConnectionWrapper,
     _translate_to_named_params,
     execute,
     query_all,
     query_one,
 )
 from ..core.models import Grant
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 _DEMO_WORKSPACE_ID = "default"
 
@@ -47,6 +49,7 @@ def list_grants(
     workspace_id: Optional[str] = None,
     limit: Optional[int] = None,
     offset: int = 0,
+    session: "Optional[Session]" = None,
 ) -> List[Grant]:
     conditions: list[str] = []
     params: list = []
@@ -63,12 +66,17 @@ def list_grants(
     if limit is not None:
         sql += " LIMIT ? OFFSET ?"
         params.extend([limit, offset])
+    if session is not None:
+        sql2, pd = _translate_to_named_params(sql, tuple(params))
+        rows = session.execute(text(sql2), pd).mappings().all()
+        return [_row_to_grant(dict(r)) for r in rows]
     return [_row_to_grant(r) for r in query_all(sql, tuple(params))]
 
 
 def count_grants(
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
+    session: "Optional[Session]" = None,
 ) -> int:
     conditions: list[str] = []
     params: list = []
@@ -81,6 +89,10 @@ def count_grants(
     sql = "SELECT COUNT(*) AS count FROM grants"
     if conditions:
         sql += " WHERE " + " AND ".join(conditions)
+    if session is not None:
+        sql2, pd = _translate_to_named_params(sql, tuple(params))
+        result = session.execute(text(sql2), pd).fetchone()
+        return int(result[0]) if result else 0
     row = query_one(sql, tuple(params))
     return int(row["count"]) if row else 0
 
@@ -89,6 +101,7 @@ def get_grant(
     grant_id: str,
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
+    session: "Optional[Session]" = None,
 ) -> Optional[Grant]:
     conditions = ["id = ?"]
     params: list = [grant_id]
@@ -98,10 +111,12 @@ def get_grant(
     if workspace_id is not None:
         conditions.append("workspace_id = ?")
         params.append(workspace_id)
-    row = query_one(
-        "SELECT * FROM grants WHERE " + " AND ".join(conditions),
-        tuple(params),
-    )
+    sql = "SELECT * FROM grants WHERE " + " AND ".join(conditions)
+    if session is not None:
+        sql2, pd = _translate_to_named_params(sql, tuple(params))
+        orm_row = session.execute(text(sql2), pd).mappings().first()
+        return _row_to_grant(dict(orm_row)) if orm_row else None
+    row = query_one(sql, tuple(params))
     return _row_to_grant(row) if row else None
 
 
@@ -136,11 +151,8 @@ def create_grant(
     )
 
     if conn is not None:
-        if isinstance(conn, _ConnectionWrapper):
-            conn.execute(sql, params)
-        else:
-            sql_inner, param_dict = _translate_to_named_params(sql, params)
-            conn.execute(text(sql_inner), param_dict)
+        sql_inner, param_dict = _translate_to_named_params(sql, params)
+        conn.execute(text(sql_inner), param_dict)
     else:
         execute(sql, params)
     return grant
@@ -195,13 +207,9 @@ def revoke_grant(
         " WHERE " + " AND ".join(conditions)
     )
     if conn is not None:
-        if isinstance(conn, _ConnectionWrapper):
-            cur = conn.execute(sql, tuple(params))
-            return (cur.rowcount or 0) > 0
-        else:
-            sql_inner, param_dict = _translate_to_named_params(sql, tuple(params))
-            result = conn.execute(text(sql_inner), param_dict)
-            return (result.rowcount or 0) > 0
+        sql_inner, param_dict = _translate_to_named_params(sql, tuple(params))
+        result = conn.execute(text(sql_inner), param_dict)
+        return (result.rowcount or 0) > 0
     rowcount = execute(sql, tuple(params))
     return rowcount > 0
 
