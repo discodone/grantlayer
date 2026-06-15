@@ -211,6 +211,16 @@ def create_app() -> FastAPI:
     if config.ENABLE_DEMO_ENDPOINTS:
         app.include_router(demo.tamper_router, prefix="/v1")
 
+    # Prometheus metrics — exposes /metrics for scraping.
+    # Imported lazily to avoid starlette version conflicts in test environments.
+    try:
+        from prometheus_fastapi_instrumentator import Instrumentator
+        Instrumentator().instrument(app).expose(
+            app, endpoint="/metrics", include_in_schema=False
+        )
+    except (ImportError, Exception):
+        pass
+
     # Backward-compat redirects: unversioned paths → /v1/ (307 Temporary Redirect)
     _COMPAT_PREFIXES = [
         "/auth", "/grants", "/grant-requests", "/grant-executions", "/audit-events",

@@ -92,4 +92,4 @@ See [SECURITY.md](SECURITY.md) for the full security policy.
 
 - **No real secrets** — never commit API keys, tokens, or passwords. All examples use placeholder values.
 - **No real customer data** — never commit real names, addresses, or identifiers. Use synthetic data in tests and examples.
-- **No production overclaims** — tenant/workspace isolation is not production-complete. Do not represent this as production SaaS.
+- **No production SaaS claims** — workspace isolation is enforced at the API level (membership checks, workspace-scoped queries) but is not a production SaaS multi-tenancy guarantee. Do not represent this as production SaaS.

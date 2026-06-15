@@ -151,7 +151,9 @@ class TestBug4AgentsMd(unittest.TestCase):
     def test_safety_phrases_preserved(self):
         self.assertIn("no real secrets", self.lower)
         self.assertIn("no real customer data", self.lower)
-        self.assertIn("tenant/workspace isolation is not production-complete", self.lower)
+        # GL-293: isolation is now enforced at API level; old "not production-complete"
+        # phrase replaced by accurate caveat: enforced but not a production SaaS guarantee.
+        self.assertIn("not a production saas multi-tenancy guarantee", self.lower)
 
 
 class TestBug5QuickstartJwt(unittest.TestCase):

@@ -1,13 +1,13 @@
 # GrantLayer full-stack compose (FastAPI + PostgreSQL + Nginx/TLS)
 #
-# Quick start:
-#   1. cp .env.example .env && edit .env
+# Quick start (PostgreSQL default):
+#   1. cp .env.example .env && edit .env   # set GRANTLAYER_JWT_SECRET and passwords
 #   2. ./nginx/generate-certs.sh
 #   3. docker compose up -d
 #   4. curl -k https://localhost/health
 #
-# SQLite-only (no Postgres, no Nginx):
-#   docker compose up -d api
+# SQLite-only (override DATABASE_URL in .env, or omit it and set GRANTLAYER_DB):
+#   GRANTLAYER_DATABASE_URL="" docker compose up -d api
 
 services:
   # ── FastAPI backend ───────────────────────────────────────────
@@ -26,13 +26,17 @@ services:
       - GRANTLAYER_JWT_PRIVATE_KEY=${GRANTLAYER_JWT_PRIVATE_KEY:-}
       - GRANTLAYER_JWT_PUBLIC_KEY=${GRANTLAYER_JWT_PUBLIC_KEY:-}
       - GRANTLAYER_JWT_SECRET=${GRANTLAYER_JWT_SECRET:-}
+      # PostgreSQL is the default backend. Override GRANTLAYER_DATABASE_URL="" in .env to use SQLite.
+      - GRANTLAYER_DATABASE_URL=${GRANTLAYER_DATABASE_URL:-postgresql://${GRANTLAYER_POSTGRES_USER:-grantlayer}:${GRANTLAYER_POSTGRES_PASSWORD:-changeme_in_env}@db:5432/${GRANTLAYER_POSTGRES_DB:-grantlayer}}
       - GRANTLAYER_DB=${GRANTLAYER_DB:-/app/data/grantlayer.db}
-      - GRANTLAYER_DATABASE_URL=${GRANTLAYER_DATABASE_URL:-}
       - GRANTLAYER_LOG_LEVEL=${GRANTLAYER_LOG_LEVEL:-INFO}
       - GRANTLAYER_ENABLE_OPERATOR_MODEL=${GRANTLAYER_ENABLE_OPERATOR_MODEL:-true}
       - GRANTLAYER_ENABLE_DEMO_ENDPOINTS=${GRANTLAYER_ENABLE_DEMO_ENDPOINTS:-false}
     volumes:
       - grantlayer-data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8765/health"]
       interval: 30s
@@ -66,9 +70,9 @@ services:
     networks:
       - grantlayer
 
-  # ── PostgreSQL (optional, replaces SQLite) ─────────────────────
-  # To activate: set GRANTLAYER_DATABASE_URL in .env and add 'db' to
-  # api.depends_on, or use docker-compose.postgres.yml override.
+  # ── PostgreSQL (default backend) ─────────────────────────────
+  # Always starts with docker compose up.
+  # To use SQLite instead, set GRANTLAYER_DATABASE_URL="" in your .env.
   db:
     image: postgres:16-alpine
     container_name: grantlayer-postgres
@@ -89,8 +93,6 @@ services:
     restart: unless-stopped
     networks:
       - grantlayer
-    profiles:
-      - postgres
 
 volumes:
   grantlayer-data:

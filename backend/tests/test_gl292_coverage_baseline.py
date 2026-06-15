@@ -32,12 +32,17 @@ class TestCoverageBaseline:
         assert major >= 4, f"pytest-cov must be >=4.0.0, found {match.group(0)}"
 
     def test_pytest_ini_has_cov_addopts(self):
-        """pytest.ini addopts must include --cov=backend/src for automatic reporting."""
+        """pytest.ini addopts must NOT contain --cov (breaks pytest-xdist -n auto).
+
+        GL-291/292: --cov in addopts is incompatible with xdist. Coverage is
+        run explicitly: python3 -m pytest --cov=backend/src ...
+        """
         ini_file = pathlib.Path("pytest.ini")
         assert ini_file.exists(), "pytest.ini not found"
         content = ini_file.read_text()
-        assert "--cov=backend/src" in content, (
-            "pytest.ini missing --cov=backend/src in addopts"
+        assert "--cov" not in content, (
+            "pytest.ini addopts must NOT contain --cov — it breaks pytest-xdist. "
+            "Run coverage explicitly: pytest --cov=backend/src ..."
         )
 
     def test_ci_workflow_has_coverage_with_fail_under(self):

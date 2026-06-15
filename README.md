@@ -1,6 +1,6 @@
 # GrantLayer
 
-GrantLayer is a verification, audit, and compliance layer for agentic grant and funding workflows. When AI agents prepare funding applications, evaluate eligibility, or trigger approval decisions, GrantLayer makes every step traceable, tamper-evident, and independently auditable. It is in **Developer Preview** — local evaluation and controlled pilot only. It is not production SaaS; production SaaS readiness is not claimed. Tenant/workspace isolation is not implemented. No GitHub push and no repository visibility change are part of this local quickstart.
+GrantLayer is a verification, audit, and compliance layer for agentic grant and funding workflows. When AI agents prepare funding applications, evaluate eligibility, or trigger approval decisions, GrantLayer makes every step traceable, tamper-evident, and independently auditable. It is in **Developer Preview** — local evaluation and controlled pilot only. It is not production SaaS; production SaaS readiness is not claimed. No GitHub push and no repository visibility change are part of this local quickstart.
 
 ---
 
@@ -9,12 +9,13 @@ GrantLayer is a verification, audit, and compliance layer for agentic grant and 
 | Area | Status |
 |------|--------|
 | Production SaaS readiness | Not claimed |
-| Tenant/workspace isolation | Not implemented |
+| Tenant/workspace isolation | Enforced at API level (developer preview) |
 | Public GitHub release | Available |
 | Real customer data in examples | None; examples use synthetic/demo data only |
 | Real secrets in examples | None; use placeholders or generated local values only |
 
-Production SaaS readiness is not claimed. Tenant isolation is not implemented.
+Production SaaS readiness is not claimed.
+Tenant/workspace isolation is enforced: every request resolves a workspace from the operator's identity and membership; queries are scoped to the resolved workspace and tenant. This is sufficient for developer preview and controlled pilots; it is not a production SaaS multi-tenancy guarantee.
 Examples use no real secrets and no real customer data.
 
 ---

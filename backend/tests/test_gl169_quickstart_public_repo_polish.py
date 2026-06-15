@@ -61,7 +61,7 @@ class TestGL169ReadmePublicPolish(unittest.TestCase):
             "local evaluation and controlled pilot only",
             "not production saas",
             "tenant/workspace isolation",
-            "not implemented",
+            "enforced",
         ]:
             self.assertIn(phrase, self.readme)
 

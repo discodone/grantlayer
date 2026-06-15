@@ -229,10 +229,11 @@ class TestGL187CaveatsPreserved(unittest.TestCase):
 
     def test_readme_tenant_isolation_not_implemented(self):
         readme = _read("README.md")
+        # GL-293: isolation is now enforced at API level; check the current accurate claim.
         self.assertIn(
-            "Not implemented",
+            "Enforced at API level",
             readme,
-            "README.md must preserve 'Tenant/workspace isolation | Not implemented' caveat",
+            "README.md must document tenant/workspace isolation status accurately",
         )
 
     def test_readme_no_real_secrets(self):
