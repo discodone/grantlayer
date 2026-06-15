@@ -29,7 +29,7 @@ jobs:
       - name: Type check (mypy)
         run: python3 -m mypy backend/src/
 
-      - name: Run functional tests (SQLite, excludes doc-guard/scope-guard)
+      - name: Run functional tests with coverage (SQLite, excludes doc-guard/scope-guard)
         env:
           GRANTLAYER_RUNTIME_MODE: test
           GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
@@ -40,6 +40,7 @@ jobs:
             --ignore=backend/tests/test_gl141_operator_model_default.py \
             --ignore=backend/tests/test_gl214_production_iam_operator_control_completion.py \
             --ignore=backend/tests/test_gl203b_openapi_api_contract_cleanup.py \
+            --cov=backend/src --cov-report=term-missing --cov-fail-under=60 \
             -x --tb=short
 
   postgres-integration:

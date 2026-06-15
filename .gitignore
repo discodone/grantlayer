@@ -55,6 +55,7 @@ Thumbs.db
 # Test artifacts
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 
 # Website design workspace import artefacts (not for public repo)
