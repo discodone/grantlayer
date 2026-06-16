@@ -93,12 +93,6 @@ class TestEvidenceBundle(unittest.TestCase):
         importlib.reload(eb_mod)
         self.eb_mod = eb_mod
 
-        import backend.src.api.routers.evidence as evidence_router_mod
-        importlib.reload(evidence_router_mod)
-
-        import backend.src.api.app as app_mod
-        importlib.reload(app_mod)
-
         self.db_mod = db_mod
 
     def tearDown(self):
@@ -170,7 +164,7 @@ class TestEvidenceBundle(unittest.TestCase):
         for k in ("GRANTLAYER_JWT_SECRET", "GRANTLAYER_JWT_PUBLIC_KEY",
                   "GRANTLAYER_JWT_PRIVATE_KEY", "GRANTLAYER_JWT_ALGORITHM"):
             os.environ.pop(k, None)
-        return TestClient(create_app(), raise_server_exceptions=True)
+        return TestClient(create_app(), raise_server_exceptions=False)
 
     def _run_handler(self, path, method="GET", auth=None):
         """Make a request via FastAPI TestClient and return (status, response_json)."""
