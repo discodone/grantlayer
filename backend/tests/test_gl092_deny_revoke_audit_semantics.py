@@ -332,7 +332,13 @@ class TestGl092RevokeAtomicityPreserved(_BaseGl092):
                     sql_str = sql
                     if hasattr(sql, "text"):
                         sql_str = sql.text
-                    if isinstance(sql_str, str) and "UPDATE grant_requests" in sql_str:
+                    is_grant_requests_update = (
+                        isinstance(sql_str, str) and "UPDATE grant_requests" in sql_str
+                    ) or (
+                        hasattr(sql, "table")
+                        and getattr(sql.table, "name", None) == "grant_requests"
+                    )
+                    if is_grant_requests_update:
                         raise RuntimeError("Simulated request update failure")
                     return orig_execute(sql, params, **kwargs)
 
