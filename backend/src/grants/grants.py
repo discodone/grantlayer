@@ -3,21 +3,45 @@
 import datetime
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import text
+from sqlalchemy import func, insert as sa_insert, select, update as sa_update
 
 from ..core.crypto_signing import sign_grant as _sign_grant
 from ..core.db import (
-    _translate_to_named_params,
     execute,
     query_all,
     query_one,
 )
 from ..core.models import Grant
+from ..core.orm import Grant as OrmGrant
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
 _DEMO_WORKSPACE_ID = "default"
+
+
+def _orm_to_grant(row: OrmGrant) -> Grant:
+    return Grant(
+        id=row.id,
+        subject_id=row.subject_id,
+        role=row.role,
+        action=row.action,
+        resource=row.resource,
+        valid_from=row.valid_from,
+        valid_until=row.valid_until,
+        created_by=row.created_by,
+        reason=row.reason,
+        revoked=bool(row.revoked),
+        revoked_by=row.revoked_by,
+        revoked_reason=row.revoked_reason,
+        revoked_at=row.revoked_at,
+        created_at=row.created_at,
+        signature=row.signature,
+        signing_key_id=row.signing_key_id,
+        payload_hash=row.payload_hash,
+        max_uses=row.max_uses,
+        use_count=row.use_count or 0,
+    )
 
 
 def _row_to_grant(row: dict) -> Grant:
@@ -51,6 +75,15 @@ def list_grants(
     offset: int = 0,
     session: "Optional[Session]" = None,
 ) -> List[Grant]:
+    if session is not None:
+        stmt = select(OrmGrant).order_by(OrmGrant.created_at.desc())
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
+        if limit is not None:
+            stmt = stmt.limit(limit).offset(offset)
+        return [_orm_to_grant(r) for r in session.execute(stmt).scalars().all()]
     conditions: list[str] = []
     params: list = []
     if tenant_id is not None:
@@ -66,10 +99,6 @@ def list_grants(
     if limit is not None:
         sql += " LIMIT ? OFFSET ?"
         params.extend([limit, offset])
-    if session is not None:
-        sql2, pd = _translate_to_named_params(sql, tuple(params))
-        rows = session.execute(text(sql2), pd).mappings().all()
-        return [_row_to_grant(dict(r)) for r in rows]
     return [_row_to_grant(r) for r in query_all(sql, tuple(params))]
 
 
@@ -78,6 +107,14 @@ def count_grants(
     workspace_id: Optional[str] = None,
     session: "Optional[Session]" = None,
 ) -> int:
+    if session is not None:
+        stmt = select(func.count()).select_from(OrmGrant)
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
+        result = session.execute(stmt).scalar()
+        return int(result) if result is not None else 0
     conditions: list[str] = []
     params: list = []
     if tenant_id is not None:
@@ -89,10 +126,6 @@ def count_grants(
     sql = "SELECT COUNT(*) AS count FROM grants"
     if conditions:
         sql += " WHERE " + " AND ".join(conditions)
-    if session is not None:
-        sql2, pd = _translate_to_named_params(sql, tuple(params))
-        result = session.execute(text(sql2), pd).fetchone()
-        return int(result[0]) if result else 0
     row = query_one(sql, tuple(params))
     return int(row["count"]) if row else 0
 
@@ -103,6 +136,14 @@ def get_grant(
     workspace_id: Optional[str] = None,
     session: "Optional[Session]" = None,
 ) -> Optional[Grant]:
+    if session is not None:
+        stmt = select(OrmGrant).where(OrmGrant.id == grant_id)
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
+        orm_row = session.execute(stmt).scalars().first()
+        return _orm_to_grant(orm_row) if orm_row else None
     conditions = ["id = ?"]
     params: list = [grant_id]
     if tenant_id is not None:
@@ -111,12 +152,7 @@ def get_grant(
     if workspace_id is not None:
         conditions.append("workspace_id = ?")
         params.append(workspace_id)
-    sql = "SELECT * FROM grants WHERE " + " AND ".join(conditions)
-    if session is not None:
-        sql2, pd = _translate_to_named_params(sql, tuple(params))
-        orm_row = session.execute(text(sql2), pd).mappings().first()
-        return _row_to_grant(dict(orm_row)) if orm_row else None
-    row = query_one(sql, tuple(params))
+    row = query_one("SELECT * FROM grants WHERE " + " AND ".join(conditions), tuple(params))
     return _row_to_grant(row) if row else None
 
 
@@ -137,24 +173,44 @@ def create_grant(
     effective_tenant = tenant_id
     effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
 
-    sql = """INSERT INTO grants
-           (id, subject_id, role, action, resource, valid_from, valid_until,
-            created_by, reason, revoked, created_at, max_uses, use_count,
-            signature, signing_key_id, payload_hash, tenant_id, workspace_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)"""
-    params = (
-        grant.id, grant.subject_id, grant.role, grant.action,
-        grant.resource, grant.valid_from, grant.valid_until,
-        grant.created_by, grant.reason, grant.created_at,
-        grant.max_uses, grant.use_count,
-        sig_hex, key_id, hash_hex, effective_tenant, effective_workspace,
-    )
-
     if conn is not None:
-        sql_inner, param_dict = _translate_to_named_params(sql, params)
-        conn.execute(text(sql_inner), param_dict)
+        conn.execute(
+            sa_insert(OrmGrant.__table__).values(
+                id=grant.id,
+                subject_id=grant.subject_id,
+                role=grant.role,
+                action=grant.action,
+                resource=grant.resource,
+                valid_from=grant.valid_from,
+                valid_until=grant.valid_until,
+                created_by=grant.created_by,
+                reason=grant.reason,
+                revoked=0,
+                created_at=grant.created_at,
+                max_uses=grant.max_uses,
+                use_count=grant.use_count,
+                signature=sig_hex,
+                signing_key_id=key_id,
+                payload_hash=hash_hex,
+                tenant_id=effective_tenant,
+                workspace_id=effective_workspace,
+            )
+        )
     else:
-        execute(sql, params)
+        execute(
+            """INSERT INTO grants
+               (id, subject_id, role, action, resource, valid_from, valid_until,
+                created_by, reason, revoked, created_at, max_uses, use_count,
+                signature, signing_key_id, payload_hash, tenant_id, workspace_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                grant.id, grant.subject_id, grant.role, grant.action,
+                grant.resource, grant.valid_from, grant.valid_until,
+                grant.created_by, grant.reason, grant.created_at,
+                grant.max_uses, grant.use_count,
+                sig_hex, key_id, hash_hex, effective_tenant, effective_workspace,
+            ),
+        )
     return grant
 
 
@@ -194,6 +250,18 @@ def revoke_grant(
     workspace_id: Optional[str] = None,
 ) -> bool:
     revoked_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+    if conn is not None:
+        stmt = (
+            sa_update(OrmGrant.__table__)
+            .where(OrmGrant.id == grant_id, OrmGrant.revoked == 0)
+            .values(revoked=1, revoked_by=revoked_by, revoked_reason=reason, revoked_at=revoked_at)
+        )
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
+        result = conn.execute(stmt)
+        return (result.rowcount or 0) > 0
     conditions = ["id = ?", "revoked = 0"]
     params: list = [revoked_by, reason, revoked_at, grant_id]
     if tenant_id is not None:
@@ -206,10 +274,6 @@ def revoke_grant(
         "UPDATE grants SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?"
         " WHERE " + " AND ".join(conditions)
     )
-    if conn is not None:
-        sql_inner, param_dict = _translate_to_named_params(sql, tuple(params))
-        result = conn.execute(text(sql_inner), param_dict)
-        return (result.rowcount or 0) > 0
     rowcount = execute(sql, tuple(params))
     return rowcount > 0
 
