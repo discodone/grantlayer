@@ -35,6 +35,7 @@ class TestEvidenceBundle(unittest.TestCase):
         self.tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         self._orig_db = os.environ.get("GRANTLAYER_DB")
         os.environ["GRANTLAYER_DB"] = self.tmp_db.name
+        self.tmp_db.close()  # release the fd so SQLite can open the file cleanly
 
         # Save env vars we will mutate
         self._orig_enable_operator = os.environ.get("GRANTLAYER_ENABLE_OPERATOR_MODEL")
@@ -91,6 +92,9 @@ class TestEvidenceBundle(unittest.TestCase):
         import backend.src.evidence.evidence_bundle as eb_mod
         importlib.reload(eb_mod)
         self.eb_mod = eb_mod
+
+        import backend.src.api.app as app_mod
+        importlib.reload(app_mod)
 
         self.db_mod = db_mod
 
