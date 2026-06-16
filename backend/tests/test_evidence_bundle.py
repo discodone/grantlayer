@@ -162,6 +162,11 @@ class TestEvidenceBundle(unittest.TestCase):
         import backend.src.core.db as bk_db
         bk_db.DB_PATH_OR_URL = self.tmp_db.name
         bk_db.DB_PATH = self.tmp_db.name
+        # Force SQLAlchemy engine recreation for this test's tmp_db.
+        # Reloads between setUp and _make_client can leave _sa_engine cached
+        # against a different URL; resetting here ensures the right DB is used.
+        bk_db._sa_engine = None
+        bk_db._engine_url = None
         for k in ("GRANTLAYER_JWT_SECRET", "GRANTLAYER_JWT_PUBLIC_KEY",
                   "GRANTLAYER_JWT_PRIVATE_KEY", "GRANTLAYER_JWT_ALGORITHM"):
             os.environ.pop(k, None)
