@@ -170,7 +170,7 @@ class TestEvidenceBundle(unittest.TestCase):
         for k in ("GRANTLAYER_JWT_SECRET", "GRANTLAYER_JWT_PUBLIC_KEY",
                   "GRANTLAYER_JWT_PRIVATE_KEY", "GRANTLAYER_JWT_ALGORITHM"):
             os.environ.pop(k, None)
-        return TestClient(create_app(), raise_server_exceptions=False)
+        return TestClient(create_app(), raise_server_exceptions=True)
 
     def _run_handler(self, path, method="GET", auth=None):
         """Make a request via FastAPI TestClient and return (status, response_json)."""
