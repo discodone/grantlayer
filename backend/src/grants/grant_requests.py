@@ -12,7 +12,9 @@ lifecycle entity from grants themselves. A grant request can be:
 import datetime
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from sqlalchemy import func, insert as sa_insert, select, update as sa_update
+from sqlalchemy import func, select
+from sqlalchemy import insert as sa_insert
+from sqlalchemy import update as sa_update
 
 from ..audit import audit_log
 from ..core import db

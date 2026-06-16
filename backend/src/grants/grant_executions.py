@@ -5,7 +5,9 @@ One row per protected action attempt.
 
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import func, insert as sa_insert, select, update as sa_update
+from sqlalchemy import func, select
+from sqlalchemy import insert as sa_insert
+from sqlalchemy import update as sa_update
 
 from ..core.db import execute, query_all, query_one
 from ..core.models import GrantExecution

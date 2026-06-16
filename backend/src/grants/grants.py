@@ -3,7 +3,9 @@
 import datetime
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import func, insert as sa_insert, select, update as sa_update
+from sqlalchemy import func, select
+from sqlalchemy import insert as sa_insert
+from sqlalchemy import update as sa_update
 
 from ..core.crypto_signing import sign_grant as _sign_grant
 from ..core.db import (
