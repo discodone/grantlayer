@@ -363,11 +363,12 @@ class _ConnectionWrapper:
     def execute(self, sql: Any, parameters: Any = None) -> Any:
         """Execute SQL and return the cursor.
 
-        Accepts both plain SQL strings and SQLAlchemy text() clause elements
-        (with named :p1 parameters) for backward compatibility with code that
-        uses the SQLAlchemy connection interface.
+        Accepts plain SQL strings, SQLAlchemy text() clause elements, and
+        SQLAlchemy DML clause elements (Insert/Update/Delete) compiled via
+        the appropriate dialect.
         """
         from sqlalchemy import TextClause
+        from sqlalchemy.sql import ClauseElement
 
         if isinstance(sql, TextClause):
             sql_str = sql.text
@@ -396,6 +397,28 @@ class _ConnectionWrapper:
             else:
                 sql = sql_str
                 parameters = parameters or ()
+        elif isinstance(sql, ClauseElement):
+            # Compile DML expressions (Insert/Update/Delete) using the target dialect
+            # so that the generated SQL and bound params match what the driver expects.
+            if self.backend == "postgres":
+                from sqlalchemy.dialects.postgresql import dialect as _pg_dialect
+                compiled = sql.compile(
+                    dialect=_pg_dialect(),
+                    compile_kwargs={"render_postcompile": True},
+                )
+                cur = self._conn.cursor()
+                cur.execute(compiled.string, compiled.params)
+                return cur
+            else:
+                from sqlalchemy.dialects.sqlite import dialect as _sqlite_dialect
+                compiled = sql.compile(
+                    dialect=_sqlite_dialect(),
+                    compile_kwargs={"render_postcompile": True},
+                )
+                sql = compiled.string
+                parameters = tuple(
+                    compiled.params[k] for k in (compiled.positiontup or [])
+                )
         else:
             parameters = parameters or ()
 

@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Optional
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from ...core import config
+from ...core.db import get_db
 from ...core.models import GrantRequest
 from ...core.validation import (
     MAX_NAME_LENGTH,
@@ -63,6 +65,7 @@ def list_grant_requests_endpoint(
     offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
+    db: Session = Depends(get_db),
 ) -> Any:
     _, ws_ctx = resolve_auth_and_workspace(
         authorization,
@@ -86,10 +89,11 @@ def list_grant_requests_endpoint(
         workspace_id=workspace_id,
         limit=limit,
         offset=offset,
+        session=db,
     )
     return GrantRequestListResponse(
         items=[GrantRequestResponse.from_grant_request(r) for r in requests],
-        total=count_grant_requests(status_filter=status, tenant_id=tenant_id, workspace_id=workspace_id),
+        total=count_grant_requests(status_filter=status, tenant_id=tenant_id, workspace_id=workspace_id, session=db),
         limit=limit,
         offset=offset,
     )
@@ -100,6 +104,7 @@ def get_grant_request_endpoint(
     request_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
+    db: Session = Depends(get_db),
 ) -> Any:
     _, ws_ctx = resolve_auth_and_workspace(
         authorization,
@@ -108,7 +113,7 @@ def get_grant_request_endpoint(
     )
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
-    req = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
+    req = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id, session=db)
     if req is None:
         raise HTTPException(
             status_code=404,
@@ -126,6 +131,7 @@ def create_grant_request_endpoint(
     body: GrantRequestCreateRequest,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
+    db: Session = Depends(get_db),
 ) -> Any:
     _require_operator_model()
     auth_ctx, ws_ctx = resolve_auth_and_workspace(
@@ -202,7 +208,7 @@ def create_grant_request_endpoint(
         requested_by=operator_id,
         reason=body.reason,
     )
-    created = create_grant_request(req, tenant_id=tenant_id, workspace_id=workspace_id)
+    created = create_grant_request(req, tenant_id=tenant_id, workspace_id=workspace_id, session=db)
     return GrantRequestResponse.from_grant_request(created)
 
 

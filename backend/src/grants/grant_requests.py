@@ -10,14 +10,15 @@ lifecycle entity from grants themselves. A grant request can be:
 """
 
 import datetime
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from sqlalchemy import text
+from sqlalchemy import func, insert as sa_insert, select, update as sa_update
 
 from ..audit import audit_log
 from ..core import db
-from ..core.db import _orm_to_dict, get_engine
+from ..core.db import get_engine
 from ..core.models import AuditEvent, Grant, GrantRequest
+from ..core.orm import GrantRequest as OrmGrantRequest
 from ..core.validation import (
     MAX_NAME_LENGTH,
     MAX_REASON_LENGTH,
@@ -26,6 +27,9 @@ from ..core.validation import (
     validate_string_length,
 )
 from . import grants
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 MAX_DENIAL_REASON_LENGTH = MAX_REASON_LENGTH  # single source of truth; alias kept for tests
 
@@ -48,10 +52,37 @@ ALLOWED_GRANT_ROLES: frozenset[str] = frozenset({
 _DEMO_WORKSPACE_ID = "default"
 
 
+def _orm_to_grant_request(row: OrmGrantRequest) -> GrantRequest:
+    return GrantRequest(
+        id=row.id,
+        subject_id=row.subject_id,
+        role=row.role,
+        action=row.action,
+        resource=row.resource,
+        valid_from=row.valid_from,
+        valid_until=row.valid_until,
+        requested_by=row.requested_by,
+        reason=row.reason,
+        status=row.status,
+        approved_by=row.approved_by,
+        approved_at=row.approved_at,
+        denied_by=row.denied_by,
+        denied_at=row.denied_at,
+        denial_reason=row.denial_reason,
+        revoked_by=row.revoked_by,
+        revoked_at=row.revoked_at,
+        revoked_reason=row.revoked_reason,
+        grant_id=row.grant_id,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+    )
+
+
 def create_grant_request(
     request: GrantRequest,
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
+    session: "Optional[Session]" = None,
 ) -> GrantRequest:
     """Create a new grant request in the 'requested' state."""
     validate_string_length(request.subject_id, "subject_id", MAX_SHORT_ID_LENGTH)
@@ -63,31 +94,51 @@ def create_grant_request(
         raise ValueError("tenant_id is required")
     effective_tenant = tenant_id
     effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
-    db.execute(
-        """
-        INSERT INTO grant_requests (
-            id, subject_id, role, action, resource, valid_from, valid_until,
-            requested_by, reason, status, created_at, updated_at, tenant_id,
-            workspace_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (
-            request.id,
-            request.subject_id,
-            request.role,
-            request.action,
-            request.resource,
-            request.valid_from,
-            request.valid_until,
-            request.requested_by,
-            request.reason,
-            request.status,
-            request.created_at,
-            request.updated_at,
-            effective_tenant,
-            effective_workspace,
-        ),
-    )
+    if session is not None:
+        session.execute(
+            sa_insert(OrmGrantRequest.__table__).values(
+                id=request.id,
+                subject_id=request.subject_id,
+                role=request.role,
+                action=request.action,
+                resource=request.resource,
+                valid_from=request.valid_from,
+                valid_until=request.valid_until,
+                requested_by=request.requested_by,
+                reason=request.reason,
+                status=request.status,
+                created_at=request.created_at,
+                updated_at=request.updated_at,
+                tenant_id=effective_tenant,
+                workspace_id=effective_workspace,
+            )
+        )
+    else:
+        db.execute(
+            """
+            INSERT INTO grant_requests (
+                id, subject_id, role, action, resource, valid_from, valid_until,
+                requested_by, reason, status, created_at, updated_at, tenant_id,
+                workspace_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                request.id,
+                request.subject_id,
+                request.role,
+                request.action,
+                request.resource,
+                request.valid_from,
+                request.valid_until,
+                request.requested_by,
+                request.reason,
+                request.status,
+                request.created_at,
+                request.updated_at,
+                effective_tenant,
+                effective_workspace,
+            ),
+        )
     return request
 
 
@@ -95,8 +146,17 @@ def get_grant_request(
     request_id: str,
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
+    session: "Optional[Session]" = None,
 ) -> Optional[GrantRequest]:
     """Get a single grant request by ID."""
+    if session is not None:
+        stmt = select(OrmGrantRequest).where(OrmGrantRequest.id == request_id)
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrantRequest.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrantRequest.workspace_id == workspace_id)
+        orm_row = session.execute(stmt).scalars().first()
+        return _orm_to_grant_request(orm_row) if orm_row else None
     conditions = ["id = ?"]
     params: list = [request_id]
     if tenant_id is not None:
@@ -120,8 +180,20 @@ def list_grant_requests(
     workspace_id: Optional[str] = None,
     limit: Optional[int] = None,
     offset: int = 0,
+    session: "Optional[Session]" = None,
 ) -> List[GrantRequest]:
     """List grant requests, optionally filtered by status, tenant, and workspace."""
+    if session is not None:
+        stmt = select(OrmGrantRequest).order_by(OrmGrantRequest.created_at.desc())
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrantRequest.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrantRequest.workspace_id == workspace_id)
+        if status_filter is not None:
+            stmt = stmt.where(OrmGrantRequest.status == status_filter)
+        if limit is not None:
+            stmt = stmt.limit(limit).offset(offset)
+        return [_orm_to_grant_request(r) for r in session.execute(stmt).scalars().all()]
     conditions: list[str] = []
     params: list = []
     if tenant_id is not None:
@@ -148,7 +220,18 @@ def count_grant_requests(
     status_filter: Optional[str] = None,
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
+    session: "Optional[Session]" = None,
 ) -> int:
+    if session is not None:
+        stmt = select(func.count()).select_from(OrmGrantRequest)
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrantRequest.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrantRequest.workspace_id == workspace_id)
+        if status_filter is not None:
+            stmt = stmt.where(OrmGrantRequest.status == status_filter)
+        result = session.execute(stmt).scalar()
+        return int(result) if result is not None else 0
     conditions: list[str] = []
     params: list = []
     if tenant_id is not None:
@@ -187,22 +270,18 @@ def approve_grant_request(
     """
     conn = get_engine().connect()
     try:
-        # Get the request (scoped to tenant/workspace if provided)
         request = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
         if not request:
             raise ValueError(f"Grant request {request_id} not found")
 
-        # Ensure the request is in the 'requested' state
         if request.status != "requested":
             raise ValueError(
                 f"Cannot approve grant request {request_id} with status {request.status}"
             )
 
-        # Reject approval of expired requests deterministically
         if _is_request_expired(request):
             raise ValueError("Grant request has expired")
 
-        # Self-approval guard
         if request.requested_by == operator_id:
             raise ValueError("Self-approval is not permitted")
 
@@ -211,7 +290,6 @@ def approve_grant_request(
         effective_tenant = tenant_id
         effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
 
-        # Create the actual grant from the request (inherit workspace_id from request)
         grant = Grant(
             subject_id=request.subject_id,
             role=request.role,
@@ -223,28 +301,22 @@ def approve_grant_request(
             reason=f"Approved from request {request_id}: {request.reason}",
         )
 
-        # Start transaction
         with conn.begin():
-            # Save the grant using the shared transaction connection
             grants.create_grant(grant, conn=conn, tenant_id=effective_tenant, workspace_id=effective_workspace)
 
-            # Update the request to approved state
             now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-            sql = """
-                UPDATE grant_requests
-                SET status = :p1, approved_by = :p2, approved_at = :p3, grant_id = :p4, updated_at = :p5
-                WHERE id = :p6
-            """
-            conn.execute(text(sql), {
-                "p1": "approved",
-                "p2": operator_id,
-                "p3": now,
-                "p4": grant.id,
-                "p5": now,
-                "p6": request_id,
-            })
+            conn.execute(
+                sa_update(OrmGrantRequest.__table__)
+                .where(OrmGrantRequest.id == request_id)
+                .values(
+                    status="approved",
+                    approved_by=operator_id,
+                    approved_at=now,
+                    grant_id=grant.id,
+                    updated_at=now,
+                )
+            )
 
-            # Log an audit event for the approval inside the same transaction
             audit_log.append_event(
                 AuditEvent(
                     subject_id=operator_id,
@@ -259,7 +331,6 @@ def approve_grant_request(
                 conn=conn,
             )
 
-        # Return the updated request and the newly created grant
         updated_request = get_grant_request(request_id)
         if updated_request is None:
             raise ValueError(f"Grant request {request_id} not found after approval")
@@ -278,18 +349,15 @@ def deny_grant_request(
     """Deny a grant request without creating a grant."""
     conn = get_engine().connect()
     try:
-        # Get the request (scoped to tenant/workspace if provided)
         request = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
         if not request:
             raise ValueError(f"Grant request {request_id} not found")
 
-        # Ensure the request is in the 'requested' state
         if request.status != "requested":
             raise ValueError(
                 f"Cannot deny grant request {request_id} with status {request.status}"
             )
 
-        # Denial reason length guard
         validate_string_length(reason, "reason", MAX_REASON_LENGTH)
 
         if tenant_id is None:
@@ -297,23 +365,19 @@ def deny_grant_request(
         effective_tenant = tenant_id
 
         with conn.begin():
-            # Update the request to denied state
             now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-            sql = """
-                UPDATE grant_requests
-                SET status = :p1, denied_by = :p2, denied_at = :p3, denial_reason = :p4, updated_at = :p5
-                WHERE id = :p6
-            """
-            conn.execute(text(sql), {
-                "p1": "denied",
-                "p2": operator_id,
-                "p3": now,
-                "p4": reason,
-                "p5": now,
-                "p6": request_id,
-            })
+            conn.execute(
+                sa_update(OrmGrantRequest.__table__)
+                .where(OrmGrantRequest.id == request_id)
+                .values(
+                    status="denied",
+                    denied_by=operator_id,
+                    denied_at=now,
+                    denial_reason=reason,
+                    updated_at=now,
+                )
+            )
 
-            # Log an audit event for the denial inside the same transaction
             audit_log.append_event(
                 AuditEvent(
                     subject_id=operator_id,
@@ -328,7 +392,6 @@ def deny_grant_request(
                 conn=conn,
             )
 
-        # Return the updated request
         updated_request = get_grant_request(request_id)
         if updated_request is None:
             raise ValueError(f"Grant request {request_id} not found after denial")
@@ -348,12 +411,10 @@ def revoke_grant_request(
     validate_string_length(reason, "reason", MAX_REASON_LENGTH)
     conn = get_engine().connect()
     try:
-        # Get the request (scoped to tenant/workspace if provided)
         request = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
         if not request:
             raise ValueError(f"Grant request {request_id} not found")
 
-        # Ensure the request is in the 'approved' state
         if request.status != "approved":
             raise ValueError(
                 f"Cannot revoke grant request {request_id} with status {request.status}"
@@ -364,7 +425,6 @@ def revoke_grant_request(
         effective_tenant = tenant_id
 
         with conn.begin():
-            # If there's an associated grant, revoke it too
             if request.grant_id:
                 grants.revoke_grant(
                     request.grant_id, operator_id,
@@ -372,23 +432,19 @@ def revoke_grant_request(
                     tenant_id=effective_tenant, workspace_id=workspace_id,
                 )
 
-            # Update the request to revoked state
             now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-            sql = """
-                UPDATE grant_requests
-                SET status = :p1, revoked_by = :p2, revoked_at = :p3, revoked_reason = :p4, updated_at = :p5
-                WHERE id = :p6
-            """
-            conn.execute(text(sql), {
-                "p1": "revoked",
-                "p2": operator_id,
-                "p3": now,
-                "p4": reason,
-                "p5": now,
-                "p6": request_id,
-            })
+            conn.execute(
+                sa_update(OrmGrantRequest.__table__)
+                .where(OrmGrantRequest.id == request_id)
+                .values(
+                    status="revoked",
+                    revoked_by=operator_id,
+                    revoked_at=now,
+                    revoked_reason=reason,
+                    updated_at=now,
+                )
+            )
 
-            # Log an audit event for the revocation inside the same transaction
             audit_log.append_event(
                 AuditEvent(
                     subject_id=operator_id,
@@ -403,7 +459,6 @@ def revoke_grant_request(
                 conn=conn,
             )
 
-        # Return the updated request
         updated_request = get_grant_request(request_id)
         if updated_request is None:
             raise ValueError(f"Grant request {request_id} not found after revocation")
@@ -419,53 +474,39 @@ def expire_old_requests() -> int:
     """
     conn = get_engine().connect()
     try:
-        # Calculate the expiry cutoff time (24 hours ago)
         cutoff = (
             datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=24)
         ).isoformat().replace("+00:00", "Z")
 
-        # Find requests to expire (include tenant_id for audit propagation)
         to_expire = conn.execute(
-            text("""
-                SELECT id, tenant_id FROM grant_requests
-                WHERE status = 'requested' AND created_at < :p1
-            """),
-            {"p1": cutoff},
+            select(OrmGrantRequest.id, OrmGrantRequest.tenant_id)
+            .where(
+                OrmGrantRequest.status == "requested",
+                OrmGrantRequest.created_at < cutoff,
+            )
         ).fetchall()
 
         if not to_expire:
             return 0
 
-        # Update requests to expired state
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
         for row in to_expire:
-            row = _orm_to_dict(row)
-            if row is None:
-                continue
             conn.execute(
-                text("""
-                    UPDATE grant_requests
-                    SET status = 'expired', updated_at = :p1
-                    WHERE id = :p2
-                """),
-                {"p1": now, "p2": row["id"]},
+                sa_update(OrmGrantRequest.__table__)
+                .where(OrmGrantRequest.id == row.id)
+                .values(status="expired", updated_at=now)
             )
 
-        # Create expiry audit events for each expired request,
-        # propagating tenant_id so audit events are tenant-scoped.
         for row in to_expire:
-            row = _orm_to_dict(row)
-            if row is None:
-                continue
-            row_tenant = row["tenant_id"] if row.get("tenant_id") else None
+            row_tenant = row.tenant_id or None
             audit_log.append_event(
                 AuditEvent(
                     subject_id="system",
                     role="system",
                     action="expire_grant_request",
-                    resource=f"grant_request/{row['id']}",
+                    resource=f"grant_request/{row.id}",
                     approved=False,
-                    reason=f"Grant request {row['id']} expired after 24 hours",
+                    reason=f"Grant request {row.id} expired after 24 hours",
                     tenant_id=row_tenant,
                     scope="tenant" if row_tenant else None,
                 ),
@@ -473,8 +514,6 @@ def expire_old_requests() -> int:
             )
 
         conn.commit()
-
-        # Return number of expired requests
         return len(to_expire)
     except Exception:
         conn.rollback()
@@ -484,7 +523,7 @@ def expire_old_requests() -> int:
 
 
 def _row_to_grant_request(row: dict) -> GrantRequest:
-    """Convert a database row to a GrantRequest object."""
+    """Convert a database row dict to a GrantRequest object."""
     return GrantRequest(
         id=row["id"],
         subject_id=row["subject_id"],
