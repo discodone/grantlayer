@@ -25,7 +25,11 @@ _SECURITY_HEADERS = {
 
 
 def _check_execution_tenant(execution_id: str, tenant_id: str) -> None:
-    if get_grant_execution(execution_id, tenant_id=tenant_id) is None:
+    try:
+        found = get_grant_execution(execution_id, tenant_id=tenant_id)
+    except Exception:
+        found = None
+    if found is None:
         raise HTTPException(
             status_code=404,
             detail={"error": "Execution not found", "errorCode": "execution_not_found", "reason": "The requested execution does not exist."},

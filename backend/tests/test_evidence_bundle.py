@@ -93,6 +93,9 @@ class TestEvidenceBundle(unittest.TestCase):
         importlib.reload(eb_mod)
         self.eb_mod = eb_mod
 
+        import backend.src.api.routers.evidence as evidence_router_mod
+        importlib.reload(evidence_router_mod)
+
         import backend.src.api.app as app_mod
         importlib.reload(app_mod)
 
