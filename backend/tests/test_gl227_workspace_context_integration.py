@@ -70,7 +70,8 @@ def _insert_operator(op_id, name, role, token, tenant_id="t1", active=1):
     try:
         conn.execute(
             """INSERT INTO operators (id, name, role, token_hash, token_lookup_hash, active, created_at, tenant_id)
-               VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)""",
+               VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+               ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, role=EXCLUDED.role, token_hash=EXCLUDED.token_hash, token_lookup_hash=EXCLUDED.token_lookup_hash, active=EXCLUDED.active, tenant_id=EXCLUDED.tenant_id""",
             (op_id, name, role,
              _ops.hash_token(token),
              _ops.derive_token_lookup_hash(token),

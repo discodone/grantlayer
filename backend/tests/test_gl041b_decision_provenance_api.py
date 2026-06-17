@@ -69,7 +69,8 @@ class TestDecisionProvenanceV2API(unittest.TestCase):
         try:
             conn.execute(
                 """INSERT INTO operators (id, name, role, token_hash, active, created_at)
-                   VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)""",
+                   VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
+                   ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, role=EXCLUDED.role, token_hash=EXCLUDED.token_hash, active=EXCLUDED.active""",
                 (op_id, name, role, self.ops.hash_token(token)),
             )
             conn.commit()

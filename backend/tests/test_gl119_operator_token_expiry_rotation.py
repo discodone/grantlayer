@@ -102,7 +102,8 @@ class _BaseGl119(unittest.TestCase):
             conn.execute(
                 """INSERT INTO operators
                    (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at, rotated_at)
-                   VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)""",
+                   VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+                   ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, role=EXCLUDED.role, token_hash=EXCLUDED.token_hash, token_lookup_hash=EXCLUDED.token_lookup_hash, active=EXCLUDED.active, expires_at=EXCLUDED.expires_at, rotated_at=EXCLUDED.rotated_at""",
                 (
                     op_id, name, role,
                     self.ops_mod.hash_token(token),
