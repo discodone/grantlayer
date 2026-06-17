@@ -202,26 +202,40 @@ def decode_token_rs256(token: str, public_key_pem: bytes) -> dict:
 # ──────────────────────────────────────────────
 
 def _check_iss_aud(payload: dict) -> None:
-    """Validate iss and aud claims if configured and present in the token.
+    """Validate iss and aud claims against server configuration.
 
-    Only fires when the claim is present — old tokens without iss/aud pass
-    through unchanged (backward compat).
+    Non-strict mode (GRANTLAYER_JWT_STRICT_CLAIMS=false, default):
+      Only validates claims that are PRESENT in the token — backward compat
+      for tokens issued before iss/aud injection was introduced.
+
+    Strict mode (GRANTLAYER_JWT_STRICT_CLAIMS=true):
+      Rejects tokens MISSING iss or aud when the server has those claims
+      configured (JWT_ISSUER / JWT_AUDIENCE non-empty).  Use this to prevent
+      cross-environment token replay via claim omission.
     """
     from ..core import config as _config  # deferred to avoid circular import
     expected_iss = _config.JWT_ISSUER
     expected_aud = _config.JWT_AUDIENCE
+    strict = _config.JWT_STRICT_CLAIMS
 
-    if expected_iss and "iss" in payload:
-        if payload["iss"] != expected_iss:
+    if expected_iss:
+        if "iss" not in payload:
+            if strict:
+                raise JWTInvalidError("Token is missing required iss claim.")
+        elif payload["iss"] != expected_iss:
             raise JWTInvalidError("Invalid issuer.")
 
-    if expected_aud and "aud" in payload:
-        aud = payload["aud"]
-        if isinstance(aud, list):
-            if expected_aud not in aud:
+    if expected_aud:
+        if "aud" not in payload:
+            if strict:
+                raise JWTInvalidError("Token is missing required aud claim.")
+        else:
+            aud = payload["aud"]
+            if isinstance(aud, list):
+                if expected_aud not in aud:
+                    raise JWTInvalidError("Invalid audience.")
+            elif aud != expected_aud:
                 raise JWTInvalidError("Invalid audience.")
-        elif aud != expected_aud:
-            raise JWTInvalidError("Invalid audience.")
 
 
 # ──────────────────────────────────────────────

@@ -169,12 +169,19 @@ GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: bool = _env_bool(
 
 # Issuer claim added to every self-signed JWT.  When set, validate_jwt_header()
 # rejects tokens whose iss claim differs.  Old tokens without iss are still
-# accepted (backward compat).  Set to "" to disable iss injection and validation.
+# accepted (backward compat) unless JWT_STRICT_CLAIMS is enabled.
+# Set to "" to disable iss injection and validation.
 JWT_ISSUER: str = _env_str("GRANTLAYER_JWT_ISSUER", "grantlayer")
 
 # Audience claim added to every self-signed JWT.  Same optional-validation rules
 # as JWT_ISSUER apply.  Set to "" to disable.
 JWT_AUDIENCE: str = _env_str("GRANTLAYER_JWT_AUDIENCE", "grantlayer-api")
+
+# When true: tokens MISSING iss/aud claims are rejected (401) when the server
+# has JWT_ISSUER / JWT_AUDIENCE configured.  Default false preserves backward
+# compat with tokens issued before iss/aud injection was introduced.
+# Enable in new deployments to close the cross-environment token replay window.
+JWT_STRICT_CLAIMS: bool = _env_bool("GRANTLAYER_JWT_STRICT_CLAIMS", default=False)
 
 # ──────────────────────────────────────────────────────────────
 # Rate Limiting
@@ -264,6 +271,26 @@ def startup_warnings() -> list[str]:
                 "in a production-like runtime mode. Set to your actual public origin(s) "
                 "or leave empty to disable CORS."
             )
+
+    # Warn when JWT_ISSUER carries the non-unique default value in non-test mode.
+    # Two deployments with the same default issuer and a shared signing key will
+    # cross-accept each other's tokens.
+    _JWT_ISSUER_DEFAULT = "grantlayer"
+    if RUNTIME_MODE != "test" and JWT_ISSUER == _JWT_ISSUER_DEFAULT:
+        msgs.append(
+            "WARNING: GRANTLAYER_JWT_ISSUER is set to the default value 'grantlayer'. "
+            "Set a unique issuer per deployment to prevent cross-instance token acceptance "
+            "when multiple GrantLayer instances share a signing key."
+        )
+
+    # Warn when strict claims enforcement is disabled but an issuer is configured.
+    # Without strict mode, tokens that omit iss/aud bypass issuer/audience validation.
+    if JWT_ISSUER and not JWT_STRICT_CLAIMS and RUNTIME_MODE not in ("local", "test"):
+        msgs.append(
+            "WARNING: GRANTLAYER_JWT_STRICT_CLAIMS is not enabled. "
+            "Tokens without iss/aud claims are accepted even though JWT_ISSUER is configured. "
+            "Set GRANTLAYER_JWT_STRICT_CLAIMS=true to require iss/aud on all tokens."
+        )
 
     return msgs
 
