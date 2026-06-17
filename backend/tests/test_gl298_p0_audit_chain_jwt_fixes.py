@@ -174,11 +174,8 @@ class TestAuditChainDispatch(unittest.TestCase):
             approved=True, reason="x", tenant_id="t",
         )
         mock_conn = MagicMock()
-        # Simulate _get_latest_row_hash returning None
         with patch.object(audit_log, "_get_latest_row_hash", return_value=None), \
              patch.object(audit_log, "_compute_row_hash", return_value="hash123"), \
-             patch.object(audit_log, "_translate_to_named_params",
-                          return_value=("INSERT ...", {})), \
              patch.object(audit_log, "_build_insert_params", return_value={}):
             audit_log._append_event_postgres_with_conn(event, mock_conn)
         # First execute call must be the advisory lock
@@ -197,8 +194,6 @@ class TestAuditChainDispatch(unittest.TestCase):
         mock_conn = MagicMock()
         with patch.object(audit_log, "_get_latest_row_hash", return_value=None), \
              patch.object(audit_log, "_compute_row_hash", return_value="hash456"), \
-             patch.object(audit_log, "_translate_to_named_params",
-                          return_value=("INSERT ...", {})), \
              patch.object(audit_log, "_build_insert_params", return_value={}):
             audit_log._append_event_postgres_with_conn(event, mock_conn)
         mock_conn.commit.assert_not_called()

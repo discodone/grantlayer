@@ -1,7 +1,7 @@
 """GL-034 — PostgreSQL Support via Minimal Connection Factory & Bounded CRUD Query Helper Refactor.
 
 Covers:
-1. Placeholder scanner correctly translates ? to %s outside literals/comments/identifiers
+1. _q_to_named converts ? positional placeholders to :p1, :p2 named params
 2. Connection factory parses postgres:// and postgresql:// URLs
 3. CRUD helpers (execute, query_one, query_all, executemany) work with SQLite
 4. Lazy-import error when PostgreSQL is configured but psycopg2 is missing
@@ -18,63 +18,51 @@ import importlib
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
-class TestPlaceholderScanner(unittest.TestCase):
-    """GL-034 placeholder scanner correctness."""
+class TestQToNamed(unittest.TestCase):
+    """GL-034 _q_to_named placeholder converter correctness."""
 
     def setUp(self):
-        from backend.src.core.db import _translate_placeholders
-        self.translate = _translate_placeholders
+        from backend.src.core.db import _q_to_named
+        self.convert = _q_to_named
 
-    def test_simple_placeholders(self):
-        sql, count = self.translate("SELECT * FROM t WHERE id = ? AND name = ?")
-        self.assertEqual(sql, "SELECT * FROM t WHERE id = %s AND name = %s")
-        self.assertEqual(count, 2)
+    def test_simple_single_placeholder(self):
+        sql, params = self.convert("SELECT * FROM t WHERE id = ?", ("x",))
+        self.assertEqual(sql, "SELECT * FROM t WHERE id = :p1")
+        self.assertEqual(params, {"p1": "x"})
+
+    def test_two_placeholders(self):
+        sql, params = self.convert("SELECT * FROM t WHERE id = ? AND name = ?", ("x", "y"))
+        self.assertEqual(sql, "SELECT * FROM t WHERE id = :p1 AND name = :p2")
+        self.assertEqual(params, {"p1": "x", "p2": "y"})
 
     def test_no_placeholders(self):
-        sql, count = self.translate("SELECT * FROM t")
+        sql, params = self.convert("SELECT * FROM t", ())
         self.assertEqual(sql, "SELECT * FROM t")
-        self.assertEqual(count, 0)
+        self.assertEqual(params, {})
 
-    def test_placeholder_in_string_literal_ignored(self):
-        sql, count = self.translate("SELECT * FROM t WHERE name = '?' AND id = ?")
-        self.assertEqual(sql, "SELECT * FROM t WHERE name = '?' AND id = %s")
-        self.assertEqual(count, 1)
+    def test_insert_with_many_placeholders(self):
+        sql, params = self.convert("INSERT INTO t (a, b, c) VALUES (?, ?, ?)", (1, 2, 3))
+        self.assertEqual(sql, "INSERT INTO t (a, b, c) VALUES (:p1, :p2, :p3)")
+        self.assertEqual(params, {"p1": 1, "p2": 2, "p3": 3})
 
-    def test_placeholder_in_doubled_quote_ignored(self):
-        sql, count = self.translate("SELECT * FROM t WHERE name = 'it''s ?' AND id = ?")
-        self.assertEqual(sql, "SELECT * FROM t WHERE name = 'it''s ?' AND id = %s")
-        self.assertEqual(count, 1)
+    def test_none_value_preserved(self):
+        sql, params = self.convert("SELECT * FROM t WHERE x = ?", (None,))
+        self.assertEqual(sql, "SELECT * FROM t WHERE x = :p1")
+        self.assertEqual(params, {"p1": None})
 
-    def test_placeholder_in_double_quoted_identifier_ignored(self):
-        sql, count = self.translate('SELECT * FROM "?" WHERE id = ?')
-        self.assertEqual(sql, 'SELECT * FROM "?" WHERE id = %s')
-        self.assertEqual(count, 1)
+    def test_mismatch_raises(self):
+        with self.assertRaises(ValueError):
+            self.convert("SELECT * FROM t WHERE id = ?", ())
 
-    def test_placeholder_in_line_comment_ignored(self):
-        sql, count = self.translate("SELECT * FROM t WHERE id = ? -- comment with ?\nAND x = ?")
-        self.assertEqual(sql, "SELECT * FROM t WHERE id = %s -- comment with ?\nAND x = %s")
-        self.assertEqual(count, 2)
+    def test_mismatch_too_many_params_raises(self):
+        with self.assertRaises(ValueError):
+            self.convert("SELECT * FROM t", ("extra",))
 
-    def test_placeholder_in_block_comment_ignored(self):
-        sql, count = self.translate("SELECT * FROM t WHERE id = ? /* comment ? */ AND x = ?")
-        self.assertEqual(sql, "SELECT * FROM t WHERE id = %s /* comment ? */ AND x = %s")
-        self.assertEqual(count, 2)
-
-    def test_unclosed_string_literal(self):
-        sql, count = self.translate("SELECT * FROM t WHERE name = '? AND id = ?")
-        # The ? after the unclosed string is still inside the string
-        self.assertIn("'", sql)
-        self.assertEqual(count, 0)
-
-    def test_mixed_comments_and_strings(self):
-        sql, count = self.translate(
-            "SELECT * FROM t WHERE id = ? /* block ? */ AND name = '?' -- line ?\nAND x = ?"
-        )
-        expected = (
-            "SELECT * FROM t WHERE id = %s /* block ? */ AND name = '?' -- line ?\nAND x = %s"
-        )
-        self.assertEqual(sql, expected)
-        self.assertEqual(count, 2)
+    def test_values_ordering(self):
+        sql, params = self.convert("INSERT INTO t VALUES (?, ?, ?)", ("a", "b", "c"))
+        self.assertEqual(params["p1"], "a")
+        self.assertEqual(params["p2"], "b")
+        self.assertEqual(params["p3"], "c")
 
 
 class TestConnectionFactory(unittest.TestCase):
