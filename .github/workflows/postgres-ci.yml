@@ -157,4 +157,5 @@ jobs:
             --ignore=backend/tests/test_gl139_audit_hash_chain_write_lock.py \
             --ignore=backend/tests/test_gl141_operator_model_default.py \
             --ignore=backend/tests/test_gl214_production_iam_operator_control_completion.py \
-            --ignore=backend/tests/test_gl203b_openapi_api_contract_cleanup.py
+            --ignore=backend/tests/test_gl203b_openapi_api_contract_cleanup.py \
+            --ignore=backend/tests/test_gl230_docker_jwt_quickstart.py
