@@ -147,7 +147,9 @@ def decode_token(token: str, secret: str) -> dict:
             raise JWTInvalidError(
                 f"Unsupported JWT algorithm: {header.get('alg')!r}. Expected HS256."
             )
-        return _pyjwt.decode(token, secret, algorithms=["HS256"])
+        # verify_aud=False: aud is validated manually in validate_jwt_header()
+        # to preserve backward compat with tokens that predate iss/aud injection.
+        return _pyjwt.decode(token, secret, algorithms=["HS256"], options={"verify_aud": False})
     except JWTInvalidError:
         raise
     except _pyjwt.ExpiredSignatureError as exc:
@@ -184,7 +186,9 @@ def decode_token_rs256(token: str, public_key_pem: bytes) -> dict:
             raise JWTInvalidError(
                 f"Unsupported JWT algorithm: {header.get('alg')!r}. Expected RS256."
             )
-        return _pyjwt.decode(token, public_key_pem, algorithms=["RS256"])
+        # verify_aud=False: aud is validated manually in validate_jwt_header()
+        # to preserve backward compat with tokens that predate iss/aud injection.
+        return _pyjwt.decode(token, public_key_pem, algorithms=["RS256"], options={"verify_aud": False})
     except JWTInvalidError:
         raise
     except _pyjwt.ExpiredSignatureError as exc:
@@ -194,11 +198,45 @@ def decode_token_rs256(token: str, public_key_pem: bytes) -> dict:
 
 
 # ──────────────────────────────────────────────
+# iss/aud claim helpers
+# ──────────────────────────────────────────────
+
+def _check_iss_aud(payload: dict) -> None:
+    """Validate iss and aud claims if configured and present in the token.
+
+    Only fires when the claim is present — old tokens without iss/aud pass
+    through unchanged (backward compat).
+    """
+    from ..core import config as _config  # deferred to avoid circular import
+    expected_iss = _config.JWT_ISSUER
+    expected_aud = _config.JWT_AUDIENCE
+
+    if expected_iss and "iss" in payload:
+        if payload["iss"] != expected_iss:
+            raise JWTInvalidError("Invalid issuer.")
+
+    if expected_aud and "aud" in payload:
+        aud = payload["aud"]
+        if isinstance(aud, list):
+            if expected_aud not in aud:
+                raise JWTInvalidError("Invalid audience.")
+        elif aud != expected_aud:
+            raise JWTInvalidError("Invalid audience.")
+
+
+# ──────────────────────────────────────────────
 # Env-driven signing (used by /auth/token router)
 # ──────────────────────────────────────────────
 
 def sign_token(payload: dict, ttl_hours: int = _DEFAULT_TTL_HOURS) -> str:
     """Issue a JWT using the algorithm and key material from environment variables."""
+    from ..core import config as _config  # deferred to avoid circular import
+    claims = dict(payload)
+    if _config.JWT_ISSUER:
+        claims.setdefault("iss", _config.JWT_ISSUER)
+    if _config.JWT_AUDIENCE:
+        claims.setdefault("aud", _config.JWT_AUDIENCE)
+
     algo = _get_algorithm()
     if algo == "HS256":
         secret = _get_jwt_secret()
@@ -208,7 +246,7 @@ def sign_token(payload: dict, ttl_hours: int = _DEFAULT_TTL_HOURS) -> str:
                 "Export it before generating a token:\n"
                 "  export GRANTLAYER_JWT_SECRET=$(python3 -c \"import secrets; print(secrets.token_hex(32))\")"
             )
-        return encode_token(payload, secret, ttl_hours)
+        return encode_token(claims, secret, ttl_hours)
     else:  # RS256
         pem = _get_private_key_pem()
         if not pem:
@@ -218,7 +256,7 @@ def sign_token(payload: dict, ttl_hours: int = _DEFAULT_TTL_HOURS) -> str:
                 "  openssl genrsa -out private.pem 2048\n"
                 "  export GRANTLAYER_JWT_PRIVATE_KEY=$(base64 -w0 private.pem)"
             )
-        return encode_token_rs256(payload, pem, ttl_hours)
+        return encode_token_rs256(claims, pem, ttl_hours)
 
 
 # ──────────────────────────────────────────────
@@ -243,11 +281,13 @@ def create_dev_token(
             "Export it before generating a token:\n"
             "  export GRANTLAYER_JWT_SECRET=$(python3 -c \"import secrets; print(secrets.token_hex(32))\")"
         )
-    return encode_token(
-        {"sub": sub, "tenant_id": tenant_id, "role": role},
-        effective_secret,
-        ttl_hours,
-    )
+    from ..core import config as _config  # deferred to avoid circular import
+    claims: dict = {"sub": sub, "tenant_id": tenant_id, "role": role}
+    if _config.JWT_ISSUER:
+        claims["iss"] = _config.JWT_ISSUER
+    if _config.JWT_AUDIENCE:
+        claims["aud"] = _config.JWT_AUDIENCE
+    return encode_token(claims, effective_secret, ttl_hours)
 
 
 # ──────────────────────────────────────────────
@@ -311,6 +351,8 @@ def validate_jwt_header(
                 priv_key = serialization.load_pem_private_key(priv_pem, password=None)
                 pub_pem = priv_key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
             payload = decode_token_rs256(token.strip(), pub_pem)
+
+        _check_iss_aud(payload)
 
         if "tenant_id" not in payload:
             return False, 400, {

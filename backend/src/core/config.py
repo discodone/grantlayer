@@ -164,6 +164,19 @@ GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: bool = _env_bool(
 )
 
 # ──────────────────────────────────────────────────────────────
+# JWT Claims
+# ──────────────────────────────────────────────────────────────
+
+# Issuer claim added to every self-signed JWT.  When set, validate_jwt_header()
+# rejects tokens whose iss claim differs.  Old tokens without iss are still
+# accepted (backward compat).  Set to "" to disable iss injection and validation.
+JWT_ISSUER: str = _env_str("GRANTLAYER_JWT_ISSUER", "grantlayer")
+
+# Audience claim added to every self-signed JWT.  Same optional-validation rules
+# as JWT_ISSUER apply.  Set to "" to disable.
+JWT_AUDIENCE: str = _env_str("GRANTLAYER_JWT_AUDIENCE", "grantlayer-api")
+
+# ──────────────────────────────────────────────────────────────
 # Rate Limiting
 # ──────────────────────────────────────────────────────────────
 
