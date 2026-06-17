@@ -1,20 +1,17 @@
 """GrantLayer MVP — Grant storage."""
 
 import datetime
-from typing import TYPE_CHECKING, List, Optional
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Generator, List, Optional
 
-from sqlalchemy import func, select
 from sqlalchemy import insert as sa_insert
 from sqlalchemy import update as sa_update
 
 from ..core.crypto_signing import sign_grant as _sign_grant
-from ..core.db import (
-    execute,
-    query_all,
-    query_one,
-)
+from ..core.db import execute
 from ..core.models import Grant
 from ..core.orm import Grant as OrmGrant
+from ..core.repositories_sqlalchemy import SqlAlchemyGrantRepository
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
@@ -22,28 +19,21 @@ if TYPE_CHECKING:
 _DEMO_WORKSPACE_ID = "default"
 
 
-def _orm_to_grant(row: OrmGrant) -> Grant:
-    return Grant(
-        id=str(row.id),
-        subject_id=str(row.subject_id),
-        role=str(row.role),
-        action=str(row.action),
-        resource=str(row.resource),
-        valid_from=str(row.valid_from),
-        valid_until=str(row.valid_until),
-        created_by=str(row.created_by),
-        reason=str(row.reason),
-        revoked=bool(row.revoked),
-        revoked_by=str(row.revoked_by) if row.revoked_by is not None else None,
-        revoked_reason=str(row.revoked_reason) if row.revoked_reason is not None else None,
-        revoked_at=str(row.revoked_at) if row.revoked_at is not None else None,
-        created_at=str(row.created_at),
-        signature=str(row.signature) if row.signature is not None else None,
-        signing_key_id=str(row.signing_key_id) if row.signing_key_id is not None else None,
-        payload_hash=str(row.payload_hash) if row.payload_hash is not None else None,
-        max_uses=int(row.max_uses) if row.max_uses is not None else None,
-        use_count=int(row.use_count) if row.use_count is not None else 0,
-    )
+@contextmanager
+def _auto_session() -> Generator["Session", None, None]:
+    """Create a short-lived, auto-committing session for standalone calls."""
+    from sqlalchemy.orm import Session as _Session
+
+    from ..core.db import get_engine
+    session = _Session(get_engine())
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 def _row_to_grant(row: dict) -> Grant:
@@ -78,30 +68,13 @@ def list_grants(
     session: "Optional[Session]" = None,
 ) -> List[Grant]:
     if session is not None:
-        stmt = select(OrmGrant).order_by(OrmGrant.created_at.desc())
-        if tenant_id is not None:
-            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
-        if workspace_id is not None:
-            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
-        if limit is not None:
-            stmt = stmt.limit(limit).offset(offset)
-        return [_orm_to_grant(r) for r in session.execute(stmt).scalars().all()]
-    conditions: list[str] = []
-    params: list = []
-    if tenant_id is not None:
-        conditions.append("tenant_id = ?")
-        params.append(tenant_id)
-    if workspace_id is not None:
-        conditions.append("workspace_id = ?")
-        params.append(workspace_id)
-    sql = "SELECT * FROM grants"
-    if conditions:
-        sql += " WHERE " + " AND ".join(conditions)
-    sql += " ORDER BY created_at DESC"
-    if limit is not None:
-        sql += " LIMIT ? OFFSET ?"
-        params.extend([limit, offset])
-    return [_row_to_grant(r) for r in query_all(sql, tuple(params))]
+        return SqlAlchemyGrantRepository(session).list(
+            tenant_id=tenant_id, workspace_id=workspace_id, limit=limit, offset=offset
+        )
+    with _auto_session() as sess:
+        return SqlAlchemyGrantRepository(sess).list(
+            tenant_id=tenant_id, workspace_id=workspace_id, limit=limit, offset=offset
+        )
 
 
 def count_grants(
@@ -110,26 +83,13 @@ def count_grants(
     session: "Optional[Session]" = None,
 ) -> int:
     if session is not None:
-        stmt = select(func.count()).select_from(OrmGrant)
-        if tenant_id is not None:
-            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
-        if workspace_id is not None:
-            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
-        result = session.execute(stmt).scalar()
-        return int(result) if result is not None else 0
-    conditions: list[str] = []
-    params: list = []
-    if tenant_id is not None:
-        conditions.append("tenant_id = ?")
-        params.append(tenant_id)
-    if workspace_id is not None:
-        conditions.append("workspace_id = ?")
-        params.append(workspace_id)
-    sql = "SELECT COUNT(*) AS count FROM grants"
-    if conditions:
-        sql += " WHERE " + " AND ".join(conditions)
-    row = query_one(sql, tuple(params))
-    return int(row["count"]) if row else 0
+        return SqlAlchemyGrantRepository(session).count(
+            tenant_id=tenant_id, workspace_id=workspace_id
+        )
+    with _auto_session() as sess:
+        return SqlAlchemyGrantRepository(sess).count(
+            tenant_id=tenant_id, workspace_id=workspace_id
+        )
 
 
 def get_grant(
@@ -139,23 +99,28 @@ def get_grant(
     session: "Optional[Session]" = None,
 ) -> Optional[Grant]:
     if session is not None:
-        stmt = select(OrmGrant).where(OrmGrant.id == grant_id)
-        if tenant_id is not None:
-            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
-        if workspace_id is not None:
-            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
-        orm_row = session.execute(stmt).scalars().first()
-        return _orm_to_grant(orm_row) if orm_row else None
-    conditions = ["id = ?"]
-    params: list = [grant_id]
-    if tenant_id is not None:
-        conditions.append("tenant_id = ?")
-        params.append(tenant_id)
-    if workspace_id is not None:
-        conditions.append("workspace_id = ?")
-        params.append(workspace_id)
-    row = query_one("SELECT * FROM grants WHERE " + " AND ".join(conditions), tuple(params))
-    return _row_to_grant(row) if row else None
+        return SqlAlchemyGrantRepository(session).get(
+            grant_id, tenant_id=tenant_id, workspace_id=workspace_id
+        )
+    with _auto_session() as sess:
+        return SqlAlchemyGrantRepository(sess).get(
+            grant_id, tenant_id=tenant_id, workspace_id=workspace_id
+        )
+
+
+def _sign_and_insert(
+    grant: Grant,
+    tenant_id: str,
+    workspace_id: str,
+    session: "Optional[Session]" = None,
+) -> Grant:
+    """Sign the grant then insert via repo. Internal helper."""
+    sig_hex, hash_hex, key_id = _sign_grant(grant)
+    grant.signature = sig_hex
+    grant.payload_hash = hash_hex
+    grant.signing_key_id = key_id
+    SqlAlchemyGrantRepository(session).create(grant, tenant_id, workspace_id)  # type: ignore[arg-type]
+    return grant
 
 
 def create_grant(
@@ -163,19 +128,18 @@ def create_grant(
     conn=None,
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
+    session: "Optional[Session]" = None,
 ) -> Grant:
-    # Generate signature before inserting to ensure atomic creation
-    sig_hex, hash_hex, key_id = _sign_grant(grant)
-    grant.signature = sig_hex
-    grant.payload_hash = hash_hex
-    grant.signing_key_id = key_id
-
     if tenant_id is None:
         raise ValueError("tenant_id is required")
-    effective_tenant = tenant_id
     effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
 
     if conn is not None:
+        # Transactional path: caller manages the connection (_ConnectionWrapper or SA Connection).
+        sig_hex, hash_hex, key_id = _sign_grant(grant)
+        grant.signature = sig_hex
+        grant.payload_hash = hash_hex
+        grant.signing_key_id = key_id
         conn.execute(
             sa_insert(OrmGrant).values(
                 id=grant.id,
@@ -194,26 +158,17 @@ def create_grant(
                 signature=sig_hex,
                 signing_key_id=key_id,
                 payload_hash=hash_hex,
-                tenant_id=effective_tenant,
+                tenant_id=tenant_id,
                 workspace_id=effective_workspace,
             )
         )
-    else:
-        execute(
-            """INSERT INTO grants
-               (id, subject_id, role, action, resource, valid_from, valid_until,
-                created_by, reason, revoked, created_at, max_uses, use_count,
-                signature, signing_key_id, payload_hash, tenant_id, workspace_id)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (
-                grant.id, grant.subject_id, grant.role, grant.action,
-                grant.resource, grant.valid_from, grant.valid_until,
-                grant.created_by, grant.reason, grant.created_at,
-                grant.max_uses, grant.use_count,
-                sig_hex, key_id, hash_hex, effective_tenant, effective_workspace,
-            ),
-        )
-    return grant
+        return grant
+
+    if session is not None:
+        return _sign_and_insert(grant, tenant_id, effective_workspace, session)
+
+    with _auto_session() as sess:
+        return _sign_and_insert(grant, tenant_id, effective_workspace, sess)
 
 
 def tamper_grant(grant_id: str, tenant_id: Optional[str] = None) -> Optional[dict]:
@@ -250,9 +205,11 @@ def revoke_grant(
     conn=None,
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
+    session: "Optional[Session]" = None,
 ) -> bool:
     revoked_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     if conn is not None:
+        # Transactional path: caller manages the connection (_ConnectionWrapper or SA Connection).
         stmt = (
             sa_update(OrmGrant)
             .where(OrmGrant.id == grant_id, OrmGrant.revoked == 0)
@@ -264,35 +221,19 @@ def revoke_grant(
             stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
         result = conn.execute(stmt)
         return (result.rowcount or 0) > 0
-    conditions = ["id = ?", "revoked = 0"]
-    params: list = [revoked_by, reason, revoked_at, grant_id]
-    if tenant_id is not None:
-        conditions.append("tenant_id = ?")
-        params.append(tenant_id)
-    if workspace_id is not None:
-        conditions.append("workspace_id = ?")
-        params.append(workspace_id)
-    sql = (
-        "UPDATE grants SET revoked = 1, revoked_by = ?, revoked_reason = ?, revoked_at = ?"
-        " WHERE " + " AND ".join(conditions)
-    )
-    rowcount = execute(sql, tuple(params))
-    return rowcount > 0
+
+    if session is not None:
+        return SqlAlchemyGrantRepository(session).revoke(
+            grant_id, revoked_by, reason, tenant_id=tenant_id, workspace_id=workspace_id
+        )
+
+    with _auto_session() as sess:
+        return SqlAlchemyGrantRepository(sess).revoke(
+            grant_id, revoked_by, reason, tenant_id=tenant_id, workspace_id=workspace_id
+        )
 
 
 def try_consume_grant_use(grant_id: str) -> bool:
-    """Atomically increment use_count if the grant is not exhausted.
-
-    Returns True if the consumption succeeded, False if the grant
-    was already exhausted (use_count >= max_uses).
-    """
-    rowcount = execute(
-        """
-        UPDATE grants
-        SET use_count = use_count + 1
-        WHERE id = ?
-          AND (max_uses IS NULL OR use_count < max_uses)
-        """,
-        (grant_id,),
-    )
-    return rowcount > 0
+    """Atomically increment use_count if the grant is not exhausted."""
+    with _auto_session() as sess:
+        return SqlAlchemyGrantRepository(sess).try_consume_use(grant_id)

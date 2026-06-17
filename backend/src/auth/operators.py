@@ -18,15 +18,8 @@ import datetime
 import hashlib
 import hmac
 import secrets
-import uuid
-from typing import TYPE_CHECKING, Optional
-
-from sqlalchemy import func, select
-from sqlalchemy import insert as sa_insert
-from sqlalchemy import update as sa_update
-
-from ..core.db import execute, query_all, query_one
-from ..core.orm import Operator as OrmOperator
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Generator, Optional
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
@@ -141,70 +134,62 @@ class Operator:
 
 
 # ──────────────────────────────────────────────────────────────
-# Database helpers
+# Session helpers
+# ──────────────────────────────────────────────────────────────
+
+@contextmanager
+def _auto_session() -> Generator["Session", None, None]:
+    from sqlalchemy.orm import Session as _Session
+
+    from ..core.db import get_engine
+    session = _Session(get_engine())
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+def _get_repo(session: "Optional[Session]" = None):
+    from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
+    if session is not None:
+        return SqlAlchemyOperatorRepository(session), None
+    # Return repo and a sentinel indicating auto-session is needed
+    return None, True
+
+
+# ──────────────────────────────────────────────────────────────
+# Database helpers (legacy init — DDL now handled by Alembic)
 # ──────────────────────────────────────────────────────────────
 
 def _init_operators_table() -> None:
-    # Schema is managed by Alembic migrations — DDL removed.
     pass
 
 
-def _orm_to_operator(row: OrmOperator) -> Operator:
-    return Operator(
-        operator_id=str(row.id),
-        name=str(row.name),
-        role=str(row.role),
-        active=bool(row.active),
-        created_at=str(row.created_at) if row.created_at is not None else None,
-        expires_at=str(row.expires_at) if row.expires_at is not None else None,
-        rotated_at=str(row.rotated_at) if row.rotated_at is not None else None,
-        tenant_id=str(row.tenant_id),
-    )
-
-
-def _row_to_operator(row: dict | None) -> Operator | None:
-    if row is None:
-        return None
-    return Operator(
-        operator_id=row["id"],
-        name=row["name"],
-        role=row["role"],
-        active=bool(row["active"]),
-        created_at=row["created_at"],
-        expires_at=row.get("expires_at"),
-        rotated_at=row.get("rotated_at"),
-        tenant_id=row["tenant_id"],
-    )
-
+# ──────────────────────────────────────────────────────────────
+# Query functions
+# ──────────────────────────────────────────────────────────────
 
 def get_operator_by_id(
     operator_id: str,
     session: "Optional[Session]" = None,
 ) -> Operator | None:
+    from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
     if session is not None:
-        stmt = select(OrmOperator).where(
-            OrmOperator.id == operator_id, OrmOperator.active == 1
-        )
-        orm_row = session.execute(stmt).scalars().first()
-        return _orm_to_operator(orm_row) if orm_row else None
-    row = query_one(
-        "SELECT * FROM operators WHERE id = ? AND active = 1", (operator_id,)
-    )
-    return _row_to_operator(row)
-
-
-def _get_operator_row_by_token_hash(token_hash: str) -> dict | None:
-    return query_one(
-        "SELECT * FROM operators WHERE token_hash = ? AND active = 1", (token_hash,)
-    )
+        return SqlAlchemyOperatorRepository(session).get(operator_id)
+    with _auto_session() as sess:
+        return SqlAlchemyOperatorRepository(sess).get(operator_id)
 
 
 def list_operators(session: "Optional[Session]" = None) -> list[Operator]:
+    from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
     if session is not None:
-        stmt = select(OrmOperator).order_by(OrmOperator.created_at.desc())
-        return [_orm_to_operator(r) for r in session.execute(stmt).scalars().all()]
-    rows = query_all("SELECT * FROM operators ORDER BY created_at DESC")
-    return [op for r in rows if (op := _row_to_operator(r)) is not None]
+        return SqlAlchemyOperatorRepository(session).list()
+    with _auto_session() as sess:
+        return SqlAlchemyOperatorRepository(sess).list()
 
 
 # ──────────────────────────────────────────────────────────────
@@ -229,10 +214,7 @@ def _operator_to_safe_dict(op: Operator) -> dict:
 
 
 def list_operators_for_admin(session: "Optional[Session]" = None) -> list[dict]:
-    """List all operators with safe fields only (no token_hash/lookup_hash/raw token).
-
-    Used by admin control-plane. Never returns internal hash fields.
-    """
+    """List all operators with safe fields only (no token_hash/lookup_hash/raw token)."""
     operators = list_operators(session=session)
     return [_operator_to_safe_dict(op) for op in operators]
 
@@ -241,20 +223,13 @@ def get_operator_safe(
     operator_id: str,
     session: "Optional[Session]" = None,
 ) -> dict | None:
-    """Get operator safe dict by ID (active or inactive).
-
-    Used by admin control-plane. Never returns internal hash fields.
-    """
+    """Get operator safe dict by ID (active or inactive)."""
+    from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
     if session is not None:
-        stmt = select(OrmOperator).where(OrmOperator.id == operator_id)
-        orm_row = session.execute(stmt).scalars().first()
-        if orm_row is None:
-            return None
-        return _operator_to_safe_dict(_orm_to_operator(orm_row))
-    row = query_one("SELECT * FROM operators WHERE id = ?", (operator_id,))
-    if row is None:
-        return None
-    op = _row_to_operator(row)
+        op = SqlAlchemyOperatorRepository(session).get_any(operator_id)
+    else:
+        with _auto_session() as sess:
+            op = SqlAlchemyOperatorRepository(sess).get_any(operator_id)
     if op is None:
         return None
     return _operator_to_safe_dict(op)
@@ -264,24 +239,12 @@ def revoke_operator(
     operator_id: str,
     session: "Optional[Session]" = None,
 ) -> bool:
-    """Deactivate an operator (set active=0).
-
-    Admin-only revocation. Returns True if updated, False if not found.
-    Revoked operators fail closed on authentication.
-    """
+    """Deactivate an operator (set active=0)."""
+    from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
     if session is not None:
-        stmt = (
-            sa_update(OrmOperator)
-            .where(OrmOperator.id == operator_id)
-            .values(active=0)
-        )
-        result = session.execute(stmt)
-        return (result.rowcount or 0) > 0  # type: ignore[attr-defined]
-    rowcount = execute(
-        "UPDATE operators SET active = 0 WHERE id = ?",
-        (operator_id,),
-    )
-    return rowcount > 0
+        return SqlAlchemyOperatorRepository(session).revoke(operator_id)
+    with _auto_session() as sess:
+        return SqlAlchemyOperatorRepository(sess).revoke(operator_id)
 
 
 def create_operator(
@@ -295,78 +258,28 @@ def create_operator(
     """Create a new operator and return (operator, raw_token).
 
     The raw_token is returned exactly once; store it securely.
-
-    tenant_id is now a required positional argument — no silent global
-    or None default in the public API. For demo/bootstrap usage, pass
-    tenant_id='demo' explicitly.
     """
-    op_id = str(uuid.uuid4())
-    token_hash = hash_token(token)
-    lookup = derive_token_lookup_hash(token)
-    now = _now_utc_iso()
-    expires = (
-        datetime.datetime.now(datetime.timezone.utc)
-        + datetime.timedelta(days=ttl_days)
-    ).isoformat().replace("+00:00", "Z")
-
+    from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
     if session is not None:
-        session.execute(
-            sa_insert(OrmOperator).values(
-                id=op_id,
-                name=name,
-                role=role,
-                token_hash=token_hash,
-                token_lookup_hash=lookup,
-                active=1,
-                created_at=now,
-                expires_at=expires,
-                tenant_id=tenant_id,
-            )
-        )
-    else:
-        execute(
-            """
-            INSERT INTO operators
-                (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at, tenant_id)
-            VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
-            """,
-            (op_id, name, role, token_hash, lookup, now, expires, tenant_id),
-        )
-
-    op = Operator(
-        operator_id=op_id,
-        name=name,
-        role=role,
-        active=True,
-        created_at=now,
-        expires_at=expires,
-        tenant_id=tenant_id,
-    )
-    return op, token
+        return SqlAlchemyOperatorRepository(session).create(name, role, token, tenant_id, ttl_days)
+    with _auto_session() as sess:
+        return SqlAlchemyOperatorRepository(sess).create(name, role, token, tenant_id, ttl_days)
 
 
 def is_operator_token_expired(
     operator_id: str,
     session: "Optional[Session]" = None,
 ) -> bool | None:
-    """Check whether an operator's token is expired.
-
-    Returns None if the operator is not found or inactive.
-    """
+    """Check whether an operator's token is expired."""
+    from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
     if session is not None:
-        stmt = select(OrmOperator).where(
-            OrmOperator.id == operator_id, OrmOperator.active == 1
-        )
-        orm_row = session.execute(stmt).scalars().first()
-        if orm_row is None:
-            return None
-        return _is_expired(str(orm_row.expires_at) if orm_row.expires_at is not None else None)
-    row = query_one(
-        "SELECT expires_at FROM operators WHERE id = ? AND active = 1", (operator_id,)
-    )
-    if row is None:
+        op = SqlAlchemyOperatorRepository(session).get(operator_id)
+    else:
+        with _auto_session() as sess:
+            op = SqlAlchemyOperatorRepository(sess).get(operator_id)
+    if op is None:
         return None
-    return _is_expired(row.get("expires_at"))
+    return _is_expired(op.expires_at)
 
 
 def authenticate_operator_with_reason(
@@ -386,61 +299,39 @@ def authenticate_operator_with_reason(
     if not token:
         return None, "operator_auth_required"
 
-    # O(1) deterministic narrowing via SHA-256 lookup hash.
     lookup = derive_token_lookup_hash(token)
 
-    if session is not None:
-        stmt = select(OrmOperator).where(
-            OrmOperator.token_lookup_hash == lookup,
-            OrmOperator.active == 1,
-        )
-        orm_row = session.execute(stmt).scalars().first()
+    def _check(repo) -> tuple[Operator | None, str | None]:
+        from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
+        assert isinstance(repo, SqlAlchemyOperatorRepository)
+        orm_row = repo.find_by_lookup_hash(lookup)
         if orm_row is not None and verify_token(token, str(orm_row.token_hash)):
-            if _is_expired(str(orm_row.expires_at) if orm_row.expires_at is not None else None):
+            expires = str(orm_row.expires_at) if orm_row.expires_at is not None else None
+            if _is_expired(expires):
                 return None, "operator_token_expired"
+            from ..core.repositories_sqlalchemy import _orm_to_operator
             return _orm_to_operator(orm_row), None
 
         # Legacy fallback: rows created before token_lookup_hash was added.
-        legacy_stmt = select(OrmOperator).where(
-            OrmOperator.active == 1,
-            OrmOperator.token_lookup_hash.is_(None),
-        )
-        for orm_op in session.execute(legacy_stmt).scalars().all():
+        for orm_op in repo.find_all_without_lookup_hash():
             if verify_token(token, str(orm_op.token_hash)):
-                if _is_expired(str(orm_op.expires_at) if orm_op.expires_at is not None else None):
+                expires = str(orm_op.expires_at) if orm_op.expires_at is not None else None
+                if _is_expired(expires):
                     return None, "operator_token_expired"
+                from ..core.repositories_sqlalchemy import _orm_to_operator
                 return _orm_to_operator(orm_op), None
 
         return None, "operator_auth_required"
 
-    row = query_one(
-        "SELECT id, token_hash, expires_at FROM operators WHERE token_lookup_hash = ? AND active = 1",
-        (lookup,),
-    )
-    if row is not None and verify_token(token, row["token_hash"]):
-        if _is_expired(row.get("expires_at")):
-            return None, "operator_token_expired"
-        return get_operator_by_id(row["id"]), None
-
-    # Legacy fallback: rows created from older migrations may lack token_lookup_hash.
-    legacy_rows = query_all(
-        "SELECT id, token_hash, expires_at FROM operators WHERE active = 1 AND token_lookup_hash IS NULL"
-    )
-    for row in legacy_rows:
-        if verify_token(token, row["token_hash"]):
-            if _is_expired(row.get("expires_at")):
-                return None, "operator_token_expired"
-            return get_operator_by_id(row["id"]), None
-
-    return None, "operator_auth_required"
+    from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
+    if session is not None:
+        return _check(SqlAlchemyOperatorRepository(session))
+    with _auto_session() as sess:
+        return _check(SqlAlchemyOperatorRepository(sess))
 
 
 def authenticate_operator(authorization_header: str | None) -> Operator | None:
-    """Validate Bearer token and return operator (without token_hash).
-
-    Returns None for missing/malformed header, unknown/inactive operator,
-    token hash mismatch, or expired token.
-    """
+    """Validate Bearer token and return operator (without token_hash)."""
     op, _reason = authenticate_operator_with_reason(authorization_header)
     return op
 
@@ -455,48 +346,12 @@ def rotate_operator_token(
     ttl_days: int = DEFAULT_TOKEN_TTL_DAYS,
     session: "Optional[Session]" = None,
 ) -> str | None:
-    """Rotate an operator's token material.
-
-    Generates a new raw token, hashes it with PBKDF2, computes a new
-    token_lookup_hash, updates the operator row, and returns the new
-    raw token exactly once.  Returns None if the operator is not found
-    or inactive.
-    """
-    op = get_operator_by_id(operator_id, session=session)
-    if op is None:
-        return None
-
-    new_token = secrets.token_urlsafe(32)
-    new_hash = hash_token(new_token)
-    new_lookup = derive_token_lookup_hash(new_token)
-    now = _now_utc_iso()
-    expires = (
-        datetime.datetime.now(datetime.timezone.utc)
-        + datetime.timedelta(days=ttl_days)
-    ).isoformat().replace("+00:00", "Z")
-
+    """Rotate an operator's token material."""
+    from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
     if session is not None:
-        session.execute(
-            sa_update(OrmOperator)
-            .where(OrmOperator.id == operator_id)
-            .values(
-                token_hash=new_hash,
-                token_lookup_hash=new_lookup,
-                rotated_at=now,
-                expires_at=expires,
-            )
-        )
-    else:
-        execute(
-            """
-            UPDATE operators
-            SET token_hash = ?, token_lookup_hash = ?, rotated_at = ?, expires_at = ?
-            WHERE id = ?
-            """,
-            (new_hash, new_lookup, now, expires, operator_id),
-        )
-
-    return new_token
+        return SqlAlchemyOperatorRepository(session).rotate_token(operator_id, ttl_days)
+    with _auto_session() as sess:
+        return SqlAlchemyOperatorRepository(sess).rotate_token(operator_id, ttl_days)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -505,69 +360,12 @@ def rotate_operator_token(
 
 def bootstrap_operator_if_needed(session: "Optional[Session]" = None) -> None:
     """Create bootstrap operator if operators table is empty and config is set."""
-    from ..core import config
-
-    if not config.ENABLE_OPERATOR_MODEL:
-        return
-    if not config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN:
-        return
-
+    from ..core.repositories_sqlalchemy import SqlAlchemyOperatorRepository
     if session is not None:
-        count = session.execute(
-            select(func.count()).select_from(OrmOperator)
-        ).scalar() or 0
-        if count > 0:
-            return
-
-        expires = (
-            datetime.datetime.now(datetime.timezone.utc)
-            + datetime.timedelta(days=DEFAULT_TOKEN_TTL_DAYS)
-        ).isoformat().replace("+00:00", "Z")
-
-        session.execute(
-            sa_insert(OrmOperator).values(
-                id=config.GRANTLAYER_BOOTSTRAP_OPERATOR_ID,
-                name=config.GRANTLAYER_BOOTSTRAP_OPERATOR_NAME,
-                role=config.GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE,
-                token_hash=hash_token(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
-                token_lookup_hash=derive_token_lookup_hash(
-                    config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN
-                ),
-                active=1,
-                created_at=_now_utc_iso(),
-                expires_at=expires,
-                tenant_id="demo",
-            )
-        )
+        SqlAlchemyOperatorRepository(session).bootstrap_if_needed()
         return
-
-    row = query_one("SELECT COUNT(*) AS count FROM operators", ())
-    count = int(row["count"]) if row else 0
-    if count > 0:
-        return
-
-    expires = (
-        datetime.datetime.now(datetime.timezone.utc)
-        + datetime.timedelta(days=DEFAULT_TOKEN_TTL_DAYS)
-    ).isoformat().replace("+00:00", "Z")
-
-    execute(
-        """
-        INSERT INTO operators
-            (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at, tenant_id)
-        VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
-        """,
-        (
-            config.GRANTLAYER_BOOTSTRAP_OPERATOR_ID,
-            config.GRANTLAYER_BOOTSTRAP_OPERATOR_NAME,
-            config.GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE,
-            hash_token(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
-            derive_token_lookup_hash(config.GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN),
-            _now_utc_iso(),
-            expires,
-            "demo",
-        ),
-    )
+    with _auto_session() as sess:
+        SqlAlchemyOperatorRepository(sess).bootstrap_if_needed()
 
 
 # ──────────────────────────────────────────────────────────────

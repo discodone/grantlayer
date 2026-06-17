@@ -6,11 +6,10 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 from ...core import config
-from ...core.db import get_db
 from ...core.models import GrantRequest
+from ...core.repositories import IGrantRequestRepository
 from ...core.validation import (
     MAX_NAME_LENGTH,
     MAX_REASON_LENGTH,
@@ -22,13 +21,10 @@ from ...grants.grant_requests import (
     ALLOWED_GRANT_ROLES,
     VALID_REQUEST_STATUSES,
     approve_grant_request,
-    count_grant_requests,
-    create_grant_request,
     deny_grant_request,
     get_grant_request,
-    list_grant_requests,
 )
-from ..deps import enforce_workspace_mutation, resolve_auth_and_workspace
+from ..deps import enforce_workspace_mutation, get_grant_request_repo, resolve_auth_and_workspace
 from ..schemas import DynamicResponse, GrantRequestListResponse, GrantRequestResponse
 from ..schemas import _validate_grant_dates as _validate_dates
 
@@ -65,7 +61,7 @@ def list_grant_requests_endpoint(
     offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
-    db: Session = Depends(get_db),
+    gr_repo: IGrantRequestRepository = Depends(get_grant_request_repo),
 ) -> Any:
     _, ws_ctx = resolve_auth_and_workspace(
         authorization,
@@ -83,17 +79,16 @@ def list_grant_requests_endpoint(
                 "reason": f"status must be one of: {sorted(VALID_REQUEST_STATUSES)}",
             },
         )
-    requests = list_grant_requests(
+    requests = gr_repo.list(
         status_filter=status,
         tenant_id=tenant_id,
         workspace_id=workspace_id,
         limit=limit,
         offset=offset,
-        session=db,
     )
     return GrantRequestListResponse(
         items=[GrantRequestResponse.from_grant_request(r) for r in requests],
-        total=count_grant_requests(status_filter=status, tenant_id=tenant_id, workspace_id=workspace_id, session=db),
+        total=gr_repo.count(status_filter=status, tenant_id=tenant_id, workspace_id=workspace_id),
         limit=limit,
         offset=offset,
     )
@@ -104,7 +99,7 @@ def get_grant_request_endpoint(
     request_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
-    db: Session = Depends(get_db),
+    gr_repo: IGrantRequestRepository = Depends(get_grant_request_repo),
 ) -> Any:
     _, ws_ctx = resolve_auth_and_workspace(
         authorization,
@@ -113,7 +108,7 @@ def get_grant_request_endpoint(
     )
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
-    req = get_grant_request(request_id, tenant_id=tenant_id, workspace_id=workspace_id, session=db)
+    req = gr_repo.get(request_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if req is None:
         raise HTTPException(
             status_code=404,
@@ -131,7 +126,7 @@ def create_grant_request_endpoint(
     body: GrantRequestCreateRequest,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
-    db: Session = Depends(get_db),
+    gr_repo: IGrantRequestRepository = Depends(get_grant_request_repo),
 ) -> Any:
     _require_operator_model()
     auth_ctx, ws_ctx = resolve_auth_and_workspace(
@@ -146,16 +141,6 @@ def create_grant_request_endpoint(
         raise HTTPException(
             status_code=400,
             detail={"error": "Cannot determine caller identity", "errorCode": "missing_caller_identity", "reason": "operator_id could not be resolved from the authentication token."},
-        )
-
-    if not operator_id:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "error": "Cannot determine caller identity",
-                "errorCode": "missing_caller_identity",
-                "reason": "requested_by could not be resolved from the authentication token.",
-            },
         )
 
     for alias, value in (
@@ -208,7 +193,7 @@ def create_grant_request_endpoint(
         requested_by=operator_id,
         reason=body.reason,
     )
-    created = create_grant_request(req, tenant_id=tenant_id, workspace_id=workspace_id, session=db)
+    created = gr_repo.create(req, tenant_id, workspace_id)
     return GrantRequestResponse.from_grant_request(created)
 
 

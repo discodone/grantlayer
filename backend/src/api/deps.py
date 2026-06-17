@@ -4,13 +4,27 @@ from __future__ import annotations
 
 from typing import Any, Optional, cast
 
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
 
 from ..auth.auth import (
     check_admin_token,
     check_auth,
     check_workspace_resource_access,
     resolve_workspace_context,
+)
+from ..core.db import get_db
+from ..core.repositories import (
+    IGrantExecutionRepository,
+    IGrantRepository,
+    IGrantRequestRepository,
+    IOperatorRepository,
+)
+from ..core.repositories_sqlalchemy import (
+    SqlAlchemyGrantExecutionRepository,
+    SqlAlchemyGrantRepository,
+    SqlAlchemyGrantRequestRepository,
+    SqlAlchemyOperatorRepository,
 )
 from .auth_jwt import validate_jwt_header
 
@@ -64,6 +78,22 @@ def require_admin(authorization: Optional[str]) -> dict:
     if not ok:
         raise HTTPException(status_code=status, detail=payload)
     return {"tenant_id": "demo"}
+
+
+def get_grant_repo(db: Session = Depends(get_db)) -> IGrantRepository:
+    return SqlAlchemyGrantRepository(db)
+
+
+def get_grant_request_repo(db: Session = Depends(get_db)) -> IGrantRequestRepository:
+    return SqlAlchemyGrantRequestRepository(db)
+
+
+def get_grant_execution_repo(db: Session = Depends(get_db)) -> IGrantExecutionRepository:
+    return SqlAlchemyGrantExecutionRepository(db)
+
+
+def get_operator_repo(db: Session = Depends(get_db)) -> IOperatorRepository:
+    return SqlAlchemyOperatorRepository(db)
 
 
 def enforce_workspace_mutation(ws_ctx: dict) -> None:
