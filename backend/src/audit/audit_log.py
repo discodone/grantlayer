@@ -323,12 +323,16 @@ def append_event(event: AuditEvent, conn=None) -> None:
     Multi-worker safety:
     - PostgreSQL: acquires a transaction-scoped advisory lock (pg_advisory_xact_lock)
       so that only one worker at a time can read the chain tail and insert, even
-      across multiple processes or containers.
+      across multiple processes or containers.  The lock is always acquired on the
+      PostgreSQL path regardless of whether the caller provides a connection.
     - SQLite: uses an in-process RLock (SQLite serializes writes at the file level,
       and single-process deployments don't need cross-process coordination).
     """
-    if DB_BACKEND == "postgres" and conn is None:
-        _append_event_postgres(event)
+    if DB_BACKEND == "postgres":
+        if conn is None:
+            _append_event_postgres(event)
+        else:
+            _append_event_postgres_with_conn(event, conn)
     else:
         _append_event_sqlite(event, conn)
 
@@ -352,6 +356,22 @@ def _append_event_postgres(event: AuditEvent) -> None:
         raise
     finally:
         conn.close()
+
+
+def _append_event_postgres_with_conn(event: AuditEvent, conn) -> None:
+    """PostgreSQL path when the caller already holds an open connection.
+
+    Acquires the same advisory lock within the caller's transaction so that
+    the audit chain read-then-insert is serialized across all workers.
+    The caller retains ownership of the transaction and must commit/rollback.
+    """
+    conn.execute(text(f"SELECT pg_advisory_xact_lock({_PG_AUDIT_CHAIN_LOCK_KEY})"))
+    prev_hash = _get_latest_row_hash(conn)
+    row_hash = _compute_row_hash(event, prev_hash)
+    sql, param_dict = _translate_to_named_params(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
+    conn.execute(text(sql), param_dict)
+    event.row_hash = row_hash
+    event.prev_hash = prev_hash
 
 
 def _append_event_sqlite(event: AuditEvent, conn=None) -> None:
