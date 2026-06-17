@@ -120,6 +120,7 @@ class _BaseGl201(unittest.TestCase):
         "GRANTLAYER_ENABLE_OPERATOR_MODEL",
         "GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN",
         "GRANTLAYER_CORS_ALLOWED_ORIGINS",
+        "GRANTLAYER_REDIS_URL",
     ]
 
     def setUp(self):
@@ -144,6 +145,7 @@ class _BaseGl201(unittest.TestCase):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = admin_token
         os.environ["GRANTLAYER_REQUIRE_CHALLENGE"] = "true"
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
+        os.environ["GRANTLAYER_REDIS_URL"] = "redis://localhost:6379"
 
     def _run_handler(
         self,

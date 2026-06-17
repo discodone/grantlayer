@@ -353,6 +353,14 @@ def startup_errors() -> list[str]:
                 "production-like modes to disable automatic bootstrapping."
             )
 
+    # Redis is a hard requirement in production-like modes.
+    if RUNTIME_MODE in PRODUCTION_LIKE_MODES and not GRANTLAYER_REDIS_URL:
+        errs.append(
+            "ERROR: GRANTLAYER_REDIS_URL is not set. "
+            "Redis is required in production-like modes for distributed rate limiting. "
+            "Set GRANTLAYER_REDIS_URL to a valid Redis connection URL."
+        )
+
     errs.extend(external_identity_startup_errors(os.environ, RUNTIME_MODE))
 
     return errs

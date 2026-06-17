@@ -33,6 +33,7 @@ class _BaseGl089(unittest.TestCase):
         self._orig_require_challenge = os.environ.get("GRANTLAYER_REQUIRE_CHALLENGE")
         self._orig_enable_demo = os.environ.get("GRANTLAYER_ENABLE_DEMO_ENDPOINTS")
         self._orig_runtime_mode = os.environ.get("GRANTLAYER_RUNTIME_MODE")
+        self._orig_redis_url = os.environ.get("GRANTLAYER_REDIS_URL")
 
         import backend.src.core.db as db_mod
         importlib.reload(db_mod)
@@ -58,6 +59,7 @@ class _BaseGl089(unittest.TestCase):
             ("GRANTLAYER_REQUIRE_CHALLENGE", self._orig_require_challenge),
             ("GRANTLAYER_ENABLE_DEMO_ENDPOINTS", self._orig_enable_demo),
             ("GRANTLAYER_RUNTIME_MODE", self._orig_runtime_mode),
+            ("GRANTLAYER_REDIS_URL", self._orig_redis_url),
         ]:
             if orig is None:
                 os.environ.pop(key, None)
@@ -145,6 +147,7 @@ class TestGl089StartupOkAndErrors(_BaseGl089):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "super-secret-token"
         os.environ["GRANTLAYER_REQUIRE_CHALLENGE"] = "true"
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
+        os.environ["GRANTLAYER_REDIS_URL"] = "redis://localhost:6379"
         self._reload_config()
         self.assertTrue(self.config_mod.startup_ok())
         self.assertEqual(self.config_mod.startup_errors(), [])
@@ -268,6 +271,7 @@ class TestGl089StartupGate(_BaseGl089):
         os.environ["GRANTLAYER_ADMIN_TOKEN"] = "gl089-safe-production-token-xyz"
         os.environ["GRANTLAYER_REQUIRE_CHALLENGE"] = "true"
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
+        os.environ["GRANTLAYER_REDIS_URL"] = "redis://localhost:6379"
         self._reload_config()
         self.assertTrue(self.config_mod.startup_ok())
         self.assertEqual(self.config_mod.startup_errors(), [])

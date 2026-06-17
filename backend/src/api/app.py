@@ -72,6 +72,7 @@ def create_app() -> FastAPI:
     # test) gets an isolated instance with no shared state.
     app.state.auth_rate_limiter = create_rate_limiter(
         auth_limit=config.GRANTLAYER_RATE_LIMIT_AUTH,
+        api_limit=config.GRANTLAYER_RATE_LIMIT_API,
         window_seconds=60,
         redis_url=config.GRANTLAYER_REDIS_URL,
     )
@@ -84,6 +85,30 @@ def create_app() -> FastAPI:
             allow_methods=["GET", "POST", "OPTIONS"],
             allow_headers=["Content-Type", "Authorization", "X-Correlation-ID"],
         )
+
+    # API rate limiting — all /v1/ routes, "api" group (120 req/min per IP default).
+    # OPTIONS (CORS preflight) requests are excluded — they carry no payload and
+    # must not be blocked by rate limiting.
+    # The auth router applies an additional stricter "auth" group check on /v1/auth/token.
+    @app.middleware("http")
+    async def _api_rate_limit(request: Request, call_next):
+        if request.method != "OPTIONS" and request.url.path.startswith("/v1/"):
+            limiter = getattr(request.app.state, "auth_rate_limiter", None)
+            if limiter is not None:
+                client_ip = request.client.host if request.client else "unknown"
+                allowed, retry_after = limiter.check(client_ip, "api")
+                if not allowed:
+                    from fastapi.responses import JSONResponse as _JSONResponse
+                    return _JSONResponse(
+                        status_code=429,
+                        content={
+                            "error": "rate_limit_exceeded",
+                            "errorCode": "rate_limit_exceeded",
+                            "reason": f"Too many requests. Retry after {retry_after} seconds.",
+                        },
+                        headers={"Retry-After": str(retry_after)},
+                    )
+        return await call_next(request)
 
     # Request logging and correlation ID propagation
     @app.middleware("http")
