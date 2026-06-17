@@ -10,11 +10,12 @@ import os
 import sqlite3
 import threading
 import time
-from collections.abc import Generator
+from collections.abc import AsyncGenerator, Generator
 from typing import Any
 from urllib.parse import urlparse
 
 from sqlalchemy import create_engine, text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from .. import migrations
@@ -501,6 +502,73 @@ def _orm_to_dict(row: Any) -> dict[str, Any] | None:
         d = dict(row.__dict__)
         d.pop("_sa_instance_state", None)
     return d
+
+
+# ──────────────────────────────────────────────────────────────
+# Async engine + session (aiosqlite / asyncpg)
+# ──────────────────────────────────────────────────────────────
+
+_async_engine: Any = None
+_async_engine_url: str | None = None
+_async_session_maker: Any = None
+_async_session_maker_engine: Any = None
+
+
+def _async_db_url() -> str:
+    """Return the async-driver URL for the current DB_PATH_OR_URL / DB_BACKEND."""
+    url = DB_PATH_OR_URL
+    if DB_BACKEND == "postgres":
+        if url.startswith("postgres://"):
+            url = "postgresql" + url[8:]
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1).replace(
+            "postgresql+psycopg2://", "postgresql+asyncpg://", 1
+        )
+    if url in (":memory:", "") or url.startswith("file::memory:"):
+        return "sqlite+aiosqlite:///:memory:"
+    return f"sqlite+aiosqlite:///{url}"
+
+
+def get_async_engine() -> Any:
+    """Return (and cache) the SQLAlchemy async engine for the configured backend.
+
+    Re-creates when DB_PATH_OR_URL changes between test runs.
+    """
+    global _async_engine, _async_engine_url
+    current_url = _async_db_url()
+    if _async_engine is None or _async_engine_url != current_url:
+        _async_engine_url = current_url
+        _async_engine = create_async_engine(current_url)
+    return _async_engine
+
+
+def get_async_session_maker() -> Any:
+    """Return (and cache) the async session factory, rebuilding when the engine changes."""
+    global _async_session_maker, _async_session_maker_engine
+    engine = get_async_engine()
+    if _async_session_maker is None or _async_session_maker_engine is not engine:
+        _async_session_maker = async_sessionmaker(
+            engine, class_=AsyncSession, expire_on_commit=False
+        )
+        _async_session_maker_engine = engine
+    return _async_session_maker
+
+
+async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
+    """FastAPI dependency: yield an AsyncSession per request.
+
+    Usage in a router:
+        @router.get("/example")
+        async def my_endpoint(db: AsyncSession = Depends(get_async_db)):
+            ...
+    """
+    factory = get_async_session_maker()
+    async with factory() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
 
 
 def get_db_health() -> dict[str, Any]:

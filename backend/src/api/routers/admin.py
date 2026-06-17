@@ -5,14 +5,14 @@ from __future__ import annotations
 from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...audit.audit_log import append_event
-from ...auth.operator_service import OperatorService
-from ...core.db import get_db
+from ...auth.operator_service import AsyncOperatorService
+from ...core.db import get_async_db
 from ...core.logging_utils import get_logger, safe_log
 from ...core.models import AuditEvent
-from ..deps import get_operator_service, require_admin
+from ..deps import get_async_operator_service, require_admin
 from ..schemas import DynamicResponse
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -34,22 +34,22 @@ class OperatorCreateRequest(BaseModel):
 
 
 @router.get("/operators", response_model=list[dict[str, Any]])
-def list_operators_endpoint(
+async def list_operators_endpoint(
     authorization: Annotated[Optional[str], Header()] = None,
-    svc: OperatorService = Depends(get_operator_service),
+    svc: AsyncOperatorService = Depends(get_async_operator_service),
 ) -> Any:
     require_admin(authorization)
-    return svc.list_operators_for_admin()
+    return await svc.list_operators_for_admin()
 
 
 @router.get("/operators/{operator_id}", response_model=dict[str, Any])
-def get_operator_endpoint(
+async def get_operator_endpoint(
     operator_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
-    svc: OperatorService = Depends(get_operator_service),
+    svc: AsyncOperatorService = Depends(get_async_operator_service),
 ) -> Any:
     require_admin(authorization)
-    op_safe = svc.get_operator_safe(operator_id)
+    op_safe = await svc.get_operator_safe(operator_id)
     if op_safe is None:
         raise HTTPException(
             status_code=404,
@@ -59,11 +59,11 @@ def get_operator_endpoint(
 
 
 @router.post("/operators", status_code=201, response_model=DynamicResponse)
-def create_operator_endpoint(
+async def create_operator_endpoint(
     body: OperatorCreateRequest,
     authorization: Annotated[Optional[str], Header()] = None,
-    svc: OperatorService = Depends(get_operator_service),
-    db: Session = Depends(get_db),
+    svc: AsyncOperatorService = Depends(get_async_operator_service),
+    db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     require_admin(authorization)
 
@@ -85,7 +85,7 @@ def create_operator_endpoint(
         raise HTTPException(status_code=400, detail={"error": "Invalid field: tenantId", "errorCode": "invalid_field", "reason": "tenantId must be a non-empty string."})
 
     try:
-        op, returned_token = svc.create_operator(
+        op, returned_token = await svc.create_operator(
             name=name.strip(),
             role=role,
             tenant_id=tenant_id.strip(),
@@ -97,19 +97,17 @@ def create_operator_endpoint(
         )
 
     safe_log(_logger, "info", "operator_action", action="operator_created", operator_id=op.operator_id, tenant_id=op.tenant_id)
-    append_event(
-        AuditEvent(
-            subject_id="admin",
-            role="admin",
-            action="operator_created",
-            resource=f"operator/{op.operator_id}",
-            approved=True,
-            reason="Admin created operator.",
-            tenant_id=op.tenant_id,
-            scope="tenant_admin",
-        ),
-        conn=db.connection(),
+    event = AuditEvent(
+        subject_id="admin",
+        role="admin",
+        action="operator_created",
+        resource=f"operator/{op.operator_id}",
+        approved=True,
+        reason="Admin created operator.",
+        tenant_id=op.tenant_id,
+        scope="tenant_admin",
     )
+    await db.run_sync(lambda sync_sess: append_event(event, conn=sync_sess.connection()))
     return {
         "operatorId": op.operator_id,
         "name": op.name,
@@ -123,32 +121,30 @@ def create_operator_endpoint(
 
 
 @router.post("/operators/{operator_id}/revoke", response_model=DynamicResponse)
-def revoke_operator_endpoint(
+async def revoke_operator_endpoint(
     operator_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
-    svc: OperatorService = Depends(get_operator_service),
-    db: Session = Depends(get_db),
+    svc: AsyncOperatorService = Depends(get_async_operator_service),
+    db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     require_admin(authorization)
-    revoked = svc.revoke_operator(operator_id)
+    revoked = await svc.revoke_operator(operator_id)
     if not revoked:
         raise HTTPException(
             status_code=404,
             detail={"error": "Operator not found", "errorCode": "operator_not_found", "reason": "The requested operator does not exist."},
         )
     safe_log(_logger, "info", "operator_action", action="operator_revoked", operator_id=operator_id)
-    op_safe = svc.get_operator_safe(operator_id) or {}
-    append_event(
-        AuditEvent(
-            subject_id="admin",
-            role="admin",
-            action="operator_revoked",
-            resource=f"operator/{operator_id}",
-            approved=True,
-            reason="Admin revoked operator.",
-            tenant_id=op_safe.get("tenantId"),
-            scope="tenant_admin",
-        ),
-        conn=db.connection(),
+    op_safe = await svc.get_operator_safe(operator_id) or {}
+    event = AuditEvent(
+        subject_id="admin",
+        role="admin",
+        action="operator_revoked",
+        resource=f"operator/{operator_id}",
+        approved=True,
+        reason="Admin revoked operator.",
+        tenant_id=op_safe.get("tenantId"),
+        scope="tenant_admin",
     )
+    await db.run_sync(lambda sync_sess: append_event(event, conn=sync_sess.connection()))
     return {"ok": True, "operatorId": operator_id, "revoked": True}

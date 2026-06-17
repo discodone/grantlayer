@@ -15,7 +15,7 @@ router = APIRouter(prefix="/provenance", tags=["provenance"])
 
 
 @router.get("/executions/{execution_id}/summary", response_model=dict[str, Any])
-def provenance_summary(
+async def provenance_summary(
     execution_id: str,
     include_timeline: bool = Query(default=True, alias="includeTimeline"),
     include_warnings: bool = Query(default=True, alias="includeWarnings"),

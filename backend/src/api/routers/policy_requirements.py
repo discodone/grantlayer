@@ -13,7 +13,7 @@ router = APIRouter(prefix="/policy-requirements", tags=["policy-requirements"])
 
 
 @router.post("/evaluate", response_model=dict[str, Any])
-def evaluate_policy(
+async def evaluate_policy(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:

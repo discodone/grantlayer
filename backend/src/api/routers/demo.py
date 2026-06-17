@@ -38,7 +38,7 @@ class DemoActionRequest(BaseModel):
 
 
 @tamper_router.post("/demo/tamper-grant/{grant_id}", response_model=DynamicResponse)
-def tamper_grant_endpoint(
+async def tamper_grant_endpoint(
     grant_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
@@ -59,7 +59,7 @@ def tamper_grant_endpoint(
 
 
 @router.post("/demo-action", response_model=dict[str, Any])
-def demo_action_endpoint(
+async def demo_action_endpoint(
     body: DemoActionRequest,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,

@@ -17,7 +17,7 @@ router = APIRouter(prefix="/approvals", tags=["approvals"])
 
 
 @router.post("/lifecycle/build", response_model=dict[str, Any])
-def build_lifecycle(
+async def build_lifecycle(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
@@ -39,7 +39,7 @@ def build_lifecycle(
 
 
 @router.post("/lifecycle/transition", response_model=dict[str, Any])
-def transition_lifecycle(
+async def transition_lifecycle(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
@@ -62,7 +62,7 @@ def transition_lifecycle(
 
 
 @router.post("/evaluate", response_model=dict[str, Any])
-def evaluate_approvals(
+async def evaluate_approvals(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:

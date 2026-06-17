@@ -15,7 +15,7 @@ router = APIRouter(prefix="/compliance", tags=["compliance"])
 
 
 @router.get("/gaps/executions/{execution_id}", response_model=dict[str, Any])
-def compliance_gaps(
+async def compliance_gaps(
     execution_id: str,
     include_details: bool = Query(default=True, alias="includeDetails"),
     authorization: Annotated[Optional[str], Header()] = None,
@@ -42,7 +42,7 @@ def compliance_gaps(
 
 
 @router.post("/readiness/build", response_model=dict[str, Any])
-def build_readiness(
+async def build_readiness(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Optional, cast
 
 from fastapi import Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from ..auth.auth import (
@@ -13,8 +14,8 @@ from ..auth.auth import (
     check_workspace_resource_access,
     resolve_workspace_context,
 )
-from ..auth.operator_service import OperatorService
-from ..core.db import get_db
+from ..auth.operator_service import AsyncOperatorService, OperatorService
+from ..core.db import get_async_db, get_db
 from ..core.repositories import (
     IGrantExecutionRepository,
     IGrantRepository,
@@ -22,13 +23,17 @@ from ..core.repositories import (
     IOperatorRepository,
 )
 from ..core.repositories_sqlalchemy import (
+    SqlAlchemyAsyncGrantExecutionRepository,
+    SqlAlchemyAsyncGrantRepository,
+    SqlAlchemyAsyncGrantRequestRepository,
+    SqlAlchemyAsyncOperatorRepository,
     SqlAlchemyGrantExecutionRepository,
     SqlAlchemyGrantRepository,
     SqlAlchemyGrantRequestRepository,
     SqlAlchemyOperatorRepository,
 )
-from ..grants.grant_request_service import GrantRequestService
-from ..grants.grant_service import GrantService
+from ..grants.grant_request_service import AsyncGrantRequestService, GrantRequestService
+from ..grants.grant_service import AsyncGrantService, GrantService
 from .auth_jwt import validate_jwt_header
 
 
@@ -128,3 +133,42 @@ def enforce_workspace_mutation(ws_ctx: dict) -> None:
     )
     if not access_ok:
         raise HTTPException(status_code=access_status, detail=access_err)
+
+
+# ── Async dependency factories ────────────────────────────────────────────────
+
+
+def get_async_grant_repo(db: AsyncSession = Depends(get_async_db)) -> SqlAlchemyAsyncGrantRepository:
+    return SqlAlchemyAsyncGrantRepository(db)
+
+
+def get_async_grant_request_repo(
+    db: AsyncSession = Depends(get_async_db),
+) -> SqlAlchemyAsyncGrantRequestRepository:
+    return SqlAlchemyAsyncGrantRequestRepository(db)
+
+
+def get_async_grant_execution_repo(
+    db: AsyncSession = Depends(get_async_db),
+) -> SqlAlchemyAsyncGrantExecutionRepository:
+    return SqlAlchemyAsyncGrantExecutionRepository(db)
+
+
+def get_async_operator_repo(db: AsyncSession = Depends(get_async_db)) -> SqlAlchemyAsyncOperatorRepository:
+    return SqlAlchemyAsyncOperatorRepository(db)
+
+
+def get_async_grant_service(db: AsyncSession = Depends(get_async_db)) -> AsyncGrantService:
+    return AsyncGrantService(repo=SqlAlchemyAsyncGrantRepository(db), session=db)
+
+
+def get_async_grant_request_service(db: AsyncSession = Depends(get_async_db)) -> AsyncGrantRequestService:
+    return AsyncGrantRequestService(
+        repo=SqlAlchemyAsyncGrantRequestRepository(db),
+        grant_repo=SqlAlchemyAsyncGrantRepository(db),
+        session=db,
+    )
+
+
+def get_async_operator_service(db: AsyncSession = Depends(get_async_db)) -> AsyncOperatorService:
+    return AsyncOperatorService(repo=SqlAlchemyAsyncOperatorRepository(db))

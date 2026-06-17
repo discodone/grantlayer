@@ -50,7 +50,7 @@ def _migration_revision() -> str:
 
 
 @router.get("/health", response_model=DynamicResponse)
-def health(request: Request):
+async def health(request: Request):
     try:
         db_health = get_db_health()
         db_status = "ok" if db_health.get("dbConnected") else "error: unreachable"
@@ -84,7 +84,7 @@ def health(request: Request):
     response_model=ReadinessResponse,
     responses={503: {"model": ReadinessResponse}},
 )
-def readiness():
+async def readiness():
     try:
         runtime_info = describe_runtime_config()
         return ReadinessResponse(
