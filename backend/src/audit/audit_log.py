@@ -36,13 +36,10 @@ _Genesis_PREV_HASH = "0" * 64  # fixed genesis for first event when no prior has
 
 def _get_latest_row_hash(conn=None) -> Optional[str]:
     """Return the row_hash of the most recent audit event that has one."""
-    # rowid (SQLite) and ctid (PostgreSQL) both provide reliable insertion-order
-    # tiebreaking when two events share the same timestamp.  id (UUID text) does not.
-    tiebreak = "ctid" if DB_BACKEND == "postgres" else "rowid"
     sql = (
         "SELECT row_hash FROM audit_events "
         "WHERE row_hash IS NOT NULL "
-        f"ORDER BY timestamp DESC, {tiebreak} DESC LIMIT 1"
+        "ORDER BY timestamp DESC, seq DESC LIMIT 1"
     )
     if conn is not None:
         row = conn.execute(text(sql)).fetchone()
@@ -94,6 +91,7 @@ def _compute_row_hash(event: AuditEvent, prev_hash: Optional[str]) -> str:
 
 def _row_to_audit_event(row: dict) -> AuditEvent:
     """Build an AuditEvent from a DB row dict."""
+    raw_seq = row.get("seq")
     return AuditEvent(
         id=row["id"],
         timestamp=row["timestamp"],
@@ -113,6 +111,7 @@ def _row_to_audit_event(row: dict) -> AuditEvent:
         tenant_id=row.get("tenant_id"),
         workspace_id=row.get("workspace_id"),
         scope=row.get("scope"),
+        seq=int(raw_seq) if raw_seq is not None else None,
     )
 
 
@@ -122,8 +121,7 @@ def _row_to_audit_event(row: dict) -> AuditEvent:
 
 def _fetch_all_audit_events_ordered() -> list[dict]:
     """Fetch all audit events in deterministic insertion order."""
-    tiebreak = "ctid" if DB_BACKEND == "postgres" else "rowid"
-    return query_all(f"SELECT * FROM audit_events ORDER BY timestamp ASC, {tiebreak} ASC")
+    return query_all("SELECT * FROM audit_events ORDER BY timestamp ASC, seq ASC")
 
 
 def _filter_chain_rows(rows: list[dict]) -> list[dict]:
@@ -299,7 +297,8 @@ def verify_audit_hash_chain() -> dict:
 # Public API
 # ──────────────────────────────────────────────────────────────
 
-_INSERT_SQL = """INSERT INTO audit_events
+# PostgreSQL: omit seq so the column DEFAULT (nextval from sequence) fires.
+_INSERT_SQL_PG = """INSERT INTO audit_events
                (id, timestamp, subject_id, role, action, resource,
                 approved, reason, matched_grant_id,
                 challenge_id, challenge_present, challenge_result,
@@ -310,6 +309,22 @@ _INSERT_SQL = """INSERT INTO audit_events
                        :challenge_id, :challenge_present, :challenge_result,
                        :grant_signature_result, :row_hash, :prev_hash,
                        :tenant_id, :workspace_id, :scope)"""
+
+# SQLite: include seq explicitly (computed in Python under the write lock).
+_INSERT_SQL_SQLITE = """INSERT INTO audit_events
+               (id, timestamp, subject_id, role, action, resource,
+                approved, reason, matched_grant_id,
+                challenge_id, challenge_present, challenge_result,
+                grant_signature_result, row_hash, prev_hash,
+                tenant_id, workspace_id, scope, seq)
+               VALUES (:id, :timestamp, :subject_id, :role, :action, :resource,
+                       :approved, :reason, :matched_grant_id,
+                       :challenge_id, :challenge_present, :challenge_result,
+                       :grant_signature_result, :row_hash, :prev_hash,
+                       :tenant_id, :workspace_id, :scope, :seq)"""
+
+# Legacy alias kept for any external callers that import it directly.
+_INSERT_SQL = _INSERT_SQL_PG
 
 
 def _build_insert_params(event: AuditEvent, row_hash: str, prev_hash: Optional[str]) -> dict:
@@ -333,6 +348,22 @@ def _build_insert_params(event: AuditEvent, row_hash: str, prev_hash: Optional[s
         "workspace_id": event.workspace_id,
         "scope": event.scope,
     }
+
+
+def _get_next_seq_sqlite(conn=None) -> int:
+    """Return the next seq value for a SQLite INSERT (called under the write lock)."""
+    if conn is not None:
+        row = conn.execute(text("SELECT MAX(seq) AS max_seq FROM audit_events")).fetchone()
+        if hasattr(row, "_mapping"):
+            max_seq = row._mapping.get("max_seq")
+        elif isinstance(row, dict):
+            max_seq = row.get("max_seq")
+        else:
+            max_seq = row[0] if row else None
+    else:
+        row = query_one("SELECT MAX(seq) AS max_seq FROM audit_events")
+        max_seq = row["max_seq"] if row else None
+    return (max_seq or 0) + 1
 
 
 def append_event(event: AuditEvent, conn=None) -> None:
@@ -364,7 +395,7 @@ def _append_event_postgres(event: AuditEvent) -> None:
         conn.execute(text(f"SELECT pg_advisory_xact_lock({_PG_AUDIT_CHAIN_LOCK_KEY})"))
         prev_hash = _get_latest_row_hash(conn)
         row_hash = _compute_row_hash(event, prev_hash)
-        conn.execute(text(_INSERT_SQL), _build_insert_params(event, row_hash, prev_hash))
+        conn.execute(text(_INSERT_SQL_PG), _build_insert_params(event, row_hash, prev_hash))
         conn.commit()
         event.row_hash = row_hash
         event.prev_hash = prev_hash
@@ -385,7 +416,7 @@ def _append_event_postgres_with_conn(event: AuditEvent, conn) -> None:
     conn.execute(text(f"SELECT pg_advisory_xact_lock({_PG_AUDIT_CHAIN_LOCK_KEY})"))
     prev_hash = _get_latest_row_hash(conn)
     row_hash = _compute_row_hash(event, prev_hash)
-    conn.execute(text(_INSERT_SQL), _build_insert_params(event, row_hash, prev_hash))
+    conn.execute(text(_INSERT_SQL_PG), _build_insert_params(event, row_hash, prev_hash))
     event.row_hash = row_hash
     event.prev_hash = prev_hash
 
@@ -395,12 +426,15 @@ def _append_event_sqlite(event: AuditEvent, conn=None) -> None:
     with _AUDIT_HASH_CHAIN_WRITE_LOCK:
         prev_hash = _get_latest_row_hash(conn)
         row_hash = _compute_row_hash(event, prev_hash)
+        next_seq = _get_next_seq_sqlite(conn)
+        params = {**_build_insert_params(event, row_hash, prev_hash), "seq": next_seq}
         if conn is not None:
-            conn.execute(text(_INSERT_SQL), _build_insert_params(event, row_hash, prev_hash))
+            conn.execute(text(_INSERT_SQL_SQLITE), params)
         else:
-            execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
+            execute(_INSERT_SQL_SQLITE, params)
         event.row_hash = row_hash
         event.prev_hash = prev_hash
+        event.seq = next_seq
 
 
 def get_event(event_id: str) -> Optional[AuditEvent]:
@@ -415,7 +449,14 @@ def list_events(
     tenant_id: Optional[str] = None,
     workspace_id: Optional[str] = None,
     offset: int = 0,
+    after_seq: Optional[int] = None,
 ) -> List[AuditEvent]:
+    """Return audit events in descending (newest-first) order.
+
+    Cursor-based pagination: pass after_seq to retrieve events with seq < after_seq.
+    When after_seq is provided offset is ignored.
+    Offset-based pagination: pass offset without after_seq (kept for backward compat).
+    """
     conditions: list[str] = []
     params: list = []
     if tenant_id is not None:
@@ -424,11 +465,15 @@ def list_events(
     if workspace_id is not None:
         conditions.append("workspace_id = ?")
         params.append(workspace_id)
+    if after_seq is not None:
+        conditions.append("seq < ?")
+        params.append(after_seq)
     sql = "SELECT * FROM audit_events"
     if conditions:
         sql += " WHERE " + " AND ".join(conditions)
-    sql += " ORDER BY timestamp DESC LIMIT ? OFFSET ?"
-    params.extend([limit, offset])
+    sql += " ORDER BY timestamp DESC, seq DESC LIMIT ? OFFSET ?"
+    actual_offset = 0 if after_seq is not None else offset
+    params.extend([limit, actual_offset])
     rows = query_all(sql, tuple(params))
     return [_row_to_audit_event(r) for r in rows]
 

@@ -157,6 +157,8 @@ class AuditEvent:
     tenant_id: Optional[str] = None
     workspace_id: Optional[str] = None
     scope: Optional[str] = None  # 'tenant', 'tenant_admin', 'system', 'public'
+    # stable insertion-order tiebreak assigned by the DB (None before migration 0013)
+    seq: Optional[int] = None
 
     def to_dict(self) -> dict:
         return asdict(self)
