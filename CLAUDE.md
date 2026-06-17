@@ -1,13 +1,15 @@
 # GrantLayer — Claude Code Instructions
 
 ## Git Rules (MANDATORY)
-- After every merge to main: git push origin main AND git push github main (both remotes always)
-- Never push to github without explicit approval from Anton
+- After every completed issue: automatically merge to main and push to BOTH remotes (origin + github)
+- Auto-merge conditions: tests ≥ baseline / 0 failures, mypy 0 errors, ruff 0 errors
+- If any condition fails: stop, report to Anton, wait for instructions
 - Branch naming: gl-{number}-{short-description}
 - Commit message format: feat|fix|docs|refactor(gl-{number}): description
+- After merge: close the corresponding GitHub issue with: gh issue close {number} --repo discodone/grantlayer
 
 ## Baseline (must pass after every commit)
-- pytest backend/tests/ -q --tb=short -m "not doc_guard" --timeout 3m → ≥3325 passed / 0 failures
+- pytest backend/tests/ -q --tb=short -m "not doc_guard" --timeout 3m → ≥3621 passed / 0 failures
 - python3 -m mypy backend/src/ → 0 errors
 - ruff check backend/src/ → 0 errors
 
