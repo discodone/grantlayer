@@ -18,8 +18,8 @@ from ...core.validation import (
     validate_string_length,
 )
 from ...grants.grant_requests import ALLOWED_GRANT_ROLES
-from ...grants.grant_service import GrantService
-from ..deps import get_grant_service, resolve_auth_and_workspace
+from ...grants.grant_service import AsyncGrantService
+from ..deps import get_async_grant_service, resolve_auth_and_workspace
 from ..schemas import GrantCreateRequest, GrantListResponse, GrantResponse
 
 router = APIRouter(prefix="/grants", tags=["grants"])
@@ -78,12 +78,12 @@ def _grant_to_response(grant: Grant) -> GrantResponse:
 
 
 @router.get("", response_model=GrantListResponse, response_model_by_alias=True)
-def list_grants_endpoint(
+async def list_grants_endpoint(
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
-    svc: GrantService = Depends(get_grant_service),
+    svc: AsyncGrantService = Depends(get_async_grant_service),
 ):
     """List all grants visible to the authenticated operator."""
     _, ws_ctx = resolve_auth_and_workspace(
@@ -91,7 +91,7 @@ def list_grants_endpoint(
         required_roles=["owner", "grant_admin", "auditor"],
         workspace_id=x_workspace_id,
     )
-    grants, total = svc.list_grants(
+    grants, total = await svc.list_grants(
         tenant_id=ws_ctx["tenant_id"],
         workspace_id=ws_ctx["workspace_id"],
         limit=limit,
@@ -106,11 +106,11 @@ def list_grants_endpoint(
 
 
 @router.get("/{grant_id}", response_model=GrantResponse, response_model_by_alias=True)
-def get_grant_endpoint(
+async def get_grant_endpoint(
     grant_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
-    svc: GrantService = Depends(get_grant_service),
+    svc: AsyncGrantService = Depends(get_async_grant_service),
 ):
     """Retrieve a single grant by ID."""
     _, ws_ctx = resolve_auth_and_workspace(
@@ -118,7 +118,7 @@ def get_grant_endpoint(
         required_roles=["owner", "grant_admin", "auditor"],
         workspace_id=x_workspace_id,
     )
-    grant = svc.get_grant(
+    grant = await svc.get_grant(
         grant_id,
         tenant_id=ws_ctx["tenant_id"],
         workspace_id=ws_ctx["workspace_id"],
@@ -141,11 +141,11 @@ def get_grant_endpoint(
     response_model_by_alias=True,
     status_code=201,
 )
-def create_grant_endpoint(
+async def create_grant_endpoint(
     body: GrantCreateRequest,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
-    svc: GrantService = Depends(get_grant_service),
+    svc: AsyncGrantService = Depends(get_async_grant_service),
 ):
     """Create a new grant."""
     auth_ctx, ws_ctx = resolve_auth_and_workspace(
@@ -219,7 +219,7 @@ def create_grant_endpoint(
         reason=body.reason,
         max_uses=body.max_uses,
     )
-    grant = svc.create_grant(
+    grant = await svc.create_grant(
         grant,
         tenant_id=ws_ctx["tenant_id"],
         workspace_id=ws_ctx["workspace_id"],

@@ -15,7 +15,7 @@ router = APIRouter(prefix="/auditor", tags=["auditor"])
 
 
 @router.get("/reports/executions/{execution_id}", response_model=dict[str, Any])
-def get_auditor_report(
+async def get_auditor_report(
     execution_id: str,
     include_raw_evidence: bool = Query(default=False, alias="includeRawEvidence"),
     authorization: Annotated[Optional[str], Header()] = None,
@@ -42,7 +42,7 @@ def get_auditor_report(
 
 
 @router.post("/exports/build", response_model=dict[str, Any])
-def build_auditor_export(
+async def build_auditor_export(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:

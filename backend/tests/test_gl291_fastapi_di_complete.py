@@ -36,11 +36,11 @@ class TestFastAPIDIComplete:
         assert not violations, "\n".join(violations)
 
     def test_grants_router_uses_service_di(self):
-        """grants.py router must inject GrantService via Depends(get_grant_service)."""
+        """grants.py router must inject AsyncGrantService via Depends(get_async_grant_service)."""
         grants_router = ROUTERS_DIR / "grants.py"
         source = grants_router.read_text()
-        assert "Depends(get_grant_service)" in source, "grants.py missing Depends(get_grant_service)"
-        assert "GrantService" in source, "grants.py missing GrantService"
+        assert "Depends(get_async_grant_service)" in source, "grants.py missing Depends(get_async_grant_service)"
+        assert "AsyncGrantService" in source, "grants.py missing AsyncGrantService"
 
     def test_get_conn_only_in_db_module(self):
         """get_conn() in backend/src must only appear in core/db.py (definition + init_db)."""

@@ -31,6 +31,7 @@ from .orm import (
 )
 
 if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
     from sqlalchemy.orm import Session
 
     from ..auth.operators import Operator
@@ -682,3 +683,489 @@ class SqlAlchemyOperatorRepository:
                 tenant_id="demo",
             )
         )
+
+
+# ── Async repository implementations ────────────────────────────────────────
+# These mirror the sync implementations above but use AsyncSession.
+# All DB calls use `await session.execute(stmt)`.
+
+class SqlAlchemyAsyncGrantRepository:
+    def __init__(self, session: "AsyncSession") -> None:
+        self._s = session
+
+    async def get(
+        self,
+        grant_id: str,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> Optional[Grant]:
+        stmt = select(OrmGrant).where(OrmGrant.id == grant_id)
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
+        row = (await self._s.execute(stmt)).scalars().first()
+        return _orm_to_grant(row) if row else None
+
+    async def list(
+        self,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: int = 0,
+    ) -> List[Grant]:
+        stmt = select(OrmGrant).order_by(OrmGrant.created_at.desc())
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
+        if limit is not None:
+            stmt = stmt.limit(limit).offset(offset)
+        return [_orm_to_grant(r) for r in (await self._s.execute(stmt)).scalars().all()]
+
+    async def create(
+        self,
+        grant: Grant,
+        tenant_id: str,
+        workspace_id: str,
+    ) -> Grant:
+        effective_workspace = workspace_id if workspace_id else _DEMO_WORKSPACE_ID
+        await self._s.execute(
+            sa_insert(OrmGrant).values(
+                id=grant.id,
+                subject_id=grant.subject_id,
+                role=grant.role,
+                action=grant.action,
+                resource=grant.resource,
+                valid_from=grant.valid_from,
+                valid_until=grant.valid_until,
+                created_by=grant.created_by,
+                reason=grant.reason,
+                revoked=0,
+                created_at=grant.created_at,
+                max_uses=grant.max_uses,
+                use_count=grant.use_count,
+                signature=grant.signature,
+                signing_key_id=grant.signing_key_id,
+                payload_hash=grant.payload_hash,
+                tenant_id=tenant_id,
+                workspace_id=effective_workspace,
+            )
+        )
+        return grant
+
+    async def revoke(
+        self,
+        grant_id: str,
+        revoked_by: str,
+        reason: str,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> bool:
+        revoked_at = _now_utc_iso()
+        stmt = (
+            sa_update(OrmGrant)
+            .where(OrmGrant.id == grant_id, OrmGrant.revoked == 0)
+            .values(revoked=1, revoked_by=revoked_by, revoked_reason=reason, revoked_at=revoked_at)
+        )
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
+        result = await self._s.execute(stmt)
+        return (result.rowcount or 0) > 0  # type: ignore[attr-defined]
+
+    async def count(
+        self,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> int:
+        stmt = select(func.count()).select_from(OrmGrant)
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
+        result = (await self._s.execute(stmt)).scalar()
+        return int(result) if result is not None else 0
+
+    async def try_consume_use(self, grant_id: str) -> bool:
+        stmt = (
+            sa_update(OrmGrant)
+            .where(
+                OrmGrant.id == grant_id,
+                (OrmGrant.max_uses.is_(None)) | (OrmGrant.use_count < OrmGrant.max_uses),
+            )
+            .values(use_count=OrmGrant.use_count + 1)
+        )
+        result = await self._s.execute(stmt)
+        return (result.rowcount or 0) > 0  # type: ignore[attr-defined]
+
+
+class SqlAlchemyAsyncGrantRequestRepository:
+    def __init__(self, session: "AsyncSession") -> None:
+        self._s = session
+
+    async def get(
+        self,
+        request_id: str,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> Optional[GrantRequest]:
+        stmt = select(OrmGrantRequest).where(OrmGrantRequest.id == request_id)
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrantRequest.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrantRequest.workspace_id == workspace_id)
+        row = (await self._s.execute(stmt)).scalars().first()
+        return _orm_to_grant_request(row) if row else None
+
+    async def list(
+        self,
+        status_filter: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: int = 0,
+    ) -> List[GrantRequest]:
+        stmt = select(OrmGrantRequest).order_by(OrmGrantRequest.created_at.desc())
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrantRequest.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrantRequest.workspace_id == workspace_id)
+        if status_filter is not None:
+            stmt = stmt.where(OrmGrantRequest.status == status_filter)
+        if limit is not None:
+            stmt = stmt.limit(limit).offset(offset)
+        return [_orm_to_grant_request(r) for r in (await self._s.execute(stmt)).scalars().all()]
+
+    async def create(
+        self,
+        request: GrantRequest,
+        tenant_id: str,
+        workspace_id: str,
+    ) -> GrantRequest:
+        effective_workspace = workspace_id if workspace_id else _DEMO_WORKSPACE_ID
+        await self._s.execute(
+            sa_insert(OrmGrantRequest).values(
+                id=request.id,
+                subject_id=request.subject_id,
+                role=request.role,
+                action=request.action,
+                resource=request.resource,
+                valid_from=request.valid_from,
+                valid_until=request.valid_until,
+                requested_by=request.requested_by,
+                reason=request.reason,
+                status=request.status,
+                created_at=request.created_at,
+                updated_at=request.updated_at,
+                tenant_id=tenant_id,
+                workspace_id=effective_workspace,
+            )
+        )
+        return request
+
+    async def mark_approved(
+        self,
+        request_id: str,
+        operator_id: str,
+        grant_id: str,
+        now: str,
+    ) -> None:
+        await self._s.execute(
+            sa_update(OrmGrantRequest)
+            .where(OrmGrantRequest.id == request_id)
+            .values(
+                status="approved",
+                approved_by=operator_id,
+                approved_at=now,
+                grant_id=grant_id,
+                updated_at=now,
+            )
+        )
+
+    async def mark_denied(
+        self,
+        request_id: str,
+        operator_id: str,
+        reason: str,
+        now: str,
+    ) -> None:
+        await self._s.execute(
+            sa_update(OrmGrantRequest)
+            .where(OrmGrantRequest.id == request_id)
+            .values(
+                status="denied",
+                denied_by=operator_id,
+                denied_at=now,
+                denial_reason=reason,
+                updated_at=now,
+            )
+        )
+
+    async def mark_revoked(
+        self,
+        request_id: str,
+        operator_id: str,
+        reason: str,
+        now: str,
+    ) -> None:
+        await self._s.execute(
+            sa_update(OrmGrantRequest)
+            .where(OrmGrantRequest.id == request_id)
+            .values(
+                status="revoked",
+                revoked_by=operator_id,
+                revoked_at=now,
+                revoked_reason=reason,
+                updated_at=now,
+            )
+        )
+
+    async def mark_expired(self, request_id: str, now: str) -> None:
+        await self._s.execute(
+            sa_update(OrmGrantRequest)
+            .where(OrmGrantRequest.id == request_id)
+            .values(status="expired", updated_at=now)
+        )
+
+    async def count(
+        self,
+        status_filter: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> int:
+        stmt = select(func.count()).select_from(OrmGrantRequest)
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrantRequest.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrantRequest.workspace_id == workspace_id)
+        if status_filter is not None:
+            stmt = stmt.where(OrmGrantRequest.status == status_filter)
+        result = (await self._s.execute(stmt)).scalar()
+        return int(result) if result is not None else 0
+
+    async def get_id_by_grant_id(self, grant_id: str) -> Optional[str]:
+        stmt = (
+            select(OrmGrantRequest.id)
+            .where(OrmGrantRequest.grant_id == grant_id)
+            .order_by(OrmGrantRequest.updated_at.desc())
+            .limit(1)
+        )
+        row = (await self._s.execute(stmt)).scalar()
+        return str(row) if row is not None else None
+
+
+class SqlAlchemyAsyncGrantExecutionRepository:
+    def __init__(self, session: "AsyncSession") -> None:
+        self._s = session
+
+    async def get(
+        self,
+        execution_id: str,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> Optional[GrantExecution]:
+        stmt = select(OrmGrantExecution).where(OrmGrantExecution.id == execution_id)
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrantExecution.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrantExecution.workspace_id == workspace_id)
+        row = (await self._s.execute(stmt)).scalars().first()
+        return _orm_to_grant_execution(row) if row else None
+
+    async def list(
+        self,
+        grant_id: Optional[str] = None,
+        grant_request_id: Optional[str] = None,
+        operator_id: Optional[str] = None,
+        limit: int = 200,
+        offset: int = 0,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> List[GrantExecution]:
+        stmt = select(OrmGrantExecution).order_by(OrmGrantExecution.executed_at.desc())
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrantExecution.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrantExecution.workspace_id == workspace_id)
+        if grant_id is not None:
+            stmt = stmt.where(OrmGrantExecution.grant_id == grant_id)
+        if grant_request_id is not None:
+            stmt = stmt.where(OrmGrantExecution.grant_request_id == grant_request_id)
+        if operator_id is not None:
+            stmt = stmt.where(OrmGrantExecution.operator_id == operator_id)
+        stmt = stmt.limit(limit).offset(offset)
+        return [_orm_to_grant_execution(r) for r in (await self._s.execute(stmt)).scalars().all()]
+
+    async def create(
+        self,
+        execution: GrantExecution,
+        tenant_id: str,
+        workspace_id: str,
+    ) -> GrantExecution:
+        effective_workspace = workspace_id if workspace_id else _DEMO_WORKSPACE_ID
+        await self._s.execute(
+            sa_insert(OrmGrantExecution).values(
+                id=execution.id,
+                grant_id=execution.grant_id,
+                grant_request_id=execution.grant_request_id,
+                operator_id=execution.operator_id,
+                action=execution.action,
+                resource=execution.resource,
+                challenge_id=execution.challenge_id,
+                challenge_result=execution.challenge_result,
+                policy_result=execution.policy_result,
+                result=execution.result,
+                error_code=execution.error_code,
+                executed_at=execution.executed_at,
+                audit_event_id=execution.audit_event_id,
+                metadata_json=execution.metadata_json,
+                tenant_id=tenant_id,
+                workspace_id=effective_workspace,
+            )
+        )
+        return execution
+
+    async def update_audit_event_id(
+        self,
+        execution_id: str,
+        audit_event_id: str,
+    ) -> None:
+        await self._s.execute(
+            sa_update(OrmGrantExecution)
+            .where(OrmGrantExecution.id == execution_id)
+            .values(audit_event_id=audit_event_id)
+        )
+
+    async def count(
+        self,
+        grant_id: Optional[str] = None,
+        grant_request_id: Optional[str] = None,
+        operator_id: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> int:
+        stmt = select(func.count()).select_from(OrmGrantExecution)
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrantExecution.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrantExecution.workspace_id == workspace_id)
+        if grant_id is not None:
+            stmt = stmt.where(OrmGrantExecution.grant_id == grant_id)
+        if grant_request_id is not None:
+            stmt = stmt.where(OrmGrantExecution.grant_request_id == grant_request_id)
+        if operator_id is not None:
+            stmt = stmt.where(OrmGrantExecution.operator_id == operator_id)
+        result = (await self._s.execute(stmt)).scalar()
+        return int(result) if result is not None else 0
+
+
+class SqlAlchemyAsyncOperatorRepository:
+    def __init__(self, session: "AsyncSession") -> None:
+        self._s = session
+
+    async def get(self, operator_id: str) -> "Optional[Operator]":
+        stmt = select(OrmOperator).where(
+            OrmOperator.id == operator_id, OrmOperator.active == 1
+        )
+        row = (await self._s.execute(stmt)).scalars().first()
+        return _orm_to_operator(row) if row else None
+
+    async def get_any(self, operator_id: str) -> "Optional[Operator]":
+        row = (await self._s.execute(
+            select(OrmOperator).where(OrmOperator.id == operator_id)
+        )).scalars().first()
+        return _orm_to_operator(row) if row else None
+
+    async def list(self) -> "List[Operator]":
+        stmt = select(OrmOperator).order_by(OrmOperator.created_at.desc())
+        return [_orm_to_operator(r) for r in (await self._s.execute(stmt)).scalars().all()]
+
+    async def count(self) -> int:
+        result = (await self._s.execute(
+            select(func.count()).select_from(OrmOperator)
+        )).scalar()
+        return int(result) if result is not None else 0
+
+    async def create(
+        self,
+        name: str,
+        role: str,
+        token: str,
+        tenant_id: str,
+        ttl_days: int = 90,
+    ) -> "Tuple[Operator, str]":
+        from ..auth.operators import (
+            Operator,
+            derive_token_lookup_hash,
+            hash_token,
+        )
+        op_id = str(uuid.uuid4())
+        token_hash = hash_token(token)
+        lookup = derive_token_lookup_hash(token)
+        now = _now_utc_iso()
+        expires = (
+            datetime.datetime.now(datetime.timezone.utc)
+            + datetime.timedelta(days=ttl_days)
+        ).isoformat().replace("+00:00", "Z")
+        await self._s.execute(
+            sa_insert(OrmOperator).values(
+                id=op_id,
+                name=name,
+                role=role,
+                token_hash=token_hash,
+                token_lookup_hash=lookup,
+                active=1,
+                created_at=now,
+                expires_at=expires,
+                tenant_id=tenant_id,
+            )
+        )
+        op = Operator(
+            operator_id=op_id,
+            name=name,
+            role=role,
+            active=True,
+            created_at=now,
+            expires_at=expires,
+            tenant_id=tenant_id,
+        )
+        return op, token
+
+    async def revoke(self, operator_id: str) -> bool:
+        result = await self._s.execute(
+            sa_update(OrmOperator)
+            .where(OrmOperator.id == operator_id)
+            .values(active=0)
+        )
+        return (result.rowcount or 0) > 0  # type: ignore[attr-defined]
+
+    async def rotate_token(
+        self,
+        operator_id: str,
+        ttl_days: int = 90,
+    ) -> Optional[str]:
+        op = await self.get(operator_id)
+        if op is None:
+            return None
+        from ..auth.operators import derive_token_lookup_hash, hash_token
+        new_token = secrets.token_urlsafe(32)
+        new_hash = hash_token(new_token)
+        new_lookup = derive_token_lookup_hash(new_token)
+        now = _now_utc_iso()
+        expires = (
+            datetime.datetime.now(datetime.timezone.utc)
+            + datetime.timedelta(days=ttl_days)
+        ).isoformat().replace("+00:00", "Z")
+        await self._s.execute(
+            sa_update(OrmOperator)
+            .where(OrmOperator.id == operator_id)
+            .values(
+                token_hash=new_hash,
+                token_lookup_hash=new_lookup,
+                rotated_at=now,
+                expires_at=expires,
+            )
+        )
+        return new_token

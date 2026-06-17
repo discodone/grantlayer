@@ -37,7 +37,7 @@ def _check_execution_tenant(execution_id: str, tenant_id: str) -> None:
 
 
 @router.get("/{execution_id}", response_model=dict[str, Any])
-def get_evidence_bundle(
+async def get_evidence_bundle(
     execution_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
@@ -59,7 +59,7 @@ def get_evidence_bundle(
 
 
 @router.get("/{execution_id}/export", response_model=dict[str, Any])
-def export_evidence_bundle(
+async def export_evidence_bundle(
     execution_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
@@ -94,7 +94,7 @@ def export_evidence_bundle(
 
 
 @router.get("/{execution_id}/verify", response_model=dict[str, Any])
-def verify_evidence_bundle(
+async def verify_evidence_bundle(
     execution_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
@@ -110,7 +110,7 @@ def verify_evidence_bundle(
 
 
 @router.get("/{execution_id}/completeness", response_model=dict[str, Any])
-def evidence_completeness(
+async def evidence_completeness(
     execution_id: str,
     include_details: bool = Query(default=True, alias="includeDetails"),
     authorization: Annotated[Optional[str], Header()] = None,

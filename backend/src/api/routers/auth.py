@@ -29,7 +29,7 @@ class TokenResponse(BaseModel):
 
 
 @router.post("/token", response_model=TokenResponse)
-def issue_token(request: Request, body: TokenRequest) -> Any:
+async def issue_token(request: Request, body: TokenRequest) -> Any:
     """Exchange operator credentials for a JWT Bearer token.
 
     The `secret` field accepts either the GRANTLAYER_ADMIN_TOKEN or, when

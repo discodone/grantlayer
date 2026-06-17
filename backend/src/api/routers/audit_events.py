@@ -28,7 +28,7 @@ def _decode_cursor(cursor: str) -> Optional[int]:
 
 
 @router.get("/audit-events", response_model=AuditEventListResponse)
-def list_audit_events(
+async def list_audit_events(
     limit: int = Query(default=100, ge=1, le=1000),
     cursor: Optional[str] = Query(default=None),
     offset: int = Query(default=0, ge=0),

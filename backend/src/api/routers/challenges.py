@@ -24,7 +24,7 @@ class ChallengeCreateRequest(BaseModel):
 
 
 @router.get("", response_model=ChallengeListResponse, response_model_by_alias=True)
-def list_challenges_endpoint(
+async def list_challenges_endpoint(
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
@@ -51,7 +51,7 @@ def list_challenges_endpoint(
 
 
 @router.post("", status_code=201, response_model=ChallengeCreateResponse, response_model_by_alias=True)
-def create_challenge_endpoint(
+async def create_challenge_endpoint(
     body: ChallengeCreateRequest,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,

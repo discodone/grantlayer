@@ -13,7 +13,7 @@ router = APIRouter(tags=["operators"])
 
 
 @router.get("/operators/me", response_model=dict[str, Any])
-def get_current_operator(
+async def get_current_operator(
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ) -> Any:

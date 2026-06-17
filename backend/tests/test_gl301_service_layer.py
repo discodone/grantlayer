@@ -267,25 +267,25 @@ class TestDIFactories:
         assert callable(get_operator_service)
 
     def test_grants_router_uses_grant_service(self):
-        """grants.py router must use GrantService via DI, not direct repo calls."""
+        """grants.py router must use AsyncGrantService via DI (GL-305 migration)."""
         import pathlib
         source = pathlib.Path("backend/src/api/routers/grants.py").read_text()
         assert "GrantService" in source
-        assert "get_grant_service" in source
+        assert "get_async_grant_service" in source
 
     def test_grant_requests_router_uses_grant_request_service(self):
-        """grant_requests.py must use GrantRequestService via DI."""
+        """grant_requests.py must use AsyncGrantRequestService via DI (GL-305 migration)."""
         import pathlib
         source = pathlib.Path("backend/src/api/routers/grant_requests.py").read_text()
         assert "GrantRequestService" in source
-        assert "get_grant_request_service" in source
+        assert "get_async_grant_request_service" in source
 
     def test_admin_router_uses_operator_service(self):
-        """admin.py must use OperatorService via DI."""
+        """admin.py must use AsyncOperatorService via DI (GL-305 migration)."""
         import pathlib
         source = pathlib.Path("backend/src/api/routers/admin.py").read_text()
         assert "OperatorService" in source
-        assert "get_operator_service" in source
+        assert "get_async_operator_service" in source
 
 
 # ── Integration smoke via TestClient ─────────────────────────────────────
