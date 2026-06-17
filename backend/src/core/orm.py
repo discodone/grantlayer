@@ -10,6 +10,7 @@ columns in the original SQLite schema.
 """
 
 from sqlalchemy import (
+    BigInteger,
     Column,
     Index,
     Integer,
@@ -81,9 +82,12 @@ class AuditEvent(Base):
     tenant_id = Column(Text)
     workspace_id = Column(Text)
     scope = Column(Text)
+    # from migration 0013: stable insertion-order tiebreak (BIGSERIAL on PG)
+    seq = Column(BigInteger)
 
     __table_args__ = (
         Index("idx_audit_events_tenant_id", "tenant_id"),
+        Index("idx_audit_events_seq", "seq"),
     )
 
 

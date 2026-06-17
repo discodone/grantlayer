@@ -202,6 +202,7 @@ class AuditEventListResponse(BaseModel):
     total: int
     limit: int
     offset: int
+    next_cursor: Optional[str] = None
 
 
 class GrantExecutionResponse(BaseModel):
