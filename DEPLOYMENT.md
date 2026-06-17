@@ -19,7 +19,8 @@ This guide covers deploying GrantLayer in a production environment using Docker 
 9. [Monitoring](#9-monitoring)
 10. [Upgrade Process](#10-upgrade-process)
 11. [Troubleshooting](#11-troubleshooting)
-12. [Production Readiness Notes](#production-readiness-notes)
+12. [CI — PostgreSQL Integration Tests](#12-ci--postgresql-integration-tests)
+13. [Production Readiness Notes](#production-readiness-notes)
 
 ---
 
@@ -717,6 +718,40 @@ GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS=true
 ```
 
 Do not enable demo endpoints on a public-facing server.
+
+---
+
+## 12. CI — PostgreSQL Integration Tests
+
+The repository ships three GitHub Actions jobs in `.github/workflows/postgres-ci.yml`:
+
+| Job | Trigger | DB backend | Purpose |
+|---|---|---|---|
+| `sqlite-unit-tests` | every push/PR | SQLite (in-memory) | Lint, type check, functional suite |
+| `postgres-integration` | every push/PR | PostgreSQL 16 | Single immutability integration test |
+| `postgresql-integration` | after `sqlite-unit-tests` passes | PostgreSQL 16 | Full functional suite against real Postgres |
+
+The `postgresql-integration` job starts a **temporary, ephemeral** PostgreSQL 16 container (credentials are CI-only and never used in production), runs `init_db()` to apply all schema migrations, then executes the full pytest functional suite with a 5-minute per-test timeout.
+
+### Running PostgreSQL tests locally
+
+Use the provided `docker-compose.test.yml`:
+
+```bash
+# Run the full suite in a Docker container (mirrors CI)
+docker compose -f docker-compose.test.yml run --rm test
+
+# Or: start just the DB, run tests from the host
+docker compose -f docker-compose.test.yml up -d postgres
+export GRANTLAYER_DATABASE_URL=postgresql://grantlayer:grantlayer_test@localhost:5433/grantlayer
+export GRANTLAYER_RUNTIME_MODE=test
+export GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE=true
+pip install pytest-timeout
+pytest backend/tests/ -x -q --tb=short -m "not doc_guard" --timeout 300
+docker compose -f docker-compose.test.yml down -v
+```
+
+The test DB exposes PostgreSQL on host port **5433** (not 5432) to avoid conflicts with a local instance.
 
 ---
 

@@ -88,3 +88,73 @@ jobs:
           GRANTLAYER_DATABASE_URL: postgres://grantlayer:grantlayer_test_password@localhost:5432/grantlayer
         run: |
           python3 -m unittest backend.tests.test_gl108_postgres_audit_immutability.TestGl116PostgresAuditImmutabilityIntegration -v
+
+  postgresql-integration:
+    runs-on: ubuntu-latest
+    name: PostgreSQL 16 Full Suite
+    needs: [sqlite-unit-tests]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          # Ephemeral CI-only test database credential; not a production secret.
+          POSTGRES_USER: grantlayer
+          POSTGRES_PASSWORD: grantlayer_test_password
+          POSTGRES_DB: grantlayer
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r backend/requirements-dev.txt pytest-timeout
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..10}; do
+            pg_isready -h localhost -p 5432 -U grantlayer && break
+            sleep 1
+          done
+
+      - name: Initialise schema
+        env:
+          # Ephemeral CI-only test database credential; not a production secret.
+          GRANTLAYER_DATABASE_URL: postgresql://grantlayer:grantlayer_test_password@localhost:5432/grantlayer
+          GRANTLAYER_RUNTIME_MODE: test
+          GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
+        run: |
+          python3 -c "
+          import sys; sys.path.insert(0, 'backend')
+          from backend.src.core.db import init_db
+          init_db()
+          print('Schema initialised.')
+          "
+
+      - name: Run full functional test suite (PostgreSQL)
+        env:
+          # Ephemeral CI-only test database credential; not a production secret.
+          GRANTLAYER_DATABASE_URL: postgresql://grantlayer:grantlayer_test_password@localhost:5432/grantlayer
+          GRANTLAYER_RUNTIME_MODE: test
+          GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
+        run: |
+          python3 -m pytest backend/tests/ -x -q --tb=short \
+            -m "not doc_guard" \
+            --timeout 300 \
+            --ignore=backend/tests/test_gl112_audit_log_duplication_cleanup.py \
+            --ignore=backend/tests/test_gl139_audit_hash_chain_write_lock.py \
+            --ignore=backend/tests/test_gl141_operator_model_default.py \
+            --ignore=backend/tests/test_gl214_production_iam_operator_control_completion.py \
+            --ignore=backend/tests/test_gl203b_openapi_api_contract_cleanup.py
