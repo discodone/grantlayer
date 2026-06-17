@@ -4,17 +4,11 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Optional
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 
 from ...core import config
-from ...grants.grant_executions import (
-    count_grant_executions,
-    get_grant_execution,
-    list_grant_executions,
-    list_grant_executions_for_grant,
-)
-from ...grants.grants import get_grant
-from ..deps import resolve_auth_and_workspace
+from ...core.repositories import IGrantExecutionRepository, IGrantRepository
+from ..deps import get_grant_execution_repo, get_grant_repo, resolve_auth_and_workspace
 from ..schemas import GrantExecutionListResponse, GrantExecutionResponse
 
 router = APIRouter(tags=["executions"])
@@ -35,6 +29,7 @@ def list_executions_endpoint(
     offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
+    exec_repo: IGrantExecutionRepository = Depends(get_grant_execution_repo),
 ) -> Any:
     _require_operator_model()
     _, ws_ctx = resolve_auth_and_workspace(
@@ -44,7 +39,7 @@ def list_executions_endpoint(
     )
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
-    executions = list_grant_executions(
+    executions = exec_repo.list(
         grant_id=grant_id,
         operator_id=operator_id,
         limit=limit,
@@ -54,7 +49,7 @@ def list_executions_endpoint(
     )
     return GrantExecutionListResponse(
         items=[GrantExecutionResponse(**e.to_dict()) for e in executions],
-        total=count_grant_executions(
+        total=exec_repo.count(
             grant_id=grant_id,
             operator_id=operator_id,
             tenant_id=tenant_id,
@@ -70,6 +65,7 @@ def get_execution_endpoint(
     execution_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
+    exec_repo: IGrantExecutionRepository = Depends(get_grant_execution_repo),
 ) -> Any:
     _require_operator_model()
     _, ws_ctx = resolve_auth_and_workspace(
@@ -79,7 +75,7 @@ def get_execution_endpoint(
     )
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
-    execution = get_grant_execution(execution_id, tenant_id=tenant_id, workspace_id=workspace_id)
+    execution = exec_repo.get(execution_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if execution is None:
         raise HTTPException(
             status_code=404,
@@ -95,6 +91,8 @@ def list_executions_for_grant_endpoint(
     offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
+    grant_repo: IGrantRepository = Depends(get_grant_repo),
+    exec_repo: IGrantExecutionRepository = Depends(get_grant_execution_repo),
 ) -> Any:
     _require_operator_model()
     _, ws_ctx = resolve_auth_and_workspace(
@@ -104,14 +102,14 @@ def list_executions_for_grant_endpoint(
     )
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
-    grant = get_grant(grant_id, tenant_id=tenant_id, workspace_id=workspace_id)
+    grant = grant_repo.get(grant_id, tenant_id=tenant_id, workspace_id=workspace_id)
     if grant is None:
         raise HTTPException(
             status_code=404,
             detail={"error": "Grant not found", "errorCode": "grant_not_found", "reason": "The requested grant does not exist."},
         )
-    executions = list_grant_executions_for_grant(
-        grant_id,
+    executions = exec_repo.list(
+        grant_id=grant_id,
         limit=limit,
         offset=offset,
         tenant_id=tenant_id,
@@ -119,7 +117,7 @@ def list_executions_for_grant_endpoint(
     )
     return GrantExecutionListResponse(
         items=[GrantExecutionResponse(**e.to_dict()) for e in executions],
-        total=count_grant_executions(grant_id=grant_id, tenant_id=tenant_id, workspace_id=workspace_id),
+        total=exec_repo.count(grant_id=grant_id, tenant_id=tenant_id, workspace_id=workspace_id),
         limit=limit,
         offset=offset,
     )
