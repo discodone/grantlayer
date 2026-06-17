@@ -395,7 +395,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         try:
             conn.execute(
                 """INSERT INTO operators (id, name, role, token_hash, active, created_at)
-                   VALUES (?, ?, ?, ?, 1, datetime('now'))""",
+                   VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)""",
                 (op_id, name, role, self.ops_mod.hash_token(token)),
             )
             conn.commit()

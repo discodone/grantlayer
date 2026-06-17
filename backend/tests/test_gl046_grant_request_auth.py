@@ -72,7 +72,7 @@ class _BaseGl046(unittest.TestCase):
         try:
             conn.execute(
                 """INSERT INTO operators (id, name, role, token_hash, active, created_at)
-                   VALUES (?, ?, ?, ?, 1, datetime('now'))""",
+                   VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)""",
                 (op_id, name, role, self.ops_mod.hash_token(token)),
             )
             conn.commit()

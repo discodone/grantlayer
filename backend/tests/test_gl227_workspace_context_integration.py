@@ -70,7 +70,7 @@ def _insert_operator(op_id, name, role, token, tenant_id="t1", active=1):
     try:
         conn.execute(
             """INSERT INTO operators (id, name, role, token_hash, token_lookup_hash, active, created_at, tenant_id)
-               VALUES (?, ?, ?, ?, ?, ?, datetime('now'), ?)""",
+               VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)""",
             (op_id, name, role,
              _ops.hash_token(token),
              _ops.derive_token_lookup_hash(token),
@@ -86,7 +86,7 @@ def _insert_workspace(ws_id, tenant_id, status="active"):
     try:
         conn.execute(
             """INSERT INTO workspaces (id, tenant_id, name, slug, owner_id, status, created_at, updated_at)
-               VALUES (?, ?, ?, ?, 'system', ?, datetime('now'), datetime('now'))""",
+               VALUES (?, ?, ?, ?, 'system', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)""",
             (ws_id, tenant_id, ws_id, ws_id, status),
         )
         conn.commit()
@@ -99,7 +99,7 @@ def _insert_member(workspace_id, operator_id, role="workspace_member", status="a
     try:
         conn.execute(
             """INSERT INTO workspace_members (id, workspace_id, operator_id, role, status, joined_at)
-               VALUES (?, ?, ?, ?, ?, datetime('now'))""",
+               VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)""",
             (str(uuid.uuid4()), workspace_id, operator_id, role, status),
         )
         conn.commit()

@@ -84,7 +84,7 @@ class TestOperatorModel(unittest.TestCase):
         try:
             conn.execute(
                 """INSERT INTO operators (id, name, role, token_hash, active, created_at)
-                   VALUES (?, ?, ?, ?, ?, datetime('now'))""",
+                   VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)""",
                 (op_id, name, role, ops_mod.hash_token(token), active),
             )
             conn.commit()

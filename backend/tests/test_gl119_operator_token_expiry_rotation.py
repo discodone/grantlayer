@@ -102,7 +102,7 @@ class _BaseGl119(unittest.TestCase):
             conn.execute(
                 """INSERT INTO operators
                    (id, name, role, token_hash, token_lookup_hash, active, created_at, expires_at, rotated_at)
-                   VALUES (?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)""",
+                   VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)""",
                 (
                     op_id, name, role,
                     self.ops_mod.hash_token(token),
