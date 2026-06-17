@@ -13,6 +13,7 @@ from ..auth.auth import (
     check_workspace_resource_access,
     resolve_workspace_context,
 )
+from ..auth.operator_service import OperatorService
 from ..core.db import get_db
 from ..core.repositories import (
     IGrantExecutionRepository,
@@ -26,6 +27,8 @@ from ..core.repositories_sqlalchemy import (
     SqlAlchemyGrantRequestRepository,
     SqlAlchemyOperatorRepository,
 )
+from ..grants.grant_request_service import GrantRequestService
+from ..grants.grant_service import GrantService
 from .auth_jwt import validate_jwt_header
 
 
@@ -94,6 +97,22 @@ def get_grant_execution_repo(db: Session = Depends(get_db)) -> IGrantExecutionRe
 
 def get_operator_repo(db: Session = Depends(get_db)) -> IOperatorRepository:
     return SqlAlchemyOperatorRepository(db)
+
+
+def get_grant_service(db: Session = Depends(get_db)) -> GrantService:
+    return GrantService(repo=SqlAlchemyGrantRepository(db), session=db)
+
+
+def get_grant_request_service(db: Session = Depends(get_db)) -> GrantRequestService:
+    return GrantRequestService(
+        repo=SqlAlchemyGrantRequestRepository(db),
+        grant_repo=SqlAlchemyGrantRepository(db),
+        session=db,
+    )
+
+
+def get_operator_service(db: Session = Depends(get_db)) -> OperatorService:
+    return OperatorService(repo=SqlAlchemyOperatorRepository(db))
 
 
 def enforce_workspace_mutation(ws_ctx: dict) -> None:
