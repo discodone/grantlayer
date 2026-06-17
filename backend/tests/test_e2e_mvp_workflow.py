@@ -13,6 +13,7 @@ import json
 import unittest
 import tempfile
 import importlib
+import uuid
 
 
 class TestE2EMvpWorkflow(unittest.TestCase):
@@ -79,6 +80,15 @@ class TestE2EMvpWorkflow(unittest.TestCase):
 
         self.db_mod = db_mod
 
+        # Unique IDs per test instance — prevents cross-test grant leakage on
+        # shared PostgreSQL where rows from previous runs persist.
+        _uid = uuid.uuid4().hex[:8]
+        self.subject_id = f"tech-{_uid}"
+        self.req_op_id = f"req-{_uid}"
+        self.app_op_id = f"app-{_uid}"
+        self.den_op_id = f"den-{_uid}"
+        self.owner_op_id = f"owner-{_uid}"
+
     def tearDown(self):
         os.unlink(self.tmp_db.name)
         if self._orig_db is not None:
@@ -118,32 +128,32 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         from backend.src.core.models import GrantRequest
 
         # Insert two operators: requester and approver
-        self._insert_operator("req-01", "Requester", "grant_admin", "token-req")
-        self._insert_operator("app-01", "Approver", "owner", "token-app")
+        self._insert_operator(self.req_op_id, "Requester", "grant_admin", f"token-{self.req_op_id}")
+        self._insert_operator(self.app_op_id, "Approver", "owner", f"token-{self.app_op_id}")
 
         # Step 1: Create grant request
         request = GrantRequest(
-            subject_id="tech-01",
+            subject_id=self.subject_id,
             role="technician",
             action="restart-service",
             resource="customer-env-a",
             valid_from="2026-01-01T00:00:00Z",
             valid_until="2099-12-31T23:59:59Z",
-            requested_by="req-01",
+            requested_by=self.req_op_id,
             reason="Routine maintenance",
         )
         created = self.greps_mod.create_grant_request(request, tenant_id="demo")
         self.assertEqual(created.status, "requested")
 
         # Step 2: Approve request
-        updated, grant = self.greps_mod.approve_grant_request(created.id, "app-01", tenant_id="demo")
+        updated, grant = self.greps_mod.approve_grant_request(created.id, self.app_op_id, tenant_id="demo")
         self.assertEqual(updated.status, "approved")
         self.assertIsNotNone(updated.grant_id)
         self.assertIsNotNone(grant)
 
         # Step 3: Execute demo action
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a",
+            self.subject_id, "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
         )
         self.assertTrue(result["approved"], f"Demo action denied: {result}")
@@ -162,7 +172,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         # Request and approval sections present
         self.assertIsNotNone(bundle["request"])
         self.assertIsNotNone(bundle["approval"])
-        self.assertEqual(bundle["approval"]["approvedBy"], "app-01")
+        self.assertEqual(bundle["approval"]["approvedBy"], self.app_op_id)
 
         # Grant section present
         self.assertIsNotNone(bundle["grant"])
@@ -186,29 +196,29 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         """request -> deny -> no grant created -> execution denied."""
         from backend.src.core.models import GrantRequest
 
-        self._insert_operator("req-01", "Requester", "grant_admin", "token-req")
-        self._insert_operator("den-01", "Denier", "owner", "token-den")
+        self._insert_operator(self.req_op_id, "Requester", "grant_admin", f"token-{self.req_op_id}")
+        self._insert_operator(self.den_op_id, "Denier", "owner", f"token-{self.den_op_id}")
 
         request = GrantRequest(
-            subject_id="tech-01",
+            subject_id=self.subject_id,
             role="technician",
             action="restart-service",
             resource="customer-env-a",
             valid_from="2026-01-01T00:00:00Z",
             valid_until="2099-12-31T23:59:59Z",
-            requested_by="req-01",
+            requested_by=self.req_op_id,
             reason="Routine maintenance",
         )
         created = self.greps_mod.create_grant_request(request, tenant_id="demo")
 
         # Deny the request
-        updated = self.greps_mod.deny_grant_request(created.id, "den-01", "Not authorized", tenant_id="demo")
+        updated = self.greps_mod.deny_grant_request(created.id, self.den_op_id, "Not authorized", tenant_id="demo")
         self.assertEqual(updated.status, "denied")
         self.assertIsNone(updated.grant_id)
 
-        # No grant exists, so execution should be denied
+        # No grant exists for this unique subject, so execution should be denied
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a",
+            self.subject_id, "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
         )
         self.assertFalse(result["approved"])
@@ -229,34 +239,34 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         """create grant -> execute -> revoke -> execution denied."""
         from backend.src.core.models import Grant
 
-        self._insert_operator("owner-01", "Owner", "owner", "token-owner")
+        self._insert_operator(self.owner_op_id, "Owner", "owner", f"token-{self.owner_op_id}")
 
         grant = Grant(
-            subject_id="tech-01",
+            subject_id=self.subject_id,
             role="technician",
             action="restart-service",
             resource="customer-env-a",
             valid_from="2026-01-01T00:00:00Z",
             valid_until="2099-12-31T23:59:59Z",
-            created_by="owner-01",
+            created_by=self.owner_op_id,
             reason="Direct grant",
         )
         self.grants_mod.create_grant(grant, tenant_id="demo")
 
         # Execute succeeds
         result1 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a",
+            self.subject_id, "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
         )
         self.assertTrue(result1["approved"], f"First execution denied: {result1}")
 
         # Revoke
-        ok = self.grants_mod.revoke_grant(grant.id, "owner-01", "Maintenance complete")
+        ok = self.grants_mod.revoke_grant(grant.id, self.owner_op_id, "Maintenance complete")
         self.assertTrue(ok)
 
         # Execute fails after revoke
         result2 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a",
+            self.subject_id, "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
         )
         self.assertFalse(result2["approved"])
@@ -269,23 +279,23 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         """Grant exists, valid challenge, execution succeeds."""
         from backend.src.core.models import Grant
 
-        self._insert_operator("owner-01", "Owner", "owner", "token-owner")
+        self._insert_operator(self.owner_op_id, "Owner", "owner", f"token-{self.owner_op_id}")
 
         grant = Grant(
-            subject_id="tech-01",
+            subject_id=self.subject_id,
             role="technician",
             action="restart-service",
             resource="customer-env-a",
             valid_from="2026-01-01T00:00:00Z",
             valid_until="2099-12-31T23:59:59Z",
-            created_by="owner-01",
+            created_by=self.owner_op_id,
             reason="Direct grant",
         )
         self.grants_mod.create_grant(grant, tenant_id="demo")
 
-        challenge = self.ch_mod.create_challenge("tech-01", "restart-service", "customer-env-a", tenant_id="demo")
+        challenge = self.ch_mod.create_challenge(self.subject_id, "restart-service", "customer-env-a", tenant_id="demo")
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a",
+            self.subject_id, "technician", "restart-service", "customer-env-a",
             challenge_id=challenge.id,
             tenant_id="demo",
         )
@@ -299,25 +309,25 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         """REQUIRE_CHALLENGE=true without challenge -> denied."""
         from backend.src.core.models import Grant
 
-        self._insert_operator("owner-01", "Owner", "owner", "token-owner")
+        self._insert_operator(self.owner_op_id, "Owner", "owner", f"token-{self.owner_op_id}")
 
         os.environ["GRANTLAYER_REQUIRE_CHALLENGE"] = "true"
         importlib.reload(self.demo_mod)
 
         grant = Grant(
-            subject_id="tech-01",
+            subject_id=self.subject_id,
             role="technician",
             action="restart-service",
             resource="customer-env-a",
             valid_from="2026-01-01T00:00:00Z",
             valid_until="2099-12-31T23:59:59Z",
-            created_by="owner-01",
+            created_by=self.owner_op_id,
             reason="Direct grant",
         )
         self.grants_mod.create_grant(grant, tenant_id="demo")
 
         result = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a",
+            self.subject_id, "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
         )
         self.assertFalse(result["approved"])
