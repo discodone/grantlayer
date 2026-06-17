@@ -1,7 +1,7 @@
 # GrantLayer — Claude Code Instructions
 
 ## Git Rules (MANDATORY)
-- After every merge to main: git push origin main AND git push github main (both remotes always)
+- After every merge to main: git push origin main AND git push github main
 - Never push to github without explicit approval from Anton
 - Branch naming: gl-{number}-{short-description}
 - Commit message format: feat|fix|docs|refactor(gl-{number}): description
@@ -11,33 +11,31 @@
 - python3 -m mypy backend/src/ → 0 errors
 - ruff check backend/src/ → 0 errors
 
-## CI Ignored Tests (known issues, do not re-ignore without fixing)
+## CI Ignored Tests
 - test_gl112_audit_log_duplication_cleanup.py
 - test_gl139_audit_hash_chain_write_lock.py
 - test_gl141_operator_model_default.py
 - test_gl214_production_iam_operator_control_completion.py
 - test_gl203b_openapi_api_contract_cleanup.py
-- test_gl230_docker_jwt_quickstart.py (missing pyyaml in PostgreSQL CI job)
+- test_gl230_docker_jwt_quickstart.py
 
 ## Architecture
-- Repository Pattern: backend/src/core/repositories.py + repositories_sqlalchemy.py
+- Repository Pattern: core/repositories.py + repositories_sqlalchemy.py
 - Service Layer: grant_service.py, grant_request_service.py, operator_service.py
-- ORM Models: backend/src/core/orm.py (Grant, GrantRequest, GrantExecution, Operator)
-- No raw SQL anywhere — use SQLAlchemy ORM or session.execute(text().bindparams())
+- ORM Models: core/orm.py
+- No raw SQL — SQLAlchemy ORM only
 - No custom SQL placeholder parsing
 
 ## Database
 - SQLite for local/test, PostgreSQL 16 for production
-- Always test PostgreSQL compatibility (no rowid, no datetime(), no SQLite-specific syntax)
-- Test isolation: always use uuid4()-generated IDs per test, never hardcoded IDs
+- Test isolation: always use uuid4()-generated IDs per test
 
-## Disk Management (ai-agent VM)
+## Disk Management
 - If disk full: rm -rf /home/adminuser/tmp/claude-1000/ && find /home/adminuser/tmp -name "tmp*.db*" -delete
-- tmpDir is configured in ~/.config/claude/settings.json
 
 ## Current Roadmap
 - GL-302: Test coverage 95%+
-- GL-303: Redis hard requirement + rate limiting on all endpoints
-- GL-304: BIGSERIAL audit tiebreak + cursor-based pagination
+- GL-303: Redis hard requirement
+- GL-304: BIGSERIAL audit tiebreak
 - GL-305: Async FastAPI
 - Target: 10/10 external review score

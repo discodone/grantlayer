@@ -3,8 +3,12 @@
 ## GrantLayer — Developer Preview
 
 GrantLayer is a verification, audit, and compliance layer for agentic grant and
-funding workflows, written in Python (FastAPI + `cryptography`). It runs locally
-with SQLite or PostgreSQL.
+funding workflows, written in Python (FastAPI + SQLAlchemy + `cryptography`).
+It runs locally with SQLite or PostgreSQL 16.
+
+**Purpose:** When AI agents prepare funding applications, evaluate eligibility,
+or trigger approval decisions, GrantLayer makes every step traceable,
+tamper-evident, and independently auditable.
 
 **Status:** Developer Preview — local evaluation and controlled pilot only.
 
@@ -12,7 +16,7 @@ with SQLite or PostgreSQL.
 - Not a production SaaS. Do not deploy to shared multi-tenant infrastructure.
 - Tenant/workspace isolation baseline is implemented but not production-complete.
 - No real secrets or customer data are used anywhere.
-- Public GitHub repository available at `https://github.com/Discodone/grantlayer.git`.
+- Public GitHub repository: `https://github.com/Discodone/grantlayer.git`
 
 ---
 
@@ -23,12 +27,96 @@ with SQLite or PostgreSQL.
 | `README.md` | Project overview, status, stack, API quick reference |
 | `QUICKSTART.md` | Get the Docker stack running in 5 minutes |
 | `CONTRIBUTING.md` | How to contribute, run tests, report bugs |
-| `AGENTS.md` | Project entry point: getting started, contributing, contact |
+| `AGENTS.md` | Project entry point for AI agents: getting started, contributing, contact |
+| `DEPLOYMENT.md` | Docker Compose, nginx TLS, environment variables, production runbook |
 | `docs/architecture.md` | System design and data model |
-| `docs/integration_guide.md` | How to integrate GrantLayer into a workflow |
+| `docs/integration_guide.md` | How to integrate GrantLayer into an agentic workflow |
 | `docs/openapi.yaml` | Full OpenAPI specification |
 | `sdk/python/README.md` | Minimal Python SDK usage guide |
-| `docs/langgraph_langchain_integration_example.md` | How GrantLayer fits into an agentic workflow |
+| `docs/langgraph_langchain_integration_example.md` | GrantLayer in a LangGraph/LangChain agentic workflow |
+
+---
+
+## Key Endpoints
+
+All routes are versioned under `/v1/`.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/v1/auth/token` | Issue a JWT for an operator |
+| `GET` | `/v1/grants` | List grants (workspace-scoped) |
+| `POST` | `/v1/grants` | Create a grant |
+| `GET` | `/v1/grants/{grant_id}` | Retrieve a grant |
+| `POST` | `/v1/grant-requests` | Submit a grant request |
+| `POST` | `/v1/grant-requests/{id}/approve` | Approve a grant request |
+| `POST` | `/v1/grant-requests/{id}/deny` | Deny a grant request |
+| `GET` | `/v1/audit-log` | Paginated tamper-evident audit log |
+| `GET` | `/v1/health` | Health check (DB + Redis status) |
+| `GET` | `/v1/operators/me` | Authenticated operator profile |
+
+---
+
+## Authentication
+
+- **Default:** RS256 JWT (`Authorization: Bearer <token>`).
+- **Legacy:** HS256 JWT supported for backwards compatibility.
+- JWT claims include `iss`, `aud`, `sub` (operator ID), `workspace_id`.
+- Token endpoint: `POST /v1/auth/token` with operator credentials.
+- Rate-limited: 10 requests/minute per IP on `/v1/auth/token`.
+
+---
+
+## Multi-Tenancy
+
+- Every request resolves a **workspace** from the authenticated operator's identity and membership.
+- All queries are scoped to the resolved workspace.
+- Tenant/workspace isolation is enforced at the API level for developer preview.
+- This is not a production SaaS multi-tenancy guarantee.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| API framework | FastAPI (Python 3.11+) |
+| ORM | SQLAlchemy 2.0 |
+| Migrations | Alembic |
+| Auth | PyJWT `>=2.8.0`, RS256/HS256 |
+| Rate limiting | Redis sliding-window (`RedisRateLimiter`) with in-process fallback |
+| Database | SQLite (local/test), PostgreSQL 16 (production) |
+| Linting | ruff |
+| Type checking | mypy |
+| Tests | pytest + pytest-xdist (`-n auto`) |
+
+---
+
+## Architecture Decisions
+
+- **Repository Pattern:** `backend/src/core/repositories.py` (Protocol interfaces) + `backend/src/core/repositories_sqlalchemy.py` (SQLAlchemy implementations).
+- **Service Layer:** `grant_service.py`, `grant_request_service.py`, `operator_service.py` — business logic fully decoupled from routers.
+- **ORM Models:** `backend/src/core/orm.py` — `Grant`, `GrantRequest`, `GrantExecution`, `Operator`.
+- **No raw SQL** — SQLAlchemy ORM or `session.execute(text().bindparams())` only; no custom SQL placeholder parsing.
+- **Audit chain:** Every state-changing event produces a tamper-evident audit record with hash chaining; `pg_advisory_xact_lock` for cluster-safe writes.
+- **Test isolation:** `uuid4()`-generated IDs per test; no hardcoded IDs; PostgreSQL-compatible syntax only.
+
+---
+
+## Validation Commands
+
+```bash
+# Fast functional regression (~3 400 tests)
+make test
+
+# Full suite including documentation checks (~9 400 tests)
+make test-all
+
+# Linting baseline (must be 0 errors)
+make lint
+
+# Coverage report
+make coverage
+```
 
 ---
 
@@ -37,23 +125,7 @@ with SQLite or PostgreSQL.
 - Do not use real secrets — all documentation uses placeholder tokens.
 - Do not use real customer data — all examples use synthetic identifiers.
 - Do not claim production SaaS readiness.
-- Do not claim production-complete or production-grade tenant isolation.
 - Tenant/workspace isolation is not production-complete.
-
----
-
-## Validation Commands
-
-```bash
-# Fast regression
-python3 -m unittest backend.tests.test_security_boundary_regression -v
-
-# Full functional suite
-./scripts/run-functional-tests.sh
-
-# Full suite including documentation checks
-./scripts/run-full-backend-suite.sh
-```
 
 ---
 
