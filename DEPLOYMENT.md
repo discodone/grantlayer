@@ -96,8 +96,9 @@ All settings are read from environment variables at startup. There are no config
 | `GRANTLAYER_JWT_SECRET` | _(empty)_ | HMAC secret for HS256 tokens. Only used when `GRANTLAYER_JWT_ALGORITHM=HS256`. |
 | `GRANTLAYER_JWT_ISSUER` | `grantlayer` | `iss` claim added to every issued JWT. Tokens with a mismatched `iss` are rejected. Set to `""` to disable. |
 | `GRANTLAYER_JWT_AUDIENCE` | `grantlayer-api` | `aud` claim added to every issued JWT. Tokens with a mismatched `aud` are rejected. Set to `""` to disable. |
+| `GRANTLAYER_JWT_STRICT_CLAIMS` | `false` | **Recommended: `true` for production.** When `true`, tokens without `iss` or `aud` claims are rejected outright. When `false` (default), tokens without these claims are accepted for backward compatibility. |
 
-**Backward compatibility:** Tokens issued before `GRANTLAYER_JWT_ISSUER`/`GRANTLAYER_JWT_AUDIENCE` were configured (i.e., tokens without `iss`/`aud` claims) continue to be accepted. Validation only fires when the claim is present in the token.
+**Backward compatibility:** Tokens issued before `GRANTLAYER_JWT_ISSUER`/`GRANTLAYER_JWT_AUDIENCE` were configured (i.e., tokens without `iss`/`aud` claims) continue to be accepted when `GRANTLAYER_JWT_STRICT_CLAIMS=false`. Set `GRANTLAYER_JWT_STRICT_CLAIMS=true` to require these claims on all tokens in production.
 
 ### Signing Key (Audit Chain)
 
@@ -171,6 +172,7 @@ GRANTLAYER_JWT_PRIVATE_KEY=<base64-encoded-private-key-pem>
 GRANTLAYER_JWT_PUBLIC_KEY=<base64-encoded-public-key-pem>
 GRANTLAYER_JWT_ISSUER=grantlayer
 GRANTLAYER_JWT_AUDIENCE=grantlayer-api
+GRANTLAYER_JWT_STRICT_CLAIMS=true    # reject tokens without iss/aud (recommended)
 
 # CORS (set to your actual frontend origin)
 GRANTLAYER_CORS_ALLOWED_ORIGINS=https://app.example.com

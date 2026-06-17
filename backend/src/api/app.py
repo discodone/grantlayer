@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from ..core import config
 from ..core.db import init_db
@@ -185,6 +186,29 @@ def create_app() -> FastAPI:
         return JSONResponse(
             status_code=501,
             content={"error": "Not Implemented", "errorCode": "not_implemented", "reason": "Feature not available."},
+        )
+
+    @app.exception_handler(Exception)
+    async def _internal_server_error(request: Request, exc: Exception):
+        # Let HTTPExceptions propagate through their own handlers
+        if isinstance(exc, StarletteHTTPException):
+            raise exc
+        _logger.error(
+            "unhandled_exception",
+            extra={
+                "method": request.method,
+                "path": request.url.path,
+                "exc_type": type(exc).__name__,
+            },
+            exc_info=True,
+        )
+        show_detail = config.RUNTIME_MODE in ("local", "test")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "internal_server_error",
+                "message": repr(exc) if show_detail else "An internal server error occurred.",
+            },
         )
 
     # Health endpoints — no versioning (infrastructure checks must be stable)

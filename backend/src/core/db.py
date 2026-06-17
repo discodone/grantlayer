@@ -100,167 +100,28 @@ def get_db() -> Generator[Session, None, None]:
 
 
 # ──────────────────────────────────────────────────────────────
-# Placeholder scanner
+# Placeholder converter
 # ──────────────────────────────────────────────────────────────
 
-def _translate_placeholders(sql: str) -> tuple[str, int]:
-    """Translate SQLite ? placeholders to PostgreSQL %s.
+def _q_to_named(sql: str, params: tuple) -> tuple[str, dict[str, Any]]:
+    """Convert ? positional placeholders to :p1, :p2 ... named params for SQLAlchemy text().
 
-    Returns (translated_sql, placeholder_count).
-
-    Only translates ? outside of:
-    - single-quoted string literals
-    - doubled single-quote escapes inside string literals
-    - double-quoted identifiers
-    - line comments (-- ...)
-    - block comments (/* ... */)
+    All SQL passed to this function is developer-controlled; ? never appears
+    inside string literals or comments in practice, so a simple split is safe.
     """
-    result: list[str] = []
-    i = 0
-    n = len(sql)
-    count = 0
-
-    while i < n:
-        ch = sql[i]
-
-        # Block comment /* */
-        if ch == "/" and i + 1 < n and sql[i + 1] == "*":
-            j = sql.find("*/", i + 2)
-            if j == -1:
-                result.append(sql[i:])
-                break
-            result.append(sql[i : j + 2])
-            i = j + 2
-            continue
-
-        # Line comment -- \n
-        if ch == "-" and i + 1 < n and sql[i + 1] == "-":
-            j = sql.find("\n", i + 2)
-            if j == -1:
-                result.append(sql[i:])
-                break
-            result.append(sql[i : j + 1])
-            i = j + 1
-            continue
-
-        # Single-quoted string literal
-        if ch == "'":
-            result.append("'")
-            i += 1
-            while i < n:
-                if sql[i] == "'" and i + 1 < n and sql[i + 1] == "'":
-                    result.append("''")
-                    i += 2
-                    continue
-                if sql[i] == "'":
-                    result.append("'")
-                    i += 1
-                    break
-                result.append(sql[i])
-                i += 1
-            continue
-
-        # Double-quoted identifier
-        if ch == '"':
-            result.append('"')
-            i += 1
-            while i < n and sql[i] != '"':
-                result.append(sql[i])
-                i += 1
-            if i < n:
-                result.append('"')
-                i += 1
-            continue
-
-        # Placeholder
-        if ch == "?":
-            result.append("%s")
-            count += 1
-            i += 1
-            continue
-
-        result.append(ch)
-        i += 1
-
-    return "".join(result), count
-
-
-def _translate_to_named_params(sql: str, params: tuple) -> tuple[str, dict[str, Any]]:
-    """Translate SQLite ? placeholders to :p1, :p2 ... named placeholders.
-
-    Returns (translated_sql, param_dict) so the statement can be executed
-    via SQLAlchemy text() with a dict binding.
-    """
-    result: list[str] = []
-    i = 0
-    n = len(sql)
-    param_idx = 0
+    parts = sql.split("?")
+    if len(parts) - 1 != len(params):
+        raise ValueError(
+            f"Placeholder count mismatch: SQL has {len(parts) - 1} '?' "
+            f"but {len(params)} params were supplied."
+        )
     param_dict: dict[str, Any] = {}
-
-    while i < n:
-        ch = sql[i]
-
-        # Block comment /* */
-        if ch == "/" and i + 1 < n and sql[i + 1] == "*":
-            j = sql.find("*/", i + 2)
-            if j == -1:
-                result.append(sql[i:])
-                break
-            result.append(sql[i : j + 2])
-            i = j + 2
-            continue
-
-        # Line comment -- \n
-        if ch == "-" and i + 1 < n and sql[i + 1] == "-":
-            j = sql.find("\n", i + 2)
-            if j == -1:
-                result.append(sql[i:])
-                break
-            result.append(sql[i : j + 1])
-            i = j + 1
-            continue
-
-        # Single-quoted string literal
-        if ch == "'":
-            result.append("'")
-            i += 1
-            while i < n:
-                if sql[i] == "'" and i + 1 < n and sql[i + 1] == "'":
-                    result.append("''")
-                    i += 2
-                    continue
-                if sql[i] == "'":
-                    result.append("'")
-                    i += 1
-                    break
-                result.append(sql[i])
-                i += 1
-            continue
-
-        # Double-quoted identifier
-        if ch == '"':
-            result.append('"')
-            i += 1
-            while i < n and sql[i] != '"':
-                result.append(sql[i])
-                i += 1
-            if i < n:
-                result.append('"')
-                i += 1
-            continue
-
-        # Placeholder
-        if ch == "?":
-            param_idx += 1
-            key = f"p{param_idx}"
-            result.append(f":{key}")
-            param_dict[key] = params[param_idx - 1]
-            i += 1
-            continue
-
-        result.append(ch)
-        i += 1
-
+    result = [parts[0]]
+    for i, (part, val) in enumerate(zip(parts[1:], params), 1):
+        key = f"p{i}"
+        param_dict[key] = val
+        result.append(f":{key}")
+        result.append(part)
     return "".join(result), param_dict
 
 
@@ -424,7 +285,7 @@ class _ConnectionWrapper:
 
         cur = self._conn.cursor()
         if self.backend == "postgres":
-            sql, _ = _translate_placeholders(sql)
+            sql = sql.replace("?", "%s")
         cur.execute(sql, parameters)
         return cur
 
@@ -432,7 +293,7 @@ class _ConnectionWrapper:
         """Execute SQL against multiple parameter sets and return the cursor."""
         cur = self._conn.cursor()
         if self.backend == "postgres":
-            sql, _ = _translate_placeholders(sql)
+            sql = sql.replace("?", "%s")
         cur.executemany(sql, parameters)
         return cur
 
@@ -562,27 +423,36 @@ def init_db() -> None:
 # Bounded CRUD query helpers
 # ──────────────────────────────────────────────────────────────
 
-def execute(sql: str, params: tuple = ()) -> int:
+def execute(sql: str, params: tuple | dict = ()) -> int:
     """Execute INSERT/UPDATE/DELETE via SQLAlchemy and return rowcount."""
-    sql, param_dict = _translate_to_named_params(sql, params)
+    if isinstance(params, dict):
+        param_dict = params
+    else:
+        sql, param_dict = _q_to_named(sql, params)
     with get_engine().connect() as conn:
         result = conn.execute(text(sql), param_dict)
         conn.commit()
         return result.rowcount or 0
 
 
-def query_one(sql: str, params: tuple = ()) -> dict[str, Any] | None:
+def query_one(sql: str, params: tuple | dict = ()) -> dict[str, Any] | None:
     """Execute a single-row SELECT via SQLAlchemy and return a dict or None."""
-    sql, param_dict = _translate_to_named_params(sql, params)
+    if isinstance(params, dict):
+        param_dict = params
+    else:
+        sql, param_dict = _q_to_named(sql, params)
     with get_engine().connect() as conn:
         result = conn.execute(text(sql), param_dict)
         row = result.fetchone()
         return _orm_to_dict(row) if row else None
 
 
-def query_all(sql: str, params: tuple = ()) -> list[dict[str, Any]]:
+def query_all(sql: str, params: tuple | dict = ()) -> list[dict[str, Any]]:
     """Execute a multi-row SELECT via SQLAlchemy and return a list of dicts."""
-    sql, param_dict = _translate_to_named_params(sql, params)
+    if isinstance(params, dict):
+        param_dict = params
+    else:
+        sql, param_dict = _q_to_named(sql, params)
     with get_engine().connect() as conn:
         result = conn.execute(text(sql), param_dict)
         rows = result.fetchall()
@@ -594,7 +464,7 @@ def executemany(sql: str, params_list: list) -> int:
     with get_engine().connect() as conn:
         total = 0
         for params in params_list:
-            sql_inner, param_dict = _translate_to_named_params(sql, params)
+            sql_inner, param_dict = _q_to_named(sql, params)
             result = conn.execute(text(sql_inner), param_dict)
             total += result.rowcount or 0
         conn.commit()

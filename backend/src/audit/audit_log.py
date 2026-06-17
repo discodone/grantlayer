@@ -9,7 +9,6 @@ from sqlalchemy import text
 
 from ..core.db import (
     DB_BACKEND,
-    _translate_to_named_params,
     execute,
     get_engine,
     query_all,
@@ -306,19 +305,34 @@ _INSERT_SQL = """INSERT INTO audit_events
                 challenge_id, challenge_present, challenge_result,
                 grant_signature_result, row_hash, prev_hash,
                 tenant_id, workspace_id, scope)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+               VALUES (:id, :timestamp, :subject_id, :role, :action, :resource,
+                       :approved, :reason, :matched_grant_id,
+                       :challenge_id, :challenge_present, :challenge_result,
+                       :grant_signature_result, :row_hash, :prev_hash,
+                       :tenant_id, :workspace_id, :scope)"""
 
 
-def _build_insert_params(event: AuditEvent, row_hash: str, prev_hash: Optional[str]) -> tuple:
-    return (
-        event.id, event.timestamp, event.subject_id, event.role,
-        event.action, event.resource, int(event.approved),
-        event.reason, event.matched_grant_id,
-        event.challenge_id, int(event.challenge_present), event.challenge_result,
-        event.grant_signature_result,
-        row_hash, prev_hash,
-        event.tenant_id, event.workspace_id, event.scope,
-    )
+def _build_insert_params(event: AuditEvent, row_hash: str, prev_hash: Optional[str]) -> dict:
+    return {
+        "id": event.id,
+        "timestamp": event.timestamp,
+        "subject_id": event.subject_id,
+        "role": event.role,
+        "action": event.action,
+        "resource": event.resource,
+        "approved": int(event.approved),
+        "reason": event.reason,
+        "matched_grant_id": event.matched_grant_id,
+        "challenge_id": event.challenge_id,
+        "challenge_present": int(event.challenge_present),
+        "challenge_result": event.challenge_result,
+        "grant_signature_result": event.grant_signature_result,
+        "row_hash": row_hash,
+        "prev_hash": prev_hash,
+        "tenant_id": event.tenant_id,
+        "workspace_id": event.workspace_id,
+        "scope": event.scope,
+    }
 
 
 def append_event(event: AuditEvent, conn=None) -> None:
@@ -350,8 +364,7 @@ def _append_event_postgres(event: AuditEvent) -> None:
         conn.execute(text(f"SELECT pg_advisory_xact_lock({_PG_AUDIT_CHAIN_LOCK_KEY})"))
         prev_hash = _get_latest_row_hash(conn)
         row_hash = _compute_row_hash(event, prev_hash)
-        sql, param_dict = _translate_to_named_params(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
-        conn.execute(text(sql), param_dict)
+        conn.execute(text(_INSERT_SQL), _build_insert_params(event, row_hash, prev_hash))
         conn.commit()
         event.row_hash = row_hash
         event.prev_hash = prev_hash
@@ -372,8 +385,7 @@ def _append_event_postgres_with_conn(event: AuditEvent, conn) -> None:
     conn.execute(text(f"SELECT pg_advisory_xact_lock({_PG_AUDIT_CHAIN_LOCK_KEY})"))
     prev_hash = _get_latest_row_hash(conn)
     row_hash = _compute_row_hash(event, prev_hash)
-    sql, param_dict = _translate_to_named_params(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
-    conn.execute(text(sql), param_dict)
+    conn.execute(text(_INSERT_SQL), _build_insert_params(event, row_hash, prev_hash))
     event.row_hash = row_hash
     event.prev_hash = prev_hash
 
@@ -384,8 +396,7 @@ def _append_event_sqlite(event: AuditEvent, conn=None) -> None:
         prev_hash = _get_latest_row_hash(conn)
         row_hash = _compute_row_hash(event, prev_hash)
         if conn is not None:
-            sql, param_dict = _translate_to_named_params(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
-            conn.execute(text(sql), param_dict)
+            conn.execute(text(_INSERT_SQL), _build_insert_params(event, row_hash, prev_hash))
         else:
             execute(_INSERT_SQL, _build_insert_params(event, row_hash, prev_hash))
         event.row_hash = row_hash
