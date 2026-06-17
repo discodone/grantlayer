@@ -6,15 +6,10 @@ import datetime
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
-from sqlalchemy.orm import Session
 
-from ...audit import audit_log as _audit_log
 from ...core import config
-from ...core.crypto_signing import sign_grant as _sign_grant
 from ...core.crypto_signing import verify_grant_signature
-from ...core.db import get_db
-from ...core.models import AuditEvent, Grant
-from ...core.repositories import IGrantRepository
+from ...core.models import Grant
 from ...core.validation import (
     MAX_NAME_LENGTH,
     MAX_REASON_LENGTH,
@@ -23,7 +18,8 @@ from ...core.validation import (
     validate_string_length,
 )
 from ...grants.grant_requests import ALLOWED_GRANT_ROLES
-from ..deps import get_grant_repo, resolve_auth_and_workspace
+from ...grants.grant_service import GrantService
+from ..deps import get_grant_service, resolve_auth_and_workspace
 from ..schemas import GrantCreateRequest, GrantListResponse, GrantResponse
 
 router = APIRouter(prefix="/grants", tags=["grants"])
@@ -87,7 +83,7 @@ def list_grants_endpoint(
     offset: int = Query(default=0, ge=0),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
-    grant_repo: IGrantRepository = Depends(get_grant_repo),
+    svc: GrantService = Depends(get_grant_service),
 ):
     """List all grants visible to the authenticated operator."""
     _, ws_ctx = resolve_auth_and_workspace(
@@ -95,12 +91,15 @@ def list_grants_endpoint(
         required_roles=["owner", "grant_admin", "auditor"],
         workspace_id=x_workspace_id,
     )
-    tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx["workspace_id"]
-    grants = grant_repo.list(tenant_id=tenant_id, workspace_id=workspace_id, limit=limit, offset=offset)
+    grants, total = svc.list_grants(
+        tenant_id=ws_ctx["tenant_id"],
+        workspace_id=ws_ctx["workspace_id"],
+        limit=limit,
+        offset=offset,
+    )
     return GrantListResponse(
         items=[_grant_to_response(g) for g in grants],
-        total=grant_repo.count(tenant_id=tenant_id, workspace_id=workspace_id),
+        total=total,
         limit=limit,
         offset=offset,
     )
@@ -111,7 +110,7 @@ def get_grant_endpoint(
     grant_id: str,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
-    grant_repo: IGrantRepository = Depends(get_grant_repo),
+    svc: GrantService = Depends(get_grant_service),
 ):
     """Retrieve a single grant by ID."""
     _, ws_ctx = resolve_auth_and_workspace(
@@ -119,9 +118,11 @@ def get_grant_endpoint(
         required_roles=["owner", "grant_admin", "auditor"],
         workspace_id=x_workspace_id,
     )
-    tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx["workspace_id"]
-    grant = grant_repo.get(grant_id, tenant_id=tenant_id, workspace_id=workspace_id)
+    grant = svc.get_grant(
+        grant_id,
+        tenant_id=ws_ctx["tenant_id"],
+        workspace_id=ws_ctx["workspace_id"],
+    )
     if grant is None:
         raise HTTPException(
             status_code=404,
@@ -144,8 +145,7 @@ def create_grant_endpoint(
     body: GrantCreateRequest,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
-    db: Session = Depends(get_db),
-    grant_repo: IGrantRepository = Depends(get_grant_repo),
+    svc: GrantService = Depends(get_grant_service),
 ):
     """Create a new grant."""
     auth_ctx, ws_ctx = resolve_auth_and_workspace(
@@ -153,8 +153,6 @@ def create_grant_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
-    tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx["workspace_id"]
 
     # Validate that string fields are non-empty
     for alias, value in (
@@ -221,24 +219,10 @@ def create_grant_endpoint(
         reason=body.reason,
         max_uses=body.max_uses,
     )
-    sig_hex, hash_hex, key_id = _sign_grant(grant)
-    grant.signature = sig_hex
-    grant.payload_hash = hash_hex
-    grant.signing_key_id = key_id
-    grant_repo.create(grant, tenant_id, workspace_id)
-    _audit_log.append_event(
-        AuditEvent(
-            subject_id=grant.subject_id,
-            role=grant.role,
-            action=grant.action,
-            resource=grant.resource,
-            approved=True,
-            reason=f"grant_created: {grant.reason}",
-            matched_grant_id=grant.id,
-            grant_signature_result="valid",
-            tenant_id=tenant_id,
-            workspace_id=workspace_id,
-        ),
-        conn=db.connection(),
+    grant = svc.create_grant(
+        grant,
+        tenant_id=ws_ctx["tenant_id"],
+        workspace_id=ws_ctx["workspace_id"],
+        operator_id=operator_id,
     )
     return _grant_to_response(grant)

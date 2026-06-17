@@ -9,6 +9,10 @@ Depends(get_db).
 Remaining legitimate get_conn() callers:
   - backend/src/core/db.py (definition + init_db for migration runner)
   - backend/tests/* (direct DB inspection fixtures — separate concern)
+
+GL-301 update: grants.py now uses GrantService via Depends(get_grant_service)
+instead of direct Depends(get_db). The DI chain is:
+  get_grant_service(db: Session = Depends(get_db)) → GrantService(repo, session=db)
 """
 import pathlib
 
@@ -31,12 +35,12 @@ class TestFastAPIDIComplete:
                     violations.append(f"{path}: contains '{name}'")
         assert not violations, "\n".join(violations)
 
-    def test_grants_router_uses_depends_get_db(self):
-        """grants.py router must inject Session via Depends(get_db)."""
+    def test_grants_router_uses_service_di(self):
+        """grants.py router must inject GrantService via Depends(get_grant_service)."""
         grants_router = ROUTERS_DIR / "grants.py"
         source = grants_router.read_text()
-        assert "Depends(get_db)" in source, "grants.py missing Depends(get_db)"
-        assert "from ...core.db import get_db" in source, "grants.py missing get_db import"
+        assert "Depends(get_grant_service)" in source, "grants.py missing Depends(get_grant_service)"
+        assert "GrantService" in source, "grants.py missing GrantService"
 
     def test_get_conn_only_in_db_module(self):
         """get_conn() in backend/src must only appear in core/db.py (definition + init_db)."""
