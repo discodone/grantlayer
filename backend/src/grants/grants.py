@@ -24,25 +24,25 @@ _DEMO_WORKSPACE_ID = "default"
 
 def _orm_to_grant(row: OrmGrant) -> Grant:
     return Grant(
-        id=row.id,
-        subject_id=row.subject_id,
-        role=row.role,
-        action=row.action,
-        resource=row.resource,
-        valid_from=row.valid_from,
-        valid_until=row.valid_until,
-        created_by=row.created_by,
-        reason=row.reason,
+        id=str(row.id),
+        subject_id=str(row.subject_id),
+        role=str(row.role),
+        action=str(row.action),
+        resource=str(row.resource),
+        valid_from=str(row.valid_from),
+        valid_until=str(row.valid_until),
+        created_by=str(row.created_by),
+        reason=str(row.reason),
         revoked=bool(row.revoked),
-        revoked_by=row.revoked_by,
-        revoked_reason=row.revoked_reason,
-        revoked_at=row.revoked_at,
-        created_at=row.created_at,
-        signature=row.signature,
-        signing_key_id=row.signing_key_id,
-        payload_hash=row.payload_hash,
-        max_uses=row.max_uses,
-        use_count=row.use_count or 0,
+        revoked_by=str(row.revoked_by) if row.revoked_by is not None else None,
+        revoked_reason=str(row.revoked_reason) if row.revoked_reason is not None else None,
+        revoked_at=str(row.revoked_at) if row.revoked_at is not None else None,
+        created_at=str(row.created_at),
+        signature=str(row.signature) if row.signature is not None else None,
+        signing_key_id=str(row.signing_key_id) if row.signing_key_id is not None else None,
+        payload_hash=str(row.payload_hash) if row.payload_hash is not None else None,
+        max_uses=int(row.max_uses) if row.max_uses is not None else None,
+        use_count=int(row.use_count) if row.use_count is not None else 0,
     )
 
 
@@ -177,7 +177,7 @@ def create_grant(
 
     if conn is not None:
         conn.execute(
-            sa_insert(OrmGrant.__table__).values(
+            sa_insert(OrmGrant).values(
                 id=grant.id,
                 subject_id=grant.subject_id,
                 role=grant.role,
@@ -254,7 +254,7 @@ def revoke_grant(
     revoked_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     if conn is not None:
         stmt = (
-            sa_update(OrmGrant.__table__)
+            sa_update(OrmGrant)
             .where(OrmGrant.id == grant_id, OrmGrant.revoked == 0)
             .values(revoked=1, revoked_by=revoked_by, revoked_reason=reason, revoked_at=revoked_at)
         )

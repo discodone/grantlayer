@@ -417,7 +417,7 @@ class _ConnectionWrapper:
                 )
                 sql = compiled.string
                 parameters = tuple(
-                    compiled.params[k] for k in (compiled.positiontup or [])
+                    compiled.params[k] for k in list(compiled.params.keys())
                 )
         else:
             parameters = parameters or ()

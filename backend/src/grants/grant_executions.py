@@ -21,20 +21,20 @@ _DEMO_WORKSPACE_ID = "default"
 
 def _orm_to_grant_execution(row: OrmGrantExecution) -> GrantExecution:
     return GrantExecution(
-        id=row.id,
-        grant_id=row.grant_id,
-        grant_request_id=row.grant_request_id,
-        operator_id=row.operator_id,
-        action=row.action,
-        resource=row.resource,
-        challenge_id=row.challenge_id,
-        challenge_result=row.challenge_result,
-        policy_result=row.policy_result or "",
-        result=row.result,  # type: ignore[arg-type]
-        error_code=row.error_code,
-        executed_at=row.executed_at,
-        audit_event_id=row.audit_event_id,
-        metadata_json=row.metadata_json,
+        id=str(row.id),
+        grant_id=str(row.grant_id) if row.grant_id is not None else None,
+        grant_request_id=str(row.grant_request_id) if row.grant_request_id is not None else None,
+        operator_id=str(row.operator_id) if row.operator_id is not None else None,
+        action=str(row.action),
+        resource=str(row.resource),
+        challenge_id=str(row.challenge_id) if row.challenge_id is not None else None,
+        challenge_result=str(row.challenge_result) if row.challenge_result is not None else None,
+        policy_result=str(row.policy_result) if row.policy_result is not None else "",
+        result=str(row.result),  # type: ignore[arg-type]
+        error_code=str(row.error_code) if row.error_code is not None else None,
+        executed_at=str(row.executed_at),
+        audit_event_id=str(row.audit_event_id) if row.audit_event_id is not None else None,
+        metadata_json=str(row.metadata_json) if row.metadata_json is not None else None,
     )
 
 
@@ -73,7 +73,7 @@ def create_grant_execution(
 
     if session is not None:
         session.execute(
-            sa_insert(OrmGrantExecution.__table__).values(
+            sa_insert(OrmGrantExecution).values(
                 id=execution.id,
                 grant_id=execution.grant_id,
                 grant_request_id=execution.grant_request_id,
@@ -281,7 +281,7 @@ def update_grant_execution_audit_event_id(
     """Link an execution to its audit event after audit insertion."""
     if session is not None:
         session.execute(
-            sa_update(OrmGrantExecution.__table__)
+            sa_update(OrmGrantExecution)
             .where(OrmGrantExecution.id == execution_id)
             .values(audit_event_id=audit_event_id)
         )

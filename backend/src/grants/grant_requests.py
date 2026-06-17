@@ -56,27 +56,27 @@ _DEMO_WORKSPACE_ID = "default"
 
 def _orm_to_grant_request(row: OrmGrantRequest) -> GrantRequest:
     return GrantRequest(
-        id=row.id,
-        subject_id=row.subject_id,
-        role=row.role,
-        action=row.action,
-        resource=row.resource,
-        valid_from=row.valid_from,
-        valid_until=row.valid_until,
-        requested_by=row.requested_by,
-        reason=row.reason,
-        status=row.status,
-        approved_by=row.approved_by,
-        approved_at=row.approved_at,
-        denied_by=row.denied_by,
-        denied_at=row.denied_at,
-        denial_reason=row.denial_reason,
-        revoked_by=row.revoked_by,
-        revoked_at=row.revoked_at,
-        revoked_reason=row.revoked_reason,
-        grant_id=row.grant_id,
-        created_at=row.created_at,
-        updated_at=row.updated_at,
+        id=str(row.id),
+        subject_id=str(row.subject_id),
+        role=str(row.role),
+        action=str(row.action),
+        resource=str(row.resource),
+        valid_from=str(row.valid_from),
+        valid_until=str(row.valid_until),
+        requested_by=str(row.requested_by),
+        reason=str(row.reason),
+        status=str(row.status),  # type: ignore[arg-type]
+        approved_by=str(row.approved_by) if row.approved_by is not None else None,
+        approved_at=str(row.approved_at) if row.approved_at is not None else None,
+        denied_by=str(row.denied_by) if row.denied_by is not None else None,
+        denied_at=str(row.denied_at) if row.denied_at is not None else None,
+        denial_reason=str(row.denial_reason) if row.denial_reason is not None else None,
+        revoked_by=str(row.revoked_by) if row.revoked_by is not None else None,
+        revoked_at=str(row.revoked_at) if row.revoked_at is not None else None,
+        revoked_reason=str(row.revoked_reason) if row.revoked_reason is not None else None,
+        grant_id=str(row.grant_id) if row.grant_id is not None else None,
+        created_at=str(row.created_at),
+        updated_at=str(row.updated_at),
     )
 
 
@@ -98,7 +98,7 @@ def create_grant_request(
     effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
     if session is not None:
         session.execute(
-            sa_insert(OrmGrantRequest.__table__).values(
+            sa_insert(OrmGrantRequest).values(
                 id=request.id,
                 subject_id=request.subject_id,
                 role=request.role,
@@ -308,7 +308,7 @@ def approve_grant_request(
 
             now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
             conn.execute(
-                sa_update(OrmGrantRequest.__table__)
+                sa_update(OrmGrantRequest)
                 .where(OrmGrantRequest.id == request_id)
                 .values(
                     status="approved",
@@ -369,7 +369,7 @@ def deny_grant_request(
         with conn.begin():
             now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
             conn.execute(
-                sa_update(OrmGrantRequest.__table__)
+                sa_update(OrmGrantRequest)
                 .where(OrmGrantRequest.id == request_id)
                 .values(
                     status="denied",
@@ -436,7 +436,7 @@ def revoke_grant_request(
 
             now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
             conn.execute(
-                sa_update(OrmGrantRequest.__table__)
+                sa_update(OrmGrantRequest)
                 .where(OrmGrantRequest.id == request_id)
                 .values(
                     status="revoked",
@@ -494,7 +494,7 @@ def expire_old_requests() -> int:
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
         for row in to_expire:
             conn.execute(
-                sa_update(OrmGrantRequest.__table__)
+                sa_update(OrmGrantRequest)
                 .where(OrmGrantRequest.id == row.id)
                 .values(status="expired", updated_at=now)
             )

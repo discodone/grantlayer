@@ -151,14 +151,14 @@ def _init_operators_table() -> None:
 
 def _orm_to_operator(row: OrmOperator) -> Operator:
     return Operator(
-        operator_id=row.id,
-        name=row.name,
-        role=row.role,
+        operator_id=str(row.id),
+        name=str(row.name),
+        role=str(row.role),
         active=bool(row.active),
-        created_at=row.created_at,
-        expires_at=row.expires_at,
-        rotated_at=row.rotated_at,
-        tenant_id=row.tenant_id,
+        created_at=str(row.created_at) if row.created_at is not None else None,
+        expires_at=str(row.expires_at) if row.expires_at is not None else None,
+        rotated_at=str(row.rotated_at) if row.rotated_at is not None else None,
+        tenant_id=str(row.tenant_id),
     )
 
 
@@ -271,12 +271,12 @@ def revoke_operator(
     """
     if session is not None:
         stmt = (
-            sa_update(OrmOperator.__table__)
+            sa_update(OrmOperator)
             .where(OrmOperator.id == operator_id)
             .values(active=0)
         )
         result = session.execute(stmt)
-        return (result.rowcount or 0) > 0
+        return (result.rowcount or 0) > 0  # type: ignore[attr-defined]
     rowcount = execute(
         "UPDATE operators SET active = 0 WHERE id = ?",
         (operator_id,),
@@ -311,7 +311,7 @@ def create_operator(
 
     if session is not None:
         session.execute(
-            sa_insert(OrmOperator.__table__).values(
+            sa_insert(OrmOperator).values(
                 id=op_id,
                 name=name,
                 role=role,
@@ -360,7 +360,7 @@ def is_operator_token_expired(
         orm_row = session.execute(stmt).scalars().first()
         if orm_row is None:
             return None
-        return _is_expired(orm_row.expires_at)
+        return _is_expired(str(orm_row.expires_at) if orm_row.expires_at is not None else None)
     row = query_one(
         "SELECT expires_at FROM operators WHERE id = ? AND active = 1", (operator_id,)
     )
@@ -395,8 +395,8 @@ def authenticate_operator_with_reason(
             OrmOperator.active == 1,
         )
         orm_row = session.execute(stmt).scalars().first()
-        if orm_row is not None and verify_token(token, orm_row.token_hash):
-            if _is_expired(orm_row.expires_at):
+        if orm_row is not None and verify_token(token, str(orm_row.token_hash)):
+            if _is_expired(str(orm_row.expires_at) if orm_row.expires_at is not None else None):
                 return None, "operator_token_expired"
             return _orm_to_operator(orm_row), None
 
@@ -406,8 +406,8 @@ def authenticate_operator_with_reason(
             OrmOperator.token_lookup_hash.is_(None),
         )
         for orm_op in session.execute(legacy_stmt).scalars().all():
-            if verify_token(token, orm_op.token_hash):
-                if _is_expired(orm_op.expires_at):
+            if verify_token(token, str(orm_op.token_hash)):
+                if _is_expired(str(orm_op.expires_at) if orm_op.expires_at is not None else None):
                     return None, "operator_token_expired"
                 return _orm_to_operator(orm_op), None
 
@@ -477,7 +477,7 @@ def rotate_operator_token(
 
     if session is not None:
         session.execute(
-            sa_update(OrmOperator.__table__)
+            sa_update(OrmOperator)
             .where(OrmOperator.id == operator_id)
             .values(
                 token_hash=new_hash,
@@ -525,7 +525,7 @@ def bootstrap_operator_if_needed(session: "Optional[Session]" = None) -> None:
         ).isoformat().replace("+00:00", "Z")
 
         session.execute(
-            sa_insert(OrmOperator.__table__).values(
+            sa_insert(OrmOperator).values(
                 id=config.GRANTLAYER_BOOTSTRAP_OPERATOR_ID,
                 name=config.GRANTLAYER_BOOTSTRAP_OPERATOR_NAME,
                 role=config.GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE,
