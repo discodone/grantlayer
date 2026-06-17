@@ -37,10 +37,13 @@ _Genesis_PREV_HASH = "0" * 64  # fixed genesis for first event when no prior has
 
 def _get_latest_row_hash(conn=None) -> Optional[str]:
     """Return the row_hash of the most recent audit event that has one."""
+    # rowid (SQLite) and ctid (PostgreSQL) both provide reliable insertion-order
+    # tiebreaking when two events share the same timestamp.  id (UUID text) does not.
+    tiebreak = "ctid" if DB_BACKEND == "postgres" else "rowid"
     sql = (
         "SELECT row_hash FROM audit_events "
         "WHERE row_hash IS NOT NULL "
-        "ORDER BY timestamp DESC, rowid DESC LIMIT 1"
+        f"ORDER BY timestamp DESC, {tiebreak} DESC LIMIT 1"
     )
     if conn is not None:
         row = conn.execute(text(sql)).fetchone()
@@ -120,7 +123,8 @@ def _row_to_audit_event(row: dict) -> AuditEvent:
 
 def _fetch_all_audit_events_ordered() -> list[dict]:
     """Fetch all audit events in deterministic insertion order."""
-    return query_all("SELECT * FROM audit_events ORDER BY timestamp ASC, rowid ASC")
+    tiebreak = "ctid" if DB_BACKEND == "postgres" else "rowid"
+    return query_all(f"SELECT * FROM audit_events ORDER BY timestamp ASC, {tiebreak} ASC")
 
 
 def _filter_chain_rows(rows: list[dict]) -> list[dict]:
@@ -254,7 +258,7 @@ def _build_report_recommendations(
 def verify_audit_hash_chain() -> dict:
     """Read-only verification of audit_events hash-chain integrity.
 
-    Reads audit events in deterministic insertion order (timestamp ASC, rowid ASC),
+    Reads audit events in deterministic insertion order (timestamp ASC, id ASC),
     skips historical/pre-chain rows where row_hash IS NULL, and verifies:
       1. Each stored row_hash matches the hash recomputed from the event fields
          and the expected prev_hash (previous event's row_hash, or None for genesis).
