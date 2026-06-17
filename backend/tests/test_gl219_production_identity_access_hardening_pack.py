@@ -286,13 +286,16 @@ class TestGL219IdentityAccessHelpers(unittest.TestCase):
         self.assertEqual(self.identity_access.external_identity_startup_errors(env, "local"), [])
 
     def test_posture_summary_is_safe_and_not_production_ready(self):
-        env = {"GRANTLAYER_JWT_AUDIENCE": "audience-placeholder"}
+        # GRANTLAYER_JWT_ISSUER/AUDIENCE are now internal config (GL-295), not
+        # external-identity vars.  Use GRANTLAYER_OIDC_AUDIENCE to exercise the
+        # external_identity_config_vars_present field.
+        env = {"GRANTLAYER_OIDC_AUDIENCE": "audience-placeholder"}
         posture = self.identity_access.describe_identity_access_posture(env, "staging")
         self.assertFalse(posture["external_identity_provider_implemented"])
         self.assertEqual(posture["oauth_oidc_jwt_bearer_acceptance"], "not_implemented")
         self.assertFalse(posture["production_identity_ready"])
         self.assertFalse(posture["real_customer_private_data_ready"])
-        self.assertIn("GRANTLAYER_JWT_AUDIENCE", posture["external_identity_config_vars_present"])
+        self.assertIn("GRANTLAYER_OIDC_AUDIENCE", posture["external_identity_config_vars_present"])
         self.assertNotIn("audience-placeholder", json.dumps(posture))
 
     def test_config_startup_errors_include_external_identity_gate(self):
