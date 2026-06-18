@@ -322,6 +322,24 @@ Set `GRANTLAYER_JWT_PRIVATE_KEY` (base64-encoded PEM) for signing and
 `GRANTLAYER_JWT_PUBLIC_KEY` (base64-encoded PEM) for verification. See Step 1
 for key generation commands.
 
+### Required: JWT issuer and audience
+
+`JWT_STRICT_CLAIMS` is **`true` by default** — tokens that are missing `iss`
+or `aud` claims are rejected. You must set matching values in your `.env`:
+
+```env
+# Unique per deployment — prevents cross-instance token replay
+GRANTLAYER_JWT_ISSUER=my-org-grantlayer-prod
+GRANTLAYER_JWT_AUDIENCE=grantlayer-api-prod
+```
+
+Tokens signed by your stack will embed these values automatically. Tokens
+from external issuers (OIDC) must include matching claims.
+
+> **Do not** leave `GRANTLAYER_JWT_ISSUER` at its default `grantlayer` value
+> in production. Two deployments sharing the same issuer string and signing key
+> will cross-accept each other's tokens.
+
 **For production**, also consider:
 - Shorter TTLs (15–30 min) with refresh tokens
 - A dedicated identity provider (Auth0, Okta, Keycloak)
