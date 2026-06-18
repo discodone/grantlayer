@@ -37,10 +37,13 @@ def _make_client():
 
 
 def _jwt() -> str:
-    os.environ.setdefault("GRANTLAYER_JWT_SECRET", _TEST_SECRET)
+    os.environ["GRANTLAYER_JWT_SECRET"] = _TEST_SECRET
     from backend.src.api.auth_jwt import encode_token
+    # Use tenant_id="demo" so workspace resolution falls back to demo workspace
+    # when no explicit workspace_id is provided (no DB lookup needed).
     return encode_token(
-        {"sub": "perf-user", "role": "grant_admin", "tenant_id": "t1", "workspace_id": "ws-perf"},
+        {"sub": "perf-user", "role": "grant_admin", "tenant_id": "demo",
+         "iss": "grantlayer", "aud": "grantlayer-api"},
         _TEST_SECRET,
     )
 

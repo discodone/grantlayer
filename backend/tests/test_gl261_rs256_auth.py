@@ -167,7 +167,11 @@ class TestValidateJwtHeaderRS256(unittest.TestCase):
 
     def _make_rs256_token(self):
         from backend.src.api.auth_jwt import encode_token_rs256
-        return encode_token_rs256({"sub": "op-1", "tenant_id": "acme"}, self._private_pem)
+        return encode_token_rs256(
+            {"sub": "op-1", "tenant_id": "acme",
+             "iss": "grantlayer", "aud": "grantlayer-api"},
+            self._private_pem,
+        )
 
     def test_rs256_valid_token_accepted(self):
         with _EnvGuard():
@@ -218,7 +222,10 @@ class TestValidateJwtHeaderRS256(unittest.TestCase):
 
     def test_rs256_missing_tenant_id_rejected(self):
         from backend.src.api.auth_jwt import encode_token_rs256
-        token = encode_token_rs256({"sub": "op-1"}, self._private_pem)  # no tenant_id
+        token = encode_token_rs256(
+            {"sub": "op-1", "iss": "grantlayer", "aud": "grantlayer-api"},
+            self._private_pem,
+        )  # no tenant_id
         with _EnvGuard():
             os.environ["GRANTLAYER_JWT_ALGORITHM"] = "RS256"
             os.environ["GRANTLAYER_JWT_PUBLIC_KEY"] = self._pub_b64
@@ -239,7 +246,11 @@ class TestValidateJwtHeaderHS256Legacy(unittest.TestCase):
             os.environ["GRANTLAYER_JWT_SECRET"] = _TEST_HS256_SECRET
             from backend.src.api import auth_jwt
             importlib.reload(auth_jwt)
-            token = auth_jwt.encode_token({"sub": "op", "tenant_id": "t"}, _TEST_HS256_SECRET)
+            token = auth_jwt.encode_token(
+                {"sub": "op", "tenant_id": "t",
+                 "iss": "grantlayer", "aud": "grantlayer-api"},
+                _TEST_HS256_SECRET,
+            )
             ok, status, payload = auth_jwt.validate_jwt_header(f"Bearer {token}")
         self.assertTrue(ok)
         self.assertEqual(status, 200)

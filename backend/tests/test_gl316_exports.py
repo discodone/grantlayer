@@ -29,9 +29,12 @@ _TEST_SECRET = "gl316-test-hs256-secret-32chars!!"
 
 
 def _auth_token() -> str:
-    os.environ.setdefault("GRANTLAYER_JWT_SECRET", _TEST_SECRET)
     from backend.src.api.auth_jwt import encode_token
-    return encode_token({"sub": "export-user", "role": "auditor", "tenant_id": "test-tenant"}, _TEST_SECRET)
+    return encode_token(
+        {"sub": "export-user", "role": "auditor", "tenant_id": "test-tenant",
+         "iss": "grantlayer", "aud": "grantlayer-api"},
+        _TEST_SECRET,
+    )
 
 
 class TestExportsImport(unittest.TestCase):
@@ -105,6 +108,7 @@ class TestExportsEndpointsNoAuth(unittest.TestCase):
 
 class TestExportsEndpointsAuthenticated(unittest.TestCase):
     def setUp(self):
+        self._orig_jwt_secret = os.environ.get("GRANTLAYER_JWT_SECRET")
         os.environ["GRANTLAYER_JWT_SECRET"] = _TEST_SECRET
         os.environ["GRANTLAYER_JWT_MODE"] = "hs256"
         from backend.src.core.db import init_db
@@ -112,6 +116,10 @@ class TestExportsEndpointsAuthenticated(unittest.TestCase):
 
     def tearDown(self):
         os.environ.pop("GRANTLAYER_JWT_MODE", None)
+        if self._orig_jwt_secret is None:
+            os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        else:
+            os.environ["GRANTLAYER_JWT_SECRET"] = self._orig_jwt_secret
 
     def _headers(self):
         return {"Authorization": f"Bearer {_auth_token()}"}

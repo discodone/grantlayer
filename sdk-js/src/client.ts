@@ -116,10 +116,11 @@ export class GrantLayerClient {
 
   // ── Grants ────────────────────────────────────────────────────────────────
 
-  async listGrants(params?: { limit?: number; cursor?: string }): Promise<Grant[]> {
+  async listGrants(params?: { limit?: number; offset?: number; cursor?: string }): Promise<Grant[]> {
     const qs = new URLSearchParams();
     if (params?.limit !== undefined) qs.set('limit', String(params.limit));
     if (params?.cursor) qs.set('cursor', params.cursor);
+    else if (params?.offset !== undefined) qs.set('offset', String(params.offset));
     const query = qs.toString() ? `?${qs.toString()}` : '';
     return this.request<Grant[]>('GET', `/v1/grants${query}`);
   }
@@ -132,8 +133,8 @@ export class GrantLayerClient {
     return this.request<Grant>('GET', `/v1/grants/${id}`);
   }
 
-  async revokeGrant(id: string, reason: string): Promise<Grant> {
-    return this.request<Grant>('DELETE', `/v1/grants/${id}`, { reason });
+  async revokeGrant(id: string, reason?: string): Promise<Grant> {
+    return this.request<Grant>('POST', `/v1/grants/${id}/revoke`, { reason });
   }
 
   // ── Grant Requests ────────────────────────────────────────────────────────
@@ -155,8 +156,8 @@ export class GrantLayerClient {
     return this.request<GrantRequest>('POST', `/v1/grant-requests/${id}/deny`, { reason });
   }
 
-  async bulkApproveRequests(ids: string[], reason?: string): Promise<{ approved: number }> {
-    return this.request('POST', '/v1/grant-requests/bulk-approve', { ids, reason });
+  async bulkApproveRequests(requestIds: string[], reason?: string): Promise<{ approved: number }> {
+    return this.request('POST', '/v1/grant-requests/bulk-approve', { requestIds, reason });
   }
 
   // ── Audit Events ──────────────────────────────────────────────────────────

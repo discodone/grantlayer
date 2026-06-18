@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query
 
 from ...core import config
 from ...core.crypto_signing import verify_grant_signature
@@ -225,4 +225,45 @@ async def create_grant_endpoint(
         workspace_id=ws_ctx["workspace_id"],
         operator_id=operator_id,
     )
+    return _grant_to_response(grant)
+
+
+@router.post("/{grant_id}/revoke", response_model=GrantResponse, response_model_by_alias=True)
+async def revoke_grant_endpoint(
+    grant_id: str,
+    reason: Annotated[Optional[str], Body(embed=True)] = None,
+    authorization: Annotated[Optional[str], Header()] = None,
+    x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
+    svc: AsyncGrantService = Depends(get_async_grant_service),
+):
+    """Revoke an existing grant."""
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(
+        authorization,
+        required_roles=["owner", "grant_admin"],
+        workspace_id=x_workspace_id,
+    )
+    operator_id = auth_ctx.get("sub") or auth_ctx.get("operator", {}).get("operatorId", "unknown")
+    revoked = await svc.revoke_grant(
+        grant_id,
+        tenant_id=ws_ctx["tenant_id"],
+        workspace_id=ws_ctx["workspace_id"],
+        revoked_by=operator_id,
+        reason=reason or "revoked via API",
+    )
+    if not revoked:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "Grant not found",
+                "errorCode": "grant_not_found",
+                "reason": "The requested grant does not exist or is already revoked.",
+            },
+        )
+    grant = await svc.get_grant(
+        grant_id,
+        tenant_id=ws_ctx["tenant_id"],
+        workspace_id=ws_ctx["workspace_id"],
+    )
+    if grant is None:
+        raise HTTPException(status_code=404, detail={"error": "Grant not found", "errorCode": "grant_not_found"})
     return _grant_to_response(grant)

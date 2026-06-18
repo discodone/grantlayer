@@ -1,17 +1,16 @@
 """
 GrantLayer Minimal Python SDK — developer-preview, local use only.
 
-Standard library only. No network calls at import time.
+Uses httpx. No network calls at import time.
 Not package-published. No production SaaS readiness claimed.
-Tenant isolation not implemented.
 """
 
 from __future__ import annotations
 
 import json
-import urllib.error
-import urllib.request
 from typing import Any, Dict, Optional
+
+import httpx
 
 
 class GrantLayerClientError(Exception):
@@ -73,38 +72,41 @@ class GrantLayerClient:
     ) -> GrantLayerResponse:
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._build_headers(headers)
-        data: Optional[bytes] = None
         if body is not None:
-            data = json.dumps(body).encode("utf-8")
             request_headers["Content-Type"] = "application/json"
 
-        req = urllib.request.Request(
-            url, data=data, headers=request_headers, method=method
-        )
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                status: int = resp.status
-                raw: bytes = resp.read()
-                resp_headers = dict(resp.headers) if resp.headers else {}
-                if raw:
-                    try:
-                        parsed = json.loads(raw)
-                    except json.JSONDecodeError as exc:
-                        raise GrantLayerJSONError(
-                            f"Invalid JSON in response body: {exc}"
-                        ) from exc
-                else:
-                    parsed = None
-                return GrantLayerResponse(status=status, body=parsed, headers=resp_headers)
-        except urllib.error.HTTPError as exc:
-            raw_err = exc.read()
+            with httpx.Client(timeout=self.timeout) as client:
+                response = client.request(
+                    method,
+                    url,
+                    headers=request_headers,
+                    content=json.dumps(body).encode() if body is not None else None,
+                )
+        except httpx.ConnectError as exc:
+            raise GrantLayerClientError(f"Connection error: {exc}") from exc
+        except httpx.TimeoutException as exc:
+            raise GrantLayerClientError(f"Request timed out: {exc}") from exc
+
+        status = response.status_code
+        raw = response.content
+        resp_headers = dict(response.headers)
+
+        if status >= 400:
             try:
-                msg = json.loads(raw_err).get("error", "request failed")
-            except (ValueError, KeyError):
+                msg = response.json().get("error", "request failed")
+            except Exception:
                 msg = "request failed"
-            raise GrantLayerHTTPError(exc.code, msg) from None
-        except urllib.error.URLError as exc:
-            raise GrantLayerClientError(f"Connection error: {exc.reason}") from exc
+            raise GrantLayerHTTPError(status, msg)
+
+        parsed: Any = None
+        if raw:
+            try:
+                parsed = response.json()
+            except Exception as exc:
+                raise GrantLayerJSONError(f"Invalid JSON in response body: {exc}") from exc
+
+        return GrantLayerResponse(status=status, body=parsed, headers=resp_headers)
 
     def health(self) -> GrantLayerResponse:
         return self.request_json("GET", "/health")

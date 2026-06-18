@@ -1,13 +1,13 @@
-# GrantLayer full-stack compose (FastAPI + PostgreSQL + Nginx/TLS)
+# GrantLayer full-stack compose (FastAPI + PostgreSQL + Redis + Nginx/TLS)
 #
-# Quick start (PostgreSQL default):
+# Quick start (PostgreSQL + Redis default):
 #   1. cp .env.example .env && edit .env   # set GRANTLAYER_JWT_SECRET and passwords
 #   2. ./nginx/generate-certs.sh
 #   3. docker compose up -d
 #   4. curl -k https://localhost/health
 #
-# SQLite-only (override DATABASE_URL in .env, or omit it and set GRANTLAYER_DB):
-#   GRANTLAYER_DATABASE_URL="" docker compose up -d api
+# Local SQLite-only development (no PostgreSQL, no Redis):
+#   docker compose -f docker-compose.dev.yml up -d
 
 services:
   # ── FastAPI backend ───────────────────────────────────────────
@@ -28,9 +28,11 @@ services:
       - GRANTLAYER_JWT_PRIVATE_KEY=${GRANTLAYER_JWT_PRIVATE_KEY:-}
       - GRANTLAYER_JWT_PUBLIC_KEY=${GRANTLAYER_JWT_PUBLIC_KEY:-}
       - GRANTLAYER_JWT_SECRET=${GRANTLAYER_JWT_SECRET:-}
-      # PostgreSQL is the default backend. Override GRANTLAYER_DATABASE_URL="" in .env to use SQLite.
+      # PostgreSQL is the default backend.
       - GRANTLAYER_DATABASE_URL=${GRANTLAYER_DATABASE_URL:-postgresql://${GRANTLAYER_POSTGRES_USER:-grantlayer}:${GRANTLAYER_POSTGRES_PASSWORD:-changeme_in_env}@db:5432/${GRANTLAYER_POSTGRES_DB:-grantlayer}}
       - GRANTLAYER_DB=${GRANTLAYER_DB:-/app/data/grantlayer.db}
+      # Redis is required for distributed rate limiting in production mode.
+      - GRANTLAYER_REDIS_URL=${GRANTLAYER_REDIS_URL:-redis://redis:6379}
       - GRANTLAYER_LOG_LEVEL=${GRANTLAYER_LOG_LEVEL:-INFO}
       - GRANTLAYER_ENABLE_OPERATOR_MODEL=${GRANTLAYER_ENABLE_OPERATOR_MODEL:-true}
       - GRANTLAYER_ENABLE_DEMO_ENDPOINTS=${GRANTLAYER_ENABLE_DEMO_ENDPOINTS:-false}
@@ -38,6 +40,8 @@ services:
       - grantlayer-data:/app/data
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8765/health"]
@@ -92,6 +96,20 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    restart: unless-stopped
+    networks:
+      - grantlayer
+
+  # ── Redis (rate limiting + ARQ job queue) ────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: grantlayer-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
     networks:
       - grantlayer

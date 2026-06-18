@@ -14,13 +14,13 @@ GrantLayer is a verification, audit, and compliance layer for agentic grant and 
 | Area | Status |
 |------|--------|
 | Production SaaS readiness | Not claimed |
-| Tenant/workspace isolation | Enforced at API level (developer preview) |
+| Tenant/workspace isolation | Enforced at API level — workspace-scoped queries, cross-workspace denial |
 | Public GitHub release | Available |
 | Real customer data in examples | None; examples use synthetic/demo data only |
 | Real secrets in examples | None; use placeholders or generated local values only |
 
 Production SaaS readiness is not claimed.
-Tenant/workspace isolation is enforced: every request resolves a workspace from the operator's identity and membership; queries are scoped to the resolved workspace and tenant. This is sufficient for developer preview and controlled pilots; it is not a production SaaS multi-tenancy guarantee.
+Tenant/workspace isolation is enforced at the API level: every request resolves a workspace_id and tenant_id from the operator identity; queries are server-side scoped to that workspace and tenant; cross-workspace access is denied by default. This provides strong isolation for developer preview and controlled pilot deployments.
 Examples use no real secrets and no real customer data.
 
 ---

@@ -264,16 +264,16 @@ class TestJwtNonStrictBackwardCompat(unittest.TestCase):
     """GRANTLAYER_JWT_STRICT_CLAIMS=false (default) preserves backward compat."""
 
     def test_non_strict_accepts_token_without_iss_aud(self):
-        """Non-strict (default): old tokens without iss/aud must still pass."""
+        """Non-strict: old tokens without iss/aud must still pass when strict=false."""
         token = _make_hs256_token()  # no iss, no aud
-        ok, status, payload = _call_validate(token)  # strict not set → default false
+        ok, status, payload = _call_validate(token, strict="false")
         self.assertTrue(ok)
         self.assertEqual(status, 200)
 
     def test_non_strict_accepts_token_without_iss(self):
-        """Non-strict: token with aud but no iss passes (iss check skipped)."""
+        """Non-strict: token with aud but no iss passes when strict=false."""
         token = _make_hs256_token({"aud": _AUDIENCE})
-        ok, status, payload = _call_validate(token)
+        ok, status, payload = _call_validate(token, strict="false")
         self.assertTrue(ok)
         self.assertEqual(status, 200)
 

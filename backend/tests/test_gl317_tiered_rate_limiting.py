@@ -133,6 +133,16 @@ class TestRateLimiterTierBehavior(unittest.TestCase):
 
 
 class TestWorkspacesRouter(unittest.TestCase):
+    def setUp(self):
+        self._orig_jwt_secret = os.environ.get("GRANTLAYER_JWT_SECRET")
+        os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+
+    def tearDown(self):
+        if self._orig_jwt_secret is None:
+            os.environ.pop("GRANTLAYER_JWT_SECRET", None)
+        else:
+            os.environ["GRANTLAYER_JWT_SECRET"] = self._orig_jwt_secret
+
     def test_workspaces_router_importable(self):
         from backend.src.api.routers.workspaces import router
         self.assertIsNotNone(router)

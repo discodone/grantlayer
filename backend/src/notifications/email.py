@@ -22,7 +22,7 @@ _SMTP_USER = os.environ.get("GRANTLAYER_SMTP_USER", "")
 _SMTP_PASS = os.environ.get("GRANTLAYER_SMTP_PASS", "")
 _SMTP_FROM = os.environ.get("GRANTLAYER_SMTP_FROM", "noreply@grantlayer.example")
 _SMTP_TLS = os.environ.get("GRANTLAYER_SMTP_TLS", "false").lower() in ("1", "true", "yes")
-_UNSUBSCRIBE_SECRET = os.environ.get("GRANTLAYER_UNSUBSCRIBE_SECRET", "change-me-unsub")
+_UNSUBSCRIBE_SECRET = os.environ.get("GRANTLAYER_UNSUBSCRIBE_SECRET", "change-me-unsub")  # validated by startup_errors() in production
 _BACKEND = os.environ.get("GRANTLAYER_EMAIL_BACKEND", "smtp")  # smtp | sendgrid | ses | noop
 _BASE_URL = os.environ.get("GRANTLAYER_BASE_URL", "http://localhost:8765")
 

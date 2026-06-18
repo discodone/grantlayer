@@ -102,8 +102,10 @@ class TestEvaluatePolicyWithMockedOpa(unittest.TestCase):
                 self.assertFalse(result)
 
     def test_fallback_true_when_opa_unreachable(self):
+        """OPA unreachable → fail-closed: HTTPException(503) is raised (P1 fix)."""
         import asyncio
         import httpx
+        from fastapi import HTTPException
         from backend.src.policy.opa_client import evaluate_policy
 
         async def _run():
@@ -117,8 +119,13 @@ class TestEvaluatePolicyWithMockedOpa(unittest.TestCase):
                 mock_client.__aexit__ = AsyncMock(return_value=None)
                 mock_client_cls.return_value = mock_client
 
-                result = asyncio.run(_run())
-                self.assertTrue(result)  # graceful fallback
+                with self.assertRaises(HTTPException) as ctx:
+                    asyncio.run(_run())
+                self.assertEqual(ctx.exception.status_code, 503)
+                self.assertEqual(
+                    ctx.exception.detail.get("errorCode"),
+                    "policy_engine_unavailable",
+                )
 
 
 class TestRequirePolicy(unittest.TestCase):

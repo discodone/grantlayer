@@ -65,17 +65,32 @@ class GrantLayerClient:
         timeout: float = 10.0,
         max_retries: int = 3,
         _http_client: Optional[Any] = None,
+        _workspace_id: Optional[str] = None,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._token = token
         self._timeout = timeout
         self._max_retries = max_retries
         self._http_client = _http_client
+        self._workspace_id = _workspace_id
+
+    def with_workspace(self, workspace_id: str) -> "GrantLayerClient":
+        """Return a new client scoped to the given workspace_id."""
+        return GrantLayerClient(
+            base_url=self._base_url,
+            token=self._token,
+            timeout=self._timeout,
+            max_retries=self._max_retries,
+            _http_client=self._http_client,
+            _workspace_id=workspace_id,
+        )
 
     def _headers(self, extra: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         headers: Dict[str, str] = {}
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
+        if self._workspace_id:
+            headers["X-Workspace-ID"] = self._workspace_id
         if extra:
             headers.update(extra)
         return headers
@@ -88,6 +103,7 @@ class GrantLayerClient:
         json: Any = None,
         params: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
+        _retry_auth: bool = True,
     ) -> Any:
         headers = self._headers(extra_headers)
         try:
@@ -104,6 +120,14 @@ class GrantLayerClient:
             raise GrantLayerConnectionError(f"Connection failed: {exc}") from exc
         except httpx.TimeoutException as exc:
             raise GrantLayerConnectionError(f"Request timed out: {exc}") from exc
+
+        # Token refresh on 401: re-authenticate if we have stored credentials.
+        if response.status_code == 401 and _retry_auth and hasattr(self, "_operator_id") and hasattr(self, "_operator_secret"):
+            try:
+                self.authenticate(self._operator_id, self._operator_secret)  # type: ignore[attr-defined]
+                return self._request(method, path, json=json, params=params, extra_headers=extra_headers, _retry_auth=False)
+            except Exception:
+                pass
 
         return _parse_response(response)
 
@@ -128,6 +152,8 @@ class GrantLayerClient:
         data = self._req("POST", "/v1/auth/token", json={"operator_id": operator_id, "secret": secret})
         token: str = data["access_token"]
         self._token = token
+        self._operator_id = operator_id  # type: ignore[attr-defined]
+        self._operator_secret = secret  # type: ignore[attr-defined]
         return token
 
     # ── Grants ─────────────────────────────────────────────────────────────
@@ -213,6 +239,22 @@ class GrantLayerClient:
     def list_policy_requirements(self, **filters: Any) -> Any:
         return self._req("GET", "/v1/policy-requirements", params=filters or None)
 
+    # ── API Keys ────────────────────────────────────────────────────────────
+
+    def create_api_key(self, name: str, scopes: Optional[List[str]] = None, workspace_id: Optional[str] = None, expires_at: Optional[str] = None) -> dict:
+        body: Dict[str, Any] = {"name": name, "scopes": scopes or ["read_write"]}
+        if workspace_id:
+            body["workspace_id"] = workspace_id
+        if expires_at:
+            body["expires_at"] = expires_at
+        return self._req("POST", "/v1/api-keys", json=body)
+
+    def list_api_keys(self) -> list:
+        return self._req("GET", "/v1/api-keys")
+
+    def revoke_api_key(self, key_id: str) -> dict:
+        return self._req("DELETE", f"/v1/api-keys/{key_id}")
+
     # ── Admin (operators) ────────────────────────────────────────────────────
 
     def list_operators(self) -> list:
@@ -248,12 +290,29 @@ class AsyncGrantLayerClient:
         token: Optional[str] = None,
         timeout: float = 10.0,
         max_retries: int = 3,
+        _workspace_id: Optional[str] = None,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._token = token
         self._timeout = timeout
         self._max_retries = max_retries
         self._client: Optional[httpx.AsyncClient] = None
+        self._workspace_id = _workspace_id
+        self._operator_id: Optional[str] = None
+        self._operator_secret: Optional[str] = None
+
+    def with_workspace(self, workspace_id: str) -> "AsyncGrantLayerClient":
+        """Return a new client scoped to the given workspace_id."""
+        clone = AsyncGrantLayerClient(
+            base_url=self._base_url,
+            token=self._token,
+            timeout=self._timeout,
+            max_retries=self._max_retries,
+            _workspace_id=workspace_id,
+        )
+        clone._operator_id = self._operator_id
+        clone._operator_secret = self._operator_secret
+        return clone
 
     async def __aenter__(self) -> "AsyncGrantLayerClient":
         self._client = httpx.AsyncClient(base_url=self._base_url, timeout=self._timeout)
@@ -265,15 +324,30 @@ class AsyncGrantLayerClient:
             self._client = None
 
     def _headers(self) -> Dict[str, str]:
-        return {"Authorization": f"Bearer {self._token}"} if self._token else {}
+        headers: Dict[str, str] = {}
+        if self._token:
+            headers["Authorization"] = f"Bearer {self._token}"
+        if self._workspace_id:
+            headers["X-Workspace-ID"] = self._workspace_id
+        return headers
 
-    async def _request(self, method: str, path: str, *, json: Any = None, params: Optional[Dict[str, Any]] = None) -> Any:
+    async def _request(self, method: str, path: str, *, json: Any = None, params: Optional[Dict[str, Any]] = None, _retry_auth: bool = True) -> Any:
         assert self._client is not None, "Use as async context manager"
         last_exc: Optional[Exception] = None
         for attempt in range(max(1, self._max_retries)):
             try:
                 response = await self._client.request(method, path, json=json, params=params, headers=self._headers())
-                return _parse_response(response)
+                parsed = _parse_response(response)
+                return parsed
+            except GrantLayerAuthError as exc:
+                # Token refresh on 401: re-authenticate if we have stored credentials.
+                if _retry_auth and self._operator_id and self._operator_secret:
+                    try:
+                        await self.authenticate(self._operator_id, self._operator_secret)
+                        return await self._request(method, path, json=json, params=params, _retry_auth=False)
+                    except Exception:
+                        pass
+                raise exc
             except GrantLayerRateLimitError as exc:
                 last_exc = exc
                 if attempt < self._max_retries - 1:
@@ -282,13 +356,15 @@ class AsyncGrantLayerClient:
                 last_exc = exc
                 if attempt < self._max_retries - 1:
                     await asyncio.sleep(2 ** attempt)
-            except (GrantLayerAuthError, GrantLayerNotFoundError, GrantLayerValidationError):
+            except (GrantLayerNotFoundError, GrantLayerValidationError):
                 raise
         raise last_exc  # type: ignore[misc]
 
     async def authenticate(self, operator_id: str, secret: str) -> str:
-        data = await self._request("POST", "/v1/auth/token", json={"operator_id": operator_id, "secret": secret})
+        data = await self._request("POST", "/v1/auth/token", json={"operator_id": operator_id, "secret": secret}, _retry_auth=False)
         self._token = data["access_token"]
+        self._operator_id = operator_id
+        self._operator_secret = secret
         return self._token
 
     async def create_grant(self, **kwargs: Any) -> dict:
@@ -332,6 +408,22 @@ class AsyncGrantLayerClient:
 
     async def delete_webhook(self, webhook_id: str) -> None:
         await self._request("DELETE", f"/v1/webhooks/{webhook_id}")
+
+    # ── API Keys ────────────────────────────────────────────────────────────
+
+    async def create_api_key(self, name: str, scopes: Optional[List[str]] = None, workspace_id: Optional[str] = None, expires_at: Optional[str] = None) -> dict:
+        body: Dict[str, Any] = {"name": name, "scopes": scopes or ["read_write"]}
+        if workspace_id:
+            body["workspace_id"] = workspace_id
+        if expires_at:
+            body["expires_at"] = expires_at
+        return await self._request("POST", "/v1/api-keys", json=body)
+
+    async def list_api_keys(self) -> list:
+        return await self._request("GET", "/v1/api-keys")
+
+    async def revoke_api_key(self, key_id: str) -> dict:
+        return await self._request("DELETE", f"/v1/api-keys/{key_id}")
 
     async def list_operators(self) -> list:
         return await self._request("GET", "/v1/admin/operators")

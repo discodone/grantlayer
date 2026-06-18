@@ -37,7 +37,8 @@ def _jwt() -> str:
     os.environ.pop("GRANTLAYER_JWT_PUBLIC_KEY", None)
     from backend.src.api.auth_jwt import encode_token
     return encode_token(
-        {"sub": "tmpl-user", "role": "grant_admin", "tenant_id": "t1", "workspace_id": "ws-1"},
+        {"sub": "tmpl-user", "role": "grant_admin", "tenant_id": "t1", "workspace_id": "ws-1",
+         "iss": "grantlayer", "aud": "grantlayer-api"},
         _TEST_SECRET,
     )
 

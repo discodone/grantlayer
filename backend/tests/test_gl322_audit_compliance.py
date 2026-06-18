@@ -38,7 +38,8 @@ def _jwt() -> str:
     from backend.src.api.auth_jwt import encode_token
     # No sub → legacy demo mode (no workspace DB lookup required)
     return encode_token(
-        {"role": "auditor", "tenant_id": "demo"},
+        {"role": "auditor", "tenant_id": "demo",
+         "iss": "grantlayer", "aud": "grantlayer-api"},
         _TEST_SECRET,
     )
 

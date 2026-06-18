@@ -415,7 +415,7 @@ class TestAdminRouterIntegration(_IntegrationBase):
     def test_list_operators_with_admin_token(self):
         resp = self.client.get(
             "/v1/admin/operators",
-            headers=self.admin_header,
+            headers=self.jwt_header,
         )
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), list)
@@ -423,7 +423,7 @@ class TestAdminRouterIntegration(_IntegrationBase):
     def test_create_operator_returns_201(self):
         resp = self.client.post(
             "/v1/admin/operators",
-            headers=self.admin_header,
+            headers=self.jwt_header,
             json={"name": "Test Operator GL301", "tenantId": "t1", "role": "owner"},
         )
         self.assertEqual(resp.status_code, 201)

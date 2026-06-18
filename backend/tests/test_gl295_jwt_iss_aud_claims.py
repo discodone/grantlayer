@@ -53,6 +53,7 @@ def _clear_jwt_env(**overrides: str):
         "GRANTLAYER_JWT_PUBLIC_KEY",
         "GRANTLAYER_JWT_ISSUER",
         "GRANTLAYER_JWT_AUDIENCE",
+        "GRANTLAYER_JWT_STRICT_CLAIMS",
     )
     saved = {k: os.environ.get(k) for k in _jwt_keys}
     for k in _jwt_keys:
@@ -199,13 +200,15 @@ class TestValidateJwtHeaderIssAud(unittest.TestCase):
             payload.update(extra)
         return encode_token(payload, _HS256_SECRET)
 
-    def _call_validate(self, token: str, issuer: str = _ISSUER, audience: str = _AUDIENCE) -> tuple:
-        with _clear_jwt_env(
+    def _call_validate(self, token: str, issuer: str = _ISSUER, audience: str = _AUDIENCE, strict: bool = True) -> tuple:
+        overrides: dict = dict(
             GRANTLAYER_JWT_ALGORITHM="HS256",
             GRANTLAYER_JWT_SECRET=_HS256_SECRET,
             GRANTLAYER_JWT_ISSUER=issuer,
             GRANTLAYER_JWT_AUDIENCE=audience,
-        ):
+            GRANTLAYER_JWT_STRICT_CLAIMS="true" if strict else "false",
+        )
+        with _clear_jwt_env(**overrides):
             from backend.src.api import auth_jwt
             importlib.reload(auth_jwt)
             import backend.src.core.config as cfg
@@ -233,9 +236,9 @@ class TestValidateJwtHeaderIssAud(unittest.TestCase):
         self.assertEqual(payload["errorCode"], "jwt_invalid")
 
     def test_old_token_without_iss_aud_accepted(self):
-        """Backward compat: tokens without iss/aud must still be accepted."""
+        """Backward compat: tokens without iss/aud accepted when strict=false."""
         token = self._make_hs256_token()  # no iss, no aud
-        ok, status, payload = self._call_validate(token)
+        ok, status, payload = self._call_validate(token, strict=False)
         self.assertTrue(ok)
         self.assertEqual(status, 200)
 
@@ -319,13 +322,14 @@ class TestValidateJwtHeaderIssAudRS256(unittest.TestCase):
         self.assertEqual(payload["errorCode"], "jwt_invalid")
 
     def test_rs256_old_token_without_iss_aud_accepted(self):
-        """Backward compat: RS256 tokens without iss/aud still work."""
+        """Backward compat: RS256 tokens without iss/aud accepted when strict=false."""
         token = self._make_rs256_token()
         with _clear_jwt_env(
             GRANTLAYER_JWT_ALGORITHM="RS256",
             GRANTLAYER_JWT_PUBLIC_KEY=self._pub_b64,
             GRANTLAYER_JWT_ISSUER=_ISSUER,
             GRANTLAYER_JWT_AUDIENCE=_AUDIENCE,
+            GRANTLAYER_JWT_STRICT_CLAIMS="false",
         ):
             from backend.src.api import auth_jwt
             importlib.reload(auth_jwt)

@@ -178,7 +178,11 @@ class TestValidateJwtHeader(unittest.TestCase):
 
     def test_valid_token_ok(self):
         with self._with_secret(self._SECRET):
-            token = encode_token({"sub": "dev", "tenant_id": "demo"}, self._SECRET)
+            token = encode_token(
+                {"sub": "dev", "tenant_id": "demo",
+                 "iss": "grantlayer", "aud": "grantlayer-api"},
+                self._SECRET,
+            )
             ok, status, payload = validate_jwt_header(f"Bearer {token}")
         self.assertTrue(ok)
         self.assertEqual(status, 200)
@@ -187,7 +191,10 @@ class TestValidateJwtHeader(unittest.TestCase):
 
     def test_missing_tenant_rejected(self):
         with self._with_secret(self._SECRET):
-            token = encode_token({"sub": "dev"}, self._SECRET)
+            token = encode_token(
+                {"sub": "dev", "iss": "grantlayer", "aud": "grantlayer-api"},
+                self._SECRET,
+            )
             ok, status, payload = validate_jwt_header(f"Bearer {token}")
         self.assertFalse(ok)
         self.assertEqual(status, 400)

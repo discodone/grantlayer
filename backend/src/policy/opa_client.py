@@ -11,6 +11,7 @@ import os
 from typing import Any, Optional
 
 import httpx
+from fastapi import HTTPException
 
 logger = logging.getLogger("grantlayer.opa")
 
@@ -61,17 +62,33 @@ async def evaluate_policy(
             result = response.json()
             return bool(result.get("result", False))
     except httpx.ConnectError:
-        logger.warning(
+        logger.error(
             "opa_unreachable",
             extra={"opa_url": opa_url, "action": action},
         )
-        return True  # graceful fallback: allow when OPA unreachable
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "policy_engine_unavailable",
+                "errorCode": "policy_engine_unavailable",
+                "reason": "OPA policy engine is configured but unreachable. Request denied.",
+            },
+        )
+    except HTTPException:
+        raise
     except Exception as exc:
-        logger.warning(
+        logger.error(
             "opa_error",
             extra={"opa_url": opa_url, "action": action, "error": str(exc)},
         )
-        return True  # graceful fallback
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "policy_engine_unavailable",
+                "errorCode": "policy_engine_unavailable",
+                "reason": "OPA policy engine returned an error. Request denied.",
+            },
+        )
 
 
 def evaluate_policy_sync(

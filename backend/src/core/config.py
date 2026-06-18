@@ -146,6 +146,19 @@ GRANTLAYER_BOOTSTRAP_OPERATOR_NAME: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATO
 GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE", "owner")
 
 # ──────────────────────────────────────────────────────────────
+# Email / Notification Settings
+# ──────────────────────────────────────────────────────────────
+
+# HMAC key for unsubscribe tokens.  Must be set in production; the default
+# "change-me-unsub" is rejected by startup_errors() in production-like modes.
+GRANTLAYER_UNSUBSCRIBE_SECRET: str = _env_str("GRANTLAYER_UNSUBSCRIBE_SECRET", "change-me-unsub")
+
+_UNSAFE_UNSUBSCRIBE_SECRETS: frozenset = frozenset({
+    "change-me-unsub", "change-me", "unsub", "secret", "changeme",
+    "placeholder", "default", "example", "sample",
+})
+
+# ──────────────────────────────────────────────────────────────
 # CORS Origin Allowlist
 # ──────────────────────────────────────────────────────────────
 
@@ -192,10 +205,10 @@ JWT_ISSUER: str = _env_str("GRANTLAYER_JWT_ISSUER", "grantlayer")
 JWT_AUDIENCE: str = _env_str("GRANTLAYER_JWT_AUDIENCE", "grantlayer-api")
 
 # When true: tokens MISSING iss/aud claims are rejected (401) when the server
-# has JWT_ISSUER / JWT_AUDIENCE configured.  Default false preserves backward
-# compat with tokens issued before iss/aud injection was introduced.
-# Enable in new deployments to close the cross-environment token replay window.
-JWT_STRICT_CLAIMS: bool = _env_bool("GRANTLAYER_JWT_STRICT_CLAIMS", default=False)
+# has JWT_ISSUER / JWT_AUDIENCE configured.  Default true for new deployments.
+# Set GRANTLAYER_JWT_STRICT_CLAIMS=false only for backward compat with tokens
+# issued before iss/aud injection was introduced.
+JWT_STRICT_CLAIMS: bool = _env_bool("GRANTLAYER_JWT_STRICT_CLAIMS", default=True)
 
 # ──────────────────────────────────────────────────────────────
 # OIDC / External Identity Provider
@@ -388,6 +401,17 @@ def startup_errors() -> list[str]:
             "Redis is required in production-like modes for distributed rate limiting. "
             "Set GRANTLAYER_REDIS_URL to a valid Redis connection URL."
         )
+
+    # Unsubscribe secret must not be the default placeholder in production-like modes.
+    if RUNTIME_MODE in PRODUCTION_LIKE_MODES:
+        if (
+            not GRANTLAYER_UNSUBSCRIBE_SECRET
+            or GRANTLAYER_UNSUBSCRIBE_SECRET in _UNSAFE_UNSUBSCRIBE_SECRETS
+        ):
+            errs.append(
+                "ERROR: GRANTLAYER_UNSUBSCRIBE_SECRET is not set or uses an unsafe placeholder. "
+                "Set a strong, unique unsubscribe secret to protect HMAC-signed unsubscribe tokens."
+            )
 
     errs.extend(external_identity_startup_errors(os.environ, RUNTIME_MODE))
 

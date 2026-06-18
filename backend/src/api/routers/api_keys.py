@@ -105,7 +105,7 @@ async def create_api_key(
         reason=f"API key '{body.name}' created",
     )
     try:
-        append_event(audit_evt)
+        await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
     except Exception:
         pass
 
@@ -191,11 +191,72 @@ async def revoke_api_key(
         reason=f"API key '{row['name']}' revoked",
     )
     try:
-        append_event(audit_evt)
+        await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
     except Exception:
         pass
 
     return {"id": key_id, "revoked_at": now, "status": "revoked"}
+
+
+def resolve_api_key_sync(raw_key: str) -> Optional[dict[str, Any]]:
+    """Synchronous API key resolution for use in the sync auth chain.
+
+    Looks up the key via the SQLAlchemy sync engine (same pattern as audit_log).
+    Returns a payload dict on success, None if the key is invalid/revoked/expired.
+    """
+    from sqlalchemy import text as _text
+
+    from ...core.db import get_engine
+
+    if not raw_key.startswith(_KEY_PREFIX):
+        return None
+
+    key_hash = _hash_key(raw_key)
+    now = datetime.now(timezone.utc).isoformat()
+
+    try:
+        with get_engine().connect() as conn:
+            result = conn.execute(
+                _text(
+                    "SELECT ak.id, ak.workspace_id, ak.user_id, ak.scopes, "
+                    "ak.expires_at, ak.revoked_at, "
+                    "COALESCE(w.tenant_id, ak.workspace_id) AS tenant_id "
+                    "FROM api_keys ak "
+                    "LEFT JOIN workspaces w ON w.id = ak.workspace_id "
+                    "WHERE ak.key_hash = :kh"
+                ),
+                {"kh": key_hash},
+            )
+            row = result.mappings().first()
+            if row is None:
+                return None
+            if row["revoked_at"] is not None:
+                return None
+            if row["expires_at"] is not None and row["expires_at"] < now:
+                return None
+            key_id = row["id"]
+            workspace_id = row["workspace_id"]
+            tenant_id = row["tenant_id"]
+            user_id = row["user_id"]
+            scopes = json.loads(row["scopes"] or "[]")
+
+            conn.execute(
+                _text("UPDATE api_keys SET last_used_at = :now WHERE id = :id"),
+                {"now": now, "id": key_id},
+            )
+            conn.commit()
+
+        return {
+            "sub": user_id,
+            "workspace_id": workspace_id,
+            "tenant_id": tenant_id,
+            "api_key_id": key_id,
+            "scopes": scopes,
+            "auth_method": "api_key",
+            "role": "api_key",
+        }
+    except Exception:
+        return None
 
 
 async def resolve_api_key_auth(

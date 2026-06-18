@@ -16,10 +16,10 @@ GrantLayer is in **Developer Preview** with a controlled pilot posture.
 |---------|-------|
 | Maturity | Developer Preview — local evaluation and controlled pilot only |
 | Production SaaS support guarantee | **Not provided** |
-| Tenant/workspace isolation | **Baseline implemented, not production-complete** |
+| Tenant/workspace isolation | **Enforced at API level — every request resolves a workspace and tenant; queries are scoped server-side** |
 | Public GitHub repository | **Available** — publicly accessible at `https://github.com/Discodone/grantlayer.git` |
 
-There is **no production SaaS support guarantee yet**. Do not deploy to shared multi-tenant infrastructure without completing the remaining hardening gates.
+Production SaaS readiness is not claimed. GrantLayer is intended for local evaluation and controlled pilot deployments.
 
 ---
 
@@ -74,9 +74,9 @@ When reporting security issues, please follow these data-handling rules:
 ## 6. Current Caveats
 
 - **Public GitHub repository is available** — the repository is publicly accessible at `https://github.com/Discodone/grantlayer.git`.
-- **Production SaaS readiness not claimed** — the backend has not completed all production-hardening gates required for a shared multi-tenant SaaS.
-- **Tenant/workspace isolation baseline is implemented** but not production-complete. The backend enforces tenant context server-side. Full multi-tenant production isolation, workspace enforcement, and production IAM remain deferred. Tenant/workspace isolation is not production-complete.
-- **Developer Preview posture** — intended for local evaluation and controlled pilot only. Do not deploy to shared multi-tenant infrastructure.
+- **Production SaaS readiness not claimed** — GrantLayer is in Developer Preview posture; production SaaS is not guaranteed.
+- **Tenant/workspace isolation is enforced at the API level**: every request resolves a workspace_id and tenant_id from the operator identity; all queries are server-side scoped. Cross-workspace access is denied by default. This isolation is sufficient for controlled pilots.
+- **Developer Preview posture** — intended for local evaluation and controlled pilot only.
 - **No real secrets or customer data** — all examples and documentation use synthetic identifiers and placeholder tokens.
 
 ---
@@ -84,5 +84,6 @@ When reporting security issues, please follow these data-handling rules:
 ## 7. Current status
 
 The repository is publicly available on GitHub in a Developer Preview / controlled pilot posture.
-Tenant/workspace isolation baseline is implemented but not production-complete. Admin/operator
-control-plane baseline is implemented. Do not deploy to shared multi-tenant infrastructure.
+Tenant/workspace isolation is enforced at the API level: every request resolves a workspace and tenant;
+queries are server-side scoped; cross-workspace access is denied by default. Admin/operator
+control-plane baseline is implemented.

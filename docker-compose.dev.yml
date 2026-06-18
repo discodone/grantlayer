@@ -1,0 +1,43 @@
+# GrantLayer local development compose — SQLite + in-memory rate limiter.
+#
+# No PostgreSQL, no Redis required.  For rapid local iteration only.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d
+#   curl http://localhost:8765/health
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: grantlayer-api-dev
+    ports:
+      - "8765:8765"
+    environment:
+      - GRANTLAYER_RUNTIME_MODE=local
+      - GRANTLAYER_HOST=0.0.0.0
+      - GRANTLAYER_PORT=8765
+      - GRANTLAYER_ADMIN_TOKEN=${GRANTLAYER_ADMIN_TOKEN:-dev-token-change-me}
+      - GRANTLAYER_REQUIRE_ADMIN_TOKEN=false
+      - GRANTLAYER_JWT_SECRET=${GRANTLAYER_JWT_SECRET:-dev-jwt-secret-change-me}
+      # SQLite — no DATABASE_URL needed; GRANTLAYER_DB controls the file path.
+      - GRANTLAYER_DATABASE_URL=
+      - GRANTLAYER_DB=/app/data/grantlayer-dev.db
+      # No Redis in dev — in-process sliding-window fallback is used.
+      - GRANTLAYER_REDIS_URL=
+      - GRANTLAYER_LOG_LEVEL=DEBUG
+      - GRANTLAYER_ENABLE_OPERATOR_MODEL=true
+      - GRANTLAYER_ENABLE_DEMO_ENDPOINTS=true
+    volumes:
+      - grantlayer-dev-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8765/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  grantlayer-dev-data:

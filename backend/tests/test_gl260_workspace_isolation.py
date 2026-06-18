@@ -67,6 +67,8 @@ def _make_jwt_token(op_id: str, role: str = "owner") -> str:
         "sub": op_id,
         "tenant_id": _TENANT,
         "role": role,
+        "iss": "grantlayer",
+        "aud": "grantlayer-api",
     }
     return encode_token(payload, _JWT_SECRET, ttl_hours=1)
 

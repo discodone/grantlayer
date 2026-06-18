@@ -38,6 +38,46 @@ from ..grants.grant_service import AsyncGrantService, GrantService
 from .auth_jwt import validate_jwt_header
 
 
+async def async_resolve_auth_and_workspace(
+    authorization: Optional[str],
+    required_roles: list[str],
+    db: "AsyncSession",
+    workspace_id: Optional[str] = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Async version of resolve_auth_and_workspace that uses resolve_api_key_auth().
+
+    Use this in async route handlers so API key DB lookups avoid the sync engine.
+    Falls through to the same OIDC/JWT/legacy chain for non-API-key requests.
+    """
+    # 1. API key auth — async path using resolve_api_key_auth().
+    if authorization:
+        scheme, _, raw_token = authorization.partition(" ")
+        if scheme.lower() == "bearer" and raw_token.strip().startswith("gl_live_"):
+            from .routers.api_keys import resolve_api_key_auth
+            api_payload = await resolve_api_key_auth(raw_token.strip(), db)
+            if api_payload is None:
+                raise HTTPException(
+                    status_code=401,
+                    detail={
+                        "error": "invalid_api_key",
+                        "errorCode": "invalid_api_key",
+                        "reason": "API key is invalid, revoked, or expired.",
+                    },
+                )
+            effective_workspace = workspace_id or api_payload["workspace_id"]
+            ws_ctx: dict[str, Any] = {
+                "workspace_id": effective_workspace,
+                "tenant_id": api_payload.get("tenant_id", effective_workspace),
+                "workspace_member_role": None,
+                "cross_workspace_access": False,
+                "resolution_mode": "api_key",
+            }
+            return api_payload, ws_ctx
+
+    # 2-4: delegate to sync chain (OIDC/JWT/legacy — no DB needed there).
+    return resolve_auth_and_workspace(authorization, required_roles, workspace_id)
+
+
 def resolve_auth_and_workspace(
     authorization: Optional[str],
     required_roles: list[str],
@@ -46,29 +86,57 @@ def resolve_auth_and_workspace(
     """Authenticate and resolve workspace context.
 
     Auth priority (first match wins):
-    1. OIDC — when GRANTLAYER_ENABLE_OIDC=true and fully configured.
-    2. Internal JWT — when GRANTLAYER_JWT_SECRET or GRANTLAYER_JWT_PUBLIC_KEY is set.
-    3. Legacy static-token / operator-model.
+    1. API key  — when Authorization header contains a gl_live_* key.
+    2. OIDC     — when GRANTLAYER_ENABLE_OIDC=true and fully configured.
+    3. Internal JWT — when GRANTLAYER_JWT_SECRET or GRANTLAYER_JWT_PUBLIC_KEY is set.
+    4. Legacy static-token / operator-model.
 
     Returns (auth_ctx, ws_ctx).  Raises HTTPException on failure.
     """
     payload: dict[str, Any]
 
-    # 1. OIDC validation (externally-issued JWTs from Keycloak/Okta/Azure AD).
+    # 1. API key auth (Bearer gl_live_* tokens bypass JWT/OIDC pipeline).
+    if authorization:
+        scheme, _, raw_token = authorization.partition(" ")
+        if scheme.lower() == "bearer" and raw_token.strip().startswith("gl_live_"):
+            from .routers.api_keys import resolve_api_key_sync
+            api_payload = resolve_api_key_sync(raw_token.strip())
+            if api_payload is None:
+                raise HTTPException(
+                    status_code=401,
+                    detail={
+                        "error": "invalid_api_key",
+                        "errorCode": "invalid_api_key",
+                        "reason": "API key is invalid, revoked, or expired.",
+                    },
+                )
+            # API keys carry an explicit workspace_id — construct ws_ctx directly
+            # without going through membership resolution.
+            effective_workspace = workspace_id or api_payload["workspace_id"]
+            ws_ctx: dict[str, Any] = {
+                "workspace_id": effective_workspace,
+                "tenant_id": api_payload["tenant_id"],
+                "workspace_member_role": None,
+                "cross_workspace_access": False,
+                "resolution_mode": "api_key",
+            }
+            return api_payload, ws_ctx
+
+    # 2. OIDC validation (externally-issued JWTs from Keycloak/Okta/Azure AD).
     oidc_ok, oidc_status, oidc_result = validate_oidc_header(authorization)
     if oidc_ok is not None:
         if not oidc_ok:
             raise HTTPException(status_code=oidc_status or 401, detail=oidc_result)
         payload = cast(dict[str, Any], oidc_result)
     else:
-        # 2. Internal JWT validation.
+        # 3. Internal JWT validation.
         jwt_ok, jwt_status, jwt_result = validate_jwt_header(authorization)
         if jwt_ok is not None:
             if not jwt_ok:
                 raise HTTPException(status_code=jwt_status or 401, detail=jwt_result)
             payload = cast(dict[str, Any], jwt_result)
         else:
-            # 3. Legacy static-token / operator-model auth.
+            # 4. Legacy static-token / operator-model auth.
             ok, http_status, payload = check_auth(authorization, required_roles=required_roles)
             if not ok:
                 raise HTTPException(status_code=http_status, detail=payload)
@@ -92,11 +160,25 @@ def resolve_auth_and_workspace(
 
 
 def require_admin(authorization: Optional[str]) -> dict:
-    """Check admin token. Returns payload dict or raises HTTPException."""
+    """Check admin token or JWT admin role. Returns payload dict or raises HTTPException."""
+    # Prefer JWT when configured — extracts real caller identity and tenant.
+    jwt_ok, jwt_status, jwt_result = validate_jwt_header(authorization)
+    if jwt_ok is not None:
+        if not jwt_ok:
+            raise HTTPException(status_code=jwt_status or 401, detail=jwt_result)
+        jwt_payload = cast(dict[str, Any], jwt_result)
+        if jwt_payload.get("role") not in ("owner", "grant_admin", "admin"):
+            raise HTTPException(
+                status_code=403,
+                detail={"error": "Forbidden", "errorCode": "forbidden", "reason": "Admin role required."},
+            )
+        return jwt_payload
+
+    # Fall back to admin token (returns {} on success — no tenant context).
     ok, status, payload = check_admin_token(authorization)
     if not ok:
         raise HTTPException(status_code=status, detail=payload)
-    return {"tenant_id": "demo"}
+    return payload
 
 
 def get_grant_repo(db: Session = Depends(get_db)) -> IGrantRepository:

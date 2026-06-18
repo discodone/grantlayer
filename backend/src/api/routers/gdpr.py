@@ -77,7 +77,7 @@ async def export_user_data(
         reason=f"GDPR data export requested for user {user_id}",
     )
     try:
-        append_event(audit_evt)
+        await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
     except Exception:
         pass
 
@@ -136,7 +136,7 @@ async def erase_user_data(
         reason=f"GDPR erasure completed for user {user_id}; PII anonymized, tokens revoked",
     )
     try:
-        append_event(audit_evt)
+        await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
     except Exception:
         pass
 
