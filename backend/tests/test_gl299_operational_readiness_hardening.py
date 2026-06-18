@@ -180,8 +180,9 @@ class TestGeneric500Handler(unittest.TestCase):
         self.assertEqual(resp.status_code, 500)
         body = resp.json()
         self.assertIn("error", body)
-        self.assertEqual(body["error"], "internal_server_error")
-        self.assertIn("message", body)
+        # GL-339: error body uses {error, errorCode, reason} not {error, message}
+        self.assertIn("errorCode", body)
+        self.assertIn("reason", body)
 
     def test_unhandled_exception_no_stack_trace_in_response(self):
         """Stack trace must NOT appear in the response body in test mode."""
