@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 from ..audit import audit_log as _audit_log
 from ..core.models import AuditEvent, Grant, GrantRequest
 from ..core.repositories import IGrantRepository, IGrantRequestRepository
+from ..core.webhook_dispatcher import dispatch as _webhook_dispatch
 from ..grants import grants as _grants_module
 
 if TYPE_CHECKING:
@@ -273,7 +274,22 @@ class AsyncGrantRequestService:
         tenant_id: str,
         workspace_id: str,
     ) -> GrantRequest:
-        return await self._repo.create(request, tenant_id, workspace_id)
+        created = await self._repo.create(request, tenant_id, workspace_id)
+        await _webhook_dispatch(
+            "grant_request.created",
+            {
+                "id": created.id,
+                "subject_id": created.subject_id,
+                "role": created.role,
+                "action": created.action,
+                "resource": created.resource,
+                "requested_by": created.requested_by,
+                "reason": created.reason,
+            },
+            tenant_id=tenant_id,
+            workspace_id=workspace_id,
+        )
+        return created
 
     async def approve_request(
         self,
@@ -331,6 +347,12 @@ class AsyncGrantRequestService:
         updated = await self._repo.get(request_id)
         if updated is None:
             raise ValueError(f"Grant request {request_id} not found after approval")
+        await _webhook_dispatch(
+            "grant_request.approved",
+            {"id": request_id, "grant_id": grant.id, "approved_by": operator_id},
+            tenant_id=tenant_id,
+            workspace_id=workspace_id,
+        )
         return updated, grant
 
     async def deny_request(
@@ -369,6 +391,12 @@ class AsyncGrantRequestService:
         updated = await self._repo.get(request_id)
         if updated is None:
             raise ValueError(f"Grant request {request_id} not found after denial")
+        await _webhook_dispatch(
+            "grant_request.denied",
+            {"id": request_id, "denied_by": operator_id, "reason": reason},
+            tenant_id=tenant_id,
+            workspace_id=workspace_id,
+        )
         return updated
 
     async def revoke_request(

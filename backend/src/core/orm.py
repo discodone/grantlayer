@@ -324,3 +324,24 @@ class WorkspaceInvite(Base):
         Index("idx_workspace_invites_workspace_id", "workspace_id"),
         Index("idx_workspace_invites_email_hash", "email_hash"),
     )
+
+
+# ── Webhook tables ────────────────────────────────────────────────────────────
+
+class WebhookSubscription(Base):
+    __tablename__ = "webhook_subscriptions"
+
+    id = Column(Text, primary_key=True)
+    tenant_id = Column(Text, nullable=False)
+    workspace_id = Column(Text)
+    url = Column(Text, nullable=False)
+    events = Column(Text, nullable=False)
+    secret = Column(Text, nullable=False)
+    active = Column(Integer, nullable=False, default=1)
+    created_at = Column(Text, nullable=False)
+    created_by = Column(Text, nullable=False)
+
+    __table_args__ = (
+        Index("idx_webhook_subscriptions_tenant_id", "tenant_id"),
+        Index("idx_webhook_subscriptions_active", "tenant_id", "active"),
+    )
