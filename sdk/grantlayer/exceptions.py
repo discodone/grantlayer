@@ -35,5 +35,13 @@ class GrantLayerValidationError(GrantLayerHTTPError):
     """Raised on 400/422 responses."""
 
 
+class GrantLayerRateLimitError(GrantLayerHTTPError):
+    """Raised on 429 Too Many Requests."""
+
+    def __init__(self, status_code: int, detail: Any = None, retry_after: int = 60) -> None:
+        self.retry_after = retry_after
+        super().__init__(status_code, detail)
+
+
 class GrantLayerConnectionError(GrantLayerError):
     """Raised when the HTTP connection fails."""
