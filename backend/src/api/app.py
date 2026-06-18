@@ -256,6 +256,16 @@ def create_app() -> FastAPI:
             content={"error": "Not Implemented", "errorCode": "not_implemented", "reason": "Feature not available."},
         )
 
+    @app.exception_handler(503)
+    async def _service_unavailable(request: Request, exc):
+        if isinstance(getattr(exc, "detail", None), dict):
+            return JSONResponse(status_code=503, content=exc.detail)
+        return JSONResponse(
+            status_code=503,
+            content={"error": "service_unavailable", "errorCode": "service_unavailable",
+                     "reason": "Service is temporarily unavailable."},
+        )
+
     @app.exception_handler(Exception)
     async def _internal_server_error(request: Request, exc: Exception):
         # Let HTTPExceptions propagate through their own handlers

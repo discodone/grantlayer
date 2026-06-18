@@ -96,7 +96,7 @@ def evaluate_policy_sync(
     subject: dict[str, Any],
     resource: dict[str, Any],
 ) -> bool:
-    """Synchronous OPA evaluation (uses httpx sync client)."""
+    """Synchronous OPA evaluation (uses httpx sync client). Fail-closed: raises 503 if unreachable."""
     opa_url = _get_opa_url()
     if not opa_url:
         return True
@@ -119,8 +119,15 @@ def evaluate_policy_sync(
             result = response.json()
             return bool(result.get("result", False))
     except Exception as exc:
-        logger.warning(
+        logger.error(
             "opa_error_sync",
             extra={"opa_url": opa_url, "action": action, "error": str(exc)},
         )
-        return True  # graceful fallback
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "policy_engine_unavailable",
+                "errorCode": "policy_engine_unavailable",
+                "reason": "OPA policy engine is configured but unreachable. Request denied.",
+            },
+        )
