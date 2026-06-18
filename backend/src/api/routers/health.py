@@ -84,16 +84,11 @@ async def health(request: Request):
     response_model=ReadinessResponse,
     responses={503: {"model": ReadinessResponse}},
 )
-async def readiness():
+async def readiness(request: Request):
+    errors: list[str] = []
+
     try:
         runtime_info = describe_runtime_config()
-        return ReadinessResponse(
-            status="ready",
-            service="grantlayer",
-            checkType="readiness",
-            runtimeMode=runtime_info.get("runtimeMode"),
-            isProductionLike=runtime_info.get("isProductionLike"),
-        )
     except ValueError:
         return JSONResponse(
             status_code=503,
@@ -104,3 +99,41 @@ async def readiness():
                 "errorCode": "RUNTIME_CONFIG_INVALID",
             },
         )
+
+    # Probe DB connectivity
+    try:
+        with get_engine().connect() as conn:
+            conn.execute(text("SELECT 1"))
+        db_ok = True
+    except Exception as exc:
+        db_ok = False
+        errors.append(f"db: {exc}")
+
+    # Probe Redis connectivity
+    limiter = getattr(request.app.state, "auth_rate_limiter", None)
+    redis_ok = True
+    if limiter is not None:
+        redis_status = getattr(limiter, "redis_status", "disabled")
+        if redis_status not in ("ok", "disabled"):
+            redis_ok = False
+            errors.append(f"redis: {redis_status}")
+
+    if not db_ok or not redis_ok:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "not_ready",
+                "service": "grantlayer",
+                "checkType": "readiness",
+                "errors": errors,
+                "errorCode": "DEPENDENCY_UNAVAILABLE",
+            },
+        )
+
+    return ReadinessResponse(
+        status="ready",
+        service="grantlayer",
+        checkType="readiness",
+        runtimeMode=runtime_info.get("runtimeMode"),
+        isProductionLike=runtime_info.get("isProductionLike"),
+    )
