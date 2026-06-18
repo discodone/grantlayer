@@ -70,7 +70,7 @@ class TestWorkerSettings(unittest.TestCase):
 
 class TestQueueHelpers(unittest.TestCase):
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_enqueue_job_returns_none_when_redis_unavailable(self):
         from backend.src.workers.queue import enqueue_job
@@ -92,7 +92,7 @@ class TestQueueHelpers(unittest.TestCase):
 
 class TestJobFunctions(unittest.TestCase):
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_webhook_delivery_missing_subscription(self):
         from backend.src.workers.jobs import webhook_delivery
