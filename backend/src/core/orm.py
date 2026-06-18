@@ -328,6 +328,28 @@ class WorkspaceInvite(Base):
 
 # ── Webhook tables ────────────────────────────────────────────────────────────
 
+class WebhookDelivery(Base):
+    __tablename__ = "webhook_deliveries"
+
+    id = Column(Text, primary_key=True)
+    webhook_id = Column(Text, nullable=False)
+    tenant_id = Column(Text, nullable=False)
+    event_type = Column(Text, nullable=False)
+    payload = Column(Text, nullable=False)
+    status = Column(Text, nullable=False)
+    http_status = Column(Integer)
+    error = Column(Text)
+    attempt = Column(Integer, nullable=False, default=1)
+    created_at = Column(Text, nullable=False)
+    delivered_at = Column(Text)
+
+    __table_args__ = (
+        Index("idx_webhook_deliveries_webhook_id", "webhook_id"),
+        Index("idx_webhook_deliveries_tenant_id", "tenant_id"),
+        Index("idx_webhook_deliveries_created_at", "created_at"),
+    )
+
+
 class WebhookSubscription(Base):
     __tablename__ = "webhook_subscriptions"
 

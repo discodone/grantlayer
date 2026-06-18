@@ -22,15 +22,21 @@ from typing import Any, Dict, List, Optional
 
 _logger = logging.getLogger("grantlayer.webhooks")
 
-WEBHOOK_EVENTS = frozenset(
-    {
-        "grant.created",
-        "grant.revoked",
-        "grant_request.created",
-        "grant_request.approved",
-        "grant_request.denied",
-    }
-)
+# Import canonical event set from the webhooks module; fall back to a minimal
+# set if the module is not yet importable (e.g. during migration bootstrap).
+try:
+    from ..webhooks.events import ALL_WEBHOOK_EVENTS as _ALL
+    WEBHOOK_EVENTS: frozenset = _ALL
+except ImportError:  # pragma: no cover
+    WEBHOOK_EVENTS = frozenset(
+        {
+            "grant.created",
+            "grant.revoked",
+            "grant_request.created",
+            "grant_request.approved",
+            "grant_request.denied",
+        }
+    )
 
 _DELIVERY_TIMEOUT = 10  # seconds
 _MAX_WEBHOOK_RETRIES = 3
