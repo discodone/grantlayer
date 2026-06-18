@@ -114,9 +114,9 @@ async def create_api_key(
         "key": raw_key,  # shown ONCE only
         "name": body.name,
         "scopes": body.scopes,
-        "workspace_id": workspace_id,
-        "expires_at": body.expires_at,
-        "created_at": now,
+        "workspaceId": workspace_id,
+        "expiresAt": body.expires_at,
+        "createdAt": now,
     }
 
 
@@ -141,7 +141,18 @@ async def list_api_keys(
     for r in rows:
         d = dict(r)
         d["scopes"] = json.loads(d.get("scopes") or "[]")
-        out.append(d)
+        # Normalize to camelCase for external response
+        out.append({
+            "id": d.get("id"),
+            "name": d.get("name"),
+            "scopes": d["scopes"],
+            "workspaceId": d.get("workspace_id"),
+            "userId": d.get("user_id"),
+            "expiresAt": d.get("expires_at"),
+            "lastUsedAt": d.get("last_used_at"),
+            "createdAt": d.get("created_at"),
+            "revokedAt": d.get("revoked_at"),
+        })
     return out
 
 
@@ -195,7 +206,7 @@ async def revoke_api_key(
     except Exception:
         pass
 
-    return {"id": key_id, "revoked_at": now, "status": "revoked"}
+    return {"id": key_id, "revokedAt": now, "status": "revoked"}
 
 
 def resolve_api_key_sync(raw_key: str) -> Optional[dict[str, Any]]:

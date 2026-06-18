@@ -316,8 +316,9 @@ def create_app() -> FastAPI:
         return JSONResponse(
             status_code=500,
             content={
-                "error": "internal_server_error",
-                "message": repr(exc) if show_detail else "An internal server error occurred.",
+                "error": "Internal Server Error",
+                "errorCode": "internal_server_error",
+                "reason": repr(exc) if show_detail else "An internal server error occurred.",
             },
         )
 
