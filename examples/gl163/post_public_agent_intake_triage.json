@@ -1,0 +1,168 @@
+{
+  "issue": "GL-163",
+  "title": "Post-Public Agent Intake & First Feedback Triage",
+  "status": "developer-preview-post-public-triage",
+  "publicRepository": "https://github.com/discodone/grantlayer",
+  "publicHeadAtPlanning": "4259fa8e40bbb79dd4aedbe7d286d6ada023abc6",
+  "sourceOfTruth": "internal-forgejo",
+  "publicSnapshotModel": true,
+  "directPublicEditsAllowed": "emergency-only",
+
+  "triageCategories": [
+    "security",
+    "sensitive-data",
+    "public-snapshot",
+    "docs",
+    "agent-feedback",
+    "sdk",
+    "dashboard",
+    "compliance-language",
+    "feature-request",
+    "bug-report",
+    "question",
+    "out-of-scope"
+  ],
+
+  "severityModel": {
+    "P0": "Active public exposure of real secret/customer data, exploitable security vulnerability in public assets, or materially misleading production/compliance claim requiring immediate correction.",
+    "P1": "Public docs or agent guidance materially misleading or broken; public snapshot packaging issue; broken examples preventing quickstart from working; confirmed security issue not yet exploitable.",
+    "P2": "Usability improvements, missing examples, wording clarity, non-blocking SDK or docs improvements.",
+    "P3": "Future ideas, roadmap suggestions, architectural feedback outside current Developer Preview scope."
+  },
+
+  "firstWeekChecklist": [
+    "Review new GitHub Issues; assign triage category and severity",
+    "Check for new security reports via SECURITY.md or direct contact",
+    "Verify no unexpected files in public repository (backend/, .claude/, secrets)",
+    "Confirm README accurately describes Developer Preview scope (no production-ready claims)",
+    "Confirm no tenant-isolation-implemented claims in public content",
+    "Check for unexpected GitHub Actions or CI activity on public repository",
+    "Review GitHub dependency and security alerts if visible",
+    "Check for coding-agent reports mentioning GrantLayer",
+    "Triage questions about production readiness or tenant isolation",
+    "Confirm no private hostnames, internal paths, or internal IP ranges are publicly visible",
+    "Review any pull requests filed against the public repository",
+    "Check public scanner status against current public HEAD"
+  ],
+
+  "agentFeedbackIntakePolicy": {
+    "requiresFileLine": true,
+    "requiresClassification": true,
+    "classificationValues": ["bug", "security", "docs", "suggestion"],
+    "requiresNoSecretExposure": true,
+    "broadAutomatedRewritesAccepted": false,
+    "agentPRsMergedDirectly": false,
+    "agentFindingsMustBeConvertedToInternalIssue": true
+  },
+
+  "securityReportHandling": [
+    "Acknowledge promptly",
+    "Do not request real secrets or customer data",
+    "Reproduce internally with synthetic data",
+    "Classify severity using P0/P1/P2/P3 model",
+    "Fix internally on internal branch",
+    "Publish through clean snapshot workflow",
+    "Use direct public hotfix only for documented P0 emergency with active public exposure",
+    "Preserve evidence and audit notes internally",
+    "Do not disclose unmitigated issue publicly before fix is published"
+  ],
+
+  "publicUpdateWorkflow": [
+    "internal-issue",
+    "internal-branch",
+    "validation",
+    "merge-to-internal-main",
+    "build-clean-public-snapshot",
+    "scanner-clean",
+    "push-public-snapshot",
+    "revoke-temporary-token",
+    "post-push-verification"
+  ],
+
+  "emergencyException": {
+    "allowed": "emergency-only",
+    "conditions": [
+      "Active public exposure of real secret, customer data, or materially harmful content",
+      "Change is minimum necessary to remove harmful content",
+      "No broad refactors or unrelated changes included"
+    ],
+    "backportRequired": true,
+    "backportDeadline": "same-working-day",
+    "documentationRequired": true
+  },
+
+  "goNoCriteria": {
+    "go": [
+      "scanner-clean-on-internal-snapshot",
+      "no-backend-or-internal-source-files-in-public-snapshot",
+      "no-claude-directory-in-public-snapshot",
+      "no-private-hostnames-or-internal-ip-in-public-content",
+      "no-real-secrets-or-customer-data-in-public-content",
+      "no-production-ready-or-tenant-isolation-claims",
+      "internal-main-clean-and-tests-pass"
+    ],
+    "nogo": [
+      "scanner-reports-any-blocker",
+      "unclear-source-of-truth-state",
+      "unreviewed-secret-or-security-issue",
+      "public-history-rewrite-without-explicit-approval",
+      "live-direct-github-edits-not-backported"
+    ]
+  },
+
+  "noGoCriteria": [
+    "scanner-reports-any-blocker",
+    "unclear-source-of-truth-state",
+    "unreviewed-secret-or-security-issue",
+    "public-history-rewrite-without-explicit-approval",
+    "live-direct-github-edits-not-backported"
+  ],
+
+  "recommendedLabels": [
+    "security",
+    "sensitive-data",
+    "docs",
+    "public-snapshot",
+    "agent-feedback",
+    "sdk",
+    "dashboard",
+    "compliance-language",
+    "question",
+    "out-of-scope",
+    "good-first-review"
+  ],
+
+  "caveats": [
+    "Developer Preview",
+    "not production SaaS",
+    "tenant isolation not implemented",
+    "no real secrets",
+    "no real customer data",
+    "clean public snapshot only",
+    "internal Forgejo remains source of truth"
+  ],
+
+  "filesChanged": [
+    "docs/post_public_agent_intake_triage.md",
+    "docs/examples/gl163/post_public_agent_intake_triage.json",
+    "backend/tests/test_gl163_post_public_agent_intake_triage.py"
+  ],
+
+  "backend_src_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "sdk_changed": false,
+  "pushed_to_github": false,
+  "github_api_called": false,
+  "live_github_issues_created": false,
+  "git_remotes_changed": false,
+  "history_rewrite_performed": false,
+  "production_code_changed": false,
+  "production_saas_ready_claimed": false,
+  "tenant_isolation_claimed_implemented": false,
+  "uses_real_secrets": false,
+  "uses_real_customer_data": false,
+  "includes_private_personal_data": false,
+  "public_github_modified": false
+}

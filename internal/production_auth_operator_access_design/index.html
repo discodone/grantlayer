@@ -1,0 +1,1541 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/production_auth_operator_access_design/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer Production Auth and Operator Access Design - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-production-auth-and-operator-access-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer Production Auth and Operator Access Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-product-auth-principle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Product auth principle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-runtime-mode-auth-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Runtime-mode auth expectations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Runtime-mode auth expectations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-local-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 local-dev
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 demo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-staging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 staging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 production
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-stable-operator-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Stable operator roles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Stable operator roles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-system_admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 system_admin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-grant_admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 grant_admin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-evidence_operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 evidence_operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-policy_admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 policy_admin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-auditor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 auditor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-readonly_integrator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 readonly_integrator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-external_workflow_agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 external_workflow_agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#48-service_operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.8 service_operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-capability-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Capability boundaries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Capability boundaries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-grant-request-administration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Grant request administration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-grant-approval-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Grant approval operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-grant-creation-and-lifecycle-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Grant creation and lifecycle operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-evidence-write-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Evidence write operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-evidence-verification-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Evidence verification operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56-policyrule-pack-administration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 Policy/rule pack administration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#57-permission-profile-administration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.7 Permission profile administration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#58-auditor-reportexport-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.8 Auditor report/export access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#59-compliance-readiness-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.9 Compliance readiness review
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#510-system-configuration-administration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.10 System configuration administration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#511-readonly-integration-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.11 Readonly integration access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#512-service-to-service-workflow-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.12 Service-to-service workflow execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-auth-provider-adapter-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Auth provider adapter boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-production-fail-closed-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Production fail-closed rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-audit-and-provenance-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Audit and provenance expectations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-localtestdemo-shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Local/test/demo shortcuts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-future-implementation-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Future implementation expectations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-what-not-to-implement-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. What not to implement yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-decision-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Decision boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-production-auth-and-operator-access-design">GrantLayer Production Auth and Operator Access Design<a class="headerlink" href="#grantlayer-production-auth-and-operator-access-design" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>This document defines the auth and operator access model for GrantLayer as a <strong>reusable, adaptable API-first product core</strong>.</p>
+<p>It clarifies:
+- which operator/admin access concepts belong to the Product Core boundary
+- which authentication providers should remain replaceable adapters
+- which roles and permissions need stable product semantics
+- which local/test/demo auth shortcuts are acceptable outside production
+- which production auth requirements must be explicit before production use
+- which later implementation blocks should build auth runtime behavior</p>
+<p>This is a <strong>product-foundation security design document</strong>. It does not implement authentication code.</p>
+<h2 id="2-product-auth-principle">2. Product auth principle<a class="headerlink" href="#2-product-auth-principle" title="Permanent link">&para;</a></h2>
+<p>GrantLayer should keep <strong>stable operator role semantics</strong> in the Product Core while keeping <strong>concrete auth providers replaceable</strong>.</p>
+<p>The Product Core owns the operator role definitions, capability boundaries, and audit expectations. The Product Core does not depend on one specific auth provider. OAuth, JWT, SSO, and mTLS should remain pluggable adapter boundaries.</p>
+<p>Local, test, and demo auth shortcuts must <strong>not accidentally become production behavior</strong>. Any runtime mode that permits shortcut auth must explicitly declare that it is not production-ready.</p>
+<h2 id="3-runtime-mode-auth-expectations">3. Runtime-mode auth expectations<a class="headerlink" href="#3-runtime-mode-auth-expectations" title="Permanent link">&para;</a></h2>
+<h3 id="31-local-dev">3.1 local-dev<a class="headerlink" href="#31-local-dev" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Auth expectation</strong>: developer convenience; simplified or bypassed authentication acceptable</li>
+<li><strong>Allowed shortcut</strong>: deterministic local admin token, no external identity provider, no role enforcement</li>
+<li><strong>Audit expectation</strong>: minimal; operator actions may be attributed to a generic local-dev identity</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready</li>
+</ul>
+<h3 id="32-test">3.2 test<a class="headerlink" href="#32-test" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Auth expectation</strong>: deterministic automated verification; mock or bypassed authentication acceptable</li>
+<li><strong>Allowed shortcut</strong>: fixture-based operator identities, synthetic role assignments, mock auth provider</li>
+<li><strong>Audit expectation</strong>: none required; test identities are synthetic and isolated from production data</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready</li>
+</ul>
+<h3 id="33-demo">3.3 demo<a class="headerlink" href="#33-demo" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Auth expectation</strong>: illustrative non-production walkthrough; simplified auth acceptable</li>
+<li><strong>Allowed shortcut</strong>: demo operator identity, demo tokens, no external identity provider</li>
+<li><strong>Audit expectation</strong>: minimal; demo actions must be clearly labeled as synthetic</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready; explicitly labeled as demonstration only</li>
+</ul>
+<h3 id="34-integration">3.4 integration<a class="headerlink" href="#34-integration" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Auth expectation</strong>: controlled external technical integration; partner-agreed authentication</li>
+<li><strong>Allowed shortcut</strong>: partner-agreed auth provider with documented constraints</li>
+<li><strong>Audit expectation</strong>: partner-agreed; operator actions should be attributable where possible</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready without explicit partner agreement and documented constraints</li>
+</ul>
+<h3 id="35-staging">3.5 staging<a class="headerlink" href="#35-staging" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Auth expectation</strong>: production-like validation; same auth target as production</li>
+<li><strong>Allowed shortcut</strong>: same backend and auth as production target; realistic but synthetic data</li>
+<li><strong>Audit expectation</strong>: full audit trail to validate production behavior</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready; explicitly labeled as pre-production validation</li>
+</ul>
+<h3 id="36-production">3.6 production<a class="headerlink" href="#36-production" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Auth expectation</strong>: explicit hardened operation only</li>
+<li><strong>Allowed shortcut</strong>: <strong>none</strong> — every required auth configuration must be explicit, validated, and fail-closed if missing</li>
+<li><strong>Audit expectation</strong>: full; all operator-sensitive actions must produce auditable records</li>
+<li><strong>Production claim boundary</strong>: may be described as production-ready <strong>only</strong> when all required auth configuration is explicit, validated, and monitored</li>
+</ul>
+<h2 id="4-stable-operator-roles">4. Stable operator roles<a class="headerlink" href="#4-stable-operator-roles" title="Permanent link">&para;</a></h2>
+<p>The following operator roles are defined as stable Product Core semantics. Auth provider adapters must map their identity claims into these roles.</p>
+<h3 id="41-system_admin">4.1 system_admin<a class="headerlink" href="#41-system_admin" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: ultimate system-level access for installation, bootstrap, and emergency recovery</li>
+<li><strong>Core responsibilities</strong>: system configuration administration, operator bootstrap, role assignment, fail-closed override in documented emergencies</li>
+</ul>
+<h3 id="42-grant_admin">4.2 grant_admin<a class="headerlink" href="#42-grant_admin" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: grant request and approval administration</li>
+<li><strong>Core responsibilities</strong>: grant request administration, grant approval operations, grant creation and lifecycle operations</li>
+</ul>
+<h3 id="43-evidence_operator">4.3 evidence_operator<a class="headerlink" href="#43-evidence_operator" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: evidence bundle and verification management</li>
+<li><strong>Core responsibilities</strong>: evidence write operations, evidence verification operations</li>
+</ul>
+<h3 id="44-policy_admin">4.4 policy_admin<a class="headerlink" href="#44-policy_admin" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: policy and rule pack administration</li>
+<li><strong>Core responsibilities</strong>: policy/rule pack administration, permission profile administration</li>
+</ul>
+<h3 id="45-auditor">4.5 auditor<a class="headerlink" href="#45-auditor" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: institutional audit and compliance review</li>
+<li><strong>Core responsibilities</strong>: auditor report/export access, compliance readiness review</li>
+</ul>
+<h3 id="46-readonly_integrator">4.6 readonly_integrator<a class="headerlink" href="#46-readonly_integrator" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: read-only integration access for external systems</li>
+<li><strong>Core responsibilities</strong>: readonly integration access, safe read-only queries without mutation rights</li>
+</ul>
+<h3 id="47-external_workflow_agent">4.7 external_workflow_agent<a class="headerlink" href="#47-external_workflow_agent" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: service-to-service workflow execution by external agents</li>
+<li><strong>Core responsibilities</strong>: service-to-service workflow execution, attributable action records linked to a stable operator or service identity</li>
+</ul>
+<h3 id="48-service_operator">4.8 service_operator<a class="headerlink" href="#48-service_operator" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: internal service-to-service operations and maintenance</li>
+<li><strong>Core responsibilities</strong>: service-to-service workflow execution, system health and maintenance operations</li>
+</ul>
+<h2 id="5-capability-boundaries">5. Capability boundaries<a class="headerlink" href="#5-capability-boundaries" title="Permanent link">&para;</a></h2>
+<p>The following capability groups define what actions each role may perform. Auth provider adapters must map provider-specific claims into these stable capability groups.</p>
+<h3 id="51-grant-request-administration">5.1 Grant request administration<a class="headerlink" href="#51-grant-request-administration" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Review, approve, reject, and manage grant requests</li>
+<li>Link requests to subjects, scopes, and time bounds</li>
+</ul>
+<h3 id="52-grant-approval-operations">5.2 Grant approval operations<a class="headerlink" href="#52-grant-approval-operations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Execute approval decisions with required signatures</li>
+<li>Enforce multi-step and quorum approval policies</li>
+</ul>
+<h3 id="53-grant-creation-and-lifecycle-operations">5.3 Grant creation and lifecycle operations<a class="headerlink" href="#53-grant-creation-and-lifecycle-operations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Create, update, revoke, and expire grants</li>
+<li>Manage grant execution records</li>
+</ul>
+<h3 id="54-evidence-write-operations">5.4 Evidence write operations<a class="headerlink" href="#54-evidence-write-operations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Create, append, and finalize evidence bundles</li>
+<li>Link evidence to grants, requests, and executions</li>
+</ul>
+<h3 id="55-evidence-verification-operations">5.5 Evidence verification operations<a class="headerlink" href="#55-evidence-verification-operations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Recompute and compare evidence hashes</li>
+<li>Flag tampering, corruption, or completeness gaps</li>
+</ul>
+<h3 id="56-policyrule-pack-administration">5.6 Policy/rule pack administration<a class="headerlink" href="#56-policyrule-pack-administration" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Load, validate, and activate policy rule packs</li>
+<li>Manage exclusions, deadlines, amount limits, and required roles</li>
+</ul>
+<h3 id="57-permission-profile-administration">5.7 Permission profile administration<a class="headerlink" href="#57-permission-profile-administration" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Define and assign permission profiles</li>
+<li>Manage scope templates and role hierarchies</li>
+</ul>
+<h3 id="58-auditor-reportexport-access">5.8 Auditor report/export access<a class="headerlink" href="#58-auditor-reportexport-access" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Export structured auditor records</li>
+<li>Review compliance readiness summaries and gap reports</li>
+</ul>
+<h3 id="59-compliance-readiness-review">5.9 Compliance readiness review<a class="headerlink" href="#59-compliance-readiness-review" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Access compliance readiness outputs</li>
+<li>Review but not mutate readiness dimensions</li>
+</ul>
+<h3 id="510-system-configuration-administration">5.10 System configuration administration<a class="headerlink" href="#510-system-configuration-administration" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Configure runtime settings, feature flags, and extension toggles</li>
+<li>Manage system-level parameters with documented override procedures</li>
+</ul>
+<h3 id="511-readonly-integration-access">5.11 Readonly integration access<a class="headerlink" href="#511-readonly-integration-access" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Query grants, requests, evidence, and audit records</li>
+<li>No mutation rights; no approval or revocation access</li>
+</ul>
+<h3 id="512-service-to-service-workflow-execution">5.12 Service-to-service workflow execution<a class="headerlink" href="#512-service-to-service-workflow-execution" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Execute workflow steps between services</li>
+<li>Produce attributable action records with stable service identity</li>
+</ul>
+<h2 id="6-auth-provider-adapter-boundary">6. Auth provider adapter boundary<a class="headerlink" href="#6-auth-provider-adapter-boundary" title="Permanent link">&para;</a></h2>
+<p>The Product Core should <strong>not</strong> depend on one specific auth provider. The following boundary rules apply:</p>
+<ul>
+<li><strong>Product Core should not depend on one specific auth provider</strong> — the core owns roles and capabilities, not provider-specific fields</li>
+<li><strong>OAuth/JWT/SSO can be future provider adapters</strong> — any of these may be implemented as adapter layers that map into stable GrantLayer roles</li>
+<li><strong>Local/demo tokens are non-production shortcuts only</strong> — they are acceptable in local-dev, test, and demo modes but must not persist into production</li>
+<li><strong>Production must use explicit provider configuration</strong> — the active auth provider must be declared, validated, and fail-closed if missing</li>
+<li><strong>Provider claims should map into stable GrantLayer roles/capabilities</strong> — adapters translate provider-specific group memberships, scopes, or roles into the stable operator roles defined in this document</li>
+<li><strong>Provider-specific fields should not leak into Product Core records</strong> — audit records and evidence bundles should reference stable operator IDs and roles, not raw provider tokens, JWTs, or OAuth fields</li>
+</ul>
+<h2 id="7-production-fail-closed-rules">7. Production fail-closed rules<a class="headerlink" href="#7-production-fail-closed-rules" title="Permanent link">&para;</a></h2>
+<p>Production mode must enforce the following fail-closed behavior:</p>
+<ul>
+<li><strong>Production mode must not start with demo/default admin token</strong> — if the only configured auth is a demo token, startup must fail</li>
+<li><strong>Production mode must not silently allow unauthenticated access</strong> — every protected endpoint must require valid authentication</li>
+<li><strong>Production mode must require explicit auth provider configuration</strong> — the auth mechanism, endpoints, and validation rules must be declared</li>
+<li><strong>Production mode must require explicit operator/admin bootstrap configuration</strong> — at least one valid operator must be bootstrapped with explicit role assignment</li>
+<li><strong>Production mode must fail closed if required auth config is missing</strong> — the system must refuse to start rather than assume a safe default</li>
+<li><strong>Denied access should be auditable where appropriate</strong> — failed authentication and authorization attempts should produce audit records when feasible</li>
+</ul>
+<h2 id="8-audit-and-provenance-expectations">8. Audit and provenance expectations<a class="headerlink" href="#8-audit-and-provenance-expectations" title="Permanent link">&para;</a></h2>
+<p>Operator-sensitive actions should produce auditable records. The following events must be traceable:</p>
+<ul>
+<li><strong>Grant approval</strong> — who approved, when, under what policy, and with what evidence</li>
+<li><strong>Evidence mutation</strong> — who wrote, modified, or finalized evidence bundles</li>
+<li><strong>Policy changes</strong> — who loaded, activated, or modified rule packs</li>
+<li><strong>Permission changes</strong> — who assigned, revoked, or modified permission profiles and role assignments</li>
+<li><strong>Auditor export access</strong> — who exported audit records and when</li>
+</ul>
+<p>Audit records must <strong>not contain secrets</strong> — no plaintext tokens, JWTs, passwords, or private keys should appear in audit logs or provenance summaries.</p>
+<p>External workflow agent actions should be attributable to a <strong>stable operator/service identity</strong> — not anonymous or untraceable.</p>
+<h2 id="9-localtestdemo-shortcuts">9. Local/test/demo shortcuts<a class="headerlink" href="#9-localtestdemo-shortcuts" title="Permanent link">&para;</a></h2>
+<p>The following auth shortcuts are acceptable <strong>only outside production</strong>:</p>
+<ul>
+<li><strong>Deterministic test identity</strong> — synthetic operator IDs used in automated tests</li>
+<li><strong>Local admin token for developer convenience</strong> — a simple shared token for local-dev environments</li>
+<li><strong>Demo operator identity</strong> — a preconfigured operator for walkthroughs and stakeholder demos</li>
+<li><strong>Fixture-based service identity</strong> — synthetic service accounts loaded from test fixtures</li>
+<li><strong>Readonly demo access</strong> — a preconfigured readonly account for demo integration queries</li>
+</ul>
+<p>These shortcuts are <strong>not valid production behavior</strong>. Production must replace all shortcuts with explicit auth provider configuration, role mapping, and operator bootstrap.</p>
+<h2 id="10-future-implementation-expectations">10. Future implementation expectations<a class="headerlink" href="#10-future-implementation-expectations" title="Permanent link">&para;</a></h2>
+<p>The following implementation blocks should be built after this planning document is accepted:</p>
+<ol>
+<li><strong>Auth configuration schema</strong> — a validated schema that declares the active auth provider, role mapping, and capability assignments</li>
+<li><strong>Runtime-mode auth validation</strong> — startup checks that enforce the auth expectations defined for each runtime mode</li>
+<li><strong>Production fail-closed startup checks</strong> — explicit checks that refuse to start in production mode if required auth configuration is missing</li>
+<li><strong>Role/capability mapping helper</strong> — a utility that translates provider claims into stable GrantLayer roles and capabilities</li>
+<li><strong>Auth provider adapter interface</strong> — a defined boundary that auth provider adapters must implement to integrate with the Product Core</li>
+<li><strong>Operator bootstrap mechanism</strong> — a secure process for creating the first operator/admin in a fresh production deployment</li>
+<li><strong>Service-to-service access model</strong> — how internal and external services authenticate and authorize workflow steps</li>
+<li><strong>Auth audit event integration</strong> — how authentication and authorization events feed into the audit event stream</li>
+<li><strong>OpenAPI security contract update</strong> — how auth requirements are documented in the OpenAPI contract (security schemes, scopes, and protected paths)</li>
+<li><strong>Integration tests for auth gates</strong> — tests that verify protected endpoints reject unauthenticated and unauthorized requests in production-like modes</li>
+</ol>
+<h2 id="11-what-not-to-implement-yet">11. What not to implement yet<a class="headerlink" href="#11-what-not-to-implement-yet" title="Permanent link">&para;</a></h2>
+<p>This block does <strong>not</strong> implement:</p>
+<ul>
+<li>OAuth</li>
+<li>JWT validation</li>
+<li>SSO</li>
+<li>Session management</li>
+<li>Password login</li>
+<li>User management UI</li>
+<li>Production secret store</li>
+<li>Multi-tenant identity</li>
+<li>Dashboard access control</li>
+<li>Provider-specific integration</li>
+</ul>
+<p>These remain valid future workstreams but must be scoped in separate issues.</p>
+<h2 id="12-decision-boundary">12. Decision boundary<a class="headerlink" href="#12-decision-boundary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer should <strong>not</strong> claim production auth readiness until auth provider configuration, operator bootstrap, role/capability mapping, fail-closed startup checks, and audit expectations are implemented and verified.</p>
+<p>Any statement to external partners, documentation, or marketing materials must include the non-production constraint. If a partner asks about production timelines, reference this document, the GL-066 runtime configuration environment model, the GL-065 product architecture and extension boundaries, the GL-063 production-hardening roadmap, and the GL-064 API/OpenAPI contract hardening review.</p>
+<hr />
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../runtime_configuration_environment_model/"><code>docs/runtime_configuration_environment_model.md</code></a> — GL-066 runtime configuration and environment model</li>
+<li><a href="../product_architecture_extension_boundaries/"><code>docs/product_architecture_extension_boundaries.md</code></a> — GL-065 product architecture and extension boundaries</li>
+<li><a href="../production_hardening_roadmap/"><code>docs/production_hardening_roadmap.md</code></a> — GL-063 production-hardening roadmap</li>
+<li><a href="../api_openapi_contract_hardening_review/"><code>docs/api_openapi_contract_hardening_review.md</code></a> — GL-064 API/OpenAPI contract hardening review</li>
+<li><a href="examples/gl067/auth_operator_role_matrix.json"><code>docs/examples/gl067/auth_operator_role_matrix.json</code></a> — machine-readable auth operator role matrix</li>
+<li><a href="examples/gl067/operator_access_boundary_catalog.json"><code>docs/examples/gl067/operator_access_boundary_catalog.json</code></a> — machine-readable operator access boundary catalog</li>
+<li><a href="../backend/tests/test_gl067_production_auth_operator_access_design.py"><code>backend/tests/test_gl067_production_auth_operator_access_design.py</code></a> — validation test for this auth and operator access design</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

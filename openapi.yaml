@@ -1,0 +1,3441 @@
+openapi: 3.0.3
+info:
+  title: GrantLayer MVP API
+  description: |
+    GrantLayer MVP — API Contract Baseline (GL-203B).
+
+    **Status: Developer Preview / Controlled Preview with strict boundaries.**
+    This is not a production SaaS. Not ready for real customer data, private
+    grant data, or institutional data. Tenant/workspace isolation baseline is
+    implemented but not production-complete. No official SDK/package is claimed
+    or published.
+
+    This document describes the HTTP surface as of GL-203B, aligned with the
+    actual implementation after GL-200 through GL-203.
+
+    **Auth modes:**
+    - Legacy mode (`ENABLE_OPERATOR_MODEL=false`): `Authorization: Bearer <admin-token>`
+      via constant-time HMAC comparison. Tenant context is bound to `"demo"`.
+    - Operator mode (`ENABLE_OPERATOR_MODEL=true`): `Authorization: Bearer <operator-token>`
+      via PBKDF2-HMAC-SHA256 (600,000 iterations). Tenant context is derived
+      server-side from the authenticated operator record.
+
+    **Tenant context:**
+    `tenant_id` is always derived server-side from authentication. Clients cannot
+    supply or override `tenant_id` via headers, path parameters, or request bodies.
+    Cross-tenant ID lookups return HTTP 404; cross-tenant list endpoints return
+    an empty list. No existence of cross-tenant resources is leaked.
+
+    **workspace_id:**
+    `workspace_id` is reserved, nullable, and not currently enforced. It is present
+    in the data model but workspace-level isolation is deferred to a future release.
+
+    **Correlation ID:**
+    Clients may send `X-Correlation-ID` (or `X-Request-ID` as fallback) on any
+    request. The server echoes or generates a safe correlation ID in the
+    `X-Correlation-ID` response header.
+
+    **Security headers:**
+    All responses include: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+    `Cache-Control: no-store`, `Content-Security-Policy`.
+
+    **Production-mode startup:**
+    In `staging` or `production` runtime mode, placeholder/weak admin tokens are
+    rejected at startup and the server will not start (GL-201 fail-closed behavior).
+
+    **Error contract:**
+    All error responses follow the GL-030 additive shape:
+    ```json
+    {
+      "error": "human-readable summary",
+      "errorCode": "machine-readable-code",
+      "reason": "detailed explanation"
+    }
+    ```
+
+    **Backward compatibility note:**
+    Grant responses include both snake_case and camelCase signature fields
+    (`signing_key_id`/`signingKeyId`, `payload_hash`/`payloadHash`) for
+    backward compatibility.
+
+    Security-sensitive reports must be routed to GitHub Security Advisories.
+  version: "0.203b.0-developer-preview"
+
+servers:
+  - url: http://localhost:8765
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Liveness health check
+      description: |
+        Liveness endpoint. Confirms the API process can respond.
+        Does NOT expose secrets, raw environment, or internal config.
+        GL-077 baseline response.
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service, checkType]
+                properties:
+                  status: { type: string, example: "ok" }
+                  service: { type: string, example: "grantlayer" }
+                  checkType: { type: string, example: "liveness" }
+
+  /readiness:
+    get:
+      summary: Readiness check
+      description: |
+        Readiness endpoint. Confirms the API can resolve runtime
+        configuration using the GL-076 runtime_config helper.
+        Does NOT expose raw environment values, secrets, or tokens.
+      operationId: readinessCheck
+      responses:
+        "200":
+          description: Runtime configuration valid and ready
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service, checkType, runtimeMode, isProductionLike]
+                properties:
+                  status: { type: string, example: "ready" }
+                  service: { type: string, example: "grantlayer" }
+                  checkType: { type: string, example: "readiness" }
+                  runtimeMode: { type: string, example: "local" }
+                  isProductionLike: { type: boolean, example: false }
+        "503":
+          description: Runtime configuration invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service, checkType, errorCode]
+                properties:
+                  status: { type: string, example: "not_ready" }
+                  service: { type: string, example: "grantlayer" }
+                  checkType: { type: string, example: "readiness" }
+                  errorCode: { type: string, example: "RUNTIME_CONFIG_INVALID" }
+
+  /:
+    get:
+      summary: Dashboard
+      description: Serves the HTML dashboard. Falls back to 404 if the dashboard file is missing.
+      operationId: getDashboard
+      responses:
+        "200":
+          description: HTML dashboard
+          content:
+            text/html:
+              schema:
+                type: string
+        "404":
+          description: Dashboard not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/grants:
+    get:
+      summary: List grants
+      description: Returns all grants with signature metadata.
+      operationId: listGrants
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of grants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Grant"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      summary: Create grant
+      description: Create a new grant. In operator mode, the operator ID is used as `createdBy`.
+      operationId: createGrant
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subjectId, role, action, resource, validFrom, validUntil, createdBy, reason]
+              properties:
+                subjectId: { type: string }
+                role: { type: string }
+                action: { type: string }
+                resource: { type: string }
+                validFrom: { type: string, format: date-time }
+                validUntil: { type: string, format: date-time }
+                createdBy: { type: string }
+                reason: { type: string }
+                maxUses: { type: integer, nullable: true }
+      responses:
+        "201":
+          description: Grant created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grant"
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/grants/{id}:
+    get:
+      summary: Get grant by ID
+      description: Returns a single grant with signature metadata.
+      operationId: getGrant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Grant found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grant"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/grants/{id}/revoke:
+    post:
+      summary: Revoke grant
+      description: Revoke an active grant.
+      operationId: revokeGrant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [revokedBy, reason]
+              properties:
+                revokedBy: { type: string }
+                reason: { type: string }
+      responses:
+        "200":
+          description: Grant revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, grantId]
+                properties:
+                  ok: { type: boolean }
+                  grantId: { type: string }
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Grant already revoked or not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/grant-requests:
+    get:
+      summary: List grant requests
+      description: |
+        Returns all grant requests, optionally filtered by status.
+        Tenant context is server-derived from authentication; clients cannot
+        supply or override it. Cross-tenant requests return an empty list.
+        Grant requests only carry meaningful data when operator model is enabled.
+      operationId: listGrantRequests
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, enum: [requested, approved, denied, revoked, expired] }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of grant requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GrantRequest"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      summary: Create grant request
+      description: Create a new grant request in `requested` state. Operator mode only.
+      operationId: createGrantRequest
+      security:
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subjectId, role, action, resource, validFrom, validUntil, reason]
+              properties:
+                subjectId: { type: string }
+                role: { type: string }
+                action: { type: string }
+                resource: { type: string }
+                validFrom: { type: string, format: date-time }
+                validUntil: { type: string, format: date-time }
+                reason: { type: string }
+      responses:
+        "201":
+          description: Grant request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantRequest"
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/grant-requests/{id}:
+    get:
+      summary: Get grant request by ID
+      description: Returns a single grant request. Operator mode only.
+      operationId: getGrantRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Grant request found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantRequest"
+        "404":
+          description: Grant request not found or operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/grant-requests/{id}/approve:
+    post:
+      summary: Approve grant request
+      description: Approve a grant request and create the associated grant. Operator mode only.
+      operationId: approveGrantRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Request approved
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, request, grant]
+                properties:
+                  ok: { type: boolean }
+                  request:
+                    $ref: "#/components/schemas/GrantRequest"
+                  grant:
+                    $ref: "#/components/schemas/Grant"
+        "400":
+          description: Invalid state or request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or self-approval blocked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant request not found or operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/grant-requests/{id}/deny:
+    post:
+      summary: Deny grant request
+      description: Deny a grant request without creating a grant. Operator mode only.
+      operationId: denyGrantRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        "200":
+          description: Request denied
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, request]
+                properties:
+                  ok: { type: boolean }
+                  request:
+                    $ref: "#/components/schemas/GrantRequest"
+        "400":
+          description: Invalid JSON, missing reason, or invalid state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant request not found or operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/grant-executions:
+    get:
+      summary: List grant executions
+      description: Returns all grant executions, optionally filtered. Operator mode only.
+      operationId: listGrantExecutions
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, default: 200 }
+        - name: grantId
+          in: query
+          required: false
+          schema: { type: string }
+        - name: operatorId
+          in: query
+          required: false
+          schema: { type: string }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of grant executions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GrantExecution"
+        "400":
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/grant-executions/{id}:
+    get:
+      summary: Get grant execution by ID
+      description: Returns a single grant execution. Operator mode only.
+      operationId: getGrantExecution
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Grant execution found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantExecution"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant execution not found or operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/grants/{id}/executions:
+    get:
+      summary: List executions for a grant
+      description: Returns all executions linked to a specific grant. Operator mode only.
+      operationId: listExecutionsForGrant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, default: 200 }
+      security:
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of grant executions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GrantExecution"
+        "400":
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant not found or operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/audit-events:
+    get:
+      summary: List audit events
+      description: Returns audit events ordered by timestamp descending.
+      operationId: listAuditEvents
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, default: 200 }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of audit events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEvent"
+        "400":
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/challenges:
+    get:
+      summary: List challenges
+      description: Returns all challenges ordered by creation time descending.
+      operationId: listChallenges
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of challenges
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Challenge"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      summary: Create challenge
+      description: Create a new challenge for a subject-action-resource tuple.
+      operationId: createChallenge
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subjectId, action, resource]
+              properties:
+                subjectId: { type: string }
+                action: { type: string }
+                resource: { type: string }
+      responses:
+        "201":
+          description: Challenge created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [challengeId, subjectId, action, resource, expiresAt]
+                properties:
+                  challengeId: { type: string }
+                  subjectId: { type: string }
+                  action: { type: string }
+                  resource: { type: string }
+                  expiresAt: { type: string }
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/operators/me:
+    get:
+      summary: Get current operator profile
+      description: |
+        Returns the authenticated operator's own profile. Operator mode only;
+        returns 404 if operator model is disabled. The `tenantId` field reflects
+        the server-derived tenant context for this operator.
+      operationId: getOperatorMe
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Operator profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  operatorId: { type: string }
+                  name: { type: string }
+                  role: { type: string }
+                  active: { type: boolean }
+                  tenantId: { type: string, description: "Server-derived tenant context for this operator. Not client-supplied." }
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Operator model disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/evidence/executions/{id}:
+    get:
+      summary: Get evidence bundle for execution
+      description: |
+        Returns a complete evidence bundle for a single GrantExecution.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getEvidenceBundle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Evidence bundle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceBundle"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/evidence/executions/{id}/export:
+    get:
+      summary: Export evidence bundle artifact
+      description: |
+        Returns a deterministic, pretty-printed JSON artifact for download.
+
+        Response headers:
+        - `Content-Type: application/json; charset=utf-8`
+        - `Content-Disposition: attachment; filename="evidence-{id}-{shortHash}.json"`
+        - `X-Evidence-Hash: {fullEvidenceHash}`
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: exportEvidenceBundle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Evidence bundle artifact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceBundle"
+          headers:
+            Content-Disposition:
+              description: Attachment filename for the evidence bundle
+              schema: { type: string }
+            X-Evidence-Hash:
+              description: SHA-256 evidence hash
+              schema: { type: string }
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/evidence/executions/{id}/verify:
+    get:
+      summary: Verify evidence bundle for execution
+      description: |
+        Verifies the persisted evidence bundle for a GrantExecution.
+        Recomputes the SHA-256 evidenceHash, validates structural completeness
+        and denial-code consistency, and records the result.
+
+        Status values:
+        - `valid` — bundle hash matches and structure is consistent
+        - `invalid` — hash mismatch or structural/consistency failure
+        - `missing_data` — no persisted bundle found for execution
+        - `unsupported_version` — unsupported canonicalVersion or hashAlgorithm
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: verifyEvidenceBundle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceVerificationResult"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/provenance/executions/{executionId}/summary:
+    get:
+      summary: Decision Provenance Summary
+      description: |
+        Returns a decision provenance summary for a single GrantExecution.
+        Includes execution metadata, evidence archive status, verification,
+        provenance events, timeline, and warnings.
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getDecisionProvenanceSummary
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: includeTimeline
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+        - name: includeWarnings
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+        - name: includeRawEvidence
+          in: query
+          required: false
+          schema: { type: boolean, default: false }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Decision provenance summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionProvenanceSummary"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/decision-provenance/v2/build:
+    post:
+      summary: Build Decision Provenance v2
+      description: |
+        Builds a decision provenance v2 record from structured inputs.
+        Pure/read-only endpoint — no DB access, no persistence.
+
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: buildDecisionProvenanceV2
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decisionId:
+                  type: string
+                decisionType:
+                  type: string
+                subjectId:
+                  type: string
+                actorId:
+                  type: string
+                action:
+                  type: string
+                decision:
+                  type: string
+                reason:
+                  type: string
+                evidenceCompleteness:
+                  type: object
+                complianceGapReport:
+                  type: object
+                permissionResult:
+                  type: object
+                approvalRequirement:
+                  type: object
+                approvalLifecycle:
+                  type: object
+                provenanceSummary:
+                  type: object
+                auditorReport:
+                  type: object
+                policyResults:
+                  type: array
+                  items:
+                    type: object
+                inputs:
+                  type: object
+        context:
+          type: object
+          nullable: true
+
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Decision provenance v2 record built
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionProvenanceV2"
+        "400":
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/agent-permissions/evaluate:
+    post:
+      summary: Evaluate Agent Permission
+      description: |
+        Evaluates whether an agent is permitted to perform a requested scope.
+        Returns allowed, matched scope, reason, and warnings.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: evaluateAgentPermission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agentId
+                - requestedScope
+                - assignedScopes
+              properties:
+                agentId:
+                  type: string
+                requestedScope:
+                  type: string
+                assignedScopes:
+                  type: array
+                  items:
+                    type: string
+                resourceType:
+                  type: string
+                  nullable: true
+                resourceId:
+                  type: string
+                  nullable: true
+                context:
+                  type: object
+                  nullable: true
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Permission evaluation result
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - allowed
+                  - agentId
+                  - requestedScope
+                  - matchedScope
+                  - reason
+                  - warnings
+                properties:
+                  allowed:
+                    type: boolean
+                  agentId:
+                    type: string
+                  requestedScope:
+                    type: string
+                  matchedScope:
+                    type: string
+                    nullable: true
+                  resourceType:
+                    type: string
+                    nullable: true
+                  resourceId:
+                    type: string
+                    nullable: true
+                  reason:
+                    type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/approvals/evaluate:
+    post:
+      summary: Evaluate Approval Requirements
+      description: |
+        Evaluates whether a proposed action requires approval based on risk,
+        compliance, evidence, permission, policy flags, and amount signals.
+
+        Returns the decision (`no_approval_required`, `approval_required`,
+        `four_eyes_required`, or `blocked`), required approvals count,
+        required roles, blockers, warnings, and optional detail fields.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: evaluateApprovalRequirements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  type: string
+                  description: The proposed action to evaluate.
+                actorId:
+                  type: string
+                  nullable: true
+                  description: Identifier of the actor proposing the action.
+                amount:
+                  type: number
+                  nullable: true
+                  description: Monetary amount associated with the action.
+                currency:
+                  type: string
+                  nullable: true
+                  description: Currency code for the amount.
+                riskLevel:
+                  type: string
+                  nullable: true
+                  description: Risk level (low, medium, high).
+                complianceReport:
+                  type: object
+                  nullable: true
+                  description: Compliance report with overallStatus and severity.
+                evidenceCompleteness:
+                  type: object
+                  nullable: true
+                  description: Evidence completeness status.
+                permissionResult:
+                  type: object
+                  nullable: true
+                  description: Permission evaluation result with allowed flag.
+                policyFlags:
+                  type: array
+                  items:
+                    type: string
+                  nullable: true
+                  description: Policy flags such as requires_approval or requires_four_eyes.
+                context:
+                  type: object
+                  nullable: true
+                  description: Optional additional context (not returned in response).
+                includeDetails:
+                  type: boolean
+                  nullable: true
+                  description: Whether to include checks and inputs in response.
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Evaluation result
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - action
+                  - actorId
+                  - approvalRequired
+                  - requiredApprovals
+                  - requiredRoles
+                  - decision
+                  - reason
+                  - blockers
+                  - warnings
+                  - riskLevel
+                  - amount
+                  - currency
+                properties:
+                  action:
+                    type: string
+                    nullable: true
+                  actorId:
+                    type: string
+                    nullable: true
+                  approvalRequired:
+                    type: boolean
+                  requiredApprovals:
+                    type: integer
+                  requiredRoles:
+                    type: array
+                    items:
+                      type: string
+                  decision:
+                    type: string
+                  reason:
+                    type: string
+                  blockers:
+                    type: array
+                    items:
+                      type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  riskLevel:
+                    type: string
+                    nullable: true
+                  amount:
+                    type: number
+                    nullable: true
+                  currency:
+                    type: string
+                    nullable: true
+                  checks:
+                    type: object
+                    nullable: true
+                  inputs:
+                    type: object
+                    nullable: true
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/approvals/lifecycle/build:
+    post:
+      summary: Build Approval Request Lifecycle
+      description: |
+        Builds an approval request lifecycle from an approval requirement.
+
+        Returns the constructed approval request with status, decision, required approvals,
+        required roles, approvers list, timestamps, and optional detail fields.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: buildApprovalRequestLifecycle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approvalRequirement:
+                  type: object
+                  nullable: true
+                  description: The approval requirement from evaluateApprovalRequirements.
+                requestId:
+                  type: string
+                  nullable: true
+                  description: Unique identifier for the request.
+                action:
+                  type: string
+                  nullable: true
+                  description: The proposed action.
+                actorId:
+                  type: string
+                  nullable: true
+                  description: Identifier of the actor proposing the action.
+                subjectId:
+                  type: string
+                  nullable: true
+                  description: Identifier of the subject of the request.
+                requestedBy:
+                  type: string
+                  nullable: true
+                  description: Identifier of who requested the approval.
+                approvers:
+                  type: array
+                  items:
+                    type: object
+                  nullable: true
+                  description: List of approvers with role and id.
+                status:
+                  type: string
+                  nullable: true
+                  description: Override status (default derived from approvalRequirement).
+                createdAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Creation timestamp.
+                expiresAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Expiration timestamp.
+                context:
+                  type: object
+                  nullable: true
+                  description: Optional additional context (secrets redacted in response).
+                includeDetails:
+                  type: boolean
+                  nullable: true
+                  description: Whether to include context in response.
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Approval request lifecycle built
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestId:
+                    type: string
+                    nullable: true
+                  action:
+                    type: string
+                    nullable: true
+                  actorId:
+                    type: string
+                    nullable: true
+                  subjectId:
+                    type: string
+                    nullable: true
+                  requestedBy:
+                    type: string
+                    nullable: true
+                  status:
+                    type: string
+                  decision:
+                    type: string
+                  reason:
+                    type: string
+                  requiredApprovals:
+                    type: integer
+                  requiredRoles:
+                    type: array
+                    items:
+                      type: string
+                  approvers:
+                    type: array
+                    items:
+                      type: object
+                  blockers:
+                    type: array
+                    items:
+                      type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  receivedApprovals:
+                    type: integer
+                  approvedByRoles:
+                    type: array
+                    items:
+                      type: string
+                  context:
+                    type: object
+                    nullable: true
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/approvals/lifecycle/transition:
+    post:
+      summary: Transition Approval Request
+      description: |
+        Transitions an approval request to a new state.
+
+        Valid transitions: create, approve, reject, expire, cancel, block, reopen.
+
+        Returns the updated approval request with new status, decision, reason,
+        and approver tracking fields.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: transitionApprovalRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - approvalRequest
+                - transition
+              properties:
+                approvalRequest:
+                  type: object
+                  description: The current approval request state.
+                transition:
+                  type: string
+                  description: The transition to apply (create, approve, reject, expire, cancel, block, reopen).
+                actorId:
+                  type: string
+                  nullable: true
+                  description: Identifier of the actor performing the transition.
+                reason:
+                  type: string
+                  nullable: true
+                  description: Reason for the transition.
+                at:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Timestamp for the transition.
+                context:
+                  type: object
+                  nullable: true
+                  description: 'Optional additional context (secrets redacted in response). Pass {"allowBlockedReopen": true} to allow reopening blocked requests.'
+                includeDetails:
+                  type: boolean
+                  nullable: true
+                  description: Whether to include context in response.
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Approval request transitioned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestId:
+                    type: string
+                    nullable: true
+                  action:
+                    type: string
+                    nullable: true
+                  actorId:
+                    type: string
+                    nullable: true
+                  subjectId:
+                    type: string
+                    nullable: true
+                  requestedBy:
+                    type: string
+                    nullable: true
+                  status:
+                    type: string
+                  decision:
+                    type: string
+                  reason:
+                    type: string
+                  requiredApprovals:
+                    type: integer
+                  requiredRoles:
+                    type: array
+                    items:
+                      type: string
+                  approvers:
+                    type: array
+                    items:
+                      type: object
+                  blockers:
+                    type: array
+                    items:
+                      type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  receivedApprovals:
+                    type: integer
+                  approvedByRoles:
+                    type: array
+                    items:
+                      type: string
+                  context:
+                    type: object
+                    nullable: true
+        "400":
+          description: Validation error, missing fields, or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/agent-permissions/profiles:
+    get:
+      summary: List agent permission scope profiles
+      description: |
+        Returns all built-in agent permission scope profiles in deterministic alphabetical order.
+        Each profile contains its name, description, allowed scopes, scope count, and any warnings.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: listAgentPermissionProfiles
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: List of agent permission scope profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgentPermissionProfile"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/agent-permissions/profiles/{profileName}:
+    get:
+      summary: Get agent permission scope profile by name
+      description: |
+        Returns a single built-in agent permission scope profile by name.
+        Profile names are case-insensitive and normalized internally.
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: getAgentPermissionProfile
+      parameters:
+        - name: profileName
+          in: path
+          required: true
+          schema: { type: string }
+          description: Name of the built-in profile (e.g. `auditor_readonly`).
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Agent permission scope profile found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentPermissionProfile"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/agent-permissions/assignments/resolve:
+    post:
+      summary: Resolve Agent Permission Assignment
+      description: |
+        Resolves whether an agent's permission assignment (direct scopes + profile-based scopes)
+        authorizes a requested scope. Combines `assignedScopes` and `assignedProfiles` into effective
+        scopes, then evaluates the requested scope.
+
+        The `includeDetails` flag controls whether `profileResolution` and `evaluation` detail
+        objects are included in the response (default: `true`).
+
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: resolveAgentPermissionAssignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agentId
+                - requestedScope
+              properties:
+                agentId:
+                  type: string
+                  description: Unique identifier of the agent.
+                requestedScope:
+                  type: string
+                  description: Scope the agent is requesting access to.
+                assignedScopes:
+                  type: array
+                  items:
+                    type: string
+                  description: Scopes directly assigned to the agent.
+                assignedProfiles:
+                  type: array
+                  items:
+                    type: string
+                  description: Permission profile names assigned to the agent.
+                resourceType:
+                  type: string
+                  nullable: true
+                  description: Optional resource type context.
+                resourceId:
+                  type: string
+                  nullable: true
+                  description: Optional resource identifier context.
+                context:
+                  type: object
+                  nullable: true
+                  description: Optional additional context (currently unused, reserved for future).
+                includeDetails:
+                  type: boolean
+                  default: true
+                  description: Whether to include `profileResolution` and `evaluation` detail objects.
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Assignment resolution result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentPermissionAssignmentResolution"
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/demo-action:
+    post:
+      summary: Execute a protected demo action
+      description: |
+        Executes a protected demo action through the policy engine.
+        Creates a GrantExecution and AuditEvent record.
+        Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
+      operationId: demoAction
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - subjectId
+                - role
+                - action
+                - resource
+              properties:
+                subjectId: { type: string }
+                role: { type: string }
+                action: { type: string }
+                resource: { type: string }
+                challengeId: { type: string, nullable: true }
+      responses:
+        "200":
+          description: Demo action approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoActionResult"
+        "400":
+          description: Invalid JSON or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed or action denied by policy engine
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/demo/tamper-grant/{id}:
+    post:
+      summary: Demo tamper a grant (DEMO ONLY)
+      description: |
+        **Demo endpoint.** Corrupts a grant field without re-signing to
+        demonstrate tamper detection. Requires `ENABLE_DEMO_ENDPOINTS=true`.
+        Never available in production builds.
+      operationId: tamperGrant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Tamper result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  grant_id: { type: string }
+                  field_changed: { type: string }
+        "403":
+          description: Demo endpoints disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Grant not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/evidence/executions/{id}/completeness:
+    get:
+      summary: Evidence completeness report for execution
+      description: |
+        Returns the evidence completeness report for a GrantExecution.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getEvidenceCompleteness
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: includeDetails
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Evidence completeness report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceCompletenessReport"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/compliance/gaps/executions/{id}:
+    get:
+      summary: Compliance gap report for execution
+      description: |
+        Returns the compliance gap report for a GrantExecution.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getComplianceGapReport
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: includeDetails
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Compliance gap report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceGapReport"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/auditor/reports/executions/{id}:
+    get:
+      summary: Auditor report for execution
+      description: |
+        Returns the institutional auditor report for a GrantExecution.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: getAuditorReport
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: includeRawEvidence
+          in: query
+          required: false
+          schema: { type: boolean, default: false }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Auditor report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditorReport"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/auditor/exports/build:
+    post:
+      summary: Build institutional auditor export
+      description: |
+        Builds an institutional auditor export from structured inputs.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: buildAuditorExport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                exportId: { type: string, nullable: true }
+                exportType: { type: string, nullable: true }
+                subjectId: { type: string, nullable: true }
+                decisionId: { type: string, nullable: true }
+                generatedBy: { type: string, nullable: true }
+                auditorId: { type: string, nullable: true }
+                decisionProvenance: { type: object, nullable: true }
+                auditorReport: { type: object, nullable: true }
+                evidenceCompleteness: { type: object, nullable: true }
+                complianceGapReport: { type: object, nullable: true }
+                permissionResult: { type: object, nullable: true }
+                approvalRequirement: { type: object, nullable: true }
+                approvalLifecycle: { type: object, nullable: true }
+                policyResults: { type: array, items: { type: object }, nullable: true }
+                metadata: { type: object, nullable: true }
+                context: { type: object, nullable: true }
+                createdAt: { type: string, nullable: true }
+                includeDetails: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Auditor export result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InstitutionalAuditorExport"
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/policy-requirements/evaluate:
+    post:
+      summary: Evaluate policy requirements
+      description: |
+        Evaluates a policy requirement rule pack against subject and context.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: evaluatePolicyRequirements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                policyPack: { type: object, nullable: true }
+                subject: { type: object, nullable: true }
+                evidenceCompleteness: { type: object, nullable: true }
+                complianceGapReport: { type: object, nullable: true }
+                permissionResult: { type: object, nullable: true }
+                approvalRequirement: { type: object, nullable: true }
+                approvalLifecycle: { type: object, nullable: true }
+                decisionProvenance: { type: object, nullable: true }
+                context: { type: object, nullable: true }
+                createdAt: { type: string, nullable: true }
+                includeDetails: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Policy requirement evaluation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyRequirementEvaluation"
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/compliance/readiness/build:
+    post:
+      summary: Build compliance readiness summary
+      description: |
+        Builds a compliance readiness summary from structured GrantLayer signals.
+        Authorization: owner, grant_admin, auditor (operator mode) or admin token (legacy mode).
+      operationId: buildComplianceReadiness
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subjectId: { type: string, nullable: true }
+                workflowId: { type: string, nullable: true }
+                evidenceCompleteness: { type: object, nullable: true }
+                complianceGapReport: { type: object, nullable: true }
+                permissionResult: { type: object, nullable: true }
+                approvalRequirement: { type: object, nullable: true }
+                approvalLifecycle: { type: object, nullable: true }
+                decisionProvenance: { type: object, nullable: true }
+                auditorExport: { type: object, nullable: true }
+                policyRequirementEvaluation: { type: object, nullable: true }
+                context: { type: object, nullable: true }
+                createdAt: { type: string, nullable: true }
+                includeDetails: { type: boolean, default: true }
+      security:
+        - LegacyAdminToken: []
+        - OperatorToken: []
+      responses:
+        "200":
+          description: Compliance readiness summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceReadinessSummary"
+        "400":
+          description: Validation error or invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    LegacyAdminToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        Legacy admin token mode. Send `Authorization: Bearer <admin-token>`.
+        Used when `ENABLE_OPERATOR_MODEL=false`. Validated via constant-time
+        HMAC comparison (GL-201). Tenant context is bound to `"demo"` server-side.
+        Clients cannot supply or override tenant_id. In production-like runtime
+        mode, placeholder/weak tokens are rejected at startup.
+    OperatorToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        Operator bearer token mode. Send `Authorization: Bearer <operator-token>`.
+        Used when `ENABLE_OPERATOR_MODEL=true`. Validated via PBKDF2-HMAC-SHA256
+        (600,000 iterations) with SHA-256 lookup-hash pre-filter. Tenant context
+        is derived server-side from the authenticated operator record. Clients
+        cannot supply or override tenant_id. Tokens are issued once at operator
+        creation and are not retrievable afterward.
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Human-readable error summary
+        errorCode:
+          type: string
+          description: Machine-readable error code (GL-030 additive field)
+        reason:
+          type: string
+          description: Detailed explanation (GL-030 additive field)
+      example:
+        error: "Grant execution not found"
+        errorCode: "grant_execution_not_found"
+        reason: "The requested grant execution does not exist."
+
+    Grant:
+      type: object
+      properties:
+        id: { type: string }
+        subject_id: { type: string }
+        role: { type: string }
+        action: { type: string }
+        resource: { type: string }
+        valid_from: { type: string }
+        valid_until: { type: string }
+        created_by: { type: string }
+        reason: { type: string }
+        created_at: { type: string }
+        revoked: { type: boolean }
+        revoked_by: { type: string, nullable: true }
+        revoked_reason: { type: string, nullable: true }
+        revoked_at: { type: string, nullable: true }
+        signature: { type: string, nullable: true }
+        signing_key_id: { type: string, nullable: true }
+        payload_hash: { type: string, nullable: true }
+        # camelCase duplicates injected by server for backward compatibility
+        signingKeyId: { type: string, nullable: true }
+        payloadHash: { type: string, nullable: true }
+        max_uses: { type: integer, nullable: true }
+        use_count: { type: integer }
+        signaturePresent: { type: boolean }
+        signatureValid: { type: boolean }
+
+    GrantRequest:
+      type: object
+      properties:
+        id: { type: string }
+        subject_id: { type: string }
+        role: { type: string }
+        action: { type: string }
+        resource: { type: string }
+        valid_from: { type: string }
+        valid_until: { type: string }
+        requested_by: { type: string }
+        reason: { type: string }
+        status: { type: string, enum: [requested, approved, denied, revoked, expired] }
+        approved_by: { type: string, nullable: true }
+        approved_at: { type: string, nullable: true }
+        denied_by: { type: string, nullable: true }
+        denied_at: { type: string, nullable: true }
+        denial_reason: { type: string, nullable: true }
+        revoked_by: { type: string, nullable: true }
+        revoked_at: { type: string, nullable: true }
+        revoked_reason: { type: string, nullable: true }
+        grant_id: { type: string, nullable: true }
+        created_at: { type: string }
+        updated_at: { type: string }
+
+    GrantExecution:
+      type: object
+      properties:
+        id: { type: string }
+        grantId: { type: string, nullable: true }
+        grantRequestId: { type: string, nullable: true }
+        operatorId: { type: string, nullable: true }
+        action: { type: string }
+        resource: { type: string }
+        challengeId: { type: string, nullable: true }
+        challengeResult: { type: string }
+        policyResult: { type: string }
+        result: { type: string, enum: [succeeded, denied, failed] }
+        errorCode: { type: string, nullable: true }
+        executedAt: { type: string }
+        auditEventId: { type: string, nullable: true }
+        metadataJson: { type: string, nullable: true }
+
+    AuditEvent:
+      type: object
+      properties:
+        id: { type: string }
+        timestamp: { type: string }
+        subject_id: { type: string }
+        role: { type: string }
+        action: { type: string }
+        resource: { type: string }
+        approved: { type: boolean }
+        reason: { type: string }
+        matched_grant_id: { type: string, nullable: true }
+        challenge_id: { type: string, nullable: true }
+        challenge_present: { type: boolean }
+        challenge_result: { type: string }
+        grant_signature_result: { type: string }
+        row_hash: { type: string, nullable: true, description: "SHA-256 hash of this audit event row for tamper-evidence chain (GL-103)." }
+        prev_hash: { type: string, nullable: true, description: "Hash of the previous audit event, forming the tamper-evidence chain." }
+        tenant_id: { type: string, nullable: true, description: "Server-derived tenant context. Null for pre-migration or system-scope events (GL-200B)." }
+        workspace_id: { type: string, nullable: true, description: "Reserved, nullable. workspace_id enforcement is deferred." }
+        scope: { type: string, nullable: true, description: "Audit event scope: tenant, tenant_admin, system, or public." }
+
+    Challenge:
+      type: object
+      properties:
+        id: { type: string }
+        subject_id: { type: string }
+        action: { type: string }
+        resource: { type: string }
+        created_at: { type: string }
+        expires_at: { type: string }
+        used_at: { type: string, nullable: true }
+        status: { type: string, enum: [active, used, expired] }
+
+    EvidenceBundle:
+      type: object
+      required:
+        - evidenceId
+        - executionId
+        - grantId
+        - grantRequestId
+        - evidenceHash
+        - canonicalVersion
+        - hashAlgorithm
+        - generatedAt
+        - request
+        - approval
+        - grant
+        - execution
+        - usageLimits
+        - auditTrail
+      properties:
+        evidenceId:
+          type: string
+          description: Same as executionId
+        executionId:
+          type: string
+        grantId:
+          type: string
+          nullable: true
+          description: Linked grant ID, or null if no grant matched
+        grantRequestId:
+          type: string
+          nullable: true
+          description: Linked grant request ID, or null if not applicable
+        evidenceHash:
+          type: string
+          description: SHA-256 hash of the canonical bundle (GL-026)
+        canonicalVersion:
+          type: string
+          enum: [gl-evidence-v1]
+        hashAlgorithm:
+          type: string
+          enum: [sha256]
+        generatedAt:
+          type: string
+          format: date-time
+        request:
+          type: object
+          nullable: true
+          description: Grant request section (present if grant request exists)
+          properties:
+            id: { type: string }
+            requestedBy: { type: string }
+            requestedAt: { type: string }
+            reason: { type: string }
+        approval:
+          type: object
+          nullable: true
+          description: Approval/denial section (present if request was approved or denied)
+          properties:
+            approvedBy: { type: string, nullable: true }
+            approvedAt: { type: string, nullable: true }
+            deniedBy: { type: string, nullable: true }
+            deniedAt: { type: string, nullable: true }
+            denialReason: { type: string, nullable: true }
+        grant:
+          type: object
+          nullable: true
+          description: Grant section (present if a grant was matched)
+          properties:
+            id: { type: string }
+            subjectId: { type: string }
+            role: { type: string }
+            action: { type: string }
+            resource: { type: string }
+            validFrom: { type: string }
+            validUntil: { type: string }
+            createdBy: { type: string }
+            createdAt: { type: string }
+            signingKeyId: { type: string, nullable: true }
+            payloadHash: { type: string, nullable: true }
+            maxUses: { type: integer, nullable: true }
+            useCount: { type: integer }
+            grantSignatureResult: { type: string }
+        execution:
+          type: object
+          description: Execution section
+          properties:
+            action: { type: string }
+            resource: { type: string }
+            operatorId: { type: string, nullable: true }
+            challengeId: { type: string, nullable: true }
+            challengeResult: { type: string }
+            policyResult: { type: string }
+            result: { type: string, enum: [succeeded, denied, failed] }
+            errorCode: { type: string, nullable: true }
+            executedAt: { type: string }
+            auditEventId: { type: string, nullable: true }
+        usageLimits:
+          type: object
+          description: Usage limit snapshot at time of execution
+          properties:
+            affectedOutcome: { type: boolean }
+            maxUses: { type: integer, nullable: true }
+            useCount: { type: integer, nullable: true }
+            reason: { type: string, nullable: true }
+        auditTrail:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditEvent"
+
+    DemoActionResult:
+      type: object
+      properties:
+        approved: { type: boolean }
+        message: { type: string, nullable: true }
+        reason: { type: string, nullable: true }
+        matchedGrantId: { type: string, nullable: true }
+        challengeId: { type: string, nullable: true }
+        challengeResult: { type: string, nullable: true }
+        auditEventId: { type: string }
+        grantSignatureResult: { type: string }
+        executionId: { type: string }
+
+    EvidenceVerificationResult:
+      type: object
+      required: [status, executionId, verifiedAt, reason]
+      properties:
+        status:
+          type: string
+          enum: [valid, invalid, missing_data, unsupported_version]
+          description: Verification outcome for the persisted evidence bundle.
+        executionId:
+          type: string
+          description: The execution ID that was verified.
+        verifiedAt:
+          type: string
+          format: date-time
+          description: ISO-8601 UTC timestamp of the verification.
+        reason:
+          type: string
+          description: Human-readable explanation of the verification outcome.
+
+    DecisionProvenanceSummary:
+      type: object
+      required:
+        - executionId
+        - grantId
+        - execution
+        - evidence
+        - verification
+        - provenanceEvents
+        - timeline
+        - warnings
+        - generatedAt
+      properties:
+        executionId:
+          type: string
+        grantId:
+          type: string
+          nullable: true
+        execution:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string }
+            action: { type: string }
+            resource: { type: string }
+            operatorId: { type: string, nullable: true }
+            grantId: { type: string, nullable: true }
+            grantRequestId: { type: string, nullable: true }
+            challengeId: { type: string, nullable: true }
+            challengeResult: { type: string }
+            policyResult: { type: string }
+            result: { type: string }
+            errorCode: { type: string, nullable: true }
+            executedAt: { type: string }
+            auditEventId: { type: string, nullable: true }
+        evidence:
+          type: object
+          properties:
+            present: { type: boolean }
+            hash:
+              type: string
+              nullable: true
+            bundleJson:
+              type: object
+              nullable: true
+        verification:
+          type: object
+          properties:
+            status:
+              type: string
+              nullable: true
+            verifiedAt:
+              type: string
+              nullable: true
+        provenanceEvents:
+          type: array
+          items:
+            type: object
+            properties:
+              eventType: { type: string }
+              actorType: { type: string }
+              actorId: { type: string }
+              action: { type: string }
+              occurredAt: { type: string }
+              resourceType: { type: string }
+              resourceId: { type: string }
+              evidenceHash: { type: string }
+              verificationStatus: { type: string }
+        timeline:
+          type: array
+          items:
+            type: object
+            properties:
+              eventType: { type: string }
+              actorType: { type: string }
+              actorId: { type: string }
+              action: { type: string }
+              occurredAt: { type: string }
+              resourceType: { type: string }
+              resourceId: { type: string }
+              evidenceHash: { type: string }
+              verificationStatus: { type: string }
+        warnings:
+          type: array
+          items: { type: string }
+        generatedAt:
+          type: string
+          format: date-time
+
+    AuditorReport:
+      type: object
+      required:
+        - reportId
+        - reportType
+        - scope
+        - generatedAt
+        - findings
+        - conclusion
+        - provenanceSummary
+        - grant
+        - grantRequest
+      properties:
+        reportId:
+          type: string
+          format: uuid
+        reportType:
+          type: string
+          enum: [auditor_report]
+        scope:
+          type: object
+          required: [executionId]
+          properties:
+            executionId: { type: string }
+            grantId: { type: string, nullable: true }
+        generatedAt:
+          type: string
+          format: date-time
+        findings:
+          type: array
+          items: { type: string }
+        conclusion:
+          type: string
+          enum: [clean, attention_required]
+        provenanceSummary:
+          $ref: "#/components/schemas/DecisionProvenanceSummary"
+        grant:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string }
+            subjectId: { type: string }
+            role: { type: string }
+            action: { type: string }
+            resource: { type: string }
+            validFrom: { type: string }
+            validUntil: { type: string }
+            createdBy: { type: string }
+            reason: { type: string }
+            createdAt: { type: string }
+            revoked: { type: boolean }
+            revokedBy: { type: string, nullable: true }
+            revokedAt: { type: string, nullable: true }
+            revokedReason: { type: string, nullable: true }
+            signingKeyId: { type: string, nullable: true }
+            payloadHash: { type: string, nullable: true }
+            maxUses: { type: integer, nullable: true }
+            useCount: { type: integer }
+            signaturePresent: { type: boolean }
+        grantRequest:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string }
+            subjectId: { type: string }
+            role: { type: string }
+            action: { type: string }
+            resource: { type: string }
+            validFrom: { type: string }
+            validUntil: { type: string }
+            requestedBy: { type: string }
+            reason: { type: string }
+            status: { type: string, enum: [requested, approved, denied, revoked, expired] }
+            approvedBy: { type: string, nullable: true }
+            approvedAt: { type: string, nullable: true }
+            deniedBy: { type: string, nullable: true }
+            deniedAt: { type: string, nullable: true }
+            denialReason: { type: string, nullable: true }
+            revokedBy: { type: string, nullable: true }
+            revokedAt: { type: string, nullable: true }
+            revokedReason: { type: string, nullable: true }
+            grantId: { type: string, nullable: true }
+            createdAt: { type: string }
+            updatedAt: { type: string }
+        evidenceBundle:
+          type: object
+          nullable: true
+
+    EvidenceCompletenessReport:
+      type: object
+      required:
+        - reportType
+        - reportVersion
+        - executionId
+        - grantId
+        - generatedAt
+        - completenessScore
+        - completenessStatus
+        - missingEvidence
+        - complianceGaps
+        - warnings
+        - auditReadiness
+        - evidence
+        - verification
+        - provenance
+      properties:
+        reportType:
+          type: string
+          enum: [evidence_completeness]
+        reportVersion:
+          type: string
+          enum: [gl-038-a1]
+        executionId:
+          type: string
+        grantId:
+          type: string
+          nullable: true
+        generatedAt:
+          type: string
+          format: date-time
+        completenessScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        completenessStatus:
+          type: string
+          enum: [complete, incomplete, critical]
+        missingEvidence:
+          type: array
+          items: { type: string }
+        complianceGaps:
+          type: array
+          items: { type: string }
+        warnings:
+          type: array
+          items: { type: string }
+        auditReadiness:
+          type: string
+          enum: [ready, not_ready, blocked]
+        evidence:
+          type: object
+          properties:
+            present:
+              type: boolean
+            hash:
+              type: string
+              nullable: true
+        verification:
+          type: object
+          properties:
+            status:
+              type: string
+              nullable: true
+            verifiedAt:
+              type: string
+              nullable: true
+        provenance:
+          type: object
+          properties:
+            eventCount:
+              type: integer
+            events:
+              type: array
+              nullable: true
+              items:
+                type: object
+                properties:
+                  eventType: { type: string }
+                  actorType: { type: string }
+                  actorId: { type: string }
+                  action: { type: string }
+                  occurredAt: { type: string }
+        checks:
+          type: object
+          nullable: true
+          properties:
+            auditorReportAvailable:
+              type: boolean
+            executionPresent:
+              type: boolean
+            evidencePresent:
+              type: boolean
+            evidenceVerified:
+              type: boolean
+            evidenceValid:
+              type: boolean
+            provenanceEventsPresent:
+              type: boolean
+            criticalGapsPresent:
+              type: boolean
+
+    AgentPermissionProfile:
+      type: object
+      required:
+        - profileName
+        - description
+        - scopes
+        - scopeCount
+        - warnings
+      properties:
+        profileName:
+          type: string
+          description: Normalized lowercase profile identifier.
+        description:
+          type: string
+          description: Human-readable summary of the profile purpose.
+        scopes:
+          type: array
+          items:
+            type: string
+          description: Deterministic list of scope strings granted by this profile.
+        scopeCount:
+          type: integer
+          description: Number of scopes in the profile.
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Validation warnings (e.g. unknown or malformed scope entries).
+
+    AgentPermissionAssignmentResolution:
+      type: object
+      required:
+        - allowed
+        - agentId
+        - requestedScope
+        - assignedScopes
+        - assignedProfiles
+        - resolvedScopes
+        - matchedScope
+        - resourceType
+        - resourceId
+        - reason
+        - warnings
+      properties:
+        allowed:
+          type: boolean
+          description: Whether the requested scope is authorized.
+        agentId:
+          type: string
+        requestedScope:
+          type: string
+        assignedScopes:
+          type: array
+          items:
+            type: string
+          description: Echo of the directly assigned scopes.
+        assignedProfiles:
+          type: array
+          items:
+            type: string
+          description: Echo of the assigned profile names.
+        resolvedScopes:
+          type: array
+          items:
+            type: string
+          description: Effective scopes after combining direct scopes and profile-derived scopes, deduplicated and sorted.
+        matchedScope:
+          type: string
+          nullable: true
+          description: The scope that granted access, or null if denied.
+        resourceType:
+          type: string
+          nullable: true
+        resourceId:
+          type: string
+          nullable: true
+        reason:
+          type: string
+          description: Human-readable reason for allow/deny decision.
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Warnings about malformed inputs or unknown profiles.
+        profileResolution:
+          type: object
+          nullable: true
+          description: Detail object present only when `includeDetails=true`.
+          properties:
+            resolvedProfiles:
+              type: array
+              items:
+                type: string
+            unresolvedProfiles:
+              type: array
+              items:
+                type: string
+            warnings:
+              type: array
+              items:
+                type: string
+        evaluation:
+          type: object
+          nullable: true
+          description: Full permission evaluation detail present only when `includeDetails=true`.
+          properties:
+            allowed:
+              type: boolean
+            agentId:
+              type: string
+            requestedScope:
+              type: string
+            matchedScope:
+              type: string
+              nullable: true
+            resourceType:
+              type: string
+              nullable: true
+            resourceId:
+              type: string
+              nullable: true
+            reason:
+              type: string
+            warnings:
+              type: array
+              items:
+                type: string
+
+    ComplianceGapReport:
+      type: object
+      required:
+        - reportType
+        - reportVersion
+        - executionId
+        - grantId
+        - generatedAt
+        - overallStatus
+        - severity
+        - complianceGaps
+        - blockingGaps
+        - recommendedActions
+        - completeness
+        - evidence
+        - verification
+        - provenance
+        - warnings
+        - auditReadiness
+      properties:
+        reportType:
+          type: string
+          enum: [compliance_gap_report]
+        reportVersion:
+          type: string
+          enum: [gl-compliance-gap-v1]
+        executionId:
+          type: string
+        grantId:
+          type: string
+          nullable: true
+        generatedAt:
+          type: string
+          format: date-time
+        overallStatus:
+          type: string
+          enum: [clear, gaps_detected, blocked]
+        severity:
+          type: string
+          enum: [none, low, medium, high, critical]
+        complianceGaps:
+          type: array
+          items:
+            type: object
+            required: [gapId, category, severity, description]
+            properties:
+              gapId: { type: string }
+              category: { type: string }
+              severity: { type: string, enum: [critical, high, medium, low] }
+              description: { type: string }
+        blockingGaps:
+          type: array
+          items:
+            type: object
+            required: [gapId, category, severity, description]
+            properties:
+              gapId: { type: string }
+              category: { type: string }
+              severity: { type: string, enum: [critical, high, medium, low] }
+              description: { type: string }
+        recommendedActions:
+          type: array
+          items: { type: string }
+        completeness:
+          type: object
+          required: [score, status]
+          properties:
+            score:
+              type: integer
+              nullable: true
+            status:
+              type: string
+              nullable: true
+        evidence:
+          type: object
+          properties:
+            present:
+              type: boolean
+            hash:
+              type: string
+              nullable: true
+        verification:
+          type: object
+          properties:
+            status:
+              type: string
+              nullable: true
+            verifiedAt:
+              type: string
+              nullable: true
+        provenance:
+          type: object
+          properties:
+            eventCount:
+              type: integer
+            events:
+              type: array
+              nullable: true
+              items:
+                type: object
+                properties:
+                  eventType: { type: string }
+                  actorType: { type: string }
+                  actorId: { type: string }
+                  action: { type: string }
+                  occurredAt: { type: string }
+        warnings:
+          type: array
+          items: { type: string }
+        auditReadiness:
+          type: string
+          enum: [ready, not_ready, blocked]
+          nullable: true
+
+    DecisionProvenanceV2:
+      type: object
+      required:
+        - recordType
+        - recordVersion
+        - readiness
+        - signals
+        - blockers
+        - warnings
+        - missingInputs
+        - createdAt
+      properties:
+        recordType:
+          type: string
+          enum: [decision_provenance]
+        recordVersion:
+          type: string
+          enum: [gl-decision-provenance-v2]
+        decisionId:
+          type: string
+          nullable: true
+        decisionType:
+          type: string
+          nullable: true
+        subjectId:
+          type: string
+          nullable: true
+        actorId:
+          type: string
+          nullable: true
+        action:
+          type: string
+          nullable: true
+        decision:
+          type: string
+          nullable: true
+        decisionStatus:
+          type: string
+          nullable: true
+        reason:
+          type: string
+          nullable: true
+        readiness:
+          type: object
+          additionalProperties:
+            type: string
+        signals:
+          type: object
+          additionalProperties:
+            type: string
+        blockers:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        missingInputs:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        evidence:
+          type: object
+          nullable: true
+        compliance:
+          type: object
+          nullable: true
+        permission:
+          type: object
+          nullable: true
+        approval:
+          type: object
+          nullable: true
+        provenance:
+          type: object
+          nullable: true
+        auditor:
+          type: object
+          nullable: true
+        policy:
+          type: object
+          nullable: true
+        inputs:
+          type: object
+          nullable: true
+
+    InstitutionalAuditorExport:
+      type: object
+      required:
+        - recordType
+        - recordVersion
+        - exportId
+        - exportType
+        - subjectId
+        - decisionId
+        - generatedBy
+        - auditorId
+        - exportStatus
+        - auditReadiness
+        - sections
+        - blockers
+        - warnings
+        - missingSections
+        - createdAt
+      properties:
+        recordType:
+          type: string
+          enum: [auditor_export]
+        recordVersion:
+          type: string
+          enum: [gl-auditor-export-v1]
+        exportId:
+          type: string
+          nullable: true
+        exportType:
+          type: string
+          nullable: true
+        subjectId:
+          type: string
+          nullable: true
+        decisionId:
+          type: string
+          nullable: true
+        generatedBy:
+          type: string
+          nullable: true
+        auditorId:
+          type: string
+          nullable: true
+        exportStatus:
+          type: string
+          enum: [ready, needs_review, blocked, incomplete, unknown]
+        auditReadiness:
+          type: string
+          enum: [audit_ready, needs_review, blocked, insufficient_evidence, unknown]
+        sections:
+          type: array
+          items:
+            type: string
+            enum: [decisionProvenance, auditorReport, evidence, compliance, permission, approval, policy]
+        blockers:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        missingSections:
+          type: array
+          items:
+            type: string
+            enum: [decisionProvenance, auditorReport, evidence, compliance, permission, approval, policy]
+        createdAt:
+          type: string
+          format: date-time
+        decisionProvenance:
+          type: object
+          nullable: true
+        auditorReport:
+          type: object
+          nullable: true
+        evidence:
+          type: object
+          nullable: true
+        compliance:
+          type: object
+          nullable: true
+        permission:
+          type: object
+          nullable: true
+        approval:
+          type: object
+          nullable: true
+        policy:
+          type: array
+          items:
+            type: object
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        context:
+          type: object
+          nullable: true
+
+    PolicyRequirementEvaluation:
+      type: object
+      required:
+        - recordType
+        - recordVersion
+        - policyPackId
+        - policyPackVersion
+        - evaluationStatus
+        - readiness
+        - requiredEvidence
+        - missingEvidence
+        - satisfiedEvidence
+        - exclusionViolations
+        - deadlineStatus
+        - amountStatus
+        - requiredRoles
+        - approvalPolicy
+        - blockers
+        - warnings
+        - missingInputs
+        - createdAt
+      properties:
+        recordType:
+          type: string
+          enum: [policy_requirement_evaluation]
+        recordVersion:
+          type: string
+          enum: [gl-policy-requirements-v1]
+        policyPackId:
+          type: string
+        policyPackVersion:
+          type: string
+          nullable: true
+        subjectId:
+          type: string
+          nullable: true
+        evaluationStatus:
+          type: string
+          enum: [passed, needs_review, blocked, incomplete, unknown]
+        readiness:
+          type: string
+          enum: [ready, needs_review, blocked, insufficient_data]
+        requiredEvidence:
+          type: array
+          items:
+            type: string
+        missingEvidence:
+          type: array
+          items:
+            type: string
+        satisfiedEvidence:
+          type: array
+          items:
+            type: string
+        exclusionViolations:
+          type: array
+          items:
+            type: string
+        deadlineStatus:
+          type: string
+          enum: [on_time, expired, expired_optional, none, missing]
+        amountStatus:
+          type: string
+          enum: [within_limit, above_limit, currency_mismatch, malformed, missing_subject_amount, missing_subject, none, missing]
+        requiredRoles:
+          type: array
+          items:
+            type: string
+        approvalPolicy:
+          type: object
+          properties:
+            minimumApprovals:
+              type: integer
+              nullable: true
+            fourEyesAboveAmount:
+              type: number
+              nullable: true
+        blockers:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        missingInputs:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        policyPack:
+          type: object
+          nullable: true
+        subject:
+          type: object
+          nullable: true
+        evidenceCompleteness:
+          type: object
+          nullable: true
+        complianceGapReport:
+          type: object
+          nullable: true
+        permissionResult:
+          type: object
+          nullable: true
+        approvalRequirement:
+          type: object
+          nullable: true
+        approvalLifecycle:
+          type: object
+          nullable: true
+        decisionProvenance:
+          type: object
+          nullable: true
+        auditorExport:
+          type: object
+          nullable: true
+        context:
+          type: object
+          nullable: true
+
+    ComplianceReadinessSummary:
+      type: object
+      required:
+        - recordType
+        - recordVersion
+        - createdAt
+        - readinessStatus
+        - readinessScore
+        - evidenceStatus
+        - complianceStatus
+        - permissionStatus
+        - approvalStatus
+        - provenanceStatus
+        - auditorExportStatus
+        - policyStatus
+        - blockers
+        - warnings
+        - missingInputs
+        - recommendedActions
+      properties:
+        recordType:
+          type: string
+          enum: [compliance_readiness_summary]
+        recordVersion:
+          type: string
+          enum: [gl-compliance-readiness-v1]
+        executionId:
+          type: string
+          nullable: true
+        grantId:
+          type: string
+          nullable: true
+        subjectId:
+          type: string
+          nullable: true
+        workflowId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        readinessStatus:
+          type: string
+          enum: [ready, needs_review, blocked, insufficient_data]
+        readinessScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        evidenceStatus:
+          type: string
+        complianceStatus:
+          type: string
+        permissionStatus:
+          type: string
+        approvalStatus:
+          type: string
+        provenanceStatus:
+          type: string
+        auditorExportStatus:
+          type: string
+        policyStatus:
+          type: string
+        blockers:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        missingInputs:
+          type: array
+          items:
+            type: string
+        recommendedActions:
+          type: array
+          items:
+            type: string
+        evidenceCompleteness:
+          type: object
+          nullable: true
+        complianceGapReport:
+          type: object
+          nullable: true
+        permissionResult:
+          type: object
+          nullable: true
+        approval:
+          type: object
+          nullable: true
+        provenance:
+          type: object
+          nullable: true
+        auditorReport:
+          type: object
+          nullable: true
+        policy:
+          type: array
+          items:
+            type: object
+          nullable: true
+        context:
+          type: object
+          nullable: true

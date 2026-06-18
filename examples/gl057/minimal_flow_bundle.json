@@ -1,0 +1,31 @@
+{
+  "bundleId": "gl057-bundle-001",
+  "description": "Minimal flow bundle aggregating the main Product Core artifacts for the GL-057 quickstart example.",
+  "workflowId": "gl057-workflow-001",
+  "subjectId": "gl057-subject-001",
+  "grantRequestId": "gl057-request-001",
+  "grantId": "gl057-grant-001",
+  "executionId": "gl057-execution-001",
+  "evidenceId": "gl057-evidence-001",
+  "policyId": "gl057-policy-001",
+  "auditorExportId": "gl057-auditor-export-001",
+  "artifacts": {
+    "grantRequest": "docs/examples/gl057/grant_request.json",
+    "approvalResult": "docs/examples/gl057/approval_result.json",
+    "grant": "docs/examples/gl057/grant.json",
+    "grantExecution": "docs/examples/gl057/grant_execution.json",
+    "evidenceItem": "docs/examples/gl057/evidence_item.json",
+    "evidenceCompleteness": "docs/examples/gl057/evidence_completeness.json",
+    "complianceGapReport": "docs/examples/gl057/compliance_gap_report.json",
+    "policyRequirementsResult": "docs/examples/gl057/policy_requirements_result.json",
+    "decisionProvenanceSummary": "docs/examples/gl057/decision_provenance_summary.json",
+    "auditorExport": "docs/examples/gl057/auditor_export.json",
+    "complianceReadinessSummary": "docs/examples/gl057/compliance_readiness_summary.json"
+  },
+  "notes": [
+    "This bundle is illustrative and not a live API contract.",
+    "All identifiers are stable demo IDs and contain no real personal data.",
+    "Signature and hash values are deterministic demo strings for readability.",
+    "Refer to docs/integrator_quickstart.md for context."
+  ]
+}

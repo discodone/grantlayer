@@ -1,0 +1,182 @@
+{
+  "issue_id": "GL-171",
+  "title": "Public Release / GitHub Snapshot Readiness + Private Data Safety Review Gate",
+  "review_date": "2026-06-01",
+  "base_commit": "db6979122129e9ea3970a2da757da7566e26de8f",
+  "branch": "gl-171-public-release-github-snapshot-readiness-review",
+  "reviewed_areas": [
+    "public_facing_correctness",
+    "quickstart_readiness",
+    "safety_and_non_production_boundaries",
+    "github_publish_readiness",
+    "secret_privacy_internal_leakage_safety",
+    "private_data_public_snapshot_safety",
+    "release_blocker_assessment"
+  ],
+  "checks_performed": [
+    "README.md is single canonical status source after GL-170 deduplication",
+    "SECURITY.md is single canonical security caveat source after GL-170 deduplication",
+    "No duplicated broad status blocks in non-canonical docs",
+    "GrantLayer described as Developer Preview not production SaaS",
+    "Tenant isolation described as not implemented",
+    "No real secrets in public docs",
+    "No real customer data in public docs",
+    "No private email addresses in public docs",
+    "No raw tokens passwords or private keys in public files",
+    "No private absolute paths in non-excluded public docs",
+    "No internal hostnames or Forgejo URLs",
+    "internal-forgejo label checked as descriptive label not URL or credential",
+    "docs/demo_script.md checked for internal path and snapshot exclusion status",
+    "docs/sprint_2_plan.md confirmed as excluded from snapshot",
+    "docs/public_secret_sensitive_scan_gate.md confirmed as excluded from snapshot",
+    "first_verifiable_output example run locally and output verified against committed reference",
+    "Run command checked for accuracy in README and docs/first_verifiable_output.md",
+    "docs/first_verifiable_output.md discoverability from README confirmed",
+    "examples/first_verifiable_output.json committed deterministic reference verified",
+    "No GitHub push instruction in any reviewed file",
+    "Publication requires explicit human approval confirmed in docs",
+    "No visibility-change instruction in any reviewed file",
+    "No history rewrite instruction in any reviewed file",
+    "scripts/build-clean-public-snapshot.sh exclusion list reviewed for completeness"
+  ],
+  "private_data_public_snapshot_safety": {
+    "scan_scope": [
+      "docs/**",
+      "examples/**",
+      "README.md",
+      "SECURITY.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "llms.txt",
+      "llms-full.txt",
+      "scripts/build-clean-public-snapshot.sh (exclusion list review)"
+    ],
+    "checks_performed": [
+      "raw API tokens JWTs passwords",
+      "private key material RSA SSH Ed25519 PEM",
+      "private email addresses",
+      "phone numbers",
+      "real customer or user data",
+      "private absolute paths in non-excluded files",
+      "internal hostnames or Forgejo URLs",
+      "internal terminal URLs",
+      "environment files or secret-bearing configs",
+      "Paperclip references in non-excluded files",
+      "GitHub visibility-change instructions",
+      "instructions to push internal repo directly to GitHub",
+      "public examples use synthetic/demo data only"
+    ],
+    "private_data_found": false,
+    "secret_material_found": false,
+    "internal_operational_path_in_non_excluded_file": true,
+    "internal_operational_path_detail": "docs/demo_script.md line 39 contains 'cd /paperclip/grantlayer-mvp'; file is not in PUBLIC_EXPORT_EXCLUDE in scripts/build-clean-public-snapshot.sh",
+    "internal_infrastructure_label_in_non_excluded_artifacts": true,
+    "internal_infrastructure_label_detail": "sourceOfTruth: internal-forgejo label (no URL or credential) in docs/examples/gl163/, gl164a/, gl165/ JSON artifacts not in snapshot exclusion list",
+    "public_examples_use_synthetic_demo_data_only": true,
+    "deterministic_output_verified": true,
+    "github_snapshot_publication_blocked_by_private_data_concerns": false,
+    "snapshot_publication_cautions": [
+      "F-001 HIGH: docs/demo_script.md contains internal operational path and is not excluded from snapshot — add to PUBLIC_EXPORT_EXCLUDE before publish",
+      "F-002 MEDIUM: internal-forgejo label in three non-excluded example JSONs — confirm acceptability or exclude before publish"
+    ]
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "high",
+      "area": "private_data_public_snapshot_safety",
+      "status": "open",
+      "finding": "docs/demo_script.md contains 'cd /paperclip/grantlayer-mvp' (internal operational path revealing Paperclip internal system directory). This file is not in the PUBLIC_EXPORT_EXCLUDE list in scripts/build-clean-public-snapshot.sh and would be included in a future public snapshot.",
+      "recommendation": "Add docs/demo_script.md to PUBLIC_EXPORT_EXCLUDE in scripts/build-clean-public-snapshot.sh before the next snapshot build. Address in next publish or snapshot-build issue. Do not rewrite history in this issue."
+    },
+    {
+      "id": "F-002",
+      "severity": "medium",
+      "area": "private_data_public_snapshot_safety",
+      "status": "open",
+      "finding": "docs/examples/gl163/post_public_agent_intake_triage.json, docs/examples/gl164a/public_repo_discovery_metadata.json, and docs/examples/gl165/public_changelog_version_anchors.json each contain 'sourceOfTruth: internal-forgejo'. This label discloses that an internal Forgejo instance is the canonical source of truth. No URL or credentials are exposed. These files are not in the snapshot exclusion list.",
+      "recommendation": "Confirm acceptability of the internal-forgejo descriptive label in public artifacts, or add these three JSON files to the snapshot exclusion list. Addressable in the next publish issue."
+    },
+    {
+      "id": "F-003",
+      "severity": "low",
+      "area": "public_facing_correctness",
+      "status": "open",
+      "finding": "README.md Safety section still contains 'GL-169 is public-facing polish only' — accurate but two issues old. No incorrect claim.",
+      "recommendation": "Optional: update the line to reference the current latest internal issue when README is next revised. Not a blocker."
+    },
+    {
+      "id": "F-004",
+      "severity": "low",
+      "area": "github_publish_readiness",
+      "status": "pass",
+      "finding": "docs/examples/gl164a/public_repo_discovery_metadata.json contains a public GitHub URL (https://github.com/discodone/grantlayer) as a planned/reference URL from GL-164A. Not a leaked credential.",
+      "recommendation": "No action required; this is a documented reference URL."
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 1,
+    "medium": 1,
+    "low": 2,
+    "total": 4
+  },
+  "readiness_decision": "proceed_with_cautions_to_public_snapshot_publish",
+  "readiness_rationale": "No critical findings. One HIGH finding (docs/demo_script.md with internal path not excluded from snapshot) must be addressed before executing the next publish. No secrets, credentials, PII, or customer data found. All quickstart paths pass, deterministic output verified, canonical status sources clean.",
+  "next_recommended_step": "GL-172: Public Snapshot Publish — Pre-Publish Caution Resolution + Snapshot Build + Publish Gate. Resolve F-001 (add docs/demo_script.md to exclusion list) and F-002 (confirm or exclude internal-forgejo label artifacts), then rebuild snapshot, run scan gate, run full backend suite, and proceed to GL-162 Publish Gate with explicit human approval.",
+  "non_goals": [
+    "push_to_github",
+    "change_repository_visibility",
+    "rewrite_history",
+    "force_push",
+    "change_backend_src",
+    "change_openapi",
+    "change_migrations",
+    "change_database_schema",
+    "change_dependencies",
+    "change_sdk_implementation",
+    "change_snapshot_publish_script_behavior",
+    "change_git_remotes",
+    "change_secret_handling",
+    "update_paperclip_or_call_paperclip_apis",
+    "change_frontend_website_design",
+    "change_production_runtime_behavior"
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "no_production_backend_src_changes": true,
+    "no_openapi_migration_db_dependency_changes": true,
+    "no_secret_material_in_review_artifacts": true,
+    "no_real_customer_data_in_review_artifacts": true,
+    "no_private_email_or_phone_in_review_artifacts": true,
+    "working_tree_clean_after_commit": true,
+    "changes_within_allowed_scope": true
+  },
+  "canonical_status_sources": [
+    {
+      "path": "README.md",
+      "role": "canonical public status and readiness source",
+      "verified": true
+    },
+    {
+      "path": "SECURITY.md",
+      "role": "canonical security caveat source",
+      "verified": true
+    }
+  ],
+  "quickstart_verification": {
+    "first_verifiable_output_discoverable": true,
+    "run_command_accurate": true,
+    "committed_deterministic_output_referenced": true,
+    "deterministic_output_matched_reference": true,
+    "docs_first_verifiable_output_md_discoverable": true,
+    "local_run_performed": true,
+    "local_run_output_diff": "zero — exact match"
+  },
+  "changed_files": [
+    "docs/public_release_github_snapshot_readiness_review.md",
+    "docs/examples/gl171/public_release_github_snapshot_readiness_review.json",
+    "backend/tests/test_gl171_public_release_github_snapshot_readiness_review.py"
+  ]
+}

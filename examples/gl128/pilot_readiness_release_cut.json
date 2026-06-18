@@ -1,0 +1,166 @@
+{
+  "issue_id": "GL-128",
+  "title": "Pilot Readiness Review / Release Cut",
+  "disposition": "pilot_ready_with_caveats",
+  "review_only": true,
+  "production_code_changed": false,
+  "baseline": {
+    "main_after": "GL-127",
+    "merge_commit_short": "333a6dd",
+    "full_backend_suite": {
+      "total_or_passed": 3312,
+      "skipped": 43,
+      "failures": 0,
+      "errors": 0,
+      "timeout": false
+    }
+  },
+  "completed_gates": [
+    {
+      "issue_id": "GL-116",
+      "title": "PostgreSQL Audit Immutability CI Gate",
+      "description": "Real PostgreSQL integration test proving GL-108 audit log triggers block UPDATE and DELETE; prevents silent regression on the immutability guarantee."
+    },
+    {
+      "issue_id": "GL-117",
+      "title": "Structured Logging Integration",
+      "description": "server.py request handlers emit structured log events for operational and security events without changing API behavior or auth semantics."
+    },
+    {
+      "issue_id": "GL-118",
+      "title": "Correlation ID Propagation Baseline",
+      "description": "X-Correlation-ID is echoed in all responses and appears in structured log events; unsafe or oversized IDs are replaced rather than reflected."
+    },
+    {
+      "issue_id": "GL-119",
+      "title": "Operator Token Expiry and Rotation Baseline",
+      "description": "Operator tokens expire and support rotation without leaking raw token material; fail-closed on expiry."
+    },
+    {
+      "issue_id": "GL-120",
+      "title": "Auth Failure Structured Event Logging",
+      "description": "All auth failure paths emit structured security events with a stable reason_code field and correlation_id; no raw token or header leakage."
+    },
+    {
+      "issue_id": "GL-121",
+      "title": "Full Backend Suite Timeout Wrapper",
+      "description": "scripts/run-full-backend-suite.sh wraps the full suite with a configurable timeout (default 900 s) and preserves exit codes."
+    },
+    {
+      "issue_id": "GL-123",
+      "title": "PostgreSQL Connection Pooling Baseline",
+      "description": "psycopg2 SimpleConnectionPool with configurable min/max connections; SQLite path unchanged; credentials never exposed in failure messages."
+    },
+    {
+      "issue_id": "GL-124",
+      "title": "Request Payload Shape Validation Gate",
+      "description": "Oversized, malformed, wrong-shape, and non-object JSON bodies are rejected with safe error responses; raw payload is never echoed."
+    },
+    {
+      "issue_id": "GL-125",
+      "title": "Operational Smoke Test Bundle",
+      "description": "Fast, focused validation suite for post-deployment confidence: health, auth boundary, payload validation, correlation ID, and logging safety."
+    },
+    {
+      "issue_id": "GL-126",
+      "title": "Production Runtime Gate",
+      "description": "Fast config validation before deployment covering runtime mode classification, production-like config safety, and secret-handling conventions."
+    },
+    {
+      "issue_id": "GL-127",
+      "title": "Backup / Restore Minimum Drill",
+      "description": "Checklist and validation package for minimum backup/restore readiness; defines critical data categories, restore acceptance criteria, and go/no-go gates."
+    }
+  ],
+  "pilot_ready_capabilities": [
+    "Product Core backend: grant lifecycle (submit, approve, execute, evidence, audit) end-to-end",
+    "Auth and operator boundaries: tokens, expiry, rotation, challenge flow",
+    "Request validation: payload shape, size limits, JSON structure, string length",
+    "Structured logging and correlation: all handlers emit structured events with correlation_id",
+    "Auth failure security logging: stable reason_code, no raw token leakage",
+    "Production runtime gate: fast automated config validation before deployment",
+    "Operational smoke tests: focused post-deployment health and boundary validation",
+    "Backup/restore minimum drill: critical data categories and restore acceptance criteria",
+    "PostgreSQL readiness baseline: audit immutability CI-gated; connection pooling configurable",
+    "Audit and hash-chain integrity: row_hash, prev_hash, PostgreSQL UPDATE/DELETE blocking"
+  ],
+  "accepted_pilot_caveats": [
+    "Controlled environment only: not a public production deployment",
+    "Limited named users and operators: pilot scope is not open-ended or multi-tenant",
+    "Manual operator oversight: no automated incident response or alerting during pilot",
+    "Manual deployment and runbook steps: no automated CI/CD deployment pipeline",
+    "Manual full-suite gate: the full backend suite must be run manually before each deployment",
+    "Backup/restore is minimum package only: no automated backup scheduling or cloud snapshot management",
+    "Monitoring and alerting not complete: no metrics pipeline or alerting thresholds (production SaaS blocker)"
+  ],
+  "production_saas_blockers": [
+    "Monitoring and alerting baseline: no metrics pipeline, health alerting, or latency dashboards (GL-129)",
+    "Incident response runbook execution gate: escalation procedures not defined or tested (GL-130)",
+    "Tenant and workspace boundary: no multi-tenant architecture or tenant isolation design (GL-132)",
+    "Production deployment automation or explicit ops procedure: no containers, orchestration, or automated pipeline (GL-131)",
+    "External security review: no third-party or independent security review completed (GL-133)",
+    "Legal, privacy, and data-retention review: no data classification matrix or evidence retention policy",
+    "Customer onboarding, admin UX, and commercial packaging: no customer-facing onboarding or billing structure"
+  ],
+  "go_criteria": [
+    "scripts/run-production-runtime-gate.sh passes with no failures",
+    "scripts/run-operational-smoke-tests.sh passes with no failures",
+    "scripts/run-backup-restore-drill.sh passes with no failures",
+    "scripts/run-full-backend-suite.sh passes with 0 failures and 0 errors",
+    "Secrets configured via environment variables or secrets manager: no raw secrets in files, logs, or docs",
+    "Pilot operators are named and have accepted operational responsibility",
+    "Rollback and restore path is documented and known before deployment begins"
+  ],
+  "no_go_criteria": [
+    "Any failure or error in the full backend suite",
+    "Any failure in the production runtime gate",
+    "Any failure in the operational smoke tests",
+    "Any failure in the backup/restore drill",
+    "Unsafe or missing secrets configuration (raw secrets in files, missing required env vars)",
+    "Any audit log or hash-chain integrity issue detected",
+    "Operational responsibility for the pilot is unowned or unacknowledged"
+  ],
+  "required_pre_pilot_commands": [
+    "scripts/run-production-runtime-gate.sh",
+    "scripts/run-operational-smoke-tests.sh",
+    "scripts/run-backup-restore-drill.sh",
+    "scripts/run-full-backend-suite.sh"
+  ],
+  "recommended_next_issues": [
+    {
+      "issue_id": "GL-129",
+      "title": "Monitoring / Alerting Baseline"
+    },
+    {
+      "issue_id": "GL-130",
+      "title": "Incident Response / Operational Runbook Execution Gate"
+    },
+    {
+      "issue_id": "GL-131",
+      "title": "Pilot Environment Setup Checklist"
+    },
+    {
+      "issue_id": "GL-132",
+      "title": "Tenant / Workspace Boundary Decision"
+    },
+    {
+      "issue_id": "GL-133",
+      "title": "External Security Review Preparation"
+    },
+    {
+      "issue_id": "GL-134",
+      "title": "Pilot Partner Dry Run"
+    }
+  ],
+  "explicit_non_goals": [
+    "No production code changes (backend/src/)",
+    "No OpenAPI specification changes",
+    "No database migration or schema changes",
+    "No dependency additions or version changes",
+    "No frontend, website, design, brand, or marketing file changes"
+  ],
+  "secret_safety": {
+    "no_raw_secrets_in_artifacts": true,
+    "credentials_via_env_or_secrets_manager": true
+  }
+}

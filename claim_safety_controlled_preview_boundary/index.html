@@ -1,0 +1,2956 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/claim_safety_controlled_preview_boundary/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-207 — Claim Safety & Controlled Preview Boundary - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-207-claim-safety-controlled-preview-boundary" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-207 — Claim Safety &amp; Controlled Preview Boundary
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#title" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Title
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#claim-inventory-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claim Inventory Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Claim Inventory Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#readmemd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        README.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#securitymd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SECURITY.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agentsmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGENTS.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llmstxt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        llms.txt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llms-fulltxt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        llms-full.txt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docsopenapiyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        docs/openapi.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examplessdk_prototypepythongrantlayer_clientpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        examples/sdk_prototype/python/grantlayer_client.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sdkpythonreadmemd-not-in-gl-207-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sdk/python/README.md (not in GL-207 scope)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prior-decision-docs-docscontrolled_preview_boundary_packmd-docsproduction_readiness_gap_report_v2md-etc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prior Decision Docs (docs/controlled_preview_boundary_pack.md, docs/production_readiness_gap_report_v2.md, etc.)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlled-preview-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled Preview Boundary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Controlled Preview Boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allowed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#not-allowed-no-go" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not Allowed / No-Go
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allowed-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed Claims
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prohibited-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prohibited Claims
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stale-claim-corrections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale Claim Corrections
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stale Claim Corrections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#readmemd_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        README.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#securitymd_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SECURITY.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agentsmd_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGENTS.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llmstxt_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        llms.txt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llms-fulltxt_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        llms-full.txt
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-docs-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Docs Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi-claim-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAPI Claim Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sdk-claim-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDK Claim Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tenantworkspace-claim-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant/Workspace Claim Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adminoperator-claim-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin/Operator Claim Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-postgresql-claim-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live PostgreSQL Claim Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backuprestoredr-claim-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup/Restore/DR Claim Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observability-claim-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observability Claim Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#first-external-controlled-pilot-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        First External Controlled Pilot Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#websitemarketing-deferral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Website/Marketing Deferral
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Readiness Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Gaps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-207-claim-safety-controlled-preview-boundary">GL-207 — Claim Safety &amp; Controlled Preview Boundary<a class="headerlink" href="#gl-207-claim-safety-controlled-preview-boundary" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-207
+<strong>Branch:</strong> <code>gl-207-claim-safety-controlled-preview-boundary</code>
+<strong>Status:</strong> Internal / Developer Preview</p>
+<hr />
+<h2 id="title">Title<a class="headerlink" href="#title" title="Permanent link">&para;</a></h2>
+<p>Claim Safety &amp; Controlled Preview Boundary</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-200A through GL-206 are merged internally. The GL-200 tenant/workspace
+isolation block, GL-201 production auth/secrets/config hardening, GL-202
+persistence/PostgreSQL/migration readiness, GL-203 API contract/SDK packaging
+decision, GL-203B OpenAPI contract cleanup, GL-203C SDK prototype/packaging
+boundary, GL-204 Production Ops / Go-No-Go v3, GL-205 Live PostgreSQL /
+Backup-Restore / Observability Baseline, and GL-206 Admin/Operator Tenant
+Control Plane are all represented by clean doc, JSON, and test artifacts.</p>
+<p>GL-207 is the Claim Safety &amp; Controlled Preview Boundary pack. It audits
+public-facing docs, metadata files, and accumulated decision artifacts for
+stale, overbroad, misleading, or prohibited claims. It corrects stale claims
+in allowed docs and produces a canonical controlled-preview boundary artifact
+after GL-200 through GL-206.</p>
+<p><strong>GrantLayer remains:</strong>
+- Developer Preview / Controlled Preview with strict boundaries
+- Not production SaaS
+- Not ready for real customer data, private grant data, or institutional data
+- Tenant/workspace isolation baseline implemented but not production-complete
+- Admin/operator control-plane baseline implemented, not a production tenant-management UI
+- No official SDK/package is claimed or published
+- No live PostgreSQL production claim</p>
+<p>Security-sensitive reports route to GitHub Security Advisories. No exploit
+details are included. No real secrets are included. No real customer/private
+grant/institutional data is used.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>GL-207 covers:
+- Reading and reviewing all input sources listed below
+- Building a repository claim inventory
+- Classifying claims as allowed, allowed-with-caveat, stale, misleading, prohibited, or requires-follow-up
+- Defining the current controlled preview boundary after GL-200 through GL-206
+- Correcting stale or unsafe wording in README.md, SECURITY.md, AGENTS.md, llms.txt, llms-full.txt
+- Documenting allowed and prohibited claims
+- Aligning GL-206 admin/operator control-plane claims
+- Aligning GL-205 live PostgreSQL / backup-restore / observability claims
+- Aligning GL-203C SDK prototype claims
+- Producing this doc, the JSON artifact, and claim-safety tests
+- Adding tests that prevent future claim drift</p>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>GL-207 is not:
+- Implementation of product features
+- Backend/src changes
+- API behavior changes
+- OpenAPI behavioral changes
+- Migration, DB, schema, or dependency changes
+- SDK/package implementation or publication
+- Public publish, GitHub push, or visibility change
+- Marketing website creation
+- Frontend or design changes
+- GitHub workflow changes
+- Production SaaS readiness declaration
+- Real customer data or private grant/institutional data readiness claim</p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/admin_operator_tenant_control_plane.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl206/admin_operator_tenant_control_plane.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/live_postgres_backup_observability_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl205/live_postgres_backup_observability_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_ops_go_no_go_v3.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl204/production_ops_go_no_go_v3.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/sdk_prototype_packaging_boundary.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203c/sdk_prototype_packaging_boundary.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi_api_contract_cleanup.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203b/openapi_api_contract_cleanup.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/api_contract_sdk_packaging_decision.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203/api_contract_sdk_packaging_decision.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/persistence_postgres_migration_readiness.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl202/persistence_postgres_migration_readiness.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_auth_secrets_config_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl201/production_auth_secrets_config_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_api_audit_regression_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_implementation_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_design_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200a/tenant_workspace_isolation_design_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/controlled_preview_boundary_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl198/controlled_preview_boundary_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_readiness_gap_report_v2.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl199/production_readiness_gap_report_v2.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/server.py</td>
+<td>Yes (read-only, claim accuracy only)</td>
+</tr>
+<tr>
+<td>backend/src/auth.py</td>
+<td>Yes (read-only, claim accuracy only)</td>
+</tr>
+<tr>
+<td>backend/src/operators.py</td>
+<td>Yes (read-only, claim accuracy only)</td>
+</tr>
+<tr>
+<td>backend/src/config.py</td>
+<td>Yes (read-only, claim accuracy only)</td>
+</tr>
+<tr>
+<td>backend/src/db.py</td>
+<td>Yes (read-only, claim accuracy only)</td>
+</tr>
+<tr>
+<td>backend/src/audit_log.py</td>
+<td>Yes (read-only, claim accuracy only)</td>
+</tr>
+<tr>
+<td>backend/src/migrations/*</td>
+<td>Yes (read-only, count/state only)</td>
+</tr>
+<tr>
+<td>examples/sdk_prototype/python/grantlayer_client.py</td>
+<td>Yes (read-only, claim accuracy only)</td>
+</tr>
+<tr>
+<td>scripts/ops/gl205_live_postgres_validation.py</td>
+<td>Yes (read-only, claim accuracy only)</td>
+</tr>
+<tr>
+<td>scripts/ops/gl205_backup_restore_drill.py</td>
+<td>Yes (read-only, claim accuracy only)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="claim-inventory-summary">Claim Inventory Summary<a class="headerlink" href="#claim-inventory-summary" title="Permanent link">&para;</a></h2>
+<h3 id="readmemd">README.md<a class="headerlink" href="#readmemd" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Classification</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Release label: GL-0.1 / Developer Preview</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Maturity: local evaluation and controlled pilot only</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Production SaaS readiness: Not claimed</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Tenant/workspace isolation: <strong>Not implemented</strong></td>
+<td>Stale</td>
+<td>GL-200–GL-206 implemented baseline; corrected to "Baseline implemented, not production-complete"</td>
+</tr>
+<tr>
+<td>Real customer data in examples: No</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Real secrets in examples: No</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Public GitHub release: Available</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>"not production SaaS" in body text</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>"Tenant isolation is not implemented — data shares a single namespace."</td>
+<td>Stale</td>
+<td>Corrected to baseline implemented, not production-complete</td>
+</tr>
+<tr>
+<td>"Tenant isolation is not implemented" in limitations</td>
+<td>Stale</td>
+<td>Corrected</td>
+</tr>
+<tr>
+<td>Current status/next steps table ends at GL-192</td>
+<td>Stale</td>
+<td>Updated to reflect GL-193–GL-207</td>
+</tr>
+<tr>
+<td>No admin routes in API Quick Reference</td>
+<td>Allowed with caveat</td>
+<td>Admin routes are internal/admin-only; not required in public API reference</td>
+</tr>
+</tbody>
+</table>
+<h3 id="securitymd">SECURITY.md<a class="headerlink" href="#securitymd" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Classification</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Maturity: Developer Preview</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Production SaaS support guarantee: Not provided</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Tenant/workspace isolation: <strong>Not implemented</strong></td>
+<td>Stale</td>
+<td>Corrected to "Baseline implemented, not production-complete"</td>
+</tr>
+<tr>
+<td>Security advisory reporting channel</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>"Tenant isolation not implemented" in caveats</td>
+<td>Stale</td>
+<td>Corrected</td>
+</tr>
+</tbody>
+</table>
+<h3 id="agentsmd">AGENTS.md<a class="headerlink" href="#agentsmd" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Classification</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Maturity: Developer Preview</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Production SaaS readiness: Not claimed</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Tenant/workspace isolation: <strong>Not implemented</strong></td>
+<td>Stale</td>
+<td>Corrected to "Baseline implemented, not production-complete"</td>
+</tr>
+<tr>
+<td>"Tenant isolation is not implemented." in body</td>
+<td>Stale</td>
+<td>Corrected</td>
+</tr>
+<tr>
+<td>Forbidden: "Claim tenant isolation is implemented"</td>
+<td>Misleading</td>
+<td>After GL-200–GL-206 the baseline IS implemented; rule corrected to prohibit overclaiming production-complete isolation</td>
+</tr>
+<tr>
+<td>Safety phrase: "tenant isolation is not implemented"</td>
+<td>Stale</td>
+<td>Updated to "tenant/workspace isolation is not production-complete"</td>
+</tr>
+</tbody>
+</table>
+<h3 id="llmstxt">llms.txt<a class="headerlink" href="#llmstxt" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Classification</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Status: Developer Preview</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>"Tenant isolation is not implemented."</td>
+<td>Stale</td>
+<td>Corrected</td>
+</tr>
+<tr>
+<td>"Do not claim tenant isolation is implemented."</td>
+<td>Misleading</td>
+<td>Corrected to prohibit production-complete claim</td>
+</tr>
+<tr>
+<td>Safety phrase: "tenant isolation is not implemented"</td>
+<td>Stale</td>
+<td>Updated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="llms-fulltxt">llms-full.txt<a class="headerlink" href="#llms-fulltxt" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Classification</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Maturity: Developer Preview</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Production SaaS readiness: Not claimed</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Tenant/workspace isolation: Not implemented</td>
+<td>Stale</td>
+<td>Corrected</td>
+</tr>
+<tr>
+<td>"Tenant isolation is not implemented" in body</td>
+<td>Stale</td>
+<td>Corrected</td>
+</tr>
+<tr>
+<td>"Do not claim tenant isolation is implemented."</td>
+<td>Misleading</td>
+<td>Corrected</td>
+</tr>
+<tr>
+<td>Next Issues section outdated (references GL-187/188)</td>
+<td>Stale</td>
+<td>Updated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="docsopenapiyaml">docs/openapi.yaml<a class="headerlink" href="#docsopenapiyaml" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Classification</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Status: Developer Preview / Controlled Preview with strict boundaries</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>"not a production SaaS"</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>"No official SDK/package is claimed or published"</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Tenant context server-derived</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>workspace_id deferred</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Version "0.203b.0-developer-preview"</td>
+<td>Allowed with caveat</td>
+<td>Public API contract unchanged since GL-203B; GL-204–GL-206 admin routes are internal-only and intentionally excluded from public OpenAPI</td>
+</tr>
+<tr>
+<td>Security advisories routing note</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examplessdk_prototypepythongrantlayer_clientpy">examples/sdk_prototype/python/grantlayer_client.py<a class="headerlink" href="#examplessdk_prototypepythongrantlayer_clientpy" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Classification</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"NOT an official SDK"</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>"No package is published"</td>
+<td>Allowed</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>"Tenant/workspace isolation is baseline-implemented but not production-complete"</td>
+<td>Allowed</td>
+<td>Already correct — no change needed</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sdkpythonreadmemd-not-in-gl-207-scope">sdk/python/README.md (not in GL-207 scope)<a class="headerlink" href="#sdkpythonreadmemd-not-in-gl-207-scope" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Classification</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Tenant isolation is <strong>not implemented</strong>"</td>
+<td>Stale</td>
+<td>Out of GL-207 scope; recommend correction in GL-208 or follow-up</td>
+</tr>
+</tbody>
+</table>
+<h3 id="prior-decision-docs-docscontrolled_preview_boundary_packmd-docsproduction_readiness_gap_report_v2md-etc">Prior Decision Docs (docs/controlled_preview_boundary_pack.md, docs/production_readiness_gap_report_v2.md, etc.)<a class="headerlink" href="#prior-decision-docs-docscontrolled_preview_boundary_packmd-docsproduction_readiness_gap_report_v2md-etc" title="Permanent link">&para;</a></h3>
+<p>All prior decision docs are historical records accurate at the time of their issue. They are not updated by GL-207. The stale tenant isolation phrasing within historical docs (e.g., GL-198, GL-199) is acceptable context for those points in time.</p>
+<hr />
+<h2 id="controlled-preview-boundary">Controlled Preview Boundary<a class="headerlink" href="#controlled-preview-boundary" title="Permanent link">&para;</a></h2>
+<p>After GL-200 through GL-206, the controlled preview boundary is:</p>
+<h3 id="allowed">Allowed<a class="headerlink" href="#allowed" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Developer Preview (local evaluation)</td>
+<td>ALLOWED</td>
+</tr>
+<tr>
+<td>Controlled Preview (strict boundaries)</td>
+<td>ALLOWED</td>
+</tr>
+<tr>
+<td>Controlled Preview expansion</td>
+<td>CONDITIONAL — synthetic/demo data only</td>
+</tr>
+<tr>
+<td>First external controlled pilot</td>
+<td>CONDITIONAL — synthetic/demo data only, no real customer/private grant data</td>
+</tr>
+<tr>
+<td>Internal development and testing</td>
+<td>ALLOWED</td>
+</tr>
+<tr>
+<td>Synthetic/demo data in all paths</td>
+<td>ALLOWED</td>
+</tr>
+</tbody>
+</table>
+<h3 id="not-allowed-no-go">Not Allowed / No-Go<a class="headerlink" href="#not-allowed-no-go" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production SaaS</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Real customer data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Private grant/institutional data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Official SDK/package</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Live PostgreSQL production deployment</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Public website/marketing expansion</td>
+<td>DEFERRED until website claim gate</td>
+</tr>
+<tr>
+<td>Production multi-tenant deployment</td>
+<td>NO-GO</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="allowed-claims">Allowed Claims<a class="headerlink" href="#allowed-claims" title="Permanent link">&para;</a></h2>
+<p>The following claims are accurate and allowed:</p>
+<table>
+<thead>
+<tr>
+<th>Allowed Claim</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Developer Preview posture</td>
+<td>GL-198 boundary, GL-204 decision</td>
+</tr>
+<tr>
+<td>Controlled Preview with strict boundaries</td>
+<td>GL-198 boundary, GL-204 decision</td>
+</tr>
+<tr>
+<td>API-first grant-layer prototype</td>
+<td>GL-197, GL-198</td>
+</tr>
+<tr>
+<td>Tenant/workspace isolation baseline implemented, not production-complete</td>
+<td>GL-200A–GL-206</td>
+</tr>
+<tr>
+<td>Auth/secrets/config hardening improved (fail-closed, PBKDF2, structured logging)</td>
+<td>GL-201</td>
+</tr>
+<tr>
+<td>Migration/PostgreSQL readiness improved; live validation incomplete</td>
+<td>GL-202, GL-205</td>
+</tr>
+<tr>
+<td>OpenAPI contract cleaned and stable as of GL-203B</td>
+<td>GL-203B</td>
+</tr>
+<tr>
+<td>Internal SDK prototype exists; not an official SDK</td>
+<td>GL-203C</td>
+</tr>
+<tr>
+<td>Backup/restore baseline exists for synthetic/demo SQLite drill</td>
+<td>GL-205</td>
+</tr>
+<tr>
+<td>Observability baseline documented</td>
+<td>GL-205</td>
+</tr>
+<tr>
+<td>Admin/operator tenant control-plane baseline exists; not a production tenant-management UI</td>
+<td>GL-206</td>
+</tr>
+<tr>
+<td>Controlled preview expansion conditional on synthetic/demo data</td>
+<td>GL-198, GL-204</td>
+</tr>
+<tr>
+<td>No real secrets or customer data in examples</td>
+<td>All</td>
+</tr>
+<tr>
+<td>Security-sensitive reports route to GitHub Security Advisories</td>
+<td>GL-153, GL-192</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="prohibited-claims">Prohibited Claims<a class="headerlink" href="#prohibited-claims" title="Permanent link">&para;</a></h2>
+<p>The following claims are prohibited:</p>
+<table>
+<thead>
+<tr>
+<th>Prohibited Claim</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production SaaS ready</td>
+<td>NO-GO per GL-204</td>
+</tr>
+<tr>
+<td>Enterprise ready</td>
+<td>NO-GO — multiple P0 gaps remain</td>
+</tr>
+<tr>
+<td>Compliance ready</td>
+<td>NO-GO — no compliance certification</td>
+</tr>
+<tr>
+<td>Ready for real customer data</td>
+<td>NO-GO — no production multi-tenant isolation</td>
+</tr>
+<tr>
+<td>Ready for private grant/institutional data</td>
+<td>NO-GO — no production data handling</td>
+</tr>
+<tr>
+<td>Official SDK/package available</td>
+<td>NO-GO — internal prototype only</td>
+</tr>
+<tr>
+<td>Production-ready SDK</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Public SDK package available</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Live PostgreSQL production ready</td>
+<td>NO-GO — live validation not executed</td>
+</tr>
+<tr>
+<td>Complete tenant/workspace production guarantee</td>
+<td>NO-GO — baseline only</td>
+</tr>
+<tr>
+<td>Complete admin/operator tenant-management plane</td>
+<td>NO-GO — baseline only</td>
+</tr>
+<tr>
+<td>Production DR ready</td>
+<td>NO-GO — no production backup/restore automation</td>
+</tr>
+<tr>
+<td>Production observability stack complete</td>
+<td>NO-GO — baseline only</td>
+</tr>
+<tr>
+<td>Security/compliance certified</td>
+<td>NO-GO — no external certification</td>
+</tr>
+<tr>
+<td>First external pilot has started</td>
+<td>NO-GO — pilot remains conditional/deferred</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="stale-claim-corrections">Stale Claim Corrections<a class="headerlink" href="#stale-claim-corrections" title="Permanent link">&para;</a></h2>
+<p>The following stale claims were found and corrected in this issue:</p>
+<h3 id="readmemd_1">README.md<a class="headerlink" href="#readmemd_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Status table — Tenant/workspace isolation</strong></li>
+<li>Old: <code>Tenant/workspace isolation | **Not implemented**</code></li>
+<li>New: <code>Tenant/workspace isolation | **Baseline implemented — not production-complete** (GL-200–GL-206)</code></li>
+<li>
+<p>Reason: GL-200A–GL-206 implemented tenant_id server-derivation, cross-tenant data isolation, operator model with tenant assignment, and admin control-plane. Full multi-tenant isolation and workspace enforcement remain deferred.</p>
+</li>
+<li>
+<p><strong>Agent caveats section</strong></p>
+</li>
+<li>Old: "<strong>Tenant isolation is not implemented</strong> — data shares a single namespace."</li>
+<li>
+<p>New: "<strong>Tenant/workspace isolation baseline is implemented</strong> (GL-200–GL-206) but not production-complete. Full multi-tenant RBAC, workspace enforcement, and production IAM remain deferred."</p>
+</li>
+<li>
+<p><strong>Safety and limitations section</strong></p>
+</li>
+<li>Old: "Tenant isolation is not implemented — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers."</li>
+<li>
+<p>New: "Tenant/workspace isolation baseline is implemented (GL-200–GL-206) — the backend derives tenant context server-side and enforces cross-tenant data boundaries at the data and authorization layers. Full multi-tenant production isolation, workspace enforcement, and production IAM remain deferred."</p>
+</li>
+<li>
+<p><strong>Current status and next steps table</strong></p>
+</li>
+<li>Added GL-193 through GL-207 entries.</li>
+</ol>
+<h3 id="securitymd_1">SECURITY.md<a class="headerlink" href="#securitymd_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Supported Status table — Tenant/workspace isolation</strong></li>
+<li>Old: <code>Tenant/workspace isolation | **Not implemented**</code></li>
+<li>
+<p>New: <code>Tenant/workspace isolation | **Baseline implemented, not production-complete** (GL-200–GL-206)</code></p>
+</li>
+<li>
+<p><strong>Section 6 Current Caveats</strong></p>
+</li>
+<li>Old: "Tenant isolation not implemented — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers."</li>
+<li>New: "Tenant/workspace isolation baseline is implemented (GL-200–GL-206) but not production-complete. The backend enforces tenant context server-side. Full multi-tenant production isolation, workspace enforcement, and production IAM remain deferred."</li>
+</ol>
+<h3 id="agentsmd_1">AGENTS.md<a class="headerlink" href="#agentsmd_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Status table — Tenant/workspace isolation</strong></li>
+<li>Old: <code>Tenant/workspace isolation | **Not implemented**</code></li>
+<li>
+<p>New: <code>Tenant/workspace isolation | **Baseline implemented, not production-complete** (GL-200–GL-206)</code></p>
+</li>
+<li>
+<p><strong>Body text</strong></p>
+</li>
+<li>Old: "Tenant isolation is not implemented."</li>
+<li>
+<p>New: "Tenant/workspace isolation baseline is implemented (GL-200–GL-206) but not production-complete."</p>
+</li>
+<li>
+<p><strong>Forbidden by Default rule</strong></p>
+</li>
+<li>Old: "Claim tenant isolation is implemented"</li>
+<li>
+<p>New: "Claim production-complete or production-grade tenant isolation"</p>
+</li>
+<li>
+<p><strong>Safety phrase</strong></p>
+</li>
+<li>Old: "tenant isolation is not implemented"</li>
+<li>New: "tenant/workspace isolation is not production-complete"</li>
+</ol>
+<h3 id="llmstxt_1">llms.txt<a class="headerlink" href="#llmstxt_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Caveats section</strong></li>
+<li>Old: "Tenant isolation is not implemented."</li>
+<li>
+<p>New: "Tenant/workspace isolation baseline is implemented (GL-200–GL-206) but not production-complete."</p>
+</li>
+<li>
+<p><strong>Safety rules</strong></p>
+</li>
+<li>Old: "Do not claim tenant isolation is implemented."</li>
+<li>
+<p>New: "Do not claim production-complete or production-grade tenant isolation."</p>
+</li>
+<li>
+<p><strong>Exact Safety Phrases</strong></p>
+</li>
+<li>Old: "tenant isolation is not implemented"</li>
+<li>New: "tenant/workspace isolation is not production-complete"</li>
+</ol>
+<h3 id="llms-fulltxt_1">llms-full.txt<a class="headerlink" href="#llms-fulltxt_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Status table</strong></li>
+<li>Old: <code>Tenant/workspace isolation | Not implemented</code></li>
+<li>
+<p>New: <code>Tenant/workspace isolation | Baseline implemented, not production-complete (GL-200–GL-206)</code></p>
+</li>
+<li>
+<p><strong>Body text</strong></p>
+</li>
+<li>Old: "<strong>Tenant isolation is not implemented</strong> — data shares a single namespace."</li>
+<li>
+<p>New: "<strong>Tenant/workspace isolation baseline is implemented</strong> (GL-200–GL-206) but not production-complete. Full multi-tenant RBAC, workspace enforcement, and production IAM remain deferred."</p>
+</li>
+<li>
+<p><strong>No-Overclaim Rules</strong></p>
+</li>
+<li>Old: "Do not claim tenant isolation is implemented."</li>
+<li>New: "Do not claim production-complete or production-grade tenant isolation."</li>
+</ol>
+<hr />
+<h2 id="public-docs-impact">Public Docs Impact<a class="headerlink" href="#public-docs-impact" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Doc</th>
+<th>Impact</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>README.md</td>
+<td>Stale tenant isolation claim corrected; status table updated</td>
+<td>Updated</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Stale tenant isolation claim corrected</td>
+<td>Updated</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Stale tenant isolation claim corrected; forbidden rule updated</td>
+<td>Updated</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Stale tenant isolation claim corrected; safety phrases updated</td>
+<td>Updated</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Stale tenant isolation claim corrected; no-overclaim rules updated</td>
+<td>Updated</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>No update required — existing claims are accurate</td>
+<td>No change</td>
+</tr>
+<tr>
+<td>Prior decision docs</td>
+<td>Historical records — no change</td>
+<td>No change</td>
+</tr>
+<tr>
+<td>sdk/python/README.md</td>
+<td>Out of GL-207 scope (stale claim noted for follow-up)</td>
+<td>Deferred</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="openapi-claim-impact">OpenAPI Claim Impact<a class="headerlink" href="#openapi-claim-impact" title="Permanent link">&para;</a></h2>
+<p>The public OpenAPI contract (<code>docs/openapi.yaml</code>, version <code>0.203b.0-developer-preview</code>) was reviewed
+and found accurate:</p>
+<ul>
+<li>Status line "Developer Preview / Controlled Preview with strict boundaries" — accurate.</li>
+<li>"not a production SaaS" — accurate.</li>
+<li>"No official SDK/package is claimed or published" — accurate.</li>
+<li>Tenant context is server-derived — accurate.</li>
+<li>workspace_id reserved/deferred — accurate.</li>
+<li>Security advisory routing note — accurate.</li>
+</ul>
+<p>The version string <code>0.203b.0-developer-preview</code> reflects the last contract change in GL-203B.
+GL-204, GL-205, and GL-206 did not change the public API contract. GL-206 admin routes
+(<code>/admin/operators</code>, <code>/admin/operators/{id}</code>, <code>/admin/operators/{id}/revoke</code>) are internal/admin-only
+and are intentionally excluded from the public OpenAPI spec. This is accurate and no change required.</p>
+<hr />
+<h2 id="sdk-claim-boundary">SDK Claim Boundary<a class="headerlink" href="#sdk-claim-boundary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Internal prototype exists at examples/sdk_prototype/python/</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>GL-203C prototype demonstrates GL-203B contract is SDK-compatible</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>"NOT an official SDK"</td>
+<td>Required and present</td>
+</tr>
+<tr>
+<td>"No package is published"</td>
+<td>Required and present</td>
+</tr>
+<tr>
+<td>GL-203D (official SDK) remains deferred</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>examples/sdk_prototype/python/grantlayer_client.py already has correct claim language</td>
+<td>No change needed</td>
+</tr>
+<tr>
+<td>sdk/python/README.md has stale "Tenant isolation is not implemented"</td>
+<td>Out of scope (GL-207); recommend follow-up</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="tenantworkspace-claim-boundary">Tenant/Workspace Claim Boundary<a class="headerlink" href="#tenantworkspace-claim-boundary" title="Permanent link">&para;</a></h2>
+<p>After GL-200 through GL-206:</p>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tenant/workspace isolation baseline is implemented</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>tenant_id enforced server-side, not client-supplied</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Cross-tenant data boundaries enforced</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>workspace_id field present but not enforced</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>workspace-level isolation deferred</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Full production multi-tenant isolation</td>
+<td>NOT allowed — not implemented</td>
+</tr>
+<tr>
+<td>Production RBAC / IAM</td>
+<td>NOT allowed — not implemented</td>
+</tr>
+<tr>
+<td>Complete workspace enforcement</td>
+<td>NOT allowed — deferred</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="adminoperator-claim-boundary">Admin/Operator Claim Boundary<a class="headerlink" href="#adminoperator-claim-boundary" title="Permanent link">&para;</a></h2>
+<p>After GL-206:</p>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Admin/operator tenant control-plane baseline exists</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Admin-only control-plane HTTP routes exist (POST /admin/operators, GET /admin/operators, etc.)</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Admin routes are internal/admin-only (not public API)</td>
+<td>Accurate</td>
+</tr>
+<tr>
+<td>Operator tenant_id is server-assigned, not client-overridable</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Structured audit events for operator_created/revoked</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Complete production admin plane</td>
+<td>NOT allowed — baseline only</td>
+</tr>
+<tr>
+<td>Production tenant-management UI</td>
+<td>NOT allowed — does not exist</td>
+</tr>
+<tr>
+<td>Full production RBAC</td>
+<td>NOT allowed — not implemented</td>
+</tr>
+<tr>
+<td>Production IAM (OAuth/JWT/SSO)</td>
+<td>NOT allowed — not implemented</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="live-postgresql-claim-boundary">Live PostgreSQL Claim Boundary<a class="headerlink" href="#live-postgresql-claim-boundary" title="Permanent link">&para;</a></h2>
+<p>After GL-205:</p>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PostgreSQL live validation script exists (dry-run/plan mode)</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Dry-run/plan passed</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>SQLite synthetic backup/restore drill passed</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Observability baseline documented</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Live PostgreSQL validation executed against real database</td>
+<td>NOT allowed — not executed</td>
+</tr>
+<tr>
+<td>Live PostgreSQL production ready</td>
+<td>NOT allowed — not claimed</td>
+</tr>
+<tr>
+<td>Production backup/restore automation</td>
+<td>NOT allowed — not implemented</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="backuprestoredr-claim-boundary">Backup/Restore/DR Claim Boundary<a class="headerlink" href="#backuprestoredr-claim-boundary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backup/restore drill baseline exists for SQLite synthetic data</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>PostgreSQL manual backup checklist documented</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Dry-run/plan mode validated</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Production DR ready</td>
+<td>NOT allowed — not implemented</td>
+</tr>
+<tr>
+<td>Production backup/restore automation</td>
+<td>NOT allowed — not implemented</td>
+</tr>
+<tr>
+<td>Production RTO/RPO guarantees</td>
+<td>NOT allowed — not documented</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="observability-claim-boundary">Observability Claim Boundary<a class="headerlink" href="#observability-claim-boundary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Observability baseline documented (GL-205)</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Structured log events with correlation IDs</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Signal categories documented</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Secret-safety rules in logging documented</td>
+<td>Allowed</td>
+</tr>
+<tr>
+<td>Production observability stack complete</td>
+<td>NOT allowed — not implemented</td>
+</tr>
+<tr>
+<td>External metrics/alerting/tracing</td>
+<td>NOT allowed — not implemented</td>
+</tr>
+<tr>
+<td>Production SLO/SLA observability</td>
+<td>NOT allowed — not claimed</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="first-external-controlled-pilot-boundary">First External Controlled Pilot Boundary<a class="headerlink" href="#first-external-controlled-pilot-boundary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>First external controlled pilot is conditional</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>Synthetic/demo data only</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>No real customer data</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>No private grant/institutional data</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Controlled reviewer pool</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>Boundary doc (GL-198) shared with pilot participants</td>
+<td>Required</td>
+</tr>
+<tr>
+<td>First pilot has started</td>
+<td>NOT claimed</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="websitemarketing-deferral">Website/Marketing Deferral<a class="headerlink" href="#websitemarketing-deferral" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Public marketing website</td>
+<td>Deferred</td>
+</tr>
+<tr>
+<td>Marketing landing page</td>
+<td>Deferred</td>
+</tr>
+<tr>
+<td>Website claim gate</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>External marketing copy</td>
+<td>Deferred until claim boundary is clean</td>
+</tr>
+<tr>
+<td>Unrelated website design files (website-design/, docs/website_design*)</td>
+<td>Excluded from GL-207</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="production-readiness-impact">Production Readiness Impact<a class="headerlink" href="#production-readiness-impact" title="Permanent link">&para;</a></h2>
+<p>After GL-207 claim corrections:</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Developer Preview posture</td>
+<td>CONFIRMED</td>
+</tr>
+<tr>
+<td>Controlled Preview with strict boundaries</td>
+<td>CONFIRMED</td>
+</tr>
+<tr>
+<td>Production SaaS</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Real customer data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Private grant/institutional data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Official SDK/package</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Live PostgreSQL production</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Full multi-tenant production isolation</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Production observability stack</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Production DR</td>
+<td>NO-GO</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="remaining-gaps">Remaining Gaps<a class="headerlink" href="#remaining-gaps" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>Category</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production IAM (OAuth/JWT/SSO) not implemented</td>
+<td>P0 production blocker</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>Live PostgreSQL validation not executed</td>
+<td>P0 ops blocker</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>workspace_id enforcement deferred</td>
+<td>P1 isolation gap</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>Full multi-tenant RBAC not implemented</td>
+<td>P0 production blocker</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>Production observability stack (external metrics, alerting, tracing)</td>
+<td>P0 production blocker</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>Production backup/restore automation</td>
+<td>P0 production blocker</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>Key management (demo Ed25519 keypair in repo)</td>
+<td>P0 production blocker</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>CORS origin hardening for production</td>
+<td>P1</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>sdk/python/README.md stale "tenant isolation is not implemented"</td>
+<td>Low claim drift</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Public marketing website deferred</td>
+<td>Deferred</td>
+<td>Deferred</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Description</th>
+<th>Category</th>
+<th>Severity</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RR-207-01</td>
+<td>Old tests checking for "tenant isolation is not implemented" exact phrase in AGENTS.md, llms.txt, README.md, etc. will fail on GL-207 branch</td>
+<td>scope-guard false positive</td>
+<td>Low</td>
+<td>Classified as branch-only scope-guard false positives; GL-207 tests check new correct phrase</td>
+</tr>
+<tr>
+<td>RR-207-02</td>
+<td>sdk/python/README.md retains stale "Tenant isolation is not implemented"</td>
+<td>claim drift</td>
+<td>Low</td>
+<td>Out of GL-207 scope; document for follow-up</td>
+</tr>
+<tr>
+<td>RR-207-03</td>
+<td>Prior historical decision docs (GL-198, GL-199) retain old phrasing</td>
+<td>expected</td>
+<td>Low</td>
+<td>Historical docs are accurate for their time; not updated</td>
+</tr>
+<tr>
+<td>RR-207-04</td>
+<td>First external controlled pilot expansion could trigger data safety risk if boundary not enforced</td>
+<td>data safety</td>
+<td>High</td>
+<td>Boundary documented; synthetic/demo data only; pilot remains conditional</td>
+</tr>
+<tr>
+<td>RR-207-05</td>
+<td>Production SaaS claim drift if future contributors miss claim boundary</td>
+<td>claim drift</td>
+<td>Medium</td>
+<td>GL-207 tests added; AGENTS.md/llms.txt rules updated</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>claim_safety_corrections_approved_controlled_preview_confirmed</strong></p>
+<hr />
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>The claim "Tenant/workspace isolation: Not implemented" in README, SECURITY, AGENTS, llms.txt,
+   and llms-full.txt is stale after GL-200 through GL-206 implemented the isolation baseline.
+   The accurate claim is "Baseline implemented, not production-complete."</p>
+</li>
+<li>
+<p>The controlled preview boundary after GL-200 through GL-206 is well-defined:
+   Developer Preview and Controlled Preview continue with strict boundaries; Production SaaS
+   remains NO-GO; real customer/private grant data remains NO-GO.</p>
+</li>
+<li>
+<p>The admin/operator control-plane baseline (GL-206) does not constitute a production
+   tenant-management UI and must not be overclaimed as such.</p>
+</li>
+<li>
+<p>The OpenAPI contract (docs/openapi.yaml, version 0.203b.0-developer-preview) is accurate —
+   the public contract did not change from GL-204 through GL-206.</p>
+</li>
+<li>
+<p>The SDK prototype (GL-203C) is correctly labeled "NOT an official SDK" and requires no
+   claim corrections.</p>
+</li>
+<li>
+<p>All claim corrections are conservative and accurate — no production claims are added,
+   and the "not production-complete" caveat is explicit and prominent.</p>
+</li>
+</ol>
+<hr />
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Confirmation</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No exploit details included</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No real secrets included</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No real customer data included</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No private grant/institutional data included</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>Security-sensitive reports route to GitHub Security Advisories</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>Production SaaS is not claimed</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>Real customer data is not claimed ready</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>Private grant/institutional data is not claimed ready</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>Official SDK/package is not claimed</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>Live PostgreSQL production is not claimed</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>Tenant isolation is not overclaimed as production-complete</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>Admin/operator plane is not overclaimed as production-complete</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No backend/src changes</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No API behavior changes</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No migrations/DB/schema/dependency changes</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No SDK/package implementation changes</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No package publishing metadata</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No frontend/website/design changes</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No GitHub workflow changes</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No public GitHub push</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>No visibility change</td>
+<td>Confirmed</td>
+</tr>
+<tr>
+<td>Unrelated website files (website-design/, docs/website_design*) excluded</td>
+<td>Confirmed</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-208</td>
+<td>Production IAM Baseline</td>
+<td>OAuth/JWT/SSO baseline — P0 production blocker</td>
+</tr>
+<tr>
+<td>GL-209</td>
+<td>Live PostgreSQL Validation Execution</td>
+<td>Execute GL-205 validation against real database</td>
+</tr>
+<tr>
+<td>GL-210</td>
+<td>workspace_id Enforcement Baseline</td>
+<td>Implement workspace-level isolation</td>
+</tr>
+<tr>
+<td>GL-211</td>
+<td>SDK README Claim Correction</td>
+<td>Update sdk/python/README.md stale tenant isolation claim</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<blockquote>
+<p>This document was created in <strong>GL-207 Claim Safety &amp; Controlled Preview Boundary</strong>.
+It does not change production code, API behavior, migrations, DB/schema, dependencies,
+SDK implementations, package publishing metadata, frontend/website/design, GitHub workflows,
+git remotes, or make any public publish or visibility change.
+All examples use synthetic identifiers and placeholder tokens only.</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

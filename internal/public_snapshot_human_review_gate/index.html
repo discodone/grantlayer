@@ -1,0 +1,1623 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/public_snapshot_human_review_gate/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-174 Public Snapshot Human Review Gate - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-174-public-snapshot-human-review-gate" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-174 Public Snapshot Human Review Gate
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#review-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reviewer-personas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reviewer Personas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checks-performed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checks Performed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#finding-counts-by-severity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding Counts by Severity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-code-surface-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Code Surface Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audience-clarity-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audience Clarity Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#first-output-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        First-Output Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#private-data-secret-safety-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private Data / Secret Safety Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#readme-security-canonical-status-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        README / SECURITY Canonical Status Handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gl-168169170171172173-narrative-coherence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-168/169/170/171/172/173 Narrative Coherence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#review-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#confidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Confidence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#human-readable-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Human-Readable Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#explicit-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicit Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-174-public-snapshot-human-review-gate">GL-174 Public Snapshot Human Review Gate<a class="headerlink" href="#gl-174-public-snapshot-human-review-gate" title="Permanent link">&para;</a></h1>
+<p><strong>Issue:</strong> GL-174
+<strong>Review date:</strong> 2026-06-01
+<strong>Public GitHub repo reviewed:</strong> <code>https://github.com/discodone/grantlayer.git</code>
+<strong>Public commit reviewed:</strong> <code>4b42f7f00b11a12413d4e4bdce99c4ea921dfa0d</code>
+<strong>Internal base commit reviewed:</strong> <code>24c8f8a8a22609f89afe3d1b40b94bbb593e8d4f</code>
+<strong>Branch:</strong> <code>gl-174-public-snapshot-human-review-gate</code>
+<strong>Reviewer:</strong> GrantLayer Claude Human-Style Public Snapshot Review Agent</p>
+<hr />
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>No GitHub push performed in GL-174.</li>
+<li>No visibility change performed.</li>
+<li>No backend/src changes.</li>
+<li>No OpenAPI, migration, database-schema, or dependency changes.</li>
+<li>No SDK implementation changes.</li>
+<li>No frontend, website, or design changes.</li>
+<li>No snapshot publish script behavior changes.</li>
+<li>No git remote changes.</li>
+<li>No force push.</li>
+<li>No secret handling changes.</li>
+<li>No Paperclip references or status updates.</li>
+</ul>
+<p>This review is read-only. It evaluates the public snapshot from the perspective of three external reviewer personas and determines whether the project is ready to proceed to an explicit visibility decision gate.</p>
+<hr />
+<h2 id="review-scope">Review Scope<a class="headerlink" href="#review-scope" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Checked</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>README.md — first impression, discoverability, status claims</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md — canonical security caveat source</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>CHANGELOG.md — snapshot narrative coherence</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md — AI-agent entry point</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt / llms-full.txt — machine-readable entry points</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>examples/first_verifiable_output.py + .json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/first_verifiable_output.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>sdk/python/grantlayer_client.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>examples/agents/*.py — agent examples</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Public visible code surface (Python files)</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Private data / secret scan across public snapshot</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>GL-168/169/170/171/172/173 narrative coherence</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Status table claims vs. current state</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="reviewer-personas">Reviewer Personas<a class="headerlink" href="#reviewer-personas" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Persona</th>
+<th>Perspective</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>External backend developer</td>
+<td>Is this worth cloning? Can I see what to run?</td>
+</tr>
+<tr>
+<td>Institutional / compliance reviewer</td>
+<td>What does the audit trail prove? Are the caveats honest?</td>
+</tr>
+<tr>
+<td>AI-agent workflow developer</td>
+<td>How does GrantLayer fit agentic workflows? Where do I start?</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="checks-performed">Checks Performed<a class="headerlink" href="#checks-performed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>README</td>
+<td>Opens with clear one-sentence tagline</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>Explains what GrantLayer does within first 30 seconds</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>Status table immediately visible</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>Clone URL correct (<code>https://github.com/Discodone/grantlayer.git</code>)</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>No placeholder text</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>"First verifiable output quickstart" section present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>Developer entry path table present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>Agent section present with correct file references</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>Production SaaS readiness: not claimed</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>Tenant isolation described as not implemented</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>Footer contains internal workflow notation</td>
+<td>CAUTION (see F-002)</td>
+</tr>
+<tr>
+<td>README</td>
+<td>"Next steps" table references already-completed issues</td>
+<td>CAUTION (see F-004)</td>
+</tr>
+<tr>
+<td>README</td>
+<td>"Public GitHub release: Not performed" in status table — potentially stale</td>
+<td>CAUTION (see F-001)</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Canonical security caveats present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>"Public GitHub release: Not performed" — same staleness as README</td>
+<td>CAUTION (see F-001)</td>
+</tr>
+<tr>
+<td>CHANGELOG</td>
+<td>Reflects GL-172 clean snapshot publish</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>examples/</td>
+<td>first_verifiable_output.py present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>examples/</td>
+<td>first_verifiable_output.json present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>examples/agents/</td>
+<td>4 agent examples present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>examples/langgraph_langchain/</td>
+<td>Integration example present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>sdk/python/</td>
+<td>grantlayer_client.py present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>docs/</td>
+<td>first_verifiable_output.md discoverable from README</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Primary agent entry point present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Concise machine-readable summary present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Detailed map present</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Code surface</td>
+<td>Python files visible in snapshot</td>
+<td>CAUTION (see F-003)</td>
+</tr>
+<tr>
+<td>Private data</td>
+<td>No real secrets, tokens, private keys</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Private data</td>
+<td>No private email addresses or phone numbers</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Private data</td>
+<td>No internal Forgejo hostnames or remotes</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Private data</td>
+<td>No /paperclip or Paperclip references</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Private data</td>
+<td>No private absolute paths</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Private data</td>
+<td>No customer data</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Private data</td>
+<td>No GitHub visibility-change instructions</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Private data</td>
+<td>No instructions to push internal repo directly to GitHub</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Narrative coherence</td>
+<td>GL-168–173 form consistent public-surface story</td>
+<td>PASS</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="findings">Findings<a class="headerlink" href="#findings" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Severity</th>
+<th>Status</th>
+<th>Area</th>
+<th>Summary</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F-001</td>
+<td>low</td>
+<td>open</td>
+<td>README / SECURITY status table</td>
+<td>Both README and SECURITY.md show "Public GitHub release: Not performed" in their status tables. The public snapshot IS accessible on GitHub (successfully cloned at commit <code>4b42f7f</code>). External readers who clone the repo and then read this status may be confused about the repo's accessibility state. The distinction intended is "formal visibility decision / public launch" vs "clean snapshot sync" — but this distinction is not explained in the status table.</td>
+<td>Add a clarifying note to the status table row, e.g. distinguishing "clean snapshot synced to GitHub (private read)" vs "formal public visibility decision (pending)".</td>
+</tr>
+<tr>
+<td>F-002</td>
+<td>low</td>
+<td>open</td>
+<td>README footer</td>
+<td>The README's final paragraph reads as an internal methodology commit note ("This README was polished in GL-151… It does not publish to GitHub, change git remotes, rewrite history…"). This is internal workflow documentation that reads awkwardly to external developers and adds noise to an otherwise clean document.</td>
+<td>Remove or move the GL-151/GL-152/GL-153 audit footnote from the user-facing README. This content belongs in a commit message or internal changelog.</td>
+</tr>
+<tr>
+<td>F-003</td>
+<td>medium</td>
+<td>open</td>
+<td>Public code surface</td>
+<td>The public snapshot contains 9 Python files across examples/, sdk/, and scripts/, compared to 62 Markdown files in docs/ alone. The backend (which contains the main production codebase) is intentionally excluded. For an external developer or institutional reviewer evaluating whether this is real software, the visible code surface may feel thin relative to the documentation volume. The first verifiable output does compensate, and the SDK + agent examples show a credible surface, but the overall ratio is notable.</td>
+<td>Before a full public visibility decision, consider whether exposing a minimal read-only verifier or a lightweight CLI entrypoint would strengthen the code credibility signal. This is not a blocker, but is worth noting for the next step.</td>
+</tr>
+<tr>
+<td>F-004</td>
+<td>low</td>
+<td>open</td>
+<td>README "Next steps" table</td>
+<td>The README's "Next steps" section references GL-153, GL-154, GL-155, GL-156 as future items to complete. All of these issues were completed many iterations ago (the project is now at GL-174). An external reader seeing this table would form a misleading impression of what work remains.</td>
+<td>Update or remove the "Next steps" table. Replace with accurate status reflecting the current public-snapshot phase and what a developer should do after evaluating the first verifiable output.</td>
+</tr>
+<tr>
+<td>F-005</td>
+<td>info</td>
+<td>pass</td>
+<td>Agent documentation</td>
+<td>AGENTS.md, llms.txt, llms-full.txt, docs/agent_quickstart.md, and docs/agent_task_contract.md are all present and well-organized. The agent section in README correctly points to these files without overwhelming the primary reader.</td>
+<td>No action required.</td>
+</tr>
+<tr>
+<td>F-006</td>
+<td>info</td>
+<td>pass</td>
+<td>First verifiable output</td>
+<td>The first verifiable output path is clearly discoverable from README. The dedicated quickstart section, the developer entry path table, and docs/first_verifiable_output.md all converge on <code>examples/first_verifiable_output.py</code>. The output is self-contained (stdlib only, no secrets, no backend).</td>
+<td>No action required.</td>
+</tr>
+<tr>
+<td>F-007</td>
+<td>info</td>
+<td>pass</td>
+<td>Private data / secret safety</td>
+<td>Full scan found no real secrets, private keys, tokens, API keys, private email addresses, internal Forgejo hostnames, /paperclip paths, Paperclip references, customer data, or GitHub visibility-change instructions in the public snapshot.</td>
+<td>No action required.</td>
+</tr>
+<tr>
+<td>F-008</td>
+<td>info</td>
+<td>pass</td>
+<td>Post-publish narrative coherence</td>
+<td>GL-168/169/170/171/172/173 form a coherent public-surface story. The CHANGELOG explains the clean snapshot model. The README status table and SECURITY.md status table are consistent with each other (despite the staleness noted in F-001).</td>
+<td>No action required.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="finding-counts-by-severity">Finding Counts by Severity<a class="headerlink" href="#finding-counts-by-severity" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Critical</td>
+<td>0</td>
+</tr>
+<tr>
+<td>High</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Medium</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Low</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Info</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Total</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="public-code-surface-assessment">Public Code Surface Assessment<a class="headerlink" href="#public-code-surface-assessment" title="Permanent link">&para;</a></h2>
+<p>The public snapshot exposes the following Python code surface:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>examples/first_verifiable_output.py</code></td>
+<td>Deterministic first verifiable output — no backend needed</td>
+</tr>
+<tr>
+<td><code>examples/agents/approval_guardrail_agent.py</code></td>
+<td>Agent example: approval guardrail pattern</td>
+</tr>
+<tr>
+<td><code>examples/agents/audit_export_agent.py</code></td>
+<td>Agent example: audit export workflow</td>
+</tr>
+<tr>
+<td><code>examples/agents/evidence_review_agent.py</code></td>
+<td>Agent example: evidence review</td>
+</tr>
+<tr>
+<td><code>examples/agents/policy_check_agent.py</code></td>
+<td>Agent example: policy check</td>
+</tr>
+<tr>
+<td><code>examples/langgraph_langchain/grantlayer_agent_example.py</code></td>
+<td>LangGraph/LangChain-style integration example</td>
+</tr>
+<tr>
+<td><code>sdk/python/grantlayer_client.py</code></td>
+<td>Minimal typed Python SDK</td>
+</tr>
+<tr>
+<td><code>scripts/verify_evidence_bundle.py</code></td>
+<td>Evidence bundle verifier script</td>
+</tr>
+<tr>
+<td><code>scripts/demo/gl061_api_smoke.py</code></td>
+<td>API smoke test script</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Assessment:</strong> The visible Python surface (9 files) is credible for a developer preview. The first verifiable output is runnable without any backend. The agent examples and SDK give a meaningful picture of the integration surface. The backend exclusion is documented and explained. The medium finding (F-003) is a design trade-off, not a safety blocker.</p>
+<hr />
+<h2 id="audience-clarity-assessment">Audience Clarity Assessment<a class="headerlink" href="#audience-clarity-assessment" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Persona</th>
+<th>First-impression clarity</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>External backend developer</td>
+<td>README opens clearly. Developer entry path table is present. "What you can do today" section is concrete. Minor noise from footer notation (F-002) and stale "Next steps" table (F-004).</td>
+<td>Pass with minor cautions</td>
+</tr>
+<tr>
+<td>Institutional / compliance reviewer</td>
+<td>Status table immediate. Caveats honest (no production SaaS claim, tenant isolation not implemented). Evidence bundle concept visible in examples and docs. Non-production limitations stated clearly.</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>AI-agent workflow developer</td>
+<td>AGENTS.md prominent. llms.txt / llms-full.txt present. Agent examples cover approval, audit, evidence, and policy patterns. LangGraph/LangChain integration example present. Not over-optimized at expense of human readers.</td>
+<td>Pass</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="first-output-assessment">First-Output Assessment<a class="headerlink" href="#first-output-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Path:</strong> <code>examples/first_verifiable_output.py</code>
+<strong>Reference output:</strong> <code>examples/first_verifiable_output.json</code>
+<strong>Walkthrough doc:</strong> <code>docs/first_verifiable_output.md</code></p>
+<p>The first verifiable output:
+- Is discoverable from README within the first scroll.
+- Requires Python stdlib only — no secrets, no backend, no cloud service.
+- Produces a deterministic GrantLayer-style institutional record with audit hash.
+- Is confirmed by GL-173 smoke review to run successfully and match the committed reference JSON exactly.
+- Is described as synthetic/local/demo — no production SaaS claim.</p>
+<p><strong>Assessment:</strong> pass</p>
+<hr />
+<h2 id="private-data-secret-safety-assessment">Private Data / Secret Safety Assessment<a class="headerlink" href="#private-data-secret-safety-assessment" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Real secrets (tokens, API keys, private keys)</td>
+<td>None found</td>
+</tr>
+<tr>
+<td>Private email addresses or phone numbers</td>
+<td>None found</td>
+</tr>
+<tr>
+<td>Internal Forgejo hostnames or remotes</td>
+<td>None found (label appears only as a JSON field name prefix, not as an actual hostname string)</td>
+</tr>
+<tr>
+<td>/paperclip paths or Paperclip references</td>
+<td>None found</td>
+</tr>
+<tr>
+<td>Private absolute paths</td>
+<td>None found</td>
+</tr>
+<tr>
+<td>Customer data or real personal identifiers</td>
+<td>None found</td>
+</tr>
+<tr>
+<td>GitHub visibility-change instructions</td>
+<td>None found</td>
+</tr>
+<tr>
+<td>Instructions to push internal repo directly to GitHub</td>
+<td>None found</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Assessment:</strong> No critical private-data or secret-material found. Safe to proceed to visibility decision evaluation.</p>
+<hr />
+<h2 id="readme-security-canonical-status-handling">README / SECURITY Canonical Status Handling<a class="headerlink" href="#readme-security-canonical-status-handling" title="Permanent link">&para;</a></h2>
+<p><code>README.md</code> and <code>SECURITY.md</code> remain the canonical status and safety sources as established in GL-170. The GL-170 deduplication work is intact: no duplicate broad status blocks were found in non-canonical docs. The staleness finding (F-001) is in the canonical sources themselves, not in secondary docs.</p>
+<hr />
+<h2 id="gl-168169170171172173-narrative-coherence">GL-168/169/170/171/172/173 Narrative Coherence<a class="headerlink" href="#gl-168169170171172173-narrative-coherence" title="Permanent link">&para;</a></h2>
+<p>The sequence forms a coherent story:
+- GL-168: First verifiable output (present in public snapshot)
+- GL-169: AGENTS.md + llms.txt (present in public snapshot)
+- GL-170: Status block deduplication (confirmed — no duplicates found)
+- GL-171: Pre-publish readiness review (documented in docs/)
+- GL-172: Clean snapshot publish to GitHub (reflected in CHANGELOG)
+- GL-173: Post-publish smoke review (documented in docs/)
+- GL-174 (this review): Human review gate</p>
+<p><strong>Assessment:</strong> Coherent. The CHANGELOG explicitly describes the clean snapshot model and distinguishes it from a full internal history.</p>
+<hr />
+<h2 id="review-decision">Review Decision<a class="headerlink" href="#review-decision" title="Permanent link">&para;</a></h2>
+<p><strong><code>proceed_with_cautions_to_visibility_decision</code></strong></p>
+<p>No critical or high findings. The single medium finding (F-003, documentation-heavy code surface) is a design consequence of the clean snapshot architecture — the backend is intentionally excluded — and does not constitute a safety or trust blocker. The three low findings (F-001 stale status claim, F-002 README footer noise, F-004 stale next steps table) are documentation polish items that should be addressed before or during a visibility change, not before entering the decision gate.</p>
+<p>The public snapshot is safe (no secrets, no private data, no misleading production claims), has a clear first-output path, provides appropriate caveats, and presents a credible developer preview surface.</p>
+<hr />
+<h2 id="confidence">Confidence<a class="headerlink" href="#confidence" title="Permanent link">&para;</a></h2>
+<p><strong>high</strong></p>
+<p>The review covered all required areas. No ambiguous findings with uncertain severity. Evidence base is clean. GL-173 smoke review confirms the first-output path works and the snapshot is free of private data. The medium and low findings are well-characterized and actionable.</p>
+<hr />
+<h2 id="recommended-next-issue">Recommended Next Issue<a class="headerlink" href="#recommended-next-issue" title="Permanent link">&para;</a></h2>
+<p><strong>GL-175: Public Snapshot Visibility Decision Gate</strong></p>
+<p>Address the low findings (F-001, F-002, F-004) as part of GL-175 cleanup before or during the visibility decision. The medium finding (F-003 code surface) is noted as a future improvement consideration, not a blocker.</p>
+<hr />
+<h2 id="human-readable-summary">Human-Readable Summary<a class="headerlink" href="#human-readable-summary" title="Permanent link">&para;</a></h2>
+<p>The GL-174 human review of the public GitHub snapshot (<code>4b42f7f</code>) found no critical or high issues. The snapshot is safe: no secrets, no private data, no internal hostnames, no misleading production-readiness claims. The first verifiable output is discoverable and working. Agent-oriented documentation (AGENTS.md, llms.txt, agent examples) is well-organized for AI-agent workflow developers. Institutional and compliance reviewers see honest, consistent caveats.</p>
+<p>Three low findings need documentation cleanup: a stale "Public GitHub release: Not performed" status table claim that conflicts with the repo being publicly cloneable, an internal workflow footnote in the README footer, and a stale "Next steps" table referencing already-completed issues. One medium finding notes the documentation-heavy surface relative to visible Python code — a design consequence of excluding the backend, but worth noting for the next visibility step.</p>
+<p>The project is ready to proceed to an explicit visibility decision gate.</p>
+<hr />
+<h2 id="explicit-confirmations">Explicit Confirmations<a class="headerlink" href="#explicit-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>No GitHub push performed in GL-174.</li>
+<li>No visibility change performed.</li>
+<li>No backend/src changes performed.</li>
+<li>No OpenAPI, migration, database-schema, or dependency changes performed.</li>
+<li>No production code modified.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2700 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/controlled_preview_boundary_pack/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-198 Controlled Preview Boundary Pack - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-198-controlled-preview-boundary-pack" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-198 Controlled Preview Boundary Pack
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#issue-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue ID
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#title" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Title
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlled-preview-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled Preview Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlled-preview-audience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled Preview Audience
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allowed-participant-profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed Participant Profiles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disallowed-participant-profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disallowed Participant Profiles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allowed-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed Data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forbidden-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forbidden Data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allowed-activities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed Activities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forbidden-activities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forbidden Activities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allowed-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed Environments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forbidden-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forbidden Environments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#demo-endpoint-safety-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Demo Endpoint Safety Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apisdkagent-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API/SDK/Agent Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-sensitive-reporting-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security-Sensitive Reporting Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-claim-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Claim Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preview-entry-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preview Entry Criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preview-exit-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preview Exit Criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#escalation-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escalation Criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#follow-up-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-up Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Follow-up Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#optional-future-follow-ups-only-if-useful" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional future follow-ups (only if useful)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gl-198-f001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-198-F001
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-198-f002" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-198-F002
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-198-f003" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-198-F003
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-198-f004" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-198-F004
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-198-f005" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-198-F005
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-198-f006" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-198-F006
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-198-f007" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-198-F007
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risks-and-caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risks and Caveats
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exact-safety-phrases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exact Safety Phrases
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-public-preview-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Public Preview State
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-198-controlled-preview-boundary-pack">GL-198 Controlled Preview Boundary Pack<a class="headerlink" href="#gl-198-controlled-preview-boundary-pack" title="Permanent link">&para;</a></h1>
+<h2 id="issue-id">Issue ID<a class="headerlink" href="#issue-id" title="Permanent link">&para;</a></h2>
+<p>GL-198</p>
+<h2 id="title">Title<a class="headerlink" href="#title" title="Permanent link">&para;</a></h2>
+<p>Controlled Preview Boundary Pack</p>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GrantLayer is publicly available on GitHub at
+<code>https://github.com/Discodone/grantlayer.git</code> in a Developer Preview /
+controlled-pilot posture.</p>
+<p>The sequence GL-187 through GL-197 delivered: stale public docs cleanup, a
+first-output verify helper, a grant lifecycle evidence bundle, a demo endpoint
+safety guard (GL-190), a developer experience polish pack (GL-191), a public
+feedback infrastructure (GL-192), a public agent/API walkthrough refresh
+(GL-193), a public preview review &amp; feedback triage pack (GL-194), a public
+safety/scanner/claim consistency gate (GL-195), a public smoke matrix pack
+(GL-196), and an API/SDK/Agent value decision pack (GL-197).</p>
+<p>GL-197 concluded <code>api_first_agent_examples_now_sdk_later</code> and noted that the
+controlled preview boundary had not been formally documented. This issue
+creates that boundary pack as a review/docs/test artifact only. It does not
+implement production features, change the backend, push to GitHub, or modify
+any runtime behavior.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>This issue is <strong>review / docs / test / artifact only.</strong></p>
+<p>Allowed files created:
+- <code>docs/controlled_preview_boundary_pack.md</code> (this file)
+- <code>docs/examples/gl198/controlled_preview_boundary_pack.json</code>
+- <code>backend/tests/test_gl198_controlled_preview_boundary_pack.py</code></p>
+<p>This issue does <strong>not</strong>:
+- implement backend features or modify <code>backend/src/*</code>
+- change <code>docs/openapi.yaml</code>, migrations, DB/schema, or dependency manifests
+- publish packages to PyPI or any registry
+- implement or change SDK code
+- push to GitHub
+- change GitHub visibility, labels, or issues via API
+- send reviewer outreach
+- modify frontend, website, or design
+- change snapshot publish script behavior
+- change examples runtime implementation
+- change GitHub workflow files</p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>README.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>CONTRIBUTING.md</td>
+<td>yes (if present)</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/api_sdk_agent_value_decision_pack.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/public_preview_review_feedback_triage_pack.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/public_feedback_infrastructure_pack.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/public_safety_scanner_claim_consistency_gate.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/public_smoke_matrix_pack.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/public_agent_api_walkthrough_refresh.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/demo_endpoint_safety_guard.md (GL-190)</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/first_output_verify_helper.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/grant_lifecycle_evidence_bundle.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/agent_quickstart.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/ten_minute_quickstart.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>examples/first_verifiable_output.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>examples/first_verifiable_output.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>examples/grant_lifecycle_evidence_bundle.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>examples/grant_lifecycle_evidence_bundle.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>scripts/verify-first-output.sh</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl190/demo_endpoint_safety_guard.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl191/public_developer_experience_polish_pack.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl192/public_feedback_infrastructure_pack.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl193/public_agent_api_walkthrough_refresh.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl194/public_preview_review_feedback_triage_pack.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl195/public_safety_scanner_claim_consistency_gate.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl196/public_smoke_matrix_pack.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl197/api_sdk_agent_value_decision_pack.json</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="controlled-preview-purpose">Controlled Preview Purpose<a class="headerlink" href="#controlled-preview-purpose" title="Permanent link">&para;</a></h2>
+<p>GrantLayer's controlled preview is a <strong>narrow, bounded technical preview</strong> for
+qualified external participants who want to:</p>
+<ol>
+<li>Evaluate the core value proposition — verifiable grant workflow evidence,
+   auditability, and agent-facing trust checks — using publicly available
+   examples and documentation.</li>
+<li>Provide technical feedback on the API design, developer experience, and
+   agent integration story.</li>
+<li>Run the two deterministic no-install examples and the verify-first-output
+   helper to gain confidence in the public snapshot's correctness.</li>
+<li>Inspect the backend and API surface in a local, synthetic-data-only
+   environment.</li>
+</ol>
+<p>The controlled preview is <strong>not</strong>:
+- a production SaaS trial
+- a multi-tenant pilot with real customer data
+- a validator of tenant/workspace isolation (not implemented)
+- an official SDK or package distribution
+- a commitment to production-level service-level agreements</p>
+<p>This posture is intentional. The preview allows public inspection and feedback
+while explicitly ruling out data-sensitive or production-commitment use patterns
+that are not yet safe to support.</p>
+<hr />
+<h2 id="controlled-preview-audience">Controlled Preview Audience<a class="headerlink" href="#controlled-preview-audience" title="Permanent link">&para;</a></h2>
+<p>The controlled preview is intended for <strong>technically qualified external
+participants</strong> who understand that they are interacting with a Developer
+Preview, not a production-ready SaaS product.</p>
+<p>All participants must:
+- understand the synthetic-data-only constraint,
+- agree not to submit real customer data, private grants, secrets, or
+  institutional records,
+- route security-sensitive reports through GitHub Security Advisories,
+- not treat the local examples as a production SDK or stable API client.</p>
+<hr />
+<h2 id="allowed-participant-profiles">Allowed Participant Profiles<a class="headerlink" href="#allowed-participant-profiles" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>External developer reviewer</td>
+<td>A developer who evaluates the public examples, API docs, and DX feedback path. Uses synthetic data. No production deployments.</td>
+</tr>
+<tr>
+<td>AI/coding-agent reviewer</td>
+<td>A coding agent that reads AGENTS.md, llms.txt, llms-full.txt and runs the deterministic no-install examples. Uses synthetic identifiers only.</td>
+</tr>
+<tr>
+<td>Grant/compliance domain reviewer (synthetic scenarios only)</td>
+<td>A reviewer with grant or compliance domain knowledge who evaluates whether the grant workflow model, evidence structure, and audit chain design make sense — using synthetic scenarios only, no real grants or institutional data.</td>
+</tr>
+<tr>
+<td>Security-minded reviewer (high-level public-safe reporting only)</td>
+<td>A security reviewer who inspects the public surface for design-level concerns, reporting high-level findings via GitHub Security Advisories without publishing exploit details in public issues.</td>
+</tr>
+<tr>
+<td>Product/UX reviewer for docs and examples</td>
+<td>A reviewer who assesses the developer experience, documentation clarity, and example quality with synthetic data only.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="disallowed-participant-profiles">Disallowed Participant Profiles<a class="headerlink" href="#disallowed-participant-profiles" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Real customer pilot with private data</td>
+<td>Tenant/workspace isolation is not implemented; real data would commingle in a single namespace.</td>
+</tr>
+<tr>
+<td>Production grant workflow operator</td>
+<td>Production SaaS readiness is not claimed; no production-level hardening, TLS, IAM, or SLA exists.</td>
+</tr>
+<tr>
+<td>Institutional deployment</td>
+<td>Not appropriate until production hardening gates (auth, encryption at rest, backup, incident response) are complete.</td>
+</tr>
+<tr>
+<td>Tenant-isolation validation with real tenants</td>
+<td>Tenant isolation is not implemented; validating it with real tenants would be misleading.</td>
+</tr>
+<tr>
+<td>Security exploit publication in public issue</td>
+<td>Exploit details must not appear in public GitHub issues; use GitHub Security Advisories.</td>
+</tr>
+<tr>
+<td>Integration requiring secrets or private credentials</td>
+<td>The preview must use placeholder tokens and synthetic identifiers only. No real secrets should enter the review environment.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="allowed-data">Allowed Data<a class="headerlink" href="#allowed-data" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Data Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Synthetic/demo grant data</td>
+<td>The repository examples use synthetic subject, role, action, and resource identifiers.</td>
+</tr>
+<tr>
+<td>Repository sample JSON</td>
+<td>The committed reference artifacts in <code>examples/*.json</code> are synthetic reference outputs.</td>
+</tr>
+<tr>
+<td>Generated local example outputs</td>
+<td>Outputs produced by running the local examples with synthetic identifiers.</td>
+</tr>
+<tr>
+<td>Public docs feedback</td>
+<td>Textual feedback on documentation, DX, examples, and API design.</td>
+</tr>
+<tr>
+<td>Public GitHub issue feedback without secrets</td>
+<td>Feedback submitted via GitHub Issues — must not contain real credentials, real data, or exploit details.</td>
+</tr>
+<tr>
+<td>High-level security concern without exploit details</td>
+<td>Security design observations submitted via GitHub Security Advisories only.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="forbidden-data">Forbidden Data<a class="headerlink" href="#forbidden-data" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Data Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Real customer data</td>
+<td>Any data relating to real individuals, organizations, or grant transactions.</td>
+</tr>
+<tr>
+<td>Private grants</td>
+<td>Real grant records from real institutional processes.</td>
+</tr>
+<tr>
+<td>Institutional records</td>
+<td>Compliance records, regulatory data, or other institutionally sensitive information.</td>
+</tr>
+<tr>
+<td>PII (Personally Identifiable Information)</td>
+<td>Names, email addresses, phone numbers, IDs, or any data that can identify a real individual.</td>
+</tr>
+<tr>
+<td>Secrets</td>
+<td>API keys, tokens, passwords, private keys, or any credential material.</td>
+</tr>
+<tr>
+<td>Tokens/API keys/passwords/private keys</td>
+<td>See above.</td>
+</tr>
+<tr>
+<td>Internal hostnames/remotes</td>
+<td>Internal network addresses, private repository URLs, or internal service endpoints.</td>
+</tr>
+<tr>
+<td>Exploit details in public issues</td>
+<td>Attack reproduction steps, proof-of-concept code, or bypass details must not appear in public GitHub issues.</td>
+</tr>
+<tr>
+<td>Private compliance records</td>
+<td>Regulatory, legal, or compliance-sensitive institutional records.</td>
+</tr>
+<tr>
+<td>Production credentials</td>
+<td>Any credential used in a real production system.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="allowed-activities">Allowed Activities<a class="headerlink" href="#allowed-activities" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Activity</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clone the public repository</td>
+<td><code>git clone https://github.com/Discodone/grantlayer.git</code></td>
+</tr>
+<tr>
+<td>Read README, AGENTS.md, llms.txt, llms-full.txt</td>
+<td>Public entry point documents are open for inspection.</td>
+</tr>
+<tr>
+<td>Run <code>scripts/verify-first-output.sh</code></td>
+<td>No backend, no network, no secrets required. Returns MATCH or DIFF CLEAN.</td>
+</tr>
+<tr>
+<td>Run <code>python3 examples/grant_lifecycle_evidence_bundle.py</code></td>
+<td>No backend, no network, no secrets required. Uses synthetic identifiers.</td>
+</tr>
+<tr>
+<td>Run <code>python3 examples/first_verifiable_output.py</code></td>
+<td>No backend, no network, no secrets required.</td>
+</tr>
+<tr>
+<td>Inspect API docs and server path documentation</td>
+<td>README API table, <code>docs/openapi.yaml</code> (local), <code>docs/ten_minute_quickstart.md</code>.</td>
+</tr>
+<tr>
+<td>Provide documentation and DX feedback</td>
+<td>Via GitHub Issues (no secrets, no exploit details) or the feedback template.</td>
+</tr>
+<tr>
+<td>Ask product questions with public/synthetic context</td>
+<td>General product, API design, and DX questions.</td>
+</tr>
+<tr>
+<td>Start the local backend with synthetic data</td>
+<td><code>pip install -r requirements.txt &amp;&amp; python3 -m backend</code> — local machine only, placeholder tokens.</td>
+</tr>
+<tr>
+<td>Report security-sensitive issues via GitHub Security Advisories</td>
+<td><code>https://github.com/Discodone/grantlayer/security/advisories</code> — no exploit details in public issues.</td>
+</tr>
+<tr>
+<td>Inspect <code>sdk/python/README.md</code> and <code>sdk/python/grantlayer_client.py</code> as a local reference</td>
+<td>The minimal local client wrapper is a reference example, not a published package.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="forbidden-activities">Forbidden Activities<a class="headerlink" href="#forbidden-activities" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Activity</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production deployment</td>
+<td>No production hardening, TLS, IAM, or SLA. Production SaaS not claimed.</td>
+</tr>
+<tr>
+<td>Processing real grant or customer data</td>
+<td>Data safety boundary — no tenant isolation, no encryption at rest guarantee.</td>
+</tr>
+<tr>
+<td>Testing tenant isolation with real tenants</td>
+<td>Tenant isolation is not implemented.</td>
+</tr>
+<tr>
+<td>Uploading secrets, private grant data, or PII</td>
+<td>Violates data safety boundary.</td>
+</tr>
+<tr>
+<td>Treating examples as a production SDK</td>
+<td>Examples are local-only demos; no published package exists.</td>
+</tr>
+<tr>
+<td>Claiming official SDK/package readiness</td>
+<td>No pip package is published; no PyPI release exists.</td>
+</tr>
+<tr>
+<td>Publishing exploit details in public issues</td>
+<td>Must route through GitHub Security Advisories.</td>
+</tr>
+<tr>
+<td>Changing GitHub visibility or repository settings</td>
+<td>Forbidden.</td>
+</tr>
+<tr>
+<td>Using internal/private repo paths or remotes</td>
+<td>Forbidden.</td>
+</tr>
+<tr>
+<td>Submitting feedback that contains real credentials</td>
+<td>Any credential or secret must not appear in issues, discussions, or feedback forms.</td>
+</tr>
+<tr>
+<td>Running demo endpoints with real data or non-local binding without explicit acknowledgement</td>
+<td>See demo endpoint safety boundary (GL-190).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="allowed-environments">Allowed Environments<a class="headerlink" href="#allowed-environments" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Environment</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Local developer machine with synthetic/demo data</td>
+<td>The primary allowed environment. pip install + python3 -m backend, synthetic identifiers only.</td>
+</tr>
+<tr>
+<td>Ephemeral clone (read-only or no-commit)</td>
+<td>Clone the public repo for inspection without modifying anything.</td>
+</tr>
+<tr>
+<td>Docs-only review</td>
+<td>Reading and reviewing the documentation without running any code.</td>
+</tr>
+<tr>
+<td>Offline/no-network example validation (where supported)</td>
+<td><code>scripts/verify-first-output.sh</code> and the two no-install examples run offline.</td>
+</tr>
+<tr>
+<td>Local CI/test pipeline (synthetic data)</td>
+<td>Running the test suite against a local backend with synthetic identifiers.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="forbidden-environments">Forbidden Environments<a class="headerlink" href="#forbidden-environments" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Environment</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production SaaS usage</td>
+<td>Not claimed; no production deployment exists.</td>
+</tr>
+<tr>
+<td>Customer environment usage</td>
+<td>Real customer data must not enter the review environment.</td>
+</tr>
+<tr>
+<td>Regulated/private institutional workflow</td>
+<td>Compliance requirements not yet met; no encryption at rest, no audit trail at production level.</td>
+</tr>
+<tr>
+<td>Multi-tenant production trial</td>
+<td>Tenant isolation is not implemented.</td>
+</tr>
+<tr>
+<td>Secret-bearing integration</td>
+<td>Any integration that requires real credentials or tokens is forbidden in the controlled preview.</td>
+</tr>
+<tr>
+<td>Public-facing server with demo endpoints enabled (without explicit acknowledgement)</td>
+<td>See GL-190 demo endpoint safety guard.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="demo-endpoint-safety-boundary">Demo Endpoint Safety Boundary<a class="headerlink" href="#demo-endpoint-safety-boundary" title="Permanent link">&para;</a></h2>
+<p><strong>Reference:</strong> GL-190 Demo Endpoint Safety Guard (<code>docs/demo_endpoint_safety_guard.md</code>)</p>
+<p>Key constraints for the controlled preview:</p>
+<ol>
+<li>Demo endpoints (<code>/demo-action</code>, related demo routes) are disabled by default
+   (<code>GRANTLAYER_ENABLE_DEMO_ENDPOINTS=false</code>).</li>
+<li>When demo endpoints are enabled, they must be bound to a local host
+   (<code>localhost</code>, <code>127.0.0.1</code>, <code>::1</code>) or an empty bind address.</li>
+<li>Binding demo endpoints to a non-local interface (e.g., <code>0.0.0.0</code>) is blocked
+   at startup unless <code>GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS=true</code> is explicitly
+   set.</li>
+<li>Controlled preview participants must not expose demo endpoints publicly
+   without understanding and acknowledging this guard.</li>
+<li>Demo endpoints must not be used with real grant data, real customer records,
+   or real credentials.</li>
+</ol>
+<p>The startup error name is <code>demo_endpoints_public_exposure_blocked</code>. This error
+contains no secrets, tokens, endpoint paths, or exploit details.</p>
+<p><strong>In the controlled preview:</strong> demo endpoints are for local synthetic-data-only
+evaluation. Do not expose them to the public internet without the explicit
+acknowledgement mechanism.</p>
+<hr />
+<h2 id="apisdkagent-boundary">API/SDK/Agent Boundary<a class="headerlink" href="#apisdkagent-boundary" title="Permanent link">&para;</a></h2>
+<p><strong>Reference:</strong> GL-197 API/SDK/Agent Value Decision Pack (<code>docs/api_sdk_agent_value_decision_pack.md</code>)</p>
+<p>Decision: <strong>api_first_agent_examples_now_sdk_later</strong></p>
+<p>Key constraints for the controlled preview:</p>
+<ol>
+<li><strong>API-first:</strong> The public API surface (README table, <code>docs/openapi.yaml</code>,
+   <code>docs/ten_minute_quickstart.md</code>) is sufficient for Developer Preview
+   evaluation. No hosted interactive playground exists.</li>
+<li><strong>Examples now:</strong> The two deterministic no-install examples
+   (<code>examples/first_verifiable_output.py</code>,
+   <code>examples/grant_lifecycle_evidence_bundle.py</code>) are the highest-value
+   public assets for controlled preview use.</li>
+<li><strong>SDK later:</strong> No official SDK or pip package is claimed. The minimal local
+   Python client wrapper at <code>sdk/python/grantlayer_client.py</code> is a local
+   reference only — not a published package, not a stable API client.</li>
+<li><strong>Agent workflows are examples/guidance:</strong> <code>AGENTS.md</code>, <code>llms.txt</code>,
+   <code>llms-full.txt</code>, and the LangGraph/LangChain-style example show how coding
+   agents can use GrantLayer. These are guidance documents and examples, not
+   production automation.</li>
+<li><strong>No SDK implementation added in GL-198.</strong> The decision to defer SDK
+   packaging remains from GL-197.</li>
+</ol>
+<p>Participants must not treat <code>sdk/python/grantlayer_client.py</code> as a published
+SDK, claim pip install availability, or depend on it as a stable API contract.</p>
+<hr />
+<h2 id="security-sensitive-reporting-boundary">Security-Sensitive Reporting Boundary<a class="headerlink" href="#security-sensitive-reporting-boundary" title="Permanent link">&para;</a></h2>
+<p>All security-sensitive findings must be reported via:</p>
+<blockquote>
+<p><strong>GitHub Security Advisories</strong>
+<code>https://github.com/Discodone/grantlayer/security/advisories</code></p>
+</blockquote>
+<p>This includes:
+- Authentication or authorization design concerns
+- Data exposure risks
+- Demo endpoint exposure scenarios
+- Potential injection or API abuse patterns
+- Cryptographic or audit chain weaknesses</p>
+<p><strong>Do not</strong> file exploit details, proof-of-concept code, or reproduction steps
+in public GitHub issues. Public issues are appropriate for general design
+questions and documentation feedback only.</p>
+<p>High-level security observations (e.g., "the auth configuration friction could
+lead to misconfiguration") may be noted in public issues as long as they
+contain no exploit details, no bypass instructions, and no credential material.</p>
+<hr />
+<h2 id="public-claim-boundary">Public Claim Boundary<a class="headerlink" href="#public-claim-boundary" title="Permanent link">&para;</a></h2>
+<p>The following claims are <strong>explicitly forbidden</strong> in the controlled preview
+period and in any public-facing communication:</p>
+<table>
+<thead>
+<tr>
+<th>Forbidden Claim</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"GrantLayer is a production SaaS"</td>
+<td>Not true; no production deployment exists.</td>
+</tr>
+<tr>
+<td>"GrantLayer provides tenant/workspace isolation"</td>
+<td>Tenant isolation is not implemented. All data lives in a single namespace.</td>
+</tr>
+<tr>
+<td>"The Python SDK is available on PyPI"</td>
+<td>No pip package is published. The local wrapper is not a published package.</td>
+</tr>
+<tr>
+<td>"GrantLayer is production-ready for institutional use"</td>
+<td>Multiple hardening gates remain (auth, encryption at rest, IAM, SLA).</td>
+</tr>
+<tr>
+<td>"GrantLayer guarantees audit trail immutability in production"</td>
+<td>Audit hash chain exists; production-level guarantees require additional hardening.</td>
+</tr>
+<tr>
+<td>"Reviewer data is tenant-isolated from other reviewer data"</td>
+<td>Not true; tenant isolation is not implemented.</td>
+</tr>
+</tbody>
+</table>
+<p>The following claims are <strong>allowed</strong> in the controlled preview:</p>
+<table>
+<thead>
+<tr>
+<th>Allowed Claim</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"GrantLayer is an API-first Developer Preview"</td>
+<td>GL-197 decision.</td>
+</tr>
+<tr>
+<td>"The examples run deterministically with no install and no network"</td>
+<td>Verified by smoke matrix (GL-196) and verify-first-output helper (GL-188).</td>
+</tr>
+<tr>
+<td>"The public snapshot is free of internal paths and real secrets"</td>
+<td>Verified by GL-195 scanner gate and GL-196 smoke matrix.</td>
+</tr>
+<tr>
+<td>"Security-sensitive reports go to GitHub Security Advisories"</td>
+<td>Routing established in SECURITY.md and GL-192.</td>
+</tr>
+<tr>
+<td>"Tenant isolation is not implemented"</td>
+<td>Honest Developer Preview posture.</td>
+</tr>
+<tr>
+<td>"No pip package is published; the local wrapper is a reference example"</td>
+<td>GL-197 packaging boundaries.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="preview-entry-criteria">Preview Entry Criteria<a class="headerlink" href="#preview-entry-criteria" title="Permanent link">&para;</a></h2>
+<p>The following conditions must be true before the controlled preview is
+considered open:</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-191 through GL-197 public docs published</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>First output helper works (MATCH result)</td>
+<td>confirmed (GL-188, GL-197 smoke)</td>
+</tr>
+<tr>
+<td>Grant lifecycle example works (DIFF CLEAN result)</td>
+<td>confirmed (GL-189, GL-197 smoke)</td>
+</tr>
+<tr>
+<td>Public feedback infrastructure exists (GitHub Issues + Security Advisories)</td>
+<td>confirmed (GL-192)</td>
+</tr>
+<tr>
+<td>Security advisory routing exists (SECURITY.md + docs/public_feedback_infrastructure_pack.md)</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>Public smoke matrix exists (GL-196)</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>Public safety/claim gate passed with cautions (GL-195)</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>No current blocker from GL-195, GL-196, or GL-197</td>
+<td>confirmed — all findings non-blocking</td>
+</tr>
+<tr>
+<td>Demo endpoint safety guard in place (GL-190)</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>API/SDK/agent boundary decision documented (GL-197)</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>This GL-198 boundary pack published</td>
+<td>pending</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="preview-exit-criteria">Preview Exit Criteria<a class="headerlink" href="#preview-exit-criteria" title="Permanent link">&para;</a></h2>
+<p>The controlled preview can be closed or transitioned when:</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clear reviewer feedback captured and triaged</td>
+<td>All submitted feedback normalized, categorized, and converted to roadmap issues.</td>
+</tr>
+<tr>
+<td>No private data or security leak identified</td>
+<td>No real customer data, private grants, secrets, or exploit details in public channels.</td>
+</tr>
+<tr>
+<td>No misleading production or tenant isolation claims</td>
+<td>All participant communications remain within the allowed claim boundary.</td>
+</tr>
+<tr>
+<td>Public examples remain deterministic</td>
+<td>Verify-first-output MATCH and grant lifecycle DIFF CLEAN maintained.</td>
+</tr>
+<tr>
+<td>Known follow-ups converted into roadmap</td>
+<td>All non-blocking findings from the controlled preview documented as issues.</td>
+</tr>
+<tr>
+<td>Production-readiness gaps explicitly deferred to GL-199</td>
+<td>The gap report v2 documents all remaining hardening gates and defers them explicitly.</td>
+</tr>
+<tr>
+<td>Decision made on whether to widen the preview, proceed to pilot, or continue boundary</td>
+<td>Product decision documented in a follow-up.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="escalation-criteria">Escalation Criteria<a class="headerlink" href="#escalation-criteria" title="Permanent link">&para;</a></h2>
+<p>The following conditions require immediate escalation and should be treated as
+blocking:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Real customer data, PII, or private grants found in the public snapshot</td>
+<td>Remove immediately; notify via GitHub Security Advisory; assess scope of exposure.</td>
+</tr>
+<tr>
+<td>Real secret, token, or private key found in the public snapshot</td>
+<td>Rotate immediately; remove from history; notify via GitHub Security Advisory.</td>
+</tr>
+<tr>
+<td>Security-sensitive finding posted publicly with exploit details</td>
+<td>Request GitHub issue removal; acknowledge via Security Advisory; assess scope.</td>
+</tr>
+<tr>
+<td>Demo endpoint exposed to the public internet with real data</td>
+<td>Shut down immediately; assess scope; notify via Security Advisory.</td>
+</tr>
+<tr>
+<td>Evidence of unauthorized production deployment claiming GrantLayer identity</td>
+<td>Legal and security escalation path; assess scope.</td>
+</tr>
+<tr>
+<td>Internal hostname, private remote, or internal path found in public snapshot</td>
+<td>Remove from public snapshot; assess scope of exposure.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="follow-up-roadmap">Follow-up Roadmap<a class="headerlink" href="#follow-up-roadmap" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Priority</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-199</td>
+<td>Production Readiness Gap Report v2</td>
+<td>high</td>
+<td>Consolidate all hardening gaps with owner, priority, and estimated scope. Covers auth, encryption at rest, IAM, SLA, tenant isolation path, and remaining gates.</td>
+</tr>
+<tr>
+<td>GL-198P</td>
+<td>GL-198 Combined Merge-and-Publish</td>
+<td>high</td>
+<td>Merge GL-198 to main and push public snapshot update.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="optional-future-follow-ups-only-if-useful">Optional future follow-ups (only if useful)<a class="headerlink" href="#optional-future-follow-ups-only-if-useful" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Controlled reviewer feedback round</td>
+<td>Capture and triage feedback from the first controlled preview participants.</td>
+</tr>
+<tr>
+<td>API walkthrough implementation refresh</td>
+<td>Add cURL collection, expand auth docs — addresses GL-197-F001, F006.</td>
+</tr>
+<tr>
+<td>Minimal SDK prototype follow-up</td>
+<td>Only after API contract stability commitment and external demand.</td>
+</tr>
+<tr>
+<td>Agent-to-API standalone example</td>
+<td>Complete the agent workflow integration story — GL-197-F004.</td>
+</tr>
+<tr>
+<td>Pilot data safety checklist</td>
+<td>Before any pilot involving synthetic-but-realistic data from real organizations.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>controlled_preview_allowed_with_strict_boundaries</strong></p>
+<hr />
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<p>The input review from GL-187 through GL-197 confirms:</p>
+<ol>
+<li>The public snapshot is clean — no internal paths, no real secrets, no
+   private data found in any scan.</li>
+<li>The public examples are deterministic and verified — MATCH and DIFF CLEAN
+   results confirmed in GL-197 smoke.</li>
+<li>The public safety/claim gate (GL-195) passed with cautions — no blockers.</li>
+<li>The public smoke matrix (GL-196) passed — all 22 check IDs confirmed.</li>
+<li>The API/SDK/agent value decision (GL-197) is clear — api_first_agent_examples_now_sdk_later.</li>
+<li>Security-sensitive reporting routing is established — GitHub Security
+   Advisories documented in SECURITY.md and GL-192.</li>
+<li>The demo endpoint safety guard (GL-190) is in place — non-local exposure
+   blocked by default.</li>
+<li>No finding from GL-195, GL-196, or GL-197 is blocking.</li>
+</ol>
+<p>A narrow controlled preview is acceptable for public docs/examples/API-understanding
+feedback under strict data and participant boundaries. The preview must use
+only synthetic/demo data. It must not involve production deployments, real
+customer data, private grants, secrets, tenant-isolation claims, or official
+SDK/package claims. Security-sensitive reports must go through GitHub Security
+Advisories.</p>
+<p>Remaining caveats (GL-198-F001 through GL-198-F007 below) are non-blocking
+and do not prevent the controlled preview from proceeding.</p>
+<hr />
+<h2 id="findings">Findings<a class="headerlink" href="#findings" title="Permanent link">&para;</a></h2>
+<h3 id="gl-198-f001">GL-198-F001<a class="headerlink" href="#gl-198-f001" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>GL-198-F001</td>
+</tr>
+<tr>
+<td>severity</td>
+<td>medium</td>
+</tr>
+<tr>
+<td>category</td>
+<td>preview-boundary</td>
+</tr>
+<tr>
+<td>summary</td>
+<td>The controlled preview boundary has not been formally documented until this issue. Reviewers joining the preview before GL-198 are operating without an explicit data safety boundary document.</td>
+</tr>
+<tr>
+<td>evidence</td>
+<td>GL-197 risk: "The controlled preview boundary (GL-198) has not been formally documented; until it is, the reviewer pool should remain limited."</td>
+</tr>
+<tr>
+<td>blocking</td>
+<td>no — resolved by this issue</td>
+</tr>
+<tr>
+<td>recommended_action</td>
+<td>Publish GL-198 boundary pack. Ensure all future reviewer invitations reference this document.</td>
+</tr>
+<tr>
+<td>recommended_issue</td>
+<td>GL-198 (this issue); GL-198P for public publish</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gl-198-f002">GL-198-F002<a class="headerlink" href="#gl-198-f002" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>GL-198-F002</td>
+</tr>
+<tr>
+<td>severity</td>
+<td>medium</td>
+</tr>
+<tr>
+<td>category</td>
+<td>claim-safety</td>
+</tr>
+<tr>
+<td>summary</td>
+<td>The README Developer entry path table labels Step 5 as "Python SDK" without a qualifier, which may set incorrect expectations about published package availability.</td>
+</tr>
+<tr>
+<td>evidence</td>
+<td>GL-197-F002: README.md Developer entry path table, Step 5: "Python SDK" — <code>sdk/python/README.md</code>. The SDK README correctly states "No pip package is published," but the table label alone is ambiguous.</td>
+</tr>
+<tr>
+<td>blocking</td>
+<td>no</td>
+</tr>
+<tr>
+<td>recommended_action</td>
+<td>Add a qualifier to the README table: change "Python SDK" to "Minimal Python client (local only, not published)" or equivalent. Can be done in GL-198P or a subsequent small fix.</td>
+</tr>
+<tr>
+<td>recommended_issue</td>
+<td>GL-198P or a dedicated README fix issue</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gl-198-f003">GL-198-F003<a class="headerlink" href="#gl-198-f003" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>GL-198-F003</td>
+</tr>
+<tr>
+<td>severity</td>
+<td>low</td>
+</tr>
+<tr>
+<td>category</td>
+<td>preview-boundary</td>
+</tr>
+<tr>
+<td>summary</td>
+<td><code>llms.txt</code> Next Steps section still references "GL-193" as an upcoming issue, but GL-193 is complete. First identified in GL-195-F003, carried through GL-197-F003.</td>
+</tr>
+<tr>
+<td>evidence</td>
+<td>llms.txt line approximately 78: references GL-193 as upcoming. GL-193 was merged and published.</td>
+</tr>
+<tr>
+<td>blocking</td>
+<td>no</td>
+</tr>
+<tr>
+<td>recommended_action</td>
+<td>Update llms.txt Next Steps to reference GL-198–GL-199 roadmap. Minimal one-line fix appropriate for GL-198P or a subsequent issue.</td>
+</tr>
+<tr>
+<td>recommended_issue</td>
+<td>GL-198P or a small docs refresh</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gl-198-f004">GL-198-F004<a class="headerlink" href="#gl-198-f004" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>GL-198-F004</td>
+</tr>
+<tr>
+<td>severity</td>
+<td>low</td>
+</tr>
+<tr>
+<td>category</td>
+<td>tenant-isolation</td>
+</tr>
+<tr>
+<td>summary</td>
+<td>No consolidated reminder of the tenant-isolation-not-implemented constraint appears in the new reviewer entry path (ten-minute quickstart, agent quickstart). Reviewers who skip SECURITY.md or README caveats may not encounter this disclaimer.</td>
+</tr>
+<tr>
+<td>evidence</td>
+<td><code>docs/ten_minute_quickstart.md</code> and <code>docs/agent_quickstart.md</code> focus on the happy path without a prominent tenant isolation caveat. The constraint is documented in README.md and SECURITY.md but not surfaced at the quickstart entry point.</td>
+</tr>
+<tr>
+<td>blocking</td>
+<td>no</td>
+</tr>
+<tr>
+<td>recommended_action</td>
+<td>Add a one-line Developer Preview caveat to the top of <code>docs/ten_minute_quickstart.md</code> and <code>docs/agent_quickstart.md</code> referencing the boundary doc or SECURITY.md. Non-blocking; appropriate for GL-198P or GL-199.</td>
+</tr>
+<tr>
+<td>recommended_issue</td>
+<td>GL-198P or GL-199</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gl-198-f005">GL-198-F005<a class="headerlink" href="#gl-198-f005" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>GL-198-F005</td>
+</tr>
+<tr>
+<td>severity</td>
+<td>low</td>
+</tr>
+<tr>
+<td>category</td>
+<td>api-sdk-agent-boundary</td>
+</tr>
+<tr>
+<td>summary</td>
+<td>No agent-to-API integration example exists showing a coding agent calling the live local backend (health → create grant → demo action → check audit) with placeholder tokens. GL-197-F004 identified this gap.</td>
+</tr>
+<tr>
+<td>evidence</td>
+<td><code>examples/langgraph_langchain/grantlayer_agent_example.py</code> exists but is not a standalone, fully documented agent-to-API smoke path.</td>
+</tr>
+<tr>
+<td>blocking</td>
+<td>no</td>
+</tr>
+<tr>
+<td>recommended_action</td>
+<td>Add a future standalone agent-to-API example that uses placeholder tokens and produces a structured JSON report. Defer to GL-199 or a dedicated follow-up issue.</td>
+</tr>
+<tr>
+<td>recommended_issue</td>
+<td>GL-199 or a future agent example issue</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gl-198-f006">GL-198-F006<a class="headerlink" href="#gl-198-f006" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>GL-198-F006</td>
+</tr>
+<tr>
+<td>severity</td>
+<td>low</td>
+</tr>
+<tr>
+<td>category</td>
+<td>production-caveat</td>
+</tr>
+<tr>
+<td>summary</td>
+<td>No consolidated production readiness gap report v2 exists. Individual caveats are spread across README.md, SECURITY.md, and docs/security_boundaries.md.</td>
+</tr>
+<tr>
+<td>evidence</td>
+<td>GL-194-F002, GL-195-F004, GL-197-F007 all identify this gap. No single document maps all remaining hardening gates with owner, priority, and estimated scope.</td>
+</tr>
+<tr>
+<td>blocking</td>
+<td>no</td>
+</tr>
+<tr>
+<td>recommended_action</td>
+<td>GL-199 Production Readiness Gap Report v2 should consolidate all remaining hardening gates.</td>
+</tr>
+<tr>
+<td>recommended_issue</td>
+<td>GL-199</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gl-198-f007">GL-198-F007<a class="headerlink" href="#gl-198-f007" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>GL-198-F007</td>
+</tr>
+<tr>
+<td>severity</td>
+<td>info</td>
+</tr>
+<tr>
+<td>category</td>
+<td>data-safety</td>
+</tr>
+<tr>
+<td>summary</td>
+<td>No formal reviewer data safety checklist exists for participants who wish to run the backend with synthetic-but-realistic data from real organizations. All current examples use fully synthetic identifiers.</td>
+</tr>
+<tr>
+<td>evidence</td>
+<td>The boundary doc (this issue) defines the data boundary. No formal per-reviewer checklist exists for edge cases such as a grant reviewer who works at a real organization but wants to test with their own anonymized scenarios.</td>
+</tr>
+<tr>
+<td>blocking</td>
+<td>no</td>
+</tr>
+<tr>
+<td>recommended_action</td>
+<td>Consider a pilot data safety checklist follow-up if any reviewer proposes using organization-specific but anonymized scenarios. Defer until a concrete request arises.</td>
+</tr>
+<tr>
+<td>recommended_issue</td>
+<td>Optional future pilot data safety checklist issue</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="risks-and-caveats">Risks and Caveats<a class="headerlink" href="#risks-and-caveats" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The controlled preview boundary is documented here for the first time (GL-198). Until this is published, reviewers lack an explicit data safety boundary reference. Publishing GL-198 closes this gap.</li>
+<li>Tenant isolation is not implemented. All reviewer data in a shared local instance is in a single namespace. This is an acceptable risk for synthetic-data-only local review, but not for any real-data or multi-party pilot.</li>
+<li>The API contract has no stability commitment. Reviewers who write integrations against the current API should expect changes.</li>
+<li>The <code>sdk/python/</code> directory name implies more maturity than exists. The README qualifier ("No pip package is published") must remain prominent.</li>
+<li>The minimal local Python client wrapper at <code>sdk/python/grantlayer_client.py</code> must not be described as a published SDK or a stable API client.</li>
+<li>Security-sensitive findings submitted via public issues before GitHub Security Advisories routing was established (pre-GL-192) may require retroactive handling if exploit details were included. No such incidents are known.</li>
+<li>The escalation criteria in this document must be followed immediately if any condition is triggered.</li>
+</ul>
+<hr />
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>This issue does <strong>not</strong>:
+- implement a real SDK or publish a pip package
+- change backend runtime behavior or add new API surface
+- change <code>backend/src/*</code>, OpenAPI, migrations, DB/schema, or dependency manifests
+- push to GitHub or change GitHub visibility
+- create or modify GitHub labels/issues via API
+- send reviewer outreach or contact reviewers
+- change frontend, website, or design
+- change snapshot publish script behavior
+- claim production SaaS readiness
+- claim tenant isolation is implemented
+- request real customer data, private grants, or secrets
+- include exploit details
+- process real grant data
+- make production deployment decisions</p>
+<hr />
+<h2 id="exact-safety-phrases">Exact Safety Phrases<a class="headerlink" href="#exact-safety-phrases" title="Permanent link">&para;</a></h2>
+<p>The following lowercase phrases are intentionally included for agent and test
+compatibility:</p>
+<ul>
+<li>tenant isolation is not implemented</li>
+<li>no real secrets</li>
+<li>no real customer data</li>
+<li>developer preview / technical preview only</li>
+<li>not production saas</li>
+</ul>
+<hr />
+<h2 id="current-public-preview-state">Current Public Preview State<a class="headerlink" href="#current-public-preview-state" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Posture</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Release label</td>
+<td><strong>GL-0.1 / Developer Preview</strong></td>
+</tr>
+<tr>
+<td>Maturity</td>
+<td>Developer Preview / technical preview only</td>
+</tr>
+<tr>
+<td>Production SaaS readiness</td>
+<td><strong>Not claimed</strong></td>
+</tr>
+<tr>
+<td>Tenant/workspace isolation</td>
+<td><strong>Not implemented</strong></td>
+</tr>
+<tr>
+<td>Public GitHub repository</td>
+<td><strong>Available</strong> — <code>https://github.com/Discodone/grantlayer.git</code> (GL-176)</td>
+</tr>
+<tr>
+<td>Public snapshot</td>
+<td>Clean developer-facing snapshot — no internal paths, no real secrets</td>
+</tr>
+<tr>
+<td>Real customer data in examples</td>
+<td><strong>No</strong> — all examples use synthetic identifiers</td>
+</tr>
+<tr>
+<td>Real secrets in examples</td>
+<td><strong>No</strong> — all tokens and keys are placeholders</td>
+</tr>
+<tr>
+<td>Official SDK/package</td>
+<td><strong>Not claimed</strong> — no pip package published</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Confirmation</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>no_github_push_performed</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_visibility_change_performed</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>internal_repo_not_pushed_directly_to_github</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_github_api_label_changes_performed</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_github_issue_changes_performed</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_reviewer_outreach_sent</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_backend_src_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_openapi_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_migration_db_dependency_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_dependency_manifest_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_sdk_implementation_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_package_publishing_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_examples_runtime_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_frontend_website_design_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_github_workflow_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_snapshot_publish_script_behavior_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_production_saas_claim</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>tenant_isolation_not_claimed</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>official_sdk_package_not_claimed_unless_verified</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_real_customer_data_requested</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_private_grant_data_requested</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_secrets_requested</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_exploit_details_included</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>security_sensitive_reports_routed_to_github_security_advisories</td>
+<td>confirmed</td>
+</tr>
+</tbody>
+</table>
+<p>Security-sensitive reports should be submitted via GitHub Security Advisories
+at <code>https://github.com/Discodone/grantlayer/security/advisories</code>. Do not file
+exploit details in public issues.</p>
+<hr />
+<blockquote>
+<p>This document was created in <strong>GL-198 Controlled Preview Boundary Pack</strong>. It
+is a review/docs/test artifact only. It does not change git remotes, rewrite
+history, modify production code, change API behavior, add migrations, change
+the database schema, add dependencies, implement SDK changes, publish packages,
+launch a website or frontend, claim production SaaS readiness, or claim tenant
+isolation implementation. All examples use synthetic identifiers and
+placeholder tokens only.</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

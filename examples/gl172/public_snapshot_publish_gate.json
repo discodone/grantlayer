@@ -1,0 +1,99 @@
+{
+  "issue_id": "GL-172",
+  "title": "Public Snapshot Publish — Pre-Publish Caution Resolution + Snapshot Build + Publish Gate",
+  "review_date": "2026-06-01",
+  "base_commit": "d9054ef9f0abfef7a93b5a316fb95b0a62b71b39",
+  "branch": "gl-172-public-snapshot-publish-gate",
+  "resolved_findings": [
+    {
+      "id": "F-001",
+      "severity": "high",
+      "resolution": "exclusion",
+      "action": "Added docs/demo_script.md to PUBLIC_EXPORT_EXCLUDE in scripts/build-clean-public-snapshot.sh. The file references an internal operational path and must not appear in the public snapshot.",
+      "status": "resolved"
+    },
+    {
+      "id": "F-002",
+      "severity": "medium",
+      "resolution": "exclusion",
+      "action": "Added docs/examples/gl163/post_public_agent_intake_triage.json, docs/examples/gl164a/public_repo_discovery_metadata.json, and docs/examples/gl165/public_changelog_version_anchors.json to PUBLIC_EXPORT_EXCLUDE. Each contained a sourceOfTruth label identifying an internal infrastructure system by name.",
+      "status": "resolved"
+    },
+    {
+      "id": "F-003",
+      "severity": "low",
+      "resolution": "wording_update",
+      "action": "Updated README.md Safety section: replaced stale 'GL-169 is public-facing polish only' line with an evergreen statement confirming no direct GitHub push has been performed and public content is synced only via the explicit clean snapshot publish workflow.",
+      "status": "resolved"
+    },
+    {
+      "id": "F-004",
+      "severity": "low",
+      "resolution": "no_action_required",
+      "action": "docs/examples/gl164a/public_repo_discovery_metadata.json reference GitHub URL is a documented reference from GL-164A planning. Not a leaked credential. File is now also excluded via F-002 resolution.",
+      "status": "resolved"
+    }
+  ],
+  "snapshot_build_path": "/tmp/grantlayer-snapshot-gl172",
+  "publish_worktree": "/tmp/grantlayer-public-publish",
+  "github_remote": "https://github.com/discodone/grantlayer.git",
+  "excluded_files_added": [
+    "docs/demo_script.md",
+    "docs/examples/gl163/post_public_agent_intake_triage.json",
+    "docs/examples/gl164a/public_repo_discovery_metadata.json",
+    "docs/examples/gl165/public_changelog_version_anchors.json",
+    "docs/public_release_github_snapshot_readiness_review.md",
+    "docs/examples/gl171/public_release_github_snapshot_readiness_review.json"
+  ],
+  "scanner_result": "pass",
+  "absence_checks": {
+    "dot_claude_absent": true,
+    "backend_absent": true,
+    "demo_script_md_absent": true,
+    "gl163_post_public_agent_intake_absent": true,
+    "gl164a_public_repo_discovery_absent": true,
+    "gl165_changelog_version_anchors_absent": true,
+    "paperclip_path_absent": true,
+    "internal_forgejo_label_absent": true,
+    "private_key_markers_absent": true,
+    "raw_tokens_absent": true,
+    "customer_data_absent": true,
+    "private_paths_absent": true,
+    "visibility_change_instruction_absent": true,
+    "internal_repo_push_instruction_absent": true
+  },
+  "first_output_present": {
+    "examples_first_verifiable_output_py": true,
+    "examples_first_verifiable_output_json": true,
+    "docs_first_verifiable_output_md": true
+  },
+  "github_push_performed": true,
+  "github_push_source": "/tmp/grantlayer-public-publish",
+  "github_push_target": "https://github.com/discodone/grantlayer.git",
+  "visibility_changed": false,
+  "force_push_performed": false,
+  "internal_repo_pushed_to_github": false,
+  "readiness_result": "published",
+  "non_goals": [
+    "push_internal_repo_to_github",
+    "change_github_visibility",
+    "force_push",
+    "rewrite_history",
+    "change_backend_src",
+    "change_openapi",
+    "change_migrations",
+    "change_database_schema",
+    "change_dependencies",
+    "change_sdk_implementation",
+    "change_production_runtime_behavior",
+    "use_paperclip",
+    "call_paperclip_apis",
+    "change_frontend_website_design"
+  ],
+  "changed_files": [
+    "scripts/build-clean-public-snapshot.sh",
+    "README.md",
+    "docs/examples/gl172/public_snapshot_publish_gate.json",
+    "backend/tests/test_gl172_public_snapshot_publish_gate.py"
+  ]
+}

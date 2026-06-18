@@ -1,0 +1,1268 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/runtime_configuration_environment_model/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer Runtime Configuration and Environment Model - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-runtime-configuration-and-environment-model" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer Runtime Configuration and Environment Model
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-product-configuration-principle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Product configuration principle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-runtime-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Runtime modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Runtime modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-local-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 local-dev
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 demo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-staging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 staging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 production
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-configuration-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Configuration categories
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-safe-localtestdemo-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Safe local/test/demo defaults
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-production-required-explicit-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Production-required explicit configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-configuration-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Configuration boundaries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-environment-matrix-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Environment matrix summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-future-implementation-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Future implementation expectations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-what-not-to-implement-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. What not to implement yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-decision-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Decision boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-runtime-configuration-and-environment-model">GrantLayer Runtime Configuration and Environment Model<a class="headerlink" href="#grantlayer-runtime-configuration-and-environment-model" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>This document defines the runtime and environment model for GrantLayer as a <strong>reusable, adaptable API-first product core</strong>.</p>
+<p>It clarifies:
+- which runtime modes GrantLayer should support
+- which configuration categories belong to the product foundation
+- what is safe for local, test, and demo defaults
+- what must be explicit before any production use
+- what should remain configurable instead of hard-coded
+- what later implementation blocks should build</p>
+<p>This is a <strong>product-foundation architecture and planning document</strong>. It does not implement runtime configuration code, a config loader, or any deployment automation.</p>
+<h2 id="2-product-configuration-principle">2. Product configuration principle<a class="headerlink" href="#2-product-configuration-principle" title="Permanent link">&para;</a></h2>
+<p>GrantLayer should make runtime mode, environment assumptions, secrets, persistence, auth, and external integrations <strong>explicit</strong>.</p>
+<p>Local, test, and demo defaults must not accidentally become production behavior. Every runtime mode must be declared, validated, and respected by the product core and its extensions. Configuration that affects data integrity, security, auditability, or compliance must not rely on implicit defaults in production.</p>
+<h2 id="3-runtime-modes">3. Runtime modes<a class="headerlink" href="#3-runtime-modes" title="Permanent link">&para;</a></h2>
+<p>GrantLayer supports the following runtime modes, from least to most constrained:</p>
+<h3 id="31-local-dev">3.1 local-dev<a class="headerlink" href="#31-local-dev" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: developer convenience during active development</li>
+<li><strong>Allowed defaults</strong>: SQLite, local file paths, demo admin tokens, in-memory fixtures, simplified logging, no external secret manager, no backup guarantee, no observability stack</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready or pilot-ready</li>
+</ul>
+<h3 id="32-test">3.2 test<a class="headerlink" href="#32-test" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: deterministic automated verification in CI and local test suites</li>
+<li><strong>Allowed defaults</strong>: SQLite in-memory or temporary files, synthetic data, mock auth, deterministic fixtures, no external integrations, no network exposure</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready or pilot-ready</li>
+</ul>
+<h3 id="33-demo">3.3 demo<a class="headerlink" href="#33-demo" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: illustrative non-production walkthrough for integrators, partners, and stakeholders</li>
+<li><strong>Allowed defaults</strong>: demo fixtures, example data, local-only binding, simplified auth, no real secrets, no backup/restore guarantee, no compliance certification</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready; explicitly labeled as demonstration only</li>
+</ul>
+<h3 id="34-integration">3.4 integration<a class="headerlink" href="#34-integration" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: controlled external technical integration with partner systems</li>
+<li><strong>Allowed defaults</strong>: partner-agreed database and auth configuration, limited network exposure, basic observability, documented backup expectations</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready without explicit partner agreement and documented constraints</li>
+</ul>
+<h3 id="35-staging">3.5 staging<a class="headerlink" href="#35-staging" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: production-like validation before production deployment</li>
+<li><strong>Allowed defaults</strong>: same backend and auth as production target, realistic data (synthetic or anonymized), full observability, backup/restore tested, network exposure limited and documented</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready; explicitly labeled as pre-production validation</li>
+</ul>
+<h3 id="36-production">3.6 production<a class="headerlink" href="#36-production" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: explicit hardened operation only</li>
+<li><strong>Allowed defaults</strong>: <strong>none</strong> — every required configuration must be explicit, validated, and fail-closed if missing</li>
+<li><strong>Production claim boundary</strong>: may be described as production-ready <strong>only</strong> when all required configuration is explicit, validated, and monitored</li>
+</ul>
+<h2 id="4-configuration-categories">4. Configuration categories<a class="headerlink" href="#4-configuration-categories" title="Permanent link">&para;</a></h2>
+<p>The following configuration categories define the product foundation boundary between safe local/test/demo defaults and production-required explicit settings:</p>
+<ol>
+<li><strong>Runtime mode</strong> — the declared mode (<code>local-dev</code>, <code>test</code>, <code>demo</code>, <code>integration</code>, <code>staging</code>, <code>production</code>). Must be validated on startup.</li>
+<li><strong>Database backend</strong> — which persistence backend is active (SQLite, PostgreSQL, or future backends). Must be explicit in production.</li>
+<li><strong>Persistence path / connection</strong> — file path or connection string. Must be explicit and reachable in production.</li>
+<li><strong>Admin/operator access</strong> — who can mutate Product Core state and how roles are assigned. Must be explicit in production.</li>
+<li><strong>Authentication provider</strong> — local token, OAuth, JWT, SSO, or mTLS. Must be explicit in production; demo defaults must not persist.</li>
+<li><strong>Secret management</strong> — how keys, tokens, and credentials are sourced, rotated, and stored. Must be explicit in production; no demo keypairs allowed.</li>
+<li><strong>Signing/key management</strong> — how Ed25519 or future signing keys are managed. Must be explicit in production.</li>
+<li><strong>Evidence storage</strong> — where evidence bundles are persisted. Must be durable and explicit in production.</li>
+<li><strong>Evidence verification strategy</strong> — default SHA-256 recomparison or additional strategies. Must be documented in production.</li>
+<li><strong>Audit/provenance retention</strong> — how long audit events and provenance records are retained. Must be explicit in production.</li>
+<li><strong>Compliance/readiness profile</strong> — which compliance dimensions are enforced and how readiness is evaluated. Must be documented in production.</li>
+<li><strong>Policy/rule pack profile</strong> — which policy rules are active and where they are loaded from. Must be explicit in production.</li>
+<li><strong>API server binding / network exposure</strong> — host, port, and whether the server is exposed beyond localhost. Must be explicit and restricted in production.</li>
+<li><strong>CORS / external access</strong> — which origins and clients are permitted. Must be explicit in production.</li>
+<li><strong>Logging / observability</strong> — structured logging, metrics, alerting, and tracing configuration. Must be explicit in production.</li>
+<li><strong>Backup / restore</strong> — automated backup schedule, retention, point-in-time recovery, and disaster runbooks. Must be explicit in production.</li>
+<li><strong>Feature flags / extension toggles</strong> — which extensions and experimental features are enabled. Must be explicit in production.</li>
+<li><strong>External integrations</strong> — which external services are connected and how they are authenticated. Must be explicit in production.</li>
+<li><strong>Demo/test fixture mode</strong> — whether synthetic fixtures are loaded and how they are isolated from real data. Must be disabled in production.</li>
+<li><strong>Safe failure behavior</strong> — how the system behaves when configuration is missing, invalid, or untrusted. Must fail closed in production.</li>
+</ol>
+<h2 id="5-safe-localtestdemo-defaults">5. Safe local/test/demo defaults<a class="headerlink" href="#5-safe-localtestdemo-defaults" title="Permanent link">&para;</a></h2>
+<p>The following defaults are acceptable only outside production:</p>
+<ul>
+<li><strong>SQLite local database</strong> — acceptable for local-dev, test, and demo; not acceptable for production without explicit justification</li>
+<li><strong>Local file paths</strong> — acceptable for evidence storage in local-dev and test; production requires durable, explicit storage</li>
+<li><strong>Demo admin tokens</strong> — acceptable for local-dev and demo; production requires real auth provider configuration</li>
+<li><strong>In-memory/test fixtures</strong> — acceptable for test and demo; must be isolated from real data and disabled in production</li>
+<li><strong>Local-only API binding</strong> (<code>localhost</code> or <code>127.0.0.1</code>) — acceptable for local-dev, test, and demo; production requires explicit network exposure rules</li>
+<li><strong>Simplified logging</strong> — acceptable for local-dev and test; production requires structured logging and observability configuration</li>
+<li><strong>No external secret manager</strong> — acceptable for local-dev and test; production requires explicit secret management</li>
+<li><strong>No backup/restore guarantee</strong> — acceptable for local-dev, test, and demo; production requires explicit backup configuration</li>
+<li><strong>No production observability</strong> — acceptable for local-dev, test, and demo; production requires explicit observability configuration</li>
+<li><strong>Demo evidence examples</strong> — acceptable for demo and test; must not be presented as real institutional records</li>
+</ul>
+<h2 id="6-production-required-explicit-configuration">6. Production-required explicit configuration<a class="headerlink" href="#6-production-required-explicit-configuration" title="Permanent link">&para;</a></h2>
+<p>Production mode must require explicit settings for the following. The system must refuse to start if any required configuration is missing or invalid.</p>
+<ul>
+<li><strong>Runtime mode</strong> — must be explicitly set to <code>production</code></li>
+<li><strong>Database backend and connection</strong> — must specify backend type and connection details</li>
+<li><strong>Auth provider</strong> — must specify the authentication mechanism and configuration</li>
+<li><strong>Operator/admin access model</strong> — must define roles, assignments, and enforcement</li>
+<li><strong>Secret management</strong> — must specify secret source, rotation policy, and access controls</li>
+<li><strong>Signing/key management</strong> — must specify key source, rotation, and storage</li>
+<li><strong>Evidence storage</strong> — must specify durable storage backend and retention</li>
+<li><strong>Retention policy</strong> — must specify audit, provenance, and evidence retention periods</li>
+<li><strong>Observability/logging</strong> — must specify structured logging, metrics, and alerting configuration</li>
+<li><strong>Backup/restore</strong> — must specify schedule, retention, and recovery procedures</li>
+<li><strong>Network binding</strong> — must specify host, port, and TLS configuration</li>
+<li><strong>CORS/external access</strong> — must specify permitted origins and access controls</li>
+<li><strong>Deployment environment</strong> — must specify container, host, or orchestration context</li>
+<li><strong>Compliance/legal boundary</strong> — must specify which compliance dimensions are enforced and which remain external</li>
+</ul>
+<h2 id="7-configuration-boundaries">7. Configuration boundaries<a class="headerlink" href="#7-configuration-boundaries" title="Permanent link">&para;</a></h2>
+<p>The following boundaries protect the Product Core from accidental implicit behavior:</p>
+<ul>
+<li><strong>Product Core should read configuration through a defined boundary</strong> — not by scattering environment variable reads throughout modules.</li>
+<li><strong>Modules should not read arbitrary environment variables directly</strong> — all configuration should pass through a validated configuration boundary.</li>
+<li><strong>Secrets must not be written into records, logs, examples, or exports</strong> — no plaintext tokens, keys, or credentials in evidence bundles, audit events, or error messages.</li>
+<li><strong>Extension/adaptor behavior should be configured explicitly</strong> — adapters should not fall back to hidden defaults; they should declare their configuration requirements.</li>
+<li><strong>Production mode should fail closed if required configuration is missing</strong> — the system must refuse to start rather than assume a safe default.</li>
+</ul>
+<h2 id="8-environment-matrix-summary">8. Environment matrix summary<a class="headerlink" href="#8-environment-matrix-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Purpose</th>
+<th>Defaults</th>
+<th>Production claim</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>local-dev</code></td>
+<td>Developer convenience</td>
+<td>SQLite, demo tokens, local files, no observability</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>test</code></td>
+<td>Deterministic automated verification</td>
+<td>In-memory fixtures, mock auth, no network</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>demo</code></td>
+<td>Illustrative non-production walkthrough</td>
+<td>Demo fixtures, local binding, no real secrets</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>integration</code></td>
+<td>Controlled external technical integration</td>
+<td>Partner-agreed config, limited exposure</td>
+<td>Only with documented constraints</td>
+</tr>
+<tr>
+<td><code>staging</code></td>
+<td>Production-like validation</td>
+<td>Same target backend as prod, full observability</td>
+<td>No — pre-production only</td>
+</tr>
+<tr>
+<td><code>production</code></td>
+<td>Explicit hardened operation only</td>
+<td>None — all required config must be explicit</td>
+<td>Only when fully configured and validated</td>
+</tr>
+</tbody>
+</table>
+<h2 id="9-future-implementation-expectations">9. Future implementation expectations<a class="headerlink" href="#9-future-implementation-expectations" title="Permanent link">&para;</a></h2>
+<p>The following implementation blocks should be built after this planning document is accepted:</p>
+<ol>
+<li><strong>Configuration schema / loader</strong> — a validated configuration schema and loader that reads from a defined boundary.</li>
+<li><strong>Runtime mode validation</strong> — startup validation that rejects invalid or undeclared runtime modes. <em>(Partially addressed by GL-076 — see note below.)</em></li>
+<li><strong>Production fail-closed config checks</strong> — explicit checks that refuse to start in production mode if required configuration is missing.</li>
+<li><strong>Secret source abstraction</strong> — a boundary that abstracts secret storage so the Product Core does not depend on a specific vault or manager.</li>
+<li><strong>Database backend selection</strong> — explicit backend selection with validation and connection testing.</li>
+<li><strong>Evidence storage backend selection</strong> — explicit evidence storage configuration with durability checks.</li>
+<li><strong>Auth provider configuration</strong> — explicit auth provider setup with fallback rejection in production.</li>
+<li><strong>Observability configuration</strong> — structured logging, metrics, and alerting setup.</li>
+<li><strong>Backup/restore configuration</strong> — automated backup schedule and restore validation.</li>
+<li><strong>Extension/adaptor toggle configuration</strong> — explicit enable/disable for extensions and experimental features.</li>
+</ol>
+<blockquote>
+<p><strong>GL-076 note:</strong> GL-076 introduces a small isolated runtime mode validation helper (<code>backend/src/runtime_config.py</code>) that supports <code>local</code>, <code>test</code>, <code>demo</code>, <code>staging</code>, and <code>production</code> modes. This helper validates runtime mode from environment variables, raises <code>ValueError</code> for unsupported modes, and provides safe metadata inspection without exposing raw environment values or secrets. It does <strong>not</strong> yet enforce all production configuration requirements, and it does <strong>not</strong> make GrantLayer production-ready.</p>
+<p><strong>GL-076 note:</strong> GL-076 introduces a small isolated runtime mode validation helper (<code>backend/src/runtime_config.py</code>) that supports <code>local</code>, <code>test</code>, <code>demo</code>, <code>staging</code>, and <code>production</code> modes. This helper validates runtime mode from environment variables, raises <code>ValueError</code> for unsupported modes, and provides safe metadata inspection without exposing raw environment values or secrets. It does <strong>not</strong> yet enforce all production configuration requirements, and it does <strong>not</strong> make GrantLayer production-ready.</p>
+</blockquote>
+<h2 id="10-what-not-to-implement-yet">10. What not to implement yet<a class="headerlink" href="#10-what-not-to-implement-yet" title="Permanent link">&para;</a></h2>
+<p>This block does <strong>not</strong> implement:</p>
+<ul>
+<li>A configuration loader or parser</li>
+<li>Production deployment automation or containers</li>
+<li>Secret manager integration (HashiCorp Vault, AWS Secrets Manager, etc.)</li>
+<li>Auth provider integration (OAuth, JWT, SSO, mTLS)</li>
+<li>Docker or deployment setup</li>
+<li>PostgreSQL CI gating</li>
+<li>Monitoring stack (Prometheus, Grafana, etc.)</li>
+<li>Backup system implementation</li>
+<li>Plugin runtime or adapter framework</li>
+<li>SaaS tenant configuration</li>
+<li>Multi-tenant isolation</li>
+</ul>
+<p>These remain valid future workstreams but must be scoped in separate issues.</p>
+<h2 id="11-decision-boundary">11. Decision boundary<a class="headerlink" href="#11-decision-boundary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer should <strong>not</strong> claim production readiness until runtime mode, secrets, auth, persistence, observability, and backup configuration are <strong>explicit, validated, and fail closed</strong> in production mode.</p>
+<p>Any statement to external partners, documentation, or marketing materials must include the non-production constraint. If a partner asks about production timelines, reference this model, the GL-063 production-hardening roadmap, and the GL-064 API/OpenAPI contract hardening review.</p>
+<hr />
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../product_architecture_extension_boundaries/"><code>docs/product_architecture_extension_boundaries.md</code></a> — GL-065 product architecture and extension boundaries</li>
+<li><a href="../production_auth_operator_access_design/"><code>docs/production_auth_operator_access_design.md</code></a> — GL-067 production auth and operator access design</li>
+<li><a href="secret_management_baseline_design.md"><code>docs/secret_management_baseline_design.md</code></a> — GL-068 secret management baseline design</li>
+<li><a href="../production_hardening_roadmap/"><code>docs/production_hardening_roadmap.md</code></a> — GL-063 production-hardening roadmap</li>
+<li><a href="../api_openapi_contract_hardening_review/"><code>docs/api_openapi_contract_hardening_review.md</code></a> — GL-064 API/OpenAPI contract hardening review</li>
+<li><a href="../deployment_package_runtime_modes_design/"><code>docs/deployment_package_runtime_modes_design.md</code></a> — GL-069 deployment package and runtime modes design</li>
+<li><a href="examples/gl066/runtime_environment_matrix.json"><code>docs/examples/gl066/runtime_environment_matrix.json</code></a> — machine-readable runtime environment matrix</li>
+<li><a href="examples/gl066/configuration_contract_catalog.json"><code>docs/examples/gl066/configuration_contract_catalog.json</code></a> — machine-readable configuration contract catalog</li>
+<li><a href="../backend/tests/test_gl066_runtime_configuration_environment_model.py"><code>backend/tests/test_gl066_runtime_configuration_environment_model.py</code></a> — validation test for this runtime configuration environment model</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

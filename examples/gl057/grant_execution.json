@@ -1,0 +1,11 @@
+{
+  "executionId": "gl057-execution-001",
+  "grantId": "gl057-grant-001",
+  "grantRequestId": "gl057-request-001",
+  "operatorId": "gl057-operator-001",
+  "action": "deploy",
+  "resource": "demo-service-gl057",
+  "result": "succeeded",
+  "executedAt": "2026-01-20T14:00:00Z",
+  "metadataJson": "{\"workflowId\":\"gl057-workflow-001\",\"projectPhase\":\"completed\"}"
+}

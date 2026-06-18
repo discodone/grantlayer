@@ -1,0 +1,380 @@
+{
+  "issue_id": "GL-198",
+  "title": "Controlled Preview Boundary Pack",
+  "context": "GrantLayer is publicly available on GitHub at https://github.com/Discodone/grantlayer.git in a Developer Preview / controlled-pilot posture. GL-187 through GL-197 delivered a clean public snapshot, deterministic examples, feedback infrastructure, safety/claim gate, smoke matrix, and API/SDK/agent value decision. GL-197 concluded api_first_agent_examples_now_sdk_later and identified that the controlled preview boundary had not been formally documented. GL-198 creates that boundary pack as a review/docs/test artifact only.",
+  "input_sources_reviewed": [
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/api_sdk_agent_value_decision_pack.md",
+    "docs/public_preview_review_feedback_triage_pack.md",
+    "docs/public_feedback_infrastructure_pack.md",
+    "docs/public_safety_scanner_claim_consistency_gate.md",
+    "docs/public_smoke_matrix_pack.md",
+    "docs/public_agent_api_walkthrough_refresh.md",
+    "docs/demo_endpoint_safety_guard.md",
+    "docs/first_output_verify_helper.md",
+    "docs/grant_lifecycle_evidence_bundle.md",
+    "docs/agent_quickstart.md",
+    "docs/ten_minute_quickstart.md",
+    "examples/first_verifiable_output.py",
+    "examples/first_verifiable_output.json",
+    "examples/grant_lifecycle_evidence_bundle.py",
+    "examples/grant_lifecycle_evidence_bundle.json",
+    "scripts/verify-first-output.sh",
+    "docs/examples/gl190/demo_endpoint_safety_guard.json",
+    "docs/examples/gl191/public_developer_experience_polish_pack.json",
+    "docs/examples/gl192/public_feedback_infrastructure_pack.json",
+    "docs/examples/gl193/public_agent_api_walkthrough_refresh.json",
+    "docs/examples/gl194/public_preview_review_feedback_triage_pack.json",
+    "docs/examples/gl195/public_safety_scanner_claim_consistency_gate.json",
+    "docs/examples/gl196/public_smoke_matrix_pack.json",
+    "docs/examples/gl197/api_sdk_agent_value_decision_pack.json"
+  ],
+  "controlled_preview_purpose": "A narrow, bounded technical preview for qualified external participants to evaluate the core value proposition using publicly available examples and documentation, provide technical feedback on the API design and developer experience, and run deterministic no-install examples to gain confidence in the public snapshot. Not a production SaaS trial, not a multi-tenant pilot with real customer data, not a validator of tenant/workspace isolation, not an official SDK distribution, and not a production SLA commitment.",
+  "controlled_preview_audience": "Technically qualified external participants who understand they are interacting with a Developer Preview, not a production-ready SaaS product. All participants must understand the synthetic-data-only constraint, agree not to submit real customer data or private grants, route security-sensitive reports through GitHub Security Advisories, and not treat examples as a production SDK.",
+  "allowed_participant_profiles": [
+    "external developer reviewer",
+    "AI/coding-agent reviewer",
+    "grant/compliance domain reviewer using synthetic scenarios only",
+    "security-minded reviewer using high-level public-safe reporting only",
+    "product/UX reviewer for docs and examples"
+  ],
+  "disallowed_participant_profiles": [
+    "real customer pilot with private data",
+    "production grant workflow operator",
+    "institutional deployment",
+    "tenant-isolation validation with real tenants",
+    "security exploit publication in public issue",
+    "integration requiring secrets or private credentials"
+  ],
+  "allowed_data": [
+    "synthetic/demo grant data",
+    "repository sample JSON",
+    "generated local example outputs",
+    "public docs feedback",
+    "public GitHub issue feedback without secrets",
+    "high-level security concern without exploit details"
+  ],
+  "forbidden_data": [
+    "real customer data",
+    "private grants",
+    "institutional records",
+    "PII (personally identifiable information)",
+    "secrets",
+    "tokens/API keys/passwords/private keys",
+    "internal hostnames/remotes",
+    "exploit details in public issues",
+    "private compliance records",
+    "production credentials"
+  ],
+  "allowed_activities": [
+    "clone the public repository",
+    "read README, AGENTS.md, llms.txt, llms-full.txt",
+    "run scripts/verify-first-output.sh",
+    "run python3 examples/grant_lifecycle_evidence_bundle.py",
+    "run python3 examples/first_verifiable_output.py",
+    "inspect API docs and server path documentation",
+    "provide documentation and DX feedback via GitHub Issues (no secrets, no exploit details)",
+    "ask product questions with public/synthetic context",
+    "start the local backend with synthetic data on a local machine with placeholder tokens",
+    "report security-sensitive issues via GitHub Security Advisories",
+    "inspect sdk/python/README.md and sdk/python/grantlayer_client.py as a local reference only"
+  ],
+  "forbidden_activities": [
+    "production deployment",
+    "processing real grant or customer data",
+    "testing tenant isolation with real tenants",
+    "uploading secrets, private grant data, or PII",
+    "treating examples as a production SDK",
+    "claiming official SDK/package readiness",
+    "publishing exploit details in public issues",
+    "changing GitHub visibility or repository settings",
+    "using internal/private repo paths or remotes",
+    "submitting feedback that contains real credentials",
+    "running demo endpoints with real data or non-local binding without explicit acknowledgement"
+  ],
+  "allowed_environments": [
+    "local developer machine with synthetic/demo data",
+    "ephemeral clone (read-only or no-commit)",
+    "docs-only review",
+    "offline/no-network example validation (where supported)",
+    "local CI/test pipeline with synthetic data"
+  ],
+  "forbidden_environments": [
+    "production SaaS usage",
+    "customer environment usage",
+    "regulated/private institutional workflow",
+    "multi-tenant production trial",
+    "secret-bearing integration",
+    "public-facing server with demo endpoints enabled without explicit acknowledgement"
+  ],
+  "demo_endpoint_boundary": {
+    "reference": "GL-190 Demo Endpoint Safety Guard (docs/demo_endpoint_safety_guard.md)",
+    "constraints": [
+      "Demo endpoints are disabled by default (GRANTLAYER_ENABLE_DEMO_ENDPOINTS=false)",
+      "When demo endpoints are enabled, they must be bound to a local host (localhost, 127.0.0.1, ::1) or empty bind address",
+      "Binding demo endpoints to a non-local interface is blocked at startup unless GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS=true is explicitly set",
+      "Controlled preview participants must not expose demo endpoints publicly without understanding this guard",
+      "Demo endpoints must not be used with real grant data, real customer records, or real credentials"
+    ],
+    "startup_error_name": "demo_endpoints_public_exposure_blocked",
+    "local_hosts_allowed": ["localhost", "127.0.0.1", "::1", ""],
+    "non_local_blocked_unless_acknowledged": true,
+    "real_data_forbidden": true
+  },
+  "api_sdk_agent_boundary": {
+    "reference": "GL-197 API/SDK/Agent Value Decision Pack (docs/api_sdk_agent_value_decision_pack.md)",
+    "decision": "api_first_agent_examples_now_sdk_later",
+    "constraints": [
+      "API-first: README table, docs/openapi.yaml, and docs/ten_minute_quickstart.md are sufficient for Developer Preview evaluation",
+      "Examples now: the two deterministic no-install examples are the highest-value public assets",
+      "SDK later: no official SDK or pip package is claimed; sdk/python/grantlayer_client.py is a local reference only",
+      "Agent workflows are examples/guidance, not production automation",
+      "No SDK implementation added in GL-198"
+    ],
+    "sdk_claimed": false,
+    "pip_package_published": false,
+    "api_stability_commitment": false,
+    "agent_entry_points": ["AGENTS.md", "llms.txt", "llms-full.txt"]
+  },
+  "security_sensitive_reporting_boundary": {
+    "route": "GitHub Security Advisories",
+    "url": "https://github.com/Discodone/grantlayer/security/advisories",
+    "scope": [
+      "authentication or authorization design concerns",
+      "data exposure risks",
+      "demo endpoint exposure scenarios",
+      "potential injection or API abuse patterns",
+      "cryptographic or audit chain weaknesses"
+    ],
+    "public_issues_allowed_for": [
+      "general design questions without exploit details",
+      "documentation feedback",
+      "high-level security observations without bypass instructions"
+    ],
+    "public_issues_forbidden_for": [
+      "exploit details",
+      "proof-of-concept code",
+      "reproduction steps for security vulnerabilities",
+      "credential material"
+    ]
+  },
+  "public_claim_boundary": {
+    "forbidden_claims": [
+      "GrantLayer is a production SaaS",
+      "GrantLayer provides tenant/workspace isolation",
+      "The Python SDK is available on PyPI",
+      "GrantLayer is production-ready for institutional use",
+      "GrantLayer guarantees audit trail immutability in production",
+      "Reviewer data is tenant-isolated from other reviewer data"
+    ],
+    "allowed_claims": [
+      "GrantLayer is an API-first Developer Preview",
+      "The examples run deterministically with no install and no network",
+      "The public snapshot is free of internal paths and real secrets",
+      "Security-sensitive reports go to GitHub Security Advisories",
+      "Tenant isolation is not implemented",
+      "No pip package is published; the local wrapper is a reference example"
+    ]
+  },
+  "preview_entry_criteria": [
+    "GL-191 through GL-197 public docs published",
+    "first output helper works (MATCH result confirmed)",
+    "grant lifecycle example works (DIFF CLEAN result confirmed)",
+    "feedback infrastructure exists (GitHub Issues + Security Advisories)",
+    "security advisory routing exists (SECURITY.md + docs/public_feedback_infrastructure_pack.md)",
+    "smoke matrix exists and passed (GL-196)",
+    "safety/claim gate passed with cautions (GL-195)",
+    "no current blocker from GL-195, GL-196, or GL-197",
+    "demo endpoint safety guard in place (GL-190)",
+    "API/SDK/agent boundary decision documented (GL-197)",
+    "this GL-198 boundary pack published"
+  ],
+  "preview_exit_criteria": [
+    "clear reviewer feedback captured and triaged",
+    "no private data or security leak identified",
+    "no misleading production or tenant isolation claims",
+    "public examples remain deterministic",
+    "known follow-ups converted into roadmap issues",
+    "production-readiness gaps explicitly deferred to GL-199",
+    "decision made on whether to widen the preview, proceed to pilot, or continue boundary"
+  ],
+  "escalation_criteria": [
+    "real customer data, PII, or private grants found in the public snapshot",
+    "real secret, token, or private key found in the public snapshot",
+    "security-sensitive finding posted publicly with exploit details",
+    "demo endpoint exposed to the public internet with real data",
+    "evidence of unauthorized production deployment claiming GrantLayer identity",
+    "internal hostname, private remote, or internal path found in public snapshot"
+  ],
+  "decision": "controlled_preview_allowed_with_strict_boundaries",
+  "decision_rationale": "Input review from GL-187 through GL-197 confirms: clean public snapshot (no internal paths, no real secrets), deterministic examples verified (MATCH and DIFF CLEAN), safety/claim gate passed with cautions (GL-195), smoke matrix passed (GL-196, 22 check IDs), API/SDK/agent decision clear (GL-197), security-sensitive reporting routing established (GL-192), demo endpoint safety guard in place (GL-190). No finding from GL-195, GL-196, or GL-197 is blocking. A narrow controlled preview is acceptable for public docs/examples/API-understanding feedback under strict data and participant boundaries. The preview must use only synthetic/demo data and must not involve production deployments, real customer data, private grants, secrets, tenant-isolation claims, or official SDK/package claims.",
+  "findings": [
+    {
+      "id": "GL-198-F001",
+      "severity": "medium",
+      "category": "preview-boundary",
+      "summary": "The controlled preview boundary has not been formally documented until this issue. Reviewers joining the preview before GL-198 are operating without an explicit data safety boundary document.",
+      "evidence": "GL-197 risk: 'The controlled preview boundary (GL-198) has not been formally documented; until it is, the reviewer pool should remain limited.'",
+      "blocking": false,
+      "recommended_action": "Publish GL-198 boundary pack. Ensure all future reviewer invitations reference this document.",
+      "recommended_issue": "GL-198 (this issue); GL-198P for public publish"
+    },
+    {
+      "id": "GL-198-F002",
+      "severity": "medium",
+      "category": "claim-safety",
+      "summary": "The README Developer entry path table labels Step 5 as 'Python SDK' without a qualifier, which may set incorrect expectations about published package availability.",
+      "evidence": "GL-197-F002: README.md Developer entry path table, Step 5: 'Python SDK' — sdk/python/README.md. The SDK README correctly states 'No pip package is published,' but the table label alone is ambiguous.",
+      "blocking": false,
+      "recommended_action": "Add a qualifier to the README table: change 'Python SDK' to 'Minimal Python client (local only, not published)' or equivalent.",
+      "recommended_issue": "GL-198P or a dedicated README fix issue"
+    },
+    {
+      "id": "GL-198-F003",
+      "severity": "low",
+      "category": "preview-boundary",
+      "summary": "llms.txt Next Steps section still references GL-193 as an upcoming issue, but GL-193 is complete. First identified in GL-195-F003, carried through GL-197-F003.",
+      "evidence": "llms.txt references GL-193 as upcoming. GL-193 was merged and published.",
+      "blocking": false,
+      "recommended_action": "Update llms.txt Next Steps to reference GL-198 to GL-199 roadmap.",
+      "recommended_issue": "GL-198P or a small docs refresh"
+    },
+    {
+      "id": "GL-198-F004",
+      "severity": "low",
+      "category": "preview-boundary",
+      "summary": "No consolidated reminder of the tenant-isolation-not-implemented constraint appears in the ten-minute quickstart or agent quickstart entry paths.",
+      "evidence": "docs/ten_minute_quickstart.md and docs/agent_quickstart.md focus on the happy path without a prominent tenant isolation caveat. The constraint is documented in README.md and SECURITY.md but not surfaced at the quickstart entry point.",
+      "blocking": false,
+      "recommended_action": "Add a one-line Developer Preview caveat to the top of docs/ten_minute_quickstart.md and docs/agent_quickstart.md referencing the boundary doc or SECURITY.md.",
+      "recommended_issue": "GL-198P or GL-199"
+    },
+    {
+      "id": "GL-198-F005",
+      "severity": "low",
+      "category": "api-sdk-agent-boundary",
+      "summary": "No agent-to-API integration example exists showing a coding agent calling the live local backend (health → create grant → demo action → check audit) with placeholder tokens.",
+      "evidence": "GL-197-F004: examples/langgraph_langchain/grantlayer_agent_example.py exists but is not a standalone, fully documented agent-to-API smoke path.",
+      "blocking": false,
+      "recommended_action": "Add a future standalone agent-to-API example that uses placeholder tokens and produces a structured JSON report.",
+      "recommended_issue": "GL-199 or a future agent example issue"
+    },
+    {
+      "id": "GL-198-F006",
+      "severity": "low",
+      "category": "production-caveat",
+      "summary": "No consolidated production readiness gap report v2 exists. Individual caveats are spread across README.md, SECURITY.md, and docs/security_boundaries.md.",
+      "evidence": "GL-194-F002, GL-195-F004, GL-197-F007 all identify this gap.",
+      "blocking": false,
+      "recommended_action": "GL-199 Production Readiness Gap Report v2 should consolidate all remaining hardening gates.",
+      "recommended_issue": "GL-199"
+    },
+    {
+      "id": "GL-198-F007",
+      "severity": "info",
+      "category": "data-safety",
+      "summary": "No formal reviewer data safety checklist exists for participants who wish to run the backend with synthetic-but-realistic data from real organizations.",
+      "evidence": "The boundary doc defines the data boundary. No formal per-reviewer checklist exists for edge cases such as a grant reviewer who works at a real organization but wants to test with their own anonymized scenarios.",
+      "blocking": false,
+      "recommended_action": "Consider a pilot data safety checklist follow-up if any reviewer proposes using organization-specific but anonymized scenarios. Defer until a concrete request arises.",
+      "recommended_issue": "Optional future pilot data safety checklist issue"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "high": 0,
+    "medium": 2,
+    "low": 4,
+    "info": 1,
+    "total": 7
+  },
+  "recommended_next_issues": [
+    {
+      "issue": "GL-198P",
+      "title": "GL-198 Combined Merge-and-Publish for Controlled Preview Boundary Pack",
+      "priority": "high",
+      "rationale": "Merge GL-198 to main and push public snapshot update."
+    },
+    {
+      "issue": "GL-199",
+      "title": "Production Readiness Gap Report v2",
+      "priority": "high",
+      "rationale": "Consolidate all hardening gaps with owner, priority, and estimated scope. Covers auth, encryption at rest, IAM, SLA, tenant isolation path, and remaining gates."
+    }
+  ],
+  "optional_future_followups": [
+    {
+      "topic": "Controlled reviewer feedback round",
+      "notes": "Capture and triage feedback from the first controlled preview participants."
+    },
+    {
+      "topic": "API walkthrough implementation refresh",
+      "notes": "Add cURL collection, expand auth docs — addresses GL-197-F001, F006."
+    },
+    {
+      "topic": "Minimal SDK prototype follow-up",
+      "notes": "Only after API contract stability commitment and external demand."
+    },
+    {
+      "topic": "Agent-to-API standalone example",
+      "notes": "Complete the agent workflow integration story — GL-197-F004, GL-198-F005."
+    },
+    {
+      "topic": "Pilot data safety checklist",
+      "notes": "Before any pilot involving synthetic-but-realistic data from real organizations."
+    }
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": "confirmed",
+    "no_visibility_change_performed": "confirmed",
+    "internal_repo_not_pushed_directly_to_github": "confirmed",
+    "no_github_api_label_changes_performed": "confirmed",
+    "no_github_issue_changes_performed": "confirmed",
+    "no_reviewer_outreach_sent": "confirmed",
+    "no_backend_src_changes": "confirmed",
+    "no_openapi_changes": "confirmed",
+    "no_migration_db_dependency_changes": "confirmed",
+    "no_dependency_manifest_changes": "confirmed",
+    "no_sdk_implementation_changes": "confirmed",
+    "no_package_publishing_changes": "confirmed",
+    "no_examples_runtime_changes": "confirmed",
+    "no_frontend_website_design_changes": "confirmed",
+    "no_github_workflow_changes": "confirmed",
+    "no_snapshot_publish_script_behavior_changes": "confirmed",
+    "no_production_saas_claim": "confirmed",
+    "tenant_isolation_not_claimed": "confirmed",
+    "official_sdk_package_not_claimed_unless_verified": "confirmed",
+    "no_real_customer_data_requested": "confirmed",
+    "no_private_grant_data_requested": "confirmed",
+    "no_secrets_requested": "confirmed",
+    "no_exploit_details_included": "confirmed",
+    "security_sensitive_reports_routed_to_github_security_advisories": "confirmed"
+  },
+  "changed_files": [
+    "docs/controlled_preview_boundary_pack.md",
+    "docs/examples/gl198/controlled_preview_boundary_pack.json",
+    "backend/tests/test_gl198_controlled_preview_boundary_pack.py"
+  ],
+  "tests": "backend/tests/test_gl198_controlled_preview_boundary_pack.py",
+  "result": "controlled_preview_boundary_pack_complete",
+  "next_recommended_step": "GL-198 Combined Merge-and-Publish for Controlled Preview Boundary Pack",
+  "non_goals": [
+    "implement a real SDK or publish a pip package",
+    "change backend runtime behavior or add new API surface",
+    "change backend/src/*, OpenAPI, migrations, DB/schema, or dependency manifests",
+    "push to GitHub or change GitHub visibility",
+    "create or modify GitHub labels/issues via API",
+    "send reviewer outreach or contact reviewers",
+    "change frontend, website, or design",
+    "change snapshot publish script behavior",
+    "claim production SaaS readiness",
+    "claim tenant isolation is implemented",
+    "request real customer data, private grants, or secrets",
+    "include exploit details",
+    "process real grant data",
+    "make production deployment decisions"
+  ]
+}

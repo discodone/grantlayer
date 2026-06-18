@@ -1,0 +1,2787 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/production_readiness_gap_report_v4/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-213 — Production Readiness Gap Report v4 - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-213-production-readiness-gap-report-v4" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-213 — Production Readiness Gap Report v4
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-state-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#readiness-tier-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Readiness Tier Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#progress-since-gl-199-v2-and-gl-204-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Progress Since GL-199 (v2) and GL-204 (v3)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Progress Since GL-199 (v2) and GL-204 (v3)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tenantworkspace-baseline-gl-200a-gl-200b-gl-200c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant/Workspace Baseline (GL-200A, GL-200B, GL-200C)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authsecretsconfig-hardening-gl-201" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth/Secrets/Config Hardening (GL-201)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-runner-hardening-gl-202" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Runner Hardening (GL-202)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-contractopenapi-cleanup-gl-203-gl-203b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Contract/OpenAPI Cleanup (GL-203, GL-203B)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sdk-prototype-boundary-gl-203c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDK Prototype Boundary (GL-203C)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-ops-gono-go-v3-gl-204" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Ops Go/No-Go v3 (GL-204)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#live-postgresql-backup-restore-observability-baseline-gl-205" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live PostgreSQL / Backup-Restore / Observability Baseline (GL-205)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adminoperator-tenant-control-plane-gl-206" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin/Operator Tenant Control Plane (GL-206)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ephemeral-live-postgresql-validation-execution-gl-206b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ephemeral Live PostgreSQL Validation Execution (GL-206B)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#claim-safety-controlled-preview-boundary-gl-207" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claim Safety &amp; Controlled Preview Boundary (GL-207)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-abuse-incident-hardening-gl-208" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime / Abuse / Incident Hardening (GL-208)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-governance-audit-operations-gl-209" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Governance / Audit Operations (GL-209)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#website-track-gl-210" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Website Track (GL-210)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sdk-pilot-production-gate-gl-211" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDK / Pilot / Production Gate (GL-211)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#public-external-review-readiness-gate-pack-gl-212" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public / External Review Readiness Gate Pack (GL-212)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-blocker-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Blocker Matrix
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Production Blocker Matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p0-production-blockers-must-be-resolved-before-production-saas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0 — Production Blockers (must be resolved before production SaaS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p1-production-hardening-blockers-must-be-resolved-before-production-complete-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — Production Hardening Blockers (must be resolved before production-complete claims)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-maturity-blockers-recommended-before-stable-external-adoption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Maturity Blockers (recommended before stable external adoption)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-gono-go-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Go/No-Go Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-data-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real Data Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#private-grantinstitutional-data-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private Grant/Institutional Data Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-saas-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production SaaS Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-snapshot-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Snapshot Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-review-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Review Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sdkpackage-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDK/Package Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-postgresql-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live PostgreSQL Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observabilityincident-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observability/Incident Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backuprestoredr-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup/Restore/DR Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tenantworkspace-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant/Workspace Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adminoperator-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin/Operator Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-governanceaudit-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Governance/Audit Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#securitycompliance-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security/Compliance Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register-v4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register v4
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-compact-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Compact Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommended Compact Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#track-a-external-review-public-snapshot-preparation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track A — External Review / Public Snapshot Preparation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#track-b-production-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track B — Production Hardening
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#track-c-sdk-packaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track C — SDK / Packaging
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-213-production-readiness-gap-report-v4">GL-213 — Production Readiness Gap Report v4<a class="headerlink" href="#gl-213-production-readiness-gap-report-v4" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-213
+<strong>Title:</strong> Production Readiness Gap Report v4
+<strong>Branch:</strong> <code>gl-213-production-readiness-gap-report-v4</code>
+<strong>Status:</strong> Internal / Developer Preview</p>
+<p>GL-213 is a readiness gap report, not a production readiness declaration.</p>
+<p>GrantLayer remains Developer Preview / Controlled Preview with strict
+boundaries. Controlled external technical review is allowed only with strict
+boundaries if prior gates remain valid. Production SaaS remains no-go. Real
+customer data, private grant data, and institutional data remain no-go. The
+internal SDK prototype is not an official SDK or package. Official SDK/package
+remains no-go. Compliance certification remains no-go. GDPR, SOC2, and ISO
+readiness are not claimed. Ephemeral live PostgreSQL validation passed but
+production PostgreSQL readiness remains no-go. Public snapshot preparation may
+proceed only via a separate export/safety issue and explicit approval. Public
+publish remains no-go in GL-213.</p>
+<p>Security-sensitive reports route to GitHub Security Advisories. No exploit
+details are included. No real secrets are included. No real customer/private
+data is used.</p>
+<p>Unrelated website-design/import files were excluded from GL-213. No
+<code>website-design/</code> content or similarly named website-design import/report
+files are included in this change.</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-200A through GL-212 and GL-206B are merged internally. GL-212
+(Public / External Review Readiness Gate Pack) confirmed:</p>
+<ul>
+<li><code>external_review_allowed_with_strict_boundaries</code></li>
+<li><code>public_snapshot_gate_proceed_with_cautions</code></li>
+<li>Production SaaS: NO-GO</li>
+<li>Real customer/private grant/institutional data: NO-GO</li>
+<li>Official SDK/package: NO-GO</li>
+<li>Compliance certification: NO-GO</li>
+<li>Ephemeral live PostgreSQL validation passed (GL-206B)</li>
+<li>Production PostgreSQL readiness: NO-GO</li>
+</ul>
+<p>GL-213 consolidates the current production-readiness posture after the full
+GL-200A–GL-212 + GL-206B hardening sequence. It answers what is now ready,
+what remains blocked, and what the next compact roadmap should be.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>GL-213 covers:
+- Review of all GL-200A through GL-212 and GL-206B input artifacts
+- Current readiness tier summary
+- Evidence of progress since GL-199 and GL-204 gap reports
+- Consolidated production blocker matrix (P0/P1/P2)
+- Production go/no-go matrix for every readiness tier
+- Real data, private grant/institutional data, and production SaaS assessments
+- Public snapshot, external review, SDK/package, live PostgreSQL, observability,
+  backup/restore/DR, tenant/workspace, admin/operator, data governance/audit,
+  and security/compliance readiness assessments
+- Risk register v4
+- Recommended compact roadmap</p>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>GL-213 does not:
+- Implement production features or change <code>backend/src/*</code>
+- Change API behavior, OpenAPI, migrations, DB/schema, or dependency manifests
+- Publish packages or create package metadata
+- Push to public GitHub or change repository visibility
+- Create a public snapshot, export directory, release branch, or release tag
+- Invoke snapshot publish scripts or change GitHub workflows
+- Claim production SaaS, enterprise, compliance, or official SDK/package readiness
+- Include exploit details, real secrets, real customer data, or private grant data</p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/public_external_review_readiness_gate_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl212/public_external_review_readiness_gate_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/public_snapshot_external_review_checklist.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/live_postgres_validation_execution_gl206b.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl206b/live_postgres_validation_execution_gl206b.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/sdk_pilot_production_gate.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl211/sdk_pilot_production_gate.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/controlled_pilot_gate_checklist.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/website_track.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl210/website_track.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/data_governance_audit_operations.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl209/data_governance_audit_operations.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/runtime_abuse_incident_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl208/runtime_abuse_incident_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/claim_safety_controlled_preview_boundary.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl207/claim_safety_controlled_preview_boundary.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/admin_operator_tenant_control_plane.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl206/admin_operator_tenant_control_plane.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/live_postgres_backup_observability_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl205/live_postgres_backup_observability_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_ops_go_no_go_v3.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl204/production_ops_go_no_go_v3.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/sdk_prototype_packaging_boundary.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203c/sdk_prototype_packaging_boundary.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi_api_contract_cleanup.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203b/openapi_api_contract_cleanup.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/api_contract_sdk_packaging_decision.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203/api_contract_sdk_packaging_decision.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/persistence_postgres_migration_readiness.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl202/persistence_postgres_migration_readiness.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_auth_secrets_config_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl201/production_auth_secrets_config_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_api_audit_regression_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_implementation_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_design_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200a/tenant_workspace_isolation_design_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/controlled_preview_boundary_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl198/controlled_preview_boundary_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_readiness_gap_report_v2.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl199/production_readiness_gap_report_v2.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>website/index.html</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>website/README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>examples/grant_lifecycle_evidence_bundle.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>examples/grant_lifecycle_evidence_bundle.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl205_live_postgres_validation.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl205_backup_restore_drill.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl209_audit_export_check.py</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="current-state-summary">Current State Summary<a class="headerlink" href="#current-state-summary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer is an API-first grant workflow verification and audit layer in
+Developer Preview. Controlled Preview is possible only with strict boundaries
+and synthetic/demo data only.</p>
+<p>After the GL-200A–GL-212 + GL-206B hardening sequence, the repository has
+clean baseline controls and documentation across the following areas:</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tenant/workspace isolation</td>
+<td>Baseline implemented, not production-complete</td>
+</tr>
+<tr>
+<td>Admin/operator control plane</td>
+<td>Baseline implemented, not production-complete</td>
+</tr>
+<tr>
+<td>Auth/secrets/config hardening</td>
+<td>Fail-closed baseline implemented, not production-IAM-complete</td>
+</tr>
+<tr>
+<td>Persistence/PostgreSQL/migrations</td>
+<td>Migration runner hardened; ephemeral live validation passed (GL-206B)</td>
+</tr>
+<tr>
+<td>API contract/OpenAPI</td>
+<td>36 paths documented; no external stability commitment</td>
+</tr>
+<tr>
+<td>SDK prototype</td>
+<td>Internal prototype only; no official SDK/package</td>
+</tr>
+<tr>
+<td>Backup/restore/DR</td>
+<td>Scripts baseline; not automated; no cloud DR</td>
+</tr>
+<tr>
+<td>Observability/alerting</td>
+<td>Structured logging baseline only; no external stack</td>
+</tr>
+<tr>
+<td>Runtime/IAM/abuse hardening</td>
+<td>In-process rate limiter; no OAuth/JWT/SSO</td>
+</tr>
+<tr>
+<td>Data governance/audit ops</td>
+<td>Policy baseline; partial implementation</td>
+</tr>
+<tr>
+<td>Website</td>
+<td>Static baseline internally; not published</td>
+</tr>
+<tr>
+<td>Claim safety</td>
+<td>Corrected after GL-207; aligned in GL-212</td>
+</tr>
+<tr>
+<td>Public/external review readiness</td>
+<td>Gate approved with cautions (GL-212)</td>
+</tr>
+<tr>
+<td>Ephemeral live PostgreSQL</td>
+<td>Validated and passed (GL-206B)</td>
+</tr>
+</tbody>
+</table>
+<p>None of these baselines are production-complete.</p>
+<hr />
+<h2 id="readiness-tier-summary">Readiness Tier Summary<a class="headerlink" href="#readiness-tier-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Internal development</td>
+<td>CONTINUE</td>
+<td>No restrictions</td>
+</tr>
+<tr>
+<td>Developer Preview</td>
+<td>CONTINUE</td>
+<td>Confirmed ready by GL-212</td>
+</tr>
+<tr>
+<td>Controlled External Technical Review</td>
+<td>ALLOWED with strict boundaries</td>
+<td>GL-212 gate approved; synthetic/demo data only</td>
+</tr>
+<tr>
+<td>First External Controlled Pilot</td>
+<td>CONDITIONAL</td>
+<td>Synthetic/demo data only; per GL-211 boundaries</td>
+</tr>
+<tr>
+<td>Controlled Preview Expansion</td>
+<td>CONDITIONAL</td>
+<td>Synthetic/demo data only; no real data</td>
+</tr>
+<tr>
+<td>Public Snapshot Preparation</td>
+<td>CONDITIONAL / proceed with cautions</td>
+<td>Requires separate export/safety issue and explicit approval</td>
+</tr>
+<tr>
+<td>Public Website Publish</td>
+<td>DEFERRED</td>
+<td>Requires separate publish gate; no-go in GL-213</td>
+</tr>
+<tr>
+<td>Official SDK/Package</td>
+<td>NO-GO</td>
+<td>Prototype only; no package metadata; no semver; no support SLA</td>
+</tr>
+<tr>
+<td>Real Customer Data</td>
+<td>NO-GO</td>
+<td>Tenant isolation not production-complete; no real-data governance</td>
+</tr>
+<tr>
+<td>Private Grant/Institutional Data</td>
+<td>NO-GO</td>
+<td>Compliance requirements not met; no data handling certification</td>
+</tr>
+<tr>
+<td>Production SaaS</td>
+<td>NO-GO</td>
+<td>Multiple P0 blockers remain; see blocker matrix below</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="progress-since-gl-199-v2-and-gl-204-v3">Progress Since GL-199 (v2) and GL-204 (v3)<a class="headerlink" href="#progress-since-gl-199-v2-and-gl-204-v3" title="Permanent link">&para;</a></h2>
+<p>The following improvements were completed between GL-199/GL-204 and GL-213.
+Each reduces risk and improves the controlled-preview posture. <strong>None eliminates
+the production SaaS blockers.</strong></p>
+<h3 id="tenantworkspace-baseline-gl-200a-gl-200b-gl-200c">Tenant/Workspace Baseline (GL-200A, GL-200B, GL-200C)<a class="headerlink" href="#tenantworkspace-baseline-gl-200a-gl-200b-gl-200c" title="Permanent link">&para;</a></h3>
+<ul>
+<li>tenant_id column added to all 7 primary business resource tables</li>
+<li>Tenant context is server-derived from operator credentials, not client-injectable</li>
+<li>All list/get/mutate routes enforce tenant filtering</li>
+<li>Direct-ID lookups deny cross-tenant access with 404 (no existence leak)</li>
+<li>Design pack established full isolation threat model</li>
+<li>Regression tests (43 tests) verify all isolation paths</li>
+<li>Gap remaining: workspace_id deferred; admin-plane adversarial multi-tenant not production-complete</li>
+</ul>
+<h3 id="authsecretsconfig-hardening-gl-201">Auth/Secrets/Config Hardening (GL-201)<a class="headerlink" href="#authsecretsconfig-hardening-gl-201" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Placeholder/demo/weak admin token rejection in prod-like mode</li>
+<li>Minimum token length enforcement in prod-like mode</li>
+<li>fail-closed startup: server refuses to start on config errors</li>
+<li>CORS localhost warning in prod-like mode</li>
+<li><code>hmac.compare_digest</code> confirmed for admin token comparison</li>
+<li>Operator token_hash never exposed in API responses or logs</li>
+<li>Gap remaining: no OAuth/JWT/SSO/HSM; production IAM incomplete</li>
+</ul>
+<h3 id="migration-runner-hardening-gl-202">Migration Runner Hardening (GL-202)<a class="headerlink" href="#migration-runner-hardening-gl-202" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Migration runner failure context and dry-run API added</li>
+<li>PostgreSQL executescript comment-skip bug fixed</li>
+<li>Audit events backfill immutability conflict fixed</li>
+<li>All 10 migrations verified idempotent and lexicographically ordered</li>
+<li>Gap remaining: live PostgreSQL CI validation was not automated</li>
+</ul>
+<h3 id="api-contractopenapi-cleanup-gl-203-gl-203b">API Contract/OpenAPI Cleanup (GL-203, GL-203B)<a class="headerlink" href="#api-contractopenapi-cleanup-gl-203-gl-203b" title="Permanent link">&para;</a></h3>
+<ul>
+<li>36 API paths documented with consistent error shapes</li>
+<li>Security schemes documented with tenant derivation notes</li>
+<li>workspace_id reserved and documented</li>
+<li>X-Correlation-ID header documented</li>
+<li>API packaging decision: sdk_later; no SDK packaging in GL-203</li>
+<li>Gap remaining: no external stability commitment; no API v1 freeze criteria</li>
+</ul>
+<h3 id="sdk-prototype-boundary-gl-203c">SDK Prototype Boundary (GL-203C)<a class="headerlink" href="#sdk-prototype-boundary-gl-203c" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Internal SDK prototype at examples/sdk_prototype/python/</li>
+<li>No official SDK claimed; no package metadata created</li>
+<li>FakeTransport injectable for tests; token never in repr/errors</li>
+<li>24 named endpoint methods covering core API surface</li>
+<li>Gap remaining: GL-203D (experimental public SDK) explicitly deferred</li>
+</ul>
+<h3 id="production-ops-gono-go-v3-gl-204">Production Ops Go/No-Go v3 (GL-204)<a class="headerlink" href="#production-ops-gono-go-v3-gl-204" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Full blocker matrix documented after GL-200A–GL-203C</li>
+<li>GL-203D projection gate explicitly NOT passed</li>
+<li>Admin-plane tenant isolation (RB-004) identified as P0 blocker</li>
+<li>No-go confirmed for production SaaS, real data, private grant data</li>
+</ul>
+<h3 id="live-postgresql-backup-restore-observability-baseline-gl-205">Live PostgreSQL / Backup-Restore / Observability Baseline (GL-205)<a class="headerlink" href="#live-postgresql-backup-restore-observability-baseline-gl-205" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Gated live PostgreSQL validation script added (scripts/ops/gl205_live_postgres_validation.py)</li>
+<li>Deterministic SQLite backup/restore drill script added (scripts/ops/gl205_backup_restore_drill.py)</li>
+<li>PostgreSQL backup/restore manual checklist documented</li>
+<li>Structured logging correlation ID baseline documented</li>
+<li>Gap remaining: live execution not completed in GL-205 (no ephemeral instance available)</li>
+</ul>
+<h3 id="adminoperator-tenant-control-plane-gl-206">Admin/Operator Tenant Control Plane (GL-206)<a class="headerlink" href="#adminoperator-tenant-control-plane-gl-206" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Admin-only control-plane HTTP routes added (POST/GET /admin/operators, revoke)</li>
+<li>Explicit tenant_id required for operator creation</li>
+<li>safe response fields: token_hash and lookup_hash excluded from list/read</li>
+<li>Structured audit events for operator_created and operator_revoked</li>
+<li>Fail-closed: revoked/inactive operators cannot authenticate</li>
+<li>Gap remaining: full RBAC/policy engine deferred; OAuth/JWT/SSO deferred</li>
+</ul>
+<h3 id="ephemeral-live-postgresql-validation-execution-gl-206b">Ephemeral Live PostgreSQL Validation Execution (GL-206B)<a class="headerlink" href="#ephemeral-live-postgresql-validation-execution-gl-206b" title="Permanent link">&para;</a></h3>
+<ul>
+<li>GL-205 validation scripts executed against a disposable PostgreSQL container</li>
+<li>Result: PASSED — migration application, idempotency, tenant/workspace columns, audit hash-chain all verified</li>
+<li>Synthetic/demo data only; raw DSNs and credentials not included in artifacts</li>
+<li>Gap remaining: this was ephemeral validation, not production PostgreSQL readiness</li>
+</ul>
+<h3 id="claim-safety-controlled-preview-boundary-gl-207">Claim Safety &amp; Controlled Preview Boundary (GL-207)<a class="headerlink" href="#claim-safety-controlled-preview-boundary-gl-207" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Stale tenant isolation claims corrected in README.md, SECURITY.md, AGENTS.md, llms.txt</li>
+<li>Canonical controlled-preview boundary artifact produced</li>
+<li>Allowed and prohibited claims documented; future claim-drift tests added</li>
+<li>Gap remaining: claim maintenance is ongoing; boundary is not a production gate</li>
+</ul>
+<h3 id="runtime-abuse-incident-hardening-gl-208">Runtime / Abuse / Incident Hardening (GL-208)<a class="headerlink" href="#runtime-abuse-incident-hardening-gl-208" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Runtime mode assessment and fail-closed review completed</li>
+<li>Production IAM baseline assessment documented</li>
+<li>In-process sliding-window rate limiter confirmed operational</li>
+<li>Incident/security reporting baseline aligned with SECURITY.md</li>
+<li>Gap remaining: no OAuth/JWT/SSO; no production DDoS protection; no full incident platform</li>
+</ul>
+<h3 id="data-governance-audit-operations-gl-209">Data Governance / Audit Operations (GL-209)<a class="headerlink" href="#data-governance-audit-operations-gl-209" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Data classification and allowed data boundary documented</li>
+<li>Retention, deletion, and redaction policy baseline established</li>
+<li>Audit export and hash-chain operations baseline documented</li>
+<li>Read-only audit export check script added (scripts/ops/gl209_audit_export_check.py)</li>
+<li>Audit immutability preservation confirmed</li>
+<li>Gap remaining: no production retention/deletion/redaction implementation; no cloud backup storage</li>
+</ul>
+<h3 id="website-track-gl-210">Website Track (GL-210)<a class="headerlink" href="#website-track-gl-210" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Minimal static website baseline added (website/index.html, website/README.md)</li>
+<li>Website claim boundaries documented; prohibited claims confirmed</li>
+<li>No analytics, tracking, cookies, external assets, or data collection forms added</li>
+<li>Gap remaining: public website publish requires a separate gate; static content only</li>
+</ul>
+<h3 id="sdk-pilot-production-gate-gl-211">SDK / Pilot / Production Gate (GL-211)<a class="headerlink" href="#sdk-pilot-production-gate-gl-211" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Decision: <code>sdk_pilot_production_gate_approved_with_gaps</code></li>
+<li>Controlled external technical review: allowed with strict boundaries</li>
+<li>First external controlled pilot: conditional (synthetic/demo data only)</li>
+<li>Official SDK/package: NO-GO</li>
+<li>Experimental public SDK: deferred/NO-GO</li>
+<li>Production SaaS: NO-GO confirmed</li>
+<li>Internal pilot gate checklist documented</li>
+</ul>
+<h3 id="public-external-review-readiness-gate-pack-gl-212">Public / External Review Readiness Gate Pack (GL-212)<a class="headerlink" href="#public-external-review-readiness-gate-pack-gl-212" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Decision: <code>public_external_review_gate_approved_with_cautions</code></li>
+<li>External review: <code>external_review_allowed_with_strict_boundaries</code></li>
+<li>Public snapshot: <code>public_snapshot_gate_proceed_with_cautions</code></li>
+<li>Future snapshot candidate must pass full safety scan before any public action</li>
+<li>All public-facing materials reviewed; claim boundaries confirmed aligned</li>
+<li>Unrelated website-design/import files excluded</li>
+</ul>
+<hr />
+<h2 id="production-blocker-matrix">Production Blocker Matrix<a class="headerlink" href="#production-blocker-matrix" title="Permanent link">&para;</a></h2>
+<h3 id="p0-production-blockers-must-be-resolved-before-production-saas">P0 — Production Blockers (must be resolved before production SaaS)<a class="headerlink" href="#p0-production-blockers-must-be-resolved-before-production-saas" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Blocker</th>
+<th>Area</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PB-001</td>
+<td>Production IAM incomplete</td>
+<td>Auth</td>
+<td>Admin-token/operator-token only; no OAuth/JWT/SSO/HSM; prerequisite for any production SaaS</td>
+</tr>
+<tr>
+<td>PB-002</td>
+<td>Tenant/workspace production isolation not complete</td>
+<td>Tenant</td>
+<td>workspace_id deferred; admin-plane adversarial multi-tenant path not fully verified; secondary isolation paths partial</td>
+</tr>
+<tr>
+<td>PB-003</td>
+<td>Production PostgreSQL operations not established</td>
+<td>Persistence</td>
+<td>GL-206B passed ephemeral validation; no production-grade connection pooling, failover, managed-service integration, or WAL-based backup</td>
+</tr>
+<tr>
+<td>PB-004</td>
+<td>Backup/restore/DR not automated</td>
+<td>Backup/DR</td>
+<td>Scripts exist but no scheduled backup, no pg_dump automation, no cloud integration, no DR drills exercised against real data</td>
+</tr>
+<tr>
+<td>PB-005</td>
+<td>Production observability/alerting absent</td>
+<td>Observability</td>
+<td>Structured logging baseline only; no external metrics stack, no alerting pipeline, no distributed tracing</td>
+</tr>
+<tr>
+<td>PB-006</td>
+<td>Retention/deletion/redaction not implemented</td>
+<td>Data Governance</td>
+<td>Policy baseline (GL-209) exists; implementation is partial and deferred</td>
+</tr>
+<tr>
+<td>PB-007</td>
+<td>Incident response maturity incomplete</td>
+<td>Incident Response</td>
+<td>Runbook design exists; not exercised against real incidents; no formal on-call or escalation chain</td>
+</tr>
+<tr>
+<td>PB-008</td>
+<td>Security review / external validation absent</td>
+<td>Security</td>
+<td>No external pentest, no security audit, no formal vulnerability assessment completed</td>
+</tr>
+<tr>
+<td>PB-009</td>
+<td>TLS/container hardening/orchestration absent</td>
+<td>Deployment</td>
+<td>No TLS termination, no container hardening, no orchestration (Kubernetes/ECS); local deployment only</td>
+</tr>
+<tr>
+<td>PB-010</td>
+<td>Rate limiting/abuse protection not production-grade</td>
+<td>Abuse Protection</td>
+<td>In-process sliding-window rate limiter only; no production DDoS protection, no WAF, no external abuse layer</td>
+</tr>
+<tr>
+<td>PB-011</td>
+<td>Compliance/legal readiness not assessed</td>
+<td>Compliance</td>
+<td>No regulatory framework mapping; no data protection certification; no institutional data handling certification</td>
+</tr>
+<tr>
+<td>PB-012</td>
+<td>Real-data governance not ready</td>
+<td>Data Governance</td>
+<td>No real customer data, no private grant data, no institutional data; full governance lifecycle absent</td>
+</tr>
+</tbody>
+</table>
+<h3 id="p1-production-hardening-blockers-must-be-resolved-before-production-complete-claims">P1 — Production Hardening Blockers (must be resolved before production-complete claims)<a class="headerlink" href="#p1-production-hardening-blockers-must-be-resolved-before-production-complete-claims" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Blocker</th>
+<th>Area</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PH-001</td>
+<td>workspace_id enforcement deferred</td>
+<td>Tenant</td>
+<td>Reserved/nullable; not enforced at API level; required before multi-workspace production</td>
+</tr>
+<tr>
+<td>PH-002</td>
+<td>Evidence/provenance secondary-path tenant isolation partial</td>
+<td>Tenant</td>
+<td>Execution-ID guard sufficient for single-tenant; adversarial multi-tenant not fully verified</td>
+</tr>
+<tr>
+<td>PH-003</td>
+<td>Secrets/key rotation lifecycle not automated</td>
+<td>Auth</td>
+<td>Key rotation policy defined; no automated rotation; no vault integration</td>
+</tr>
+<tr>
+<td>PH-004</td>
+<td>Production CORS origin allowlist undefined</td>
+<td>Auth/Deployment</td>
+<td>Localhost warning added (GL-201); production origin allowlist for hosted service not specified</td>
+</tr>
+<tr>
+<td>PH-005</td>
+<td>Migration rollback/forward strategy not CI-validated with PostgreSQL</td>
+<td>Persistence</td>
+<td>Migration runner hardened (GL-202); PostgreSQL rollback path not CI-tested</td>
+</tr>
+<tr>
+<td>PH-006</td>
+<td>Support/release/versioning policy undefined</td>
+<td>Operations</td>
+<td>No semver commitment; no deprecation cycle; no support SLA</td>
+</tr>
+</tbody>
+</table>
+<h3 id="p2-maturity-blockers-recommended-before-stable-external-adoption">P2 — Maturity Blockers (recommended before stable external adoption)<a class="headerlink" href="#p2-maturity-blockers-recommended-before-stable-external-adoption" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Blocker</th>
+<th>Area</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PM-001</td>
+<td>Test suite scope-guard false positives (41 known baseline)</td>
+<td>Test Health</td>
+<td>Pre-existing; all classified as non-functional; reduces CI signal quality</td>
+</tr>
+<tr>
+<td>PM-002</td>
+<td>SDK/package release process undefined</td>
+<td>SDK</td>
+<td>Prototype exists; no packaging pipeline, no semver policy, no distribution plan</td>
+</tr>
+<tr>
+<td>PM-003</td>
+<td>OpenAPI external stability commitment undefined</td>
+<td>API Contract</td>
+<td>36 paths documented; no v1 freeze criteria; no external hosting of API reference</td>
+</tr>
+<tr>
+<td>PM-004</td>
+<td>Public snapshot export candidate not yet prepared</td>
+<td>Public Snapshot</td>
+<td>GL-212 gate approved with cautions; actual export candidate and safety scan deferred</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="production-gono-go-matrix">Production Go/No-Go Matrix<a class="headerlink" href="#production-gono-go-matrix" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Decision</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Developer Preview</td>
+<td><strong>GO / CONTINUE</strong></td>
+<td>GL-212 gate confirms clean posture; examples deterministic; feedback routing established</td>
+</tr>
+<tr>
+<td>Controlled External Technical Review</td>
+<td><strong>GO with strict boundaries</strong></td>
+<td>GL-212 decision: <code>external_review_allowed_with_strict_boundaries</code>; synthetic/demo data only</td>
+</tr>
+<tr>
+<td>Synthetic-data Controlled Pilot</td>
+<td><strong>CONDITIONAL</strong></td>
+<td>GL-211 decision: allowed if synthetic/demo data only; no production deployment</td>
+</tr>
+<tr>
+<td>Controlled Preview Expansion</td>
+<td><strong>CONDITIONAL</strong></td>
+<td>Synthetic/demo data only; no real data; explicit gate required before expansion</td>
+</tr>
+<tr>
+<td>Public Snapshot Preparation</td>
+<td><strong>CONDITIONAL / cautions</strong></td>
+<td>GL-212: <code>public_snapshot_gate_proceed_with_cautions</code>; requires separate export/safety issue + explicit approval</td>
+</tr>
+<tr>
+<td>Public Website Publish</td>
+<td><strong>DEFER</strong></td>
+<td>Requires separate publish gate; not approved in GL-213</td>
+</tr>
+<tr>
+<td>Official SDK/Package</td>
+<td><strong>NO-GO</strong></td>
+<td>Prototype only; no package metadata; no semver commitment; no support SLA; GL-203D deferred</td>
+</tr>
+<tr>
+<td>Real Customer Data Pilot</td>
+<td><strong>NO-GO</strong></td>
+<td>Tenant isolation not production-complete; no real-data governance; no compliance certification</td>
+</tr>
+<tr>
+<td>Private Grant/Institutional Data Pilot</td>
+<td><strong>NO-GO</strong></td>
+<td>Compliance requirements not met; no institutional data handling certification</td>
+</tr>
+<tr>
+<td>Production SaaS</td>
+<td><strong>NO-GO</strong></td>
+<td>Multiple P0 blockers remain (PB-001 through PB-012)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="real-data-readiness-assessment">Real Data Readiness Assessment<a class="headerlink" href="#real-data-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: NO-GO</strong></p>
+<p>Real customer data is not permitted in any GrantLayer environment at the time
+of GL-213. The following conditions prevent real data readiness:</p>
+<ul>
+<li>Tenant/workspace production isolation is not complete (PB-002). All customer
+  data would exist in an unverified isolation boundary.</li>
+<li>No encryption-at-rest guarantee exists beyond what the underlying database
+  provides.</li>
+<li>No data governance lifecycle (retention/deletion/redaction) is implemented
+  in production (PB-006).</li>
+<li>No compliance or legal assessment has been completed (PB-011).</li>
+<li>No data protection certification, data processing agreement framework, or
+  institutional data handling certification exists.</li>
+<li>Real data governance is not ready (PB-012).</li>
+</ul>
+<p>Allowed data: synthetic/demo identifiers only, in controlled environments,
+with no real personal information, real organization names, real grant amounts,
+or real institutional records.</p>
+<hr />
+<h2 id="private-grantinstitutional-data-assessment">Private Grant/Institutional Data Assessment<a class="headerlink" href="#private-grantinstitutional-data-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: NO-GO</strong></p>
+<p>Private grant data and institutional data must not enter any GrantLayer
+environment at the time of GL-213, for the same reasons as real customer data
+(above) plus:</p>
+<ul>
+<li>Regulatory and compliance requirements for institutional grant data have not
+  been mapped or addressed.</li>
+<li>No institutional data handling policy, audit trail completeness guarantee for
+  real data, or data residency assurance exists.</li>
+<li>GrantLayer's target use case (institutional grant workflows) implies
+  compliance requirements that remain unassessed.</li>
+</ul>
+<p>This constraint remains in force for all preview tiers.</p>
+<hr />
+<h2 id="production-saas-readiness-assessment">Production SaaS Readiness Assessment<a class="headerlink" href="#production-saas-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: NO-GO</strong></p>
+<p>Production SaaS readiness is not claimed. The P0 blocker list (PB-001 through
+PB-012) documents every condition preventing production deployment. Closing
+any single blocker does not establish production readiness; all P0 blockers
+must be resolved and a future go/no-go gate must pass before any production
+SaaS claim is appropriate.</p>
+<p>Key summary of remaining P0 conditions:
+- No production IAM (PB-001)
+- Tenant isolation not production-complete (PB-002)
+- No production-grade PostgreSQL operations (PB-003)
+- No automated backup/DR (PB-004)
+- No production observability/alerting (PB-005)
+- Retention/deletion/redaction not implemented (PB-006)
+- Incident response not exercised (PB-007)
+- No external security validation (PB-008)
+- No TLS/container/orchestration (PB-009)
+- No production-grade abuse protection (PB-010)
+- Compliance not assessed (PB-011)
+- Real-data governance absent (PB-012)</p>
+<hr />
+<h2 id="public-snapshot-readiness-assessment">Public Snapshot Readiness Assessment<a class="headerlink" href="#public-snapshot-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: CONDITIONAL — proceed with cautions via separate issue only</strong></p>
+<p>Public snapshot preparation may proceed in a future dedicated issue with the
+following requirements, per GL-212:</p>
+<ul>
+<li>A dedicated export candidate safety scan must run before any public action.</li>
+<li>The scan must cover: secrets, real data, prohibited claims, package metadata,
+  GitHub workflows, snapshot publish scripts, website/static assets, and
+  internal-only references.</li>
+<li>No public export directory, release branch, release tag, or visibility change
+  may be created before explicit approval.</li>
+<li>Unrelated website-design/import files must be excluded.</li>
+<li>GL-213 creates no public snapshot and publishes nothing.</li>
+</ul>
+<hr />
+<h2 id="external-review-readiness-assessment">External Review Readiness Assessment<a class="headerlink" href="#external-review-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: ALLOWED with strict boundaries (GL-212 gate)</strong></p>
+<p>Controlled external technical review is allowed only if all of these boundaries
+are preserved (per GL-212):</p>
+<ul>
+<li>Synthetic/demo data only</li>
+<li>No real customer, private grant, or institutional data</li>
+<li>No secrets, production credentials, raw DSNs, or private keys</li>
+<li>Security-sensitive reports route to GitHub Security Advisories</li>
+<li>No Production SaaS, compliance, official SDK/package, or public website publish implication</li>
+<li>Reviewer instructions are claim-safe and internal-only</li>
+</ul>
+<hr />
+<h2 id="sdkpackage-readiness-assessment">SDK/Package Readiness Assessment<a class="headerlink" href="#sdkpackage-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: NO-GO for official SDK/package; experimental public SDK deferred</strong></p>
+<p>The internal SDK prototype at <code>examples/sdk_prototype/python/</code> remains
+internal-only. No official SDK is claimed. No package metadata exists. GL-203D
+(experimental public SDK) remains deferred per the GL-204 projection gate
+decision and GL-211 confirmation. Conditions for revisiting GL-203D remain
+unmet (production IAM, production PostgreSQL, admin-plane isolation, claim
+corrections — all resolved in subsequent issues, but production SaaS gate not
+passed).</p>
+<hr />
+<h2 id="live-postgresql-readiness-assessment">Live PostgreSQL Readiness Assessment<a class="headerlink" href="#live-postgresql-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: Ephemeral validation PASSED; production readiness NO-GO</strong></p>
+<p>GL-206B executed the GL-205 live PostgreSQL validation scripts against a
+disposable PostgreSQL container using synthetic/demo data only. Result: PASSED.
+Migration application, idempotency, tenant/workspace columns, and audit
+hash-chain behavior were all verified.</p>
+<p>This result closes the specific ephemeral validation execution gap and confirms
+that the PostgreSQL code paths work against a real PostgreSQL instance.</p>
+<p>It does not establish:
+- Production-grade connection pooling or failover
+- Managed service integration (RDS, Cloud SQL, AlloyDB)
+- WAL-based backup or point-in-time recovery
+- Production performance or concurrency validation
+- Production security configuration (TLS, network isolation, credential rotation)</p>
+<p>Production PostgreSQL readiness remains NO-GO.</p>
+<hr />
+<h2 id="observabilityincident-readiness-assessment">Observability/Incident Readiness Assessment<a class="headerlink" href="#observabilityincident-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: Baseline only; production readiness NO-GO</strong></p>
+<p>Current state:
+- Structured JSON logging baseline (logging_utils.py, structured_logging.py) — implemented
+- Correlation ID generation and X-Correlation-ID header — implemented
+- Sensitive field redaction in logs — implemented
+- Structured audit events for control-plane operations — implemented (GL-206)</p>
+<p>Remaining gaps:
+- No external logging infrastructure (ELK, Loki, CloudWatch)
+- No metrics collection (Prometheus, StatsD, DataDog)
+- No alerting pipeline (PagerDuty, OpsGenie, SNS)
+- No distributed tracing (OpenTelemetry)
+- No SLO/SLA monitoring or anomaly detection
+- Incident response runbook exists as design only; not exercised against real incidents
+- No formal on-call rotation or escalation chain</p>
+<p>Production observability/incident readiness remains NO-GO.</p>
+<hr />
+<h2 id="backuprestoredr-readiness-assessment">Backup/Restore/DR Readiness Assessment<a class="headerlink" href="#backuprestoredr-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: Scripts baseline; production readiness NO-GO</strong></p>
+<p>Current state:
+- SQLite offline file copy and VACUUM INTO backup procedures documented
+- SQLite backup/restore drill script implemented (scripts/ops/gl205_backup_restore_drill.py)
+- PostgreSQL backup/restore manual checklist documented
+- Ephemeral PostgreSQL validated (GL-206B) but backup not automated</p>
+<p>Remaining gaps:
+- No automated scheduled backup (SQLite or PostgreSQL)
+- No PostgreSQL pg_dump automation or WAL archiving
+- No cloud backup integration (S3, GCS, Azure Blob)
+- No point-in-time recovery implementation
+- No DR runbooks exercised against real data
+- No backup monitoring or alerting
+- No backup retention policy implemented</p>
+<p>Production backup/restore/DR readiness remains NO-GO.</p>
+<hr />
+<h2 id="tenantworkspace-readiness-assessment">Tenant/Workspace Readiness Assessment<a class="headerlink" href="#tenantworkspace-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: Baseline implemented; production readiness NO-GO</strong></p>
+<p>Progress since GL-199:
+- GL-200A/B/C: tenant_id added to all 7 primary business resource tables;
+  tenant context server-derived; all list/get/mutate routes filter by tenant;
+  cross-tenant 404 denial confirmed; 43 regression tests pass
+- GL-206: Admin-plane tenant control baseline added; operator CRUD routes
+  admin-only; tenant_id required on operator creation</p>
+<p>Remaining gaps:
+- workspace_id enforcement deferred (reserved/nullable at API and DB level)
+- Admin-plane adversarial multi-tenant path not fully production-verified
+- Evidence/provenance secondary-path tenant isolation partial
+- Multi-tenant production deployment must not proceed until these gaps close</p>
+<p>Production tenant/workspace isolation remains NO-GO for multi-tenant production.</p>
+<hr />
+<h2 id="adminoperator-readiness-assessment">Admin/Operator Readiness Assessment<a class="headerlink" href="#adminoperator-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: Baseline implemented; production readiness NO-GO</strong></p>
+<p>Progress since GL-204:
+- GL-206: Admin-only HTTP routes for operator CRUD (POST/GET /admin/operators,
+  revoke); safe response fields; audit events for operator lifecycle; fail-closed
+  behavior for revoked/inactive operators</p>
+<p>Remaining gaps:
+- No full RBAC/policy engine
+- No production IAM (OAuth/JWT/SSO) for operator authentication
+- No operator management runbook executable (design only)
+- No multi-tenant operator isolation production-verification</p>
+<p>Production admin/operator control plane remains NO-GO.</p>
+<hr />
+<h2 id="data-governanceaudit-readiness-assessment">Data Governance/Audit Readiness Assessment<a class="headerlink" href="#data-governanceaudit-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: Policy baseline; production readiness NO-GO</strong></p>
+<p>Progress since GL-199:
+- GL-209: Data classification, allowed data boundary, and retention/deletion/
+  redaction policy baseline documented; audit export and hash-chain operations
+  documented; audit immutability preservation confirmed; audit export check
+  script added (scripts/ops/gl209_audit_export_check.py)
+- GL-202: Audit events backfill immutability conflict fixed</p>
+<p>Remaining gaps:
+- No production retention/deletion/redaction implementation (policy only)
+- No legal-hold workflow
+- No production audit export pipeline
+- No cloud backup storage integration
+- No compliance certification or regulatory framework mapping</p>
+<p>Production data governance/audit readiness remains NO-GO.</p>
+<hr />
+<h2 id="securitycompliance-readiness-assessment">Security/Compliance Readiness Assessment<a class="headerlink" href="#securitycompliance-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Decision: Reporting infrastructure ready; production security/compliance NO-GO</strong></p>
+<p>Progress since GL-199:
+- GL-201: Fail-closed startup; placeholder token rejection; <code>hmac.compare_digest</code>
+- GL-207: Stale claims corrected; prohibited claim tests added
+- GL-208: Runtime/IAM/abuse hardening baseline; in-process rate limiter confirmed
+- GL-212: External review boundaries confirmed; security reporting aligned</p>
+<p>Remaining gaps:
+- No external security review, pentest, or vulnerability assessment
+- No OAuth/JWT/SSO (production IAM)
+- No HSM or vault integration
+- No automated key rotation
+- No compliance gap assessment (GDPR, SOC2, ISO, institutional frameworks)
+- No data protection certification
+- No incident response exercised against real conditions</p>
+<p>Production security/compliance readiness remains NO-GO.</p>
+<hr />
+<h2 id="risk-register-v4">Risk Register v4<a class="headerlink" href="#risk-register-v4" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Title</th>
+<th>Severity</th>
+<th>Area</th>
+<th>Current Status</th>
+<th>Mitigation Completed</th>
+<th>Remaining Mitigation</th>
+<th>Recommended Next</th>
+<th>Blocks Production SaaS</th>
+<th>Blocks Real Data</th>
+<th>Blocks Controlled External Review</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R-001</td>
+<td>Production IAM absent</td>
+<td>Critical</td>
+<td>Auth</td>
+<td>Not implemented; admin-token/operator-token only</td>
+<td>Fail-closed startup (GL-201); placeholder rejection</td>
+<td>OAuth/JWT/SSO implementation</td>
+<td>Track B — Production Hardening</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-002</td>
+<td>Tenant isolation not production-complete</td>
+<td>Critical</td>
+<td>Tenant</td>
+<td>Baseline implemented (GL-200A/B/C); workspace_id deferred; adversarial multi-tenant not verified</td>
+<td>Tenant filtering on all routes; cross-tenant 404; regression tests</td>
+<td>workspace_id enforcement; admin-plane production verification</td>
+<td>Track B — Production Hardening</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-003</td>
+<td>Live PostgreSQL not production-grade</td>
+<td>Critical</td>
+<td>Persistence</td>
+<td>Ephemeral validation passed (GL-206B); production-grade ops absent</td>
+<td>GL-202 migration fixes; GL-206B ephemeral validation</td>
+<td>Production connection pooling; WAL backup; failover</td>
+<td>Track B — Production Hardening</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-004</td>
+<td>Backup/DR not automated</td>
+<td>Critical</td>
+<td>Backup/DR</td>
+<td>Scripts documented (GL-205); not automated</td>
+<td>SQLite and PostgreSQL procedures documented</td>
+<td>Automated backup; cloud integration; DR drill</td>
+<td>Track B — Production Hardening</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-005</td>
+<td>Production observability absent</td>
+<td>Critical</td>
+<td>Observability</td>
+<td>Structured logging baseline (GL-205, GL-208); no external stack</td>
+<td>Correlation IDs; redaction; structured events</td>
+<td>External logging, metrics, alerting, tracing</td>
+<td>Track B — Production Hardening</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-006</td>
+<td>Compliance not assessed</td>
+<td>High</td>
+<td>Compliance</td>
+<td>Not started</td>
+<td>None beyond SECURITY.md data rules</td>
+<td>Regulatory framework mapping; certification</td>
+<td>Track B — Production Hardening</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-007</td>
+<td>Real-data governance absent</td>
+<td>High</td>
+<td>Data Governance</td>
+<td>Policy baseline (GL-209); no implementation</td>
+<td>Policy documented; audit export script</td>
+<td>Retention/deletion/redaction implementation</td>
+<td>Track B — Production Hardening</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-008</td>
+<td>Public snapshot includes private material</td>
+<td>High</td>
+<td>Public Safety</td>
+<td>No snapshot created by GL-213</td>
+<td>GL-212 safety checklist; claim scan</td>
+<td>Export candidate safety scan before any public action</td>
+<td>Track A — External Review</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-009</td>
+<td>Ephemeral PostgreSQL validation overclaimed</td>
+<td>Medium</td>
+<td>Claims</td>
+<td>Correctly bounded in GL-206B, GL-212</td>
+<td>Explicit no-production-claim in all artifacts</td>
+<td>Maintain no-claim in future issues</td>
+<td>Ongoing claim maintenance</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-010</td>
+<td>SDK prototype treated as official package</td>
+<td>Medium</td>
+<td>SDK</td>
+<td>Correctly denied in GL-203C, GL-211, GL-212</td>
+<td>No package metadata; README caveat</td>
+<td>Keep no-official-SDK in all docs</td>
+<td>Track C — SDK decision gate</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-011</td>
+<td>External reviewer misreads Developer Preview as production</td>
+<td>Medium</td>
+<td>Claims</td>
+<td>GL-212 boundary confirmed</td>
+<td>Strict reviewer instructions; prohibited-claim list</td>
+<td>Maintain boundary in all reviewer communications</td>
+<td>Track A — External Review</td>
+<td>No</td>
+<td>No</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>R-012</td>
+<td>Incident response not exercised</td>
+<td>High</td>
+<td>Incident Response</td>
+<td>Design only</td>
+<td>Runbook design (GL-205, GL-208)</td>
+<td>Tabletop exercise; on-call rotation</td>
+<td>Track B — Production Hardening</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-013</td>
+<td>Security review absent</td>
+<td>High</td>
+<td>Security</td>
+<td>Not started</td>
+<td>Internal testing only</td>
+<td>External pentest; formal security assessment</td>
+<td>Track B — Production Hardening</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-014</td>
+<td>Rate limiting not production-grade</td>
+<td>Medium</td>
+<td>Abuse Protection</td>
+<td>In-process baseline (GL-208)</td>
+<td>In-process sliding-window rate limiter</td>
+<td>Production WAF; DDoS protection</td>
+<td>Track B — Production Hardening</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>R-015</td>
+<td>Test suite false positives degrade CI signal</td>
+<td>Low</td>
+<td>Test Health</td>
+<td>41 known baseline failures</td>
+<td>All classified as non-functional false positives</td>
+<td>Scope-guard cleanup</td>
+<td>P2 cleanup issue</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="recommended-compact-roadmap">Recommended Compact Roadmap<a class="headerlink" href="#recommended-compact-roadmap" title="Permanent link">&para;</a></h2>
+<h3 id="track-a-external-review-public-snapshot-preparation">Track A — External Review / Public Snapshot Preparation<a class="headerlink" href="#track-a-external-review-public-snapshot-preparation" title="Permanent link">&para;</a></h3>
+<p>Goal: Enable bounded external review and prepare a future public snapshot
+candidate safely.</p>
+<p><strong>A1 — Public Export Candidate Safety Scan</strong> (next immediate step if external
+review is activated)
+- Produce a draft export candidate from current internal main
+- Run full safety scan: secrets, real data, prohibited claims, package metadata,
+  workflows, internal references, website/static assets
+- Require explicit human approval before any public push or publish
+- Prerequisite: GL-212 boundaries remain valid; no production features added</p>
+<p><strong>A2 — Reviewer Handoff Pack</strong>
+- Synthesize claim-safe reviewer instructions from GL-211 and GL-212 gates
+- Confirm: synthetic/demo data only; no real data; no production credentials
+- Confirm: security reports route to GitHub Security Advisories
+- No public outreach text; internal-only handoff document</p>
+<p><strong>A3 — No-Real-Data Enforcement</strong>
+- Add runtime check or startup warning if real-data indicators are detected in
+  a review environment
+- Strengthen audit of data-boundary at demo/synthetic data ingestion paths</p>
+<p><strong>A4 — Claim-Safe Snapshot Candidate</strong>
+- After A1 scan passes: produce a tagged internal snapshot candidate
+- Requires explicit approval gate before any public action</p>
+<h3 id="track-b-production-hardening">Track B — Production Hardening<a class="headerlink" href="#track-b-production-hardening" title="Permanent link">&para;</a></h3>
+<p>Prerequisite for production SaaS, real customer data, and institutional data.
+All P0 blockers must be resolved.</p>
+<p><strong>B1 — Production IAM Completion</strong>
+- OAuth 2.0 / JWT / SSO decision record and implementation
+- HSM or vault integration for key management
+- Automated key rotation lifecycle</p>
+<p><strong>B2 — Tenant/Workspace Production Guarantees</strong>
+- workspace_id enforcement at API and DB level
+- Admin-plane multi-tenant production verification
+- Evidence/provenance secondary-path isolation verification
+- Full adversarial multi-tenant test suite</p>
+<p><strong>B3 — Production PostgreSQL Operations</strong>
+- Production-grade connection pooling (pgBouncer or equivalent)
+- Managed service integration (RDS, Cloud SQL, or equivalent)
+- WAL-based backup and point-in-time recovery
+- Failover and HA documentation and testing</p>
+<p><strong>B4 — Backup/Restore/DR Automation</strong>
+- Automated scheduled backup (PostgreSQL pg_dump + WAL archiving)
+- Cloud backup storage integration (S3, GCS, or equivalent)
+- DR runbook exercised against real synthetic data
+- Backup monitoring and alerting</p>
+<p><strong>B5 — Production Observability/Alerting</strong>
+- External logging infrastructure (ELK, Loki, CloudWatch, or equivalent)
+- Metrics collection (Prometheus, StatsD, or equivalent)
+- Alerting pipeline (PagerDuty, OpsGenie, or equivalent)
+- Distributed tracing (OpenTelemetry)
+- SLO/SLA monitoring baseline</p>
+<p><strong>B6 — Retention/Deletion/Redaction Implementation</strong>
+- Implement data retention policy (policy from GL-209)
+- Implement deletion and redaction operations
+- Legal-hold workflow baseline
+- Audit export pipeline for compliance purposes</p>
+<p><strong>B7 — Incident Response Maturity</strong>
+- Tabletop exercise against simulated incidents
+- Formal on-call rotation or escalation chain
+- Incident response runbook made executable
+- Post-incident review process</p>
+<p><strong>B8 — Security Review / Pentest Preparation</strong>
+- External security assessment or pentest
+- Formal vulnerability assessment
+- Remediation plan for any critical/high findings</p>
+<p><strong>B9 — Support/Release/Versioning Policy</strong>
+- Semver commitment for API and backend
+- Deprecation cycle and changelog policy
+- Support SLA baseline
+- Release notes process</p>
+<h3 id="track-c-sdk-packaging">Track C — SDK / Packaging<a class="headerlink" href="#track-c-sdk-packaging" title="Permanent link">&para;</a></h3>
+<p>Goal: Define an official SDK/package path only after production gates pass.</p>
+<p><strong>C1 — SDK Projection Gate Review</strong>
+- Only after Tracks B1–B5 are complete
+- Review GL-203D deferral conditions
+- No official SDK/package claim before this gate passes
+- Experimental public SDK remains deferred/no-go until gate passes</p>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>Result: ready_for_merge</strong></p>
+<p><strong>Overall decision: production_readiness_gap_report_v4_approved_with_no_go_production</strong></p>
+<p>GL-213 is a readiness gap report only. It documents the current state honestly
+and completely after the GL-200A–GL-212 + GL-206B hardening sequence.</p>
+<p>Key decisions:
+- Developer Preview: <strong>GO / continue</strong>
+- Controlled External Technical Review: <strong>GO with strict boundaries</strong>
+- Synthetic-data Controlled Pilot: <strong>CONDITIONAL</strong>
+- Public Snapshot Preparation: <strong>CONDITIONAL / proceed with cautions via separate issue</strong>
+- Public Website Publish: <strong>DEFER</strong>
+- Official SDK/Package: <strong>NO-GO</strong>
+- Real Customer Data: <strong>NO-GO</strong>
+- Private Grant/Institutional Data: <strong>NO-GO</strong>
+- Production SaaS: <strong>NO-GO</strong></p>
+<hr />
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>The GL-200A–GL-212 + GL-206B hardening sequence has closed concrete gaps
+   across tenant/workspace isolation, auth/secrets/config, migration/PostgreSQL,
+   API contract, SDK boundary, observability, admin/operator control plane,
+   claim safety, runtime/IAM/abuse, data governance, website baseline, and
+   external review readiness. These are genuine improvements that reduce
+   controlled-preview risk.</p>
+</li>
+<li>
+<p>None of the above closes a P0 production SaaS blocker. The production IAM
+   gap, tenant isolation completeness gap, production-grade PostgreSQL gap,
+   backup/DR automation gap, observability stack gap, retention/deletion
+   implementation gap, incident response maturity gap, security review gap, and
+   compliance/legal gap all remain open.</p>
+</li>
+<li>
+<p>Developer Preview and Controlled Preview (with strict boundaries) remain
+   appropriate postures. The GL-212 gate confirms that controlled external
+   technical review is allowed.</p>
+</li>
+<li>
+<p>Production SaaS, real customer data, and private grant/institutional data
+   decisions remain no-go. These are expected and correct given the remaining
+   P0 blockers.</p>
+</li>
+<li>
+<p>The recommended next work is Track A for external review activation, and
+   Track B for production hardening. Track C (SDK/packaging) should only
+   commence after Tracks B1–B5 are complete.</p>
+</li>
+</ol>
+<hr />
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-213 is a readiness gap report, not a production readiness declaration.</li>
+<li>GrantLayer remains Developer Preview / Controlled Preview with strict boundaries.</li>
+<li>Controlled external technical review is allowed only with strict boundaries if prior gates remain valid.</li>
+<li>Production SaaS remains no-go.</li>
+<li>Real customer/private grant/institutional data remains no-go.</li>
+<li>Official SDK/package remains no-go.</li>
+<li>Compliance certification remains no-go.</li>
+<li>Ephemeral live PostgreSQL validation passed but production PostgreSQL readiness remains no-go.</li>
+<li>Public snapshot preparation may proceed only via a separate export/safety issue and explicit approval.</li>
+<li>Public publish is no-go in GL-213. No public GitHub push occurs. No public snapshot is created. No repository visibility change occurs.</li>
+<li>Security-sensitive reports route to GitHub Security Advisories.</li>
+<li>No exploit details are included.</li>
+<li>No real secrets are included.</li>
+<li>No real customer/private data is used.</li>
+<li>No backend/src changes, API behavior changes, migrations, DB/schema changes, dependency changes, GitHub workflow changes, snapshot publish script changes, package publishing metadata, or SDK package metadata are included.</li>
+<li>Unrelated website-design/import files are excluded from GL-213.</li>
+</ul>
+<hr />
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GL-213 Merge</strong> — merge <code>gl-213-production-readiness-gap-report-v4</code> to
+  internal main after validation.</li>
+<li><strong>Track A: Public Export Candidate Safety Scan</strong> — only if external review
+  is being activated; requires dedicated issue with export scan + explicit
+  human approval before any public push or publish.</li>
+<li><strong>Track B: Production Hardening</strong> — begin with B1 (Production IAM Completion)
+  and B2 (Tenant/Workspace Production Guarantees) as the highest-priority P0
+  blockers; B3–B9 to follow in sequence or parallel where safe.</li>
+<li><strong>Track C: SDK Projection Gate Review</strong> — only after Track B (B1–B5) complete.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

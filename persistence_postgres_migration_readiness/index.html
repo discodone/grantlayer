@@ -1,0 +1,1871 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/persistence_postgres_migration_readiness/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-202 — Persistence / PostgreSQL / Migration Readiness - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-202-persistence-postgresql-migration-readiness" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-202 — Persistence / PostgreSQL / Migration Readiness
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-persistence-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Persistence Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Persistence Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migration-inventory-10-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Inventory (10 migrations)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-runner-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Runner Assessment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration Runner Assessment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ordering-verified-safe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ordering — VERIFIED SAFE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotency-verified-safe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotency — VERIFIED SAFE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure-safety-hardened-gl-202" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failure Safety — HARDENED (GL-202)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry-run-inspection-added-gl-202" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dry-Run / Inspection — ADDED (GL-202)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#legacy-db-detection-verified-documented-limitation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Legacy DB Detection — VERIFIED (DOCUMENTED LIMITATION)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sqlite-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLite Readiness Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#postgresql-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL Readiness Assessment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PostgreSQL Readiness Assessment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gap-found-and-fixed-gl-202-executescript-comment-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap Found and Fixed (GL-202): executescript Comment Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remaining-postgresql-gaps-deferred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining PostgreSQL Gaps (Deferred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gl-200-tenantworkspace-schema-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200 Tenant/Workspace Schema Assessment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GL-200 Tenant/Workspace Schema Assessment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fresh-db" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fresh DB
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-found-and-fixed-gl-202-audit-events-backfill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug Found and Fixed (GL-202): Audit Events Backfill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#legacy-row-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Legacy Row Behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-immutability-and-migration-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Immutability and Migration Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constraints-indexes-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constraints / Indexes Assessment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Constraints / Indexes Assessment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#existing-indexes-post-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Existing Indexes (Post-Migration)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommended-future-indexes-deferred-not-added-in-gl-202" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Future Indexes (Deferred — Not Added in GL-202)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backfill-rollback-dry-run-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backfill / Rollback / Dry-Run Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backfill / Rollback / Dry-Run Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#forward-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forward Migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backfill-assumptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backfill Assumptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rollback-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollback Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry-run-manual-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dry-Run / Manual Verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-safety-gates-before-real-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Safety Gates (Before Real Data)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implemented-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implemented Changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests Added
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Gaps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Readiness Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-202-persistence-postgresql-migration-readiness">GL-202 — Persistence / PostgreSQL / Migration Readiness<a class="headerlink" href="#gl-202-persistence-postgresql-migration-readiness" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-202
+<strong>Branch:</strong> <code>gl-202-persistence-postgres-migration-readiness</code>
+<strong>Status:</strong> Internal / Developer Preview</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-202 follows the merged GL-200A/B/C (tenant/workspace isolation) and GL-201
+(production auth/secrets/config hardening) blocks.  It hardens persistence,
+PostgreSQL readiness, migration behavior, and migration-operational safety.</p>
+<p><strong>GrantLayer remains Developer Preview / Controlled Preview with strict
+boundaries.</strong> GL-202 is a persistence/migration readiness step — not a
+production SaaS readiness declaration.</p>
+<p>Real customer/private grant/institutional data is not safe to store until later
+readiness gates explicitly change that status.  Tenant/workspace isolation is not
+overclaimed as production-complete.</p>
+<p>Security-sensitive reports route to GitHub Security Advisories.  No exploit
+details are included here.  No real secrets are included.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Review and verify migration runner behavior.</li>
+<li>Close concrete migration runner gaps (error context, dry-run API).</li>
+<li>Fix PostgreSQL <code>executescript</code> comment-handling bug.</li>
+<li>Fix audit_events backfill incompatibility with immutability trigger.</li>
+<li>Verify GL-200B tenant/workspace migration 0010 idempotency.</li>
+<li>Verify audit hash-chain integrity across migration paths.</li>
+<li>Document remaining gaps, indexes, and rollback posture.</li>
+<li>Add GL-202 regression test suite.</li>
+</ul>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Production SaaS readiness declaration.</li>
+<li>Public GitHub push.</li>
+<li>Broad ORM / persistence rewrite.</li>
+<li>Real backup/restore against production-like data.</li>
+<li>New auth provider or broad CORS redesign.</li>
+<li>API redesign.</li>
+<li>Frontend / website / design changes.</li>
+<li>Public marketing claims.</li>
+</ul>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/production_auth_secrets_config_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_api_audit_regression_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_implementation_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_design_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_readiness_gap_report_v2.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/controlled_preview_boundary_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/db.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/config.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/audit_log.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/migrations/*</td>
+<td>Yes (all 10 files)</td>
+</tr>
+<tr>
+<td>backend/tests/* (selected)</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md, SECURITY.md, AGENTS.md</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="current-persistence-summary">Current Persistence Summary<a class="headerlink" href="#current-persistence-summary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer uses a file-based migration runner on top of SQLite (default) and
+PostgreSQL (configured via <code>GRANTLAYER_DATABASE_URL</code>).  The runner is minimal
+and deliberate: no ORM, no external migration framework, SQL executed directly
+via <code>_ConnectionWrapper</code> which translates <code>?</code> placeholders to <code>%s</code> for
+PostgreSQL.</p>
+<h3 id="migration-inventory-10-migrations">Migration Inventory (10 migrations)<a class="headerlink" href="#migration-inventory-10-migrations" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0001_gl032_baseline</td>
+<td>Full GL-032 schema (grants, audit_events, challenges, operators, grant_requests, grant_executions, indexes)</td>
+</tr>
+<tr>
+<td>0002_gl036_evidence_persistence</td>
+<td>evidence_archives, evidence_hashes tables</td>
+</tr>
+<tr>
+<td>0003_gl036_r2_evidence_verification</td>
+<td>Verification tracking columns on evidence_archives</td>
+</tr>
+<tr>
+<td>0004_gl037a_provenance_events</td>
+<td>provenance_events table</td>
+</tr>
+<tr>
+<td>0005_gl102_audit_log_immutability</td>
+<td>SQLite triggers preventing UPDATE/DELETE on audit_events</td>
+</tr>
+<tr>
+<td>0006_gl103_audit_hash_chain</td>
+<td>row_hash, prev_hash columns on audit_events</td>
+</tr>
+<tr>
+<td>0007_gl107_operator_token_lookup</td>
+<td>token_lookup_hash column and index on operators</td>
+</tr>
+<tr>
+<td>0008_gl108_postgres_audit_immutability</td>
+<td>PostgreSQL triggers preventing UPDATE/DELETE on audit_events</td>
+</tr>
+<tr>
+<td>0009_gl119_operator_token_expiry_rotation</td>
+<td>expires_at, rotated_at on operators</td>
+</tr>
+<tr>
+<td>0010_gl200b_tenant_workspace_isolation</td>
+<td>tenant_id, workspace_id columns and indexes on all business tables</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="migration-runner-assessment">Migration Runner Assessment<a class="headerlink" href="#migration-runner-assessment" title="Permanent link">&para;</a></h2>
+<h3 id="ordering-verified-safe">Ordering — VERIFIED SAFE<a class="headerlink" href="#ordering-verified-safe" title="Permanent link">&para;</a></h3>
+<p><code>_discovery()</code> uses <code>sorted(os.listdir(...))</code> with numeric prefixed filenames.
+Lexicographic sort of <code>000N_*</code> names equals numeric order.  Repeated calls
+return the same list.</p>
+<h3 id="idempotency-verified-safe">Idempotency — VERIFIED SAFE<a class="headerlink" href="#idempotency-verified-safe" title="Permanent link">&para;</a></h3>
+<p>All migrations use existence guards: <code>IF NOT EXISTS</code> in DDL, <code>_column_exists</code>,
+<code>_table_exists</code>, <code>_index_exists</code> helpers.  Running a migration twice on an
+already-migrated DB is a no-op.</p>
+<h3 id="failure-safety-hardened-gl-202">Failure Safety — HARDENED (GL-202)<a class="headerlink" href="#failure-safety-hardened-gl-202" title="Permanent link">&para;</a></h3>
+<p>Previously, if <code>apply_fn(conn)</code> raised an exception, the error propagated
+without indicating which migration failed.  GL-202 wraps the call:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">apply_fn</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        <span class="sa">f</span><span class="s2">&quot;Migration </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> failed during apply: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+</code></pre></div>
+<p>Failed migrations are NOT marked applied (the <code>_mark_applied</code> call comes after
+<code>apply_fn</code> returns), so the runner is restartable.</p>
+<h3 id="dry-run-inspection-added-gl-202">Dry-Run / Inspection — ADDED (GL-202)<a class="headerlink" href="#dry-run-inspection-added-gl-202" title="Permanent link">&para;</a></h3>
+<p><code>list_pending_migrations(conn)</code> returns <code>(version, filepath)</code> pairs for
+unapplied migrations.  Safe to call without modifying the database.</p>
+<h3 id="legacy-db-detection-verified-documented-limitation">Legacy DB Detection — VERIFIED (DOCUMENTED LIMITATION)<a class="headerlink" href="#legacy-db-detection-verified-documented-limitation" title="Permanent link">&para;</a></h3>
+<p>When <code>schema_migrations</code> is absent but <code>grants</code> table exists, the runner
+validates the GL-032 baseline and marks <strong>all</strong> migrations as applied.  This is
+intentional for developer environments where the full schema predates the
+migration runner.  Any DB encountering this path in post-GL-202 deployments
+should be treated as a special case requiring manual review.</p>
+<hr />
+<h2 id="sqlite-readiness-assessment">SQLite Readiness Assessment<a class="headerlink" href="#sqlite-readiness-assessment" title="Permanent link">&para;</a></h2>
+<ul>
+<li>WAL journal mode is enabled on every connection (<code>PRAGMA journal_mode=WAL</code>).</li>
+<li>Foreign keys are enabled (<code>PRAGMA foreign_keys=ON</code>).</li>
+<li>All migrations use SQLite-compatible DDL.</li>
+<li>Immutability triggers are SQLite-native (<code>CREATE TRIGGER IF NOT EXISTS</code>).</li>
+<li>Audit hash-chain verification is read-only and safe.</li>
+<li>Fresh DB initialization applies all 10 migrations in deterministic order.</li>
+<li>All required columns and indexes are present post-migration.</li>
+</ul>
+<p><strong>Assessment: READY for controlled SQLite usage within Developer Preview.</strong></p>
+<hr />
+<h2 id="postgresql-readiness-assessment">PostgreSQL Readiness Assessment<a class="headerlink" href="#postgresql-readiness-assessment" title="Permanent link">&para;</a></h2>
+<h3 id="what-works">What Works<a class="headerlink" href="#what-works" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Connection factory supports <code>postgres://</code> and <code>postgresql://</code> URLs.</li>
+<li><code>_ConnectionWrapper</code> translates <code>?</code> placeholders to <code>%s</code> for PostgreSQL.</li>
+<li><code>_table_exists</code>, <code>_column_exists</code>, <code>_index_exists</code> have PostgreSQL branches.</li>
+<li>Migration 0008 adds PostgreSQL audit immutability triggers.</li>
+<li>Connection pool (<code>SimpleConnectionPool</code>) with bounded retry is in place.</li>
+<li>Lazy psycopg2 import with clear install hint.</li>
+</ul>
+<h3 id="gap-found-and-fixed-gl-202-executescript-comment-handling">Gap Found and Fixed (GL-202): <code>executescript</code> Comment Handling<a class="headerlink" href="#gap-found-and-fixed-gl-202-executescript-comment-handling" title="Permanent link">&para;</a></h3>
+<p><strong>Before GL-202:</strong> <code>_ConnectionWrapper.executescript</code> for PostgreSQL split SQL
+on <code>;</code> and skipped statements where the stripped text started with <code>--</code>.
+Migrations like 0001 and 0002 have <code>-- Comment\nCREATE TABLE ...</code> patterns.
+These statements would be silently skipped, leaving the schema incomplete.</p>
+<p><strong>Fix:</strong> Strip leading line comments from each <code>;</code>-delimited chunk before
+checking whether there is actual SQL content, then execute the SQL portion.</p>
+<h3 id="remaining-postgresql-gaps-deferred">Remaining PostgreSQL Gaps (Deferred)<a class="headerlink" href="#remaining-postgresql-gaps-deferred" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>No live PostgreSQL test infrastructure.</strong> Static/dry-run checks cover
+  compatibility patterns; full live execution requires a PostgreSQL instance
+  not available in this environment.  Documented in tests as a known limitation.</li>
+<li><strong>Connection pool not exercised.</strong> <code>SimpleConnectionPool</code> is code-complete
+  but not tested with real connections.  Manual validation required before
+  first PostgreSQL deployment.</li>
+<li><strong>pg_stat_activity privilege.</strong> Health probe uses <code>pg_stat_activity</code>; this
+  requires at least <code>pg_monitor</code> role in hardened PostgreSQL configurations.</li>
+</ul>
+<p><strong>Assessment: PostgreSQL code paths are substantially hardened but NOT validated
+end-to-end without a live instance.  Not production-ready for PostgreSQL without
+live integration testing.</strong></p>
+<hr />
+<h2 id="gl-200-tenantworkspace-schema-assessment">GL-200 Tenant/Workspace Schema Assessment<a class="headerlink" href="#gl-200-tenantworkspace-schema-assessment" title="Permanent link">&para;</a></h2>
+<h3 id="fresh-db">Fresh DB<a class="headerlink" href="#fresh-db" title="Permanent link">&para;</a></h3>
+<p>All business tables (grants, grant_requests, challenges, grant_executions,
+evidence_archives) get <code>tenant_id TEXT NOT NULL DEFAULT 'demo'</code>.  Operators get
+<code>tenant_id TEXT NOT NULL DEFAULT 'demo'</code>.  audit_events gets <code>tenant_id TEXT
+DEFAULT NULL</code>.  All tables get <code>workspace_id TEXT DEFAULT NULL</code>.  audit_events
+gets <code>scope TEXT DEFAULT NULL</code>.</p>
+<p>Performance indexes: <code>idx_&lt;table&gt;_tenant_id</code> on each scoped table,
+<code>idx_grants_tenant_subject</code> composite index.</p>
+<h3 id="bug-found-and-fixed-gl-202-audit-events-backfill">Bug Found and Fixed (GL-202): Audit Events Backfill<a class="headerlink" href="#bug-found-and-fixed-gl-202-audit-events-backfill" title="Permanent link">&para;</a></h3>
+<p><strong>Before GL-202:</strong> Migration 0010 attempted to <code>UPDATE audit_events SET
+tenant_id = 'demo' WHERE tenant_id IS NULL</code> for existing rows.  This is
+incompatible with the audit immutability trigger added by migration 0005:</p>
+<ul>
+<li>Migration 0005 creates <code>BEFORE UPDATE</code> and <code>BEFORE DELETE</code> triggers that
+  raise an error on any modification to <code>audit_events</code>.</li>
+<li>On an existing DB with audit events, migration 0010's UPDATE would trigger
+  the immutability guard, causing migration 0010 to fail.</li>
+<li>Re-running migration 0010 after partial execution would fail again on the
+  same UPDATE (idempotency guard skips the ALTER TABLE but still tries the
+  UPDATE).</li>
+</ul>
+<p><strong>Additionally:</strong> backfilling chain-verified audit events (with <code>row_hash IS
+NOT NULL</code>) to <code>tenant_id = 'demo'</code> would corrupt hash-chain verification,
+because <code>_hash_payload</code> includes <code>tenant_id</code> only when non-NULL.  The stored
+row_hash was computed without <code>tenant_id</code>; post-backfill recomputation would
+include it, causing a mismatch.</p>
+<p><strong>Fix:</strong> Remove the backfill UPDATE from the nullable path entirely.
+- Pre-migration audit events keep <code>tenant_id = NULL</code>.
+- NULL tenant_id is the intended fail-closed behavior: legacy events are not
+  associated with any specific tenant and do not appear in per-tenant filtered
+  queries.
+- New audit events written after migration have <code>tenant_id</code> set explicitly by
+  <code>append_event</code>.</p>
+<h3 id="legacy-row-behavior">Legacy Row Behavior<a class="headerlink" href="#legacy-row-behavior" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Business table rows inserted before explicit tenant context use <code>tenant_id =
+  'demo'</code> (NOT NULL column default).</li>
+<li>Audit events inserted without explicit tenant_id keep <code>tenant_id = NULL</code>.</li>
+<li><code>list_events(tenant_id='t1')</code> returns only rows with <code>tenant_id = 't1'</code>.
+  Legacy NULL-tenant audit events are isolated by default.</li>
+</ul>
+<hr />
+<h2 id="audit-immutability-and-migration-assessment">Audit Immutability and Migration Assessment<a class="headerlink" href="#audit-immutability-and-migration-assessment" title="Permanent link">&para;</a></h2>
+<ul>
+<li>SQLite immutability triggers (migration 0005) and PostgreSQL triggers
+  (migration 0008) protect audit_events from UPDATE and DELETE.</li>
+<li>Triggers are created before migration 0010 adds tenant_id columns.</li>
+<li>After GL-202 fix, migration 0010 does not attempt UPDATE on audit_events.</li>
+<li>Hash-chain verification (<code>verify_audit_hash_chain</code>) is read-only; it reads
+  audit events in ascending timestamp+rowid order and recomputes row_hash.</li>
+<li>Pre-chain events (row_hash IS NULL) are skipped during verification.</li>
+<li>Post-migration events with tenant_id verify correctly because <code>_hash_payload</code>
+  conditionally includes <code>tenant_id</code> only when non-None, matching the format
+  used at write time.</li>
+</ul>
+<p><strong>Assessment: Audit immutability is intact.  Pre-migration and post-migration
+audit events verify correctly.  Hash-chain is not corrupted by GL-202.</strong></p>
+<hr />
+<h2 id="constraints-indexes-assessment">Constraints / Indexes Assessment<a class="headerlink" href="#constraints-indexes-assessment" title="Permanent link">&para;</a></h2>
+<h3 id="existing-indexes-post-migration">Existing Indexes (Post-Migration)<a class="headerlink" href="#existing-indexes-post-migration" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Table</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idx_grants_tenant_id</td>
+<td>grants</td>
+<td>Per-tenant grant lookup</td>
+</tr>
+<tr>
+<td>idx_grants_tenant_subject</td>
+<td>grants</td>
+<td>Tenant + subject composite</td>
+</tr>
+<tr>
+<td>idx_audit_events_tenant_id</td>
+<td>audit_events</td>
+<td>Per-tenant audit listing</td>
+</tr>
+<tr>
+<td>idx_grant_requests_tenant_id</td>
+<td>grant_requests</td>
+<td>Per-tenant request lookup</td>
+</tr>
+<tr>
+<td>idx_challenges_tenant_id</td>
+<td>challenges</td>
+<td>Per-tenant challenge lookup</td>
+</tr>
+<tr>
+<td>idx_grant_executions_tenant_id</td>
+<td>grant_executions</td>
+<td>Per-tenant execution lookup</td>
+</tr>
+<tr>
+<td>idx_evidence_archives_tenant_id</td>
+<td>evidence_archives</td>
+<td>Per-tenant archive lookup</td>
+</tr>
+<tr>
+<td>idx_operators_token_lookup_hash</td>
+<td>operators</td>
+<td>O(1) token narrowing</td>
+</tr>
+<tr>
+<td>idx_grant_executions_grant_id</td>
+<td>grant_executions</td>
+<td>Join index</td>
+</tr>
+<tr>
+<td>idx_grant_executions_executed_at</td>
+<td>grant_executions</td>
+<td>Time-range scan</td>
+</tr>
+</tbody>
+</table>
+<h3 id="recommended-future-indexes-deferred-not-added-in-gl-202">Recommended Future Indexes (Deferred — Not Added in GL-202)<a class="headerlink" href="#recommended-future-indexes-deferred-not-added-in-gl-202" title="Permanent link">&para;</a></h3>
+<p>The following indexes would improve production query patterns but are deferred
+to a dedicated controlled migration issue to avoid schema risk:</p>
+<ul>
+<li><code>idx_audit_events_timestamp</code> — audit event time-range queries.</li>
+<li><code>idx_audit_events_subject_id</code> — per-subject audit history.</li>
+<li><code>idx_grants_subject_id</code> — per-subject grant lookup.</li>
+<li><code>idx_operators_active</code> — active operator filter.</li>
+</ul>
+<p><strong>Assessment: Current index set is sufficient for Developer Preview scale.
+Production-grade index additions are a separate, lower-risk migration issue.</strong></p>
+<hr />
+<h2 id="backfill-rollback-dry-run-strategy">Backfill / Rollback / Dry-Run Strategy<a class="headerlink" href="#backfill-rollback-dry-run-strategy" title="Permanent link">&para;</a></h2>
+<h3 id="forward-migration">Forward Migration<a class="headerlink" href="#forward-migration" title="Permanent link">&para;</a></h3>
+<p>Migrations run in deterministic numeric order.  Each migration is idempotent.
+A fresh DB applies all 10 migrations.  An upgraded DB applies only pending
+migrations.  The <code>list_pending_migrations(conn)</code> helper provides dry-run
+visibility before <code>run_migrations(conn)</code> is called.</p>
+<h3 id="backfill-assumptions">Backfill Assumptions<a class="headerlink" href="#backfill-assumptions" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Business tables: <code>tenant_id = 'demo'</code> is the NOT NULL column default.
+  Pre-existing rows from before the column existed receive this default
+  automatically via SQLite's ALTER TABLE default behavior.</li>
+<li>Audit events: <code>tenant_id = NULL</code> for pre-migration rows.  No backfill is
+  performed (GL-202 fix removes the UPDATE that was incompatible with the
+  immutability trigger).</li>
+<li>Operators: <code>tenant_id = 'demo'</code> via NOT NULL default.</li>
+</ul>
+<h3 id="rollback-limitations">Rollback Limitations<a class="headerlink" href="#rollback-limitations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Schema migrations (ALTER TABLE ADD COLUMN) are not reversible in SQLite
+  without rebuilding the table.</li>
+<li>There is no automated rollback mechanism.  Manual DB restoration from backup
+  is the only rollback path for schema changes.</li>
+<li>For production deployments, a pre-migration database snapshot is required
+  before running <code>init_db()</code>.</li>
+</ul>
+<h3 id="dry-run-manual-verification">Dry-Run / Manual Verification<a class="headerlink" href="#dry-run-manual-verification" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_conn</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.migrations</span><span class="w"> </span><span class="kn">import</span> <span class="n">list_pending_migrations</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">conn</span> <span class="o">=</span> <span class="n">get_conn</span><span class="p">()</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">pending</span> <span class="o">=</span> <span class="n">list_pending_migrations</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="k">for</span> <span class="n">version</span><span class="p">,</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PENDING: </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="production-safety-gates-before-real-data">Production Safety Gates (Before Real Data)<a class="headerlink" href="#production-safety-gates-before-real-data" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Run <code>list_pending_migrations</code> and confirm expected versions.</li>
+<li>Take a full DB snapshot.</li>
+<li>Run <code>init_db()</code> in a staging environment with production-like data shape.</li>
+<li>Verify <code>list_pending_migrations</code> returns empty.</li>
+<li>Run audit chain verification: <code>al.build_audit_chain_verification_report()</code>.</li>
+<li>Verify health endpoint returns <code>dbConnected=true, dbWritable=true</code>.</li>
+<li>Run the GL-202 test suite against the upgraded DB.</li>
+<li>Only then promote to production.</li>
+</ol>
+<hr />
+<h2 id="implemented-changes">Implemented Changes<a class="headerlink" href="#implemented-changes" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>backend/src/db.py</code></td>
+<td>Fix <code>executescript</code> PostgreSQL path to strip leading line comments before executing SQL chunks</td>
+</tr>
+<tr>
+<td><code>backend/src/migrations/runner.py</code></td>
+<td>Wrap <code>apply_fn(conn)</code> in error context; add <code>list_pending_migrations(conn)</code></td>
+</tr>
+<tr>
+<td><code>backend/src/migrations/__init__.py</code></td>
+<td>Export <code>list_pending_migrations</code></td>
+</tr>
+<tr>
+<td><code>backend/src/migrations/0010_gl200b_tenant_workspace_isolation.py</code></td>
+<td>Remove backfill UPDATE from nullable (audit_events) path; add explanatory comment</td>
+</tr>
+<tr>
+<td><code>backend/tests/test_gl202_persistence_postgres_migration_readiness.py</code></td>
+<td>New GL-202 test suite</td>
+</tr>
+<tr>
+<td><code>docs/persistence_postgres_migration_readiness.md</code></td>
+<td>This document</td>
+</tr>
+<tr>
+<td><code>docs/examples/gl202/persistence_postgres_migration_readiness.json</code></td>
+<td>JSON artifact</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="tests-added">Tests Added<a class="headerlink" href="#tests-added" title="Permanent link">&para;</a></h2>
+<p><code>backend/tests/test_gl202_persistence_postgres_migration_readiness.py</code></p>
+<ul>
+<li>Migration ordering is deterministic.</li>
+<li>All migrations expose <code>apply(conn)</code>.</li>
+<li>Runner raises with version context on missing apply function.</li>
+<li>Runner raises with version context on apply failure.</li>
+<li>Failed migration not marked applied.</li>
+<li>Fresh DB has all required tables.</li>
+<li>Fresh DB has GL-200B tenant_id/workspace_id columns.</li>
+<li>All tenant lookup indexes present.</li>
+<li>Repeated migration 0010 application is idempotent.</li>
+<li>Legacy GL-032 DB detection marks baseline, all migrations applied.</li>
+<li>Legacy rows backfilled to 'demo' for business tables.</li>
+<li>Audit events with NULL tenant_id not backfilled (fail-closed).</li>
+<li>Audit hash chain empty DB verifies valid.</li>
+<li>Pre-chain events skipped during verification.</li>
+<li>Post-migration tenant-aware events verify correctly.</li>
+<li>Mixed pre-chain and chain events verify correctly.</li>
+<li>Tampered event fails verification.</li>
+<li>Audit immutability trigger blocks UPDATE.</li>
+<li>Chain verification report structure is correct.</li>
+<li><code>list_pending_migrations</code> returns empty after init_db.</li>
+<li><code>list_pending_migrations</code> returns pending before init_db.</li>
+<li>PostgreSQL executescript comment stripping (mock test).</li>
+<li>Placeholder translation for migration SQL.</li>
+<li>Migration SQL uses IF NOT EXISTS / existence guards.</li>
+<li>DB URL password not in connection error messages.</li>
+<li>GL-201 production config fail-closed preserved.</li>
+<li>Documentation artifacts present and structurally valid.</li>
+</ul>
+<hr />
+<h2 id="remaining-gaps">Remaining Gaps<a class="headerlink" href="#remaining-gaps" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>Risk</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No live PostgreSQL test infrastructure</td>
+<td>Medium</td>
+<td>Deferred; requires PostgreSQL instance not available locally</td>
+</tr>
+<tr>
+<td><code>pg_stat_activity</code> health probe privilege</td>
+<td>Low</td>
+<td>Document; use <code>pg_monitor</code> role in hardened PostgreSQL</td>
+</tr>
+<tr>
+<td>Legacy DB detection marks all migrations applied without running them</td>
+<td>Low</td>
+<td>Documented; only applies to developer environments pre-migration-runner</td>
+</tr>
+<tr>
+<td>Production-grade indexes (audit timestamp, subject_id, etc.)</td>
+<td>Low</td>
+<td>Deferred to dedicated migration issue</td>
+</tr>
+<tr>
+<td>Connection pool live validation</td>
+<td>Medium</td>
+<td>Requires live PostgreSQL; deferred</td>
+</tr>
+<tr>
+<td>DR / backup-restore drill</td>
+<td>Medium</td>
+<td>Separate GL-203 scope</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="production-readiness-impact">Production Readiness Impact<a class="headerlink" href="#production-readiness-impact" title="Permanent link">&para;</a></h2>
+<p><strong>GL-202 hardens the migration path for Developer Preview but does NOT declare
+production SaaS readiness.</strong></p>
+<ul>
+<li>Migration failure context is improved (specific error messages).</li>
+<li>PostgreSQL executescript SQL execution is now correct for commented migrations.</li>
+<li>Audit events are not backfilled in ways that violate hash-chain integrity or
+  trigger the immutability guard.</li>
+<li>Dry-run inspection is available via <code>list_pending_migrations</code>.</li>
+<li>The GL-201 auth/secrets/config hardening is fully preserved.</li>
+<li>The GL-200 tenant/workspace isolation is preserved and not weakened.</li>
+</ul>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>Proceed with GL-202.  Persistence and migration readiness is hardened for
+Developer Preview.  PostgreSQL remains not live-validated; this is documented.</strong></p>
+<h3 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>No production SaaS readiness claim.</li>
+<li>Tenant/workspace isolation not overclaimed as production-complete.</li>
+<li>No real customer / private grant / institutional data readiness claimed.</li>
+<li>Security-sensitive reports route to GitHub Security Advisories.</li>
+<li>No exploit details included.</li>
+<li>No real secrets included.</li>
+<li>GL-201 auth/secrets/config hardening preserved.</li>
+<li>GL-200 tenant/workspace behavior preserved.</li>
+<li>Audit immutability not weakened.</li>
+<li>No frontend/website/design changes.</li>
+<li>No GitHub workflow changes.</li>
+<li>No public publish or visibility change.</li>
+</ul>
+<hr />
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GL-202 Merge</strong> — merge <code>gl-202-persistence-postgres-migration-readiness</code> to internal main.</li>
+<li><strong>GL-203</strong> — API Contract / SDK Packaging Decision after GL-202 is merged.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

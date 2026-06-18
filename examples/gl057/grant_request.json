@@ -1,0 +1,14 @@
+{
+  "grantRequestId": "gl057-request-001",
+  "workflowId": "gl057-workflow-001",
+  "subjectId": "gl057-subject-001",
+  "role": "developer",
+  "action": "deploy",
+  "resource": "demo-service-gl057",
+  "validFrom": "2026-01-01T00:00:00Z",
+  "validUntil": "2026-12-31T23:59:59Z",
+  "requestedBy": "gl057-operator-001",
+  "reason": "GL-057 integrator quickstart example request.",
+  "status": "requested",
+  "requestedAt": "2026-01-15T09:00:00Z"
+}

@@ -1,0 +1,48 @@
+{
+  "issue_id": "GL-167",
+  "artifact_type": "public_visibility_go_no_go_checklist",
+  "baseline_internal_main": "08460fddeb9f841776b13f973bac6d5acdaf1584",
+  "deferred_publish_commit": "4e4d7fc1733323148cfeb0306deb455aa1ebd63b",
+  "current_recommendation": "no_go",
+  "recommendation_reason": "GitHub push is deferred and final remote verification has not occurred.",
+  "decision_states": [
+    "no_go",
+    "go_after_deferred_push_verified",
+    "go"
+  ],
+  "blockers": [
+    "github_push_deferred",
+    "remote_verification_missing",
+    "visibility_change_not_authorized"
+  ],
+  "explicit_non_goals": [
+    "push_to_github",
+    "change_github_visibility",
+    "force_push",
+    "push_internal_repo_to_github",
+    "publish_full_internal_git_history",
+    "change_production_code",
+    "change_backend_src",
+    "change_openapi",
+    "change_migrations"
+  ],
+  "status": {
+    "public_visibility_readiness_checklist": true,
+    "public_launch": false,
+    "github_push_performed": false,
+    "remote_verification_completed": false,
+    "visibility_change_authorized": false,
+    "repository_visibility_changed": false,
+    "force_push_performed": false,
+    "internal_repo_pushed_to_github": false,
+    "full_internal_history_published": false,
+    "production_code_changed": false,
+    "backend_src_changed": false,
+    "openapi_changed": false,
+    "migrations_changed": false,
+    "dependencies_changed": false,
+    "production_saas_ready_claimed": false,
+    "tenant_isolation_claimed_implemented": false,
+    "public_launch_claimed": false
+  }
+}

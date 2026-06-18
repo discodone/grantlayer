@@ -1,0 +1,1513 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/secret_management_baseline_design/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer Secret Management Baseline Design - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-secret-management-baseline-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer Secret Management Baseline Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-product-secret-management-principle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Product secret management principle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-runtime-mode-secret-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Runtime-mode secret expectations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Runtime-mode secret expectations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-local-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 local-dev
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 demo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-staging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 staging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 production
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-secret-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Secret categories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Secret categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-adminoperator-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Admin/operator tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-service-to-service-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Service-to-service credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-auth-provider-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Auth provider credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-database-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Database credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-signing-key-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Signing key material
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-evidence-storage-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 Evidence storage credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-external-integration-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 External integration credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#48-webhook-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.8 Webhook secrets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#49-encryption-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.9 Encryption keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#410-sessiontoken-signing-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.10 Session/token signing secrets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#411-api-client-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.11 API client credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-backup-storage-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.12 Backup storage credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#413-observabilitylogging-sink-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.13 Observability/logging sink credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#414-optional-blockchainwallet-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.14 Optional blockchain/wallet keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#415-demotest-placeholder-identifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.15 Demo/test placeholder identifiers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-allowed-localtestdemo-shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Allowed local/test/demo shortcuts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-production-required-secret-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Production-required secret behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-secret-source-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Secret source boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-forbidden-secret-locations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Forbidden secret locations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-redaction-and-audit-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Redaction and audit expectations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-production-fail-closed-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Production fail-closed rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-future-implementation-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Future implementation expectations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-what-not-to-implement-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. What not to implement yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-decision-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Decision boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-secret-management-baseline-design">GrantLayer Secret Management Baseline Design<a class="headerlink" href="#grantlayer-secret-management-baseline-design" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>This document defines the secret management baseline for GrantLayer as a <strong>reusable, adaptable API-first product core</strong>.</p>
+<p>It clarifies:
+- which secret types GrantLayer may need
+- which values must never be stored in records, examples, logs, exports, or fixtures
+- which local/test/demo shortcuts are acceptable outside production
+- which production secret requirements must be explicit before production use
+- which secret source boundaries should remain configurable
+- which later implementation blocks should build runtime secret behavior</p>
+<p>This is a <strong>product-foundation security design document</strong>. It does not implement secret management code.</p>
+<h2 id="2-product-secret-management-principle">2. Product secret management principle<a class="headerlink" href="#2-product-secret-management-principle" title="Permanent link">&para;</a></h2>
+<p>GrantLayer should keep <strong>secrets outside Product Core records, examples, exports, logs, and fixtures</strong>.</p>
+<p>The Product Core owns the contract of what secrets are needed, where they must not appear, and what production behavior must enforce. The Product Core does not depend on one specific vault, secret manager, or credential provider. Secret sourcing, rotation, and storage should remain replaceable adapter boundaries.</p>
+<p>Local, test, and demo secret placeholders must <strong>not accidentally become production behavior</strong>. Any runtime mode that permits placeholder secrets must explicitly declare that it is not production-ready.</p>
+<h2 id="3-runtime-mode-secret-expectations">3. Runtime-mode secret expectations<a class="headerlink" href="#3-runtime-mode-secret-expectations" title="Permanent link">&para;</a></h2>
+<h3 id="31-local-dev">3.1 local-dev<a class="headerlink" href="#31-local-dev" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Secret expectation</strong>: developer convenience; deterministic or placeholder secrets acceptable</li>
+<li><strong>Allowed shortcut</strong>: local-only demo signing key reference, no external secret manager, no credential rotation</li>
+<li><strong>Secret source expectation</strong>: may be a local file path or inline placeholder; must be clearly labeled as non-production</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready</li>
+</ul>
+<h3 id="32-test">3.2 test<a class="headerlink" href="#32-test" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Secret expectation</strong>: deterministic automated verification; synthetic secrets acceptable</li>
+<li><strong>Allowed shortcut</strong>: test-only fixture identifiers, mock secret sources, no real credentials</li>
+<li><strong>Secret source expectation</strong>: in-memory or temporary; must be isolated from production data</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready</li>
+</ul>
+<h3 id="33-demo">3.3 demo<a class="headerlink" href="#33-demo" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Secret expectation</strong>: illustrative non-production walkthrough; placeholder secrets acceptable</li>
+<li><strong>Allowed shortcut</strong>: demo fixture identifiers, local-only references, no real credential values</li>
+<li><strong>Secret source expectation</strong>: local-only and labeled as synthetic; must not resemble real secrets</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready; explicitly labeled as demonstration only</li>
+</ul>
+<h3 id="34-integration">3.4 integration<a class="headerlink" href="#34-integration" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Secret expectation</strong>: controlled external technical integration; partner-agreed secret handling</li>
+<li><strong>Allowed shortcut</strong>: partner-agreed secret source with documented constraints</li>
+<li><strong>Secret source expectation</strong>: partner-agreed secret manager or environment boundary</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready without explicit partner agreement and documented constraints</li>
+</ul>
+<h3 id="35-staging">3.5 staging<a class="headerlink" href="#35-staging" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Secret expectation</strong>: production-like validation; same secret target as production</li>
+<li><strong>Allowed shortcut</strong>: same secret source and rotation target as production; realistic but synthetic data</li>
+<li><strong>Secret source expectation</strong>: production-like secret manager or validated environment boundary</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready; explicitly labeled as pre-production validation</li>
+</ul>
+<h3 id="36-production">3.6 production<a class="headerlink" href="#36-production" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Secret expectation</strong>: explicit hardened operation only</li>
+<li><strong>Allowed shortcut</strong>: <strong>none</strong> — every required secret must come from an explicit, validated source, and the system must fail-closed if missing</li>
+<li><strong>Secret source expectation</strong>: explicit secret manager, validated environment boundary, or approved secret provider</li>
+<li><strong>Production claim boundary</strong>: may be described as production-ready <strong>only</strong> when all required secret sources are explicit, validated, and monitored</li>
+</ul>
+<h2 id="4-secret-categories">4. Secret categories<a class="headerlink" href="#4-secret-categories" title="Permanent link">&para;</a></h2>
+<p>The following secret categories define the secret inventory GrantLayer may need. Each category must be sourced, stored, and logged according to the rules in this document.</p>
+<h3 id="41-adminoperator-tokens">4.1 Admin/operator tokens<a class="headerlink" href="#41-adminoperator-tokens" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: authenticate and authorize human operators and admins</li>
+<li><strong>Sensitivity</strong>: high — direct access to Product Core state</li>
+<li><strong>Production requirement</strong>: must come from explicit auth provider; must not be demo or default tokens</li>
+</ul>
+<h3 id="42-service-to-service-credentials">4.2 Service-to-service credentials<a class="headerlink" href="#42-service-to-service-credentials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: authenticate internal and external services to each other</li>
+<li><strong>Sensitivity</strong>: high — automated access to workflow and data boundaries</li>
+<li><strong>Production requirement</strong>: must come from explicit service identity provider; must support rotation</li>
+</ul>
+<h3 id="43-auth-provider-credentials">4.3 Auth provider credentials<a class="headerlink" href="#43-auth-provider-credentials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: client secrets, shared secrets, or validation keys for the active auth provider</li>
+<li><strong>Sensitivity</strong>: critical — compromise allows identity forgery</li>
+<li><strong>Production requirement</strong>: must be explicit and validated; must not appear in logs or records</li>
+</ul>
+<h3 id="44-database-credentials">4.4 Database credentials<a class="headerlink" href="#44-database-credentials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: connection authentication for the active persistence backend</li>
+<li><strong>Sensitivity</strong>: critical — full data access</li>
+<li><strong>Production requirement</strong>: must be explicit and sourced through secret boundary; must not appear in logs or error messages</li>
+</ul>
+<h3 id="45-signing-key-material">4.5 Signing key material<a class="headerlink" href="#45-signing-key-material" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: Ed25519 or future signing keys for grants, evidence, and provenance</li>
+<li><strong>Sensitivity</strong>: critical — compromise allows signature forgery</li>
+<li><strong>Production requirement</strong>: must be explicit, rotated, and stored in a managed secret boundary; no synthetic or demo keypairs</li>
+</ul>
+<h3 id="46-evidence-storage-credentials">4.6 Evidence storage credentials<a class="headerlink" href="#46-evidence-storage-credentials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: access keys or tokens for external evidence storage backends</li>
+<li><strong>Sensitivity</strong>: high — evidence tampering or deletion risk</li>
+<li><strong>Production requirement</strong>: must be explicit and durable; must not appear in evidence bundle metadata</li>
+</ul>
+<h3 id="47-external-integration-credentials">4.7 External integration credentials<a class="headerlink" href="#47-external-integration-credentials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: API keys, tokens, or certificates for partner and third-party services</li>
+<li><strong>Sensitivity</strong>: high — external data and control surface</li>
+<li><strong>Production requirement</strong>: must be explicit and scoped; must be rotated on partner change</li>
+</ul>
+<h3 id="48-webhook-secrets">4.8 Webhook secrets<a class="headerlink" href="#48-webhook-secrets" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: shared secrets to verify incoming webhook payloads</li>
+<li><strong>Sensitivity</strong>: high — webhook spoofing risk</li>
+<li><strong>Production requirement</strong>: must be explicit and rotated; must not be hard-coded</li>
+</ul>
+<h3 id="49-encryption-keys">4.9 Encryption keys<a class="headerlink" href="#49-encryption-keys" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: keys for encrypting sensitive fields at rest or in transit</li>
+<li><strong>Sensitivity</strong>: critical — decryption of institutional data</li>
+<li><strong>Production requirement</strong>: must be explicit, rotated, and managed; must not appear in backups unencrypted</li>
+</ul>
+<h3 id="410-sessiontoken-signing-secrets">4.10 Session/token signing secrets<a class="headerlink" href="#410-sessiontoken-signing-secrets" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: keys used to sign session tokens, state tokens, or transient auth artifacts</li>
+<li><strong>Sensitivity</strong>: high — session hijacking risk</li>
+<li><strong>Production requirement</strong>: must be explicit, rotated, and different from auth provider credentials</li>
+</ul>
+<h3 id="411-api-client-credentials">4.11 API client credentials<a class="headerlink" href="#411-api-client-credentials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: credentials issued to integrators and external clients</li>
+<li><strong>Sensitivity</strong>: medium–high — scoped access to Product Core API</li>
+<li><strong>Production requirement</strong>: must be explicit, scoped, and revocable; must not appear in OpenAPI examples</li>
+</ul>
+<h3 id="412-backup-storage-credentials">4.12 Backup storage credentials<a class="headerlink" href="#412-backup-storage-credentials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: access keys or tokens for backup and restore storage</li>
+<li><strong>Sensitivity</strong>: high — full data exfiltration risk</li>
+<li><strong>Production requirement</strong>: must be explicit and scoped to backup operations only</li>
+</ul>
+<h3 id="413-observabilitylogging-sink-credentials">4.13 Observability/logging sink credentials<a class="headerlink" href="#413-observabilitylogging-sink-credentials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: tokens or API keys for metrics, logging, or alerting backends</li>
+<li><strong>Sensitivity</strong>: medium — observability data may contain operational detail</li>
+<li><strong>Production requirement</strong>: must be explicit; must not appear in startup logs or diagnostics</li>
+</ul>
+<h3 id="414-optional-blockchainwallet-keys">4.14 Optional blockchain/wallet keys<a class="headerlink" href="#414-optional-blockchainwallet-keys" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: optional signing keys for blockchain anchoring or wallet operations</li>
+<li><strong>Sensitivity</strong>: high–critical depending on on-chain value</li>
+<li><strong>Production requirement</strong>: if enabled, must be explicit, managed, and kept off-chain in Product Core records</li>
+</ul>
+<h3 id="415-demotest-placeholder-identifiers">4.15 Demo/test placeholder identifiers<a class="headerlink" href="#415-demotest-placeholder-identifiers" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: non-secret labels and fixture identifiers used in local, test, and demo environments</li>
+<li><strong>Sensitivity</strong>: none — these are not real credentials</li>
+<li><strong>Production requirement</strong>: <strong>must not</strong> be present in production; must be clearly labeled as placeholders</li>
+</ul>
+<h2 id="5-allowed-localtestdemo-shortcuts">5. Allowed local/test/demo shortcuts<a class="headerlink" href="#5-allowed-localtestdemo-shortcuts" title="Permanent link">&para;</a></h2>
+<p>The following shortcuts are acceptable <strong>only outside production</strong>:</p>
+<ul>
+<li><strong>Deterministic placeholder identifiers</strong> — synthetic labels like <code>demo-admin</code> or <code>test-operator</code> that carry no real secret value</li>
+<li><strong>Local-only demo admin token references without real secret values</strong> — references that describe where a token would come from, not the token itself</li>
+<li><strong>Test-only fake identity labels that are not credentials</strong> — fixture names that are clearly not real accounts or passwords</li>
+<li><strong>Local SQLite path references</strong> — file paths for local development that contain no credentials</li>
+<li><strong>Fixture IDs</strong> — deterministic synthetic identifiers used in test fixtures</li>
+<li><strong>Disabled external integrations</strong> — integrations that are explicitly turned off, requiring no live credentials</li>
+<li><strong>Dry-run-only smoke manifests</strong> — manifests that simulate secret resolution without real values</li>
+</ul>
+<p>These shortcuts are <strong>not valid production secrets</strong>. Production must replace all shortcuts with explicit secret source configuration, validated credentials, and managed rotation.</p>
+<h2 id="6-production-required-secret-behavior">6. Production-required secret behavior<a class="headerlink" href="#6-production-required-secret-behavior" title="Permanent link">&para;</a></h2>
+<p>Production mode must require the following secret behavior. The system must refuse to start if any required secret is missing, invalid, or uses a placeholder.</p>
+<ul>
+<li><strong>Explicit secret source</strong> — the secret manager or source must be declared and validated</li>
+<li><strong>No hard-coded default secrets</strong> — no secret may be embedded in source code, config files, or defaults</li>
+<li><strong>No demo/default admin token</strong> — production must not accept demo or synthetic operator tokens</li>
+<li><strong>No secrets in examples or fixtures</strong> — examples and fixtures must use labels and placeholders only</li>
+<li><strong>No secrets in logs or exports</strong> — logs, audit records, evidence bundles, and exports must never contain secret values</li>
+<li><strong>Explicit database credential source</strong> — database credentials must be sourced through the secret boundary</li>
+<li><strong>Explicit auth provider credential source</strong> — auth provider secrets must be sourced through the secret boundary</li>
+<li><strong>Explicit signing/key management source</strong> — signing keys must be sourced through the secret boundary</li>
+<li><strong>Explicit evidence storage credential source where external storage is used</strong> — evidence storage access must be sourced through the secret boundary</li>
+<li><strong>Rotation and revocation expectations</strong> — secrets must support rotation and revocation; stale secrets must be rejected</li>
+<li><strong>Fail-closed startup behavior if required secrets are missing</strong> — the system must refuse to start rather than assume a safe default</li>
+</ul>
+<h2 id="7-secret-source-boundary">7. Secret source boundary<a class="headerlink" href="#7-secret-source-boundary" title="Permanent link">&para;</a></h2>
+<p>The following boundary rules protect the Product Core from accidental secret leakage and provider lock-in:</p>
+<ul>
+<li><strong>Product Core should not depend on one specific vault or secret provider</strong> — the core owns the secret contract, not provider-specific fields</li>
+<li><strong>Environment variables may be a future source, but should be validated through a config boundary</strong> — raw environment reads should not scatter through modules</li>
+<li><strong>External secret managers may be future adapters</strong> — HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, Google Secret Manager, and others may all be future adapter targets</li>
+<li><strong>Provider-specific secret fields should not leak into Product Core records</strong> — audit records and evidence bundles should reference secret source names, not raw values</li>
+<li><strong>Secret values should be resolved only at runtime where needed</strong> — secrets should not be loaded eagerly into global state unless required</li>
+<li><strong>Examples should use labels/placeholders, not secret-looking values</strong> — docs, fixtures, and OpenAPI examples must use obvious placeholders like <code>&lt;SIGNING_KEY_SOURCE&gt;</code></li>
+</ul>
+<h2 id="8-forbidden-secret-locations">8. Forbidden secret locations<a class="headerlink" href="#8-forbidden-secret-locations" title="Permanent link">&para;</a></h2>
+<p>Secrets must not appear in:</p>
+<ul>
+<li>committed source code</li>
+<li>docs examples</li>
+<li>JSON fixtures</li>
+<li>OpenAPI examples</li>
+<li>logs</li>
+<li>auditor exports</li>
+<li>evidence bundle metadata</li>
+<li>provenance records</li>
+<li>compliance readiness summaries</li>
+<li>git history</li>
+<li>screenshots</li>
+<li>test output</li>
+</ul>
+<h2 id="9-redaction-and-audit-expectations">9. Redaction and audit expectations<a class="headerlink" href="#9-redaction-and-audit-expectations" title="Permanent link">&para;</a></h2>
+<p>Secret handling must meet the following redaction and audit expectations:</p>
+<ul>
+<li><strong>Secret-bearing configuration must be redacted in diagnostics</strong> — startup logs, health checks, and config dumps must mask or omit secret values</li>
+<li><strong>Denied access or missing-secret failures should be auditable where appropriate</strong> — failed secret resolution should produce audit records when feasible</li>
+<li><strong>Audit records must not contain secret values</strong> — no plaintext tokens, keys, or credentials in audit logs</li>
+<li><strong>Secret source names may be recorded, but secret values must not</strong> — it is acceptable to log that a secret was resolved from <code>vault://signing-key</code>, but not the value itself</li>
+<li><strong>External integration failures must not leak credentials</strong> — error messages from external services must be sanitized before inclusion in logs or API responses</li>
+</ul>
+<h2 id="10-production-fail-closed-rules">10. Production fail-closed rules<a class="headerlink" href="#10-production-fail-closed-rules" title="Permanent link">&para;</a></h2>
+<p>Production mode must enforce the following fail-closed secret behavior:</p>
+<ul>
+<li><strong>Production mode must not start with missing required secret source</strong> — the system must refuse to start if any required secret source is not configured</li>
+<li><strong>Production mode must not silently fall back to demo secrets</strong> — no automatic fallback to synthetic or demo credentials</li>
+<li><strong>Production mode must not allow placeholder secrets</strong> — placeholder identifiers like <code>demo-admin</code> must be rejected</li>
+<li><strong>Production mode must fail closed if secret-bearing config is incomplete</strong> — missing, invalid, or unvalidated secret configuration must block startup</li>
+<li><strong>Production mode must not expose secret values through API or logs</strong> — no endpoint or log may return a secret value</li>
+</ul>
+<h2 id="11-future-implementation-expectations">11. Future implementation expectations<a class="headerlink" href="#11-future-implementation-expectations" title="Permanent link">&para;</a></h2>
+<p>The following implementation blocks should be built after this planning document is accepted:</p>
+<ol>
+<li><strong>GL-079</strong> — secret source boundary hardening baseline — adds isolated helper functions (<code>is_secret_key</code>, <code>read_optional_secret</code>, <code>read_required_secret</code>, <code>describe_secret_source</code>, <code>validate_required_secrets</code>, <code>redact_secret_value</code>) for safe secret lookup and validation. GL-079 does <strong>not</strong> add Vault/KMS/cloud secret manager integration, does <strong>not</strong> replace existing auth/operator access behavior, and does <strong>not</strong> make GrantLayer production-ready.</li>
+<li><strong>Secret configuration schema</strong> — a validated schema that declares required secrets, their sources, and rotation expectations</li>
+<li><strong>Runtime secret source validation</strong> — startup checks that verify secret sources are reachable and returning valid values</li>
+<li><strong>Production fail-closed startup checks</strong> — explicit checks that refuse to start in production mode if required secrets are missing</li>
+<li><strong>Secret redaction helper</strong> — a utility that masks or omits secret-bearing fields from logs, diagnostics, and exports</li>
+<li><strong>Signing/key management abstraction</strong> — a boundary that abstracts key storage and rotation so the Product Core does not depend on one key provider</li>
+<li><strong>Database credential configuration</strong> — explicit database credential sourcing with masking in logs and error messages</li>
+<li><strong>Auth provider secret configuration</strong> — explicit auth provider secret sourcing with validation and rotation expectations</li>
+<li><strong>Evidence storage credential configuration</strong> — explicit evidence storage credential sourcing where external storage is used</li>
+<li><strong>Observability sink secret configuration</strong> — explicit observability backend credential sourcing with redaction in startup output</li>
+<li><strong>Integration tests for secret leakage prevention</strong> — tests that verify secrets do not appear in logs, exports, responses, or fixtures under any runtime mode</li>
+</ol>
+<h2 id="12-what-not-to-implement-yet">12. What not to implement yet<a class="headerlink" href="#12-what-not-to-implement-yet" title="Permanent link">&para;</a></h2>
+<p>This block does <strong>not</strong> implement:</p>
+<ul>
+<li>vault integration</li>
+<li>secret loader (beyond the GL-079 safe environment-read helpers)</li>
+<li>key rotation</li>
+<li>HSM integration</li>
+<li>KMS integration</li>
+<li>OAuth/JWT/SSO secret handling</li>
+<li>production deployment secrets</li>
+<li>Kubernetes secrets</li>
+<li>Docker secrets</li>
+<li>cloud secret manager</li>
+<li>wallet custody</li>
+<li>payment keys</li>
+</ul>
+<p>These remain valid future workstreams but must be scoped in separate issues.</p>
+<h2 id="13-decision-boundary">13. Decision boundary<a class="headerlink" href="#13-decision-boundary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer should <strong>not</strong> claim production secret management readiness until secret sources, required production secrets, redaction, fail-closed startup checks, and leakage-prevention tests are implemented and verified.</p>
+<p>Any statement to external partners, documentation, or marketing materials must include the non-production constraint. If a partner asks about production timelines, reference this model, the GL-067 production auth and operator access design, the GL-066 runtime configuration environment model, and the GL-063 production-hardening roadmap.</p>
+<hr />
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="production_auth_operator_access_design.md"><code>docs/production_auth_operator_access_design.md</code></a> — GL-067 production auth and operator access design</li>
+<li><a href="runtime_configuration_environment_model.md"><code>docs/runtime_configuration_environment_model.md</code></a> — GL-066 runtime configuration and environment model</li>
+<li><a href="production_hardening_roadmap.md"><code>docs/production_hardening_roadmap.md</code></a> — GL-063 production-hardening roadmap</li>
+<li><a href="product_architecture_extension_boundaries.md"><code>docs/product_architecture_extension_boundaries.md</code></a> — GL-065 product architecture and extension boundaries</li>
+<li><a href="deployment_package_runtime_modes_design.md"><code>docs/deployment_package_runtime_modes_design.md</code></a> — GL-069 deployment package and runtime modes design</li>
+<li><a href="../examples/gl068/secret_inventory_model.json"><code>docs/examples/gl068/secret_inventory_model.json</code></a> — machine-readable secret inventory model</li>
+<li><a href="../examples/gl068/secret_handling_policy_catalog.json"><code>docs/examples/gl068/secret_handling_policy_catalog.json</code></a> — machine-readable secret handling policy catalog</li>
+<li><a href="../backend/tests/test_gl068_secret_management_baseline_design.py"><code>backend/tests/test_gl068_secret_management_baseline_design.py</code></a> — validation test for this secret management baseline design</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

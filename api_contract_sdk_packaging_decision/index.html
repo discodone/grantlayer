@@ -1,0 +1,2183 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/api_contract_sdk_packaging_decision/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-203 — API Contract / SDK Packaging Decision - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-203-api-contract-sdk-packaging-decision" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-203 — API Contract / SDK Packaging Decision
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-api-contract-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current API Contract Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi-alignment-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAPI Alignment Assessment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenAPI Alignment Assessment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-the-openapi-correctly-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the OpenAPI correctly documents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-openapi-does-not-document-gaps-to-address-in-gl-203b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the OpenAPI does not document (gaps to address in GL-203B)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assessment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointauth-boundary-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoint/Auth Boundary Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tenantworkspace-contract-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant/Workspace Contract Implications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tenant/Workspace Contract Implications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state-post-gl-200abc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current state (post GL-200A/B/C)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implications-for-openapi-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implications for OpenAPI contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-must-be-completed-before-public-caveats-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What must be completed before public caveats change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stale-claims-in-public-docs-finding-to-address-in-gl-203b-or-narrow-follow-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale claims in public docs (finding — to address in GL-203B or narrow follow-up)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authconfig-contract-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth/Config Contract Implications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Auth/Config Contract Implications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#production-mode-fail-closed-behavior-gl-201" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production-mode fail-closed behavior (GL-201)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin-token-safety-verified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin token safety (verified)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator-token-safety-verified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator token safety (verified)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implications-for-openapi-contract_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implications for OpenAPI contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assessment-authconfig-contract-is-sound-no-changes-needed-in-gl-203" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assessment: Auth/config contract is sound. No changes needed in GL-203.
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#persistencemigration-contract-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persistence/Migration Contract Implications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Persistence/Migration Contract Implications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sqlite-readiness-post-gl-202" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLite readiness (post GL-202)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-readiness-post-gl-202" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL readiness (post GL-202)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-claims-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API claims impact
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sdkpackage-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDK/Package Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SDK/Package Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-no-sdkpackage-examples-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A: No SDK/package; examples only
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-experimental-local-sdk-prototype-later-not-published" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B: Experimental local SDK prototype later, not published
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-c-public-experimental-sdkpackage-later-with-clear-preview-caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option C: Public experimental SDK/package later with clear preview caveats
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-d-official-sdkpackage-now" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option D: Official SDK/package now
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-e-defer-sdk-until-openapicontract-cleanup-and-packaging-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option E: Defer SDK until OpenAPI/contract cleanup and packaging tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#selected-sdkpackage-recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selected SDK/Package Recommendation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agent-integration-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent Integration Implications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Agent Integration Implications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-agent-integration-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current agent integration surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assessment_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assessment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stale-claim-in-agent-docs-finding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale claim in agent docs (finding)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agent-integration-boundary-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent integration boundary decision
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-claim-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Claim Boundary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Claim Boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allowed-public-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed public claims
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prohibited-public-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prohibited public claims
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#follow-up-implementation-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-Up Implementation Split
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Follow-Up Implementation Split">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gl-203b-openapi-api-contract-cleanup-recommended-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-203B — OpenAPI / API Contract Cleanup (recommended first)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-203c-sdk-prototype-packaging-boundary-only-if-gl-203b-supports-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-203C — SDK Prototype / Packaging Boundary (only if GL-203B supports it)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-204-production-ops-go-no-go-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-204 — Production Ops / Go-No-Go v3
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-205-deployment-runtime-backup-observability-admin-plane" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-205+ — Deployment, Runtime, Backup, Observability, Admin Plane
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Readiness Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-203-api-contract-sdk-packaging-decision">GL-203 — API Contract / SDK Packaging Decision<a class="headerlink" href="#gl-203-api-contract-sdk-packaging-decision" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-203
+<strong>Branch:</strong> <code>gl-203-api-contract-sdk-packaging-decision</code>
+<strong>Status:</strong> Internal / Developer Preview</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-200A, GL-200B, GL-200C, GL-201, and GL-202 are merged internally. The GL-200 tenant/workspace isolation block, the GL-201 production auth/secrets/config hardening, and the GL-202 persistence/PostgreSQL/migration readiness block are all complete.</p>
+<p>GL-203 is a decision and review pack. It does not implement an SDK, publish a package, change API behavior, or declare production SaaS readiness.</p>
+<p><strong>GrantLayer remains:</strong>
+- Developer Preview / Controlled Preview with strict boundaries
+- Not production SaaS
+- Not ready for real customer data, private grant data, or institutional data
+- Tenant/workspace isolation is not overclaimed as production-complete
+- No official SDK/package is claimed or published</p>
+<p>Security-sensitive reports route to GitHub Security Advisories. No exploit details are included. No real secrets are included.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>GL-203 covers:
+- Review of current API contract and OpenAPI alignment after GL-200 through GL-202
+- Endpoint/auth boundary assessment
+- Tenant/workspace contract implications
+- Auth/config contract implications
+- Persistence/migration contract implications
+- SDK/package options comparison and recommendation
+- Agent integration boundary review
+- Public claim safety review
+- Roadmap split for follow-up implementation issues</p>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>GL-203 is not:
+- SDK implementation
+- Package publishing
+- API behavior implementation
+- Production SaaS readiness declaration
+- Public publish, GitHub push, or visibility change
+- Website, frontend, or design work
+- Auth, secrets, or config implementation
+- Persistence or migration implementation
+- Tenant/workspace implementation expansion</p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/persistence_postgres_migration_readiness.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl202/persistence_postgres_migration_readiness.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_auth_secrets_config_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl201/production_auth_secrets_config_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_api_audit_regression_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_implementation_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_design_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200a/tenant_workspace_isolation_design_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_readiness_gap_report_v2.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl199/production_readiness_gap_report_v2.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/api_sdk_agent_value_decision_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl197/api_sdk_agent_value_decision_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/controlled_preview_boundary_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl198/controlled_preview_boundary_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/public_safety_scanner_claim_consistency_gate.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/public_smoke_matrix_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/server.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/auth.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/operators.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/grants.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/grant_requests.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/challenges.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/audit_log.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/db.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/models.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/agent_permissions.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/agent_permission_assignments.py</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>backend/src/migrations/*</td>
+<td>Yes (contract review only)</td>
+</tr>
+<tr>
+<td>sdk/python/grantlayer_client.py</td>
+<td>Yes (stat only)</td>
+</tr>
+<tr>
+<td>sdk/python/README.md</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="current-api-contract-summary">Current API Contract Summary<a class="headerlink" href="#current-api-contract-summary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer exposes an HTTP/REST API served by a stdlib HTTPServer (BaseHTTPRequestHandler). There is no framework dependency. Two auth modes exist and are controlled by <code>ENABLE_OPERATOR_MODEL</code>:</p>
+<p><strong>Auth modes:</strong>
+- <strong>Legacy mode</strong> (<code>ENABLE_OPERATOR_MODEL=false</code>): <code>Authorization: Bearer &lt;admin-token&gt;</code> via constant-time <code>hmac.compare_digest</code>.
+- <strong>Operator mode</strong> (<code>ENABLE_OPERATOR_MODEL=true</code>): <code>Authorization: Bearer &lt;operator-token&gt;</code> via PBKDF2-HMAC-SHA256 (600,000 iterations) with a SHA-256 lookup-hash pre-filter.</p>
+<p><strong>Tenant context:</strong> Derived entirely server-side. In operator mode, <code>tenant_id</code> comes from the operator record. In admin-token mode, <code>tenant_id</code> is bound to <code>"demo"</code>. Clients cannot supply or override <code>tenant_id</code> via headers, path parameters, or request bodies.</p>
+<p><strong>Endpoint categories (post GL-202):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Endpoints</th>
+<th>Auth</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Public/health</td>
+<td>GET /health, GET /readiness, GET /</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Core resource (both auth modes)</td>
+<td>GET/POST /grants, GET /grants/{id}, POST /grants/{id}/revoke, GET /audit-events, GET/POST /challenges</td>
+<td>LegacyAdminToken or OperatorToken</td>
+</tr>
+<tr>
+<td>Operator-mode-only</td>
+<td>/grant-requests (CRUD), /grant-executions (CRUD), /grants/{id}/executions, /operators (CRUD), /operators/me</td>
+<td>OperatorToken only</td>
+</tr>
+<tr>
+<td>Evidence/provenance/audit chain</td>
+<td>/evidence/executions/{id} and sub-paths, /provenance/executions/{id}/summary, /auditor/reports/executions/{id}, /compliance/*</td>
+<td>LegacyAdminToken or OperatorToken</td>
+</tr>
+<tr>
+<td>Agent permission evaluation</td>
+<td>/agent-permissions/*</td>
+<td>LegacyAdminToken or OperatorToken</td>
+</tr>
+<tr>
+<td>Approval lifecycle</td>
+<td>/approval-rules/evaluate, /approval-requests/{id}/*</td>
+<td>LegacyAdminToken or OperatorToken</td>
+</tr>
+<tr>
+<td>Demo/tamper</td>
+<td>POST /demo/tamper-grant/{id}</td>
+<td>Blocked unless ENABLE_DEMO_ENDPOINTS=true; returns 403 by default</td>
+</tr>
+<tr>
+<td>Demo action</td>
+<td>POST /demo-action</td>
+<td>Auth required regardless of demo flag</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Error contract:</strong> All error responses follow the GL-030 additive shape:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;human-readable&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;errorCode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;machine-readable&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;detail&quot;</span><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>Security headers on all responses:</strong> X-Content-Type-Options, X-Frame-Options, Cache-Control: no-store, Content-Security-Policy.</p>
+<p><strong>CORS:</strong> Exact-match whitelist only. No wildcard. No reflection of arbitrary origins.</p>
+<p><strong>Rate limiting:</strong> Separate auth and API rate limiters (configurable via env vars).</p>
+<hr />
+<h2 id="openapi-alignment-assessment">OpenAPI Alignment Assessment<a class="headerlink" href="#openapi-alignment-assessment" title="Permanent link">&para;</a></h2>
+<p>The OpenAPI document (<code>docs/openapi.yaml</code>) is at version <code>"0.31.0-rc"</code>, describing the GL-031 state. The actual implementation is now at GL-202.</p>
+<h3 id="what-the-openapi-correctly-documents">What the OpenAPI correctly documents<a class="headerlink" href="#what-the-openapi-correctly-documents" title="Permanent link">&para;</a></h3>
+<ul>
+<li>GET /health, GET /readiness (public, no auth) — accurate</li>
+<li>GET / (dashboard) — accurate</li>
+<li>GET/POST /grants, GET /grants/{id}, POST /grants/{id}/revoke — accurate shape</li>
+<li>GET /audit-events — accurate</li>
+<li>GET/POST /grant-requests, GET /grant-requests/{id}, POST approve/deny — accurate</li>
+<li>GET /grant-executions, POST /grant-executions, GET /grant-executions/{id} — accurate</li>
+<li>GET /grants/{id}/executions — accurate</li>
+<li>GET/POST /operators, GET /operators/me — accurate</li>
+<li>GET /evidence/executions/{id} and sub-paths — accurate</li>
+<li>GET /challenges, POST /challenges — accurate</li>
+<li>SecuritySchemes (LegacyAdminToken: Bearer, OperatorToken: Bearer) — accurate</li>
+<li>Error response shape (GL-030 additive contract) — accurate</li>
+</ul>
+<h3 id="what-the-openapi-does-not-document-gaps-to-address-in-gl-203b">What the OpenAPI does not document (gaps to address in GL-203B)<a class="headerlink" href="#what-the-openapi-does-not-document-gaps-to-address-in-gl-203b" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Implicit tenant context from auth:</strong> OpenAPI does not state that tenant_id is always derived server-side. Clients might incorrectly infer tenant override is possible.</li>
+<li><strong>workspace_id reserved/nullable:</strong> Not documented in any schema or description.</li>
+<li><strong>Tenant isolation behavior:</strong> Cross-tenant denial (404/empty list) is not described.</li>
+<li><strong>Production-mode startup behavior:</strong> GL-201 fail-closed startup checks are not reflected.</li>
+<li><strong>Many newer endpoints:</strong> Agent permission profiles, approval lifecycle, compliance readiness, provenance v2, institutional auditor export, policy requirements — all added after GL-031; not in OpenAPI.</li>
+<li><strong>Demo endpoint explicit guard:</strong> /demo/tamper-grant/{id} behavior (403 when flag is off) is not documented.</li>
+<li><strong>Version mismatch:</strong> Version is "0.31.0-rc" against actual state GL-202+.</li>
+<li><strong>Grant execution tenant isolation (GL-200C):</strong> Not reflected.</li>
+<li><strong>Correlation-ID header:</strong> X-Correlation-ID request/response header is not documented.</li>
+</ul>
+<h3 id="assessment">Assessment<a class="headerlink" href="#assessment" title="Permanent link">&para;</a></h3>
+<p>The OpenAPI is not severely misleading about auth requirements or request/response shapes for the documented endpoints. It is substantially incomplete: significant new surface and cross-cutting behaviors (tenant context, workspace_id, newer endpoints) are absent.</p>
+<p><strong>Recommendation:</strong> Defer comprehensive OpenAPI cleanup to GL-203B. Do not change <code>docs/openapi.yaml</code> in GL-203.</p>
+<hr />
+<h2 id="endpointauth-boundary-assessment">Endpoint/Auth Boundary Assessment<a class="headerlink" href="#endpointauth-boundary-assessment" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Public endpoints (health, readiness) require no auth</td>
+<td>VERIFIED — GET /health, GET /readiness are fully public</td>
+</tr>
+<tr>
+<td>Mutating endpoints require auth</td>
+<td>VERIFIED — all mutating endpoints check auth before proceeding</td>
+</tr>
+<tr>
+<td>Admin-token auth fails closed on missing/blank/placeholder token</td>
+<td>VERIFIED — GL-201 hardening; startup rejects placeholder tokens in production-like mode</td>
+</tr>
+<tr>
+<td>Operator auth uses constant-time comparison with PBKDF2 hashing</td>
+<td>VERIFIED — 600,000 PBKDF2 iterations, SHA-256 lookup hash pre-filter</td>
+</tr>
+<tr>
+<td>tenant_id is always server-derived, never client-supplied</td>
+<td>VERIFIED — extracted from operator record or bound to 'demo' for admin-token</td>
+</tr>
+<tr>
+<td>Cross-tenant lookup denial (no existence leak)</td>
+<td>VERIFIED — returns None/404 for ID lookups, empty list for list endpoints</td>
+</tr>
+<tr>
+<td>Demo tamper endpoint blocked by default</td>
+<td>VERIFIED — returns 403 unless ENABLE_DEMO_ENDPOINTS=true</td>
+</tr>
+<tr>
+<td>/demo-action requires auth (not gated by demo flag)</td>
+<td>VERIFIED — auth check runs regardless</td>
+</tr>
+<tr>
+<td>Rate limiting applied to auth and API paths</td>
+<td>VERIFIED — separate limiters configurable via env</td>
+</tr>
+<tr>
+<td>Security headers on all responses</td>
+<td>VERIFIED — X-Content-Type-Options, X-Frame-Options, Cache-Control, CSP</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Assessment: Auth boundary is sound for Developer Preview. No auth bypass gap was found.</strong></p>
+<hr />
+<h2 id="tenantworkspace-contract-implications">Tenant/Workspace Contract Implications<a class="headerlink" href="#tenantworkspace-contract-implications" title="Permanent link">&para;</a></h2>
+<h3 id="current-state-post-gl-200abc">Current state (post GL-200A/B/C)<a class="headerlink" href="#current-state-post-gl-200abc" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>tenant_id</code> is present on all business resource tables (grants, grant_requests, challenges, grant_executions, evidence_archives, audit_events, operators).</li>
+<li>Tenant context is always server-derived from the auth token. Clients cannot inject or override it.</li>
+<li>All list and ID-lookup endpoints filter by <code>tenant_id</code> when derived from auth.</li>
+<li>Cross-tenant mutation (revoke/approve/deny) is blocked via None-lookup chain.</li>
+<li>Audit events carry <code>tenant_id</code> from the authenticated context for all new events.</li>
+<li>Pre-migration audit events keep <code>tenant_id = NULL</code> (fail-closed; not associated with any tenant).</li>
+<li><code>workspace_id</code> is reserved (nullable), not enforced.</li>
+</ul>
+<h3 id="implications-for-openapi-contract">Implications for OpenAPI contract<a class="headerlink" href="#implications-for-openapi-contract" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The OpenAPI must be updated (in GL-203B) to document that <code>tenant_id</code> is implicit from authentication, not a client-supplied parameter.</li>
+<li>The OpenAPI must document that arbitrary tenant override headers are not supported.</li>
+<li>Cross-tenant denial semantics (403/404 without existence leak) should be documented.</li>
+<li><code>workspace_id</code> should be described as reserved/nullable/deferred.</li>
+</ul>
+<h3 id="what-must-be-completed-before-public-caveats-change">What must be completed before public caveats change<a class="headerlink" href="#what-must-be-completed-before-public-caveats-change" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Workspace enforcement (<code>workspace_id</code>) must be implemented before workspace isolation can be claimed.</li>
+<li>Admin-plane tenant isolation (GL-200D) must be implemented before cross-tenant operator management can be claimed safe.</li>
+<li>Secondary-path tenant enforcement (evidence/provenance/auditor routes) must be completed.</li>
+<li>Full production-grade database-level row security (RLS) would be needed before production-SaaS multi-tenant claims.</li>
+</ul>
+<h3 id="stale-claims-in-public-docs-finding-to-address-in-gl-203b-or-narrow-follow-up">Stale claims in public docs (finding — to address in GL-203B or narrow follow-up)<a class="headerlink" href="#stale-claims-in-public-docs-finding-to-address-in-gl-203b-or-narrow-follow-up" title="Permanent link">&para;</a></h3>
+<p>README.md, AGENTS.md, SECURITY.md, and llms.txt currently state: <strong>"Tenant isolation is not implemented."</strong></p>
+<p>This is now inaccurate. GL-200A/B/C implemented a tenant isolation baseline: tenant_id is stored and enforced on all business tables via application-layer filtering. However, the isolation is not production-complete (workspace not enforced, secondary paths deferred, no DB-level RLS, admin-plane isolation deferred).</p>
+<p><strong>Recommended correction (not made in GL-203):</strong> Update these claims to: "Tenant isolation baseline implemented but not production-complete. workspace_id is reserved. Full production multi-tenancy requires additional hardening gates." This correction should be part of GL-203B or a narrow companion issue.</p>
+<hr />
+<h2 id="authconfig-contract-implications">Auth/Config Contract Implications<a class="headerlink" href="#authconfig-contract-implications" title="Permanent link">&para;</a></h2>
+<h3 id="production-mode-fail-closed-behavior-gl-201">Production-mode fail-closed behavior (GL-201)<a class="headerlink" href="#production-mode-fail-closed-behavior-gl-201" title="Permanent link">&para;</a></h3>
+<p>In <code>staging</code> or <code>production</code> runtime mode:
+- Placeholder/demo/weak admin tokens are rejected at startup (server won't start).
+- Admin token minimum length is enforced (16 characters).
+- Bootstrap operator token is validated.
+- CORS localhost origins trigger a startup warning.
+- No raw token value ever appears in error messages, logs, or startup output.</p>
+<h3 id="admin-token-safety-verified">Admin token safety (verified)<a class="headerlink" href="#admin-token-safety-verified" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Constant-time comparison via <code>hmac.compare_digest</code>.</li>
+<li>Token never leaked in response bodies, logs, or errors.</li>
+<li>Missing token + require=true → 403 (fail-closed).</li>
+<li>Wrong token → 403 (no token value in response).</li>
+</ul>
+<h3 id="operator-token-safety-verified">Operator token safety (verified)<a class="headerlink" href="#operator-token-safety-verified" title="Permanent link">&para;</a></h3>
+<ul>
+<li>PBKDF2-HMAC-SHA256 (600,000 iterations) with random salt.</li>
+<li>SHA-256 lookup hash for O(1) pre-filter before expensive PBKDF2 check.</li>
+<li>Raw token returned once on creation; not retrievable afterward.</li>
+<li><code>to_dict()</code> exposes only safe fields (operatorId, name, role, active, tenantId).</li>
+<li>Expired token → 401 operator_token_expired (reason code only, no token value).</li>
+</ul>
+<h3 id="implications-for-openapi-contract_1">Implications for OpenAPI contract<a class="headerlink" href="#implications-for-openapi-contract_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>OpenAPI should document that placeholder/weak tokens are rejected in production-like mode (startup behavior).</li>
+<li>OpenAPI should document operator token lifecycle (single issuance, never retrievable).</li>
+<li>No secret values should appear in OpenAPI examples — currently confirmed clean.</li>
+</ul>
+<h3 id="assessment-authconfig-contract-is-sound-no-changes-needed-in-gl-203">Assessment: Auth/config contract is sound. No changes needed in GL-203.<a class="headerlink" href="#assessment-authconfig-contract-is-sound-no-changes-needed-in-gl-203" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="persistencemigration-contract-implications">Persistence/Migration Contract Implications<a class="headerlink" href="#persistencemigration-contract-implications" title="Permanent link">&para;</a></h2>
+<h3 id="sqlite-readiness-post-gl-202">SQLite readiness (post GL-202)<a class="headerlink" href="#sqlite-readiness-post-gl-202" title="Permanent link">&para;</a></h3>
+<ul>
+<li>WAL journal mode and foreign keys enabled on every connection.</li>
+<li>10 migrations, deterministic order, idempotent.</li>
+<li>Migration runner wraps <code>apply_fn</code> with version-specific error context.</li>
+<li><code>list_pending_migrations()</code> available for dry-run inspection.</li>
+<li>Audit immutability triggers (SQLite) protect audit_events from UPDATE/DELETE.</li>
+<li>Hash-chain verification is read-only and safe across pre-migration and post-migration events.</li>
+</ul>
+<p><strong>Assessment: READY for controlled SQLite usage within Developer Preview.</strong></p>
+<h3 id="postgresql-readiness-post-gl-202">PostgreSQL readiness (post GL-202)<a class="headerlink" href="#postgresql-readiness-post-gl-202" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Code paths support PostgreSQL via <code>GRANTLAYER_DATABASE_URL</code>.</li>
+<li><code>executescript</code> comment-stripping bug fixed (GL-202).</li>
+<li>Connection pool (SimpleConnectionPool) is code-complete but not live-tested.</li>
+<li>No live PostgreSQL test infrastructure available.</li>
+<li><code>pg_stat_activity</code> health probe requires at least <code>pg_monitor</code> role.</li>
+</ul>
+<p><strong>Assessment: PostgreSQL code paths are substantially hardened but NOT validated end-to-end without a live instance. PostgreSQL production deployment requires live integration testing before use.</strong></p>
+<h3 id="api-claims-impact">API claims impact<a class="headerlink" href="#api-claims-impact" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Live PostgreSQL support CANNOT be claimed as production-ready without live validation.</li>
+<li>SQLite mode is suitable for Developer Preview / Controlled Preview.</li>
+<li>Backup/restore/DR is not implemented (no automated rollback for schema changes).</li>
+<li>Pre-migration database snapshot required before any migration in a staging/production deployment.</li>
+</ul>
+<hr />
+<h2 id="sdkpackage-options">SDK/Package Options<a class="headerlink" href="#sdkpackage-options" title="Permanent link">&para;</a></h2>
+<p>The current state: <code>sdk/python/grantlayer_client.py</code> is a 113-line minimal HTTP client wrapper. It is developer-preview only, not published to PyPI or any package registry. No package metadata for publication exists.</p>
+<h3 id="option-a-no-sdkpackage-examples-only">Option A: No SDK/package; examples only<a class="headerlink" href="#option-a-no-sdkpackage-examples-only" title="Permanent link">&para;</a></h3>
+<p>Keep the focus on runnable examples (<code>examples/*.py</code>) and documentation. The minimal SDK in <code>sdk/python/</code> continues as developer-adjacent code with no publication or official support claim.</p>
+<ul>
+<li><strong>Pros:</strong> Zero commitment overhead; no breaking change burden; fits current API contract gap.</li>
+<li><strong>Cons:</strong> Developer experience is limited to raw HTTP calls; no typed interface.</li>
+<li><strong>When appropriate:</strong> If the API contract is still unstable or if OpenAPI cleanup hasn't been done.</li>
+</ul>
+<h3 id="option-b-experimental-local-sdk-prototype-later-not-published">Option B: Experimental local SDK prototype later, not published<a class="headerlink" href="#option-b-experimental-local-sdk-prototype-later-not-published" title="Permanent link">&para;</a></h3>
+<p>Develop a more complete internal SDK prototype after GL-203B (contract alignment), but keep it unpublished and clearly marked experimental.</p>
+<ul>
+<li><strong>Pros:</strong> Improves developer experience; allows testing packaging boundaries safely.</li>
+<li><strong>Cons:</strong> Requires GL-203B contract work first; engineering time investment.</li>
+<li><strong>When appropriate:</strong> After GL-203B delivers a stable, documented API contract.</li>
+</ul>
+<h3 id="option-c-public-experimental-sdkpackage-later-with-clear-preview-caveats">Option C: Public experimental SDK/package later with clear preview caveats<a class="headerlink" href="#option-c-public-experimental-sdkpackage-later-with-clear-preview-caveats" title="Permanent link">&para;</a></h3>
+<p>Publish an experimental SDK to PyPI (or similar) with a <code>0.x.y.dev</code> version and explicit Developer Preview / Breaking Changes Expected notices.</p>
+<ul>
+<li><strong>Pros:</strong> Increases discoverability and developer adoption.</li>
+<li><strong>Cons:</strong> Creates public API surface that must be maintained; premature before contract stability; OpenAPI contract must be aligned first; packaging tests must exist.</li>
+<li><strong>When appropriate:</strong> After GL-203B AND GL-203C (packaging boundary verification).</li>
+</ul>
+<h3 id="option-d-official-sdkpackage-now">Option D: Official SDK/package now<a class="headerlink" href="#option-d-official-sdkpackage-now" title="Permanent link">&para;</a></h3>
+<p>Publish an official SDK with a stable versioned release.</p>
+<ul>
+<li><strong>Pros:</strong> Strong signal of maturity.</li>
+<li><strong>Cons:</strong> The API contract has not been comprehensively documented or aligned (OpenAPI is at GL-031, state is GL-202+). Publishing an official SDK before contract alignment would create untenable maintenance burden and false maturity signals. Explicitly prohibited by GL-203 scope.</li>
+<li><strong>Assessment: REJECTED. Not appropriate now. Do not claim or publish.</strong></li>
+</ul>
+<h3 id="option-e-defer-sdk-until-openapicontract-cleanup-and-packaging-tests">Option E: Defer SDK until OpenAPI/contract cleanup and packaging tests<a class="headerlink" href="#option-e-defer-sdk-until-openapicontract-cleanup-and-packaging-tests" title="Permanent link">&para;</a></h3>
+<p>Make an explicit decision to defer all SDK/packaging work until GL-203B closes the OpenAPI/contract gap, then revisit.</p>
+<ul>
+<li><strong>Pros:</strong> Responsible sequencing; protects against premature commitment.</li>
+<li><strong>Cons:</strong> Delays SDK-related developer experience improvements.</li>
+<li><strong>Assessment: Correct sequencing. Aligns with GL-197 API-first conclusion.</strong></li>
+</ul>
+<hr />
+<h2 id="selected-sdkpackage-recommendation">Selected SDK/Package Recommendation<a class="headerlink" href="#selected-sdkpackage-recommendation" title="Permanent link">&para;</a></h2>
+<p><strong>Recommendation: Option E — Defer SDK until OpenAPI/contract cleanup (GL-203B), then assess Option B.</strong></p>
+<p>Rationale:
+1. The OpenAPI contract is at GL-031 (0.31.0-rc) while the implementation is at GL-202+. Significant surface is undocumented (tenant context, workspace_id, newer endpoints, 30+ endpoints added after GL-031).
+2. Publishing any SDK before the contract is stable creates an SDK that diverges from actual behavior.
+3. The existing <code>sdk/python/grantlayer_client.py</code> covers the health/readiness/grants/audit surface adequately for Developer Preview.
+4. GL-197 concluded <code>api_first_agent_examples_now_sdk_later</code> — that recommendation remains valid and is reinforced by the contract gaps found in GL-203.
+5. An official SDK/package is explicitly not claimed. No package publishing metadata exists. This status must be preserved.</p>
+<p><strong>After GL-203B completes OpenAPI/contract alignment:</strong>
+- Revisit Option B (experimental local SDK prototype) as GL-203C.
+- Only proceed to Option C (public experimental SDK) after GL-203C verifies packaging boundaries.
+- Only consider Option D (official SDK) after a production-ready API contract is verified, which is well beyond the current roadmap.</p>
+<hr />
+<h2 id="agent-integration-implications">Agent Integration Implications<a class="headerlink" href="#agent-integration-implications" title="Permanent link">&para;</a></h2>
+<h3 id="current-agent-integration-surface">Current agent integration surface<a class="headerlink" href="#current-agent-integration-surface" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>AGENTS.md</code> is the primary agent entry point — accurate, safe, Developer Preview caveats present.</li>
+<li><code>llms.txt</code> — concise summary, safe, accurate caveats.</li>
+<li><code>llms-full.txt</code> — detailed repository map, safe areas and forbidden areas documented.</li>
+<li><code>docs/agent_integration_manifest.json</code> — machine-readable metadata.</li>
+<li><code>docs/public_agent_api_walkthrough_refresh.md</code> — public agent/API walkthrough.</li>
+<li>Agent permission evaluation endpoints (<code>/agent-permissions/*</code>) are stateless evaluators — no DB access, no cross-tenant risk.</li>
+</ul>
+<h3 id="assessment_1">Assessment<a class="headerlink" href="#assessment_1" title="Permanent link">&para;</a></h3>
+<p>The agent integration documentation is safe for Developer Preview. The agent entry points correctly document:
+- Developer Preview caveats
+- No real secrets in examples
+- No real customer data
+- Not production SaaS
+- No tenant isolation claim (though this specific claim is now stale — see Tenant/Workspace section above)</p>
+<h3 id="stale-claim-in-agent-docs-finding">Stale claim in agent docs (finding)<a class="headerlink" href="#stale-claim-in-agent-docs-finding" title="Permanent link">&para;</a></h3>
+<p><code>AGENTS.md</code> states: "Tenant isolation is not implemented." This is now a stale claim as of GL-200A/B/C. The baseline was implemented. The claim should be updated to "Tenant isolation baseline implemented but not production-complete" in GL-203B or a narrow companion task. GL-203 does not change <code>AGENTS.md</code>.</p>
+<h3 id="agent-integration-boundary-decision">Agent integration boundary decision<a class="headerlink" href="#agent-integration-boundary-decision" title="Permanent link">&para;</a></h3>
+<p>The agent integration boundaries in AGENTS.md and llms.txt remain safe as-is for GL-203. No changes to these files are required in GL-203. The stale tenant isolation claim is a documentation accuracy issue, not a security boundary issue.</p>
+<hr />
+<h2 id="public-claim-boundary">Public Claim Boundary<a class="headerlink" href="#public-claim-boundary" title="Permanent link">&para;</a></h2>
+<h3 id="allowed-public-claims">Allowed public claims<a class="headerlink" href="#allowed-public-claims" title="Permanent link">&para;</a></h3>
+<p>GrantLayer MAY claim the following publicly:</p>
+<ol>
+<li><strong>Developer Preview</strong> — local evaluation and controlled pilot posture.</li>
+<li><strong>Controlled Preview with strict boundaries</strong> — no real customer data, no private grant data, no shared multi-tenant infrastructure.</li>
+<li><strong>API-first</strong> — REST/HTTP API, no SDK required to integrate.</li>
+<li><strong>Deterministic local examples</strong> — <code>examples/first_verifiable_output.py</code> and <code>examples/grant_lifecycle_evidence_bundle.py</code> produce deterministic, verified output with no backend required.</li>
+<li><strong>Grant lifecycle evidence bundle</strong> — verifiable output from the grant lifecycle flow with cryptographic hashes.</li>
+<li><strong>Tenant/workspace isolation baseline improved</strong> (not production-complete) — GL-200A/B/C implemented baseline tenant_id tracking and filtering on all business tables; workspace_id is reserved; full production multi-tenancy requires additional gates.</li>
+<li><strong>Production auth/secrets/config hardening improved</strong> (not production SaaS) — GL-201 hardened placeholder token rejection, startup fail-closed behavior, and secret leakage prevention.</li>
+<li><strong>Persistence/migration readiness improved</strong> (not production data readiness) — GL-202 hardened migration runner, idempotency, and dry-run inspection; PostgreSQL not live-validated.</li>
+<li><strong>Open source (Apache 2.0)</strong> — LICENSE file present since GL-153.</li>
+<li><strong>Agent-friendly API surface</strong> — agent permission evaluation, audit chain, evidence bundles accessible via REST.</li>
+<li><strong>Audit tamper-evidence</strong> — hash-chain verification on audit_events, immutability triggers (SQLite and PostgreSQL).</li>
+<li><strong>Minimal SDK available for developer evaluation</strong> — <code>sdk/python/grantlayer_client.py</code>, developer-preview only, not published, not official.</li>
+</ol>
+<h3 id="prohibited-public-claims">Prohibited public claims<a class="headerlink" href="#prohibited-public-claims" title="Permanent link">&para;</a></h3>
+<p>GrantLayer MUST NOT claim the following:</p>
+<ol>
+<li><strong>Production SaaS ready</strong> — no production-grade ops, no multi-tenant SaaS deployment.</li>
+<li><strong>Ready for real customer data</strong> — examples use synthetic identifiers only; no real customer data is safe to store.</li>
+<li><strong>Ready for private grant or institutional data</strong> — no production hardening for data confidentiality.</li>
+<li><strong>Official SDK/package available</strong> — <code>sdk/python/grantlayer_client.py</code> is developer-preview adjacent code, not a published package.</li>
+<li><strong>Complete tenant/workspace isolation production guarantee</strong> — baseline implemented; workspace not enforced; secondary paths deferred; no DB-level RLS.</li>
+<li><strong>Live PostgreSQL production readiness</strong> — PostgreSQL code paths are hardened but not live-validated.</li>
+<li><strong>Enterprise-ready platform</strong> — no enterprise ops, SLAs, or support guarantees.</li>
+<li><strong>Compliance-ready platform</strong> — no regulatory compliance certification or audit.</li>
+<li><strong>Workspace enforcement complete</strong> — <code>workspace_id</code> is reserved and nullable.</li>
+<li><strong>Admin-plane multi-tenant isolation complete</strong> — GL-200D (cross-tenant operator management) is deferred.</li>
+</ol>
+<hr />
+<h2 id="follow-up-implementation-split">Follow-Up Implementation Split<a class="headerlink" href="#follow-up-implementation-split" title="Permanent link">&para;</a></h2>
+<h3 id="gl-203b-openapi-api-contract-cleanup-recommended-first">GL-203B — OpenAPI / API Contract Cleanup (recommended first)<a class="headerlink" href="#gl-203b-openapi-api-contract-cleanup-recommended-first" title="Permanent link">&para;</a></h3>
+<p>Scope:
+- Update <code>docs/openapi.yaml</code> version from "0.31.0-rc" to reflect actual state.
+- Document implicit tenant context (server-derived from auth, not client-supplied).
+- Document workspace_id as reserved/nullable/deferred.
+- Document cross-tenant denial semantics (404/empty without existence leak).
+- Add missing endpoints (agent permissions, approval lifecycle, compliance readiness, provenance v2, institutional auditor export, policy requirements, demo endpoints).
+- Document X-Correlation-ID request/response header.
+- Update stale claims in README.md, AGENTS.md, SECURITY.md, llms.txt, llms-full.txt about "Tenant isolation is not implemented" → "Tenant isolation baseline implemented but not production-complete."
+- Add OpenAPI tests for alignment.</p>
+<h3 id="gl-203c-sdk-prototype-packaging-boundary-only-if-gl-203b-supports-it">GL-203C — SDK Prototype / Packaging Boundary (only if GL-203B supports it)<a class="headerlink" href="#gl-203c-sdk-prototype-packaging-boundary-only-if-gl-203b-supports-it" title="Permanent link">&para;</a></h3>
+<p>Scope:
+- Only proceed after GL-203B delivers stable contract documentation.
+- Design an internal SDK prototype against the aligned contract.
+- Define packaging boundary tests (not PyPI publication).
+- Decide on experimental public SDK timeline (Option C).</p>
+<h3 id="gl-204-production-ops-go-no-go-v3">GL-204 — Production Ops / Go-No-Go v3<a class="headerlink" href="#gl-204-production-ops-go-no-go-v3" title="Permanent link">&para;</a></h3>
+<p>Scope:
+- Deployment configuration and runtime safety gates.
+- Backup/restore minimum drill.
+- Live PostgreSQL validation.
+- Observability/monitoring baseline.
+- Go/no-go decision for first external controlled pilot.</p>
+<h3 id="gl-205-deployment-runtime-backup-observability-admin-plane">GL-205+ — Deployment, Runtime, Backup, Observability, Admin Plane<a class="headerlink" href="#gl-205-deployment-runtime-backup-observability-admin-plane" title="Permanent link">&para;</a></h3>
+<p>Scope:
+- Admin-plane tenant isolation (GL-200D equivalent).
+- workspace_id enforcement.
+- Production-grade indexes and schema finalization.
+- Backup/restore automation.
+- Incident response runbook.</p>
+<hr />
+<h2 id="production-readiness-impact">Production Readiness Impact<a class="headerlink" href="#production-readiness-impact" title="Permanent link">&para;</a></h2>
+<p>GL-203 is a review/decision/test artifact only. It does not change production readiness.</p>
+<p>After GL-203, the production readiness posture is:</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API contract</td>
+<td>Functional; OpenAPI documentation substantially behind (GL-203B needed)</td>
+</tr>
+<tr>
+<td>Auth/secrets/config</td>
+<td>Hardened for Developer Preview (GL-201); not full production SaaS</td>
+</tr>
+<tr>
+<td>Persistence/migration</td>
+<td>SQLite ready for Developer Preview; PostgreSQL not live-validated</td>
+</tr>
+<tr>
+<td>Tenant/workspace isolation</td>
+<td>Baseline implemented (GL-200A/B/C); not production-complete</td>
+</tr>
+<tr>
+<td>SDK/package</td>
+<td>Developer-preview adjacent; not published; not official</td>
+</tr>
+<tr>
+<td>Public claims</td>
+<td>Bounded by controlled preview; stale claims in public docs need GL-203B correction</td>
+</tr>
+<tr>
+<td>Follow-up needed</td>
+<td>GL-203B (OpenAPI/contract), GL-204 (production ops), GL-205+ (admin-plane/workspace)</td>
+</tr>
+</tbody>
+</table>
+<p>GrantLayer <strong>remains</strong> Developer Preview / Controlled Preview with strict boundaries.</p>
+<hr />
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Risk</th>
+<th>Severity</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>Stale "not implemented" tenant isolation claims in README/AGENTS/llms mislead developers about actual baseline</td>
+<td>Low-Medium</td>
+<td>Document in GL-203; correct in GL-203B or narrow companion task</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>OpenAPI version "0.31.0-rc" vs actual state GL-202+ creates contract confusion</td>
+<td>Medium</td>
+<td>Document gap; defer correction to GL-203B</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>PostgreSQL not live-validated; deployment risk if used in production without testing</td>
+<td>High</td>
+<td>Document; block PostgreSQL production deployment until GL-204 live validation</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>Premature SDK publication before contract stability creates breaking-change burden</td>
+<td>High</td>
+<td>Defer all SDK publication to after GL-203B; Option E selected</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>workspace_id deferred enforcement creates future migration complexity</td>
+<td>Low-Medium</td>
+<td>Tracked in GL-200C/GL-203B; column reserved and nullable</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>Secondary-path tenant enforcement (evidence/provenance) deferred</td>
+<td>Low-Medium</td>
+<td>Execution IDs are already tenant-scoped at create; direct access requires known ID</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>Admin-plane isolation (cross-tenant operator management) deferred (GL-200D)</td>
+<td>Medium</td>
+<td>Documented; do not promote to production multi-tenant use until GL-200D</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>dispose: ready_for_merge</strong></p>
+<p><strong>Decision: Defer SDK/packaging; proceed to GL-203B for OpenAPI/contract cleanup.</strong></p>
+<p>The GL-203 analysis confirms:
+1. The API contract is functional and the auth boundary is sound for Developer Preview.
+2. The OpenAPI document is substantially incomplete relative to the current implementation state.
+3. No SDK/package should be published or claimed as official until after GL-203B.
+4. All allowed public claims are bounded and safe; prohibited claims are clearly defined.
+5. The agent integration surface is safe with the noted stale-claim finding.
+6. GL-203B is the required next step before any SDK or packaging work.</p>
+<hr />
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-197 concluded <code>api_first_agent_examples_now_sdk_later</code>. GL-203 reinforces this: the API contract gap is larger than expected (OpenAPI at GL-031, implementation at GL-202+). No SDK publication is appropriate until the contract is documented.</li>
+<li>GL-201 and GL-202 successfully hardened auth/secrets/config and persistence/migration. These are preserved. No regression.</li>
+<li>The tenant/workspace baseline (GL-200A/B/C) is functionally correct but not yet reflected in public documentation — this is a documentation gap, not a security gap.</li>
+<li>The SDK decision (Option E → B) is the correct responsible sequencing given the contract gap.</li>
+<li>Production SaaS readiness is not affected by this decision; GrantLayer remains Developer Preview.</li>
+</ul>
+<hr />
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>No production SaaS readiness claim made.</li>
+<li>Tenant/workspace isolation not overclaimed as production-complete.</li>
+<li>No real customer/private grant data readiness claimed.</li>
+<li>Security-sensitive reports must route to GitHub Security Advisories (per SECURITY.md).</li>
+<li>No exploit details included in this document.</li>
+<li>No real secrets included in this document, tests, or JSON artifact.</li>
+<li>GL-201 auth/secrets/config hardening is fully preserved.</li>
+<li>GL-200A/B/C tenant/workspace isolation is fully preserved.</li>
+<li>GL-202 migration/persistence readiness is fully preserved.</li>
+<li>No official SDK/package is claimed or published.</li>
+<li>No package publishing metadata exists or is created.</li>
+<li>No backend/src changes.</li>
+<li>No API behavior changes.</li>
+<li>No OpenAPI changes (cleanup deferred to GL-203B).</li>
+<li>No frontend/website/design changes.</li>
+<li>No GitHub workflow changes.</li>
+<li>No public publish or visibility change.</li>
+<li>No force push.</li>
+<li>No Paperclip references or status updates.</li>
+</ul>
+<hr />
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GL-203 Merge</strong> — merge <code>gl-203-api-contract-sdk-packaging-decision</code> to internal main after validation.</li>
+<li><strong>GL-203B — OpenAPI / API Contract Cleanup</strong> — update OpenAPI version, document tenant context as implicit, add missing endpoints, correct stale tenant isolation claims in README/AGENTS/llms.</li>
+<li><strong>GL-203C — SDK Prototype / Packaging Boundary</strong> — only after GL-203B; design internal SDK prototype against aligned contract; define packaging boundary tests; decide experimental public SDK timeline.</li>
+<li><strong>GL-204 — Production Ops / Go-No-Go v3</strong> — live PostgreSQL validation, backup/restore minimum drill, observability baseline, go/no-go decision for first external controlled pilot.</li>
+<li><strong>GL-205+ — Deployment / Runtime / Backup / Observability / Admin-Plane</strong> — workspace_id enforcement, admin-plane tenant isolation, production-grade indexes, incident response runbook.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

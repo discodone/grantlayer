@@ -1,0 +1,1934 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/operational_runbook_incident_response_design/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer Operational Runbook and Incident Response Baseline Design - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-operational-runbook-and-incident-response-baseline-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer Operational Runbook and Incident Response Baseline Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose-and-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose and non-goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-operational-principles-for-grantlayer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Operational principles for GrantLayer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-supported-operating-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Supported operating modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Supported operating modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 local
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 demo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-staging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 staging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-future-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 future production
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-operator-roles-and-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Operator roles and responsibilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Operator roles and responsibilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-operator-on-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Operator (on-call)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-incident-commander" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Incident Commander
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-security-officer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Security Officer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-database-persistence-subject-matter-expert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Database / Persistence Subject-Matter Expert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-audit-compliance-officer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Audit / Compliance Officer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-incident-severity-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Incident severity model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-incident-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Incident lifecycle
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Incident lifecycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-triage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Triage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-containment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Containment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-mitigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Mitigation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 Recovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-post-incident-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 Post-incident review
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-runbook-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Runbook categories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Runbook categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-api-unavailable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 API unavailable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-degraded-api-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Degraded API behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-authenticationauthorization-incident" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Authentication/authorization incident
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-secret-exposure-suspicion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Secret exposure suspicion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-persistencedatabase-issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Persistence/database issue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#76-evidence-verification-issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.6 Evidence verification issue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#77-auditprovenance-integrity-concern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.7 Audit/provenance integrity concern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#78-backuprestore-concern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.8 Backup/restore concern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#79-configurationruntime-mode-mismatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.9 Configuration/runtime mode mismatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#710-deployment-rollback-need" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.10 Deployment rollback need
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-escalation-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Escalation boundaries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-required-diagnostic-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Required diagnostic signals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-required-operator-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Required operator checks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-safe-manual-intervention-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Safe manual intervention rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-data-integrity-and-auditability-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Data integrity and auditability considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-communication-and-status-update-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Communication and status update expectations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-post-incident-review-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Post-incident review requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-environment-specific-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Environment-specific differences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. Environment-specific differences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.1 local
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2 test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3 demo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#154-staging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4 staging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#155-future-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.5 future production
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-production-readiness-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Production-readiness gaps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-future-implementation-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Future implementation sequence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-operational-runbook-and-incident-response-baseline-design">GrantLayer Operational Runbook and Incident Response Baseline Design<a class="headerlink" href="#grantlayer-operational-runbook-and-incident-response-baseline-design" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-purpose-and-non-goals">1. Purpose and non-goals<a class="headerlink" href="#1-purpose-and-non-goals" title="Permanent link">&para;</a></h2>
+<p>This document establishes the <strong>operational runbook and incident response baseline</strong> for GrantLayer as a reusable, adaptable API-first product core. It prepares the path for future operational readiness, incident response, and operator coordination without implementing any of them.</p>
+<p>It clarifies:
+- what operational principles should guide GrantLayer operations
+- which runtime modes are supported and what operational expectations apply to each
+- what operator roles and responsibilities are needed for safe operation
+- how incidents should be classified by severity
+- what an incident lifecycle should look like from detection through post-incident review
+- what runbook categories should exist for common incident types
+- where escalation boundaries lie and when external parties must be involved
+- what diagnostic signals operators should expect from future observability implementations
+- what operator checks must be performed before and during manual intervention
+- what safe manual intervention rules must be followed
+- how audit and provenance integrity must be preserved during any operational action
+- what communication expectations apply during incidents
+- what post-incident review requirements are expected
+- how operational expectations differ across environments
+- which production-readiness gaps remain before operational runbooks are executable
+- the future implementation sequence for operational and incident response work</p>
+<p>This is a <strong>product-foundation operational runbook and incident response design document</strong>.</p>
+<p>GL-073 explicitly states:
+- GL-073 adds no incident-response implementation. GL-073 does not implement any incident response.
+- GL-073 adds no monitoring implementation. GL-073 does not implement any monitoring.
+- GL-073 adds no alerting implementation. GL-073 does not implement any alerting.
+- GL-073 adds no operational automation. GL-073 does not implement any operational automation.
+- GL-073 adds no deployment implementation. GL-073 does not implement any deployment.
+- GL-073 adds no backup implementation. GL-073 does not implement any backup.
+- GL-073 adds no restore implementation. GL-073 does not implement any restore.
+- GL-073 adds no runtime config implementation. GL-073 does not implement any runtime configuration.
+- GL-073 adds no database implementation. GL-073 does not implement any database.
+- GL-073 adds no infrastructure implementation. GL-073 does not implement any infrastructure.
+- GL-073 does not make GrantLayer production-ready.
+- Operational actions must preserve audit/provenance integrity.
+- Secret exposure incidents must follow the future secret-management policy and must not log raw secrets.
+- Backup/restore incidents must follow the future backup/restore policy and must not improvise destructive recovery steps.</p>
+<h2 id="2-operational-principles-for-grantlayer">2. Operational principles for GrantLayer<a class="headerlink" href="#2-operational-principles-for-grantlayer" title="Permanent link">&para;</a></h2>
+<p>GrantLayer operations should follow these principles:</p>
+<ul>
+<li><strong>Audit/provenance integrity is non-negotiable</strong> — any operational action must preserve the immutability and tamper-evidence of audit and provenance records. Operational convenience must never justify modifying, deleting, or suppressing audit events.</li>
+<li><strong>Operator actions are themselves auditable</strong> — every manual intervention must be recorded as an operator action event with actor attribution, timestamp, justification, and outcome.</li>
+<li><strong>Secrets must never be logged or transmitted in plain text</strong> — raw secrets, tokens, private keys, and connection strings must never appear in logs, status pages, chat messages, or runbook outputs.</li>
+<li><strong>Contain before mitigation</strong> — an incident must be contained (its blast radius limited) before attempting full mitigation or recovery. Reckless restart or rollback can increase damage.</li>
+<li><strong>Configuration mismatches are incidents</strong> — running with the wrong runtime mode, stale configuration, or unvalidated deployment artifact is an operational incident even if the API appears healthy.</li>
+<li><strong>Evidence verification issues are integrity incidents</strong> — any failure to verify evidence or any suspicion of tampered evidence must be treated as a potential integrity breach, not merely a user error.</li>
+<li><strong>No runbook is a substitute for judgment</strong> — operators must be trained and empowered to deviate from runbooks when the documented path would increase risk, but deviations must themselves be documented.</li>
+<li><strong>No incident-response implementation is added in GL-073</strong> — this document is purely a design and readiness baseline.</li>
+</ul>
+<h2 id="3-supported-operating-modes">3. Supported operating modes<a class="headerlink" href="#3-supported-operating-modes" title="Permanent link">&para;</a></h2>
+<p>Operational expectations differ across runtime modes.</p>
+<h3 id="31-local">3.1 local<a class="headerlink" href="#31-local" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: developer convenience during active development.</li>
+<li><strong>Operational expectation</strong>: no formal runbook, no on-call, no incident response process. Local incidents are resolved by the developer.</li>
+<li><strong>Allowed actions</strong>: restart, wipe database, rebuild from source, synthetic data injection.</li>
+<li><strong>Production claim boundary</strong>: <strong>must not</strong> be described as production-ready or pilot-ready.</li>
+</ul>
+<h3 id="32-test">3.2 test<a class="headerlink" href="#32-test" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: deterministic automated verification in CI and local test suites.</li>
+<li><strong>Operational expectation</strong>: no operator intervention; failures are handled by CI retry or developer investigation.</li>
+<li><strong>Allowed actions</strong>: rebuild fixtures, re-run test suite, inspect temporary database.</li>
+<li><strong>Production claim boundary</strong>: no production claim.</li>
+</ul>
+<h3 id="33-demo">3.3 demo<a class="headerlink" href="#33-demo" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: partner demonstration and integration evaluation.</li>
+<li><strong>Operational expectation</strong>: demo runner validates smoke state; any failure is handled by re-running the demo script or reverting to known demo fixtures.</li>
+<li><strong>Allowed actions</strong>: reset demo data, re-run demo scenario, restart the demo process.</li>
+<li><strong>Production claim boundary</strong>: must not be described as production-ready.</li>
+</ul>
+<h3 id="34-staging">3.4 staging<a class="headerlink" href="#34-staging" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: pre-production validation and integration rehearsal.</li>
+<li><strong>Operational expectation</strong>: informal incident response may be exercised; runbooks should be drafted and validated here before production use.</li>
+<li><strong>Allowed actions</strong>: execute draft runbooks, validate escalation paths, rehearse recovery steps, test observability signals.</li>
+<li><strong>Production claim boundary</strong>: not production; data must not be real institutional data unless explicitly cleared.</li>
+</ul>
+<h3 id="35-future-production">3.5 future production<a class="headerlink" href="#35-future-production" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: live institutional workload with real data, real actors, and real audit requirements.</li>
+<li><strong>Operational expectation</strong>: formal runbooks, defined on-call rotations, severity-driven response times, mandatory post-incident reviews, and documented escalation boundaries.</li>
+<li><strong>Allowed actions</strong>: only those covered by approved runbooks; any deviation requires incident commander approval and operator-action logging.</li>
+<li><strong>Production claim boundary</strong>: production readiness requires all P0 production-hardening gates to be closed.</li>
+</ul>
+<h2 id="4-operator-roles-and-responsibilities">4. Operator roles and responsibilities<a class="headerlink" href="#4-operator-roles-and-responsibilities" title="Permanent link">&para;</a></h2>
+<p>The following roles are expected for future production operation. GL-073 does not implement any of them.</p>
+<h3 id="41-operator-on-call">4.1 Operator (on-call)<a class="headerlink" href="#41-operator-on-call" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Receives alerts and initial incident notifications.</li>
+<li>Performs first-check diagnostics as defined in runbooks.</li>
+<li>Executes containment steps within their authority boundary.</li>
+<li>Escalates when containment fails, severity exceeds their authority, or secrets may be exposed.</li>
+<li>Logs every action as an operator action event.</li>
+</ul>
+<h3 id="42-incident-commander">4.2 Incident Commander<a class="headerlink" href="#42-incident-commander" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Assumes control of a sev0, sev1, or sev2 incident.</li>
+<li>Coordinates communication, resource allocation, and escalation decisions.</li>
+<li>Authorizes deviations from standard runbooks.</li>
+<li>Ensures post-incident review is scheduled and completed.</li>
+<li>Must not perform technical remediation directly; delegates to operators and subject-matter experts.</li>
+</ul>
+<h3 id="43-security-officer">4.3 Security Officer<a class="headerlink" href="#43-security-officer" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Owns secret exposure, authentication breach, and authorization anomaly incidents.</li>
+<li>Must be consulted for any suspected secret exposure before public communication.</li>
+<li>Must approve any secret rotation or credential revocation plan.</li>
+<li>Must verify that incident logs do not contain raw secrets.</li>
+</ul>
+<h3 id="44-database-persistence-subject-matter-expert">4.4 Database / Persistence Subject-Matter Expert<a class="headerlink" href="#44-database-persistence-subject-matter-expert" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Owns persistence/database issue incidents and backup/restore concern incidents.</li>
+<li>Must approve any restore plan that touches product, audit, or provenance data.</li>
+<li>Must verify that restores do not overwrite audit or provenance records.</li>
+<li>Must confirm that point-in-time recovery preserves the cryptographic integrity chain.</li>
+</ul>
+<h3 id="45-audit-compliance-officer">4.5 Audit / Compliance Officer<a class="headerlink" href="#45-audit-compliance-officer" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Owns audit/provenance integrity concern incidents.</li>
+<li>Must verify that any operational action does not alter, suppress, or invalidate audit records.</li>
+<li>Must participate in post-incident reviews for any incident touching data integrity or compliance boundaries.</li>
+<li>Must approve communication that references audit, compliance, or regulatory obligations.</li>
+</ul>
+<h2 id="5-incident-severity-model">5. Incident severity model<a class="headerlink" href="#5-incident-severity-model" title="Permanent link">&para;</a></h2>
+<p>GrantLayer incidents are classified by severity using the matrix in <code>docs/examples/gl073/incident_severity_matrix.json</code>. The summary is:</p>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Name</th>
+<th>Examples</th>
+<th>Response Time</th>
+<th>Escalation</th>
+<th>Review</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sev0</td>
+<td>Critical</td>
+<td>Complete API outage, provenance integrity breach, suspected secret exposure</td>
+<td>Immediate</td>
+<td>Yes, immediately</td>
+<td>Mandatory</td>
+</tr>
+<tr>
+<td>sev1</td>
+<td>Major</td>
+<td>Severe API degradation, auth system unavailable, data corruption suspicion</td>
+<td>&lt; 15 minutes</td>
+<td>Yes</td>
+<td>Mandatory</td>
+</tr>
+<tr>
+<td>sev2</td>
+<td>Significant</td>
+<td>Partial feature degradation, intermittent errors, backup failure</td>
+<td>&lt; 1 hour</td>
+<td>Yes, if unresolved</td>
+<td>Mandatory</td>
+</tr>
+<tr>
+<td>sev3</td>
+<td>Minor</td>
+<td>Non-critical bug, slow response, single-tenant demo issue</td>
+<td>&lt; 4 hours</td>
+<td>No</td>
+<td>Optional</td>
+</tr>
+<tr>
+<td>sev4</td>
+<td>Low</td>
+<td>Cosmetic issue, documentation gap, internal tool inconvenience</td>
+<td>&lt; 24 hours</td>
+<td>No</td>
+<td>Optional</td>
+</tr>
+</tbody>
+</table>
+<p>All severities in the matrix must have <code>implementationStatus</code> set to <code>design_only</code> or <code>not implemented</code>, reflecting that GL-073 is a design block only.</p>
+<h2 id="6-incident-lifecycle">6. Incident lifecycle<a class="headerlink" href="#6-incident-lifecycle" title="Permanent link">&para;</a></h2>
+<p>Every incident should follow a structured lifecycle. GL-073 defines the lifecycle stages; future implementation will automate and instrument them.</p>
+<h3 id="61-detection">6.1 Detection<a class="headerlink" href="#61-detection" title="Permanent link">&para;</a></h3>
+<ul>
+<li>An incident is detected by an operator, a future monitoring system, a future alerting system, a user report, or an automated health check.</li>
+<li>Detection must include: timestamp, detector identity, initial signal or symptom, affected runtime mode, and preliminary severity guess.</li>
+<li>Detection records must be auditable and must not include raw secrets.</li>
+</ul>
+<h3 id="62-triage">6.2 Triage<a class="headerlink" href="#62-triage" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Triage confirms whether the symptom represents a real incident, classifies severity, identifies affected systems, and determines if escalation is needed.</li>
+<li>Triage must answer: Is this a real incident? What is the severity? Which data categories are at risk? Is audit/provenance integrity threatened? Are secrets involved?</li>
+<li>Triage outputs: incident severity, incident commander assignment (if escalated), initial communication plan, and containment priority.</li>
+</ul>
+<h3 id="63-containment">6.3 Containment<a class="headerlink" href="#63-containment" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Containment limits the blast radius before attempting full mitigation.</li>
+<li>Containment actions may include: disabling a failing endpoint, revoking a suspected token, isolating a compromised host, pausing a deployment pipeline, or switching to a degraded-read mode.</li>
+<li>Containment must be logged as an operator action event with justification.</li>
+<li>Containment must not destroy audit records, provenance records, or evidence metadata.</li>
+</ul>
+<h3 id="64-mitigation">6.4 Mitigation<a class="headerlink" href="#64-mitigation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Mitigation removes the root cause or restores normal operation within the contained boundary.</li>
+<li>Mitigation actions may include: restarting a service after root cause is understood, rolling back a deployment, rotating a secret, rebuilding a configuration, or restoring data from a validated backup.</li>
+<li>Mitigation must not overwrite audit or provenance records.</li>
+<li>Mitigation must be validated with a smoke check or health verification before being considered complete.</li>
+</ul>
+<h3 id="65-recovery">6.5 Recovery<a class="headerlink" href="#65-recovery" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Recovery restores the system to full normal operation and verifies that all subsystems are healthy.</li>
+<li>Recovery includes: re-enabling disabled endpoints, confirming traffic is stable, validating that audit/provenance records are intact, confirming that secrets are correctly loaded, and running a representative end-to-end check.</li>
+<li>Recovery must be declared explicitly by the incident commander or operator.</li>
+<li>Recovery does not close the incident until the post-incident review is scheduled.</li>
+</ul>
+<h3 id="66-post-incident-review">6.6 Post-incident review<a class="headerlink" href="#66-post-incident-review" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Every sev0, sev1, and sev2 incident requires a post-incident review.</li>
+<li>The review must cover: timeline of detection, triage, containment, mitigation, and recovery; what went well; what did not go well; what runbook gaps were exposed; what follow-up actions are required; and whether any audit or compliance officer must be notified.</li>
+<li>The review output must be stored as a durable record (not an ephemeral chat log) and linked to the incident identifier.</li>
+<li>If audit/provenance integrity was touched, the review must include a verification statement from the audit/compliance officer.</li>
+</ul>
+<h2 id="7-runbook-categories">7. Runbook categories<a class="headerlink" href="#7-runbook-categories" title="Permanent link">&para;</a></h2>
+<p>GrantLayer should have representative runbooks for the following categories. See <code>docs/examples/gl073/operational_runbook_catalog.json</code> for the machine-readable catalog.</p>
+<h3 id="71-api-unavailable">7.1 API unavailable<a class="headerlink" href="#71-api-unavailable" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The API returns no response, 503 errors, or connection refused for all endpoints.</li>
+<li>Runbook covers: health check execution, dependency status (database, secret source), recent deployment or configuration change, restart protocol, and escalation path.</li>
+</ul>
+<h3 id="72-degraded-api-behavior">7.2 Degraded API behavior<a class="headerlink" href="#72-degraded-api-behavior" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The API responds but with elevated latency, elevated error rate, partial feature failure, or inconsistent responses.</li>
+<li>Runbook covers: identifying the degraded endpoint, correlating with recent changes, checking for resource exhaustion, deciding whether to degrade gracefully or restart, and logging operator actions.</li>
+</ul>
+<h3 id="73-authenticationauthorization-incident">7.3 Authentication/authorization incident<a class="headerlink" href="#73-authenticationauthorization-incident" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Users or operators cannot authenticate, tokens are rejected unexpectedly, or permissions are incorrectly granted or denied.</li>
+<li>Runbook covers: distinguishing between auth provider failure and GrantLayer permission logic failure, checking token validity and expiry, identifying whether the incident is systemic or scoped, and escalating to the security officer.</li>
+</ul>
+<h3 id="74-secret-exposure-suspicion">7.4 Secret exposure suspicion<a class="headerlink" href="#74-secret-exposure-suspicion" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Any suspicion that a secret (API key, signing key, token, password, connection string) has been exposed, leaked, or compromised.</li>
+<li>Runbook covers: immediate containment (revocation, isolation), confirming scope of exposure, secret rotation plan, verifying that no raw secrets were logged during the incident, and mandatory security officer involvement.</li>
+<li><strong>Raw secrets must never be logged in incident records, runbook outputs, or communication channels.</strong></li>
+</ul>
+<h3 id="75-persistencedatabase-issue">7.5 Persistence/database issue<a class="headerlink" href="#75-persistencedatabase-issue" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Database connection failures, query timeouts, data corruption suspicion, or replication lag.</li>
+<li>Runbook covers: checking connection pool health, identifying whether the issue is in the database server or the application layer, determining if a point-in-time restore is appropriate, and involving the database/persistence subject-matter expert.</li>
+<li><strong>Restores must not overwrite audit or provenance records.</strong></li>
+</ul>
+<h3 id="76-evidence-verification-issue">7.6 Evidence verification issue<a class="headerlink" href="#76-evidence-verification-issue" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Evidence fails verification, hash mismatch, tamper detection triggers, or completeness score anomalies.</li>
+<li>Runbook covers: isolating the affected evidence bundle, determining whether the issue is in the evidence payload storage or the verification logic, preserving the current state for forensic analysis, and escalating to the audit/compliance officer.</li>
+</ul>
+<h3 id="77-auditprovenance-integrity-concern">7.7 Audit/provenance integrity concern<a class="headerlink" href="#77-auditprovenance-integrity-concern" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Any suspicion that audit records or provenance records have been altered, deleted, or suppressed; or that the cryptographic integrity chain is broken.</li>
+<li>Runbook covers: immediate freeze of any deletion or purge jobs, hash chain verification, comparison with immutable storage copies if available, and mandatory involvement of the audit/compliance officer.</li>
+<li><strong>Audit and provenance records must never be overwritten, deleted, or suppressed as part of incident response.</strong></li>
+</ul>
+<h3 id="78-backuprestore-concern">7.8 Backup/restore concern<a class="headerlink" href="#78-backuprestore-concern" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Backup failure, backup integrity suspicion, restore need, or recovery point objective violation.</li>
+<li>Runbook covers: verifying the backup scope and integrity, identifying the correct restore snapshot, executing a scoped restore (not a blanket dump), validating restored data, and confirming that audit/provenance records remain intact.</li>
+<li><strong>Backup/restore incidents must follow the future backup/restore policy and must not improvise destructive recovery steps.</strong></li>
+</ul>
+<h3 id="79-configurationruntime-mode-mismatch">7.9 Configuration/runtime mode mismatch<a class="headerlink" href="#79-configurationruntime-mode-mismatch" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The system is running with the wrong runtime mode, unvalidated configuration, or a configuration value that contradicts the deployment environment.</li>
+<li>Runbook covers: identifying the mismatch, determining whether the system must be stopped immediately, rebuilding configuration from validated deployment artifacts, and running a post-config smoke check.</li>
+</ul>
+<h3 id="710-deployment-rollback-need">7.10 Deployment rollback need<a class="headerlink" href="#710-deployment-rollback-need" title="Permanent link">&para;</a></h3>
+<ul>
+<li>A deployment has introduced regression, instability, or security exposure and must be rolled back.</li>
+<li>Runbook covers: identifying the last known good deployment, verifying rollback artifact integrity, executing the rollback, validating health post-rollback, and deciding whether the new deployment must be blocked from re-release until root cause is fixed.</li>
+</ul>
+<h2 id="8-escalation-boundaries">8. Escalation boundaries<a class="headerlink" href="#8-escalation-boundaries" title="Permanent link">&para;</a></h2>
+<p>Escalation is required when an incident exceeds the operator's authority, expertise, or time-bound containment capability.</p>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Escalate To</th>
+<th>Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sev0 or sev1 severity</td>
+<td>Incident Commander immediately</td>
+<td>Any sev0 or sev1 classification</td>
+</tr>
+<tr>
+<td>Suspected secret exposure</td>
+<td>Security Officer immediately</td>
+<td>Any suspicion of leaked or compromised secret</td>
+</tr>
+<tr>
+<td>Audit/provenance integrity concern</td>
+<td>Audit/Compliance Officer immediately</td>
+<td>Any suspicion of altered or suppressed audit record</td>
+</tr>
+<tr>
+<td>Database corruption or restore need</td>
+<td>Database / Persistence SME</td>
+<td>Any persistence issue beyond connection retry</td>
+</tr>
+<tr>
+<td>Auth system breach or anomaly</td>
+<td>Security Officer</td>
+<td>Any auth incident that is not a simple token expiry</td>
+</tr>
+<tr>
+<td>Evidence tamper detection</td>
+<td>Audit/Compliance Officer</td>
+<td>Any evidence verification failure indicating tamper</td>
+</tr>
+<tr>
+<td>Communication to external parties</td>
+<td>Incident Commander + Security Officer</td>
+<td>Any incident that may require public or partner notification</td>
+</tr>
+<tr>
+<td>Runbook does not cover the symptom</td>
+<td>Incident Commander</td>
+<td>When standard runbook steps would increase risk</td>
+</tr>
+</tbody>
+</table>
+<p>Escalation must be logged as an operator action event with timestamp, reason, and recipient role.</p>
+<h2 id="9-required-diagnostic-signals">9. Required diagnostic signals<a class="headerlink" href="#9-required-diagnostic-signals" title="Permanent link">&para;</a></h2>
+<p>Future observability implementations (beyond GL-073) must provide the following diagnostic signals for safe operations. GL-073 documents them as requirements only.</p>
+<ul>
+<li><strong>API health status</strong> — a coarse-grained signal indicating whether the API is accepting requests and returning expected responses.</li>
+<li><strong>Endpoint-level latency and error rate</strong> — per-endpoint signals to identify degraded behavior before it becomes an outage.</li>
+<li><strong>Database connection pool status</strong> — active connections, waiting requests, and recent connection failures.</li>
+<li><strong>Authentication failure rate</strong> — rate of failed login, token rejection, or permission denial events, with distinction between user error and systemic failure.</li>
+<li><strong>Runtime mode declaration</strong> — explicit signal of which runtime mode the process believes it is in.</li>
+<li><strong>Configuration validation status</strong> — whether the current configuration passed validation or has known mismatches.</li>
+<li><strong>Recent deployment identifier</strong> — what deployment artifact or version is currently running.</li>
+<li><strong>Audit record write success/failure rate</strong> — whether audit events are being recorded successfully.</li>
+<li><strong>Provenance hash computation success/failure rate</strong> — whether provenance hashes are being computed and stored without error.</li>
+<li><strong>Backup completion status</strong> — whether the most recent backup completed successfully, failed, or is overdue.</li>
+<li><strong>Secret source connectivity</strong> — whether the system can reach its configured secret source (if applicable).</li>
+</ul>
+<p>All diagnostic signals must be designed to emit structured events following the GL-071 baseline when observability is implemented.</p>
+<h2 id="10-required-operator-checks">10. Required operator checks<a class="headerlink" href="#10-required-operator-checks" title="Permanent link">&para;</a></h2>
+<p>Before taking any manual action that affects runtime state, data, or configuration, an operator must perform the following checks:</p>
+<ol>
+<li><strong>Identify the runtime mode</strong> — confirm whether the target is local, test, demo, staging, or production. Do not apply production runbook steps to a local instance.</li>
+<li><strong>Confirm the current deployment version</strong> — know what is running before attempting restart, rollback, or config change.</li>
+<li><strong>Check recent changes</strong> — review recent deployments, configuration changes, or operator actions that may have preceded the incident.</li>
+<li><strong>Verify audit/provenance integrity is not at risk</strong> — ensure the planned action will not overwrite, delete, or suppress audit or provenance records.</li>
+<li><strong>Confirm no raw secrets will be exposed</strong> — ensure that logs, command output, or shared screens will not display secrets.</li>
+<li><strong>Check whether escalation is required</strong> — if the incident is sev0, sev1, sev2, or involves secrets, audit, or database integrity, escalate before acting.</li>
+<li><strong>Document the planned action</strong> — record the operator action event with justification before execution.</li>
+<li><strong>Validate post-action state</strong> — after the action, run a health check or smoke test to confirm the intended outcome and detect unintended side effects.</li>
+</ol>
+<h2 id="11-safe-manual-intervention-rules">11. Safe manual intervention rules<a class="headerlink" href="#11-safe-manual-intervention-rules" title="Permanent link">&para;</a></h2>
+<p>Manual intervention must follow these safety rules:</p>
+<ul>
+<li><strong>Stop before you break the audit chain</strong> — if an action might alter the sequence of audit or provenance records, pause and escalate.</li>
+<li><strong>Never restart blindly</strong> — restarting without understanding the root cause can mask a data integrity issue or trigger a cascading failure.</li>
+<li><strong>Never rollback secrets from backup</strong> — secrets must be rotated or re-fetched from the approved secret source; never restore secret values from a backup snapshot.</li>
+<li><strong>Never bypass auth for convenience</strong> — disabling authentication or elevating a demo token to bypass an auth issue is a security incident, not a workaround.</li>
+<li><strong>Never delete evidence metadata to "fix" a verification failure</strong> — a verification failure is a signal of potential tampering or bug; deleting metadata destroys forensic evidence.</li>
+<li><strong>Log every manual action</strong> — every command, config edit, restart, rollback, or data change must be recorded as an operator action event.</li>
+<li><strong>Test in staging before applying to production</strong> — if a containment or mitigation step is novel, rehearse it in a non-production environment first.</li>
+<li><strong>Preserve the current state for forensics</strong> — before destructive recovery (restore, wipe, rebuild), capture the current state or a snapshot for later analysis.</li>
+</ul>
+<h2 id="12-data-integrity-and-auditability-considerations">12. Data integrity and auditability considerations<a class="headerlink" href="#12-data-integrity-and-auditability-considerations" title="Permanent link">&para;</a></h2>
+<p>Operational actions have direct implications for data integrity and auditability.</p>
+<ul>
+<li><strong>Audit/provenance records must remain immutable</strong> — no incident response action may update, delete, or suppress an audit event or provenance record. The only permitted transition is classification change (e.g., to legal-hold state).</li>
+<li><strong>Operator actions are auditable events</strong> — every manual intervention creates an operator action record with actor, timestamp, command or action description, justification, and outcome.</li>
+<li><strong>Incident timelines must be reconstructible</strong> — detection, triage, containment, mitigation, recovery, and review timestamps must be durable and linked by incident identifier.</li>
+<li><strong>Forensic preservation</strong> — before any destructive recovery step, operators must preserve the current database state or relevant snapshot for later review.</li>
+<li><strong>Cross-category isolation</strong> — restoring or deleting product records must not cascade to audit records, provenance records, or evidence metadata.</li>
+<li><strong>Redaction applies to incident artifacts</strong> — incident logs, runbook outputs, and communication channels must apply the same redaction rules as operational logs (no raw secrets, no full evidence payloads).</li>
+</ul>
+<h2 id="13-communication-and-status-update-expectations">13. Communication and status update expectations<a class="headerlink" href="#13-communication-and-status-update-expectations" title="Permanent link">&para;</a></h2>
+<p>Communication during incidents must be deliberate and controlled.</p>
+<ul>
+<li><strong>Internal status updates</strong> — sev0 and sev1 incidents require status updates at least every 15 minutes until containment is achieved. sev2 incidents require updates at least every 1 hour.</li>
+<li><strong>External communication</strong> — any public, partner, or regulatory communication must be approved by the incident commander and, if secrets or compliance are involved, by the security officer or audit/compliance officer.</li>
+<li><strong>No raw secrets in communication</strong> — status pages, chat channels, emails, and incident tickets must never include raw secrets, tokens, private keys, or full connection strings.</li>
+<li><strong>Communication records are part of the incident timeline</strong> — key communications (decisions, escalations, external notifications) should be referenced in the post-incident review.</li>
+<li><strong>Communication channels must be durable</strong> — ephemeral chat messages are insufficient for sev0 and sev1 incidents; a durable incident log or ticket must capture decisions.</li>
+</ul>
+<h2 id="14-post-incident-review-requirements">14. Post-incident review requirements<a class="headerlink" href="#14-post-incident-review-requirements" title="Permanent link">&para;</a></h2>
+<p>Post-incident reviews are mandatory for sev0, sev1, and sev2 incidents.</p>
+<ul>
+<li><strong>Timeline reconstruction</strong> — the review must include a minute-level or event-level timeline from detection through recovery.</li>
+<li><strong>Root cause analysis</strong> — the review must identify the contributing causes (not just the trigger) and distinguish between technical, process, and human factors.</li>
+<li><strong>Runbook gap identification</strong> — if a runbook did not exist, was unclear, or was wrong, the review must document the gap and propose an update.</li>
+<li><strong>Follow-up action tracking</strong> — every review must produce a set of tracked follow-up actions with owners and deadlines.</li>
+<li><strong>Audit/compliance sign-off</strong> — if the incident touched audit, provenance, evidence integrity, or secrets, the review must include a sign-off from the relevant officer.</li>
+<li><strong>Review distribution</strong> — the review record must be stored durably and accessible to future incident commanders, operators, and auditors.</li>
+<li><strong>No blame attribution</strong> — the review focuses on system and process improvement, not individual blame.</li>
+</ul>
+<h2 id="15-environment-specific-differences">15. Environment-specific differences<a class="headerlink" href="#15-environment-specific-differences" title="Permanent link">&para;</a></h2>
+<p>Operational runbook expectations differ across runtime modes.</p>
+<h3 id="151-local">15.1 local<a class="headerlink" href="#151-local" title="Permanent link">&para;</a></h3>
+<ul>
+<li>No formal incident response process.</li>
+<li>No on-call rotation.</li>
+<li>No communication expectations.</li>
+<li>Operators (developers) may restart, wipe, or rebuild at will.</li>
+<li>Audit/provenance integrity should still be respected for testing purposes.</li>
+</ul>
+<h3 id="152-test">15.2 test<a class="headerlink" href="#152-test" title="Permanent link">&para;</a></h3>
+<ul>
+<li>No formal incident response process.</li>
+<li>Failures are investigated by developers or CI maintainers.</li>
+<li>No communication expectations.</li>
+<li>No post-incident review required.</li>
+</ul>
+<h3 id="153-demo">15.3 demo<a class="headerlink" href="#153-demo" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Informal incident response: reset demo data or re-run the demo runner.</li>
+<li>No on-call rotation.</li>
+<li>Communication limited to internal demo coordinator.</li>
+<li>No post-incident review required.</li>
+</ul>
+<h3 id="154-staging">15.4 staging<a class="headerlink" href="#154-staging" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Draft runbooks should be exercised here.</li>
+<li>Informal on-call rotation may be used for rehearsal.</li>
+<li>Internal communication only; no external status pages.</li>
+<li>Post-incident review is recommended but not mandatory.</li>
+<li>All manual interventions should be logged to validate the operator action event model.</li>
+</ul>
+<h3 id="155-future-production">15.5 future production<a class="headerlink" href="#155-future-production" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Formal runbooks are mandatory.</li>
+<li>Defined on-call rotation with escalation paths.</li>
+<li>External status pages or partner notification channels may be required.</li>
+<li>Post-incident review is mandatory for sev0, sev1, and sev2.</li>
+<li>All operator actions are logged and audited.</li>
+<li>Security officer and audit/compliance officer roles are active.</li>
+</ul>
+<h2 id="16-production-readiness-gaps">16. Production-readiness gaps<a class="headerlink" href="#16-production-readiness-gaps" title="Permanent link">&para;</a></h2>
+<p>GL-073 does not claim production operational readiness. The following gaps remain to be closed by later implementation blocks:</p>
+<ul>
+<li>No monitoring system is implemented.</li>
+<li>No alerting system is implemented.</li>
+<li>No automated health checks are implemented.</li>
+<li>No incident ticketing or tracking system is integrated.</li>
+<li>No operator action event logging is implemented.</li>
+<li>No incident commander workflow is implemented.</li>
+<li>No on-call rotation or paging integration is implemented.</li>
+<li>No structured runbook execution or automation is implemented.</li>
+<li>No status page or external communication channel is implemented.</li>
+<li>No post-incident review workflow or template is implemented.</li>
+<li>No escalation routing or role mapping is implemented.</li>
+<li>No secret rotation automation is implemented.</li>
+<li>No database point-in-time restore automation is implemented.</li>
+<li>No configuration validation gate at startup is implemented.</li>
+<li>No deployment rollback automation is implemented.</li>
+<li>No forensic snapshot capture workflow is implemented.</li>
+<li>No audit/compliance officer sign-off workflow is implemented.</li>
+</ul>
+<h2 id="17-future-implementation-sequence">17. Future implementation sequence<a class="headerlink" href="#17-future-implementation-sequence" title="Permanent link">&para;</a></h2>
+<p>The following sequence is recommended for operational runbook and incident response implementation blocks after GL-073:</p>
+<ol>
+<li><strong>Health check and smoke test baseline</strong> — implement coarse health and readiness endpoints that support runbook first-checks.</li>
+<li><strong>Operator action event logging</strong> — implement structured operator action events following the GL-071 baseline.</li>
+<li><strong>Monitoring and alerting baseline</strong> — implement the minimum metrics and alerting thresholds documented in the GL-071 observability design.</li>
+<li><strong>Incident ticketing integration</strong> — integrate with an incident tracking system or define a lightweight internal incident record format.</li>
+<li><strong>Runbook execution support</strong> — implement runbook templates and a lightweight execution checklist that operators can follow and log.</li>
+<li><strong>Escalation routing</strong> — implement role mapping and escalation paths so that sev0/sev1 incidents reach the incident commander automatically.</li>
+<li><strong>Post-incident review workflow</strong> — implement review templates, timeline reconstruction helpers, and follow-up action tracking.</li>
+<li><strong>Secret rotation runbook automation</strong> — implement safe secret rotation with rollback capability and validation.</li>
+<li><strong>Database restore validation runbook</strong> — implement scoped restore with integrity checks and audit preservation.</li>
+<li><strong>Deployment rollback automation</strong> — implement safe rollback with health validation and artifact integrity checks.</li>
+<li><strong>Forensic snapshot capture</strong> — implement automatic pre-recovery snapshot capture for later analysis.</li>
+<li><strong>External status page</strong> — implement a minimal external status page for partner-facing incidents.</li>
+</ol>
+<h2 id="non-goals">Non-goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-073 does not implement any incident response, monitoring, alerting, or operational automation.</li>
+<li>GL-073 does not implement any deployment, runtime configuration, or infrastructure.</li>
+<li>GL-073 does not implement any backup, restore, or data lifecycle automation.</li>
+<li>GL-073 does not implement any logging, observability, metrics, or tracing.</li>
+<li>GL-073 does not implement any authentication, authorization, or secret management.</li>
+<li>GL-073 does not implement any persistence, database, or PostgreSQL-specific feature.</li>
+<li>GL-073 does not implement any dashboard, UI, or client.</li>
+<li>GL-073 does not claim production readiness.</li>
+</ul>
+<hr />
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../production_hardening_roadmap/"><code>docs/production_hardening_roadmap.md</code></a> — GL-066 production hardening roadmap</li>
+<li><a href="../product_architecture_extension_boundaries/"><code>docs/product_architecture_extension_boundaries.md</code></a> — GL-065 product architecture and extension boundaries</li>
+<li><a href="../runtime_configuration_environment_model/"><code>docs/runtime_configuration_environment_model.md</code></a> — GL-068 runtime configuration and environment model</li>
+<li><a href="../deployment_package_runtime_modes_design/"><code>docs/deployment_package_runtime_modes_design.md</code></a> — GL-069 deployment package and runtime modes design</li>
+<li><a href="../persistence_backend_postgresql_readiness_design/"><code>docs/persistence_backend_postgresql_readiness_design.md</code></a> — GL-070 persistence backend and PostgreSQL readiness design</li>
+<li><a href="../observability_structured_logging_baseline_design/"><code>docs/observability_structured_logging_baseline_design.md</code></a> — GL-071 observability and structured logging baseline design</li>
+<li><a href="../backup_restore_data_lifecycle_design/"><code>docs/backup_restore_data_lifecycle_design.md</code></a> — GL-072 backup, restore, and data lifecycle design</li>
+<li><a href="examples/gl073/incident_severity_matrix.json"><code>docs/examples/gl073/incident_severity_matrix.json</code></a> — machine-readable incident severity matrix</li>
+<li><a href="examples/gl073/operational_runbook_catalog.json"><code>docs/examples/gl073/operational_runbook_catalog.json</code></a> — machine-readable operational runbook catalog</li>
+<li><a href="../backend/tests/test_gl073_operational_runbook_incident_response.py"><code>backend/tests/test_gl073_operational_runbook_incident_response.py</code></a> — validation test for this design</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

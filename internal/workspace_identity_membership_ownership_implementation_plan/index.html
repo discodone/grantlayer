@@ -1,0 +1,3719 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/workspace_identity_membership_ownership_implementation_plan/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-223 — Workspace Identity / Membership / Ownership Implementation Plan - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-223-workspace-identity-membership-ownership-implementation-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-223 — Workspace Identity / Membership / Ownership Implementation Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-current-tenantworkspace-state-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Current Tenant/Workspace State Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Current Tenant/Workspace State Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-what-is-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 What is implemented
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-what-is-not-implemented-current-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 What is NOT implemented (current gaps)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-current-workspace-trust-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Current Workspace Trust Gaps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-workspace-identity-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Workspace Identity Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Workspace Identity Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-core-concept" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Core concept
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-trust-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Trust model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-workspace-entity-planned-schema-not-implemented-in-gl-223" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Workspace entity (planned schema — not implemented in GL-223)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-membership-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Membership Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Membership Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-concept" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Concept
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-membership-entity-planned-schema-not-implemented-in-gl-223" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Membership entity (planned schema — not implemented in GL-223)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-membership-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Membership rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-membership-invariants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Membership invariants
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-ownership-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Ownership Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Ownership Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-workspace-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Workspace ownership
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-resource-ownership-within-workspace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Resource ownership within workspace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-adminoperator-override-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Admin/operator override boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-role-scope-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Role / Scope Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Role / Scope Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-tenant-level-roles-existing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Tenant-level roles (existing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-workspace-level-roles-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Workspace-level roles (planned)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-composition-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Composition rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-scope-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Scope model
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-workspace-lifecycle-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Workspace Lifecycle Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Workspace Lifecycle Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-workspace-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Workspace creation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-member-invitation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Member invitation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-member-removalleave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Member removal/leave
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-workspace-deactivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Workspace deactivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-workspace-deletion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Workspace deletion
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-adminoperator-ownership-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Admin/Operator Ownership Boundary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Admin/Operator Ownership Boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-tenant-admin-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Tenant admin capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-workspace-owner-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Workspace owner capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-operator-capabilities-member-without-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Operator capabilities (member without admin)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-invariant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Invariant
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-server-derived-workspace-context-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Server-Derived Workspace Context Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Server-Derived Workspace Context Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-context-derivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Context derivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-workspace-context-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Workspace context injection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-unsafe-workspace-override-prevention-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Unsafe Workspace Override Prevention Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Unsafe Workspace Override Prevention Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-prevented-vectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Prevented vectors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-required-server-side-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Required server-side checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-cross-workspace-lookup-denial-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Cross-Workspace Lookup Denial Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Cross-Workspace Lookup Denial Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-read-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 Read routes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-404-vs-403" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 404 vs 403
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-tenant-admin-exception" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 Tenant admin exception
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-cross-workspace-mutation-denial-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Cross-Workspace Mutation Denial Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Cross-Workspace Mutation Denial Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-write-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.1 Write routes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-mutation-denial-invariant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.2 Mutation denial invariant
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-audit-evidence-provenance-compliance-propagation-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Audit / Evidence / Provenance / Compliance Propagation Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Audit / Evidence / Provenance / Compliance Propagation Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-audit-event-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 Audit event propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-provenance-event-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 Provenance event propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133-evidence-archive-workspace-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3 Evidence archive workspace attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#134-compliance-immutability-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.4 Compliance / immutability implications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#135-retention-erasure-workspace-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.5 Retention / erasure workspace boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-database-schema-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Database / Schema Plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Database / Schema Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141-new-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.1 New tables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-indexes-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.2 Indexes (planned)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.3 Constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144-existing-table-changes-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.4 Existing table changes (planned)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-migration-backfill-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Migration / Backfill Plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. Migration / Backfill Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151-migration-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.1 Migration strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-backfill-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2 Backfill rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153-migration-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3 Migration ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#154-rollback-strategy-for-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4 Rollback strategy for migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-api-server-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. API / Server Plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. API / Server Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161-new-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.1 New endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162-modified-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2 Modified endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163-auth-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.3 Auth changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#164-existing-route-backward-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.4 Existing route backward compatibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-openapi-impact-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. OpenAPI Impact Plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. OpenAPI Impact Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171-new-path-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17.1 New path groups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172-modified-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17.2 Modified components
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173-security-scheme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17.3 Security scheme
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Testing Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. Testing Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181-unit-tests-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.1 Unit tests required
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182-integration-tests-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.2 Integration tests required
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183-security-regression-tests-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.3 Security regression tests required
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#184-gate-tests-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4 Gate tests required
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-rollout-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19. Rollout Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Rollout Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#191-phase-1-schema-migration-no-behavior-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.1 Phase 1 — Schema migration (no behavior change)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#192-phase-2-workspace-crud-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.2 Phase 2 — Workspace CRUD API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#193-phase-3-workspace-context-derivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.3 Phase 3 — Workspace context derivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#194-phase-4-workspace-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.4 Phase 4 — Workspace enforcement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#195-phase-5-audit-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.5 Phase 5 — Audit enforcement
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-rollback-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        20. Rollback Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-compatibility-with-demo-synthetic-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21. Compatibility with Demo / Synthetic Flows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-production-readiness-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22. Production-Readiness Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-controlled-preview-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23. Controlled-Preview Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24-real-data-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        24. Real-Data Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#25-remaining-blockers-before-real-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        25. Remaining Blockers Before Real Data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#26-proposed-implementation-issue-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        26. Proposed Implementation Issue Breakdown
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="26. Proposed Implementation Issue Breakdown">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gl-224-workspace-schema-migration-and-entity-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-224 — Workspace Schema Migration and Entity Layer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-225-workspace-crud-api-and-admin-control-plane" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-225 — Workspace CRUD API and Admin Control Plane
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-226-workspace-context-derivation-and-header-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-226 — Workspace Context Derivation and Header Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-227-workspace-enforcement-on-resource-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-227 — Workspace Enforcement on Resource Routes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-228-workspace-audit-event-and-provenance-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-228 — Workspace Audit Event and Provenance Enforcement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-229-workspace-security-regression-test-suite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-229 — Workspace Security Regression Test Suite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-230-workspace-enforcement-gate-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-230 — Workspace Enforcement Gate Script
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-231-production-gono-go-v7-post-workspace-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-231 — Production Go/No-Go v7 (post-workspace enforcement)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#27-risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27. Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#28-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        28. Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#29-decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        29. Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#30-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        30. Findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#31-safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        31. Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#32-recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        32. Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-223-workspace-identity-membership-ownership-implementation-plan">GL-223 — Workspace Identity / Membership / Ownership Implementation Plan<a class="headerlink" href="#gl-223-workspace-identity-membership-ownership-implementation-plan" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-223
+<strong>Title:</strong> Workspace Identity / Membership / Ownership Implementation Plan
+<strong>Branch:</strong> <code>gl-223-workspace-identity-membership-ownership-implementation-plan</code>
+<strong>Status:</strong> Internal / Developer Preview — Planning Only</p>
+<p>GL-223 is an implementation plan, not the implementation itself.
+GL-223 does not add migrations.
+GL-223 does not enable real customer, private grant, or institutional data.
+GL-223 does not claim Production SaaS readiness.
+GL-223 does not change public export, publish, or visibility.</p>
+<p>Developer Preview remains GO / CONTINUE.
+Controlled External Technical Review remains GO with strict boundaries.
+Synthetic/Demo Controlled Pilot remains CONDITIONAL.
+Real Customer Data remains NO-GO.
+Private Grant / Institutional Data remains NO-GO.
+Production SaaS remains NO-GO.
+Official SDK/Package remains NO-GO.
+Compliance Certification remains NO-GO.
+Live PostgreSQL Production Readiness remains NO-GO.</p>
+<p>Security-sensitive reports route to GitHub Security Advisories.
+No exploit details are included.
+No real secrets are included.
+No real customer, private grant, or private institutional data is included.</p>
+<p>Unrelated website-design/import files (<code>website-design/</code>,
+<code>docs/website_design_workspace_import_report.md</code>,
+<code>docs/website_design_workspace_import_report_dirty_stop.md</code>,
+and similarly named files) are excluded from GL-223.</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-214 through GL-222 are merged internally. The final readiness matrix v6
+from GL-221, confirmed by GL-222, identifies the following current posture:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Developer Preview</td>
+<td>GO / CONTINUE</td>
+</tr>
+<tr>
+<td>Controlled External Technical Review</td>
+<td>GO with strict boundaries</td>
+</tr>
+<tr>
+<td>Synthetic/Demo Controlled Pilot</td>
+<td>CONDITIONAL</td>
+</tr>
+<tr>
+<td>Public Snapshot Preparation</td>
+<td>CONDITIONAL — separate explicit gate required</td>
+</tr>
+<tr>
+<td>Public Website Publish</td>
+<td>DEFER / NO-GO</td>
+</tr>
+<tr>
+<td>Official SDK / Package</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Real Customer Data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Private Grant / Institutional Data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Production SaaS</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Compliance Certification</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Live PostgreSQL Production Readiness</td>
+<td>NO-GO</td>
+</tr>
+</tbody>
+</table>
+<p>GL-215 remains the authoritative tenant/workspace runtime baseline:
+<code>tenant_id</code> is server-derived and enforced at application level.
+<code>workspace_id</code> is reserved/nullable and not production-enforced.</p>
+<p>GL-213 and GL-221 both identified workspace identity, membership, and
+ownership as remaining production blockers requiring a plan before
+implementation can proceed safely.</p>
+<p>GL-223 provides that plan.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>GL-223 covers:</p>
+<ol>
+<li>Documentation of the current tenant/workspace enforcement state.</li>
+<li>Documentation of workspace trust gaps.</li>
+<li>The workspace identity model to be implemented in a future issue.</li>
+<li>The membership model.</li>
+<li>The ownership model.</li>
+<li>The role/scope model.</li>
+<li>The workspace lifecycle model (invitation, join, leave).</li>
+<li>The admin/operator ownership boundary.</li>
+<li>The server-derived workspace context model.</li>
+<li>The unsafe workspace override prevention model.</li>
+<li>Cross-workspace lookup and mutation denial models.</li>
+<li>The audit/provenance/evidence/compliance propagation model.</li>
+<li>The database/schema plan.</li>
+<li>The migration/backfill plan.</li>
+<li>The API/server plan.</li>
+<li>The OpenAPI impact plan.</li>
+<li>The testing strategy.</li>
+<li>The rollout and rollback strategy.</li>
+<li>The compatibility model for current demo/synthetic flows.</li>
+<li>Remaining blockers before real data.</li>
+<li>Proposed implementation issue breakdown.</li>
+<li>A risk register.</li>
+</ol>
+<hr />
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>GL-223 does not:
+- Implement the full workspace system.
+- Add database migrations.
+- Create DB schema changes.
+- Modify API behavior or routing.
+- Change the OpenAPI spec beyond planning references.
+- Enable real customer, private grant, or institutional data.
+- Claim Production SaaS readiness.
+- Add dependencies or package metadata.
+- Create public snapshots, export directories, release branches, or public pushes.
+- Change GitHub workflows, snapshot publish scripts, visibility, or deployment config.
+- Weaken GL-214 through GL-222 boundaries.</p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/controlled_external_review_handoff_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl222/controlled_external_review_handoff_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/workspace_enforcement_final_go_no_go_v6.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl221/workspace_enforcement_final_go_no_go_v6.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_runtime_infrastructure_hardening_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl220/production_runtime_infrastructure_hardening_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_identity_access_hardening_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl219/production_identity_access_hardening_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/public_external_review_export_safety_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl218/public_external_review_export_safety_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_go_no_go_v5.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl217/production_go_no_go_v5.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_production_guarantee.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl215/tenant_workspace_production_guarantee.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_data_model_design.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl144/tenant_workspace_data_model_design.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/admin_operator_tenant_control_plane.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl206/admin_operator_tenant_control_plane.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_iam_operator_control_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl214/production_iam_operator_control_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/data_governance_audit_operations.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl209/data_governance_audit_operations.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/server.py</td>
+<td>Inspected (planning context only)</td>
+</tr>
+<tr>
+<td>backend/src/config.py</td>
+<td>Inspected (planning context only)</td>
+</tr>
+<tr>
+<td>backend/src/auth.py</td>
+<td>Inspected (planning context only)</td>
+</tr>
+<tr>
+<td>backend/src/identity_access.py</td>
+<td>Inspected (planning context only)</td>
+</tr>
+<tr>
+<td>backend/src/operators.py</td>
+<td>Inspected (planning context only)</td>
+</tr>
+<tr>
+<td>backend/src/audit_log.py</td>
+<td>Inspected (planning context only)</td>
+</tr>
+<tr>
+<td>backend/src/db.py</td>
+<td>Inspected (planning context only)</td>
+</tr>
+<tr>
+<td>backend/src/models.py</td>
+<td>Inspected (planning context only)</td>
+</tr>
+<tr>
+<td>backend/src/grants.py</td>
+<td>Inspected (planning context only)</td>
+</tr>
+<tr>
+<td>backend/src/grant_requests.py</td>
+<td>Inspected (planning context only)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-current-tenantworkspace-state-summary">1. Current Tenant/Workspace State Summary<a class="headerlink" href="#1-current-tenantworkspace-state-summary" title="Permanent link">&para;</a></h2>
+<h3 id="11-what-is-implemented">1.1 What is implemented<a class="headerlink" href="#11-what-is-implemented" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>tenant_id</code> on all business resources.</strong> Migration <code>0010_gl200b_tenant_workspace_isolation</code>
+  added <code>tenant_id TEXT NOT NULL DEFAULT 'demo'</code> and <code>workspace_id TEXT DEFAULT NULL</code>
+  to all resource tables (grants, grant requests, grant executions, audit events,
+  provenance events, operators, challenges).</li>
+<li><strong>Server-derived <code>tenant_id</code>.</strong> <code>server.py::_get_tenant_id()</code> extracts
+  <code>tenant_id</code> from the auth context (from operator record in operator-model
+  mode, or <code>"demo"</code> in legacy admin-token mode). Clients cannot override.</li>
+<li><strong>Tenant-filtered queries.</strong> All major read routes filter by <code>tenant_id</code>.
+  Cross-tenant lookup returns 404.</li>
+<li><strong>Tenant-propagated audit events.</strong> <code>AuditEvent</code> and <code>ProvenanceEvent</code> carry
+  <code>tenant_id</code>. Audit writes propagate the authenticated tenant.</li>
+<li><strong>Operator <code>tenant_id</code> server-assigned.</strong> GL-206 requires <code>tenant_id</code> as a
+  positional argument to <code>create_operator()</code>; clients cannot self-assign tenant.</li>
+<li><strong>Revoke/inactive fail-closed.</strong> Revoked and inactive operators are denied
+  authentication.</li>
+<li><strong>Admin/operator route protection.</strong> <code>/admin/operators/*</code> routes require admin
+  role.</li>
+</ul>
+<h3 id="12-what-is-not-implemented-current-gaps">1.2 What is NOT implemented (current gaps)<a class="headerlink" href="#12-what-is-not-implemented-current-gaps" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>workspace_id</code> is reserved/nullable.</strong> No workspace enforcement exists.
+  <code>workspace_id = NULL</code> on all records. All workspace-specific queries are
+  planned but not implemented.</li>
+<li><strong>No <code>workspaces</code> table.</strong> There is no persistent workspace entity. A
+  workspace cannot be created, named, or retrieved.</li>
+<li><strong>No workspace membership table.</strong> There is no <code>workspace_members</code> or
+  equivalent. No operator is assigned to a workspace. No join/leave lifecycle
+  exists.</li>
+<li><strong>No workspace ownership model.</strong> Resources are owned by tenants, not
+  workspaces. There is no <code>workspace_owner_id</code> field or concept in the DB.</li>
+<li><strong>No workspace-level role/scope.</strong> Operator roles (<code>grant_admin</code>, <code>approver</code>,
+  <code>agent</code>) are tenant-level. No workspace-specific role assignment exists.</li>
+<li><strong>No workspace-scoped authorization in server routes.</strong> Routes filter by
+  <code>tenant_id</code> but not <code>workspace_id</code>. Any operator in a tenant can read any
+  grant in the same tenant regardless of workspace.</li>
+<li><strong>No workspace invitation/join/leave lifecycle.</strong> No invite tokens, join
+  flows, or leave/removal flows exist.</li>
+<li><strong>No workspace context in API responses.</strong> Grant/request/execution responses
+  include <code>tenant_id</code> (from the operator) but <code>workspace_id</code> is <code>null</code>.</li>
+<li><strong>No cross-workspace denial.</strong> A future workspace-aware query must explicitly
+  deny cross-workspace reads. This guard does not exist.</li>
+<li><strong>No workspace provenance propagation.</strong> Audit events carry <code>workspace_id =
+  null</code>. Future workspace-scoped audit queries are blocked.</li>
+</ul>
+<hr />
+<h2 id="2-current-workspace-trust-gaps">2. Current Workspace Trust Gaps<a class="headerlink" href="#2-current-workspace-trust-gaps" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Gap ID</th>
+<th>Gap</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WG-001</td>
+<td><code>workspace_id</code> is nullable/unset on all resources — no workspace enforcement</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>WG-002</td>
+<td>No <code>workspaces</code> entity — a workspace cannot be created or looked up</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>WG-003</td>
+<td>No <code>workspace_members</code> entity — no operator/workspace association</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>WG-004</td>
+<td>No workspace-scoped authorization in server routes</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>WG-005</td>
+<td>No workspace ownership model on resources</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>WG-006</td>
+<td>No workspace-level role/scope assignment</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>WG-007</td>
+<td>No workspace invitation/join/leave lifecycle</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>WG-008</td>
+<td>Audit events carry <code>workspace_id = null</code> — no workspace audit trail</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>WG-009</td>
+<td>No cross-workspace lookup denial guard</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>WG-010</td>
+<td>No cross-workspace mutation denial guard</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>WG-011</td>
+<td>No workspace provenance propagation</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>WG-012</td>
+<td>No workspace-scoped API endpoints</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>WG-013</td>
+<td>No OpenAPI workspace path/parameter documentation</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>WG-014</td>
+<td>No workspace migration/backfill plan for existing <code>null</code> records</td>
+<td>P2</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-workspace-identity-model">3. Workspace Identity Model<a class="headerlink" href="#3-workspace-identity-model" title="Permanent link">&para;</a></h2>
+<h3 id="31-core-concept">3.1 Core concept<a class="headerlink" href="#31-core-concept" title="Permanent link">&para;</a></h3>
+<p>A <strong>workspace</strong> is a named, scoped operating context within a tenant. Each
+workspace has:
+- A stable UUID (<code>workspace_id</code>)
+- A human-readable name (<code>name</code>, unique within tenant)
+- A <code>tenant_id</code> (FK to tenant, immutable after creation)
+- An <code>owner_operator_id</code> (the creating or explicitly-assigned owner)
+- A <code>created_at</code> timestamp
+- An <code>active</code> boolean (deactivated workspaces block access)
+- An optional <code>description</code></p>
+<h3 id="32-trust-model">3.2 Trust model<a class="headerlink" href="#32-trust-model" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>workspace_id</code> is server-assigned on resource creation. Clients cannot
+  supply or override <code>workspace_id</code> on any resource write.</li>
+<li><code>workspace_id</code> is derived from the authenticated operator's current workspace
+  context (set at operator-session time via a future workspace context API),
+  not from request body parameters.</li>
+<li>A <code>workspace_id</code> present in a request body must be rejected with 400 or
+  silently ignored in favor of the server-derived value.</li>
+</ul>
+<h3 id="33-workspace-entity-planned-schema-not-implemented-in-gl-223">3.3 Workspace entity (planned schema — not implemented in GL-223)<a class="headerlink" href="#33-workspace-entity-planned-schema-not-implemented-in-gl-223" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>workspaces
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  id            TEXT PRIMARY KEY
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  tenant_id     TEXT NOT NULL REFERENCES tenants(id)  -- or operator-derived
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  name          TEXT NOT NULL
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  description   TEXT DEFAULT NULL
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  owner_id      TEXT NOT NULL REFERENCES operators(id)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  active        INTEGER NOT NULL DEFAULT 1
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  created_at    TEXT NOT NULL
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  updated_at    TEXT NOT NULL
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  UNIQUE(tenant_id, name)
+</code></pre></div>
+<hr />
+<h2 id="4-membership-model">4. Membership Model<a class="headerlink" href="#4-membership-model" title="Permanent link">&para;</a></h2>
+<h3 id="41-concept">4.1 Concept<a class="headerlink" href="#41-concept" title="Permanent link">&para;</a></h3>
+<p>A <strong>workspace membership</strong> is an explicit record binding one operator to one
+workspace with a defined role. Operators are not automatically members of any
+workspace. Membership must be granted explicitly by a workspace owner or admin.</p>
+<h3 id="42-membership-entity-planned-schema-not-implemented-in-gl-223">4.2 Membership entity (planned schema — not implemented in GL-223)<a class="headerlink" href="#42-membership-entity-planned-schema-not-implemented-in-gl-223" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>workspace_members
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  id              TEXT PRIMARY KEY
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  workspace_id    TEXT NOT NULL REFERENCES workspaces(id)
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  operator_id     TEXT NOT NULL REFERENCES operators(id)
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  workspace_role  TEXT NOT NULL  -- owner | admin | member | readonly
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  invited_by      TEXT REFERENCES operators(id)
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  joined_at       TEXT NOT NULL
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  active          INTEGER NOT NULL DEFAULT 1
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  UNIQUE(workspace_id, operator_id)
+</code></pre></div>
+<h3 id="43-membership-rules">4.3 Membership rules<a class="headerlink" href="#43-membership-rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li>An operator may be a member of multiple workspaces within the same tenant.</li>
+<li>An operator may only access resources in workspaces they are an active member
+  of.</li>
+<li>Membership grants access within the workspace; tenant membership is a
+  prerequisite (an operator must belong to the tenant before joining a
+  workspace).</li>
+<li>Deactivated membership denies access fail-closed.</li>
+<li>Workspace owner is automatically the first member with role <code>owner</code>.</li>
+</ul>
+<h3 id="44-membership-invariants">4.4 Membership invariants<a class="headerlink" href="#44-membership-invariants" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>workspace_id</code> and <code>operator_id</code> together form a unique constraint.</li>
+<li>An operator with no active workspace membership in the requested workspace
+  receives 403 (not 404 — to prevent workspace enumeration via timing).</li>
+<li>Membership revocation is audited.</li>
+</ul>
+<hr />
+<h2 id="5-ownership-model">5. Ownership Model<a class="headerlink" href="#5-ownership-model" title="Permanent link">&para;</a></h2>
+<h3 id="51-workspace-ownership">5.1 Workspace ownership<a class="headerlink" href="#51-workspace-ownership" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Each workspace has exactly one <code>owner_id</code> (FK to <code>operators.id</code>).</li>
+<li>The owner may transfer ownership to another active member with role <code>owner</code>
+  or <code>admin</code>.</li>
+<li>Ownership transfer is audited.</li>
+<li>The last owner cannot leave without first transferring ownership or the
+  workspace being deactivated by a tenant admin.</li>
+</ul>
+<h3 id="52-resource-ownership-within-workspace">5.2 Resource ownership within workspace<a class="headerlink" href="#52-resource-ownership-within-workspace" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Every business resource (grant, grant request, grant execution, evidence,
+  audit event, provenance event) must carry both <code>tenant_id</code> and
+  <code>workspace_id</code> after workspace enforcement is implemented.</li>
+<li><code>workspace_id = NULL</code> on legacy/demo records is acceptable only in
+  <code>developer_preview</code> and <code>demo</code> runtime modes. In production-like modes,
+  <code>workspace_id = NULL</code> on a resource write must be rejected or assigned from
+  the authenticated operator's workspace context.</li>
+<li>Resources cannot be moved between workspaces. <code>workspace_id</code> is immutable
+  after creation.</li>
+<li>Resources cannot be shared across workspace boundaries in normal operation.
+  Cross-workspace sharing, if ever added, requires an explicit future design.</li>
+</ul>
+<h3 id="53-adminoperator-override-boundary">5.3 Admin/operator override boundary<a class="headerlink" href="#53-adminoperator-override-boundary" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Tenant admins may manage workspace membership and deactivate workspaces but
+  may NOT read workspace-owned resources unless they are also a workspace
+  member.</li>
+<li>A future super-admin or system-operator role for break-glass access is not
+  defined in GL-223 and must be a separate design decision.</li>
+</ul>
+<hr />
+<h2 id="6-role-scope-model">6. Role / Scope Model<a class="headerlink" href="#6-role-scope-model" title="Permanent link">&para;</a></h2>
+<h3 id="61-tenant-level-roles-existing">6.1 Tenant-level roles (existing)<a class="headerlink" href="#61-tenant-level-roles-existing" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Permissions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>owner</code></td>
+<td>Full tenant control, operator create/revoke</td>
+</tr>
+<tr>
+<td><code>grant_admin</code></td>
+<td>Create/revoke grants within tenant</td>
+</tr>
+<tr>
+<td><code>approver</code></td>
+<td>Approve/deny grant requests</td>
+</tr>
+<tr>
+<td><code>agent</code></td>
+<td>Submit grant requests, execute grants</td>
+</tr>
+<tr>
+<td><code>readonly</code></td>
+<td>Read-only access to tenant resources</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-workspace-level-roles-planned">6.2 Workspace-level roles (planned)<a class="headerlink" href="#62-workspace-level-roles-planned" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Permissions within workspace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>workspace_owner</code></td>
+<td>Full workspace control, membership management, ownership transfer</td>
+</tr>
+<tr>
+<td><code>workspace_admin</code></td>
+<td>Add/remove members, manage workspace settings</td>
+</tr>
+<tr>
+<td><code>workspace_member</code></td>
+<td>Create/read resources within workspace</td>
+</tr>
+<tr>
+<td><code>workspace_readonly</code></td>
+<td>Read-only access within workspace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-composition-rule">6.3 Composition rule<a class="headerlink" href="#63-composition-rule" title="Permanent link">&para;</a></h3>
+<p>An operator's effective permission for an action within a workspace is the
+<strong>intersection</strong> of their tenant-level role and their workspace-level role:
+- Tenant <code>grant_admin</code> + workspace <code>workspace_readonly</code> → read-only within
+  workspace (workspace role is more restrictive).
+- Tenant <code>approver</code> + workspace <code>workspace_member</code> → may approve requests
+  within workspace but not create grants.
+- Tenant <code>readonly</code> + workspace <code>workspace_owner</code> → effective readonly (tenant
+  role is the ceiling).</p>
+<h3 id="64-scope-model">6.4 Scope model<a class="headerlink" href="#64-scope-model" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Resource access decisions must check:</li>
+<li>Is the operator authenticated? (existing)</li>
+<li>Does the operator belong to the resource's tenant? (existing, enforced)</li>
+<li>Is the operator an active member of the resource's workspace? (new)</li>
+<li>Does the operator's workspace role permit the requested operation? (new)</li>
+</ul>
+<hr />
+<h2 id="7-workspace-lifecycle-model">7. Workspace Lifecycle Model<a class="headerlink" href="#7-workspace-lifecycle-model" title="Permanent link">&para;</a></h2>
+<h3 id="71-workspace-creation">7.1 Workspace creation<a class="headerlink" href="#71-workspace-creation" title="Permanent link">&para;</a></h3>
+<ol>
+<li>A tenant admin or <code>owner</code>-role operator sends <code>POST /workspaces</code> with
+   <code>{ "name": "...", "description": "..." }</code>.</li>
+<li>Server assigns <code>workspace_id</code> (UUID), <code>tenant_id</code> (from operator auth),
+   <code>owner_id</code> (from operator auth). Client cannot supply these.</li>
+<li>Creating operator is automatically added to <code>workspace_members</code> with role
+   <code>workspace_owner</code>.</li>
+<li><code>workspace_created</code> audit event is emitted.</li>
+</ol>
+<h3 id="72-member-invitation">7.2 Member invitation<a class="headerlink" href="#72-member-invitation" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Workspace owner/admin sends <code>POST /workspaces/{workspace_id}/members</code>
+   with <code>{ "operator_id": "...", "role": "..." }</code>.</li>
+<li>Server verifies inviting operator is active workspace owner/admin.</li>
+<li>Server verifies invited operator belongs to the same tenant.</li>
+<li>Membership record is created with <code>active = 1</code>.</li>
+<li><code>workspace_member_added</code> audit event is emitted.</li>
+</ol>
+<h3 id="73-member-removalleave">7.3 Member removal/leave<a class="headerlink" href="#73-member-removalleave" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Owner/admin sends <code>DELETE /workspaces/{workspace_id}/members/{operator_id}</code>.</li>
+<li>Member sends <code>POST /workspaces/{workspace_id}/leave</code>.</li>
+<li>Server blocks removal of the last owner (unless workspace is being deactivated).</li>
+<li>Membership record is set to <code>active = 0</code>.</li>
+<li><code>workspace_member_removed</code> audit event is emitted.</li>
+</ol>
+<h3 id="74-workspace-deactivation">7.4 Workspace deactivation<a class="headerlink" href="#74-workspace-deactivation" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Tenant admin sends <code>POST /admin/workspaces/{workspace_id}/deactivate</code>.</li>
+<li>Workspace <code>active</code> is set to <code>0</code>.</li>
+<li>All membership access is denied fail-closed.</li>
+<li>Existing resources remain readable by tenant admin for audit/provenance
+   purposes (but not through workspace-scoped routes).</li>
+<li><code>workspace_deactivated</code> audit event is emitted.</li>
+</ol>
+<h3 id="75-workspace-deletion">7.5 Workspace deletion<a class="headerlink" href="#75-workspace-deletion" title="Permanent link">&para;</a></h3>
+<p>Workspace deletion is explicitly deferred. Audit immutability requires that
+resources with <code>workspace_id</code> references remain accessible for audit review
+even after a workspace is deactivated. Hard deletion requires a separate data
+retention/erasure policy design.</p>
+<hr />
+<h2 id="8-adminoperator-ownership-boundary">8. Admin/Operator Ownership Boundary<a class="headerlink" href="#8-adminoperator-ownership-boundary" title="Permanent link">&para;</a></h2>
+<h3 id="81-tenant-admin-capabilities">8.1 Tenant admin capabilities<a class="headerlink" href="#81-tenant-admin-capabilities" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Create workspaces (on behalf of tenant).</li>
+<li>Deactivate workspaces.</li>
+<li>List workspaces within tenant.</li>
+<li>View workspace membership lists.</li>
+<li>Forcibly remove members (break-glass, audited).</li>
+<li>Transfer workspace ownership.</li>
+<li><strong>Cannot</strong> read workspace-owned grant/request/execution resources unless also
+  a workspace member (enforced by workspace filter on resource routes).</li>
+</ul>
+<h3 id="82-workspace-owner-capabilities">8.2 Workspace owner capabilities<a class="headerlink" href="#82-workspace-owner-capabilities" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Invite/remove workspace members.</li>
+<li>Transfer workspace ownership to another member.</li>
+<li>Deactivate workspace (subject to tenant admin approval in future).</li>
+<li><strong>Can</strong> read/write all resources within their workspace (subject to
+  tenant-level role).</li>
+</ul>
+<h3 id="83-operator-capabilities-member-without-admin">8.3 Operator capabilities (member without admin)<a class="headerlink" href="#83-operator-capabilities-member-without-admin" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Read/write resources within their workspace per tenant-level + workspace role.</li>
+<li>Leave workspace.</li>
+<li><strong>Cannot</strong> access other workspaces.</li>
+<li><strong>Cannot</strong> modify workspace membership.</li>
+</ul>
+<h3 id="84-invariant">8.4 Invariant<a class="headerlink" href="#84-invariant" title="Permanent link">&para;</a></h3>
+<p>Operator <code>tenant_id</code> and workspace membership are server-assigned and
+server-enforced. No client-supplied <code>tenant_id</code> or <code>workspace_id</code> value can
+override the server-derived workspace context.</p>
+<hr />
+<h2 id="9-server-derived-workspace-context-model">9. Server-Derived Workspace Context Model<a class="headerlink" href="#9-server-derived-workspace-context-model" title="Permanent link">&para;</a></h2>
+<h3 id="91-context-derivation">9.1 Context derivation<a class="headerlink" href="#91-context-derivation" title="Permanent link">&para;</a></h3>
+<p>After workspace enforcement is implemented, a server request handler derives
+workspace context in this order:</p>
+<ol>
+<li>Authenticate operator (existing: from <code>Authorization</code> header).</li>
+<li>Extract <code>tenant_id</code> from operator record (existing, server-assigned).</li>
+<li>Determine the effective <code>workspace_id</code>:
+   a. From a future <code>X-Workspace-ID</code> header (if present and the operator is
+      an active member of that workspace within their tenant).
+   b. From the operator's default workspace (if a single-workspace operator).
+   c. Deny with 400 <code>workspace_context_required</code> if the operator is a member
+      of multiple workspaces and no workspace header is supplied.</li>
+<li>Verify the operator is an active member of the resolved workspace.</li>
+<li>Propagate (<code>tenant_id</code>, <code>workspace_id</code>) to all resource reads/writes.</li>
+</ol>
+<h3 id="92-workspace-context-injection">9.2 Workspace context injection<a class="headerlink" href="#92-workspace-context-injection" title="Permanent link">&para;</a></h3>
+<ul>
+<li>All route handlers must receive and pass <code>(tenant_id, workspace_id)</code> to
+  data-layer functions.</li>
+<li>No route handler may accept <code>workspace_id</code> from the request body for
+  authorization decisions. Only <code>X-Workspace-ID</code> header (a future addition)
+  is trusted for workspace context selection.</li>
+<li>The data layer must validate that the passed <code>workspace_id</code> belongs to the
+  passed <code>tenant_id</code> before any data operation.</li>
+</ul>
+<hr />
+<h2 id="10-unsafe-workspace-override-prevention-model">10. Unsafe Workspace Override Prevention Model<a class="headerlink" href="#10-unsafe-workspace-override-prevention-model" title="Permanent link">&para;</a></h2>
+<h3 id="101-prevented-vectors">10.1 Prevented vectors<a class="headerlink" href="#101-prevented-vectors" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Request body injection.</strong> Any <code>workspace_id</code> or <code>tenant_id</code> present in a
+  request body must be ignored for authorization decisions (may be included in
+  response for display, but derived from server context for writes).</li>
+<li><strong>Header injection (non-workspace headers).</strong> <code>tenant_id</code> must never be
+  accepted from any client header. Only <code>X-Workspace-ID</code> (once implemented)
+  is permitted, and only after membership verification.</li>
+<li><strong>Token elevation.</strong> Operator tokens must not carry a <code>workspace_id</code> claim
+  that the server trusts without membership verification. The operator token
+  carries <code>tenant_id</code> and <code>operator_id</code>; workspace context is resolved at
+  request time, not minted into the token.</li>
+<li><strong>Cross-workspace resource address.</strong> A resource URL (e.g.
+  <code>/grants/{id}</code>) must not be resolvable by an operator in a different
+  workspace, even within the same tenant. The query must include
+  <code>AND workspace_id = ?</code> after workspace enforcement is enabled.</li>
+<li><strong>Null workspace bypass.</strong> <code>workspace_id = NULL</code> must not be a magic value
+  that grants cross-workspace access. In production-like modes, null workspace
+  on a resource must either return 404 or be treated as a legacy-only
+  developer-preview resource.</li>
+</ul>
+<h3 id="102-required-server-side-checks">10.2 Required server-side checks<a class="headerlink" href="#102-required-server-side-checks" title="Permanent link">&para;</a></h3>
+<p>Each protected route handler must, in order:
+1. Authenticate.
+2. Derive <code>tenant_id</code> (existing).
+3. Derive <code>workspace_id</code> (new — per section 9).
+4. Verify workspace membership and role.
+5. Filter all DB queries by both <code>tenant_id</code> AND <code>workspace_id</code>.
+6. Deny 403 if workspace membership check fails.</p>
+<hr />
+<h2 id="11-cross-workspace-lookup-denial-model">11. Cross-Workspace Lookup Denial Model<a class="headerlink" href="#11-cross-workspace-lookup-denial-model" title="Permanent link">&para;</a></h2>
+<h3 id="111-read-routes">11.1 Read routes<a class="headerlink" href="#111-read-routes" title="Permanent link">&para;</a></h3>
+<p>After workspace enforcement:
+- <code>GET /grants</code> → filter by <code>tenant_id = ? AND workspace_id = ?</code>.
+- <code>GET /grants/{id}</code> → verify record has matching <code>tenant_id</code> AND
+  <code>workspace_id</code>; return 404 otherwise.
+- <code>GET /grant-requests</code> → filter by <code>tenant_id = ? AND workspace_id = ?</code>.
+- <code>GET /grant-requests/{id}</code> → workspace match required.
+- <code>GET /executions/{id}</code> → workspace match required.
+- <code>GET /audit-events</code> → filter by <code>tenant_id = ? AND workspace_id = ?</code>.
+- <code>GET /provenance</code> → filter by <code>tenant_id = ? AND workspace_id = ?</code>.</p>
+<h3 id="112-404-vs-403">11.2 404 vs 403<a class="headerlink" href="#112-404-vs-403" title="Permanent link">&para;</a></h3>
+<p>Cross-workspace resource lookups return <strong>404</strong> (not 403) to prevent workspace
+enumeration. A 403 would reveal that a resource with that ID exists in a
+different workspace.</p>
+<h3 id="113-tenant-admin-exception">11.3 Tenant admin exception<a class="headerlink" href="#113-tenant-admin-exception" title="Permanent link">&para;</a></h3>
+<p>Tenant admin read of workspace resources (for audit/break-glass) must go
+through a separately authorized admin route (<code>GET
+/admin/workspaces/{id}/resources</code>) and must emit a <code>workspace_admin_access</code>
+audit event.</p>
+<hr />
+<h2 id="12-cross-workspace-mutation-denial-model">12. Cross-Workspace Mutation Denial Model<a class="headerlink" href="#12-cross-workspace-mutation-denial-model" title="Permanent link">&para;</a></h2>
+<h3 id="121-write-routes">12.1 Write routes<a class="headerlink" href="#121-write-routes" title="Permanent link">&para;</a></h3>
+<p>After workspace enforcement:
+- <code>POST /grants</code> → <code>workspace_id</code> assigned from operator context. Any
+  client-supplied <code>workspace_id</code> in body is rejected.
+- <code>POST /grant-requests</code> → same as above.
+- <code>POST /grant-requests/{id}/approve</code> → operator must be workspace member with
+  workspace role permitting approval AND tenant-level <code>approver</code> or above.
+- <code>POST /grant-requests/{id}/deny</code> → same as above.
+- <code>POST /grant-requests/{id}/execute</code> → same as above.
+- <code>POST /grants/{id}/revoke</code> → must match <code>tenant_id</code> AND <code>workspace_id</code> of
+  operator's current context.</p>
+<h3 id="122-mutation-denial-invariant">12.2 Mutation denial invariant<a class="headerlink" href="#122-mutation-denial-invariant" title="Permanent link">&para;</a></h3>
+<p>A mutation that would assign <code>workspace_id</code> from client input, or that would
+modify a resource whose <code>workspace_id</code> does not match the operator's current
+workspace context, must be denied fail-closed with 403 and a logged audit
+event.</p>
+<hr />
+<h2 id="13-audit-evidence-provenance-compliance-propagation-model">13. Audit / Evidence / Provenance / Compliance Propagation Model<a class="headerlink" href="#13-audit-evidence-provenance-compliance-propagation-model" title="Permanent link">&para;</a></h2>
+<h3 id="131-audit-event-propagation">13.1 Audit event propagation<a class="headerlink" href="#131-audit-event-propagation" title="Permanent link">&para;</a></h3>
+<p>After workspace enforcement:
+- Every <code>AuditEvent</code> must carry a non-null <code>workspace_id</code> for all events in
+  production-like modes.
+- <code>workspace_id</code> must be derived from the operator context at event-write
+  time, not from any client-supplied value.
+- Audit events with <code>workspace_id = NULL</code> in production-like mode must be
+  rejected by the audit writer (fail-closed).</p>
+<h3 id="132-provenance-event-propagation">13.2 Provenance event propagation<a class="headerlink" href="#132-provenance-event-propagation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Every <code>ProvenanceEvent</code> must carry a non-null <code>workspace_id</code> after
+  workspace enforcement.</li>
+<li>Provenance event workspace attribution must match the resource's
+  <code>workspace_id</code>.</li>
+</ul>
+<h3 id="133-evidence-archive-workspace-attribution">13.3 Evidence archive workspace attribution<a class="headerlink" href="#133-evidence-archive-workspace-attribution" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Evidence archive records must carry <code>workspace_id</code>.</li>
+<li>Evidence queried for a workspace must be filtered by <code>workspace_id</code>.</li>
+</ul>
+<h3 id="134-compliance-immutability-implications">13.4 Compliance / immutability implications<a class="headerlink" href="#134-compliance-immutability-implications" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The audit hash chain (GL-103/GL-104/GL-105) must incorporate <code>workspace_id</code>
+  as a chain input field after workspace enforcement is live. This is a
+  breaking audit-chain change.</li>
+<li>Existing audit records with <code>workspace_id = NULL</code> must be treated as
+  legacy/developer-preview records. The hash chain for pre-enforcement records
+  remains valid as-is.</li>
+<li>A future compliance-gate must verify that all audit events in a compliance
+  window carry non-null <code>workspace_id</code> before compliance readiness is claimed.</li>
+</ul>
+<h3 id="135-retention-erasure-workspace-boundary">13.5 Retention / erasure workspace boundary<a class="headerlink" href="#135-retention-erasure-workspace-boundary" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Data retention and erasure policies (GDPR right-to-erasure) must be
+  workspace-scoped. Erasure of a workspace must cascade to all owned resources.</li>
+<li>This is explicitly deferred beyond GL-223.</li>
+</ul>
+<hr />
+<h2 id="14-database-schema-plan">14. Database / Schema Plan<a class="headerlink" href="#14-database-schema-plan" title="Permanent link">&para;</a></h2>
+<p>The following schema changes are planned for a future implementation issue.
+<strong>None of these changes are made in GL-223.</strong></p>
+<h3 id="141-new-tables">14.1 New tables<a class="headerlink" href="#141-new-tables" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">-- Planned: workspaces table</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">workspaces</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">id</span><span class="w">          </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="n">tenant_id</span><span class="w">   </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="n">name</span><span class="w">        </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="n">description</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="n">owner_id</span><span class="w">    </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="n">active</span><span class="w">      </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="n">created_at</span><span class="w">  </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="n">updated_at</span><span class="w">  </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="k">UNIQUE</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="p">);</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="c1">-- Planned: workspace_members table</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">workspace_members</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">    </span><span class="n">id</span><span class="w">              </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">    </span><span class="n">workspace_id</span><span class="w">    </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">workspaces</span><span class="p">(</span><span class="n">id</span><span class="p">),</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">    </span><span class="n">operator_id</span><span class="w">     </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">operators</span><span class="p">(</span><span class="n">id</span><span class="p">),</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="n">workspace_role</span><span class="w">  </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">    </span><span class="n">invited_by</span><span class="w">      </span><span class="nb">TEXT</span><span class="p">,</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span><span class="n">joined_at</span><span class="w">       </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">    </span><span class="n">active</span><span class="w">          </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">    </span><span class="k">UNIQUE</span><span class="p">(</span><span class="n">workspace_id</span><span class="p">,</span><span class="w"> </span><span class="n">operator_id</span><span class="p">)</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="p">);</span>
+</code></pre></div>
+<h3 id="142-indexes-planned">14.2 Indexes (planned)<a class="headerlink" href="#142-indexes-planned" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_workspaces_tenant_id</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">workspaces</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">);</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_workspace_members_workspace_id</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">workspace_members</span><span class="p">(</span><span class="n">workspace_id</span><span class="p">);</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_workspace_members_operator_id</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">workspace_members</span><span class="p">(</span><span class="n">operator_id</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="143-constraints">14.3 Constraints<a class="headerlink" href="#143-constraints" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>workspace_role</code> must be validated against an allowlist:
+  <code>('workspace_owner', 'workspace_admin', 'workspace_member', 'workspace_readonly')</code>.</li>
+<li><code>tenant_id</code> on workspace must match <code>operator.tenant_id</code> at creation.</li>
+<li><code>workspace_id</code> on all business resource tables must reference a valid, active
+  workspace in the same tenant.</li>
+</ul>
+<h3 id="144-existing-table-changes-planned">14.4 Existing table changes (planned)<a class="headerlink" href="#144-existing-table-changes-planned" title="Permanent link">&para;</a></h3>
+<p>No column additions are needed (columns already exist with <code>DEFAULT NULL</code>).
+Required changes:
+- Add FK constraint from resource tables to <code>workspaces(id)</code> (deferred to
+  implementation migration).
+- Add index on <code>(tenant_id, workspace_id)</code> for all resource tables (confirm
+  existing coverage).</p>
+<hr />
+<h2 id="15-migration-backfill-plan">15. Migration / Backfill Plan<a class="headerlink" href="#15-migration-backfill-plan" title="Permanent link">&para;</a></h2>
+<h3 id="151-migration-strategy">15.1 Migration strategy<a class="headerlink" href="#151-migration-strategy" title="Permanent link">&para;</a></h3>
+<p>A single new migration (<code>0012_gl224_workspace_enforcement</code> or equivalent) will:
+1. Create the <code>workspaces</code> table.
+2. Create the <code>workspace_members</code> table.
+3. Insert a default/legacy workspace <code>{ id: 'default', tenant_id: 'demo',
+   name: 'default', ... }</code> for backfill.
+4. Update all existing resource records with <code>workspace_id = NULL</code> to
+   <code>workspace_id = 'default'</code> within <code>tenant_id = 'demo'</code>.</p>
+<h3 id="152-backfill-rules">15.2 Backfill rules<a class="headerlink" href="#152-backfill-rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Backfill only applies to <code>developer_preview</code> and <code>demo</code> runtime modes.</li>
+<li>Production-like mode must never backfill — null workspace records in
+  production are a data integrity error requiring investigation.</li>
+<li>Backfill is idempotent (re-runnable safely).</li>
+<li>Backfill must not touch records that already have a non-null <code>workspace_id</code>.</li>
+</ul>
+<h3 id="153-migration-ordering">15.3 Migration ordering<a class="headerlink" href="#153-migration-ordering" title="Permanent link">&para;</a></h3>
+<p>Migration must be added after the last merged migration. Current last known
+migration: <code>0011_*</code> (or as identified at implementation time).</p>
+<h3 id="154-rollback-strategy-for-migration">15.4 Rollback strategy for migration<a class="headerlink" href="#154-rollback-strategy-for-migration" title="Permanent link">&para;</a></h3>
+<p>The migration can be reversed by:
+1. Dropping <code>workspace_members</code>.
+2. Dropping <code>workspaces</code>.
+3. Setting <code>workspace_id = NULL</code> on all backfilled resources.</p>
+<p>Automated rollback scripts must be provided at implementation time.</p>
+<hr />
+<h2 id="16-api-server-plan">16. API / Server Plan<a class="headerlink" href="#16-api-server-plan" title="Permanent link">&para;</a></h2>
+<p>The following server changes are planned for future implementation issues.
+<strong>None of these changes are made in GL-223.</strong></p>
+<h3 id="161-new-endpoints">16.1 New endpoints<a class="headerlink" href="#161-new-endpoints" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST</code></td>
+<td><code>/workspaces</code></td>
+<td>Create a workspace (tenant admin or owner role)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/workspaces</code></td>
+<td>List workspaces the operator is a member of</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/workspaces/{workspace_id}</code></td>
+<td>Get workspace details</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/workspaces/{workspace_id}/members</code></td>
+<td>Add a member</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/workspaces/{workspace_id}/members/{operator_id}</code></td>
+<td>Remove a member</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/workspaces/{workspace_id}/leave</code></td>
+<td>Leave a workspace</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/workspaces/{workspace_id}/transfer-ownership</code></td>
+<td>Transfer ownership</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/admin/workspaces/{workspace_id}/deactivate</code></td>
+<td>Deactivate workspace</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/workspaces</code></td>
+<td>List all workspaces (tenant admin)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="162-modified-endpoints">16.2 Modified endpoints<a class="headerlink" href="#162-modified-endpoints" title="Permanent link">&para;</a></h3>
+<p>All existing resource endpoints must be updated to:
+- Accept <code>X-Workspace-ID</code> header for workspace context selection.
+- Derive <code>workspace_id</code> server-side (not from body).
+- Filter data queries by <code>(tenant_id, workspace_id)</code>.
+- Reject requests where workspace context cannot be resolved.</p>
+<h3 id="163-auth-changes">16.3 Auth changes<a class="headerlink" href="#163-auth-changes" title="Permanent link">&para;</a></h3>
+<p><code>check_auth()</code> must return <code>workspace_id</code> in addition to <code>tenant_id</code> after
+workspace context is resolved. The <code>_get_workspace_context()</code> helper is the
+appropriate extension point.</p>
+<h3 id="164-existing-route-backward-compatibility">16.4 Existing route backward compatibility<a class="headerlink" href="#164-existing-route-backward-compatibility" title="Permanent link">&para;</a></h3>
+<p>During the transition period (developer preview / demo mode):
+- Routes that currently return resources with <code>workspace_id = NULL</code> continue
+  to function if the operator is in <code>developer_preview</code> or <code>demo</code> mode.
+- In production-like mode, <code>workspace_id = NULL</code> resources must be invisible
+  to workspace-scoped queries.</p>
+<hr />
+<h2 id="17-openapi-impact-plan">17. OpenAPI Impact Plan<a class="headerlink" href="#17-openapi-impact-plan" title="Permanent link">&para;</a></h2>
+<p>The following OpenAPI changes are planned. <strong>None are made in GL-223.</strong></p>
+<h3 id="171-new-path-groups">17.1 New path groups<a class="headerlink" href="#171-new-path-groups" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>/workspaces/*</code> paths with schemas for:</li>
+<li><code>WorkspaceCreateRequest</code></li>
+<li><code>WorkspaceResponse</code></li>
+<li><code>WorkspaceMemberAddRequest</code></li>
+<li><code>WorkspaceMemberResponse</code></li>
+<li><code>WorkspaceOwnershipTransferRequest</code></li>
+</ul>
+<h3 id="172-modified-components">17.2 Modified components<a class="headerlink" href="#172-modified-components" title="Permanent link">&para;</a></h3>
+<ul>
+<li>All resource response schemas (<code>GrantResponse</code>, <code>GrantRequestResponse</code>,
+  <code>ExecutionResponse</code>, <code>AuditEventResponse</code>) must include a non-nullable
+  <code>workspace_id</code> field after enforcement is live.</li>
+<li><code>X-Workspace-ID</code> header must be documented as a required parameter on all
+  workspace-aware endpoints.</li>
+</ul>
+<h3 id="173-security-scheme">17.3 Security scheme<a class="headerlink" href="#173-security-scheme" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The <code>operatorToken</code> security scheme must be documented to require workspace
+  membership verification in addition to operator authentication.</li>
+</ul>
+<hr />
+<h2 id="18-testing-strategy">18. Testing Strategy<a class="headerlink" href="#18-testing-strategy" title="Permanent link">&para;</a></h2>
+<h3 id="181-unit-tests-required">18.1 Unit tests required<a class="headerlink" href="#181-unit-tests-required" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>test_workspace_create_assigns_server_id</code> — workspace_id is server-assigned.</li>
+<li><code>test_workspace_create_client_id_rejected</code> — client-supplied workspace_id in
+  body is ignored or rejected.</li>
+<li><code>test_workspace_member_add</code> — adding a member creates membership record.</li>
+<li><code>test_workspace_member_remove</code> — removing a member deactivates membership.</li>
+<li><code>test_workspace_last_owner_cannot_leave</code> — last owner blocked from leaving.</li>
+<li><code>test_cross_workspace_lookup_denied</code> — operator A cannot read workspace B
+  resources.</li>
+<li><code>test_cross_workspace_mutation_denied</code> — operator A cannot mutate workspace
+  B resources.</li>
+<li><code>test_workspace_deactivate_blocks_access</code> — deactivated workspace denies all
+  member access.</li>
+<li><code>test_null_workspace_id_rejected_in_production_mode</code> — null workspace on
+  write is rejected in production-like modes.</li>
+<li><code>test_workspace_audit_event_carries_workspace_id</code> — audit events after
+  workspace enforcement carry non-null workspace_id.</li>
+<li><code>test_workspace_context_derived_from_header</code> — X-Workspace-ID header is
+  verified against membership before use.</li>
+<li><code>test_workspace_context_client_body_override_denied</code> — body workspace_id
+  ignored for context.</li>
+<li><code>test_workspace_role_scope_composition</code> — effective permission is intersection
+  of tenant and workspace roles.</li>
+<li><code>test_workspace_ownership_transfer</code> — transfer updates owner_id and audits.</li>
+<li><code>test_workspace_member_not_in_tenant_rejected</code> — operator from different
+  tenant cannot be added as workspace member.</li>
+</ul>
+<h3 id="182-integration-tests-required">18.2 Integration tests required<a class="headerlink" href="#182-integration-tests-required" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Full workspace lifecycle: create → add member → write grant → read grant →
+  remove member → verify denied access.</li>
+<li>Cross-tenant workspace isolation: two tenants with same workspace name do
+  not interfere.</li>
+<li>Audit event workspace propagation: all events in workspace have matching
+  workspace_id.</li>
+<li>Backfill idempotency: running migration twice produces identical state.</li>
+</ul>
+<h3 id="183-security-regression-tests-required">18.3 Security regression tests required<a class="headerlink" href="#183-security-regression-tests-required" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Cross-workspace resource address (URL manipulation with known ID from
+  another workspace) returns 404.</li>
+<li>Body workspace_id injection does not change resource ownership.</li>
+<li>Token-derived workspace context cannot be overridden by request headers for
+  tenant_id.</li>
+</ul>
+<h3 id="184-gate-tests-required">18.4 Gate tests required<a class="headerlink" href="#184-gate-tests-required" title="Permanent link">&para;</a></h3>
+<p>A new <code>gl224_workspace_enforcement_gate.py</code> (or equivalent) gate must verify:
+- All resource tables have non-null <code>workspace_id</code> in production-like mode.
+- All audit events in a compliance window have non-null <code>workspace_id</code>.
+- No cross-workspace reads pass the membership check.</p>
+<hr />
+<h2 id="19-rollout-strategy">19. Rollout Strategy<a class="headerlink" href="#19-rollout-strategy" title="Permanent link">&para;</a></h2>
+<h3 id="191-phase-1-schema-migration-no-behavior-change">19.1 Phase 1 — Schema migration (no behavior change)<a class="headerlink" href="#191-phase-1-schema-migration-no-behavior-change" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add <code>workspaces</code> and <code>workspace_members</code> tables.</li>
+<li>Backfill existing records with default workspace (<code>developer_preview</code> /
+  <code>demo</code> modes only).</li>
+<li>No route behavior changes. <code>workspace_id</code> remains unused in routing logic.</li>
+<li>Full suite passes with no new failures.</li>
+</ul>
+<h3 id="192-phase-2-workspace-crud-api">19.2 Phase 2 — Workspace CRUD API<a class="headerlink" href="#192-phase-2-workspace-crud-api" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add workspace creation, listing, and membership management endpoints.</li>
+<li>Routes are guarded by tenant admin or workspace owner roles.</li>
+<li>No enforcement on existing resource routes yet.</li>
+<li>Demo/synthetic flows unaffected.</li>
+</ul>
+<h3 id="193-phase-3-workspace-context-derivation">19.3 Phase 3 — Workspace context derivation<a class="headerlink" href="#193-phase-3-workspace-context-derivation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add <code>X-Workspace-ID</code> header support.</li>
+<li>Add <code>_get_workspace_context()</code> helper to <code>server.py</code>.</li>
+<li>Resource routes accept and propagate workspace context but do not yet
+  filter (backwards-compatible mode).</li>
+<li>Tests verify context derivation without enforcement.</li>
+</ul>
+<h3 id="194-phase-4-workspace-enforcement">19.4 Phase 4 — Workspace enforcement<a class="headerlink" href="#194-phase-4-workspace-enforcement" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Enable workspace filtering on all resource read routes.</li>
+<li>Enable workspace validation on all resource write routes.</li>
+<li>Null workspace in production-like modes is rejected.</li>
+<li>Full suite passes. Security regression tests pass. Gate script passes.</li>
+</ul>
+<h3 id="195-phase-5-audit-enforcement">19.5 Phase 5 — Audit enforcement<a class="headerlink" href="#195-phase-5-audit-enforcement" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Require non-null <code>workspace_id</code> on all audit events in production-like mode.</li>
+<li>Audit chain updated to incorporate <code>workspace_id</code>.</li>
+<li>Compliance gate test passes.</li>
+</ul>
+<hr />
+<h2 id="20-rollback-strategy">20. Rollback Strategy<a class="headerlink" href="#20-rollback-strategy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Each phase is a separate commit/issue. Each phase can be reverted
+  independently.</li>
+<li>Phase 1 (schema migration) rollback: drop new tables, nullify backfilled
+  workspace_id values. Existing resource routes are unaffected.</li>
+<li>Phase 2 (CRUD API) rollback: remove workspace endpoint handlers. No data
+  loss if workspaces table is preserved.</li>
+<li>Phase 3 (context derivation) rollback: remove <code>X-Workspace-ID</code> header
+  processing. Routes revert to tenant-only context.</li>
+<li>Phase 4 (enforcement) rollback: remove workspace filters from resource
+  queries. Revert to tenant-only filtering.</li>
+<li>Phase 5 (audit enforcement) rollback: revert audit writer to accept null
+  workspace_id. Note: hash chain schema change requires coordinated rollback.</li>
+</ul>
+<hr />
+<h2 id="21-compatibility-with-demo-synthetic-flows">21. Compatibility with Demo / Synthetic Flows<a class="headerlink" href="#21-compatibility-with-demo-synthetic-flows" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Demo and synthetic flows use <code>tenant_id = 'demo'</code> and <code>workspace_id = NULL</code>
+  (currently).</li>
+<li>After Phase 1 backfill, demo records will have <code>workspace_id = 'default'</code>.</li>
+<li>Demo operator tokens will be assigned to the <code>default</code> workspace via
+  membership backfill.</li>
+<li>All existing demo API smoke tests and quickstart flows must continue to
+  pass through Phase 4 by targeting the <code>default</code> workspace.</li>
+<li>The <code>X-Workspace-ID: default</code> header will be required in demo mode after
+  Phase 3 if the operator is only a member of one workspace (auto-selected).</li>
+<li>Existing <code>grant_lifecycle_evidence_bundle.py</code> example must be updated in
+  the implementation phase to send <code>X-Workspace-ID</code> if required.</li>
+</ul>
+<hr />
+<h2 id="22-production-readiness-impact">22. Production-Readiness Impact<a class="headerlink" href="#22-production-readiness-impact" title="Permanent link">&para;</a></h2>
+<p>GL-223 does not change the production-readiness posture. The following
+decisions from GL-221 and GL-222 remain unchanged:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Developer Preview</td>
+<td>GO / CONTINUE</td>
+</tr>
+<tr>
+<td>Controlled External Technical Review</td>
+<td>GO with strict boundaries</td>
+</tr>
+<tr>
+<td>Synthetic/Demo Controlled Pilot</td>
+<td>CONDITIONAL</td>
+</tr>
+<tr>
+<td>Public Website Publish</td>
+<td>DEFER / NO-GO</td>
+</tr>
+<tr>
+<td>Official SDK / Package</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Real Customer Data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Private Grant / Institutional Data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Production SaaS</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Compliance Certification</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Live PostgreSQL Production Readiness</td>
+<td>NO-GO</td>
+</tr>
+</tbody>
+</table>
+<p>Implementing the plan in GL-224 through GL-228 (see section 25) is a
+prerequisite for any future reassessment of the NO-GO posture for Production
+SaaS or Real Customer Data.</p>
+<hr />
+<h2 id="23-controlled-preview-impact">23. Controlled-Preview Impact<a class="headerlink" href="#23-controlled-preview-impact" title="Permanent link">&para;</a></h2>
+<p>GL-223 does not change the Controlled External Technical Review posture.
+Review materials remain synthetic/demo only. The plan documented here does
+not authorize any change to the review boundary or the content of review
+materials.</p>
+<hr />
+<h2 id="24-real-data-impact">24. Real-Data Impact<a class="headerlink" href="#24-real-data-impact" title="Permanent link">&para;</a></h2>
+<p>GL-223 does not enable real customer data, private grant data, or
+institutional data. These tiers remain NO-GO. Implementing the workspace
+enforcement plan (GL-224 through GL-228) and passing a subsequent production
+go/no-go gate is the required path before any real-data tier can be
+reconsidered.</p>
+<hr />
+<h2 id="25-remaining-blockers-before-real-data">25. Remaining Blockers Before Real Data<a class="headerlink" href="#25-remaining-blockers-before-real-data" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Blocker ID</th>
+<th>Description</th>
+<th>Blocking Tier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RD-001</td>
+<td>workspace_id not enforced on any resource routes</td>
+<td>Production SaaS, Real Customer Data</td>
+</tr>
+<tr>
+<td>RD-002</td>
+<td>No workspaces or workspace_members tables</td>
+<td>Production SaaS, Real Customer Data</td>
+</tr>
+<tr>
+<td>RD-003</td>
+<td>No workspace membership verification in auth/route layer</td>
+<td>Production SaaS, Real Customer Data</td>
+</tr>
+<tr>
+<td>RD-004</td>
+<td>No workspace-scoped authorization</td>
+<td>Production SaaS, Real Customer Data</td>
+</tr>
+<tr>
+<td>RD-005</td>
+<td>Audit events carry workspace_id = null</td>
+<td>Compliance Certification</td>
+</tr>
+<tr>
+<td>RD-006</td>
+<td>No cross-workspace denial guards</td>
+<td>Production SaaS, Real Customer Data</td>
+</tr>
+<tr>
+<td>RD-007</td>
+<td>No workspace lifecycle (create/deactivate) API</td>
+<td>Production SaaS</td>
+</tr>
+<tr>
+<td>RD-008</td>
+<td>No production OAuth/OIDC/JWT identity provider</td>
+<td>Production SaaS, Real Customer Data</td>
+</tr>
+<tr>
+<td>RD-009</td>
+<td>No production PostgreSQL deployment</td>
+<td>Live PostgreSQL Production Readiness</td>
+</tr>
+<tr>
+<td>RD-010</td>
+<td>No GDPR/data-retention workspace erasure policy</td>
+<td>Compliance Certification</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="26-proposed-implementation-issue-breakdown">26. Proposed Implementation Issue Breakdown<a class="headerlink" href="#26-proposed-implementation-issue-breakdown" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Phase</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-224</td>
+<td>Workspace Schema Migration and Entity Layer</td>
+<td>Phase 1</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>GL-225</td>
+<td>Workspace CRUD API and Admin Control Plane</td>
+<td>Phase 2</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>GL-226</td>
+<td>Workspace Context Derivation and Header Support</td>
+<td>Phase 3</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>GL-227</td>
+<td>Workspace Enforcement on Resource Routes</td>
+<td>Phase 4</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>GL-228</td>
+<td>Workspace Audit Event and Provenance Enforcement</td>
+<td>Phase 5</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>GL-229</td>
+<td>Workspace Security Regression Test Suite</td>
+<td>Phase 4/5</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>GL-230</td>
+<td>Workspace Enforcement Gate Script</td>
+<td>Phase 4/5</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>GL-231</td>
+<td>Production Go/No-Go v7 (post-workspace enforcement)</td>
+<td>Post-Phase 5</td>
+<td>P1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gl-224-workspace-schema-migration-and-entity-layer">GL-224 — Workspace Schema Migration and Entity Layer<a class="headerlink" href="#gl-224-workspace-schema-migration-and-entity-layer" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add <code>workspaces</code> and <code>workspace_members</code> DB tables via a new migration.</li>
+<li>Add entity classes (<code>Workspace</code>, <code>WorkspaceMember</code>) to <code>models.py</code>.</li>
+<li>Add DB helpers (<code>create_workspace</code>, <code>get_workspace</code>, <code>list_workspaces_for_operator</code>,
+  <code>add_workspace_member</code>, <code>remove_workspace_member</code>).</li>
+<li>Add backfill logic for <code>developer_preview</code>/<code>demo</code> modes.</li>
+<li>Full suite must pass.</li>
+<li>No behavior change to existing routes.</li>
+</ul>
+<h3 id="gl-225-workspace-crud-api-and-admin-control-plane">GL-225 — Workspace CRUD API and Admin Control Plane<a class="headerlink" href="#gl-225-workspace-crud-api-and-admin-control-plane" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add <code>/workspaces</code> and <code>/admin/workspaces</code> route handlers.</li>
+<li>Require tenant admin or owner role for workspace creation.</li>
+<li>Add membership add/remove/leave routes.</li>
+<li>Add ownership transfer route.</li>
+<li>Add audit events for workspace lifecycle.</li>
+<li>OpenAPI spec updated for new paths.</li>
+</ul>
+<h3 id="gl-226-workspace-context-derivation-and-header-support">GL-226 — Workspace Context Derivation and Header Support<a class="headerlink" href="#gl-226-workspace-context-derivation-and-header-support" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add <code>_get_workspace_context()</code> to <code>server.py</code>.</li>
+<li>Add <code>X-Workspace-ID</code> header processing with membership verification.</li>
+<li>Update <code>check_auth()</code> to return <code>workspace_id</code> in payload.</li>
+<li>Backwards-compatible: null workspace context continues to function in
+  <code>developer_preview</code>/<code>demo</code> modes.</li>
+</ul>
+<h3 id="gl-227-workspace-enforcement-on-resource-routes">GL-227 — Workspace Enforcement on Resource Routes<a class="headerlink" href="#gl-227-workspace-enforcement-on-resource-routes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Update all resource read handlers to filter by <code>(tenant_id, workspace_id)</code>.</li>
+<li>Update all resource write handlers to assign <code>workspace_id</code> from context.</li>
+<li>Add null-workspace rejection in production-like modes.</li>
+<li>Full suite + security regression tests must pass.</li>
+<li>Gate script must pass.</li>
+</ul>
+<h3 id="gl-228-workspace-audit-event-and-provenance-enforcement">GL-228 — Workspace Audit Event and Provenance Enforcement<a class="headerlink" href="#gl-228-workspace-audit-event-and-provenance-enforcement" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Require non-null <code>workspace_id</code> on audit writes in production-like modes.</li>
+<li>Update audit hash chain to include <code>workspace_id</code> field.</li>
+<li>Require non-null <code>workspace_id</code> on provenance writes.</li>
+<li>Add compliance gate check for audit workspace coverage.</li>
+</ul>
+<h3 id="gl-229-workspace-security-regression-test-suite">GL-229 — Workspace Security Regression Test Suite<a class="headerlink" href="#gl-229-workspace-security-regression-test-suite" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Implement all tests from section 18.</li>
+<li>Cross-workspace lookup denial, mutation denial, context override prevention.</li>
+<li>Must all pass before GL-231 gate.</li>
+</ul>
+<h3 id="gl-230-workspace-enforcement-gate-script">GL-230 — Workspace Enforcement Gate Script<a class="headerlink" href="#gl-230-workspace-enforcement-gate-script" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>scripts/ops/gl230_workspace_enforcement_gate.py</code> (or equivalent).</li>
+<li>Verifies workspace tables exist, membership is enforced, null workspace
+  blocked in production-like mode, audit events carry workspace_id.</li>
+<li>Dry-run / plan-only. No credentials. No network. No destructive ops.</li>
+</ul>
+<h3 id="gl-231-production-gono-go-v7-post-workspace-enforcement">GL-231 — Production Go/No-Go v7 (post-workspace enforcement)<a class="headerlink" href="#gl-231-production-gono-go-v7-post-workspace-enforcement" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Full production readiness gate after GL-224 through GL-230 are complete.</li>
+<li>Reassesses Production SaaS, Real Customer Data, and Live PostgreSQL tiers.</li>
+<li>Must not claim readiness before all P0 blockers from section 25 are resolved.</li>
+</ul>
+<hr />
+<h2 id="27-risk-register">27. Risk Register<a class="headerlink" href="#27-risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk ID</th>
+<th>Risk</th>
+<th>Probability</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R-001</td>
+<td>Backfill corrupts existing demo data</td>
+<td>Low</td>
+<td>High</td>
+<td>Idempotent backfill with transaction rollback; test in demo mode before schema merge</td>
+</tr>
+<tr>
+<td>R-002</td>
+<td>Workspace enforcement breaks existing demo/quickstart flows</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Backwards-compatible phase approach; demo mode auto-selects default workspace</td>
+</tr>
+<tr>
+<td>R-003</td>
+<td>Audit hash chain incompatibility after workspace_id addition</td>
+<td>Medium</td>
+<td>High</td>
+<td>Treat pre-enforcement chain as legacy; start new chain segment at enforcement boundary</td>
+</tr>
+<tr>
+<td>R-004</td>
+<td>Cross-workspace 404 leaks timing side channel</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Constant-time membership check before query</td>
+</tr>
+<tr>
+<td>R-005</td>
+<td>Workspace owner cannot leave — operational dead-end</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Ownership transfer flow required before leave; admin break-glass documented</td>
+</tr>
+<tr>
+<td>R-006</td>
+<td>Workspace context header spoofing</td>
+<td>Low</td>
+<td>High</td>
+<td>Membership verification gates all workspace context claims before trust</td>
+</tr>
+<tr>
+<td>R-007</td>
+<td>Null workspace_id bypass in production</td>
+<td>Medium</td>
+<td>High</td>
+<td>Null-workspace rejection gate in production-like mode; gate script verification</td>
+</tr>
+<tr>
+<td>R-008</td>
+<td>Migration rollback complexity increases with phases</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Each phase is independently reversible; rollback procedures documented per phase</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="28-decision">28. Decision<a class="headerlink" href="#28-decision" title="Permanent link">&para;</a></h2>
+<p><strong>GL-223 decision: APPROVED — plan accepted, implementation deferred to GL-224 through GL-231.</strong></p>
+<p>The implementation plan is complete, internally consistent, and safe to
+proceed. No production-readiness tier changes. No real data enabled. No
+migrations added. No backend/src changes. The plan is the prerequisite for
+all future workspace enforcement work.</p>
+<hr />
+<h2 id="29-decision-rationale">29. Decision Rationale<a class="headerlink" href="#29-decision-rationale" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The current <code>workspace_id = NULL</code> posture is explicitly documented and
+  tracked since GL-144 and GL-200A/B/C. GL-215 preserved it. GL-221 confirmed
+  it as a remaining production blocker.</li>
+<li>A structured implementation plan is required before workspace enforcement
+  can be safely implemented without risking audit integrity, tenant isolation
+  regression, or demo-flow breakage.</li>
+<li>The phased approach (GL-224 through GL-231) minimizes blast radius at each
+  step and ensures full test coverage before enforcement is activated.</li>
+<li>No production SaaS or real-data tiers are unlocked by the plan itself.
+  A post-enforcement go/no-go gate (GL-231) is required.</li>
+</ul>
+<hr />
+<h2 id="30-findings">30. Findings<a class="headerlink" href="#30-findings" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Finding ID</th>
+<th>Finding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F-001</td>
+<td>workspace_id column exists on all resource tables but is null for all existing records</td>
+</tr>
+<tr>
+<td>F-002</td>
+<td>No workspaces or workspace_members tables exist</td>
+</tr>
+<tr>
+<td>F-003</td>
+<td>No workspace membership verification in any route handler</td>
+</tr>
+<tr>
+<td>F-004</td>
+<td>All cross-tenant lookup denial is enforced; cross-workspace denial is not</td>
+</tr>
+<tr>
+<td>F-005</td>
+<td>Audit events carry workspace_id = null throughout</td>
+</tr>
+<tr>
+<td>F-006</td>
+<td>Operator model is tenant-aware but not workspace-aware</td>
+</tr>
+<tr>
+<td>F-007</td>
+<td>Server-derived tenant_id model is sound and can be extended to workspace</td>
+</tr>
+<tr>
+<td>F-008</td>
+<td>The phased rollout plan preserves all existing GL-214 through GL-222 boundaries</td>
+</tr>
+<tr>
+<td>F-009</td>
+<td>Demo/synthetic flows are compatible with the planned default-workspace backfill</td>
+</tr>
+<tr>
+<td>F-010</td>
+<td>The audit hash chain will require a defined break-point at workspace enforcement boundary</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="31-safety-confirmations">31. Safety Confirmations<a class="headerlink" href="#31-safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-223 is a planning document. No migrations, schema, or API changes are
+  included.</li>
+<li>GL-223 does not enable real customer data, private grant data, or
+  institutional data.</li>
+<li>GL-223 does not claim Production SaaS readiness.</li>
+<li>GL-223 does not change public export, publish, visibility, GitHub workflows,
+  or snapshot publish scripts.</li>
+<li>GL-223 does not weaken GL-214 through GL-222 boundaries.</li>
+<li>GL-223 does not include exploit details.</li>
+<li>GL-223 does not include real secrets.</li>
+<li>GL-223 does not include real customer or private data.</li>
+<li>Unrelated website-design/import files are excluded from GL-223.</li>
+<li>No backend/src changes are made.</li>
+<li>No dependencies are added.</li>
+<li>No package metadata is added.</li>
+<li>No deployment/cloud/Kubernetes/Terraform/Helm files are added.</li>
+<li>No TLS certificates or private keys are added.</li>
+</ul>
+<hr />
+<h2 id="32-recommended-next-issues">32. Recommended Next Issues<a class="headerlink" href="#32-recommended-next-issues" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-224</td>
+<td>Workspace Schema Migration and Entity Layer</td>
+</tr>
+<tr>
+<td>GL-225</td>
+<td>Workspace CRUD API and Admin Control Plane</td>
+</tr>
+<tr>
+<td>GL-226</td>
+<td>Workspace Context Derivation and Header Support</td>
+</tr>
+<tr>
+<td>GL-227</td>
+<td>Workspace Enforcement on Resource Routes</td>
+</tr>
+<tr>
+<td>GL-228</td>
+<td>Workspace Audit Event and Provenance Enforcement</td>
+</tr>
+<tr>
+<td>GL-229</td>
+<td>Workspace Security Regression Test Suite</td>
+</tr>
+<tr>
+<td>GL-230</td>
+<td>Workspace Enforcement Gate Script</td>
+</tr>
+<tr>
+<td>GL-231</td>
+<td>Production Go/No-Go v7 (post-workspace enforcement)</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

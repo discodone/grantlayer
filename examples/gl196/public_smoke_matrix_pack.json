@@ -1,0 +1,473 @@
+{
+  "issue_id": "GL-196",
+  "title": "Public Smoke Matrix Pack",
+  "context": "GrantLayer is publicly available on GitHub at https://github.com/Discodone/grantlayer.git in a Developer Preview / controlled-pilot posture. GL-196 defines the minimal repeatable public smoke matrix for clone/readability, README entry path, deterministic examples, public walkthroughs, public feedback, safety and claim consistency, stale-phrase absence, and public-facing hygiene checks. This is a docs/test/artifact issue only.",
+  "smoke_check_categories": [
+    "public-reachability",
+    "entry-paths",
+    "deterministic-examples",
+    "public-safety-and-feedback",
+    "claim-consistency",
+    "snapshot-hygiene",
+    "publish-expectations"
+  ],
+  "smoke_matrix": [
+    {
+      "check_id": "public_repo_reachable",
+      "purpose": "Confirm the public GitHub repository can be reached and cloned when network access is available.",
+      "command_or_method": "Optional network check: git ls-remote --heads https://github.com/Discodone/grantlayer.git HEAD",
+      "expected_result": "GitHub resolves the public repository and returns refs or a successful clone.",
+      "blocking": false,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt"
+      ]
+    },
+    {
+      "check_id": "readme_present",
+      "purpose": "Verify the README remains present as the first public entry point.",
+      "command_or_method": "test -f README.md",
+      "expected_result": "README.md exists at the repository root.",
+      "blocking": true,
+      "related_docs": [
+        "README.md"
+      ]
+    },
+    {
+      "check_id": "readme_entry_path_clear",
+      "purpose": "Verify the README still shows the correct entry path for new readers.",
+      "command_or_method": "rg -n \"What to try first|What to try next|Developer entry path|first_output_verify_helper|grant_lifecycle_evidence_bundle\" README.md",
+      "expected_result": "README links the first deterministic example, the verify helper, the second example, and the agent entry path.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "docs/first_output_verify_helper.md",
+        "docs/grant_lifecycle_evidence_bundle.md"
+      ]
+    },
+    {
+      "check_id": "first_output_helper_present",
+      "purpose": "Confirm the first-output helper docs and script are present.",
+      "command_or_method": "test -f scripts/verify-first-output.sh && test -f docs/first_output_verify_helper.md",
+      "expected_result": "Helper script and doc both exist.",
+      "blocking": true,
+      "related_docs": [
+        "scripts/verify-first-output.sh",
+        "docs/first_output_verify_helper.md"
+      ]
+    },
+    {
+      "check_id": "first_output_helper_match",
+      "purpose": "Verify the first deterministic output still matches the committed reference.",
+      "command_or_method": "scripts/verify-first-output.sh",
+      "expected_result": "Script exits 0 and reports MATCH.",
+      "blocking": true,
+      "related_docs": [
+        "docs/first_output_verify_helper.md",
+        "examples/first_verifiable_output.py",
+        "examples/first_verifiable_output.json"
+      ]
+    },
+    {
+      "check_id": "grant_lifecycle_example_present",
+      "purpose": "Confirm the grant lifecycle example docs, script, and reference artifact are present.",
+      "command_or_method": "test -f examples/grant_lifecycle_evidence_bundle.py && test -f docs/grant_lifecycle_evidence_bundle.md && test -f examples/grant_lifecycle_evidence_bundle.json",
+      "expected_result": "Example script, docs, and committed reference artifact all exist.",
+      "blocking": true,
+      "related_docs": [
+        "examples/grant_lifecycle_evidence_bundle.py",
+        "docs/grant_lifecycle_evidence_bundle.md",
+        "examples/grant_lifecycle_evidence_bundle.json"
+      ]
+    },
+    {
+      "check_id": "grant_lifecycle_example_match",
+      "purpose": "Verify the grant lifecycle example is deterministic and matches the committed reference.",
+      "command_or_method": "python3 examples/grant_lifecycle_evidence_bundle.py --output /tmp/grantlayer_gl196_grant_lifecycle_check.json && diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_gl196_grant_lifecycle_check.json",
+      "expected_result": "Example exits 0 and diff is empty.",
+      "blocking": true,
+      "related_docs": [
+        "docs/grant_lifecycle_evidence_bundle.md",
+        "examples/grant_lifecycle_evidence_bundle.py",
+        "examples/grant_lifecycle_evidence_bundle.json"
+      ]
+    },
+    {
+      "check_id": "public_agent_api_walkthrough_present",
+      "purpose": "Confirm the public agent/API walkthrough doc is present and linked from the public path.",
+      "command_or_method": "test -f docs/public_agent_api_walkthrough_refresh.md",
+      "expected_result": "Walkthrough doc exists and remains part of the public entry path.",
+      "blocking": true,
+      "related_docs": [
+        "docs/public_agent_api_walkthrough_refresh.md",
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "llms-full.txt"
+      ]
+    },
+    {
+      "check_id": "public_feedback_infrastructure_present",
+      "purpose": "Confirm the public feedback infrastructure doc and security routing are present.",
+      "command_or_method": "test -f docs/public_feedback_infrastructure_pack.md && test -f SECURITY.md",
+      "expected_result": "Feedback infrastructure doc and security policy exist.",
+      "blocking": true,
+      "related_docs": [
+        "docs/public_feedback_infrastructure_pack.md",
+        "SECURITY.md"
+      ]
+    },
+    {
+      "check_id": "public_safety_gate_present",
+      "purpose": "Confirm the public safety / scanner / claim consistency gate exists as the reference safety checkpoint.",
+      "command_or_method": "test -f docs/public_safety_scanner_claim_consistency_gate.md",
+      "expected_result": "Public safety gate doc exists.",
+      "blocking": true,
+      "related_docs": [
+        "docs/public_safety_scanner_claim_consistency_gate.md",
+        "docs/public_feedback_infrastructure_pack.md"
+      ]
+    },
+    {
+      "check_id": "security_advisory_route_visible",
+      "purpose": "Verify security-sensitive reports are routed to GitHub Security Advisories.",
+      "command_or_method": "rg -n \"GitHub Security Advisories|security/advisories\" SECURITY.md docs/public_feedback_infrastructure_pack.md README.md",
+      "expected_result": "Security advisory routing is visible in the security policy and public feedback docs.",
+      "blocking": true,
+      "related_docs": [
+        "SECURITY.md",
+        "docs/public_feedback_infrastructure_pack.md",
+        "README.md"
+      ]
+    },
+    {
+      "check_id": "developer_preview_caveat_visible",
+      "purpose": "Verify Developer Preview or technical preview wording remains visible.",
+      "command_or_method": "rg -n \"Developer Preview|technical preview\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md docs/public_agent_api_walkthrough_refresh.md docs/public_safety_scanner_claim_consistency_gate.md",
+      "expected_result": "Public-facing docs state the Developer Preview posture.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "llms-full.txt",
+        "SECURITY.md"
+      ]
+    },
+    {
+      "check_id": "not_production_saas_caveat_visible",
+      "purpose": "Verify the repository does not claim production SaaS readiness.",
+      "command_or_method": "rg -n \"not production SaaS|Production SaaS readiness|not provided\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md docs/public_agent_api_walkthrough_refresh.md docs/public_safety_scanner_claim_consistency_gate.md",
+      "expected_result": "Public docs preserve the not-production-SaaS caveat.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "SECURITY.md"
+      ]
+    },
+    {
+      "check_id": "tenant_isolation_not_implemented_caveat_visible",
+      "purpose": "Verify tenant/workspace isolation remains explicitly not implemented.",
+      "command_or_method": "rg -n \"tenant.*not implemented|tenant/workspace isolation|tenant isolation\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md docs/public_agent_api_walkthrough_refresh.md docs/public_safety_scanner_claim_consistency_gate.md",
+      "expected_result": "Public docs keep the tenant/workspace isolation caveat visible.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "SECURITY.md"
+      ]
+    },
+    {
+      "check_id": "no_real_customer_data_caveat_visible",
+      "purpose": "Verify public docs continue to say no real customer data is used.",
+      "command_or_method": "rg -n \"no real customer data|synthetic|demo data|private grants\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md docs/public_agent_api_walkthrough_refresh.md docs/public_safety_scanner_claim_consistency_gate.md",
+      "expected_result": "Public docs continue to restrict examples to synthetic/demo data.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "SECURITY.md"
+      ]
+    },
+    {
+      "check_id": "no_secrets_caveat_visible",
+      "purpose": "Verify public docs continue to say no real secrets are used.",
+      "command_or_method": "rg -n \"no real secrets|placeholder tokens|password|API keys\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md docs/public_agent_api_walkthrough_refresh.md docs/public_safety_scanner_claim_consistency_gate.md",
+      "expected_result": "Public docs continue to restrict secrets to placeholders only.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "SECURITY.md"
+      ]
+    },
+    {
+      "check_id": "stale_public_state_phrases_absent",
+      "purpose": "Verify stale pre-public phrases remain absent from public entry docs.",
+      "command_or_method": "rg -n \"publication pending|public GitHub release has not happened|visibility decision pending|formal visibility decision pending|approved internal source|if and when public publication is approved\" README.md CONTRIBUTING.md AGENTS.md llms-full.txt llms.txt docs/ten_minute_quickstart.md docs/agent_quickstart.md || true",
+      "expected_result": "No stale public-state phrases are found in the public entry docs.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "CONTRIBUTING.md",
+        "AGENTS.md",
+        "llms.txt",
+        "llms-full.txt"
+      ]
+    },
+    {
+      "check_id": "private_data_scan_clean",
+      "purpose": "Verify public-facing files do not expose private data or private grant content.",
+      "command_or_method": "rg -n \"customer data|private grants|real customer|real grant|real institutional|PII|email|phone number\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md CONTRIBUTING.md docs/public_agent_api_walkthrough_refresh.md docs/public_feedback_infrastructure_pack.md docs/public_safety_scanner_claim_consistency_gate.md || true",
+      "expected_result": "No private data terms are found in public-facing files.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "SECURITY.md",
+        "docs/public_agent_api_walkthrough_refresh.md"
+      ]
+    },
+    {
+      "check_id": "secret_scan_clean",
+      "purpose": "Verify public-facing files do not expose secrets or secret-shaped values.",
+      "command_or_method": "rg -n \"ghp_|sk-|Bearer |API key|password|private key\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md CONTRIBUTING.md docs/public_agent_api_walkthrough_refresh.md docs/public_feedback_infrastructure_pack.md docs/public_safety_scanner_claim_consistency_gate.md || true",
+      "expected_result": "No secret-shaped material is found in public-facing files.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "SECURITY.md",
+        "docs/public_feedback_infrastructure_pack.md"
+      ]
+    },
+    {
+      "check_id": "internal_infrastructure_scan_clean",
+      "purpose": "Verify public-facing files do not expose internal hostnames, remotes, or private absolute paths.",
+      "command_or_method": "rg -n \"Forgejo|/home/adminuser/|internal hostname|internal remote|private absolute path\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md CONTRIBUTING.md docs/public_agent_api_walkthrough_refresh.md docs/public_feedback_infrastructure_pack.md docs/public_safety_scanner_claim_consistency_gate.md || true",
+      "expected_result": "No internal infrastructure details are found in public-facing files.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "SECURITY.md",
+        "docs/public_safety_scanner_claim_consistency_gate.md"
+      ]
+    },
+    {
+      "check_id": "no_force_push_required",
+      "purpose": "Verify the public docs do not require a force push to publish the snapshot.",
+      "command_or_method": "rg -n \"git push --force|force push\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md docs/public_feedback_infrastructure_pack.md docs/public_safety_scanner_claim_consistency_gate.md || true",
+      "expected_result": "No public doc states that a force push is required.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "SECURITY.md"
+      ]
+    },
+    {
+      "check_id": "internal_repo_not_directly_pushed_to_github",
+      "purpose": "Verify the public docs do not imply that the internal repo is pushed directly to GitHub.",
+      "command_or_method": "rg -n \"internal repo directly to GitHub|git push github|push internal repo\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md docs/public_feedback_infrastructure_pack.md docs/public_safety_scanner_claim_consistency_gate.md || true",
+      "expected_result": "No public doc says the internal repo is pushed directly to GitHub.",
+      "blocking": true,
+      "related_docs": [
+        "README.md",
+        "AGENTS.md",
+        "llms.txt",
+        "SECURITY.md"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "command": "git ls-remote --heads https://github.com/Discodone/grantlayer.git HEAD",
+      "purpose": "Optional public reachability check"
+    },
+    {
+      "command": "rg -n \"What to try first|What to try next|Developer entry path|first_output_verify_helper|grant_lifecycle_evidence_bundle\" README.md",
+      "purpose": "README entry path check"
+    },
+    {
+      "command": "scripts/verify-first-output.sh",
+      "purpose": "First verifiable output helper"
+    },
+    {
+      "command": "python3 examples/grant_lifecycle_evidence_bundle.py --output /tmp/grantlayer_gl196_grant_lifecycle_check.json",
+      "purpose": "Grant lifecycle example generation"
+    },
+    {
+      "command": "diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_gl196_grant_lifecycle_check.json",
+      "purpose": "Grant lifecycle example comparison"
+    },
+    {
+      "command": "rg -n \"GitHub Security Advisories|security/advisories\" SECURITY.md docs/public_feedback_infrastructure_pack.md README.md",
+      "purpose": "Security advisory route visibility check"
+    },
+    {
+      "command": "rg -n \"Developer Preview|technical preview|not production SaaS|tenant.*not implemented|no real secrets|customer data|private grants\" README.md AGENTS.md llms.txt llms-full.txt docs/public_agent_api_walkthrough_refresh.md docs/public_safety_scanner_claim_consistency_gate.md",
+      "purpose": "Public caveat visibility check"
+    },
+    {
+      "command": "rg -n \"publication pending|public GitHub release has not happened|visibility decision pending|formal visibility decision pending|approved internal source|if and when public publication is approved\" README.md CONTRIBUTING.md AGENTS.md llms-full.txt llms.txt docs/ten_minute_quickstart.md docs/agent_quickstart.md || true",
+      "purpose": "Stale public-state phrase absence check"
+    },
+    {
+      "command": "rg -n \"customer data|private grants|real customer|real grant|real institutional|PII|email|phone number\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md CONTRIBUTING.md docs/public_agent_api_walkthrough_refresh.md docs/public_feedback_infrastructure_pack.md docs/public_safety_scanner_claim_consistency_gate.md || true",
+      "purpose": "Private data absence check"
+    },
+    {
+      "command": "rg -n \"ghp_|sk-|Bearer |API key|password|private key\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md CONTRIBUTING.md docs/public_agent_api_walkthrough_refresh.md docs/public_feedback_infrastructure_pack.md docs/public_safety_scanner_claim_consistency_gate.md || true",
+      "purpose": "Secret absence check"
+    },
+    {
+      "command": "rg -n \"Forgejo|/home/adminuser/|internal hostname|internal remote|private absolute path\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md CONTRIBUTING.md docs/public_agent_api_walkthrough_refresh.md docs/public_feedback_infrastructure_pack.md docs/public_safety_scanner_claim_consistency_gate.md || true",
+      "purpose": "Internal infrastructure absence check"
+    },
+    {
+      "command": "rg -n \"git push --force|force push|internal repo directly to GitHub|git push github|push internal repo\" README.md AGENTS.md llms.txt llms-full.txt SECURITY.md docs/public_feedback_infrastructure_pack.md docs/public_safety_scanner_claim_consistency_gate.md || true",
+      "purpose": "No force-push / direct push expectation check"
+    }
+  ],
+  "expected_results": [
+    "The public repository is reachable when network access is available.",
+    "The README entry path points to the deterministic examples and agent entry docs.",
+    "The first-output helper reports MATCH.",
+    "The grant lifecycle example diff is empty.",
+    "Security-sensitive reports route to GitHub Security Advisories.",
+    "Developer Preview, not production SaaS, and tenant/workspace isolation not implemented remain visible.",
+    "Stale public-state phrases remain absent from the public entry docs.",
+    "Public-facing files remain free of private data, secrets, and internal infrastructure details.",
+    "No public doc requires a force push or direct internal repo push to GitHub."
+  ],
+  "blocking_criteria": [
+    "Missing public docs or helper files",
+    "First-output mismatch",
+    "Grant lifecycle diff mismatch",
+    "Missing public caveats",
+    "Any stale public-state phrase in public entry docs",
+    "Any private data, secret, or internal infrastructure leak in public-facing files",
+    "Any public statement that force-push is required",
+    "Any public statement that the internal repo is pushed directly to GitHub",
+    "Any loss of GitHub Security Advisories routing"
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "no_reviewer_outreach_sent": true,
+    "no_backend_src_changes": true,
+    "no_openapi_changes": true,
+    "no_migration_db_dependency_changes": true,
+    "no_dependency_manifest_changes": true,
+    "no_sdk_implementation_changes": true,
+    "no_examples_runtime_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_behavior_changes": true,
+    "no_production_saas_claim": true,
+    "tenant_isolation_not_claimed": true,
+    "no_real_customer_data_requested": true,
+    "no_private_grant_data_requested": true,
+    "no_secrets_requested": true,
+    "no_exploit_details_included": true,
+    "security_sensitive_reports_routed_to_github_security_advisories": true
+  },
+  "changed_files": [
+    "docs/public_smoke_matrix_pack.md",
+    "docs/examples/gl196/public_smoke_matrix_pack.json",
+    "backend/tests/test_gl196_public_smoke_matrix_pack.py"
+  ],
+  "tests": [
+    {
+      "command": "python3 -m py_compile backend/tests/test_gl196_public_smoke_matrix_pack.py",
+      "purpose": "Syntax check",
+      "result": "pending"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl196_public_smoke_matrix_pack -v",
+      "purpose": "Issue-specific validation",
+      "result": "pending"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl195_public_safety_scanner_claim_consistency_gate -v",
+      "purpose": "Regression check for GL-195",
+      "result": "pending"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl194_public_preview_review_feedback_triage_pack -v",
+      "purpose": "Regression check for GL-194",
+      "result": "pending"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_security_boundary_regression -v",
+      "purpose": "Security boundary regression",
+      "result": "pending"
+    },
+    {
+      "command": "scripts/verify-first-output.sh",
+      "purpose": "First output smoke check",
+      "result": "pending"
+    },
+    {
+      "command": "python3 examples/grant_lifecycle_evidence_bundle.py --output /tmp/grantlayer_gl196_grant_lifecycle_check.json",
+      "purpose": "Grant lifecycle smoke check",
+      "result": "pending"
+    },
+    {
+      "command": "diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_gl196_grant_lifecycle_check.json",
+      "purpose": "Grant lifecycle comparison",
+      "result": "pending"
+    },
+    {
+      "command": "git diff --check",
+      "purpose": "Whitespace and conflict marker check",
+      "result": "pending"
+    },
+    {
+      "command": "git status --short",
+      "purpose": "Working tree check",
+      "result": "pending"
+    },
+    {
+      "command": "git diff --name-only main...HEAD",
+      "purpose": "Branch diff check",
+      "result": "pending"
+    }
+  ],
+  "findings": [],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0,
+    "total": 0,
+    "blocking": 0
+  },
+  "result": "public_smoke_matrix_pack_complete",
+  "next_recommended_step": "GL-196 Combined Merge-and-Publish for Public Smoke Matrix Pack",
+  "non_goals": [
+    "No backend runtime behavior changes",
+    "No OpenAPI changes",
+    "No migrations, schema, dependency, SDK implementation, or frontend/design changes",
+    "No GitHub workflow changes",
+    "No publication or visibility changes",
+    "No GitHub API label or issue automation",
+    "No reviewer outreach",
+    "No change to the snapshot publish script"
+  ]
+}

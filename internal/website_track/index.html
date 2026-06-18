@@ -1,0 +1,1491 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/website_track/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-210 - Website Track - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-210-website-track" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-210 - Website Track
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#existing-website-design-inspection-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Existing Website-Design Inspection Result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#website-claim-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Website Claim Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allowed-website-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed Website Claims
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prohibited-website-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prohibited Website Claims
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#static-website-implementation-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static Website Implementation Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#website-file-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Website File List
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-publish-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Publish Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#no-public-publish-confirmation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No-Public-Publish Confirmation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#no-analytics-tracking-forms-confirmation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No Analytics / Tracking / Forms Confirmation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-reporting-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Reporting Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlled-preview-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled-Preview Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Readiness Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Blockers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-210-website-track">GL-210 - Website Track<a class="headerlink" href="#gl-210-website-track" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-210
+<strong>Title:</strong> Website Track
+<strong>Status:</strong> Internal / Developer Preview</p>
+<p>GL-210 creates a claim-safe website baseline. It does not publish a website,
+does not push to public GitHub, and does not change repository visibility.</p>
+<p>GrantLayer remains Developer Preview / Controlled Preview with strict
+boundaries. Production SaaS is no-go. Real customer data, private grant data,
+and institutional data remain no-go. The internal SDK prototype is not an
+official SDK or package. Live PostgreSQL production readiness is not claimed.
+Compliance certification is not claimed. GDPR, SOC2, and ISO readiness are not
+claimed.</p>
+<p>Security-sensitive reports route to GitHub Security Advisories. No exploit
+details are included. No real secrets are included. No real customer/private
+data is used.</p>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-200A through GL-209 are merged internally. The repository now has
+tenant/workspace, auth/secrets/config, persistence/migration, API contract,
+operations, admin/operator, claim-safety, runtime/IAM/abuse/incident, and data
+governance/audit operations baselines. Those baselines support local evaluation
+and bounded Controlled Preview with synthetic/demo data only, but they are not
+production-complete.</p>
+<p>GL-210 defines what a public-facing website may safely say and adds a small
+static website baseline for future review. Public publish remains out of scope.</p>
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Review GL-200A through GL-209 claim-safety inputs and public entry docs.</li>
+<li>Inspect the pre-existing untracked website-design material without blindly
+  adopting it.</li>
+<li>Define website allowed and prohibited claims.</li>
+<li>Add a minimal static <code>website/</code> baseline using local assets only.</li>
+<li>Produce this document, a structured JSON artifact, and regression tests that
+  block website overclaims and unsafe website mechanics.</li>
+</ul>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Public website publish, public GitHub push, or visibility change.</li>
+<li>Deployment automation, hosting config, GitHub workflow changes, or snapshot
+  publish script changes.</li>
+<li>Backend/src changes, API behavior changes, migrations, DB/schema changes, or
+  dependency changes.</li>
+<li>JavaScript app, build system, package metadata, analytics, tracking, cookies,
+  external assets, external API calls, or forms.</li>
+<li>Production SaaS, enterprise readiness, compliance certification, official SDK
+  package, live PostgreSQL production readiness, or real/private data readiness
+  claims.</li>
+</ul>
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/claim_safety_controlled_preview_boundary.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl207/claim_safety_controlled_preview_boundary.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/runtime_abuse_incident_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl208/runtime_abuse_incident_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/data_governance_audit_operations.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl209/data_governance_audit_operations.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/admin_operator_tenant_control_plane.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl206/admin_operator_tenant_control_plane.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/live_postgres_backup_observability_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl205/live_postgres_backup_observability_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_ops_go_no_go_v3.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl204/production_ops_go_no_go_v3.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/sdk_prototype_packaging_boundary.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203c/sdk_prototype_packaging_boundary.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi_api_contract_cleanup.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203b/openapi_api_contract_cleanup.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/api_contract_sdk_packaging_decision.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203/api_contract_sdk_packaging_decision.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/persistence_postgres_migration_readiness.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl202/persistence_postgres_migration_readiness.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_auth_secrets_config_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl201/production_auth_secrets_config_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_api_audit_regression_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_implementation_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_design_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200a/tenant_workspace_isolation_design_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/website_design_workspace_import_report.md</td>
+<td>Yes, inspection only</td>
+</tr>
+<tr>
+<td>docs/website_design_workspace_import_report_dirty_stop.md</td>
+<td>Yes, inspection only</td>
+</tr>
+<tr>
+<td>website-design/</td>
+<td>Yes, inspection only</td>
+</tr>
+</tbody>
+</table>
+<h2 id="existing-website-design-inspection-result">Existing Website-Design Inspection Result<a class="headerlink" href="#existing-website-design-inspection-result" title="Permanent link">&para;</a></h2>
+<p>The untracked <code>website-design/</code> tree contains only <code>README.md</code> and
+<code>IMPORT_CHECKLIST.md</code>. The expected design files, pages, scripts, styles, and
+deck files were not present. The import reports state that no design files were
+found locally or on the reachable Nextcloud VM and no files were imported.</p>
+<p>The <code>website-design/README.md</code> also contains stale or broad positioning such as
+<code>MVP</code>, <code>pilot-readiness hardening</code>, and <code>production readiness in progress</code>.
+Because the tree is incomplete, untracked, and not a working static website, no
+files from <code>website-design/</code> are adopted by GL-210. The material remains
+excluded for future intentional review.</p>
+<p>The prompt referenced <code>docs/website_design_workspace_import_dirty_stop.md</code>; that
+exact path is absent in this worktree. The present stop report,
+<code>docs/website_design_workspace_import_report_dirty_stop.md</code>, was inspected.</p>
+<h2 id="website-claim-boundary">Website Claim Boundary<a class="headerlink" href="#website-claim-boundary" title="Permanent link">&para;</a></h2>
+<p>The website may describe the current Developer Preview posture and controlled
+preview boundaries only. It must use caveated language for every baseline that
+is not production-complete. It must not imply public availability, hosting,
+production operation, enterprise readiness, compliance certification, official
+SDK/package availability, or approval for real/private data.</p>
+<h2 id="allowed-website-claims">Allowed Website Claims<a class="headerlink" href="#allowed-website-claims" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GrantLayer is an API-first Developer Preview.</li>
+<li>GrantLayer is a verification, audit, and compliance-support layer for agentic
+  grant workflows.</li>
+<li>Controlled Preview is possible with strict boundaries.</li>
+<li>Controlled Preview expansion is synthetic/demo data only.</li>
+<li>Tenant/workspace isolation baseline is implemented, but not
+  production-complete.</li>
+<li>Admin/operator tenant control-plane baseline exists, but not
+  production-complete.</li>
+<li>Runtime/IAM/abuse/incident hardening baseline exists, but not
+  production-complete.</li>
+<li>Data governance/audit operations baseline exists, but not production-complete.</li>
+<li>Internal SDK prototype exists, but no official SDK/package is available.</li>
+<li>Live PostgreSQL validation remains pending unless an ephemeral validation has
+  actually been executed.</li>
+<li>Security-sensitive reports route to GitHub Security Advisories.</li>
+</ul>
+<h2 id="prohibited-website-claims">Prohibited Website Claims<a class="headerlink" href="#prohibited-website-claims" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Production SaaS ready.</li>
+<li>Enterprise ready.</li>
+<li>Compliance certified.</li>
+<li>GDPR/SOC2/ISO ready.</li>
+<li>Ready for real customer data.</li>
+<li>Ready for private grant/institutional data.</li>
+<li>Official SDK available.</li>
+<li>Public SDK package available.</li>
+<li>Production-ready SDK.</li>
+<li>Live PostgreSQL production ready.</li>
+<li>Complete tenant/workspace production isolation.</li>
+<li>Complete production admin/operator tenant-management plane.</li>
+<li>Complete production observability stack.</li>
+<li>Complete production backup/restore/DR readiness.</li>
+<li>Complete incident response program.</li>
+</ul>
+<h2 id="static-website-implementation-summary">Static Website Implementation Summary<a class="headerlink" href="#static-website-implementation-summary" title="Permanent link">&para;</a></h2>
+<p>GL-210 adds a small static website baseline under <code>website/</code>.</p>
+<p>The implementation uses plain HTML and CSS only. It has no JavaScript, no build
+system, no package metadata, no external fonts, no external images, no external
+scripts, no external API calls, no analytics, no tracking, no cookies, and no
+forms. Links point only to local repository documents.</p>
+<p>The page states Developer Preview / Controlled Preview with strict boundaries,
+not production SaaS, no real customer/private grant/institutional data
+readiness, no official SDK/package, no live PostgreSQL production readiness
+claim, and no compliance certification claim.</p>
+<h2 id="website-file-list">Website File List<a class="headerlink" href="#website-file-list" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>website/index.html</code></li>
+<li><code>website/styles.css</code></li>
+<li><code>website/README.md</code></li>
+</ul>
+<h2 id="public-publish-status">Public Publish Status<a class="headerlink" href="#public-publish-status" title="Permanent link">&para;</a></h2>
+<p>Not published. GL-210 is an internal branch baseline only.</p>
+<h2 id="no-public-publish-confirmation">No-Public-Publish Confirmation<a class="headerlink" href="#no-public-publish-confirmation" title="Permanent link">&para;</a></h2>
+<p>No public publish occurred. No public GitHub push occurred. Repository
+visibility was not changed.</p>
+<h2 id="no-analytics-tracking-forms-confirmation">No Analytics / Tracking / Forms Confirmation<a class="headerlink" href="#no-analytics-tracking-forms-confirmation" title="Permanent link">&para;</a></h2>
+<p>The static website baseline includes no analytics, tracking, cookies,
+JavaScript, external scripts, external assets, external API calls, or forms.</p>
+<h2 id="security-reporting-model">Security Reporting Model<a class="headerlink" href="#security-reporting-model" title="Permanent link">&para;</a></h2>
+<p>Website copy and documentation route security-sensitive reports to GitHub
+Security Advisories. Public reports must not include exploit details, secrets,
+real customer data, private grant data, or institutional data.</p>
+<h2 id="controlled-preview-boundary">Controlled-Preview Boundary<a class="headerlink" href="#controlled-preview-boundary" title="Permanent link">&para;</a></h2>
+<p>Controlled Preview remains limited to strict boundaries and synthetic/demo data
+only. Real customer data, private grant data, and institutional data remain
+no-go. Public website copy must preserve those boundaries.</p>
+<h2 id="production-readiness-impact">Production Readiness Impact<a class="headerlink" href="#production-readiness-impact" title="Permanent link">&para;</a></h2>
+<p>GL-210 does not advance production readiness. It only documents claim boundaries
+and adds a static Developer Preview website baseline. Production SaaS remains
+no-go until future security, data, operations, legal, live PostgreSQL,
+backup/restore, observability, and pilot gates are completed.</p>
+<h2 id="remaining-blockers">Remaining Blockers<a class="headerlink" href="#remaining-blockers" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Public publish review and approval remain future work.</li>
+<li>Website design system, content review, accessibility audit, and brand review
+  remain future work.</li>
+<li>Live PostgreSQL validation remains pending unless an ephemeral validation is
+  executed in a future issue.</li>
+<li>Official SDK/package publication remains no-go.</li>
+<li>Real customer/private grant/institutional data readiness remains no-go.</li>
+<li>Compliance certification and GDPR/SOC2/ISO readiness remain no-go.</li>
+</ul>
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Status</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Website copy overclaims production readiness</td>
+<td>Controlled</td>
+<td>GL-210 tests scan website copy and JSON/doc boundaries.</td>
+</tr>
+<tr>
+<td>Incomplete untracked website-design material is adopted accidentally</td>
+<td>Controlled</td>
+<td>GL-210 explicitly excludes the tree and documents why.</td>
+</tr>
+<tr>
+<td>Static page gains tracking, forms, or external calls</td>
+<td>Controlled</td>
+<td>GL-210 tests reject those mechanics.</td>
+</tr>
+<tr>
+<td>Security reporting text becomes too public or detailed</td>
+<td>Controlled</td>
+<td>Copy routes sensitive reports to GitHub Security Advisories without exploit details.</td>
+</tr>
+<tr>
+<td>Future public publish happens before review</td>
+<td>Open</td>
+<td>Public publish remains prohibited and requires a future issue.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><code>website_track_baseline_approved_with_gaps</code></p>
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<p>The safe path is to exclude the incomplete untracked <code>website-design/</code> material
+and add a small static baseline with explicit claim boundaries. This produces a
+reviewable website track without importing stale design placeholders, adding
+dependencies, collecting user data, or implying production readiness.</p>
+<h2 id="findings">Findings<a class="headerlink" href="#findings" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Website claim boundary is now documented for Developer Preview / Controlled
+  Preview only.</li>
+<li>Static website baseline is intentionally small and dependency-free.</li>
+<li>Existing website-design material was inspected but not adopted.</li>
+<li>Public publish remains prohibited and did not occur.</li>
+</ul>
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Production SaaS readiness is not claimed.</li>
+<li>Enterprise readiness is not claimed.</li>
+<li>Compliance certification is not claimed.</li>
+<li>GDPR/SOC2/ISO readiness is not claimed.</li>
+<li>Real customer data readiness is not claimed.</li>
+<li>Private grant/institutional data readiness is not claimed.</li>
+<li>Tenant/workspace isolation is not overclaimed.</li>
+<li>Admin/operator control plane is not overclaimed.</li>
+<li>Runtime/IAM/abuse/incident hardening is not overclaimed.</li>
+<li>Data governance/audit operations are not overclaimed.</li>
+<li>No official SDK/package is claimed.</li>
+<li>Live PostgreSQL production readiness is not claimed.</li>
+<li>Controlled Preview expansion is limited to synthetic/demo data.</li>
+<li>No analytics, tracking, cookies, forms, external assets, or external API calls
+  were added.</li>
+<li>No backend/src, API behavior, migrations, DB/schema, dependency, GitHub
+  workflow, or snapshot publish script changes were made.</li>
+<li>No package publishing metadata was added.</li>
+<li>No exploit details, real secrets, real customer data, private grant data, or
+  institutional data are included.</li>
+<li>Security-sensitive reports route to GitHub Security Advisories.</li>
+<li>No public GitHub push, public publish, or visibility change occurred.</li>
+</ul>
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-210 Merge if ready.</li>
+<li>GL-211 SDK / Pilot / Production Gate.</li>
+<li>GL-206B Live PostgreSQL Validation Execution when ephemeral PostgreSQL is
+  available.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

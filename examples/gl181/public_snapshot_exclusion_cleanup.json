@@ -1,0 +1,79 @@
+{
+  "issue_id": "GL-181",
+  "title": "build_clean_public_snapshot Exclusion Cleanup for GL-177/GL-178 Governance Docs",
+  "base_commit": "58b4301d3cd3357d36801e8ec95a8c3536d7c4ae",
+  "changed_files": [
+    "scripts/build-clean-public-snapshot.sh",
+    "docs/public_snapshot_exclusion_cleanup.md",
+    "docs/examples/gl181/public_snapshot_exclusion_cleanup.json",
+    "backend/tests/test_gl181_public_snapshot_exclusion_cleanup.py"
+  ],
+  "exclusions_added": [
+    "docs/public_repo_smoke_verification.md",
+    "docs/examples/gl177/public_repo_smoke_verification.json",
+    "docs/readme_security_post_public_state.md",
+    "docs/examples/gl178/readme_security_post_public_state.json",
+    "docs/public_snapshot_correction_push_gl179.md",
+    "docs/examples/gl179/public_snapshot_correction_push_gl179.json",
+    "docs/public_docs_smoke_verification.md",
+    "docs/examples/gl180/public_docs_smoke_verification.json"
+  ],
+  "public_files_preserved": [
+    "README.md",
+    "SECURITY.md",
+    "LICENSE",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/first_verifiable_output.md",
+    "examples/first_verifiable_output.py",
+    "examples/first_verifiable_output.json"
+  ],
+  "verification": {
+    "snapshot_build_run": true,
+    "snapshot_output_path": "/tmp/grantlayer-public-snapshot-gl181-UJXzJ6",
+    "excluded_files_absent": true,
+    "required_public_files_present": true,
+    "readme_security_state_preserved": true,
+    "notes": "Local snapshot build completed successfully. The internal governance/report docs were absent from the generated snapshot, and the required public-facing files plus the README/SECURITY public-state fixes remained present."
+  },
+  "private_data_secret_safety": {
+    "private_data_found": false,
+    "secret_material_found": false,
+    "internal_infrastructure_found": false,
+    "blockers_found": false,
+    "notes": "This cleanup only changed the public export exclusion list and verification artifacts. No secrets, private paths, or internal infrastructure references were introduced."
+  },
+  "findings": [
+    {
+      "id": "F-181-001",
+      "severity": "info",
+      "status": "closed",
+      "recommendation": "Keep the internal GL-177/GL-178/GL-179/GL-180 governance/report docs excluded from future public snapshot exports.",
+      "blocking": false
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 1,
+    "total": 1
+  },
+  "result": "public_snapshot_exclusion_cleanup_complete",
+  "next_recommended_step": "GL-182 external developer feedback intake",
+  "non_goals": [
+    "No GitHub push performed",
+    "No visibility change performed",
+    "Internal repo was not pushed directly to GitHub",
+    "No force push performed",
+    "No production/backend/src changes",
+    "No OpenAPI, migration, DB/schema, or dependency changes",
+    "No SDK implementation changes",
+    "No frontend, website, or design changes",
+    "No GitHub workflow changes",
+    "No git remote changes",
+    "No Paperclip references or status updates"
+  ]
+}

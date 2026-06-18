@@ -1,0 +1,373 @@
+{
+  "issue_id": "GL-197",
+  "title": "API/SDK/Agent Value Decision Pack",
+  "context": "GrantLayer is publicly available on GitHub at https://github.com/Discodone/grantlayer.git in a Developer Preview / controlled-pilot posture. GL-197 creates a public-safe product/architecture decision pack that clarifies how GrantLayer should present and evolve its API value, SDK value, agent workflow value, minimal integration path, packaging boundaries, what is ready now, what is not ready, and what should be built next. This is a review/docs/test/artifact issue only.",
+  "input_sources_reviewed": [
+    "README.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "sdk/python/README.md",
+    "sdk/python/grantlayer_client.py",
+    "docs/public_agent_api_walkthrough_refresh.md",
+    "docs/public_developer_experience_polish_pack.md",
+    "docs/public_feedback_infrastructure_pack.md",
+    "docs/public_preview_review_feedback_triage_pack.md",
+    "docs/public_safety_scanner_claim_consistency_gate.md",
+    "docs/public_smoke_matrix_pack.md",
+    "docs/first_output_verify_helper.md",
+    "docs/grant_lifecycle_evidence_bundle.md",
+    "docs/agent_quickstart.md",
+    "docs/ten_minute_quickstart.md",
+    "examples/first_verifiable_output.py",
+    "examples/first_verifiable_output.json",
+    "examples/grant_lifecycle_evidence_bundle.py",
+    "examples/grant_lifecycle_evidence_bundle.json",
+    "scripts/verify-first-output.sh",
+    "docs/examples/gl191/public_developer_experience_polish_pack.json",
+    "docs/examples/gl192/public_feedback_infrastructure_pack.json",
+    "docs/examples/gl193/public_agent_api_walkthrough_refresh.json",
+    "docs/examples/gl194/public_preview_review_feedback_triage_pack.json",
+    "docs/examples/gl195/public_safety_scanner_claim_consistency_gate.json",
+    "docs/examples/gl196/public_smoke_matrix_pack.json"
+  ],
+  "current_public_value_surface": {
+    "first_verifiable_output_example": "ready",
+    "verify_first_output_helper": "ready",
+    "grant_lifecycle_evidence_bundle": "ready",
+    "committed_reference_artifacts": "ready",
+    "backend_quickstart_local_pip_required": "ready_with_cautions",
+    "api_quick_reference_readme": "ready_with_cautions",
+    "minimal_python_sdk_readme": "ready_with_cautions",
+    "minimal_python_sdk_client_module_local_not_published": "ready_with_cautions",
+    "langgraph_langchain_style_example": "ready_with_cautions",
+    "agent_entry_points_agents_llms": "ready",
+    "public_feedback_routing": "ready",
+    "public_safety_claim_consistency_gate": "ready",
+    "public_smoke_matrix": "ready",
+    "openapi_contract_local_draft": "draft",
+    "production_saas": "not_ready",
+    "tenant_isolation": "not_implemented",
+    "published_sdk_package_pypi": "not_published",
+    "stable_api_v1_contract": "not_committed"
+  },
+  "api_value_assessment": {
+    "status": "ready_with_cautions",
+    "what_exists": "A local HTTP backend server on port 8765 with a documented REST API (health, grants, grant-requests, challenges, demo-action, audit-events, grant-executions, evidence). A formal OpenAPI contract at docs/openapi.yaml. A ten-minute quickstart that walks through clone, pip install, start, and curl smoke path.",
+    "what_integrator_can_understand_today": "A developer reading README.md and docs/ten_minute_quickstart.md can start the backend, create a grant, run a demo action, list audit events, and verify evidence using curl or the minimal SDK wrapper.",
+    "where_walkthrough_needs_improvement": [
+      "No interactive API playground or hosted demo endpoint exists.",
+      "OpenAPI contract is not served externally; must be opened locally.",
+      "Backend requires pip install and a running process — no-install examples do not reach the API layer.",
+      "Auth configuration (admin token, challenge flow) adds setup friction.",
+      "No cURL collection, Postman collection, or HAR export exists."
+    ],
+    "openapi_docs_sufficient_for_developer_preview": true,
+    "rationale": "The API quick reference in README.md and the OpenAPI contract at docs/openapi.yaml are sufficient for Developer Preview evaluation. They are not sufficient for a production integration or service-level agreement claim.",
+    "recommended_followup": "Add a minimal cURL collection or request collection for core API paths. Clarify auth configuration in the backend quickstart. Document the relationship between no-install examples and the API layer more explicitly."
+  },
+  "sdk_value_assessment": {
+    "status": "ready_with_cautions",
+    "real_sdk_exists": false,
+    "what_exists": "A minimal Python client module at sdk/python/grantlayer_client.py documented at sdk/python/README.md. It wraps the HTTP API with typed request/response helpers and is imported directly from the local repository.",
+    "official_sdk_package_claimed": false,
+    "sdk_package_published_to_pypi": false,
+    "examples_are_examples_not_sdk": true,
+    "examples_description": "examples/first_verifiable_output.py and examples/grant_lifecycle_evidence_bundle.py are standalone local examples using Python stdlib only. They do not import grantlayer_client. They are deterministic local examples, not SDK usage patterns.",
+    "local_client_description": "sdk/python/grantlayer_client.py is a minimal local client wrapper showing how the HTTP API can be called. It must not be described as a published SDK.",
+    "no_official_sdk_package_claimed_unless_verified": true,
+    "sdk_package_claim_preconditions": [
+      "HTTP API surface is stable with a v1 stability commitment.",
+      "Package published to PyPI or equivalent registry.",
+      "Versioning and changelog policy exists.",
+      "SDK test coverage sufficient for external consumer confidence."
+    ],
+    "future_minimal_sdk_should_include": [
+      "Stable HTTP client wrapping the v1 API contract.",
+      "Typed request/response models for all core endpoints.",
+      "Basic auth configuration support.",
+      "pip-installable package with version constraint.",
+      "Integration tests against a live local backend.",
+      "Changelog and version compatibility matrix."
+    ],
+    "package_naming_risks": [
+      "Publishing 'grantlayer' to PyPI before API stability locks in an unstable contract.",
+      "Premature publishing invites external dependencies that are hard to break without a deprecation cycle."
+    ],
+    "decision": "defer_official_sdk_packaging",
+    "sdk_work_safety_constraint": "SDK work must not request secrets or real customer data at any stage.",
+    "rationale": "The API contract has no stability commitment. No PyPI release infrastructure, version policy, or SDK changelog exists. Claiming SDK availability would mislead external integrators. Continue describing the local client wrapper as a minimal convenience module."
+  },
+  "agent_workflow_value_assessment": {
+    "status": "ready_with_cautions",
+    "how_agent_can_use_today": [
+      "Read AGENTS.md, llms.txt, and docs/public_agent_api_walkthrough_refresh.md to understand structure, boundaries, and safety rules.",
+      "Run examples/first_verifiable_output.py without any backend.",
+      "Verify with scripts/verify-first-output.sh.",
+      "Run examples/grant_lifecycle_evidence_bundle.py without any backend.",
+      "Start the backend and run a local API smoke path.",
+      "Create docs/test/artifact issues following the established pattern.",
+      "Follow the agent task contract for branch/commit/report workflow."
+    ],
+    "first_output_helper_value": "high",
+    "first_output_helper_smoke_result": "MATCH",
+    "grant_lifecycle_evidence_bundle_value": "high",
+    "grant_lifecycle_smoke_result": "DIFF CLEAN",
+    "agents_llms_usefulness": "high",
+    "agents_md_covers": [
+      "Safe and forbidden area boundaries.",
+      "Task workflow and branch/commit/report contract.",
+      "Exact safety phrases for agent checks.",
+      "Security and public-readiness rules."
+    ],
+    "llms_txt_known_issue": "llms.txt Next Steps still references GL-193 as upcoming, but GL-193 is complete (GL-195-F003, GL-197-F003).",
+    "langraph_langchain_example": "ready_with_cautions",
+    "agent_safety_boundaries": [
+      "Synthetic/demo data only.",
+      "No secrets, real customer data, or private grants.",
+      "No modification of backend/src/*, OpenAPI, migrations, DB/schema, or dependency manifests.",
+      "No GitHub push or repository settings changes.",
+      "No production SaaS or tenant isolation claim.",
+      "Security-sensitive reports routed to GitHub Security Advisories."
+    ],
+    "future_agent_example_value": "An agent-to-API integration example (health, create grant, demo action, check audit, structured JSON report) would complete the agent-to-API integration story."
+  },
+  "packaging_boundaries": {
+    "examples_first_verifiable_output": "public, stdlib-only — remain as example, do not package",
+    "examples_grant_lifecycle_evidence_bundle": "public, stdlib-only — remain as example, do not package",
+    "sdk_python_grantlayer_client": "public, local only — remain as local wrapper, do not publish to PyPI yet",
+    "sdk_python_readme": "public — remain as documentation, no stability claim",
+    "examples_langgraph_langchain": "public, stdlib-only — remain as integration examples, do not package",
+    "backend": "internal source — not packaged for public use in Developer Preview",
+    "docs_openapi_yaml": "local draft — keep as local draft, no external contract commitment",
+    "pypi_package_grantlayer": "not reserved or published — reserve only when API contract is stable",
+    "what_should_remain_examples_docs": "All current public examples should be positioned as examples and documentation only.",
+    "what_could_become_sdk_later": "sdk/python/grantlayer_client.py is the natural starting point for a future pip-installable SDK, contingent on API v1 stability commitment, pyproject.toml, CI publishing workflow, and version policy.",
+    "what_should_remain_internal": [
+      "backend/src/ — production runtime code.",
+      "Internal Forgejo configuration, migration state, and deployment scripts.",
+      "Any file that contains internal paths, private hostnames, or secrets."
+    ],
+    "requires_production_readiness_before_public_claim": [
+      "Production SaaS hosting.",
+      "Tenant/workspace isolation implementation.",
+      "TLS/mTLS backend configuration.",
+      "Real IAM/OAuth/JWT authentication.",
+      "Hardened database configuration.",
+      "Published SDK with stable API contract."
+    ]
+  },
+  "product_narrative": "GrantLayer is an API-first Developer Preview for verifiable grant workflow evidence, auditability, and agent-facing trust checks. Today, developers can run deterministic local examples and inspect the API and server path. The examples are standalone Python stdlib scripts — they are not a production SaaS, not a published SDK, and not a tenant-isolated service. A minimal local Python client wrapper exists in sdk/python/ for developers who want to make typed HTTP calls against the local backend. No pip package has been published; the wrapper is local only. AI coding agents can use the repository today via the documented entry points (AGENTS.md, llms.txt, llms-full.txt) and the two deterministic no-install examples. Future SDK and API packaging should follow after the API contract is stable and there is demonstrated external demand from the controlled preview reviewer pool.",
+  "what_is_ready_now": {
+    "first_verifiable_output_no_install": "ready",
+    "verify_first_output_helper_offline": "ready",
+    "grant_lifecycle_evidence_bundle_no_install": "ready",
+    "backend_quickstart_local": "ready",
+    "local_api_smoke_path": "ready_with_cautions",
+    "public_feedback_routing": "ready",
+    "agent_entry_points": "ready",
+    "public_smoke_matrix": "ready",
+    "public_safety_claim_consistency_gate": "ready",
+    "langraph_langchain_example": "ready_with_cautions",
+    "minimal_local_python_sdk_wrapper": "ready_with_cautions"
+  },
+  "what_is_not_ready": {
+    "production_saas": "not_ready — not claimed; hardening gates incomplete",
+    "tenant_workspace_isolation": "not_ready — not implemented; all data in a single namespace",
+    "published_sdk_package_pypi": "not_ready — no pyproject.toml; no PyPI release",
+    "stable_api_v1_contract": "not_ready — no stability commitment made",
+    "real_customer_data_support": "not_ready — examples use synthetic identifiers only",
+    "tls_real_iam_oauth": "not_ready — local demo mode only",
+    "hosted_interactive_api_playground": "not_ready — no external endpoint exists",
+    "production_deployment": "not_ready — no production deployment exists"
+  },
+  "decision": "api_first_agent_examples_now_sdk_later",
+  "decision_rationale": "GrantLayer's current public value is concentrated in two deterministic no-install examples and a documented API quickstart. The API layer has sufficient clarity for Developer Preview evaluation. The minimal Python client wrapper shows the API call pattern without requiring package publishing. Reasons to defer SDK packaging: no external demand confirmed, no API stability commitment, no PyPI release infrastructure, no version policy. Reasons to focus on API-first + agent examples now: no-install examples are the highest-value public assets; an agent-to-API integration example would close the remaining gap; improving the API walkthrough adds integrator confidence without packaging risk.",
+  "findings": [
+    {
+      "id": "GL-197-F001",
+      "severity": "medium",
+      "category": "api-docs",
+      "summary": "The backend API walkthrough lacks a cURL collection or request collection for the most common API paths, increasing friction for first-time integrators.",
+      "evidence": "README.md has a partial curl example for grant creation and demo action, but no downloadable request collection or structured API smoke path exists beyond the ten-minute quickstart prose.",
+      "blocking": false,
+      "recommended_action": "Add a minimal cURL collection or Postman/Bruno collection for core API paths (health, create grant, demo action, revoke, audit events) as a future API walkthrough refresh.",
+      "recommended_issue": "GL-198 or a dedicated API walkthrough refresh issue"
+    },
+    {
+      "id": "GL-197-F002",
+      "severity": "medium",
+      "category": "sdk-packaging",
+      "summary": "The README Developer entry path Step 5 reads 'Python SDK' and links to sdk/python/README.md, which may lead readers to expect a published, pip-installable package.",
+      "evidence": "README.md Developer entry path table Step 5: 'Python SDK' — sdk/python/README.md. The SDK README correctly states 'No pip package is published,' but the README table label may set incorrect expectations.",
+      "blocking": false,
+      "recommended_action": "Add a qualifier to the README Developer entry path table: change 'Python SDK' to 'Minimal Python client (local only, not published)' or equivalent.",
+      "recommended_issue": "GL-198 or a cross-link fix in a subsequent issue"
+    },
+    {
+      "id": "GL-197-F003",
+      "severity": "low",
+      "category": "agent-value",
+      "summary": "llms.txt Next Steps section still references 'GL-193 (public agent/API walkthrough refresh)' as an upcoming issue, but GL-193 is complete.",
+      "evidence": "llms.txt line 78: 'Upcoming issues: GL-193 (public agent/API walkthrough refresh).' GL-193 was merged and published. First identified in GL-195-F003.",
+      "blocking": false,
+      "recommended_action": "Update llms.txt Next Steps to reference current upcoming issues (GL-197–GL-199 roadmap).",
+      "recommended_issue": "GL-197 or GL-198"
+    },
+    {
+      "id": "GL-197-F004",
+      "severity": "low",
+      "category": "agent-value",
+      "summary": "No agent-to-API integration example exists that shows an AI coding agent calling the live local backend with placeholder tokens in a single self-explanatory script.",
+      "evidence": "examples/langgraph_langchain/grantlayer_agent_example.py shows the agent pattern but the full agent-to-API smoke path (calling each major endpoint in sequence) is not yet a standalone documented example.",
+      "blocking": false,
+      "recommended_action": "Add a future standalone agent-to-API example that is fully documented, uses placeholder tokens, and produces a structured JSON report.",
+      "recommended_issue": "GL-198 or a future agent workflow example issue"
+    },
+    {
+      "id": "GL-197-F005",
+      "severity": "info",
+      "category": "public-positioning",
+      "summary": "The OpenAPI contract at docs/openapi.yaml is not served externally; an integrator cannot browse the API interactively without a local Swagger/Redoc viewer.",
+      "evidence": "docs/openapi.yaml exists and is referenced in README, but no hosted or embedded playground is available.",
+      "blocking": false,
+      "recommended_action": "Consider linking to a static Redoc/Swagger viewer or adding a docs/api_reference.md rendered table in a future issue. Non-blocking for Developer Preview.",
+      "recommended_issue": "GL-199 or future API reference issue"
+    },
+    {
+      "id": "GL-197-F006",
+      "severity": "info",
+      "category": "developer-preview",
+      "summary": "Auth configuration (admin token, challenge flow) adds setup friction for first-time API users who come from the no-install examples without reading the quickstart docs carefully.",
+      "evidence": "Backend requires GRANTLAYER_REQUIRE_ADMIN_TOKEN and GRANTLAYER_REQUIRE_CHALLENGE to be understood. Demo-mode vs product-mode distinction is in README but may not be obvious.",
+      "blocking": false,
+      "recommended_action": "Add a quickstart auth guide or expand the auth section of docs/ten_minute_quickstart.md to cover demo-mode vs product-mode in one clear step.",
+      "recommended_issue": "GL-198 or future quickstart improvement"
+    },
+    {
+      "id": "GL-197-F007",
+      "severity": "info",
+      "category": "production-caveat",
+      "summary": "No consolidated production readiness gap report v2 exists (also identified in GL-194-F002 and GL-195-F004). Non-blocking.",
+      "evidence": "Individual caveats are scattered across README.md, SECURITY.md, and docs/security_boundaries.md. No single document maps all remaining hardening gates with owner, priority, and estimated scope.",
+      "blocking": false,
+      "recommended_action": "GL-199 Production Readiness Gap Report v2 should consolidate all hardening gaps.",
+      "recommended_issue": "GL-199"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "medium": 2,
+    "low": 2,
+    "info": 3,
+    "high": 0,
+    "critical": 0,
+    "blocker": 0
+  },
+  "recommended_next_issues": [
+    {
+      "issue": "GL-197 combined",
+      "title": "GL-197 Combined Merge-and-Publish for API/SDK/Agent Value Decision Pack",
+      "priority": "high",
+      "rationale": "Merge GL-197 to main and publish the public snapshot update."
+    },
+    {
+      "issue": "GL-198",
+      "title": "Controlled Preview Boundary Pack",
+      "priority": "medium",
+      "rationale": "Draft reviewer invite criteria, data policy summary, onboarding/offboarding, address GL-197-F001, F002, F003, F004."
+    },
+    {
+      "issue": "GL-199",
+      "title": "Production Readiness Gap Report v2",
+      "priority": "medium",
+      "rationale": "Consolidated production-vs-preview gap analysis, tenant isolation implementation path, and remaining hardening gates. Address GL-197-F007, GL-195-F004, GL-194-F002."
+    }
+  ],
+  "optional_future_followups": [
+    {
+      "topic": "API walkthrough implementation refresh",
+      "rationale": "Add cURL collection, expand auth docs — addresses GL-197-F001, F006",
+      "candidate_issue": "GL-198 or dedicated issue"
+    },
+    {
+      "topic": "llms.txt Next Steps update",
+      "rationale": "One-line fix for GL-197-F003; can be done in GL-198",
+      "candidate_issue": "GL-198"
+    },
+    {
+      "topic": "README SDK label qualifier",
+      "rationale": "Two-word fix for GL-197-F002; can be done in GL-198",
+      "candidate_issue": "GL-198"
+    },
+    {
+      "topic": "Future minimal SDK prototype",
+      "rationale": "Only after API contract stability commitment and external demand from controlled preview reviewer pool",
+      "candidate_issue": "Post GL-199"
+    },
+    {
+      "topic": "Future agent-to-API standalone example",
+      "rationale": "Complete the agent workflow integration story — GL-197-F004",
+      "candidate_issue": "GL-198 or future GL-200"
+    },
+    {
+      "topic": "Hosted OpenAPI viewer or rendered API reference",
+      "rationale": "Addresses GL-197-F005; non-blocking for Developer Preview",
+      "candidate_issue": "GL-199 or future issue"
+    }
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": "confirmed",
+    "no_visibility_change_performed": "confirmed",
+    "internal_repo_not_pushed_directly_to_github": "confirmed",
+    "no_github_api_label_changes_performed": "confirmed",
+    "no_github_issue_changes_performed": "confirmed",
+    "no_reviewer_outreach_sent": "confirmed",
+    "no_backend_src_changes": "confirmed",
+    "no_openapi_changes": "confirmed",
+    "no_migration_db_dependency_changes": "confirmed",
+    "no_dependency_manifest_changes": "confirmed",
+    "no_sdk_implementation_changes": "confirmed",
+    "no_package_publishing_changes": "confirmed",
+    "no_examples_runtime_changes": "confirmed",
+    "no_frontend_website_design_changes": "confirmed",
+    "no_github_workflow_changes": "confirmed",
+    "no_snapshot_publish_script_behavior_changes": "confirmed",
+    "no_production_saas_claim": "confirmed",
+    "tenant_isolation_not_claimed": "confirmed",
+    "official_sdk_package_not_claimed_unless_verified": "confirmed",
+    "no_real_customer_data_requested": "confirmed",
+    "no_private_grant_data_requested": "confirmed",
+    "no_secrets_requested": "confirmed",
+    "no_exploit_details_included": "confirmed",
+    "security_sensitive_reports_routed_to_github_security_advisories": "confirmed"
+  },
+  "changed_files": [
+    "docs/api_sdk_agent_value_decision_pack.md",
+    "docs/examples/gl197/api_sdk_agent_value_decision_pack.json",
+    "backend/tests/test_gl197_api_sdk_agent_value_decision_pack.py"
+  ],
+  "tests": {
+    "targeted_test": "backend/tests/test_gl197_api_sdk_agent_value_decision_pack.py",
+    "regression_test": "backend/tests/test_security_boundary_regression.py",
+    "smoke_checks": [
+      "scripts/verify-first-output.sh → MATCH",
+      "diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_gl197_grant_lifecycle_check.json → DIFF CLEAN"
+    ]
+  },
+  "result": "api_sdk_agent_value_decision_complete",
+  "next_recommended_step": "GL-197 Combined Merge-and-Publish for API/SDK/Agent Value Decision Pack",
+  "non_goals": [
+    "Implement a real SDK or publish a pip package.",
+    "Change backend runtime behavior or add new API surface.",
+    "Change backend/src/*, OpenAPI, migrations, DB/schema, or dependency manifests.",
+    "Push to GitHub or change GitHub visibility.",
+    "Create or modify GitHub labels/issues via API.",
+    "Send reviewer outreach.",
+    "Change frontend, website, or design.",
+    "Change snapshot publish script behavior.",
+    "Claim production SaaS readiness.",
+    "Claim tenant isolation is implemented.",
+    "Request real customer data, private grants, or secrets.",
+    "Include exploit details."
+  ]
+}

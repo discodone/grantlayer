@@ -1,0 +1,66 @@
+{
+  "issue_id": "GL-155",
+  "artifact_type": "agent_examples_pack",
+  "agent_examples_pack_added": true,
+  "examples_agents_readme_added": true,
+  "evidence_review_agent_added": true,
+  "approval_guardrail_agent_added": true,
+  "audit_export_agent_added": true,
+  "policy_check_agent_added": true,
+  "standard_library_only": true,
+  "dry_run_default": true,
+  "no_external_api_key_required": true,
+  "no_network_call_on_import": true,
+  "fake_demo_data_only": true,
+  "production_code_changed": false,
+  "backend_src_changed": false,
+  "endpoint_api_behavior_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "sdk_changed": false,
+  "langgraph_langchain_code_changed": false,
+  "github_issue_templates_added": false,
+  "github_publication_performed": false,
+  "git_remotes_changed": false,
+  "git_history_rewritten": false,
+  "secret_history_cleanup_performed": false,
+  "production_saas_ready_claimed": false,
+  "tenant_isolation_claimed_implemented": false,
+  "public_github_release_claimed": false,
+  "uses_real_secrets": false,
+  "uses_real_customer_data": false,
+  "includes_private_personal_data": false,
+  "agent_examples": [
+    {
+      "file": "examples/agents/evidence_review_agent.py",
+      "concept": "evidence_review",
+      "description": "Reviews a demo evidence bundle and produces findings."
+    },
+    {
+      "file": "examples/agents/approval_guardrail_agent.py",
+      "concept": "approval_guardrail",
+      "description": "Evaluates a request against guardrails and decides approve/block."
+    },
+    {
+      "file": "examples/agents/audit_export_agent.py",
+      "concept": "audit_export",
+      "description": "Exports demo audit events in a deterministic summary."
+    },
+    {
+      "file": "examples/agents/policy_check_agent.py",
+      "concept": "policy_check",
+      "description": "Runs a set of demo policy rules and reports pass/fail/warn."
+    }
+  ],
+  "validation_gates": [
+    "README exists with Developer Preview caveat",
+    "All four agent scripts exist and are valid Python",
+    "All scripts use standard library only",
+    "All scripts emit JSON with mode=dry_run",
+    "No real secrets or customer data used",
+    "No network calls on import",
+    "JSON artifact validates test assertions"
+  ],
+  "next_issue": "GL-156 GitHub Issue Templates / Feedback Templates"
+}

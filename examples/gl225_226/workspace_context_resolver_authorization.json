@@ -1,0 +1,162 @@
+{
+  "issue_id": "GL-225/GL-226",
+  "title": "Workspace Context Resolver + Authorization Enforcement",
+  "result": "implemented",
+  "summary": "Implements server-derived workspace context resolution and cross-workspace authorization enforcement. The workspace is resolved from operator identity and membership records. Client-supplied workspace_id is verified against membership before being accepted. Cross-workspace lookup and mutation are denied unless the operator holds an explicitly documented cross-workspace role (owner/grant_admin_global). Cross-tenant access is always denied. Fail-closed: operators with no memberships receive 403.",
+
+  "workspace_context_resolver": {
+    "function": "resolve_workspace_context",
+    "module": "backend/src/auth.py",
+    "description": "Derives the effective workspace_id from server-side auth payload and database membership records. Never trusts client-supplied workspace_id without verification.",
+    "resolution_modes": [
+      {
+        "mode": "legacy_demo",
+        "description": "No operator in auth payload (legacy/admin-token mode). Resolves to the canonical demo workspace (id='default', tenant='demo'). Backward-compatible.",
+        "workspace_id": "default"
+      },
+      {
+        "mode": "single_membership",
+        "description": "Operator has exactly one active workspace membership. Workspace is auto-resolved. No workspace_id required in request.",
+        "client_workspace_id_required": false
+      },
+      {
+        "mode": "membership_verified",
+        "description": "Operator supplies a workspace_id. Membership is verified against the database before the workspace is accepted.",
+        "client_workspace_id_required": true
+      },
+      {
+        "mode": "cross_workspace_role",
+        "description": "Operator holds a cross-workspace role (owner/grant_admin_global) and supplies a workspace_id. Verified to belong to caller tenant. No membership check required. Explicitly documented — not silent.",
+        "cross_workspace_access": true
+      },
+      {
+        "mode": "cross_workspace_role_demo_fallback",
+        "description": "Cross-workspace role operator in demo tenant without a workspace_id. Falls back to demo workspace. Backward-compatible for demo/synthetic mode.",
+        "cross_workspace_access": true
+      }
+    ],
+    "fail_closed_cases": [
+      "Operator has no active workspace memberships → 403 no_workspace_membership",
+      "Operator supplies workspace_id with no membership → 403 workspace_access_denied",
+      "Operator supplies workspace_id from another tenant → 403 workspace_not_found",
+      "Operator supplies workspace_id for inactive workspace → 403 workspace_inactive",
+      "Operator supplies empty or blank workspace_id → 400 invalid_workspace_id",
+      "Operator with multiple memberships and no workspace_id supplied → 400 workspace_id_required",
+      "Cross-workspace role without workspace_id in non-demo tenant → 400 workspace_id_required"
+    ]
+  },
+
+  "authorization_enforcement": {
+    "function": "check_workspace_resource_access",
+    "module": "backend/src/auth.py",
+    "description": "Enforces cross-workspace and cross-tenant access boundaries at the resource level.",
+    "rules": [
+      {
+        "rule": "cross_tenant_always_denied",
+        "description": "If resource_tenant_id differs from caller_tenant_id, access is always denied (403 cross_tenant_access_denied). No role or flag bypasses this.",
+        "http_status": 403,
+        "error_code": "cross_tenant_access_denied"
+      },
+      {
+        "rule": "same_workspace_allowed",
+        "description": "If resource_workspace_id matches caller_workspace_id, access is allowed subject to role checks.",
+        "exception": "workspace_readonly role cannot perform mutations."
+      },
+      {
+        "rule": "unscoped_resource_allowed",
+        "description": "Resources with resource_workspace_id=NULL are treated as same-workspace (backward compat with pre-GL-224 rows). Always allowed.",
+        "http_status": 200
+      },
+      {
+        "rule": "cross_workspace_lookup_denied",
+        "description": "Resource in a different workspace and cross_workspace_access=False → 403.",
+        "http_status": 403,
+        "error_code": "cross_workspace_lookup_denied"
+      },
+      {
+        "rule": "cross_workspace_mutation_denied",
+        "description": "Write to resource in a different workspace and cross_workspace_access=False → 403.",
+        "http_status": 403,
+        "error_code": "cross_workspace_mutation_denied"
+      },
+      {
+        "rule": "admin_cross_workspace_explicit",
+        "description": "cross_workspace_access=True (set only for owner/grant_admin_global roles) allows cross-workspace access. This is always explicit in the workspace context — never silent.",
+        "cross_workspace_access_flag": true,
+        "note": "Lookup and mutation are allowed. The workspace_member_role=workspace_readonly restriction still applies for mutations."
+      },
+      {
+        "rule": "readonly_mutation_denied",
+        "description": "workspace_member_role=workspace_readonly cannot perform mutations in any workspace.",
+        "http_status": 403,
+        "error_code": "workspace_role_insufficient"
+      }
+    ],
+    "cross_workspace_roles": ["owner", "grant_admin_global"],
+    "workspace_member_roles": [
+      "workspace_owner",
+      "workspace_admin",
+      "workspace_member",
+      "workspace_readonly"
+    ]
+  },
+
+  "implementation_files": {
+    "changed": ["backend/src/auth.py"],
+    "added": [
+      "backend/tests/test_gl225_226_workspace_context_resolver_authorization.py",
+      "docs/workspace_context_resolver_authorization.md",
+      "docs/examples/gl225_226/workspace_context_resolver_authorization.json",
+      "scripts/ops/gl225_226_workspace_context_gate.py"
+    ],
+    "not_changed": [
+      "backend/src/migrations/",
+      "backend/src/models.py",
+      "backend/src/server.py",
+      "backend/src/operators.py"
+    ]
+  },
+
+  "test_coverage": {
+    "total_tests": 64,
+    "categories": [
+      "context_resolver_legacy_demo",
+      "context_resolver_single_membership",
+      "context_resolver_no_membership_fail_closed",
+      "context_resolver_multiple_memberships",
+      "context_resolver_explicit_workspace_id",
+      "context_resolver_cross_workspace_role",
+      "cross_workspace_lookup_denial",
+      "cross_workspace_mutation_denial",
+      "cross_tenant_denial",
+      "admin_bypass_documented",
+      "role_scope_checks",
+      "demo_synthetic_compatibility",
+      "module_importability",
+      "docs_and_artifacts",
+      "safety_confirmations"
+    ]
+  },
+
+  "safety_confirmations": {
+    "production_saas_no_go": true,
+    "no_real_customer_data": true,
+    "no_real_secrets": true,
+    "no_network_calls": true,
+    "no_destructive_ops": true,
+    "local_only": true,
+    "no_migrations": true,
+    "no_public_push": true,
+    "no_deployment_files": true,
+    "no_tls_private_keys": true,
+    "no_package_metadata": true
+  },
+
+  "notes": [
+    "resolve_workspace_context is a pure helper in auth.py — it does not modify server.py routes.",
+    "check_workspace_resource_access is a pure enforcement function — callers pass resource metadata.",
+    "Demo/synthetic mode (no operator in payload) is fully backward-compatible.",
+    "Cross-workspace admin access is never silent: cross_workspace_access=True is always present in the returned context dict.",
+    "No new migration is required — this GL uses the workspace tables created by GL-224 migration 0011."
+  ]
+}

@@ -1,0 +1,2023 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/sdk_prototype_packaging_boundary/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-203C — SDK Prototype / Packaging Boundary - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-203c-sdk-prototype-packaging-boundary" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-203C — SDK Prototype / Packaging Boundary
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sdk-feasibility-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDK Feasibility Assessment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SDK Feasibility Assessment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openapi-contract-quality-post-gl-203b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAPI contract quality (post GL-203B)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#existing-sdk-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Existing SDK baseline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sdk-readiness-gaps-remaining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDK-readiness gaps remaining
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi-dependency-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAPI Dependency Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prototype-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prototype Boundary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prototype Boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-the-gl-203c-prototype-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the GL-203C prototype IS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-gl-203c-prototype-is-not" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the GL-203C prototype IS NOT
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packaging-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Packaging Boundary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Packaging Boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#explicitly-forbidden-for-now" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicitly FORBIDDEN for now
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explicitly-allowed-now" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicitly ALLOWED now
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prototype-implementation-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prototype Implementation Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prototype Implementation Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endpoint-methods-20-total" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoint methods (20 total)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tokensecret-safety-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token/Secret Safety Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tenantworkspace-sdk-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant/Workspace SDK Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-claim-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Claim Boundary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Claim Boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allowed-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ALLOWED claims
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prohibited-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PROHIBITED claims
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests Added
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Gaps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Readiness Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-203c-sdk-prototype-packaging-boundary">GL-203C — SDK Prototype / Packaging Boundary<a class="headerlink" href="#gl-203c-sdk-prototype-packaging-boundary" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-203C
+<strong>Branch:</strong> <code>gl-203c-sdk-prototype-packaging-boundary</code>
+<strong>Status:</strong> Internal / Developer Preview</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-200A, GL-200B, GL-200C, GL-201, GL-202, GL-203, and GL-203B are merged
+internally. GL-203B cleaned the OpenAPI contract (<code>docs/openapi.yaml</code> version
+<code>0.203b.0-developer-preview</code>) and concluded it was suitable as a basis for
+SDK prototype work.</p>
+<p>GL-203C is a prototype and packaging boundary decision issue. It creates a
+minimal internal Python SDK prototype, defines the packaging boundary, and
+documents what is and is not allowed for SDK work at this stage.</p>
+<p><strong>GrantLayer remains:</strong>
+- Developer Preview / Controlled Preview with strict boundaries
+- Not production SaaS
+- Not ready for real customer data, private grant data, or institutional data
+- Tenant/workspace isolation baseline implemented but not production-complete
+- No official SDK/package is claimed or published</p>
+<p>Security-sensitive reports route to GitHub Security Advisories. No exploit
+details are included. No real secrets are included.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>GL-203C covers:
+- SDK feasibility assessment against the GL-203B cleaned OpenAPI contract
+- OpenAPI dependency assessment for SDK work
+- Internal prototype boundary definition
+- Packaging boundary definition (what is forbidden vs. allowed now)
+- A minimal Python SDK prototype at <code>examples/sdk_prototype/python/</code> (internal only)
+- Token/secret safety model documentation
+- Tenant/workspace SDK boundary documentation
+- Public claim boundary documentation
+- Contract tests for the prototype and boundary decisions</p>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>GL-203C is not:
+- An official SDK release
+- Package publishing (no PyPI, npm, or any registry)
+- Production SaaS readiness declaration
+- Public publish, GitHub push, or visibility change
+- Backend/src changes or API behavior changes
+- Migration or DB/schema changes
+- Dependency changes
+- setup.py, pyproject.toml (for SDK), package.json, npm metadata, or release workflows
+- Enterprise SDK or production-ready SDK
+- Semantic versioned package commitment
+- Complete tenant/workspace isolation (deferred)</p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/openapi_api_contract_cleanup.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203b/openapi_api_contract_cleanup.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/api_contract_sdk_packaging_decision.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203/api_contract_sdk_packaging_decision.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/persistence_postgres_migration_readiness.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl202/persistence_postgres_migration_readiness.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_auth_secrets_config_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl201/production_auth_secrets_config_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_api_audit_regression_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_implementation_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_design_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200a/tenant_workspace_isolation_design_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_readiness_gap_report_v2.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl199/production_readiness_gap_report_v2.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/controlled_preview_boundary_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl198/controlled_preview_boundary_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>sdk/python/grantlayer_client.py</td>
+<td>Yes (existing, for comparison)</td>
+</tr>
+<tr>
+<td>sdk/python/README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/server.py</td>
+<td>Yes (boundary review only)</td>
+</tr>
+<tr>
+<td>backend/src/auth.py</td>
+<td>Yes (token safety review only)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="sdk-feasibility-assessment">SDK Feasibility Assessment<a class="headerlink" href="#sdk-feasibility-assessment" title="Permanent link">&para;</a></h2>
+<h3 id="openapi-contract-quality-post-gl-203b">OpenAPI contract quality (post GL-203B)<a class="headerlink" href="#openapi-contract-quality-post-gl-203b" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Assessment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Endpoint coverage</td>
+<td>36 documented paths; all major operational endpoints present</td>
+</tr>
+<tr>
+<td>Public/protected distinction</td>
+<td>Clear: GET /health, GET /readiness, GET / have no security requirement</td>
+</tr>
+<tr>
+<td>Auth model clarity</td>
+<td>Two schemes (LegacyAdminToken, OperatorToken) are explicit and documented</td>
+</tr>
+<tr>
+<td>Tenant context model</td>
+<td>Server-derived from auth; documented in info description and security schemes</td>
+</tr>
+<tr>
+<td>Error response shape</td>
+<td>Consistent GL-030 additive shape <code>{error, errorCode, reason}</code> across all 4xx/5xx</td>
+</tr>
+<tr>
+<td>Schema completeness</td>
+<td>All referenced schemas now defined (ComplianceReadinessSummary added in GL-203B)</td>
+</tr>
+<tr>
+<td>Backward compat fields</td>
+<td>Grant dual snake_case/camelCase fields documented explicitly</td>
+</tr>
+<tr>
+<td>workspace_id</td>
+<td>Reserved/nullable/deferred — documented; SDK does not need to handle it</td>
+</tr>
+<tr>
+<td>X-Correlation-ID</td>
+<td>Documented; SDK may optionally send it</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verdict: FEASIBLE.</strong> The cleaned OpenAPI is sufficient for a well-scoped SDK prototype.</p>
+<h3 id="existing-sdk-baseline">Existing SDK baseline<a class="headerlink" href="#existing-sdk-baseline" title="Permanent link">&para;</a></h3>
+<p><code>sdk/python/grantlayer_client.py</code> (GL-147, 114 lines) is functional but:
+- Uses urllib directly with no injectable transport (network always required for tests)
+- Does not have <code>__repr__</code> token exclusion explicitly enforced
+- Covers health, readiness, and generic <code>request_json()</code> only
+- Has stale caveat: "Tenant isolation is not implemented" (should now say "baseline implemented, not production-complete")
+- Does not cover the post-GL-200 endpoints (grant requests, executions, evidence)</p>
+<p>The GL-203C prototype improves on all these dimensions. It does not replace or deprecate <code>sdk/python/grantlayer_client.py</code> — both coexist as developer evaluation resources.</p>
+<h3 id="sdk-readiness-gaps-remaining">SDK-readiness gaps remaining<a class="headerlink" href="#sdk-readiness-gaps-remaining" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>Impact</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>workspace_id not enforced</td>
+<td>SDK may need future workspace parameter</td>
+<td>Document as reserved/deferred</td>
+</tr>
+<tr>
+<td>Admin-plane isolation (GL-200D) deferred</td>
+<td>Multi-tenant operator management unsafe</td>
+<td>Do not expose tenant management in SDK</td>
+</tr>
+<tr>
+<td>PostgreSQL not live-validated</td>
+<td>Deployment constraint</td>
+<td>SDK is storage-agnostic; gap is server-side</td>
+</tr>
+<tr>
+<td>Stale "not implemented" claim in public docs</td>
+<td>Documentation accuracy</td>
+<td>Deferred per GL-203B (requires test coordination)</td>
+</tr>
+<tr>
+<td>No semantic versioning commitment</td>
+<td>SDK version stability</td>
+<td>Explicitly deferred; no semver claim made</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="openapi-dependency-assessment">OpenAPI Dependency Assessment<a class="headerlink" href="#openapi-dependency-assessment" title="Permanent link">&para;</a></h2>
+<p>The GL-203C prototype depends on the following from <code>docs/openapi.yaml</code>:
+1. <strong>Security schemes</strong>: <code>LegacyAdminToken</code> and <code>OperatorToken</code> — both implemented as <code>Authorization: Bearer &lt;token&gt;</code> header
+2. <strong>Public endpoints</strong>: <code>/health</code>, <code>/readiness</code> — no auth
+3. <strong>Protected endpoints</strong>: All require bearer token; operator-only endpoints return 404 when operator model disabled
+4. <strong>Error contract</strong>: <code>{error, errorCode, reason}</code> GL-030 shape — prototype parses <code>errorCode</code> and <code>error</code>
+5. <strong>Tenant context</strong>: Server-derived; prototype sends NO tenant override header
+6. <strong>Request bodies</strong>: JSON with <code>Content-Type: application/json</code>
+7. <strong>Response format</strong>: JSON throughout</p>
+<p><strong>Assessment</strong>: The prototype correctly implements the OpenAPI contract. No OpenAPI changes are required for GL-203C. The prototype follows the documented auth, tenant, and error contract precisely.</p>
+<hr />
+<h2 id="prototype-boundary">Prototype Boundary<a class="headerlink" href="#prototype-boundary" title="Permanent link">&para;</a></h2>
+<h3 id="what-the-gl-203c-prototype-is">What the GL-203C prototype IS<a class="headerlink" href="#what-the-gl-203c-prototype-is" title="Permanent link">&para;</a></h3>
+<ul>
+<li>An experimental, internal-only Python source file at
+  <code>examples/sdk_prototype/python/grantlayer_client.py</code></li>
+<li>A feasibility demonstration against the cleaned OpenAPI contract</li>
+<li>100% Python standard library (urllib.request, json)</li>
+<li>Has injectable/mockable transport (<code>FakeTransport</code>) for deterministic tests
+  without any network dependency</li>
+<li>Covers 20 endpoint methods across grants, audit, challenges, operator,
+  grant requests, executions, evidence, and agent permissions</li>
+<li>Token is never included in <code>__repr__</code>, error messages, or logged anywhere</li>
+<li>No tenant override header is supported or emitted</li>
+<li>No hardcoded production endpoints or tokens</li>
+<li>Auth header added only when token is explicitly supplied by the caller</li>
+<li>Developer Preview caveats in module docstring</li>
+</ul>
+<h3 id="what-the-gl-203c-prototype-is-not">What the GL-203C prototype IS NOT<a class="headerlink" href="#what-the-gl-203c-prototype-is-not" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Not an official SDK</li>
+<li>Not package-published (no pip install path)</li>
+<li>Not a version-committed release</li>
+<li>Not production-ready</li>
+<li>Not replacing <code>sdk/python/grantlayer_client.py</code></li>
+<li>Not usable with real customer data</li>
+<li>Not usable with real secrets</li>
+<li>Not for shared/production deployment</li>
+</ul>
+<hr />
+<h2 id="packaging-boundary">Packaging Boundary<a class="headerlink" href="#packaging-boundary" title="Permanent link">&para;</a></h2>
+<h3 id="explicitly-forbidden-for-now">Explicitly FORBIDDEN for now<a class="headerlink" href="#explicitly-forbidden-for-now" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PyPI publication</td>
+<td>No package metadata, no production-ready contract commitment</td>
+</tr>
+<tr>
+<td>npm publication</td>
+<td>Not a JavaScript SDK; no Node.js dependency</td>
+</tr>
+<tr>
+<td>Official SDK claim</td>
+<td>No semantic versioning, no support SLA, no production contract</td>
+</tr>
+<tr>
+<td>setup.py</td>
+<td>Not created; would imply installable package</td>
+</tr>
+<tr>
+<td>pyproject.toml (SDK)</td>
+<td>Not created; would imply build/publish pipeline</td>
+</tr>
+<tr>
+<td>package.json</td>
+<td>Not created; not a Node.js SDK</td>
+</tr>
+<tr>
+<td>Release workflow (.github/workflows/publish*)</td>
+<td>Not created; no public publish</td>
+</tr>
+<tr>
+<td>Generated SDK (OpenAPI codegen)</td>
+<td>Not explored; requires separate decision</td>
+</tr>
+<tr>
+<td>Semantic version tag for SDK</td>
+<td>Not made; no version commitment</td>
+</tr>
+<tr>
+<td>Enterprise/production SDK claim</td>
+<td>Not applicable at Developer Preview</td>
+</tr>
+<tr>
+<td>Breaking-change-free guarantee</td>
+<td>Not made; prototype only</td>
+</tr>
+</tbody>
+</table>
+<h3 id="explicitly-allowed-now">Explicitly ALLOWED now<a class="headerlink" href="#explicitly-allowed-now" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Internal prototype source file</td>
+<td>Created: <code>examples/sdk_prototype/python/grantlayer_client.py</code></td>
+</tr>
+<tr>
+<td>Prototype README with caveats</td>
+<td>Created: <code>examples/sdk_prototype/python/README.md</code></td>
+</tr>
+<tr>
+<td>Deterministic tests (no network)</td>
+<td>Created in test file via <code>FakeTransport</code></td>
+</tr>
+<tr>
+<td>Documentation of packaging boundary</td>
+<td>This document</td>
+</tr>
+<tr>
+<td>Future GL issue for SDK packaging</td>
+<td>Recommended: GL-203D or GL-205 level</td>
+</tr>
+<tr>
+<td>Claiming "internal prototype for evaluation"</td>
+<td>Yes, with clear caveats</td>
+</tr>
+<tr>
+<td>Claiming "examples-first approach"</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Claiming "API-first Developer Preview"</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="prototype-implementation-summary">Prototype Implementation Summary<a class="headerlink" href="#prototype-implementation-summary" title="Permanent link">&para;</a></h2>
+<p><strong>File</strong>: <code>examples/sdk_prototype/python/grantlayer_client.py</code>
+<strong>Lines</strong>: ~270
+<strong>Language</strong>: Python 3.10+
+<strong>Dependencies</strong>: stdlib only (urllib.request, json)</p>
+<h3 id="classes">Classes<a class="headerlink" href="#classes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GrantLayerClientError</code></td>
+<td>Base exception</td>
+</tr>
+<tr>
+<td><code>GrantLayerHTTPError</code></td>
+<td>Non-2xx response; <code>.status</code> and <code>.error_code</code></td>
+</tr>
+<tr>
+<td><code>GrantLayerJSONError</code></td>
+<td>Non-JSON response body</td>
+</tr>
+<tr>
+<td><code>GrantLayerConnectionError</code></td>
+<td>Network-level failure</td>
+</tr>
+<tr>
+<td><code>GrantLayerResponse</code></td>
+<td>Parsed response: <code>.status</code>, <code>.body</code>, <code>.headers</code>, <code>.correlation_id</code></td>
+</tr>
+<tr>
+<td><code>FakeTransport</code></td>
+<td>Injectable fake for tests; <code>.add_response()</code>, <code>.calls</code></td>
+</tr>
+<tr>
+<td><code>GrantLayerClient</code></td>
+<td>Main client; injectable <code>_transport</code> parameter</td>
+</tr>
+</tbody>
+</table>
+<h3 id="endpoint-methods-20-total">Endpoint methods (20 total)<a class="headerlink" href="#endpoint-methods-20-total" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>HTTP</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>health()</code></td>
+<td>GET</td>
+<td>/health (public)</td>
+</tr>
+<tr>
+<td><code>readiness()</code></td>
+<td>GET</td>
+<td>/readiness (public)</td>
+</tr>
+<tr>
+<td><code>list_grants()</code></td>
+<td>GET</td>
+<td>/grants</td>
+</tr>
+<tr>
+<td><code>get_grant(id)</code></td>
+<td>GET</td>
+<td>/grants/{id}</td>
+</tr>
+<tr>
+<td><code>create_grant(...)</code></td>
+<td>POST</td>
+<td>/grants</td>
+</tr>
+<tr>
+<td><code>revoke_grant(id, ...)</code></td>
+<td>POST</td>
+<td>/grants/{id}/revoke</td>
+</tr>
+<tr>
+<td><code>list_audit_events(limit)</code></td>
+<td>GET</td>
+<td>/audit-events</td>
+</tr>
+<tr>
+<td><code>list_challenges()</code></td>
+<td>GET</td>
+<td>/challenges</td>
+</tr>
+<tr>
+<td><code>create_challenge(...)</code></td>
+<td>POST</td>
+<td>/challenges</td>
+</tr>
+<tr>
+<td><code>get_operator_me()</code></td>
+<td>GET</td>
+<td>/operators/me</td>
+</tr>
+<tr>
+<td><code>list_grant_requests(status)</code></td>
+<td>GET</td>
+<td>/grant-requests</td>
+</tr>
+<tr>
+<td><code>get_grant_request(id)</code></td>
+<td>GET</td>
+<td>/grant-requests/{id}</td>
+</tr>
+<tr>
+<td><code>create_grant_request(...)</code></td>
+<td>POST</td>
+<td>/grant-requests</td>
+</tr>
+<tr>
+<td><code>approve_grant_request(id)</code></td>
+<td>POST</td>
+<td>/grant-requests/{id}/approve</td>
+</tr>
+<tr>
+<td><code>deny_grant_request(id, reason)</code></td>
+<td>POST</td>
+<td>/grant-requests/{id}/deny</td>
+</tr>
+<tr>
+<td><code>list_grant_executions(...)</code></td>
+<td>GET</td>
+<td>/grant-executions</td>
+</tr>
+<tr>
+<td><code>get_grant_execution(id)</code></td>
+<td>GET</td>
+<td>/grant-executions/{id}</td>
+</tr>
+<tr>
+<td><code>list_executions_for_grant(id)</code></td>
+<td>GET</td>
+<td>/grants/{id}/executions</td>
+</tr>
+<tr>
+<td><code>get_evidence_bundle(id)</code></td>
+<td>GET</td>
+<td>/evidence/executions/{id}</td>
+</tr>
+<tr>
+<td><code>verify_evidence_bundle(id)</code></td>
+<td>GET</td>
+<td>/evidence/executions/{id}/verify</td>
+</tr>
+<tr>
+<td><code>list_agent_permission_profiles()</code></td>
+<td>GET</td>
+<td>/agent-permissions/profiles</td>
+</tr>
+<tr>
+<td><code>get_agent_permission_profile(name)</code></td>
+<td>GET</td>
+<td>/agent-permissions/profiles/{name}</td>
+</tr>
+<tr>
+<td><code>evaluate_agent_permission(...)</code></td>
+<td>POST</td>
+<td>/agent-permissions/evaluate</td>
+</tr>
+<tr>
+<td><code>request(method, path, ...)</code></td>
+<td>Any</td>
+<td>Generic escape hatch</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="tokensecret-safety-model">Token/Secret Safety Model<a class="headerlink" href="#tokensecret-safety-model" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Token storage</td>
+<td>Private attribute <code>_token</code>; never public</td>
+</tr>
+<tr>
+<td>Token in <code>repr(client)</code></td>
+<td><code>has_token=True/False</code> only — token value excluded</td>
+</tr>
+<tr>
+<td>Token in error messages</td>
+<td>Never — only HTTP status and <code>errorCode</code> from server</td>
+</tr>
+<tr>
+<td>Token in logs</td>
+<td>Never — client does not log; caller is responsible for not logging</td>
+</tr>
+<tr>
+<td>Token transmission</td>
+<td>Only in <code>Authorization: Bearer &lt;token&gt;</code> header, over the caller's network</td>
+</tr>
+<tr>
+<td>Token on public endpoints</td>
+<td>Not sent — auth header skipped when <code>_token is None</code></td>
+</tr>
+<tr>
+<td>Placeholder tokens in tests</td>
+<td>Used — clearly marked as non-production synthetic identifiers</td>
+</tr>
+<tr>
+<td>Real tokens in test files</td>
+<td>None — all tests use <code>FakeTransport</code>, no network</td>
+</tr>
+<tr>
+<td>Token in <code>GrantLayerHTTPError</code></td>
+<td>Not included — only <code>status</code>, <code>error_code</code>, <code>error_message</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="tenantworkspace-sdk-boundary">Tenant/Workspace SDK Boundary<a class="headerlink" href="#tenantworkspace-sdk-boundary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>SDK Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tenant context</td>
+<td>Server-derived from authentication — NOT a client-supplied parameter</td>
+</tr>
+<tr>
+<td>Tenant override header</td>
+<td>NOT supported — no X-Tenant-ID or similar is sent</td>
+</tr>
+<tr>
+<td>workspace_id</td>
+<td>Not exposed as a client parameter — reserved/deferred server-side</td>
+</tr>
+<tr>
+<td>Cross-tenant isolation</td>
+<td>Enforced server-side; SDK sees 404/empty list for cross-tenant access</td>
+</tr>
+<tr>
+<td>Operator tenant context</td>
+<td>Derived from operator record server-side; SDK only supplies the auth token</td>
+</tr>
+<tr>
+<td>Admin-token tenant context</td>
+<td>Bound to "demo" server-side; SDK is unaware of this binding</td>
+</tr>
+<tr>
+<td>Multi-tenant SDK support</td>
+<td>Not claimed — tenant isolation is not production-complete</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="public-claim-boundary">Public Claim Boundary<a class="headerlink" href="#public-claim-boundary" title="Permanent link">&para;</a></h2>
+<h3 id="allowed-claims">ALLOWED claims<a class="headerlink" href="#allowed-claims" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Developer Preview / Controlled Preview</strong> — local evaluation and controlled pilot posture.</li>
+<li><strong>API-first</strong> — REST/HTTP API; no SDK required to integrate.</li>
+<li><strong>Internal SDK prototype for evaluation</strong> — GL-203C explores packaging feasibility.</li>
+<li><strong>Examples-first approach</strong> — examples and prototype source, no package installation.</li>
+<li><strong>No official SDK yet</strong> — prototype is not an official or published SDK.</li>
+<li><strong>SDK packaging under evaluation</strong> — future issue will decide experimental public SDK timeline.</li>
+</ol>
+<h3 id="prohibited-claims">PROHIBITED claims<a class="headerlink" href="#prohibited-claims" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Official SDK available</strong> — not true; no published package.</li>
+<li><strong>Installable production package</strong> — not true; no pip/npm install.</li>
+<li><strong>Production-ready SDK</strong> — not true; prototype only.</li>
+<li><strong>Real customer data readiness</strong> — not true; synthetic identifiers only.</li>
+<li><strong>Private grant/institutional data readiness</strong> — not true.</li>
+<li><strong>Production SaaS readiness</strong> — not true.</li>
+<li><strong>Complete tenant/workspace production guarantee</strong> — not true; workspace not enforced.</li>
+<li><strong>Enterprise SDK</strong> — not true.</li>
+<li><strong>Semantic versioned stable SDK</strong> — not true; no version commitment.</li>
+<li><strong>Breaking-change-free SDK API</strong> — not true; prototype may change.</li>
+</ol>
+<hr />
+<h2 id="tests-added">Tests Added<a class="headerlink" href="#tests-added" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>backend/tests/test_gl203c_sdk_prototype_packaging_boundary.py</code></li>
+<li>Covers: doc existence, JSON artifact validity, safety confirmations, packaging boundary,
+  prohibited claims, prototype import, prototype token safety, FakeTransport usage,
+  no network in tests, auth header control, tenant override header absence, scope guard.</li>
+</ul>
+<hr />
+<h2 id="remaining-gaps">Remaining Gaps<a class="headerlink" href="#remaining-gaps" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Stale tenant isolation claim</strong> in AGENTS.md, llms.txt, llms-full.txt, README.md,
+   SECURITY.md — deferred per GL-203B (requires coordinated test changes).</li>
+<li><strong>workspace_id enforcement</strong> not implemented — SDK reflects deferred status.</li>
+<li><strong>Admin-plane tenant isolation (GL-200D)</strong> deferred — SDK does not expose tenant
+   management endpoints.</li>
+<li><strong>PostgreSQL live validation</strong> blocked until GL-204.</li>
+<li><strong>Package publishing pipeline</strong> not established — not within GL-203C scope.</li>
+<li><strong>Generated SDK (OpenAPI codegen)</strong> not explored — separate decision required.</li>
+<li><strong>Semantic versioning commitment</strong> not made — deferred to official SDK decision.</li>
+<li><strong>Existing sdk/python/ stale caveat</strong> — <code>sdk/python/README.md</code> still says
+   "Tenant isolation is not implemented" — updating requires coordinated test changes.</li>
+</ol>
+<hr />
+<h2 id="production-readiness-impact">Production Readiness Impact<a class="headerlink" href="#production-readiness-impact" title="Permanent link">&para;</a></h2>
+<p>GL-203C is a prototype and packaging boundary issue. It does not change
+production readiness.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API contract</td>
+<td>GL-203B aligned; SDK prototype follows aligned contract</td>
+</tr>
+<tr>
+<td>Auth/secrets/config</td>
+<td>Hardened (GL-201); prototype inherits safe design</td>
+</tr>
+<tr>
+<td>Persistence/migration</td>
+<td>SQLite ready for Developer Preview; PostgreSQL not live-validated</td>
+</tr>
+<tr>
+<td>Tenant/workspace isolation</td>
+<td>Baseline implemented; not production-complete</td>
+</tr>
+<tr>
+<td>SDK/package</td>
+<td>Prototype created (internal); not published; not official</td>
+</tr>
+<tr>
+<td>Public claims</td>
+<td>Bounded by controlled preview; prototype clearly experimental</td>
+</tr>
+<tr>
+<td>Follow-up needed</td>
+<td>GL-204 (production ops), optional GL-203D (SDK packaging)</td>
+</tr>
+</tbody>
+</table>
+<p>GrantLayer <strong>remains</strong> Developer Preview / Controlled Preview with strict boundaries.</p>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>dispose: ready_for_merge</strong></p>
+<p><strong>Decision: SDK prototype is feasible and safe. Internal prototype created.
+Packaging boundary defined. Proceed to GL-204 (Production Ops / Go-No-Go v3)
+as the next required issue. GL-203D (public SDK packaging) may follow
+GL-204 if production ops gate passes.</strong></p>
+<hr />
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<ol>
+<li>The GL-203B cleaned OpenAPI contract provides sufficient documentation
+   for an SDK prototype. All 36 endpoints are documented with auth requirements,
+   error shapes, and schema definitions.</li>
+<li>A minimal Python prototype with injectable transport is safe to create:
+   stdlib only, no external deps, no hardcoded URLs/tokens, token never in repr/errors.</li>
+<li>The prototype demonstrates that the auth model (two bearer token schemes),
+   tenant context model (server-derived), and error contract are all
+   representable with a clean client interface.</li>
+<li>No package publishing metadata is created. No official SDK is claimed.</li>
+<li>Remaining blockers (workspace enforcement, admin-plane isolation, PostgreSQL
+   validation) are server-side concerns that do not block SDK prototype exploration.</li>
+<li>GL-204 (production ops) is the critical next step before any external pilot.</li>
+<li>An experimental public SDK (GL-203D equivalent) should only proceed after
+   GL-204 validates the production path.</li>
+</ol>
+<hr />
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>No production SaaS readiness claim made.</li>
+<li>Tenant/workspace isolation not overclaimed as production-complete.</li>
+<li>No real customer/private grant data readiness claimed.</li>
+<li>Security-sensitive reports route to GitHub Security Advisories (per SECURITY.md).</li>
+<li>No exploit details included in this document, tests, or prototype.</li>
+<li>No real secrets included anywhere.</li>
+<li>No official SDK/package claimed or published.</li>
+<li>No package publishing metadata created (no setup.py, pyproject.toml, package.json).</li>
+<li>No backend/src changes.</li>
+<li>No API behavior changes.</li>
+<li>No migrations/DB/schema changes.</li>
+<li>No dependency changes.</li>
+<li>No frontend/website/design changes.</li>
+<li>No GitHub workflow changes.</li>
+<li>No public publish or visibility change.</li>
+<li>No force push.</li>
+<li>No Paperclip references or status updates.</li>
+<li>Unrelated pre-existing website untracked files (<code>docs/website_design_workspace_import_report.md</code>,
+  <code>website-design/</code>) excluded from GL-203C.</li>
+</ul>
+<hr />
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GL-203C Merge</strong> — merge <code>gl-203c-sdk-prototype-packaging-boundary</code> to internal main after validation.</li>
+<li><strong>GL-204 — Production Ops / Go-No-Go v3</strong> — live PostgreSQL validation, backup/restore minimum drill,
+  observability baseline, go/no-go decision for first external controlled pilot. <strong>Required before
+  any external pilot or public SDK release.</strong></li>
+<li><strong>GL-203D — Experimental Public SDK / Packaging (conditional)</strong> — only after GL-204 passes;
+  design packaging pipeline, semantic versioning, and experimental public release. Do not proceed
+  before GL-204.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

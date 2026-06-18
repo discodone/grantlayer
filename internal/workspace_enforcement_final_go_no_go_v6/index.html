@@ -1,0 +1,1896 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/workspace_enforcement_final_go_no_go_v6/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-221 - Workspace Enforcement & Final Go/No-Go v6 - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-221-workspace-enforcement-final-gono-go-v6" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-221 - Workspace Enforcement &amp; Final Go/No-Go v6
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-workspace-enforcement-state-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Workspace Enforcement State Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workspace-enforcement-gap-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workspace Enforcement Gap Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implemented-hardening-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implemented Hardening Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workspace_id-derivationtrust-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        workspace_id Derivation/Trust Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tenantworkspace-relationship-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant/Workspace Relationship Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unsafe-workspace-override-prevention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unsafe Workspace Override Prevention
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-workspace-lookup-denial-posture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Workspace Lookup Denial Posture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-workspace-mutation-denial-posture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Workspace Mutation Denial Posture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workspace-propagation-into-auditevidenceprovenancecompliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workspace Propagation Into Audit/Evidence/Provenance/Compliance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adminoperator-workspace-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin/Operator Workspace Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#demosynthetic-workspace-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Demo/Synthetic Workspace Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlled-external-review-workspace-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled External Review Workspace Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production-Readiness Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlled-preview-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled Preview Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#final-readiness-matrix-v6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Final Readiness Matrix v6
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-saas-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production SaaS Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-customer-data-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real Customer Data Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#private-grantinstitutional-data-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private Grant/Institutional Data Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlled-external-review-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled External Review Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-snapshotpublic-publish-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Snapshot/Public Publish Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#official-sdkpackage-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Official SDK/Package Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-postgresql-production-readiness-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live PostgreSQL Production Readiness Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iamidentity-decision-after-gl-219" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IAM/Identity Decision After GL-219
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runtimeinfrastructure-decision-after-gl-220" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime/Infrastructure Decision After GL-220
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#publicexport-decision-after-gl-218" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public/Export Decision After GL-218
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-p0p1p2-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining P0/P1/P2 Blockers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register-v6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register v6
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compact-next-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compact Next Roadmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-221-workspace-enforcement-final-gono-go-v6">GL-221 - Workspace Enforcement &amp; Final Go/No-Go v6<a class="headerlink" href="#gl-221-workspace-enforcement-final-gono-go-v6" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-221
+<strong>Title:</strong> Workspace Enforcement &amp; Final Go/No-Go v6
+<strong>Branch:</strong> <code>gl-221-workspace-enforcement-final-go-no-go-v6</code>
+<strong>Status:</strong> Internal / Developer Preview</p>
+<p>GL-221 is workspace enforcement assessment and final Go/No-Go v6, not an
+automatic production release.
+GL-221 is not an automatic production release.</p>
+<p>GrantLayer remains Developer Preview / Controlled Preview with strict
+boundaries. Production SaaS remains NO-GO. Real customer data, private grant
+data, and institutional data remain NO-GO. Official SDK/package remains NO-GO.
+Compliance certification remains NO-GO. Live PostgreSQL production readiness
+remains NO-GO. Public snapshot/export and public website publish remain
+separate-gate only.
+Developer Preview / Controlled Preview with strict boundaries remains the
+current posture.
+Public snapshot/export and public website publish remain separate-gate only.</p>
+<p>Security-sensitive reports route to GitHub Security Advisories. No exploit
+details are included. No real secrets are included. No real customer/private
+data is used.
+No exploit details are included.
+No real secrets are included.
+No real customer/private data is used.</p>
+<p>Unrelated website-design/import files were excluded from GL-221.</p>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-218 preserved public/export safety boundaries. GL-219 documented identity and
+access hardening without adding production OAuth/OIDC/JWT readiness. GL-220
+documented runtime/infrastructure hardening without adding production
+infrastructure. GL-215 remains the authoritative tenant/workspace runtime
+baseline: tenant context is server-derived and enforced at application level;
+<code>workspace_id</code> is reserved/nullable and not production-enforced.
+workspace_id is reserved/nullable and not production-enforced.</p>
+<p>The known GL-220 post-merge full suite baseline is 8988 tests, 43 failures, 3
+errors, 253 skipped, and 0 real regressions. GL-221 does not treat stale scope
+guards or claim scanners as production evidence.</p>
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Assess current workspace enforcement state and remaining gaps.</li>
+<li>Preserve GL-214 IAM/operator-control, GL-215 tenant/workspace, GL-218
+  public/export, GL-219 identity/access, and GL-220 runtime/infrastructure
+  boundaries.</li>
+<li>Add local documentation, machine-readable artifact, focused tests, and a
+  local-only dry-run/plan gate.</li>
+<li>Produce final readiness matrix v6.</li>
+</ul>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>GL-221 does not implement a full workspace RBAC engine, policy engine rewrite,
+schema migration, broad persistence rewrite, frontend, external workspace
+provider, production deployment, public snapshot/export, public publish,
+official package release, production OAuth/OIDC/JWT rollout, or live PostgreSQL
+production gate.</p>
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/production_go_no_go_v5.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl217/production_go_no_go_v5.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_runtime_infrastructure_hardening_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl220/production_runtime_infrastructure_hardening_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_identity_access_hardening_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl219/production_identity_access_hardening_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/public_external_review_export_safety_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl218/public_external_review_export_safety_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_operations_hardening_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl216/production_operations_hardening_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_production_guarantee.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl215/tenant_workspace_production_guarantee.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_iam_operator_control_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl214/production_iam_operator_control_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/admin_operator_tenant_control_plane.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl206/admin_operator_tenant_control_plane.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_data_model_design.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl144/tenant_workspace_data_model_design.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/runtime_abuse_incident_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl208/runtime_abuse_incident_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/data_governance_audit_operations.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl209/data_governance_audit_operations.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/server.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/config.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/auth.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/identity_access.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/operators.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/audit_log.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/db.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/models.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/grants.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/grant_requests.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/tests/</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl216_production_operations_gate.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl218_public_export_safety_scan.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl219_identity_access_gate.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl220_runtime_infrastructure_gate.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl205_live_postgres_validation.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl205_backup_restore_drill.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl209_audit_export_check.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/run-full-backend-suite.sh</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>examples/grant_lifecycle_evidence_bundle.py</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="current-workspace-enforcement-state-summary">Current Workspace Enforcement State Summary<a class="headerlink" href="#current-workspace-enforcement-state-summary" title="Permanent link">&para;</a></h2>
+<p>Tenant isolation is application-layer enforced for primary business resources.
+Operator authentication derives <code>tenant_id</code> from the stored operator row.
+Legacy admin-token mode derives <code>tenant_id="demo"</code> server-side. Business routes
+do not trust arbitrary tenant headers or ordinary body fields for tenant
+context.</p>
+<p><code>workspace_id</code> exists in schema/model surfaces as a reserved nullable field.
+It is not a production workspace boundary. Current server routes do not derive a
+trusted workspace from auth, do not maintain workspace membership, and do not
+perform workspace-scoped filtering.</p>
+<h2 id="workspace-enforcement-gap-assessment">Workspace Enforcement Gap Assessment<a class="headerlink" href="#workspace-enforcement-gap-assessment" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Current state</th>
+<th>Remaining gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>workspace_id derivation</td>
+<td>Reserved/nullable; no trusted runtime derivation</td>
+<td>No server-derived workspace identity or membership model</td>
+</tr>
+<tr>
+<td>tenant_id / workspace_id relationship</td>
+<td>Tenant is enforced; workspace is not linked to tenant</td>
+<td>No tenant-owned workspace table or lifecycle</td>
+</tr>
+<tr>
+<td>server-derived workspace context</td>
+<td>None beyond nullable field propagation in audit model</td>
+<td>No authenticated workspace context</td>
+</tr>
+<tr>
+<td>unsafe header/body override prevention</td>
+<td>Tenant override ignored on business routes; workspace body override is non-operative</td>
+<td>No explicit production workspace override rejection because workspace is deferred</td>
+</tr>
+<tr>
+<td>cross-workspace lookup denial</td>
+<td>Not claimed</td>
+<td>Requires workspace-scoped resource ownership and query filters</td>
+</tr>
+<tr>
+<td>cross-workspace mutation denial</td>
+<td>Not claimed</td>
+<td>Requires workspace-scoped ownership and mutation predicates</td>
+</tr>
+<tr>
+<td>grants/evidence/provenance/audit/compliance propagation</td>
+<td>Tenant propagates through routes and audit events; workspace remains nullable</td>
+<td>Evidence/provenance/archive tables need ownership propagation before real data</td>
+</tr>
+<tr>
+<td>demo/synthetic flows</td>
+<td>Tenant-scoped and synthetic/demo bounded</td>
+<td>No production workspace semantics</td>
+</tr>
+<tr>
+<td>admin/operator routes</td>
+<td>Admin can assign tenant for operators; workspace assignment not exposed</td>
+<td>No production workspace admin/member workflow</td>
+</tr>
+<tr>
+<td>controlled external review</td>
+<td>Synthetic/demo only, separate export gate</td>
+<td>No public/export workspace readiness claim</td>
+</tr>
+</tbody>
+</table>
+<h2 id="implemented-hardening-summary">Implemented Hardening Summary<a class="headerlink" href="#implemented-hardening-summary" title="Permanent link">&para;</a></h2>
+<p>No backend source hardening was implemented in GL-221. The inspected gaps require
+workspace identity, ownership, persistence, and authorization design work that is
+too broad for this issue and would require schema/migration and RBAC decisions.
+GL-221 adds documentation, JSON evidence, a local-only dry-run/plan gate, and
+tests that lock the conservative no-go posture.</p>
+<h2 id="workspace_id-derivationtrust-model">workspace_id Derivation/Trust Model<a class="headerlink" href="#workspace_id-derivationtrust-model" title="Permanent link">&para;</a></h2>
+<p>There is currently no trusted <code>workspace_id</code> derivation model. Clients do not
+establish workspace trust through headers or normal body fields. A future gate
+must derive workspace context from authenticated operator membership or a
+trusted provider claim after signature, issuer, audience, expiry, and
+tenant/workspace mapping validation.</p>
+<h2 id="tenantworkspace-relationship-model">Tenant/Workspace Relationship Model<a class="headerlink" href="#tenantworkspace-relationship-model" title="Permanent link">&para;</a></h2>
+<p>Current runtime treats tenant as the enforced boundary and workspace as reserved
+metadata. A production model must make every workspace belong to exactly one
+tenant and must bind every customer-owned resource to tenant plus workspace.</p>
+<h2 id="unsafe-workspace-override-prevention">Unsafe Workspace Override Prevention<a class="headerlink" href="#unsafe-workspace-override-prevention" title="Permanent link">&para;</a></h2>
+<p>Current business create routes ignore caller-supplied <code>tenantId</code>/<code>workspaceId</code>
+for resource ownership. Because no server-derived workspace context exists,
+GL-221 does not add a partial workspace override mechanism. Future work should
+reject unsupported workspace override fields once a real workspace model exists.</p>
+<h2 id="cross-workspace-lookup-denial-posture">Cross-Workspace Lookup Denial Posture<a class="headerlink" href="#cross-workspace-lookup-denial-posture" title="Permanent link">&para;</a></h2>
+<p>Cross-tenant direct-ID lookup denial exists for primary and GL-215 secondary
+execution-derived routes. Cross-workspace lookup denial is not claimed because
+resource rows are not workspace-scoped by runtime authorization.</p>
+<h2 id="cross-workspace-mutation-denial-posture">Cross-Workspace Mutation Denial Posture<a class="headerlink" href="#cross-workspace-mutation-denial-posture" title="Permanent link">&para;</a></h2>
+<p>Cross-tenant mutation denial exists for primary mutations and demo tamper.
+Cross-workspace mutation denial is not claimed. Production SaaS remains blocked
+until mutations include workspace ownership predicates and tests.</p>
+<h2 id="workspace-propagation-into-auditevidenceprovenancecompliance">Workspace Propagation Into Audit/Evidence/Provenance/Compliance<a class="headerlink" href="#workspace-propagation-into-auditevidenceprovenancecompliance" title="Permanent link">&para;</a></h2>
+<p>Audit events have nullable <code>workspace_id</code> storage, but current audit append
+flows normally carry tenant and scope, not a trusted workspace. Evidence,
+provenance, auditor, and compliance builders are protected at HTTP entry points
+by tenant-visible execution checks, but their persistence helpers are not a
+standalone workspace enforcement boundary.</p>
+<h2 id="adminoperator-workspace-boundary">Admin/Operator Workspace Boundary<a class="headerlink" href="#adminoperator-workspace-boundary" title="Permanent link">&para;</a></h2>
+<p>Admin/operator routes preserve tenant assignment and safe audit events. They do
+not implement workspace membership, workspace operator assignment, or production
+tenant administration. Admin operations are not proof of production workspace
+readiness.</p>
+<h2 id="demosynthetic-workspace-boundary">Demo/Synthetic Workspace Boundary<a class="headerlink" href="#demosynthetic-workspace-boundary" title="Permanent link">&para;</a></h2>
+<p>Demo and synthetic flows remain allowed only for Developer Preview / Controlled
+Preview. Demo tamper is tenant-scoped after GL-215. No demo flow is approved for
+real customer, private grant, or institutional data.</p>
+<h2 id="controlled-external-review-workspace-boundary">Controlled External Review Workspace Boundary<a class="headerlink" href="#controlled-external-review-workspace-boundary" title="Permanent link">&para;</a></h2>
+<p>Controlled external technical review remains GO with strict boundaries:
+synthetic/demo data only, no public export unless a separate explicit gate
+approves it, no exploit details, no real secrets, and no production claims.</p>
+<h2 id="production-readiness-impact">Production-Readiness Impact<a class="headerlink" href="#production-readiness-impact" title="Permanent link">&para;</a></h2>
+<p>Workspace enforcement remains a final consolidated blocker before Production
+SaaS or real-data use. GL-221 does not remove that blocker.</p>
+<h2 id="controlled-preview-impact">Controlled Preview Impact<a class="headerlink" href="#controlled-preview-impact" title="Permanent link">&para;</a></h2>
+<p>Developer Preview and controlled technical review can continue because current
+tenant-derived controls, claim-safety boundaries, and synthetic/demo data rules
+remain intact.</p>
+<h2 id="final-readiness-matrix-v6">Final Readiness Matrix v6<a class="headerlink" href="#final-readiness-matrix-v6" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Developer Preview</td>
+<td>GO / CONTINUE</td>
+</tr>
+<tr>
+<td>Controlled External Technical Review</td>
+<td>GO with strict boundaries</td>
+</tr>
+<tr>
+<td>Synthetic/Demo Controlled Pilot</td>
+<td>CONDITIONAL</td>
+</tr>
+<tr>
+<td>Public Snapshot Preparation</td>
+<td>CONDITIONAL - separate explicit gate required</td>
+</tr>
+<tr>
+<td>Public Website Publish</td>
+<td>DEFER / NO-GO</td>
+</tr>
+<tr>
+<td>Official SDK / Package</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Real Customer Data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Private Grant / Institutional Data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Production SaaS</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Compliance Certification</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Live PostgreSQL Production Readiness</td>
+<td>NO-GO</td>
+</tr>
+</tbody>
+</table>
+<h2 id="production-saas-decision">Production SaaS Decision<a class="headerlink" href="#production-saas-decision" title="Permanent link">&para;</a></h2>
+<p>NO-GO. Remaining blockers include workspace enforcement, production IAM,
+database/RLS posture, live PostgreSQL readiness, operations ownership,
+monitoring/alerting, backup/restore/DR, incident process, and compliance/legal
+review.</p>
+<h2 id="real-customer-data-decision">Real Customer Data Decision<a class="headerlink" href="#real-customer-data-decision" title="Permanent link">&para;</a></h2>
+<p>NO-GO. Real customer data requires workspace enforcement, data governance,
+legal/security review, retention/deletion workflows, production IAM, and
+production operations evidence.</p>
+<h2 id="private-grantinstitutional-data-decision">Private Grant/Institutional Data Decision<a class="headerlink" href="#private-grantinstitutional-data-decision" title="Permanent link">&para;</a></h2>
+<p>NO-GO. Private grant and institutional data require stronger access controls,
+workspace ownership, audit/export governance, and compliance review.</p>
+<h2 id="controlled-external-review-decision">Controlled External Review Decision<a class="headerlink" href="#controlled-external-review-decision" title="Permanent link">&para;</a></h2>
+<p>GO with strict boundaries. Review is synthetic/demo only, security-sensitive
+reports route to GitHub Security Advisories, and public issue content must not
+include exploit details or secrets.</p>
+<h2 id="public-snapshotpublic-publish-decision">Public Snapshot/Public Publish Decision<a class="headerlink" href="#public-snapshotpublic-publish-decision" title="Permanent link">&para;</a></h2>
+<p>Public snapshot/export remains CONDITIONAL and separate-gate only. Public
+website publish remains DEFER / NO-GO unless a later explicit publish gate
+approves it.</p>
+<h2 id="official-sdkpackage-decision">Official SDK/Package Decision<a class="headerlink" href="#official-sdkpackage-decision" title="Permanent link">&para;</a></h2>
+<p>NO-GO. The internal/minimal SDK prototype is not an official SDK or package.
+No package publishing metadata is added.</p>
+<h2 id="live-postgresql-production-readiness-decision">Live PostgreSQL Production Readiness Decision<a class="headerlink" href="#live-postgresql-production-readiness-decision" title="Permanent link">&para;</a></h2>
+<p>NO-GO. Prior PostgreSQL validation was ephemeral/synthetic and does not prove a
+live production topology, backup, restore, failover, or operations model.</p>
+<h2 id="iamidentity-decision-after-gl-219">IAM/Identity Decision After GL-219<a class="headerlink" href="#iamidentity-decision-after-gl-219" title="Permanent link">&para;</a></h2>
+<p>Improved but not production-ready. Static admin token and hashed operator-token
+model remain controlled-preview controls. External IdP/OAuth/OIDC/JWT
+production readiness is not claimed.</p>
+<h2 id="runtimeinfrastructure-decision-after-gl-220">Runtime/Infrastructure Decision After GL-220<a class="headerlink" href="#runtimeinfrastructure-decision-after-gl-220" title="Permanent link">&para;</a></h2>
+<p>Improved documentation and local gate coverage, but no real TLS, reverse proxy,
+process supervisor, cloud deployment, monitoring, production secrets, or
+production infrastructure readiness is claimed.</p>
+<h2 id="publicexport-decision-after-gl-218">Public/Export Decision After GL-218<a class="headerlink" href="#publicexport-decision-after-gl-218" title="Permanent link">&para;</a></h2>
+<p>Public/export safety boundaries are documented. No public snapshot/export,
+public GitHub push, visibility change, or public publish is authorized by
+GL-221.</p>
+<h2 id="remaining-p0p1p2-blockers">Remaining P0/P1/P2 Blockers<a class="headerlink" href="#remaining-p0p1p2-blockers" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Blocker</th>
+<th>Status</th>
+<th>Mitigation</th>
+<th>Remaining work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>Production SaaS readiness</td>
+<td>Open</td>
+<td>Keep Developer Preview / Controlled Preview only</td>
+<td>Complete production IAM, workspace, DB, ops, compliance gates</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>Real customer/private/institutional data</td>
+<td>Open</td>
+<td>Synthetic/demo-only boundary</td>
+<td>Legal/security/data-governance approval and production controls</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>Live PostgreSQL production readiness</td>
+<td>Open</td>
+<td>Ephemeral validation only</td>
+<td>Production topology, backups, restore, failover, monitoring</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Workspace enforcement</td>
+<td>Open</td>
+<td>Tenant-scoped app controls preserved</td>
+<td>Workspace identity, membership, ownership, query/mutation enforcement</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Production IAM</td>
+<td>Open</td>
+<td>GL-219 fail-closed unsupported IdP config</td>
+<td>Real IdP/JWT validator, MFA/SSO, deprovisioning, rotation</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Audit/evidence/provenance workspace propagation</td>
+<td>Open</td>
+<td>Tenant-visible route prechecks</td>
+<td>Persisted workspace ownership and export governance</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>Public snapshot preparation</td>
+<td>Conditional</td>
+<td>Separate gate required</td>
+<td>Candidate export review and approval</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>Official SDK/package</td>
+<td>Open</td>
+<td>Keep prototype boundary</td>
+<td>Packaging policy, metadata, versioning, support decision</td>
+</tr>
+</tbody>
+</table>
+<h2 id="risk-register-v6">Risk Register v6<a class="headerlink" href="#risk-register-v6" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Severity</th>
+<th>Status</th>
+<th>Mitigation</th>
+<th>Remaining work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Workspace boundary overclaim</td>
+<td>P0</td>
+<td>Open</td>
+<td>Explicit no-go language and tests</td>
+<td>Implement workspace model and verification</td>
+</tr>
+<tr>
+<td>Real-data misuse in preview</td>
+<td>P0</td>
+<td>Open</td>
+<td>Synthetic/demo-only docs and gates</td>
+<td>Data governance and legal approval</td>
+</tr>
+<tr>
+<td>Public/export leakage</td>
+<td>P1</td>
+<td>Controlled</td>
+<td>GL-218 separate gate and scans</td>
+<td>Manual export candidate review</td>
+</tr>
+<tr>
+<td>Static/admin token production use</td>
+<td>P1</td>
+<td>Open</td>
+<td>Fail-closed production-like config</td>
+<td>Production IAM rollout</td>
+</tr>
+<tr>
+<td>Runtime/infrastructure gap</td>
+<td>P1</td>
+<td>Open</td>
+<td>GL-220 local gate</td>
+<td>Real deployment architecture and ops ownership</td>
+</tr>
+</tbody>
+</table>
+<h2 id="compact-next-roadmap">Compact Next Roadmap<a class="headerlink" href="#compact-next-roadmap" title="Permanent link">&para;</a></h2>
+<ol>
+<li>GL-222: Workspace identity, membership, and ownership design/implementation
+   plan.</li>
+<li>GL-223: Workspace-scoped query/mutation enforcement with focused tests.</li>
+<li>GL-224: Evidence/provenance/audit workspace propagation and export scoping.</li>
+<li>GL-225: Production IAM provider gate design.</li>
+<li>GL-226: Live PostgreSQL production-readiness gate.</li>
+</ol>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><code>workspace_enforcement_final_go_no_go_v6_ready_for_merge_with_blockers</code></p>
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<p>GL-221 confirms current tenant enforcement remains useful for Developer Preview
+and controlled synthetic/demo evaluation, but workspace enforcement is not
+production-complete. The correct final v6 posture is GO / CONTINUE for
+Developer Preview, GO with strict boundaries for controlled external technical
+review, CONDITIONAL for synthetic/demo pilot, and NO-GO for production SaaS,
+real/private/institutional data, official SDK/package, compliance
+certification, and live PostgreSQL production readiness.</p>
+<h2 id="findings">Findings<a class="headerlink" href="#findings" title="Permanent link">&para;</a></h2>
+<ul>
+<li>No real workspace enforcement implementation exists beyond reserved nullable
+  fields and route-level tenant prechecks.</li>
+<li>Current cross-tenant denial behavior is preserved.</li>
+<li>Cross-workspace lookup and mutation denial are not claimed.</li>
+<li>No backend change was safe within GL-221 scope without broader schema/RBAC
+  work.</li>
+</ul>
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-221 is not production release.</li>
+<li>Developer Preview / Controlled Preview boundaries remain.</li>
+<li>Public snapshot/export remains separate-gate only.</li>
+<li>Public website publish remains separate-gate only.</li>
+<li>No public push, public publish, or visibility change was performed.</li>
+<li>No package metadata, setup.py, SDK pyproject.toml, package.json, or
+  package-lock.json was added.</li>
+<li>No GitHub workflow or snapshot publish script was changed.</li>
+<li>No migration, dependency, deployment, cloud, Kubernetes, Terraform, Helm, TLS
+  certificate, or private-key file was added.</li>
+<li>No exploit details, real secrets, real customer data, private grant data, or
+  institutional data are included.</li>
+</ul>
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-222 Workspace identity/membership/ownership implementation plan.</li>
+<li>GL-223 Workspace-scoped lookup and mutation enforcement.</li>
+<li>GL-224 Workspace propagation for evidence, provenance, audit, compliance, and
+  export surfaces.</li>
+<li>GL-225 Production identity provider readiness gate.</li>
+<li>GL-226 Live PostgreSQL production readiness gate.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

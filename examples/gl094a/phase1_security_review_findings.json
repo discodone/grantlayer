@@ -1,0 +1,120 @@
+{
+  "reviewId": "GL-094A",
+  "baseMain": "5b63026fdc333f36e4b0a3f6713cf4436ff76a63",
+  "reviewedIssues": [
+    "GL-088",
+    "GL-089",
+    "GL-090",
+    "GL-091",
+    "GL-092",
+    "GL-093"
+  ],
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "high",
+      "status": "gap",
+      "title": "CORS wildcard allows any origin",
+      "description": "Access-Control-Allow-Origin: * is returned on every response. Any browser origin can make cross-origin requests to the API. In production this must be restricted to known consumer domains.",
+      "affectedFiles": [
+        "backend/src/server.py"
+      ],
+      "recommendedIssue": "GL-095"
+    },
+    {
+      "id": "F-002",
+      "severity": "high",
+      "status": "gap",
+      "title": "Private key stored without file permission hardening",
+      "description": "The Ed25519 private key is written to data/demo_ed25519_private_key.pem with NoEncryption(). os.makedirs does not set restrictive file permissions. If the data/ directory is world-readable the private key is immediately compromised. No runtime enforcement prevents use outside demo mode.",
+      "affectedFiles": [
+        "backend/src/crypto_signing.py"
+      ],
+      "recommendedIssue": "GL-096"
+    },
+    {
+      "id": "F-003",
+      "severity": "high",
+      "status": "gap",
+      "title": "Audit log has no immutability protection",
+      "description": "Audit events are inserted via plain INSERT with no database trigger, row-level policy, or constraint preventing subsequent UPDATE or DELETE. An attacker with database write access can silently alter or erase the audit trail. Entries are not hash-chained, so tampering is undetectable without an external reference.",
+      "affectedFiles": [
+        "backend/src/audit_log.py"
+      ],
+      "recommendedIssue": "GL-094B"
+    },
+    {
+      "id": "F-004",
+      "severity": "medium",
+      "status": "gap",
+      "title": "Self-approval enforcement not encapsulated in grant_requests module",
+      "description": "The guard preventing an operator from approving their own request lives in server.py, not in grant_requests.approve_grant_request(). Any future code path calling the module function directly bypasses the guard. Authorization invariants should be enforced at the data layer.",
+      "affectedFiles": [
+        "backend/src/server.py",
+        "backend/src/grant_requests.py"
+      ],
+      "recommendedIssue": "GL-097"
+    },
+    {
+      "id": "F-005",
+      "severity": "medium",
+      "status": "gap",
+      "title": "Denial reason field has no length bound",
+      "description": "deny_grant_request() accepts an arbitrary reason string and stores it in the database without length validation. A caller can write multi-megabyte strings per denial event, causing unbounded database growth and memory pressure during reads.",
+      "affectedFiles": [
+        "backend/src/grant_requests.py"
+      ],
+      "recommendedIssue": "GL-097"
+    },
+    {
+      "id": "F-006",
+      "severity": "medium",
+      "status": "gap",
+      "title": "expire_old_requests() is never triggered",
+      "description": "expire_old_requests() is implemented in grant_requests.py but is never called. There is no background job, cron trigger, or request-time hook that invokes it. Stale grant requests remain indefinitely in the requested state and can be approved long after their intended window.",
+      "affectedFiles": [
+        "backend/src/grant_requests.py"
+      ],
+      "recommendedIssue": "GL-098"
+    },
+    {
+      "id": "F-007",
+      "severity": "low",
+      "status": "inconsistency",
+      "title": "GL-092 test_deny_failure_is_surfaced has copy-paste bug in mock assignment",
+      "description": "test_deny_failure_is_surfaced assigns self.audit_mod.append_event = self.audit_mod.append_event, a no-op that leaves the real function in place. The test does not verify that an audit failure exception actually surfaces from deny_grant_request(). Adjacent rollback tests are valid but this specific assertion is unexercised.",
+      "affectedFiles": [
+        "backend/tests/test_gl092_deny_revoke_audit_semantics.py"
+      ],
+      "recommendedIssue": "GL-092-followup"
+    }
+  ],
+  "recommendedNextIssues": [
+    {
+      "issueId": "GL-094B",
+      "title": "Audit log immutability",
+      "rationale": "High-severity gap; compliance and forensic integrity depend on INSERT-only enforcement. The current schema allows silent deletion or alteration of audit events."
+    },
+    {
+      "issueId": "GL-095",
+      "title": "CORS origin hardening",
+      "rationale": "High-severity; Access-Control-Allow-Origin: * is trivially exploitable in browser-based integrations. Restrict to a configurable allowlist."
+    },
+    {
+      "issueId": "GL-096",
+      "title": "Private key file permission enforcement",
+      "rationale": "High-severity key management gap. Set 0o600 on the private key file at write time. One-line fix with significant security value."
+    },
+    {
+      "issueId": "GL-097",
+      "title": "Grant module self-approval guard and denial reason length validation",
+      "rationale": "Encapsulates two medium-severity gaps: moves self-approval enforcement into grant_requests.py and adds a length bound on denial reason strings."
+    },
+    {
+      "issueId": "GL-098",
+      "title": "Request expiry background trigger",
+      "rationale": "expire_old_requests() is dead code without a trigger. Stale requests accumulate indefinitely and can be approved outside their intended window."
+    }
+  ],
+  "conclusion": "proceed_with_cautions"
+}

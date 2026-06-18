@@ -1,0 +1,49 @@
+{
+  "issue_id": "GL-162F",
+  "artifact_type": "dashboard_xss_hardening",
+  "description": "XSS hardening of dashboard/index.html before public snapshot push. All API-derived fields escaped before innerHTML insertion.",
+  "escape_html_helper_added": true,
+  "escape_html_characters_covered": ["&", "<", ">", "\"", "'"],
+  "functions_hardened": [
+    "updateTamperSelect",
+    "doTamper (flow-log entry)",
+    "doTamperAction (flow-log entry)",
+    "loadGrants",
+    "loadChallenges",
+    "loadAudit"
+  ],
+  "fields_escaped": [
+    "g.id", "g.subject_id", "g.role", "g.action", "g.resource",
+    "g.signingKeyId", "g.payloadHash", "g.reason",
+    "c.id", "c.subject_id", "c.action", "c.resource",
+    "e.subject_id", "e.role", "e.action", "e.resource",
+    "e.challenge_id", "e.challenge_result", "e.grant_signature_result", "e.reason",
+    "data.tamperedField", "data.oldValue", "data.newValue",
+    "data.reason", "sigResult"
+  ],
+  "onclick_hardening": {
+    "revokeGrant": "onclick uses escapeHtml(g.id) to prevent JS string breakout",
+    "clipboard_writeText": "replaced inline '${c.id}' string with this.dataset.cid; ID stored in data-cid attribute with escapeHtml"
+  },
+  "duplicate_title_attribute_fixed": true,
+  "files_changed": [
+    "dashboard/index.html",
+    "backend/tests/test_gl162f_dashboard_xss_hardening.py",
+    "docs/examples/gl162f/dashboard_xss_hardening.json"
+  ],
+  "backend_src_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "sdk_changed": false,
+  "pushed_to_github": false,
+  "github_api_called": false,
+  "history_rewrite_performed": false,
+  "git_remotes_changed": false,
+  "production_saas_ready_claimed": false,
+  "tenant_isolation_claimed_implemented": false,
+  "uses_real_secrets": false,
+  "uses_real_customer_data": false,
+  "includes_private_personal_data": false,
+  "developer_preview_status": "GL-0.1 unchanged"
+}

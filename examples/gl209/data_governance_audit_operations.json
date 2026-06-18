@@ -1,0 +1,297 @@
+{
+  "issue_id": "GL-209",
+  "title": "Data Governance & Audit Operations",
+  "result": "approved_with_gaps",
+  "decision": "data_governance_audit_operations_baseline_approved_with_gaps",
+  "decision_rationale": "GL-209 establishes a bounded data-governance and audit-operations baseline for Developer Preview / Controlled Preview. It documents the no-go real/private data boundary, preserves immutable audit source history, adds a safe derived audit export check, and records remaining blockers without claiming production or compliance readiness.",
+  "input_sources_reviewed": [
+    "docs/runtime_abuse_incident_hardening.md",
+    "docs/examples/gl208/runtime_abuse_incident_hardening.json",
+    "docs/claim_safety_controlled_preview_boundary.md",
+    "docs/examples/gl207/claim_safety_controlled_preview_boundary.json",
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/live_postgres_backup_observability_baseline.md",
+    "docs/examples/gl205/live_postgres_backup_observability_baseline.json",
+    "docs/production_ops_go_no_go_v3.md",
+    "docs/examples/gl204/production_ops_go_no_go_v3.json",
+    "docs/sdk_prototype_packaging_boundary.md",
+    "docs/examples/gl203c/sdk_prototype_packaging_boundary.json",
+    "docs/openapi_api_contract_cleanup.md",
+    "docs/examples/gl203b/openapi_api_contract_cleanup.json",
+    "docs/api_contract_sdk_packaging_decision.md",
+    "docs/examples/gl203/api_contract_sdk_packaging_decision.json",
+    "docs/persistence_postgres_migration_readiness.md",
+    "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/tenant_workspace_api_audit_regression_completion.md",
+    "docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json",
+    "docs/tenant_workspace_isolation_implementation_baseline.md",
+    "docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json",
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "docs/controlled_preview_boundary_pack.md",
+    "docs/examples/gl198/controlled_preview_boundary_pack.json",
+    "docs/production_readiness_gap_report_v2.md",
+    "docs/examples/gl199/production_readiness_gap_report_v2.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/openapi.yaml",
+    "backend/src/server.py",
+    "backend/src/auth.py",
+    "backend/src/config.py",
+    "backend/src/operators.py",
+    "backend/src/audit_log.py",
+    "backend/src/db.py",
+    "backend/src/models.py",
+    "backend/src/migrations",
+    "backend/tests",
+    "scripts/ops",
+    "scripts",
+    "examples"
+  ],
+  "current_state_summary": {
+    "posture": "Developer Preview / Controlled Preview with strict boundaries",
+    "production_saas": "NO-GO",
+    "real_customer_private_grant_institutional_data": "NO-GO",
+    "official_sdk_package": "NO-GO",
+    "live_postgres_production_claim": "NO-GO",
+    "compliance_certification": "NO-GO",
+    "audit_source_history": "append-only immutable baseline with hash-chain verification"
+  },
+  "data_classification_baseline": {
+    "synthetic_demo_data": "allowed in Developer Preview / Controlled Preview",
+    "developer_test_data": "allowed when synthetic and local/ephemeral",
+    "audit_events": "append-only, secret-safe, tenant-aware where applicable",
+    "evidence_bundles": "synthetic/demo only unless future gates approve otherwise",
+    "operator_admin_metadata": "allowed for controlled preview; tokens and hashes are sensitive",
+    "tenant_workspace_identifiers": "allowed as baseline identifiers; not production-complete isolation",
+    "runtime_config_metadata": "safe summaries only; raw secret values forbidden",
+    "secrets_tokens_credentials": "never stored in docs/artifacts/logs/exports",
+    "customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO"
+  },
+  "controlled_preview_data_boundary": {
+    "data_scope": "synthetic/demo data only",
+    "real_customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO",
+    "production_data_imports": "NO-GO",
+    "public_private_data_uploads": "NO-GO",
+    "first_external_controlled_pilot": "synthetic/demo only"
+  },
+  "retention_policy_baseline": {
+    "source_audit_history": "append-only and immutable",
+    "synthetic_demo_data": "may be reset/destroyed in ephemeral environments",
+    "real_private_data_retention": "deferred because real/private data is no-go",
+    "legal_hold_regulatory_retention": "future production blocker"
+  },
+  "deletion_policy_baseline": {
+    "audit_events_destructive_delete": "forbidden",
+    "audit_history_rewrite": "forbidden",
+    "operational_non_audit_deletion": "future controlled feature unless already implemented",
+    "secret_rotation": "must not require audit history mutation"
+  },
+  "redaction_policy_baseline": {
+    "source_audit_mutation": "forbidden",
+    "derived_exports_reports": "redaction applies here",
+    "never_include": [
+      "raw Authorization headers",
+      "raw admin tokens",
+      "raw operator tokens",
+      "token_hash",
+      "token_lookup_hash",
+      "lookup_hash",
+      "DSNs",
+      "passwords",
+      "private keys",
+      "signing keys",
+      "raw request bodies",
+      "evidence payloads",
+      "real customer data",
+      "private grant data",
+      "institutional data"
+    ]
+  },
+  "audit_immutability_model": {
+    "source_table": "audit_events",
+    "model": "immutable source with derived safe exports",
+    "sqlite_triggers": "no update/delete baseline exists",
+    "postgres_triggers": "no update/delete baseline exists",
+    "hash_chain_verification": "read-only",
+    "failed_verification": "incident signal, not destructive repair task"
+  },
+  "audit_export_operations_baseline": {
+    "script": "scripts/ops/gl209_audit_export_check.py",
+    "implemented": true,
+    "modes": [
+      "--plan",
+      "--dry-run",
+      "--sample"
+    ],
+    "read_only_default": true,
+    "source_audit_mutation": false,
+    "derived_manifest_only": true,
+    "production_export_workflow": "deferred"
+  },
+  "audit_hash_chain_operations": {
+    "procedure": [
+      "run read-only hash-chain verification",
+      "stop export on invalid chain",
+      "review failures without exposing secrets",
+      "preserve source rows unchanged",
+      "export only safe derived summaries"
+    ]
+  },
+  "evidence_bundle_operations": {
+    "status": "synthetic/demo only",
+    "exports": "deterministic, integrity-checkable, secret-safe",
+    "raw_payload_logging": "forbidden",
+    "integrity_anomaly": "audit/security incident"
+  },
+  "backup_restore_governance_alignment": {
+    "gl205_sqlite_drill": "synthetic/ephemeral baseline exists",
+    "backup_artifacts": "must not contain secrets or real/private data",
+    "restore_drill": "must verify audit hash-chain and tenant/workspace separation where applicable",
+    "production_backup_governance": "remaining blocker"
+  },
+  "postgres_backup_restore_status": {
+    "status": "manual checklist only for ephemeral/synthetic instances",
+    "production_backup_claim": "NO-GO",
+    "remaining_gaps": [
+      "backup scheduling",
+      "encryption",
+      "offsite retention",
+      "access control",
+      "restore RTO/RPO",
+      "DR runbooks"
+    ]
+  },
+  "live_postgres_validation_status": {
+    "status": "not executed unless safe ephemeral instance is explicitly available and env-gated",
+    "production_readiness_claim": "NO-GO"
+  },
+  "data_governance_risk_register": [
+    {
+      "id": "R-001",
+      "risk": "Derived exports could leak sensitive fields",
+      "mitigation": "Export only safe manifests; redact/refuse secret-like content"
+    },
+    {
+      "id": "R-002",
+      "risk": "Deletion pressure could lead to source audit mutation",
+      "mitigation": "Keep audit source immutable; redaction is derived-only"
+    },
+    {
+      "id": "R-003",
+      "risk": "Backup artifacts could include private data in future pilots",
+      "mitigation": "Real/private data remains no-go until production governance exists"
+    },
+    {
+      "id": "R-004",
+      "risk": "Hash-chain failure could be mishandled as repair",
+      "mitigation": "Treat as incident and investigate without destructive rewrite"
+    },
+    {
+      "id": "R-005",
+      "risk": "Baseline could be overclaimed as compliance readiness",
+      "mitigation": "Explicitly prohibit compliance certification and GDPR/SOC2/ISO readiness claims"
+    }
+  ],
+  "compliance_non_goals": [
+    "compliance certification",
+    "GDPR readiness",
+    "SOC2 readiness",
+    "ISO readiness",
+    "production retention compliance",
+    "legal hold",
+    "eDiscovery",
+    "DSR automation",
+    "complete audit export governance"
+  ],
+  "implementation_summary": {
+    "docs_added": [
+      "docs/data_governance_audit_operations.md",
+      "docs/examples/gl209/data_governance_audit_operations.json"
+    ],
+    "tests_added": [
+      "backend/tests/test_gl209_data_governance_audit_operations.py"
+    ],
+    "scripts_added": [
+      "scripts/ops/gl209_audit_export_check.py"
+    ],
+    "backend_source_changed": false,
+    "openapi_changed": false,
+    "migrations_changed": false,
+    "frontend_website_design_changed": false,
+    "github_workflows_changed": false,
+    "package_publishing_changed": false
+  },
+  "controlled_preview_impact": {
+    "status": "continues_with_strict_boundaries",
+    "data_scope": "synthetic/demo data only",
+    "expansion": "no expansion to real customer/private grant/institutional data"
+  },
+  "production_readiness_impact": {
+    "production_saas": "NO-GO",
+    "real_customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO",
+    "official_sdk_package": "NO-GO",
+    "live_postgres_production_claim": "NO-GO",
+    "backup_restore_production_readiness": "NO-GO",
+    "compliance_certification": "NO-GO"
+  },
+  "remaining_blockers": [
+    "Production data governance policy and approval workflow",
+    "Legal/compliance retention and deletion review",
+    "Real-data DSR/legal-hold/eDiscovery process",
+    "Production audit export authorization, encryption, and access logging",
+    "Production backup encryption, retention, offsite storage, and restore RTO/RPO",
+    "Live PostgreSQL validation execution against an ephemeral instance",
+    "Production observability and incident response program",
+    "Production IAM, tenant administration, and workspace enforcement"
+  ],
+  "findings": [
+    "Existing audit hash-chain verification is read-only.",
+    "Existing migrations preserve audit immutability.",
+    "Redaction belongs in derived exports/reports, not source audit mutation.",
+    "GL-205 backup/restore governance remains synthetic/ephemeral.",
+    "No destructive audit deletion or source audit redaction mutation was added.",
+    "No OpenAPI, migration, backend source, frontend, workflow, package, SDK, or public publish change was required."
+  ],
+  "safety_confirmations": {
+    "production_saas_not_claimed": true,
+    "developer_preview_controlled_preview_only": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "live_postgres_production_claim_no_go": true,
+    "compliance_certification_not_claimed": true,
+    "gdpr_soc2_iso_readiness_not_claimed": true,
+    "backup_restore_production_readiness_not_claimed": true,
+    "security_reports_to_github_security_advisories": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_data": true,
+    "audit_source_history_immutable": true,
+    "redaction_derived_only_no_source_audit_mutation": true,
+    "no_destructive_audit_deletion": true,
+    "tenant_workspace_isolation_not_overclaimed": true,
+    "admin_operator_control_plane_not_overclaimed": true,
+    "controlled_preview_synthetic_demo_only": true,
+    "package_publishing_avoided": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_public_github_push": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "unrelated_website_files_excluded": true
+  },
+  "recommended_next_issues": [
+    "GL-209 Merge if ready",
+    "GL-210 Website Track",
+    "GL-206B Live PostgreSQL Validation Execution when ephemeral PostgreSQL is available"
+  ]
+}

@@ -1,0 +1,1388 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/external_security_review_preparation/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer External Security Review Preparation - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-external-security-review-preparation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer External Security Review Preparation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-title-and-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Title and Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-review-posture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Review Posture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-review-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Review Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-out-of-scope-non-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Out of Scope / Non-Claims
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-security-sensitive-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Security-Sensitive Components
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-threat-model-review-areas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Threat-Model Review Areas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-reviewer-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Reviewer Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-evidence-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Evidence Artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-required-validation-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Required Validation Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-expected-reviewer-outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Expected Reviewer Outputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-gono-go-for-review-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Go/No-Go for Review Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Go/No-Go for Review Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#go-review-package-is-ready-for-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GO — Review package is ready for use
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-go-review-package-must-not-be-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NO-GO — Review package must not be used
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-relationship-to-existing-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Relationship to Existing Gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-explicit-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Explicit Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-final-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Final Statement
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-external-security-review-preparation">GrantLayer External Security Review Preparation<a class="headerlink" href="#grantlayer-external-security-review-preparation" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-title-and-scope">1. Title and Scope<a class="headerlink" href="#1-title-and-scope" title="Permanent link">&para;</a></h2>
+<p>This document is the <strong>GL-133 External Security Review Preparation</strong>. It creates a
+review, artifact, and test-only package that prepares GrantLayer for an independent
+external security review. It does not perform or complete one.</p>
+<p><strong>This is NOT a completed external security review.</strong>
+<strong>This is NOT a penetration test.</strong>
+<strong>This is NOT security implementation work.</strong>
+<strong>This is NOT production code.</strong>
+<strong>This is NOT tenant/workspace implementation.</strong>
+<strong>This is NOT frontend/onboarding/billing work.</strong>
+<strong>This is NOT website/marketing/design work.</strong></p>
+<h2 id="2-review-posture">2. Review Posture<a class="headerlink" href="#2-review-posture" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>backend is pilot-ready with caveats</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>production SaaS is complete</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>commercial SaaS is complete</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>multi-tenant isolation is implemented</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>GL-133 prepares external review</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>GL-133 completes external review</td>
+<td><strong>No</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The backend is pilot-ready with caveats (as of GL-128), not production SaaS complete.
+Production SaaS and commercial SaaS remain future work.
+Multi-tenant isolation is not implemented; the pilot boundary is single-environment or
+operator-bounded (as defined in GL-132).</p>
+<h2 id="3-review-scope">3. Review Scope<a class="headerlink" href="#3-review-scope" title="Permanent link">&para;</a></h2>
+<p>The following areas are in scope for an external reviewer to inspect and evaluate:</p>
+<ol>
+<li><strong>Backend API security</strong> — endpoints, error contracts, secret-safety of responses.</li>
+<li><strong>Operator authentication and authorization</strong> — token handling, role enforcement,
+   fail-closed behavior, RBAC boundaries.</li>
+<li><strong>Operator token expiry and rotation</strong> — expiry semantics, rotation flow, raw-token
+   non-exposure, fail-closed on expired tokens.</li>
+<li><strong>Startup fail-closed configuration</strong> — unsafe defaults are detected and blocked at
+   startup; unsafe modes are not silently permitted.</li>
+<li><strong>Request body / payload validation</strong> — JSON parsing limits, oversized payload
+   rejection, shape validation, and safe error responses that do not echo raw input.</li>
+<li><strong>Rate limiting baseline</strong> — rate limits are enforced, do not mutate state when
+   rejecting requests, and return safe, non-leaking error responses.</li>
+<li><strong>Structured logging / correlation IDs / secret safety</strong> — all security-relevant
+   events emit structured logs; <code>correlation_id</code> propagates; secrets are never logged,
+   including tokens, headers, passwords, private keys, or backup credentials.</li>
+<li><strong>Audit persistence / hash-chain / PostgreSQL immutability</strong> — audit records are
+   append-only; row-level hash chain (<code>row_hash</code>, <code>prev_hash</code>) is computed; PostgreSQL
+   triggers block UPDATE/DELETE on audit tables; tamper-evident verification is CI-gated.</li>
+<li><strong>PostgreSQL connection pooling</strong> — pool configuration, credential isolation,
+   connection lifecycle management, and error handling that does not expose credentials.</li>
+<li><strong>Backup / restore drill</strong> — critical data categories, restore acceptance criteria,
+    non-destructive restore guidance, and go/no-go gates.</li>
+<li><strong>Runtime gate / smoke tests</strong> — automated config validation before deployment and
+    a fast post-deployment validation bundle covering health, auth, payload, correlation,
+    and logging safety.</li>
+<li><strong>Monitoring / alerting baseline</strong> — documented ownership, review cadence, and
+    operational expectations for monitoring and alerting.</li>
+<li><strong>Incident response runbook</strong> — escalation paths, ownership, and execution gates for
+    incident response.</li>
+<li><strong>Tenant/workspace boundary decision</strong> — documented boundary posture, explicit
+    non-claims, pilot go/no-go criteria, and follow-up issues for multi-tenant readiness.</li>
+</ol>
+<h2 id="4-out-of-scope-non-claims">4. Out of Scope / Non-Claims<a class="headerlink" href="#4-out-of-scope-non-claims" title="Permanent link">&para;</a></h2>
+<p>The following are <strong>not</strong> claimed or implemented in GL-133:</p>
+<ul>
+<li><strong>No external security review completed by GL-133</strong> — GL-133 prepares the package
+  only; it does not perform, commission, or complete an independent review.</li>
+<li><strong>No penetration test completed by GL-133</strong> — no penetration testing is executed
+  or claimed as complete.</li>
+<li><strong>No multi-tenant isolation implemented</strong> — the backend does not enforce tenant
+  or workspace boundaries at the data, authorization, or audit layers.</li>
+<li><strong>No shared SaaS environment approved for unrelated customers</strong> — a single shared
+  deployment must not host unrelated customers until explicit tenant/workspace isolation
+  is designed, implemented, and verified.</li>
+<li><strong>No customer account / billing / onboarding model implemented</strong> — there is no
+  customer account entity, subscription logic, usage metering, or self-service onboarding UI.</li>
+<li><strong>No frontend / website security review completed</strong> — the security review preparation
+  package covers the backend only; any frontend or website security review is separate work.</li>
+</ul>
+<h2 id="5-security-sensitive-components">5. Security-Sensitive Components<a class="headerlink" href="#5-security-sensitive-components" title="Permanent link">&para;</a></h2>
+<p>Reviewers should pay particular attention to the following components:</p>
+<ol>
+<li><strong>Auth / operator token handling</strong> — token creation, hashing (PBKDF2-HMAC-SHA256),
+   storage, comparison (<code>hmac.compare_digest</code>), and transmission boundaries.</li>
+<li><strong>Permission checks</strong> — role-based access control (<code>owner</code>, <code>grant_admin</code>, <code>auditor</code>,
+   <code>demo_operator</code>), endpoint-level enforcement, and fail-closed behavior when the
+   operator model is disabled or the token is missing/invalid.</li>
+<li><strong>Request parsing and validation</strong> — JSON parsing limits, max payload size, shape
+   validation, string length checks, and safe error responses.</li>
+<li><strong>Rate limiting</strong> — enforcement logic, state-isolation on rejection, and safe
+   responses that do not expose internal counters or window details.</li>
+<li><strong>Audit / event persistence</strong> — append-only audit table design, hash-chain integrity,
+   PostgreSQL trigger-based immutability, and tamper-evident verification.</li>
+<li><strong>Cryptographic signing / signature verification</strong> — Ed25519 grant signing, hash
+   computation, signature lifecycle, and fail-closed behavior for missing or invalid
+   signatures.</li>
+<li><strong>Secret source boundary</strong> — environment variable loading, startup validation,
+   non-exposure in logs/responses/errors, and file permission checks for private key files.</li>
+<li><strong>Database configuration / migrations / PostgreSQL mode</strong> — connection pooling,
+   audit immutability triggers, SQLite vs PostgreSQL behavior, and migration runner
+   safety (atomicity, dict row access).</li>
+<li><strong>Backup / restore procedure</strong> — critical data categories, restore acceptance
+   criteria, non-destructive restore guidance, and go/no-go gates.</li>
+<li><strong>Logs / structured events / correlation ID</strong> — <code>correlation_id</code> propagation,
+    structured event shape, safe field redaction, and absence of raw secrets in log output.</li>
+</ol>
+<h2 id="6-threat-model-review-areas">6. Threat-Model Review Areas<a class="headerlink" href="#6-threat-model-review-areas" title="Permanent link">&para;</a></h2>
+<p>Reviewers should evaluate the following threat areas against the current implementation:</p>
+<ol>
+<li><strong>Unauthenticated access</strong> — any endpoint that should require authentication but
+   permits unauthenticated access.</li>
+<li><strong>Unauthorized operator access</strong> — an operator with a lower-privilege role accessing
+   endpoints or data that require a higher-privilege role.</li>
+<li><strong>Token expiry / rotation failures</strong> — tokens that do not expire when configured,
+   rotation that leaks raw token material, or fail-open behavior on expired tokens.</li>
+<li><strong>Malformed request bodies and oversized payloads</strong> — parsers that crash, leak memory,
+   or echo raw input in error responses when given malformed JSON or oversized payloads.</li>
+<li><strong>State mutation after rejection / rate-limit</strong> — endpoints that mutate database state
+   or side effects before or after rejecting a request due to auth failure, rate limit,
+   or validation failure.</li>
+<li><strong>Audit tampering</strong> — any path that permits UPDATE or DELETE on audit records, or
+   that bypasses the hash-chain integrity check.</li>
+<li><strong>Hash-chain / immutability gaps</strong> — missing or weak hash computation, reproducible
+   hash without a secret, or gaps in the chain that allow undetected deletion.</li>
+<li><strong>Secret leakage through logs / errors / docs</strong> — any log line, error response,
+   API payload, or documentation file that contains raw tokens, private keys, passwords,
+   or backup credentials.</li>
+<li><strong>DB connectivity / config failures</strong> — connection pool exhaustion, credential exposure
+   in error messages, or silent fallback to unsafe SQLite behavior in production-like mode.</li>
+<li><strong>Backup / restore misuse</strong> — destructive restore operations that overwrite unrelated
+    data, missing backup coverage for audit or evidence tables, or unclear restore
+    ownership boundaries.</li>
+<li><strong>Tenant / workspace boundary ambiguity</strong> — any claim that the backend is multi-tenant
+    when it is not, or any deployment that mixes unrelated customer data without explicit
+    tenant isolation.</li>
+</ol>
+<h2 id="7-reviewer-checklist">7. Reviewer Checklist<a class="headerlink" href="#7-reviewer-checklist" title="Permanent link">&para;</a></h2>
+<p>The external reviewer should verify the following items at a minimum:</p>
+<ul>
+<li>[ ] <strong>Auth fail-closed behavior</strong> — unauthenticated or invalid-token requests are
+  rejected with <code>401</code>/<code>403</code> and no state mutation occurs.</li>
+<li>[ ] <strong>Role / permission boundaries</strong> — each endpoint enforces the correct minimum role;
+  disabled operators or missing roles result in denial.</li>
+<li>[ ] <strong>Token expiry / rotation semantics</strong> — tokens expire at the configured time,
+  rotation does not leak raw material, and expired tokens are rejected.</li>
+<li>[ ] <strong>Unsafe startup is blocked</strong> — <code>scripts/run-full-backend-suite.sh</code> and the
+  production runtime gate catch unsafe configuration before deployment.</li>
+<li>[ ] <strong>Request body limits and malformed JSON rejection</strong> — oversized payloads and
+  malformed JSON are rejected with safe, non-leaking error responses.</li>
+<li>[ ] <strong>Rate limiting does not mutate state when rejected</strong> — a rate-limited request
+  returns a safe error without modifying database state or side effects.</li>
+<li>[ ] <strong>Logs do not expose secrets</strong> — structured logs, error responses, and evidence
+  bundles contain no raw tokens, private keys, passwords, or backup credentials.</li>
+<li>[ ] <strong>Audit immutability assumptions and CI gate</strong> — PostgreSQL audit immutability
+  triggers block UPDATE/DELETE; the hash-chain is reproducible and CI-gated in
+  <code>test_gl108_postgres_audit_immutability</code>.</li>
+<li>[ ] <strong>Backup / restore expectations and non-destructive restore guidance</strong> — the
+  GL-127 drill documents critical data categories, acceptance criteria, and warns
+  against destructive restore.</li>
+<li>[ ] <strong>Tenant / workspace non-claims and pilot boundary</strong> — the GL-132 decision
+  explicitly forbids multi-tenant claims and shared SaaS for unrelated customers.</li>
+</ul>
+<h2 id="8-evidence-artifacts">8. Evidence Artifacts<a class="headerlink" href="#8-evidence-artifacts" title="Permanent link">&para;</a></h2>
+<p>The external reviewer should have access to the following evidence artifacts:</p>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Location</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-128 Pilot Readiness Release Cut</td>
+<td><code>docs/pilot_readiness_release_cut.md</code></td>
+<td>Baseline pilot-ready disposition and accepted caveats</td>
+</tr>
+<tr>
+<td>GL-129 Monitoring / Alerting Baseline</td>
+<td><code>docs/monitoring_alerting_baseline.md</code></td>
+<td>Monitoring ownership and operational expectations</td>
+</tr>
+<tr>
+<td>GL-130 Incident Response Runbook Execution Gate</td>
+<td><code>docs/incident_response_runbook_execution_gate.md</code></td>
+<td>Escalation paths and incident ownership</td>
+</tr>
+<tr>
+<td>GL-131 Pilot Environment Setup Checklist</td>
+<td><code>docs/pilot_environment_setup_checklist.md</code></td>
+<td>Environment identity, operator ownership, and deployment checklist</td>
+</tr>
+<tr>
+<td>GL-132 Tenant / Workspace Boundary Decision</td>
+<td><code>docs/tenant_workspace_boundary_decision.md</code></td>
+<td>Boundary posture, non-claims, pilot go/no-go, and follow-up issues</td>
+</tr>
+<tr>
+<td>Security Boundary Regression Tests</td>
+<td><code>backend/tests/test_security_boundary_regression.py</code></td>
+<td>Automated CI-gated tests for auth fail-closed, secret safety, and tamper detection</td>
+</tr>
+<tr>
+<td>Full Backend Suite Runner</td>
+<td><code>scripts/run-full-backend-suite.sh</code></td>
+<td>Automated runner that executes the full backend test suite (3632+ tests)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="9-required-validation-commands">9. Required Validation Commands<a class="headerlink" href="#9-required-validation-commands" title="Permanent link">&para;</a></h2>
+<p>Before conducting a review, the reviewer or CI system should execute:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Full backend suite (recommended; timeout configurable, default 900 s)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>scripts/run-full-backend-suite.sh
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Targeted security and gate validation</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_security_boundary_regression<span class="w"> </span>-v
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl128_pilot_readiness_release_cut<span class="w"> </span>-v
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl129_monitoring_alerting_baseline<span class="w"> </span>-v
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl130_incident_response_runbook_execution_gate<span class="w"> </span>-v
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl131_pilot_environment_setup_checklist<span class="w"> </span>-v
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl132_tenant_workspace_boundary_decision<span class="w"> </span>-v
+</code></pre></div>
+<h2 id="10-expected-reviewer-outputs">10. Expected Reviewer Outputs<a class="headerlink" href="#10-expected-reviewer-outputs" title="Permanent link">&para;</a></h2>
+<p>After completing the review, the reviewer should produce:</p>
+<ol>
+<li><strong>Reviewed scope</strong> — a statement confirming which areas were inspected and on what
+   commit / branch / artifact version.</li>
+<li><strong>Findings by severity</strong> — a list of findings classified as <code>critical</code>, <code>high</code>,
+   <code>medium</code>, or <code>low</code>.</li>
+<li><strong>Must-fix-before-pilot findings</strong> — any finding that blocks a controlled pilot.</li>
+<li><strong>Must-fix-before-production-SaaS findings</strong> — any finding that blocks production
+   SaaS readiness but does not necessarily block pilot.</li>
+<li><strong>Acceptable pilot caveats</strong> — risks or limitations that are documented, understood,
+   and accepted for the controlled pilot phase.</li>
+<li><strong>Recommended follow-up issues</strong> — specific, actionable issues for the development
+   team to address post-review (e.g., <code>GL-134 Pilot Partner Dry Run</code>).</li>
+</ol>
+<h2 id="11-gono-go-for-review-usage">11. Go/No-Go for Review Usage<a class="headerlink" href="#11-gono-go-for-review-usage" title="Permanent link">&para;</a></h2>
+<h3 id="go-review-package-is-ready-for-use">GO — Review package is ready for use<a class="headerlink" href="#go-review-package-is-ready-for-use" title="Permanent link">&para;</a></h3>
+<p>GO is only permitted when <strong>ALL</strong> of the following are true:</p>
+<ul>
+<li><strong>Scope is defined</strong> — Section 3 (Review Scope) and Section 4 (Out of Scope / Non-Claims)
+  are agreed upon by the reviewer and GrantLayer team.</li>
+<li><strong>Evidence artifacts are accessible</strong> — the reviewer can access all artifacts listed
+  in Section 8, including source code, documentation, and CI test results.</li>
+<li><strong>Security boundaries are clear</strong> — the reviewer understands the current auth, audit,
+  and isolation boundaries and their limitations.</li>
+<li><strong>No multi-tenant claims are made</strong> — all stakeholders agree that the backend is not
+  multi-tenant and that shared SaaS for unrelated customers is not approved.</li>
+<li><strong>No secrets are exposed</strong> — documentation, logs, error responses, and JSON artifacts
+  contain no raw tokens, private keys, passwords, or backup credentials.</li>
+<li><strong>Must-fix findings are resolved</strong> — any critical or high-severity findings from a
+  prior review are tracked, assigned, and resolved before the next review cycle.</li>
+</ul>
+<h3 id="no-go-review-package-must-not-be-used">NO-GO — Review package must not be used<a class="headerlink" href="#no-go-review-package-must-not-be-used" title="Permanent link">&para;</a></h3>
+<p>NO-GO if <strong>ANY</strong> of the following are true:</p>
+<ul>
+<li><strong>Reviewer cannot access evidence</strong> — source code, documentation, or CI results are
+  unavailable or incomplete.</li>
+<li><strong>Security boundaries are unclear</strong> — it is not clear what auth, audit, or isolation
+  guarantees are in scope.</li>
+<li><strong>Multi-tenant claims are made</strong> — any stakeholder claims the backend is multi-tenant
+  or approves shared SaaS for unrelated customers.</li>
+<li><strong>Secrets are exposed</strong> — raw tokens, private keys, passwords, or backup credentials
+  appear in logs, responses, or documentation.</li>
+<li><strong>Must-fix findings are unresolved</strong> — critical or high-severity findings from a prior
+  review remain open and unassigned.</li>
+</ul>
+<h2 id="12-relationship-to-existing-gates">12. Relationship to Existing Gates<a class="headerlink" href="#12-relationship-to-existing-gates" title="Permanent link">&para;</a></h2>
+<p>GL-133 prepares an external review of the security posture established by the following
+completed gates:</p>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Relevance to External Security Review Preparation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-128</td>
+<td>Pilot Readiness Release Cut</td>
+<td>Defines the pilot-ready baseline and accepted caveats under which the security review is conducted.</td>
+</tr>
+<tr>
+<td>GL-129</td>
+<td>Monitoring / Alerting Baseline</td>
+<td>Documents monitoring ownership; reviewer should verify that security events are observable.</td>
+</tr>
+<tr>
+<td>GL-130</td>
+<td>Incident Response Runbook Execution Gate</td>
+<td>Documents incident ownership; reviewer should verify that security incidents are actionable.</td>
+</tr>
+<tr>
+<td>GL-131</td>
+<td>Pilot Environment Setup Checklist</td>
+<td>Defines environment identity and operator ownership; reviewer should verify that the environment is scoped and controlled.</td>
+</tr>
+<tr>
+<td>GL-132</td>
+<td>Tenant / Workspace Boundary Decision</td>
+<td>Defines the boundary posture; reviewer must verify that no multi-tenant claims are made and that pilot boundaries are documented.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="13-explicit-non-goals">13. Explicit Non-Goals<a class="headerlink" href="#13-explicit-non-goals" title="Permanent link">&para;</a></h2>
+<p>The following changes are explicitly out of scope for GL-133:</p>
+<ul>
+<li><strong>No security fix implementation</strong> — GL-133 does not implement security fixes.</li>
+<li><strong>No penetration test execution</strong> — GL-133 does not execute a penetration test.</li>
+<li><strong>No external reviewer sign-off</strong> — GL-133 does not obtain or claim sign-off from an external reviewer.</li>
+<li><strong>No production SaaS approval</strong> — GL-133 does not approve production SaaS readiness.</li>
+<li><strong>No tenant implementation</strong> — no tenant entity, model, or identifier is added.</li>
+<li><strong>No workspace implementation</strong> — no workspace entity, model, or identifier is added.</li>
+<li><strong>No API / OpenAPI change</strong> — no endpoint behavior or OpenAPI specification is changed.</li>
+<li><strong>No frontend / security UI work</strong> — no UI, admin panel, or security dashboard is implemented.</li>
+<li><strong>No production code changes</strong> (<code>backend/src/</code>).</li>
+<li><strong>No DB migration or schema change</strong>.</li>
+<li><strong>No dependency additions or version changes</strong>.</li>
+<li><strong>No website, landing page, design, brand, or marketing file changes</strong>.</li>
+<li><strong>No deployment automation, monitoring backend integration, or incident automation</strong>.</li>
+</ul>
+<h2 id="14-final-statement">14. Final Statement<a class="headerlink" href="#14-final-statement" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>GL-133 creates the <strong>external security review preparation package only</strong>. It documents
+the review scope, posture, security-sensitive components, threat-model review areas,
+reviewer checklist, evidence artifacts, validation commands, expected outputs, and
+go/no-go criteria. It explicitly states that no external security review is completed,
+no penetration test is performed, no production SaaS is approved, and no multi-tenant
+isolation is implemented. It does <strong>not</strong> replace an actual external security review.</p>
+</blockquote>
+<p>(End of file)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

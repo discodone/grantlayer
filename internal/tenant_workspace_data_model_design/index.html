@@ -1,0 +1,2101 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/tenant_workspace_data_model_design/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-144 Tenant / Workspace Data Model Design - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-144-tenant-workspace-data-model-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-144 Tenant / Workspace Data Model Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-title-and-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Title and Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-current-posture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Current Posture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Definitions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-tenant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Tenant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-workspace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Workspace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Admin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-membership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Membership
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-resource-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 Resource Ownership
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-grant-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 Grant Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#38-grant-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8 Grant Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#39-evidence-archive-artifact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9 Evidence Archive / Artifact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#310-audit-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.10 Audit Event
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#311-provenance-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.11 Provenance Event
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-proposed-data-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Proposed Data Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Proposed Data Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-tenants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 tenants
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-workspaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 workspaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-tenant_memberships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 tenant_memberships
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-workspace_memberships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 workspace_memberships
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-operator_scope-operator_workspace_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 operator_scope / operator_workspace_access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-grant_requests-ownership-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 grant_requests ownership fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-grant_executions-ownership-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 grant_executions ownership fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#48-evidence-archive-ownership-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.8 evidence / archive ownership fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#49-audit-provenance-tenantworkspace-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.9 audit / provenance tenant/workspace context
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-proposed-fields-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Proposed Fields Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Proposed Fields Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-tenant-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Tenant fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-workspace-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Workspace fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-membership-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Membership fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-ownership-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Ownership references
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-indexes-and-unique-constraints-design-level-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Indexes and unique constraints (design level only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-relationship-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Relationship Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-isolation-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Isolation Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-auth-permission-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Auth / Permission Implications
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-auditprovenancelogging-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Audit/Provenance/Logging Implications
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-migration-sequencing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Migration Sequencing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-validation-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Validation Gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-explicit-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Explicit Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-proposed-follow-up-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Proposed Follow-Up Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-go-no-go-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Go / No-Go Criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-next-issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Next Issue
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-144-tenant-workspace-data-model-design">GL-144 Tenant / Workspace Data Model Design<a class="headerlink" href="#gl-144-tenant-workspace-data-model-design" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-title-and-status">1. Title and Status<a class="headerlink" href="#1-title-and-status" title="Permanent link">&para;</a></h2>
+<p>This document is the <strong>GL-144 Tenant / Workspace Data Model Design</strong>. It defines
+proposed entities, relationships, ownership boundaries, isolation rules,
+auth/permission implications, migration sequencing, risk register, validation
+gates, non-goals, and follow-up issues.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Issue</td>
+<td>GL-144</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>design-only</td>
+</tr>
+<tr>
+<td>Production code changed</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Tenant implementation added</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Workspace implementation added</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Production SaaS readiness claimed</td>
+<td><strong>No</strong></td>
+</tr>
+</tbody>
+</table>
+<p>This is <strong>NOT implementation.</strong><br />
+This is <strong>NOT a migration.</strong><br />
+This is <strong>NOT API work.</strong><br />
+This is <strong>NOT auth redesign.</strong><br />
+This is <strong>NOT production SaaS enablement.</strong></p>
+<hr />
+<h2 id="2-current-posture">2. Current Posture<a class="headerlink" href="#2-current-posture" title="Permanent link">&para;</a></h2>
+<p>GrantLayer has <strong>no production tenant/workspace isolation implemented yet</strong>.
+The following posture statements apply:</p>
+<ul>
+<li><strong>Tenant isolation is not implemented</strong> — the backend does not enforce tenant/workspace boundaries at the data, authorization, or audit layers.</li>
+<li><strong>Shared production SaaS for unrelated customers remains blocked</strong> until
+  explicit tenant/workspace boundaries are designed, implemented, and verified.</li>
+<li>All grants, grant requests, grant executions, evidence, audit events, and
+  provenance records share a <strong>single namespace</strong> within a deployment.</li>
+<li><strong>GL-132 boundary decision remains authoritative</strong>: no multi-tenant claims are
+  permitted, no shared SaaS environment is approved for unrelated customers, and
+  no tenant or workspace model exists in production code.</li>
+<li>Operator roles and named ownership currently provide the only implicit
+  boundary (operator-bounded workspace model under GL-132 Option B).</li>
+</ul>
+<hr />
+<h2 id="3-definitions">3. Definitions<a class="headerlink" href="#3-definitions" title="Permanent link">&para;</a></h2>
+<h3 id="31-tenant">3.1 Tenant<a class="headerlink" href="#31-tenant" title="Permanent link">&para;</a></h3>
+<p>A <strong>tenant</strong> is a logical boundary that isolates one customer's data, grants,
+evidence, audit records, and operator identities from another customer's.
+A tenant is the top-level organizational boundary for a GrantLayer deployment.</p>
+<h3 id="32-workspace">3.2 Workspace<a class="headerlink" href="#32-workspace" title="Permanent link">&para;</a></h3>
+<p>A <strong>workspace</strong> is a scoped operating context within a tenant, typically mapping
+to a team, department, or organizational unit that shares grants and evidence
+but remains isolated from other workspaces within the same tenant.</p>
+<h3 id="33-operator">3.3 Operator<a class="headerlink" href="#33-operator" title="Permanent link">&para;</a></h3>
+<p>An <strong>operator</strong> is an authenticated individual or service identity that performs
+actions within a tenant/workspace boundary.</p>
+<h3 id="34-admin">3.4 Admin<a class="headerlink" href="#34-admin" title="Permanent link">&para;</a></h3>
+<p>An <strong>admin</strong> is an operator with elevated privileges (typically <code>owner</code> or
+<code>grant_admin</code> role) who can manage tenant/workspace configuration, membership,
+and boundary policies.</p>
+<h3 id="35-membership">3.5 Membership<a class="headerlink" href="#35-membership" title="Permanent link">&para;</a></h3>
+<p>A <strong>membership</strong> is an explicit association between an operator identity and a
+tenant or workspace, including a role/scope that defines what the operator may
+access within that boundary.</p>
+<h3 id="36-resource-ownership">3.6 Resource Ownership<a class="headerlink" href="#36-resource-ownership" title="Permanent link">&para;</a></h3>
+<p><strong>Resource ownership</strong> is the assignment of a grant, grant request, grant
+execution, evidence artifact, audit event, or provenance event to a specific
+workspace (and by extension, a specific tenant). Every customer-owned resource
+must have an explicit ownership path.</p>
+<h3 id="37-grant-request">3.7 Grant Request<a class="headerlink" href="#37-grant-request" title="Permanent link">&para;</a></h3>
+<p>A <strong>grant request</strong> is a structured request for a grant, submitted by an
+operator, subject to approval workflow. In a tenant-aware model, grant requests
+must belong to a workspace.</p>
+<h3 id="38-grant-execution">3.8 Grant Execution<a class="headerlink" href="#38-grant-execution" title="Permanent link">&para;</a></h3>
+<p>A <strong>grant execution</strong> is a record of a protected action attempt. In a
+tenant-aware model, executions must belong to the same workspace as the grant
+and grant request that produced them.</p>
+<h3 id="39-evidence-archive-artifact">3.9 Evidence Archive / Artifact<a class="headerlink" href="#39-evidence-archive-artifact" title="Permanent link">&para;</a></h3>
+<p>An <strong>evidence archive</strong> (or evidence bundle/artifact) is an immutable persisted
+record of execution data. In a tenant-aware model, evidence must be scoped to
+the workspace that produced it.</p>
+<h3 id="310-audit-event">3.10 Audit Event<a class="headerlink" href="#310-audit-event" title="Permanent link">&para;</a></h3>
+<p>An <strong>audit event</strong> is a tamper-evident record of an action. In a tenant-aware
+model, audit events should carry tenant/workspace context for scoping and
+redaction purposes.</p>
+<h3 id="311-provenance-event">3.11 Provenance Event<a class="headerlink" href="#311-provenance-event" title="Permanent link">&para;</a></h3>
+<p>A <strong>provenance event</strong> is an append-only record for decision tracing. In a
+tenant-aware model, provenance events should preserve the resource ownership
+context of the workspace that generated them.</p>
+<hr />
+<h2 id="4-proposed-data-model">4. Proposed Data Model<a class="headerlink" href="#4-proposed-data-model" title="Permanent link">&para;</a></h2>
+<h3 id="41-tenants">4.1 tenants<a class="headerlink" href="#41-tenants" title="Permanent link">&para;</a></h3>
+<p>Proposed entity to represent a top-level customer boundary.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>UUID / string</td>
+<td>Primary key, stable identifier</td>
+</tr>
+<tr>
+<td><code>slug</code></td>
+<td>string</td>
+<td>URL-safe unique identifier</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>Display name</td>
+</tr>
+<tr>
+<td><code>display_name</code></td>
+<td>string</td>
+<td>Human-readable label</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>e.g. <code>active</code>, <code>suspended</code>, <code>pending_deletion</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>ISO-8601 timestamp</td>
+<td>Immutable</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>ISO-8601 timestamp</td>
+<td>Updated on mutation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-workspaces">4.2 workspaces<a class="headerlink" href="#42-workspaces" title="Permanent link">&para;</a></h3>
+<p>Proposed entity to represent a scoped operating context within a tenant.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>UUID / string</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td><code>tenant_id</code></td>
+<td>UUID / string</td>
+<td>Foreign key to tenants.id (required)</td>
+</tr>
+<tr>
+<td><code>slug</code></td>
+<td>string</td>
+<td>URL-safe, unique within tenant</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>Display name</td>
+</tr>
+<tr>
+<td><code>display_name</code></td>
+<td>string</td>
+<td>Human-readable label</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>e.g. <code>active</code>, <code>archived</code>, <code>pending_deletion</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>ISO-8601 timestamp</td>
+<td>Immutable</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>ISO-8601 timestamp</td>
+<td>Updated on mutation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-tenant_memberships">4.3 tenant_memberships<a class="headerlink" href="#43-tenant_memberships" title="Permanent link">&para;</a></h3>
+<p>Proposed entity to associate operators with tenants.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>UUID / string</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td><code>tenant_id</code></td>
+<td>UUID / string</td>
+<td>Foreign key to tenants.id</td>
+</tr>
+<tr>
+<td><code>operator_id</code></td>
+<td>string</td>
+<td>Reference to operators.operator_id</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td>string</td>
+<td>Scoped role within the tenant</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>e.g. <code>active</code>, <code>revoked</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>ISO-8601 timestamp</td>
+<td>Immutable</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>ISO-8601 timestamp</td>
+<td>Updated on mutation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-workspace_memberships">4.4 workspace_memberships<a class="headerlink" href="#44-workspace_memberships" title="Permanent link">&para;</a></h3>
+<p>Proposed entity to associate operators with workspaces.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>UUID / string</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td><code>workspace_id</code></td>
+<td>UUID / string</td>
+<td>Foreign key to workspaces.id</td>
+</tr>
+<tr>
+<td><code>operator_id</code></td>
+<td>string</td>
+<td>Reference to operators.operator_id</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td>string</td>
+<td>Scoped role within the workspace</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>e.g. <code>active</code>, <code>revoked</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>ISO-8601 timestamp</td>
+<td>Immutable</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>ISO-8601 timestamp</td>
+<td>Updated on mutation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="45-operator_scope-operator_workspace_access">4.5 operator_scope / operator_workspace_access<a class="headerlink" href="#45-operator_scope-operator_workspace_access" title="Permanent link">&para;</a></h3>
+<p>Proposed junction or scope record that defines what workspaces an operator may
+access within a tenant. May be merged into <code>workspace_memberships</code> or kept as a
+separate capability record depending on implementation design later.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>operator_id</code></td>
+<td>string</td>
+<td>Reference to operators.operator_id</td>
+</tr>
+<tr>
+<td><code>tenant_id</code></td>
+<td>UUID / string</td>
+<td>Tenant scope</td>
+</tr>
+<tr>
+<td><code>workspace_id</code></td>
+<td>UUID / string</td>
+<td>Workspace scope (optional; null = all workspaces in tenant)</td>
+</tr>
+<tr>
+<td><code>scope_type</code></td>
+<td>enum</td>
+<td>e.g. <code>all_workspaces</code>, <code>specific_workspace</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>ISO-8601 timestamp</td>
+<td>Immutable</td>
+</tr>
+</tbody>
+</table>
+<h3 id="46-grant_requests-ownership-fields">4.6 grant_requests ownership fields<a class="headerlink" href="#46-grant_requests-ownership-fields" title="Permanent link">&para;</a></h3>
+<p>Proposed additions to the <code>GrantRequest</code> model (design level only — <strong>not</strong>
+implemented in GL-144):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tenant_id</code></td>
+<td>UUID / string</td>
+<td>Owning tenant</td>
+</tr>
+<tr>
+<td><code>workspace_id</code></td>
+<td>UUID / string</td>
+<td>Owning workspace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="47-grant_executions-ownership-fields">4.7 grant_executions ownership fields<a class="headerlink" href="#47-grant_executions-ownership-fields" title="Permanent link">&para;</a></h3>
+<p>Proposed additions to the <code>GrantExecution</code> model (design level only):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tenant_id</code></td>
+<td>UUID / string</td>
+<td>Owning tenant</td>
+</tr>
+<tr>
+<td><code>workspace_id</code></td>
+<td>UUID / string</td>
+<td>Owning workspace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="48-evidence-archive-ownership-fields">4.8 evidence / archive ownership fields<a class="headerlink" href="#48-evidence-archive-ownership-fields" title="Permanent link">&para;</a></h3>
+<p>Proposed additions to the <code>EvidenceBundle</code> model (design level only):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tenant_id</code></td>
+<td>UUID / string</td>
+<td>Owning tenant</td>
+</tr>
+<tr>
+<td><code>workspace_id</code></td>
+<td>UUID / string</td>
+<td>Owning workspace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="49-audit-provenance-tenantworkspace-context">4.9 audit / provenance tenant/workspace context<a class="headerlink" href="#49-audit-provenance-tenantworkspace-context" title="Permanent link">&para;</a></h3>
+<p>Proposed additions to the <code>AuditEvent</code> and <code>ProvenanceEvent</code> models
+(design level only):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tenant_id</code></td>
+<td>UUID / string</td>
+<td>Contextual tenant</td>
+</tr>
+<tr>
+<td><code>workspace_id</code></td>
+<td>UUID / string</td>
+<td>Contextual workspace</td>
+</tr>
+</tbody>
+</table>
+<p>These fields would be used for scoping, filtering, and redaction. They must not
+break the hash-chain immutability guarantee.</p>
+<hr />
+<h2 id="5-proposed-fields-summary">5. Proposed Fields Summary<a class="headerlink" href="#5-proposed-fields-summary" title="Permanent link">&para;</a></h2>
+<h3 id="51-tenant-fields">5.1 Tenant fields<a class="headerlink" href="#51-tenant-fields" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>id</code> — stable primary key</li>
+<li><code>slug</code> — URL-safe unique name</li>
+<li><code>name</code> — short display name</li>
+<li><code>display_name</code> — human-readable label</li>
+<li><code>status</code> — lifecycle state</li>
+<li><code>created_at</code> / <code>updated_at</code> — timestamps</li>
+</ul>
+<h3 id="52-workspace-fields">5.2 Workspace fields<a class="headerlink" href="#52-workspace-fields" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>id</code> — stable primary key</li>
+<li><code>tenant_id</code> — parent tenant reference</li>
+<li><code>slug</code> — URL-safe unique name within tenant</li>
+<li><code>name</code> — short display name</li>
+<li><code>display_name</code> — human-readable label</li>
+<li><code>status</code> — lifecycle state</li>
+<li><code>created_at</code> / <code>updated_at</code> — timestamps</li>
+</ul>
+<h3 id="53-membership-fields">5.3 Membership fields<a class="headerlink" href="#53-membership-fields" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>id</code> — stable primary key</li>
+<li><code>tenant_id</code> / <code>workspace_id</code> — boundary reference</li>
+<li><code>operator_id</code> — operator identity reference</li>
+<li><code>role</code> — scoped role</li>
+<li><code>status</code> — membership state</li>
+<li><code>created_at</code> / <code>updated_at</code> — timestamps</li>
+</ul>
+<h3 id="54-ownership-references">5.4 Ownership references<a class="headerlink" href="#54-ownership-references" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>tenant_id</code> on every customer-owned resource</li>
+<li><code>workspace_id</code> on every customer-owned resource</li>
+<li>System-scoped resources (e.g., global audit events without a workspace) may
+  use a sentinel workspace or NULL with explicit system scope.</li>
+</ul>
+<h3 id="55-indexes-and-unique-constraints-design-level-only">5.5 Indexes and unique constraints (design level only)<a class="headerlink" href="#55-indexes-and-unique-constraints-design-level-only" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>tenants.slug</code> — unique index</li>
+<li><code>workspaces(tenant_id, slug)</code> — unique composite index</li>
+<li><code>tenant_memberships(tenant_id, operator_id)</code> — unique composite index</li>
+<li><code>workspace_memberships(workspace_id, operator_id)</code> — unique composite index</li>
+<li><code>grant_requests(workspace_id, status)</code> — index for filtering</li>
+<li><code>grant_executions(workspace_id, executed_at)</code> — index for filtering</li>
+<li><code>audit_events(workspace_id, timestamp)</code> — index for scoping queries</li>
+</ul>
+<p>These indexes are <strong>proposed for future implementation</strong>, not created in GL-144.</p>
+<hr />
+<h2 id="6-relationship-model">6. Relationship Model<a class="headerlink" href="#6-relationship-model" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Tenant 1───────* Workspace
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>   │ 1              │ 1
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>   │                │
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>   │*               │*
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>TenantMembership  WorkspaceMembership
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>   │                │
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>   │*               │*
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>Operator ◄─────────┘
+</code></pre></div>
+<p>Rules:</p>
+<ol>
+<li><strong>Tenant has many workspaces</strong> — a tenant may contain zero or more workspaces.</li>
+<li><strong>Workspace belongs to one tenant</strong> — a workspace must have exactly one parent
+   tenant; no cross-tenant workspace sharing.</li>
+<li><strong>Operators receive explicit membership/scope</strong> — an operator has no implicit
+   access to a tenant or workspace. Every access path must be explicit.</li>
+<li><strong>Grant resources belong to one workspace</strong> unless explicitly system-scoped.
+   A grant, grant request, grant execution, and evidence bundle must be owned by
+   exactly one workspace (and by extension, one tenant).</li>
+<li><strong>Audit/provenance entries carry tenant/workspace context</strong> where applicable.
+   System-level audit events (e.g., infrastructure health) may use a sentinel
+   system scope.</li>
+</ol>
+<hr />
+<h2 id="7-isolation-rules">7. Isolation Rules<a class="headerlink" href="#7-isolation-rules" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Customer-owned resources must be tenant/workspace scoped</strong> — no unscoped
+   customer data may exist in a tenant-aware deployment.</li>
+<li><strong>No cross-tenant reads by default</strong> — any query for customer data must
+   include an explicit tenant filter. Default queries without tenant scope must
+   return empty or raise an error.</li>
+<li><strong>No cross-workspace access without explicit scope</strong> — an operator with
+   membership in workspace A must not read or mutate data in workspace B unless
+   explicitly granted cross-workspace scope.</li>
+<li><strong>Admin legacy mode is not SaaS tenant isolation</strong> — the existing admin-token
+   and operator-token paths remain unchanged in GL-144. Future tenant-aware auth
+   must not conflate legacy admin access with tenant-scoped access.</li>
+<li><strong>Background/system operations must have explicit system scope</strong> — background
+   jobs, migrations, and system-level audit events must declare whether they are
+   system-scoped or tenant-scoped. No implicit global access.</li>
+</ol>
+<hr />
+<h2 id="8-auth-permission-implications">8. Auth / Permission Implications<a class="headerlink" href="#8-auth-permission-implications" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Operator token lookup remains secure</strong> — the existing PBKDF2-HMAC-SHA256
+   token verification path is not modified in GL-144. Future tenant-aware auth
+   must preserve the same token hashing and lookup semantics.</li>
+<li><strong>Future permissions must include tenant/workspace scope</strong> — any permission
+   check must validate that the authenticated operator has an active membership
+   in the target tenant/workspace with a role that permits the action.</li>
+<li><strong>Explicit deny-by-default for missing scope</strong> — if an operator does not have
+   an explicit membership for a tenant/workspace, access is denied.</li>
+<li><strong>No implicit global access except designated system/admin flows</strong> — system
+   admin flows (e.g., health checks, runtime gates) may bypass tenant/workspace
+   checks, but this must be explicit and audited.</li>
+<li><strong>Current GL-141 default operator model remains preserved</strong> —
+  <code>ENABLE_OPERATOR_MODEL</code> defaults to <code>True</code>. No auth semantics are changed in
+   GL-144.</li>
+</ol>
+<hr />
+<h2 id="9-auditprovenancelogging-implications">9. Audit/Provenance/Logging Implications<a class="headerlink" href="#9-auditprovenancelogging-implications" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Audit events should include tenant/workspace context later</strong> — the
+   <code>AuditEvent</code> model should carry contextual <code>tenant_id</code> and <code>workspace_id</code> for
+   scoping and filtering. These fields must be included in the deterministic
+   hash payload or excluded consistently; changing the hash payload requires a
+   migration/versioning plan.</li>
+<li><strong>Provenance chains should preserve resource ownership context</strong> —
+   <code>ProvenanceEvent</code> records should reference the workspace that generated them
+   so that provenance summaries can be scoped correctly.</li>
+<li><strong>Logs should include safe tenant/workspace identifiers, not secrets</strong> —
+   structured logs may include tenant slug and workspace slug for operational
+   debugging, but must never include tokens, raw credentials, or internal UUIDs
+   that could be used for inference attacks.</li>
+<li><strong>Hash-chain immutability must be preserved</strong> — any addition of
+   tenant/workspace fields to the <code>AuditEvent</code> canonical hash payload must be
+   done carefully to avoid invalidating existing chain events. A versioning
+   strategy or backward-compatible canonicalization is required.</li>
+</ol>
+<hr />
+<h2 id="10-migration-sequencing">10. Migration Sequencing<a class="headerlink" href="#10-migration-sequencing" title="Permanent link">&para;</a></h2>
+<p>GL-144 is <strong>design only</strong>. No schema migration is implemented. The following
+sequence is proposed for future issues:</p>
+<ol>
+<li><strong>GL-144 (this issue):</strong> Design only — define entities, relationships,
+   isolation rules, auth implications, audit implications, risks, gates, and
+   follow-up issues.</li>
+<li><strong>Schema migration plan (GL-144A):</strong> Design the exact migration files,
+   column types, constraints, and index definitions.</li>
+<li><strong>Migration implementation (GL-144B):</strong> Create migration scripts that add
+   <code>tenants</code>, <code>workspaces</code>, <code>tenant_memberships</code>, and <code>workspace_memberships</code>
+   tables without modifying existing resource tables.</li>
+<li><strong>Backfill strategy (GL-144D):</strong> Define how existing grants, grant requests,
+   grant executions, evidence, audit events, and provenance events receive
+   default tenant/workspace assignments. Must be deterministic and reversible.</li>
+<li><strong>Endpoint authorization enforcement (GL-144E):</strong> Update auth boundary to
+   require tenant/workspace scope on protected actions.</li>
+<li><strong>Audit/provenance scoping (GL-144F):</strong> Add tenant/workspace context fields
+   to audit and provenance models with hash-chain compatibility.</li>
+<li><strong>Public SaaS claim (future):</strong> Only after all validation gates pass and
+   cross-tenant access prevention tests are green.</li>
+</ol>
+<hr />
+<h2 id="11-risk-register">11. Risk Register<a class="headerlink" href="#11-risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Severity</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Partial tenant isolation</strong></td>
+<td>High</td>
+<td>Do not claim SaaS readiness until all resource paths enforce scope.</td>
+</tr>
+<tr>
+<td><strong>Missing filters</strong></td>
+<td>High</td>
+<td>Every read and write query must include explicit tenant/workspace filter.</td>
+</tr>
+<tr>
+<td><strong>Cross-tenant leakage</strong></td>
+<td>Critical</td>
+<td>Automated tests must verify that no endpoint leaks data across tenants.</td>
+</tr>
+<tr>
+<td><strong>Audit ambiguity</strong></td>
+<td>Medium</td>
+<td>Audit events without tenant/workspace context must not be trusted for scoped reporting.</td>
+</tr>
+<tr>
+<td><strong>Operator/admin confusion</strong></td>
+<td>Medium</td>
+<td>Legacy admin mode and tenant-scoped admin must be clearly distinguished.</td>
+</tr>
+<tr>
+<td><strong>Migration/backfill corruption</strong></td>
+<td>High</td>
+<td>Backfill must be reversible; test on a full copy of production data before applying.</td>
+</tr>
+<tr>
+<td><strong>Performance/indexing risk</strong></td>
+<td>Medium</td>
+<td>Proposed indexes must be validated against realistic data volumes before deployment.</td>
+</tr>
+<tr>
+<td><strong>OpenAPI drift</strong></td>
+<td>Medium</td>
+<td>Any API addition (e.g., <code>X-Tenant-Id</code> header) must be reflected in <code>docs/openapi.yaml</code>.</td>
+</tr>
+<tr>
+<td><strong>Test gaps</strong></td>
+<td>High</td>
+<td>Add cross-tenant isolation tests before claiming any SaaS readiness.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-validation-gates">12. Validation Gates<a class="headerlink" href="#12-validation-gates" title="Permanent link">&para;</a></h2>
+<p>Before any tenant/workspace implementation issue is considered complete, the
+following gates must pass:</p>
+<ul>
+<li><strong>GL-132 tenant/workspace boundary decision</strong> — the boundary posture, non-claims,
+  and pilot go/no-go criteria remain authoritative.</li>
+<li><strong>GL-139 audit hash-chain write lock</strong> — the <code>threading.RLock</code> around audit
+  hash-chain append must remain present and effective.</li>
+<li><strong>GL-140 ThreadingHTTPServer</strong> — <code>run()</code> must continue to instantiate
+  <code>ThreadingHTTPServer</code>; no extraction must reintroduce plain <code>HTTPServer</code>.</li>
+<li><strong>GL-141 operator model default</strong> — <code>ENABLE_OPERATOR_MODEL</code> defaults to <code>True</code>.
+  Legacy admin-token path remains available but is not the default.</li>
+<li><strong>GL-142 request parsing cleanup</strong> — <code>_read_json</code> contains no
+  <code>isinstance(self.rfile, BytesIO)</code> branch.</li>
+<li><strong>GL-143 route decomposition plan</strong> — accepted plan guides safe extraction;
+  tenant/workspace implementation must not conflict with decomposition.</li>
+<li><strong>Security boundary regression</strong> — <code>backend/tests/test_security_boundary_regression.py</code>
+  passes with zero failures.</li>
+<li><strong>Full backend suite on main</strong> — all backend tests pass on <code>main</code> before any
+  tenant/workspace implementation branch is created.</li>
+</ul>
+<hr />
+<h2 id="13-explicit-non-goals">13. Explicit Non-Goals<a class="headerlink" href="#13-explicit-non-goals" title="Permanent link">&para;</a></h2>
+<p>The following are <strong>explicitly out of scope</strong> for GL-144:</p>
+<ul>
+<li><strong>No implementation</strong> — no code is written for tenant/workspace behavior.</li>
+<li><strong>No schema/migration</strong> — no database migration or schema change is implemented.</li>
+<li><strong>No API/OpenAPI change</strong> — no endpoint behavior or OpenAPI specification is changed.</li>
+<li><strong>No auth redesign</strong> — no authentication or authorization semantics are modified.</li>
+<li><strong>No endpoint enforcement</strong> — no tenant/workspace scope enforcement is added to endpoints.</li>
+<li><strong>No frontend/website/design work</strong> — no UI, signup flow, or branding changes.</li>
+<li><strong>No production SaaS readiness claim</strong> — this design does not make the backend
+  production SaaS complete.</li>
+<li><strong>No shared SaaS approval</strong> — unrelated customers must not share a deployment
+  until implementation and validation are complete.</li>
+<li><strong>No dependency additions</strong> — no new packages or version changes.</li>
+<li><strong>No production code changes</strong> (<code>backend/src/</code>).</li>
+<li><strong>No <code>.claude/*</code> changes</strong>.</li>
+</ul>
+<hr />
+<h2 id="14-proposed-follow-up-issues">14. Proposed Follow-Up Issues<a class="headerlink" href="#14-proposed-follow-up-issues" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GL-144A</strong></td>
+<td>Tenant/Workspace Schema Migration Plan</td>
+<td>Design exact migration files, column types, constraints, and indexes for tenant/workspace tables.</td>
+</tr>
+<tr>
+<td><strong>GL-144B</strong></td>
+<td>Tenant/Workspace Persistence Model</td>
+<td>Implement <code>tenants</code>, <code>workspaces</code>, <code>tenant_memberships</code>, and <code>workspace_memberships</code> tables and models.</td>
+</tr>
+<tr>
+<td><strong>GL-144C</strong></td>
+<td>Membership/Scope Model</td>
+<td>Implement operator-to-tenant and operator-to-workspace membership logic with scoped roles.</td>
+</tr>
+<tr>
+<td><strong>GL-144D</strong></td>
+<td>Resource Ownership Backfill Strategy</td>
+<td>Define deterministic backfill of existing data to default tenant/workspace assignments.</td>
+</tr>
+<tr>
+<td><strong>GL-144E</strong></td>
+<td>Endpoint Authorization Enforcement Plan</td>
+<td>Design how tenant/workspace scope is injected into auth boundary and enforced on every protected action.</td>
+</tr>
+<tr>
+<td><strong>GL-144F</strong></td>
+<td>Audit/Provenance Tenant Scoping Plan</td>
+<td>Design how tenant/workspace context is added to audit and provenance events without breaking hash-chain integrity.</td>
+</tr>
+<tr>
+<td><strong>GL-144G</strong></td>
+<td>OpenAPI Contract Update Plan</td>
+<td>Design API additions (headers, path parameters, response fields) for tenant/workspace awareness.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="15-go-no-go-criteria">15. Go / No-Go Criteria<a class="headerlink" href="#15-go-no-go-criteria" title="Permanent link">&para;</a></h2>
+<p>An implementation issue is <strong>go</strong> only when <strong>all</strong> of the following are true:</p>
+<ol>
+<li><strong>No behavior change until design accepted</strong> — GL-144 design must be reviewed
+   and accepted before any implementation branch is created.</li>
+<li><strong>Every resource ownership path identified</strong> — all grants, grant requests,
+   grant executions, evidence, audit events, and provenance events must have a
+   clear ownership path to a workspace and tenant.</li>
+<li><strong>Migration/backfill plan reviewed</strong> — the migration sequence and backfill
+   strategy must be reviewed for reversibility and safety.</li>
+<li><strong>Auth/scope model reviewed</strong> — the scoped permission model must be reviewed
+   for deny-by-default correctness and legacy auth compatibility.</li>
+<li><strong>Audit/provenance implications reviewed</strong> — hash-chain immutability and
+   log safety must be reviewed before any audit model changes.</li>
+<li><strong>Full-suite gate defined</strong> — the full backend test suite must pass before
+   and after every incremental implementation step.</li>
+</ol>
+<p>An implementation issue is <strong>no-go</strong> if any of the following occur:</p>
+<ul>
+<li>Any auth failure path changes its status code or error payload shape.</li>
+<li>Any request parsing error changes its status code or error code.</li>
+<li><code>ThreadingHTTPServer</code> is replaced or bypassed.</li>
+<li>The audit hash-chain write lock is removed or weakened.</li>
+<li>Rate-limit behavior changes for any client.</li>
+<li>Structured logging or correlation ID propagation stops working.</li>
+<li>The security boundary regression suite fails.</li>
+<li>A multi-tenant SaaS readiness claim is made before validation gates pass.</li>
+</ul>
+<hr />
+<h2 id="16-next-issue">16. Next Issue<a class="headerlink" href="#16-next-issue" title="Permanent link">&para;</a></h2>
+<p><strong>GL-145 Developer Adoption Strategy Intake</strong></p>
+<p>After the tenant/workspace data model design is accepted, the next architectural
+planning issue is the developer adoption strategy intake. This is a separate
+planning issue and does not overlap with GL-144 scope.</p>
+<hr />
+<blockquote>
+<p>GL-144 documents a <strong>proposed tenant/workspace data model</strong> for future
+implementation. It does <strong>not</strong> add any production code, schema, migration,
+API change, auth change, or SaaS readiness claim. It explicitly preserves
+all existing gates (GL-132, GL-139, GL-140, GL-141, GL-142, GL-143) and
+mandates that no shared SaaS deployment for unrelated customers is approved
+until follow-up implementation issues are completed and validation gates pass.</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

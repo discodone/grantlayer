@@ -1,0 +1,56 @@
+{
+  "changed_files": [
+    "backend/tests/test_gl188_first_output_verify_helper.py",
+    "docs/examples/gl188/first_output_verify_helper.json",
+    "docs/first_output_verify_helper.md",
+    "scripts/verify-first-output.sh"
+  ],
+  "commands": [
+    "bash -n scripts/verify-first-output.sh",
+    "scripts/verify-first-output.sh",
+    "scripts/verify-first-output.sh /tmp/grantlayer_first_output_verify_custom.json"
+  ],
+  "default_output_path": "/tmp/grantlayer_first_output_verify.json",
+  "findings": [],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "issue_id": "GL-188",
+  "next_recommended_step": "GL-189 Second Runnable Example / Grant Lifecycle Evidence Bundle",
+  "non_goals": [
+    "No backend runtime changes.",
+    "No second runnable example.",
+    "No GitHub publishing or visibility changes.",
+    "No dependency, schema, or API contract changes."
+  ],
+  "reference_artifact": "examples/first_verifiable_output.json",
+  "result": "first_output_verify_helper_complete",
+  "script_path": "scripts/verify-first-output.sh",
+  "safety_properties": {
+    "no_backend_required": true,
+    "no_customer_data_required": true,
+    "no_network_required": true,
+    "no_secrets_required": true,
+    "does_not_modify_reference_artifact": true,
+    "writes_only_to_requested_or_temp_output": true
+  },
+  "tests": [
+    "script existence and executable bit",
+    "safe bash settings",
+    "default temp output path execution",
+    "custom output path execution",
+    "exact match against committed reference artifact",
+    "docs and artifact validation",
+    "allowed-scope file checks"
+  ],
+  "title": "First Output Verify Helper",
+  "verification_behavior": {
+    "comparison_method": "cmp -s against examples/first_verifiable_output.json",
+    "failure_behavior": "exit non-zero on runtime error or mismatch",
+    "generator_command": "python3 examples/first_verifiable_output.py --output <path>",
+    "success_behavior": "exit 0 only on exact byte-for-byte match"
+  }
+}

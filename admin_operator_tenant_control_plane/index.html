@@ -1,0 +1,2031 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/admin_operator_tenant_control_plane/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-206 Admin/Operator Tenant Control Plane - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-206-adminoperator-tenant-control-plane" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-206 Admin/Operator Tenant Control Plane
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-adminoperator-model-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Admin/Operator Model Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Admin/Operator Model Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#admin-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tenant-context-derivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant Context Derivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator-model-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Model Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tenant-assignment-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant Assignment Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#admin-behavior-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin Behavior Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Admin Behavior Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control-plane-routes-gl-206-additions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Control-Plane Routes (GL-206 additions)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-admin-can-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Admin Can Do
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-admin-cannot-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Admin Cannot Do
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operator-behavior-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Behavior Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operator Behavior Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tenant-scoping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant Scoping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-operators-can-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Operators Can Do
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-operators-cannot-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Operators Cannot Do
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#control-plane-api-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Control-Plane API Behavior
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Control-Plane API Behavior">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#post-adminoperators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /admin/operators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-adminoperators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /admin/operators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-adminoperatorsid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /admin/operators/{id}
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-adminoperatorsidrevoke" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /admin/operators/{id}/revoke
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Behavior
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Audit Behavior">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#structured-log-events-operator_action" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structured Log Events (operator_action)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit-hash-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Hash-Chain
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fail-closed-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fail-Closed Behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Safety
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tenant-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant Isolation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-tenant-control-plane-gap-remaining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Tenant Control-Plane Gap (Remaining)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-mode-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production-Mode Implications
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlled-preview-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled-Preview Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unchanged-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unchanged files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Gaps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-206-adminoperator-tenant-control-plane">GL-206 Admin/Operator Tenant Control Plane<a class="headerlink" href="#gl-206-adminoperator-tenant-control-plane" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-206
+<strong>Branch:</strong> <code>gl-206-admin-operator-tenant-control-plane</code>
+<strong>Status:</strong> Internal / Developer Preview</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-200A through GL-205 are merged internally. The GL-200 tenant/workspace
+isolation block, GL-201 production auth/secrets/config hardening, GL-202
+persistence/PostgreSQL/migration readiness, GL-203 API contract/SDK packaging
+decision, GL-203B OpenAPI contract cleanup, GL-203C SDK prototype/packaging
+boundary, GL-204 Production Ops / Go-No-Go v3, and GL-205 Live PostgreSQL /
+Backup-Restore / Observability Baseline are all represented by clean doc, JSON,
+and test artifacts.</p>
+<p>GL-204 identified Admin-plane tenant isolation (GL-200D) as remaining blocker
+RB-004 (P0): operator management is not cross-tenant-safe and must not be
+exposed in production multi-tenant contexts.</p>
+<p>GL-206 addresses this gap by:
+1. Hardening <code>backend/src/operators.py</code> with explicit tenant assignment and safe
+   response fields
+2. Adding minimal admin-only control-plane HTTP routes for operator CRUD
+3. Enforcing that operator tokens cannot override their own tenant context
+4. Emitting structured audit events for control-plane operations
+5. Documenting the admin/operator model semantics and remaining gaps</p>
+<p><strong>GrantLayer remains:</strong>
+- Developer Preview / Controlled Preview with strict boundaries
+- Not production SaaS
+- Not ready for real customer data, private grant data, or institutional data
+- Tenant/workspace isolation baseline implemented but not production-complete
+- No official SDK/package is claimed or published</p>
+<p>Security-sensitive reports route to GitHub Security Advisories. No exploit
+details are included. No real secrets are included. No real customer/private
+grant/institutional data is used.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>GL-206 covers:
+- Review of the existing admin/operator model in operators.py, auth.py,
+  server.py, and audit_log.py
+- Hardening: explicit tenant_id required for operator creation
+- Hardening: admin-only control-plane HTTP routes (POST /admin/operators,
+  GET /admin/operators, GET /admin/operators/{id}, POST /admin/operators/{id}/revoke)
+- Safe response fields: token_hash, lookup_hash excluded from list/read responses
+- One-time raw token on create (acceptable pattern, documented)
+- Fail-closed behavior: revoked/inactive operators cannot authenticate
+- Tenant derivation: operator tenant_id is server-assigned, not client-overridable
+- Structured log events for operator_created and operator_revoked
+- Documentation of remaining gaps and risk register</p>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>GL-206 is not:
+- A production SaaS readiness declaration
+- A frontend, website, or design change
+- An official SDK/package implementation or publication
+- A live PostgreSQL production deployment
+- A full RBAC/policy engine
+- Production IAM (OAuth/JWT/SSO)
+- Workspace enforcement (reserved/deferred)
+- A public publish, GitHub push, or visibility change
+- Weakening of GL-200 through GL-205 baselines</p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/production_ops_go_no_go_v3.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl204/production_ops_go_no_go_v3.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/live_postgres_backup_observability_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl205/live_postgres_backup_observability_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/sdk_prototype_packaging_boundary.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203c/sdk_prototype_packaging_boundary.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi_api_contract_cleanup.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203b/openapi_api_contract_cleanup.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/api_contract_sdk_packaging_decision.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203/api_contract_sdk_packaging_decision.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/persistence_postgres_migration_readiness.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl202/persistence_postgres_migration_readiness.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_auth_secrets_config_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl201/production_auth_secrets_config_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_api_audit_regression_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_implementation_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_design_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200a/tenant_workspace_isolation_design_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_readiness_gap_report_v2.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl199/production_readiness_gap_report_v2.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/controlled_preview_boundary_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl198/controlled_preview_boundary_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/operators.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/auth.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/config.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/server.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/audit_log.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/db.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/models.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/agent_permissions.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/agent_permission_assignments.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/migrations/</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="current-adminoperator-model-summary">Current Admin/Operator Model Summary<a class="headerlink" href="#current-adminoperator-model-summary" title="Permanent link">&para;</a></h2>
+<h3 id="admin-authentication">Admin Authentication<a class="headerlink" href="#admin-authentication" title="Permanent link">&para;</a></h3>
+<p>Admin token authentication (<code>check_admin_token()</code> in <code>auth.py</code>) uses
+<code>hmac.compare_digest</code> for constant-time comparison. It fails closed:</p>
+<ul>
+<li>Missing token → 401</li>
+<li>Invalid token → 403</li>
+<li><code>GRANTLAYER_REQUIRE_ADMIN_TOKEN=true</code> and no token configured → 403</li>
+</ul>
+<p>Admin token is NEVER included in responses, logs, or error messages. Admin mode
+is bound to the <code>demo</code> tenant for backward compatibility (<code>_require_admin()</code>
+returns <code>{"tenant_id": "demo"}</code>).</p>
+<h3 id="operator-authentication">Operator Authentication<a class="headerlink" href="#operator-authentication" title="Permanent link">&para;</a></h3>
+<p>Operator token authentication (<code>authenticate_operator_with_reason()</code> in
+<code>operators.py</code>) uses PBKDF2-SHA256 (600,000 iterations) with a deterministic
+lookup hash (SHA-256) for narrowing before PBKDF2 verification.</p>
+<ul>
+<li>Missing/malformed token → reason <code>"operator_auth_required"</code></li>
+<li>Expired token → reason <code>"operator_token_expired"</code></li>
+<li>Inactive operator (<code>active=0</code>) → excluded by query (<code>AND active=1</code>)</li>
+</ul>
+<p>Operator token is never returned in responses (except one-time on create),
+never included in logs, and never in audit event data.</p>
+<h3 id="tenant-context-derivation">Tenant Context Derivation<a class="headerlink" href="#tenant-context-derivation" title="Permanent link">&para;</a></h3>
+<p>Tenant context is server-derived from authentication:
+- Operator token → <code>operator.tenant_id</code> from DB
+- Admin token → <code>"demo"</code> (hardcoded, not client-supplied)</p>
+<p>No request header (e.g. <code>X-Tenant-ID</code>) can override the server-derived
+tenant context. This is enforced in <code>check_auth()</code> and <code>_require_operator()</code>.</p>
+<h3 id="operator-model-fields">Operator Model Fields<a class="headerlink" href="#operator-model-fields" title="Permanent link">&para;</a></h3>
+<p>The <code>operators</code> table includes:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>id, name, role, token_hash, token_lookup_hash, active,
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>created_at, expires_at, rotated_at, tenant_id, workspace_id
+</code></pre></div></p>
+<p><code>to_dict()</code> on the <code>Operator</code> class returns only:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>operatorId, name, role, active, tenantId
+</code></pre></div>
+Never: <code>token_hash</code>, <code>token_lookup_hash</code>, <code>lookup_hash</code>, raw token.</p>
+<hr />
+<h2 id="tenant-assignment-model">Tenant Assignment Model<a class="headerlink" href="#tenant-assignment-model" title="Permanent link">&para;</a></h2>
+<p>Operator <code>tenant_id</code> is:
+1. <strong>Set at creation time</strong> by the admin. The <code>create_operator()</code> function now
+   requires <code>tenant_id</code> as an explicit positional argument (no silent default).
+2. <strong>Never overridable by the operator</strong> at authentication time. The tenant
+   context is read from the DB row, not from any request header.
+3. <strong>Visible to admin</strong> via the control-plane read routes.
+4. <strong>Not modifiable by operator</strong> — there is no self-service tenant reassignment
+   endpoint.</p>
+<p>For demo/bootstrap compatibility, <code>tenant_id="demo"</code> must be passed explicitly
+to <code>create_operator()</code>. The bootstrap path uses <code>tenant_id="demo"</code>.</p>
+<hr />
+<h2 id="admin-behavior-model">Admin Behavior Model<a class="headerlink" href="#admin-behavior-model" title="Permanent link">&para;</a></h2>
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h3>
+<p>Admin uses the <code>GRANTLAYER_ADMIN_TOKEN</code> Bearer token. The <code>_require_admin()</code>
+method in <code>server.py</code> calls <code>check_admin_token()</code> from <code>auth.py</code>.</p>
+<p>Fail-closed behavior:
+- No token → 401
+- Wrong token → 403
+- <code>REQUIRE_ADMIN_TOKEN=false</code> in production-like mode → startup error</p>
+<h3 id="control-plane-routes-gl-206-additions">Control-Plane Routes (GL-206 additions)<a class="headerlink" href="#control-plane-routes-gl-206-additions" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Method</th>
+<th>Auth</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/admin/operators</code></td>
+<td>POST</td>
+<td>Admin only</td>
+<td>Create operator with explicit tenantId</td>
+</tr>
+<tr>
+<td><code>/admin/operators</code></td>
+<td>GET</td>
+<td>Admin only</td>
+<td>List all operators (safe fields)</td>
+</tr>
+<tr>
+<td><code>/admin/operators/{id}</code></td>
+<td>GET</td>
+<td>Admin only</td>
+<td>Read single operator (safe fields)</td>
+</tr>
+<tr>
+<td><code>/admin/operators/{id}/revoke</code></td>
+<td>POST</td>
+<td>Admin only</td>
+<td>Revoke/deactivate operator</td>
+</tr>
+</tbody>
+</table>
+<p>All routes return only safe fields (no token_hash, lookup_hash, raw token).</p>
+<h3 id="what-admin-can-do">What Admin Can Do<a class="headerlink" href="#what-admin-can-do" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Create operators with any <code>tenantId</code></li>
+<li>List and read all operators across tenants</li>
+<li>Revoke operators (sets <code>active=0</code>)</li>
+<li>Access all tenant resources via the <code>demo</code> tenant (admin token mode)</li>
+</ul>
+<h3 id="what-admin-cannot-do">What Admin Cannot Do<a class="headerlink" href="#what-admin-cannot-do" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Access real-customer/institutional-data resources (no-go per GL-204)</li>
+<li>Override the operator model for production multi-tenant without GL-200D</li>
+</ul>
+<hr />
+<h2 id="operator-behavior-model">Operator Behavior Model<a class="headerlink" href="#operator-behavior-model" title="Permanent link">&para;</a></h2>
+<h3 id="authentication_1">Authentication<a class="headerlink" href="#authentication_1" title="Permanent link">&para;</a></h3>
+<p>Operator uses a Bearer token. On success, <code>check_auth()</code> returns:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span><span class="s2">&quot;operator&quot;</span><span class="p">:</span> <span class="n">op</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="s2">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="n">op</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">}</span>
+</code></pre></div></p>
+<p>The <code>tenant_id</code> in this payload comes from the DB operator row, not from any
+request header.</p>
+<h3 id="tenant-scoping">Tenant Scoping<a class="headerlink" href="#tenant-scoping" title="Permanent link">&para;</a></h3>
+<p>All resource operations (grants, grant_requests, challenges, audit_events,
+grant_executions) are filtered by <code>tenant_id</code> derived from the authenticated
+operator. An operator cannot see or mutate resources belonging to another tenant.</p>
+<h3 id="what-operators-can-do">What Operators Can Do<a class="headerlink" href="#what-operators-can-do" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Access resources within their own tenant</li>
+<li>Authenticate via Bearer token</li>
+<li>View their own operator info via <code>/operators/me</code></li>
+</ul>
+<h3 id="what-operators-cannot-do">What Operators Cannot Do<a class="headerlink" href="#what-operators-cannot-do" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Modify their own <code>tenant_id</code> (no self-service tenant assignment)</li>
+<li>Access admin control-plane routes (<code>/admin/operators</code>)</li>
+<li>Escalate to admin role</li>
+<li>See another tenant's operators or resources</li>
+</ul>
+<hr />
+<h2 id="control-plane-api-behavior">Control-Plane API Behavior<a class="headerlink" href="#control-plane-api-behavior" title="Permanent link">&para;</a></h2>
+<h3 id="post-adminoperators">POST /admin/operators<a class="headerlink" href="#post-adminoperators" title="Permanent link">&para;</a></h3>
+<p><strong>Auth:</strong> Admin token required
+<strong>Request body:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string (required)&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string (required)&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">&quot;tenantId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string (required)&quot;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">}</span>
+</code></pre></div>
+<strong>Response (201):</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;operatorId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">&quot;active&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">&quot;tenantId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="nt">&quot;createdAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO-8601&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="nt">&quot;expiresAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO-8601&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="nt">&quot;token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;raw-token-one-time-only&quot;</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="p">}</span>
+</code></pre></div>
+The <code>token</code> field is returned once on create only. It must be stored securely
+by the caller. It is never returned again by list/read routes.</p>
+<p>Missing <code>tenantId</code> → 400 with explicit error.</p>
+<h3 id="get-adminoperators">GET /admin/operators<a class="headerlink" href="#get-adminoperators" title="Permanent link">&para;</a></h3>
+<p><strong>Auth:</strong> Admin token required
+<strong>Response (200):</strong> Array of safe operator dicts (no token/hash fields).</p>
+<h3 id="get-adminoperatorsid">GET /admin/operators/{id}<a class="headerlink" href="#get-adminoperatorsid" title="Permanent link">&para;</a></h3>
+<p><strong>Auth:</strong> Admin token required
+<strong>Response (200):</strong> Single safe operator dict (no token/hash fields).
+<strong>Not found → 404.</strong></p>
+<h3 id="post-adminoperatorsidrevoke">POST /admin/operators/{id}/revoke<a class="headerlink" href="#post-adminoperatorsidrevoke" title="Permanent link">&para;</a></h3>
+<p><strong>Auth:</strong> Admin token required
+<strong>Response (200):</strong> <code>{"ok": true, "operatorId": "...", "revoked": true}</code>
+<strong>Not found → 404.</strong></p>
+<hr />
+<h2 id="audit-behavior">Audit Behavior<a class="headerlink" href="#audit-behavior" title="Permanent link">&para;</a></h2>
+<h3 id="structured-log-events-operator_action">Structured Log Events (operator_action)<a class="headerlink" href="#structured-log-events-operator_action" title="Permanent link">&para;</a></h3>
+<p>GL-206 emits structured log events for control-plane operations using the
+<code>operator_action</code> event type (already defined in <code>structured_logging.py</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Event</th>
+<th>Fields included</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Operator created</td>
+<td><code>operator_action</code></td>
+<td><code>action="operator_created"</code>, <code>operator_id</code>, <code>tenant_id</code></td>
+</tr>
+<tr>
+<td>Operator revoked</td>
+<td><code>operator_action</code></td>
+<td><code>action="operator_revoked"</code>, <code>operator_id</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Never included in events:</strong> raw token, token_hash, lookup_hash, password_hash.</p>
+<h3 id="audit-hash-chain">Audit Hash-Chain<a class="headerlink" href="#audit-hash-chain" title="Permanent link">&para;</a></h3>
+<p>The <code>audit_events</code> hash-chain (in <code>audit_log.py</code>) is unchanged. Operator
+control-plane events do NOT use the <code>AuditEvent</code> model (which is designed for
+grant/access approval decisions). This is intentional — the hash-chain is for
+access/grant audit immutability, not operator management.</p>
+<p>Control-plane events use structured logging (<code>safe_log</code>) which is the correct
+channel for operational events.</p>
+<hr />
+<h2 id="security-model">Security Model<a class="headerlink" href="#security-model" title="Permanent link">&para;</a></h2>
+<h3 id="fail-closed-behavior">Fail-Closed Behavior<a class="headerlink" href="#fail-closed-behavior" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Missing admin token</td>
+<td>401</td>
+</tr>
+<tr>
+<td>Invalid admin token</td>
+<td>403</td>
+</tr>
+<tr>
+<td>Operator token on admin route</td>
+<td>403</td>
+</tr>
+<tr>
+<td>Revoked operator token (<code>active=0</code>)</td>
+<td>401 (excluded by query)</td>
+</tr>
+<tr>
+<td>Expired operator token</td>
+<td>401 (<code>operator_token_expired</code>)</td>
+</tr>
+<tr>
+<td>Missing <code>tenantId</code> in create</td>
+<td>400</td>
+</tr>
+</tbody>
+</table>
+<h3 id="token-safety">Token Safety<a class="headerlink" href="#token-safety" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Raw token returned ONCE on create only (one-time disclosure pattern)</li>
+<li>Token hash uses PBKDF2-SHA256 (600,000 iterations)</li>
+<li>Lookup hash uses SHA-256 (narrowing only, not auth)</li>
+<li>No token value in list/read responses</li>
+<li>No token value in log events or audit events</li>
+<li>Admin token uses <code>hmac.compare_digest</code> (constant-time)</li>
+</ul>
+<h3 id="tenant-isolation">Tenant Isolation<a class="headerlink" href="#tenant-isolation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Tenant context derived server-side from auth — never from request headers</li>
+<li>Operator cannot override own tenant_id</li>
+<li>Operator cannot access admin routes</li>
+<li>Cross-tenant denial enforced at all resource endpoints (from GL-200A/B/C)</li>
+</ul>
+<h3 id="cross-tenant-control-plane-gap-remaining">Cross-Tenant Control-Plane Gap (Remaining)<a class="headerlink" href="#cross-tenant-control-plane-gap-remaining" title="Permanent link">&para;</a></h3>
+<p>Admin token mode is bound to <code>"demo"</code> tenant. This means admin cannot manage
+resources in multiple real tenants via operator token mode. For production
+multi-tenant, each tenant must have their own operator hierarchy. Full
+multi-tenant operator management (GL-200D) remains deferred.</p>
+<hr />
+<h2 id="production-mode-implications">Production-Mode Implications<a class="headerlink" href="#production-mode-implications" title="Permanent link">&para;</a></h2>
+<p>This GL does NOT change production readiness posture:
+- Admin-plane control-plane is hardened but not production multi-tenant safe
+- No OAuth/JWT/SSO: operator model remains PBKDF2/Bearer for controlled preview
+- No token rotation UI: operators rotate by creating new operators
+- No production IAM: deferred to future issues
+- No workspace_id enforcement: deferred</p>
+<p>The control-plane routes (<code>/admin/operators</code>) are suitable for controlled
+preview and developer preview usage with synthetic/demo data. They are NOT
+suitable for production multi-tenant deployments without full GL-200D closure.</p>
+<hr />
+<h2 id="controlled-preview-impact">Controlled-Preview Impact<a class="headerlink" href="#controlled-preview-impact" title="Permanent link">&para;</a></h2>
+<p>GL-206 hardening is compatible with the GL-198 controlled preview boundary:
+- Admin can create operators for each synthetic/demo tenant
+- Operators remain scoped to their assigned tenant
+- No real customer data is involved</p>
+<p>The admin control-plane routes are additive — they do not weaken any GL-200
+through GL-205 guarantees.</p>
+<hr />
+<h2 id="implementation-summary">Implementation Summary<a class="headerlink" href="#implementation-summary" title="Permanent link">&para;</a></h2>
+<h3 id="changed-files">Changed files<a class="headerlink" href="#changed-files" title="Permanent link">&para;</a></h3>
+<p><strong><code>backend/src/operators.py</code>:</strong>
+- <code>create_operator()</code>: <code>tenant_id</code> is now a required positional argument
+  (removes silent <code>"dev"</code> default; all existing callers already pass it explicitly)
+- <code>revoke_operator(operator_id)</code>: new function — sets <code>active=0</code>, returns bool
+- <code>_operator_to_safe_dict(op)</code>: new helper — safe fields only for admin routes
+- <code>list_operators_for_admin()</code>: new function — returns list of safe dicts
+- <code>get_operator_safe(operator_id)</code>: new function — returns safe dict or None
+- Docstring updated to document GL-206 semantics</p>
+<p><strong><code>backend/src/server.py</code>:</strong>
+- Added <code>import secrets as _secrets_mod</code>
+- Added path normalization entries for <code>/admin/operators/{id}</code> and
+  <code>/admin/operators/{id}/revoke</code>
+- GET <code>/admin/operators</code> — admin-only list (safe fields)
+- GET <code>/admin/operators/{id}</code> — admin-only read (safe fields)
+- POST <code>/admin/operators</code> — admin-only create with explicit <code>tenantId</code>
+- POST <code>/admin/operators/{id}/revoke</code> — admin-only revoke</p>
+<h3 id="unchanged-files">Unchanged files<a class="headerlink" href="#unchanged-files" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>backend/src/auth.py</code> — already fail-closed, no changes needed</li>
+<li><code>backend/src/audit_log.py</code> — hash-chain unchanged; control-plane uses safe_log</li>
+<li><code>backend/src/models.py</code> — no schema additions needed</li>
+<li>Migrations — no new migrations needed (operators table has <code>active</code> column)</li>
+<li><code>docs/openapi.yaml</code> — not updated in GL-206 (admin routes are additive/internal)</li>
+</ul>
+<hr />
+<h2 id="remaining-gaps">Remaining Gaps<a class="headerlink" href="#remaining-gaps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GL-200D full closure</strong>: Operator management is not production multi-tenant
+  safe. Admin token binds to <code>demo</code> tenant only. Full isolation requires
+  per-tenant admin hierarchy.</li>
+<li><strong>No operator token rotation endpoint</strong>: Manual rotation via create + revoke.</li>
+<li><strong>workspace_id not enforced</strong>: Reserved column, deferred to future issue.</li>
+<li><strong>No OAuth/JWT/SSO</strong>: PBKDF2/Bearer is suitable for controlled preview only.</li>
+<li><strong>No production IAM</strong>: Required before any production SaaS deployment.</li>
+<li><strong>OpenAPI not updated</strong>: Admin routes are not yet reflected in <code>docs/openapi.yaml</code>.
+  This is intentional for GL-206 (internal-only, not public API contract yet).</li>
+<li><strong>Stale claims in README/AGENTS.md</strong>: "Tenant isolation: not implemented"
+  remains stale (deferred per GL-204).</li>
+<li><strong>No TLS, container hardening, or orchestration</strong>: P0 for production.</li>
+<li><strong>No live PostgreSQL validation executed</strong>: Remains P0 blocker from GL-205.</li>
+<li><strong>No automated backup or DR runbooks</strong>: Remains P0 blocker from GL-205.</li>
+</ul>
+<hr />
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R-001</td>
+<td>Admin token leaked gives full operator management access</td>
+<td>Low</td>
+<td>Critical</td>
+<td>Keep admin token in environment variable; rotate on suspicion; fail-closed</td>
+</tr>
+<tr>
+<td>R-002</td>
+<td>Operator created with wrong tenant_id cannot be corrected without revoke+recreate</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Admin can revoke and recreate; document in runbook</td>
+</tr>
+<tr>
+<td>R-003</td>
+<td>Cross-tenant operator access via admin in multi-tenant production</td>
+<td>Medium</td>
+<td>High</td>
+<td>Do not deploy multi-tenant production without GL-200D full closure</td>
+</tr>
+<tr>
+<td>R-004</td>
+<td>One-time token on create not captured by caller</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Document token is returned once; caller must store immediately</td>
+</tr>
+<tr>
+<td>R-005</td>
+<td>Revoked operator re-authenticates if DB has connection issues</td>
+<td>Low</td>
+<td>Critical</td>
+<td>Fail-closed: auth query requires <code>active=1</code>; connection failure causes auth failure</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>APPROVED_WITH_GAPS</strong></p>
+<hr />
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>The existing operator model (operators.py, auth.py) was already mostly
+   hardened for controlled preview: PBKDF2 token hashing, fail-closed auth,
+   <code>to_dict()</code> safe fields, constant-time admin token comparison.</p>
+</li>
+<li>
+<p>GL-206 adds the missing admin control-plane routes, making operator
+   lifecycle management (create/list/read/revoke) explicitly admin-gated.</p>
+</li>
+<li>
+<p><code>create_operator()</code> now requires explicit <code>tenant_id</code> — the silent <code>"dev"</code>
+   default is removed. All existing callers already passed <code>tenant_id</code>
+   explicitly, so this is a non-breaking hardening.</p>
+</li>
+<li>
+<p>The revoke function (<code>revoke_operator()</code>) enables admin to deactivate
+   operators. Revoked operators fail closed on authentication.</p>
+</li>
+<li>
+<p>Structured log events are emitted for create/revoke. The audit hash-chain
+   is not used for control-plane events (by design — it is for grant/access
+   audit immutability).</p>
+</li>
+<li>
+<p>Remaining gaps (production multi-tenant isolation, OAuth/JWT, workspace
+   enforcement) are documented. None of them block the controlled preview
+   posture.</p>
+</li>
+<li>
+<p>No production SaaS claim is made. No real customer data is used.</p>
+</li>
+</ol>
+<hr />
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-206 is not a production SaaS readiness declaration.</li>
+<li>GrantLayer remains Developer Preview / Controlled Preview with strict boundaries.</li>
+<li>Real customer/private grant/institutional data remains no-go.</li>
+<li>Official SDK/package remains no-go.</li>
+<li>Security-sensitive reports route to GitHub Security Advisories.</li>
+<li>No exploit details are included.</li>
+<li>No real secrets are included.</li>
+<li>No real customer/private data is used.</li>
+<li>Admin/operator tenant control-plane baseline does not mean full production
+  tenant management UI exists.</li>
+<li>Tenant/workspace isolation is not claimed as production-complete.</li>
+<li>No frontend/website/design changes.</li>
+<li>No GitHub workflow changes.</li>
+<li>No public publish, push, or visibility change.</li>
+</ul>
+<hr />
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GL-206 Merge</strong> — merge <code>gl-206-admin-operator-tenant-control-plane</code> to
+  internal main after validation.</li>
+<li><strong>GL-207 Claim Safety &amp; Controlled Preview Boundary</strong> — correct stale
+  claims in README/AGENTS.md/SECURITY.md/llms.txt.</li>
+<li><strong>GL-206B Live PostgreSQL Validation Execution</strong> — requires ephemeral
+  PostgreSQL instance; closes RB-001 from GL-205.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

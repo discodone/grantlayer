@@ -1,0 +1,97 @@
+{
+  "issue_id": "GL-200B",
+  "title": "Tenant/Workspace Isolation Implementation Baseline",
+  "status": "baseline_complete",
+  "branch": "gl-200b-tenant-workspace-isolation-implementation-baseline",
+  "prerequisite": "GL-200A",
+  "date": "2026-06-04",
+  "decision": "tenant_workspace_baseline_implemented",
+  "decision_rationale": "Option A from GL-200A design pack: tenant_id on all business resource tables, operator tenant binding, HTTP-layer tenant injection. Backward-compatible. workspace_id reserved for GL-200C.",
+
+  "implementation_areas": {
+    "migration": {
+      "file": "backend/src/migrations/0010_gl200b_tenant_workspace_isolation.py",
+      "description": "Adds tenant_id, workspace_id to all business tables; scope to audit_events; backfills; idempotent",
+      "tenant_id_constraints": {
+        "business_tables": "NOT NULL DEFAULT 'demo' (grants, grant_requests, challenges, grant_executions, evidence_archives)",
+        "audit_events": "NULLABLE (system/legacy events have no tenant)",
+        "operators": "NOT NULL DEFAULT 'demo' (consistent with legacy resource default)"
+      }
+    },
+    "operators": {
+      "file": "backend/src/operators.py",
+      "changes": ["Operator.tenant_id field (default 'demo')", "to_dict() includes tenantId", "_row_to_operator reads tenant_id", "create_operator() new function"]
+    },
+    "auth": {
+      "file": "backend/src/auth.py",
+      "changes": ["operator mode returns tenant_id in payload", "admin-token mode injects tenant_id='demo' (backward compat)"]
+    },
+    "resource_functions": {
+      "grants.py": ["list_grants(tenant_id)", "get_grant(tenant_id)", "create_grant(tenant_id)", "revoke_grant(tenant_id)"],
+      "challenges.py": ["create_challenge(tenant_id)", "get_challenge(tenant_id)", "list_challenges(tenant_id)"],
+      "grant_requests.py": ["create_grant_request(tenant_id)", "get_grant_request(tenant_id)", "list_grant_requests(tenant_id)", "approve_grant_request(tenant_id)", "deny_grant_request(tenant_id)", "revoke_grant_request(tenant_id)"]
+    },
+    "server": {
+      "file": "backend/src/server.py",
+      "changes": ["_get_tenant_id() helper", "_require_admin() returns tenant_id='demo'", "all major routes inject tenant_id"]
+    },
+    "audit_log": {
+      "file": "backend/src/audit_log.py",
+      "changes": ["tenant_id/workspace_id/scope stored", "list_events(tenant_id) filter", "dual-mode hash chain backward compat"]
+    }
+  },
+
+  "isolation_properties": {
+    "list_filtering": "tenant_id filter applied on all list queries when tenant_id provided",
+    "get_isolation": "cross-tenant get returns None (no existence leakage)",
+    "mutation_isolation": "cross-tenant revoke/approve/deny fail (None lookup -> ValueError)",
+    "backfill_isolation": "legacy resources stored as tenant='demo'; not visible to other tenants",
+    "hash_chain_compat": "dual-mode: pre-migration events verified without tenant_id; new events include it"
+  },
+
+  "not_implemented_in_gl200b": [
+    "workspace_id enforcement (GL-200C)",
+    "multi-tenant operator provisioning API (GL-200D)",
+    "admin-plane cross-tenant isolation (GL-200D)",
+    "row-level security at DB layer",
+    "tenant provisioning endpoint"
+  ],
+
+  "test_coverage": {
+    "test_file": "backend/tests/test_gl200b_tenant_workspace_isolation_baseline.py",
+    "test_classes": 15,
+    "test_ids": [
+      "M-001 (migration columns exist)",
+      "M-003 (migration idempotency)",
+      "T-001 (list_grants cross-tenant filter)",
+      "T-003 (list_events cross-tenant filter)",
+      "T-005 (list_grant_requests cross-tenant filter)",
+      "AU-001 (audit event stores tenant_id)",
+      "AU-002 (legacy event without tenant_id accepted)",
+      "cross-tenant lookup denial",
+      "cross-tenant mutation denial",
+      "operator tenant context",
+      "admin-token demo tenant (backward compat)",
+      "legacy backfill isolation",
+      "health endpoint has no tenant data",
+      "workspace_id reserved/nullable",
+      "scope guards"
+    ]
+  },
+
+  "safety_confirmations": {
+    "no_github_push_performed": "confirmed",
+    "no_production_saas_claim": "confirmed",
+    "tenant_workspace_isolation_not_claimed_as_complete": "confirmed",
+    "no_frontend_changes": "confirmed",
+    "no_github_workflow_changes": "confirmed",
+    "no_force_push": "confirmed",
+    "no_public_snapshot_changes": "confirmed"
+  },
+
+  "next_steps": [
+    "GL-200C: workspace_id enforcement",
+    "GL-200D: admin-plane tenant isolation",
+    "GL-200E (if needed): tenant provisioning API"
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "gl074-1.0",
+  "description": "Proposed implementation backlog for GL-075 and onward. This backlog is a planning artifact; no implementation is provided by GL-074.",
+  "generatedBy": "GL-074",
+  "backlogItems": [
+    {
+      "id": "gl075",
+      "title": "Runtime configuration enforcement",
+      "goal": "Implement the runtime configuration model designed in GL-066, including environment variable parsing, runtime mode detection, and startup validation.",
+      "scope": "Configuration loading, validation, and fail-fast behavior. No database schema changes unless a config table is explicitly approved.",
+      "allowed_files_category": "backend/src/config/*, backend/tests/test_gl075_*.py",
+      "forbidden_changes": [
+        "No OpenAPI changes",
+        "No frontend changes",
+        "No database schema changes without explicit scope",
+        "No deployment implementation"
+      ],
+      "prerequisites": ["GL-074 merged", "Full backend suite passes with 0 failures"],
+      "test_strategy": "Targeted tests for config validation edge cases, env override, and fail-fast. Full backend suite must pass.",
+      "risk_level": "high",
+      "requires_claude_review": true,
+      "implementation_status": "not_started"
+    },
+    {
+      "id": "gl076",
+      "title": "Health / readiness endpoint baseline",
+      "goal": "Add coarse health and readiness endpoints that operators and future runbooks can use for first-check diagnostics.",
+      "scope": "HTTP handlers for /health and /ready with lightweight dependency checks and structured responses.",
+      "allowed_files_category": "backend/src/health.py, backend/tests/test_gl076_*.py",
+      "forbidden_changes": [
+        "No auth enforcement at health endpoints",
+        "No frontend changes",
+        "No OpenAPI changes",
+        "No database migration changes"
+      ],
+      "prerequisites": ["GL-075 runtime configuration enforcement"],
+      "test_strategy": "Targeted tests for health endpoint responses and dependency failure simulation. Full backend suite must pass.",
+      "risk_level": "medium",
+      "requires_claude_review": false,
+      "implementation_status": "not_started"
+    },
+    {
+      "id": "gl077",
+      "title": "Structured logging helper / correlation ID baseline",
+      "goal": "Introduce a structured logging helper that emits GL-071-compliant events and attaches correlation IDs without changing API behavior.",
+      "scope": "Logger factory, correlation ID middleware/generator, field catalog compliance, and secret redaction in log output.",
+      "allowed_files_category": "backend/src/logging_helper.py, backend/tests/test_gl077_*.py",
+      "forbidden_changes": [
+        "No rewriting of all existing log statements",
+        "No OpenAPI changes",
+        "No frontend changes",
+        "No database schema changes"
+      ],
+      "prerequisites": ["GL-075 runtime configuration enforcement"],
+      "test_strategy": "Targeted tests for secret redaction, correlation ID generation, and field catalog compliance. Full backend suite must pass.",
+      "risk_level": "medium",
+      "requires_claude_review": false,
+      "implementation_status": "not_started"
+    },
+    {
+      "id": "gl078",
+      "title": "Secret source boundary hardening",
+      "goal": "Abstract secret retrieval behind a boundary so that demo keys can be replaced by managed secrets without changing consumers.",
+      "scope": "Secret source interface, environment-based loader, and migration path away from the demo Ed25519 keypair.",
+      "allowed_files_category": "backend/src/secrets.py, backend/tests/test_gl078_*.py",
+      "forbidden_changes": [
+        "No full HSM or vault integration unless explicitly scoped",
+        "No auth behavior changes",
+        "No OpenAPI changes",
+        "No frontend changes"
+      ],
+      "prerequisites": ["GL-075 runtime configuration enforcement", "GL-077 structured logging baseline"],
+      "test_strategy": "Targeted tests for secret retrieval, fallback behavior, and boundary isolation. Full backend suite must pass.",
+      "risk_level": "high",
+      "requires_claude_review": true,
+      "implementation_status": "not_started"
+    },
+    {
+      "id": "gl079",
+      "title": "Persistence backend abstraction groundwork",
+      "goal": "Solidify the persistence backend abstraction so PostgreSQL can be wired in cleanly alongside SQLite.",
+      "scope": "Database session factory abstraction, connection pool configuration placeholder, and runtime-driven backend selection.",
+      "allowed_files_category": "backend/src/persistence.py or backend/src/db/*, backend/tests/test_gl079_*.py",
+      "forbidden_changes": [
+        "No schema rewrites",
+        "No migration rewrites",
+        "No data loss",
+        "No frontend changes",
+        "No OpenAPI changes"
+      ],
+      "prerequisites": ["GL-075 runtime configuration enforcement", "GL-077 structured logging baseline"],
+      "test_strategy": "Targeted tests for backend switching and connection error handling. Full backend suite must pass.",
+      "risk_level": "high",
+      "requires_claude_review": true,
+      "implementation_status": "not_started"
+    },
+    {
+      "id": "gl080",
+      "title": "Deployment / runtime mode validation",
+      "goal": "Validate that the application refuses to start in an invalid or mismatched runtime mode.",
+      "scope": "Startup assertions for runtime mode vs. configuration consistency, deployment artifact validation, and graceful failure modes.",
+      "allowed_files_category": "backend/src/deployment_validation.py, backend/tests/test_gl080_*.py",
+      "forbidden_changes": [
+        "No Docker changes",
+        "No infrastructure changes",
+        "No scripts/deploy/* changes",
+        "No frontend changes",
+        "No OpenAPI changes"
+      ],
+      "prerequisites": ["GL-075 runtime configuration enforcement", "GL-076 health endpoint baseline"],
+      "test_strategy": "Targeted tests for invalid runtime mode rejection and artifact validation. Full backend suite must pass.",
+      "risk_level": "medium",
+      "requires_claude_review": false,
+      "implementation_status": "not_started"
+    },
+    {
+      "id": "gl081",
+      "title": "Operator access hardening",
+      "goal": "Strengthen operator authentication and authorization boundaries without breaking existing test paths.",
+      "scope": "Operator role enforcement, token validation improvements, and access boundary checks for sensitive endpoints.",
+      "allowed_files_category": "backend/src/auth/*, backend/tests/test_gl081_*.py",
+      "forbidden_changes": [
+        "No OAuth/JWT/SSO implementation unless explicitly scoped",
+        "No breaking changes to existing admin-token paths used by tests",
+        "No frontend changes",
+        "No OpenAPI changes"
+      ],
+      "prerequisites": ["GL-075 runtime configuration enforcement", "GL-077 structured logging baseline", "GL-078 secret source boundary"],
+      "test_strategy": "Targeted tests for unauthorized access rejection and authorized access success. Full backend suite must pass.",
+      "risk_level": "high",
+      "requires_claude_review": true,
+      "implementation_status": "not_started"
+    },
+    {
+      "id": "gl082",
+      "title": "Claude Code review-only checkpoint (security / runtime alignment)",
+      "goal": "Review-only checkpoint to validate that GL-075 through GL-081 implementations align with design documents and do not introduce forbidden changes.",
+      "scope": "No code changes. Review diff, test coverage, and rollback feasibility for the first implementation cut.",
+      "allowed_files_category": "Review comments, planning doc updates only",
+      "forbidden_changes": [
+        "No implementation code changes during this checkpoint",
+        "No backend/src/* changes",
+        "No test logic changes"
+      ],
+      "prerequisites": ["GL-075 through GL-081 design alignment complete"],
+      "test_strategy": "Manual review of diffs, test reports, and rollback plans. No automated tests required.",
+      "risk_level": "low",
+      "requires_claude_review": true,
+      "implementation_status": "not_started"
+    },
+    {
+      "id": "gl083",
+      "title": "Backup / restore / data lifecycle jobs",
+      "goal": "Implement automated backup, restore, and data lifecycle jobs based on the GL-072 design.",
+      "scope": "Scheduled backup jobs, restore procedures, retention automation, and lifecycle state transitions.",
+      "allowed_files_category": "backend/src/backup.py, backend/src/restore.py, backend/src/lifecycle.py, backend/tests/test_gl083_*.py",
+      "forbidden_changes": [
+        "No overwrite of audit or provenance records",
+        "No frontend changes",
+        "No OpenAPI changes"
+      ],
+      "prerequisites": ["GL-079 persistence abstraction", "GL-081 operator access hardening"],
+      "test_strategy": "Targeted tests for backup scope, restore integrity, and retention policy enforcement. Full backend suite must pass.",
+      "risk_level": "medium",
+      "requires_claude_review": false,
+      "implementation_status": "not_started"
+    },
+    {
+      "id": "gl084",
+      "title": "Observability metrics and alerting baseline",
+      "goal": "Extend the structured logging baseline with metrics and alerting thresholds based on the GL-071 design.",
+      "scope": "Metrics collection, alerting thresholds, and integration with health endpoints.",
+      "allowed_files_category": "backend/src/metrics.py, backend/src/alerting.py, backend/tests/test_gl084_*.py",
+      "forbidden_changes": [
+        "No external observability stack deployment",
+        "No frontend changes",
+        "No OpenAPI changes",
+        "No database schema changes"
+      ],
+      "prerequisites": ["GL-076 health endpoint baseline", "GL-077 structured logging baseline"],
+      "test_strategy": "Targeted tests for metric emission and alerting threshold triggers. Full backend suite must pass.",
+      "risk_level": "medium",
+      "requires_claude_review": false,
+      "implementation_status": "not_started"
+    }
+  ]
+}

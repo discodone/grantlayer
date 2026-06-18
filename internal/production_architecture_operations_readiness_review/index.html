@@ -1,0 +1,1985 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/production_architecture_operations_readiness_review/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-094C: Production Architecture and Operations Readiness Review - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-094c-production-architecture-and-operations-readiness-review" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-094C: Production Architecture and Operations Readiness Review
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#review-only-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review-only statement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-inspected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files inspected
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-production-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current production-readiness assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#staging-readiness-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Staging readiness assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production readiness blockers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Production readiness blockers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blocker-1-cors-wildcard-gl094c-finding-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BLOCKER-1: CORS wildcard (GL094C-FINDING-001)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blocker-2-operator-token-auth-on-scan-gl094c-finding-002" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BLOCKER-2: Operator token auth O(n) scan (GL094C-FINDING-002)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blocker-3-no-migration-rollback-gl094c-finding-003" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BLOCKER-3: No migration rollback (GL094C-FINDING-003)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blocker-4-postgresql-not-ci-validated-gl094c-finding-004" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BLOCKER-4: PostgreSQL not CI-validated (GL094C-FINDING-004)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blocker-5-no-concurrent-migration-guard-gl094c-finding-005" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BLOCKER-5: No concurrent migration guard (GL094C-FINDING-005)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blocker-6-structured-logging-not-integrated-gl094c-finding-006" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BLOCKER-6: Structured logging not integrated (GL094C-FINDING-006)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blocker-7-no-operational-runbooks-gl094c-finding-007" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BLOCKER-7: No operational runbooks (GL094C-FINDING-007)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#serverpy-monolith-gl094c-finding-015-informational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        server.py monolith (GL094C-FINDING-015, informational)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dual-auth-model-legacy-admin-token-operator-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dual auth model (legacy admin token + operator model)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runtimeconfiguration-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime/configuration risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Runtime/configuration risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#startup-gate-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Startup gate assessment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-mode-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime mode boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configpy-reads-env-vars-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config.py reads env vars directly
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#persistencepostgresql-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persistence/PostgreSQL risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Persistence/PostgreSQL risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sqlite-is-the-de-facto-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLite is the de facto backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sql-placeholder-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQL placeholder translation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-pooling-absent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection pooling absent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-startup-retry-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL startup retry exists
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-rollback-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No rollback mechanism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-dry-run-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No dry-run mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-concurrent-execution-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No concurrent execution guard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#legacy-gl-032-detection-is-implicit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Legacy GL-032 detection is implicit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observabilitylogging-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observability/logging risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Observability/logging risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#structured-logging-not-integrated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structured logging not integrated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-correlation-id-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No correlation ID propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-log-sampling-or-rate-limiting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No log sampling or rate limiting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#secret-management-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secret-management risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Secret-management risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#secret-sources-module-not-connected-to-config-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secret sources module not connected to config loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-secret-value-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No secret value validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-key-rotation-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No key rotation support
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-permission-enforcement-absent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File permission enforcement absent
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operatorauth-lifecycle-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator/auth lifecycle risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operator/auth lifecycle risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#operator-token-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator token lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bootstrap-re-initialization-requires-manual-intervention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bootstrap re-initialization requires manual intervention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-per-resource-permission-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No per-resource permission enforcement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auth-caching-per-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth caching per request
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apiopenapi-contract-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API/OpenAPI contract risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API/OpenAPI contract risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#contract-is-at-0310-rc-not-frozen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contract is at 0.31.0-rc — not frozen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#only-localhost8765-server-declared" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Only localhost:8765 server declared
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dual-auth-scheme-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dual auth scheme documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-and-readiness-endpoints-are-adequate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health and readiness endpoints are adequate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deploymentoperations-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment/operations gaps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deployment/operations gaps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-verified-deployment-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No verified deployment package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-backuprestore-procedures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No backup/restore procedures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-incident-response-playbook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No incident response playbook
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-pooling-not-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection pooling not implemented
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-implementation-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended implementation issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommended implementation issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#on-gl-095-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        On GL-095 ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#responses-to-review-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Responses to review questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-094c-production-architecture-and-operations-readiness-review">GL-094C: Production Architecture and Operations Readiness Review<a class="headerlink" href="#gl-094c-production-architecture-and-operations-readiness-review" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+</blockquote>
+<p><strong>Review ID:</strong> GL-094C<br />
+<strong>Review type:</strong> Production Architecture and Operations Readiness Review<br />
+<strong>Base main:</strong> <code>9bb8b16b5f149ac260f70304dc2e56eb02d6d82e</code><br />
+<strong>Date:</strong> 2026-05-23<br />
+<strong>Reviewer:</strong> Claude Code (Senior Architecture, Operations, and Production Readiness Review Agent)</p>
+<hr />
+<h2 id="review-only-statement">Review-only statement<a class="headerlink" href="#review-only-statement" title="Permanent link">&para;</a></h2>
+<p>This is a review-only artifact. No production code was modified, no implementation was added, no tests were changed, no migrations were created, no schema changes were made, and no OpenAPI changes were introduced. The sole outputs of this review are this document, the JSON findings artifact at <code>docs/examples/gl094c/production_architecture_operations_findings.json</code>, and the validation test at <code>backend/tests/test_gl094c_production_architecture_operations_review_artifact.py</code>.</p>
+<hr />
+<h2 id="executive-summary">Executive summary<a class="headerlink" href="#executive-summary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer MVP has a solid architectural foundation. The startup safety gate (GL-089) enforces fail-closed behavior in production-like modes. The runtime configuration boundary (<code>runtime_config.py</code>) is dependency-free and safe. Health and readiness endpoints exist and are well-specified in the OpenAPI contract. The database backend abstraction (<code>db.py</code>) handles both SQLite and PostgreSQL through a unified connection wrapper. The structured logging and secret management modules are implemented and tested in isolation.</p>
+<p>However, <strong>GrantLayer is not production-ready</strong>. Seven HIGH findings block a credible production deployment claim:</p>
+<ol>
+<li>CORS wildcard is still present (unaddressed from GL-094A F-001).</li>
+<li>Operator token authentication performs an O(n) PBKDF2 scan on every authenticated request.</li>
+<li>There is no migration rollback capability.</li>
+<li>PostgreSQL migrations are not validated in CI against a real PostgreSQL instance.</li>
+<li>There is no concurrent migration guard for multi-instance deployments.</li>
+<li>Structured logging is implemented but not integrated into the server.py request path.</li>
+<li>Backup/restore and incident response are design documents, not operational procedures.</li>
+</ol>
+<p><strong>Staging readiness: go_with_cautions.</strong> The startup gate, runtime mode separation, and basic authentication work. Known gaps are documented and tracked.</p>
+<p><strong>Production readiness: not_ready.</strong> Seven HIGH findings and six MEDIUM findings must be addressed before a production deployment claim is credible.</p>
+<p><strong>Review conclusion: proceed_with_cautions.</strong> The review confirms the blockers, establishes their priority, and recommends a concrete implementation sequence. GL-095 (CORS Origin Hardening) should remain the next implementation issue.</p>
+<hr />
+<h2 id="scope-reviewed">Scope reviewed<a class="headerlink" href="#scope-reviewed" title="Permanent link">&para;</a></h2>
+<p>This review addresses the following questions:</p>
+<ol>
+<li>Is the current architecture suitable for staging?</li>
+<li>Is the current architecture suitable for production?</li>
+<li>What are the main blockers to production readiness?</li>
+<li>Are runtime modes and fail-closed config boundaries clear enough?</li>
+<li>Is the deployment/runtime story complete enough?</li>
+<li>Is PostgreSQL readiness real or still partial?</li>
+<li>Are migrations operationally safe enough?</li>
+<li>Is observability sufficient for production incident diagnosis?</li>
+<li>Is structured logging integrated or only available as a helper?</li>
+<li>Are secrets handled safely enough for staging/production?</li>
+<li>Is operator/admin auth lifecycle production-ready?</li>
+<li>Are API contracts stable and aligned with implementation?</li>
+<li>Are health/readiness endpoints adequate?</li>
+<li>Are backup/restore, incident response, and operational runbooks missing?</li>
+<li>Are there architecture risks around the server.py monolith / routing?</li>
+<li>What should be implemented next after GL-094C?</li>
+<li>Should GL-095 still be CORS Origin Hardening, or should another blocker come first?</li>
+</ol>
+<hr />
+<h2 id="files-inspected">Files inspected<a class="headerlink" href="#files-inspected" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/phase1_security_remediation_review.md</code></td>
+<td>GL-094A conclusions and findings</td>
+</tr>
+<tr>
+<td><code>docs/examples/gl094a/phase1_security_review_findings.json</code></td>
+<td>GL-094A structured findings</td>
+</tr>
+<tr>
+<td><code>docs/audit_log_immutability_review.md</code></td>
+<td>GL-094B conclusions and findings</td>
+</tr>
+<tr>
+<td><code>docs/examples/gl094b/audit_log_immutability_findings.json</code></td>
+<td>GL-094B structured findings</td>
+</tr>
+<tr>
+<td><code>docs/product_foundation_implementation_cut.md</code></td>
+<td>GL-074 implementation sequencing</td>
+</tr>
+<tr>
+<td><code>docs/production_hardening_roadmap.md</code></td>
+<td>GL-063 P0 production gates</td>
+</tr>
+<tr>
+<td><code>docs/runtime_configuration_environment_model.md</code></td>
+<td>GL-066 runtime mode model</td>
+</tr>
+<tr>
+<td><code>docs/production_auth_operator_access_design.md</code></td>
+<td>GL-067 operator auth design</td>
+</tr>
+<tr>
+<td><code>docs/secret_management_baseline_design.md</code></td>
+<td>GL-068 secret management design</td>
+</tr>
+<tr>
+<td><code>docs/observability_structured_logging_baseline_design.md</code></td>
+<td>GL-071 observability design</td>
+</tr>
+<tr>
+<td><code>docs/persistence_backend_postgresql_readiness_design.md</code></td>
+<td>GL-080 persistence design</td>
+</tr>
+<tr>
+<td><code>docs/openapi.yaml</code></td>
+<td>API contract (v0.31.0-rc)</td>
+</tr>
+<tr>
+<td><code>backend/src/server.py</code></td>
+<td>Application entry point, routing, auth middleware</td>
+</tr>
+<tr>
+<td><code>backend/src/config.py</code></td>
+<td>Runtime configuration and startup validation</td>
+</tr>
+<tr>
+<td><code>backend/src/runtime_config.py</code></td>
+<td>Runtime mode detection helper</td>
+</tr>
+<tr>
+<td><code>backend/src/db.py</code></td>
+<td>Database backend abstraction</td>
+</tr>
+<tr>
+<td><code>backend/src/migrations/runner.py</code></td>
+<td>Migration discovery and execution</td>
+</tr>
+<tr>
+<td><code>backend/src/structured_logging.py</code></td>
+<td>Structured logging helpers</td>
+</tr>
+<tr>
+<td><code>backend/src/secret_sources.py</code></td>
+<td>Secret boundary functions</td>
+</tr>
+<tr>
+<td><code>backend/src/operators.py</code></td>
+<td>Operator model and token authentication</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="current-production-readiness-assessment">Current production-readiness assessment<a class="headerlink" href="#current-production-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Status: not_ready</strong></p>
+<p>GrantLayer may be described as <strong>Pilot-Ready for technical review</strong> (consistent with the GL-063 roadmap decision boundary), but must not be described as production-ready. The following P0 gates from GL-063 remain open:</p>
+<table>
+<thead>
+<tr>
+<th>P0 Gate</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production auth model</td>
+<td>Operator model implemented; operator lifecycle not hardened</td>
+</tr>
+<tr>
+<td>Secret management</td>
+<td>Secret boundary module exists; not integrated with config loading</td>
+</tr>
+<tr>
+<td>Deployment environment definition</td>
+<td>Design documents exist; no verified deployment package</td>
+</tr>
+<tr>
+<td>Database production readiness</td>
+<td>PostgreSQL abstraction exists; not CI-gated against real PostgreSQL</td>
+</tr>
+<tr>
+<td>Backup/restore plan</td>
+<td>Design document exists; no implemented procedures</td>
+</tr>
+<tr>
+<td>Observability baseline</td>
+<td>Structured logging module exists; not integrated into request path</td>
+</tr>
+<tr>
+<td>CI gate definition</td>
+<td>SQLite-only CI; no PostgreSQL CI job</td>
+</tr>
+<tr>
+<td>API/OpenAPI contract freeze</td>
+<td>Contract is at 0.31.0-rc; no freeze policy defined</td>
+</tr>
+<tr>
+<td>Data privacy and evidence-handling</td>
+<td>Not assessed in this review</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="staging-readiness-assessment">Staging readiness assessment<a class="headerlink" href="#staging-readiness-assessment" title="Permanent link">&para;</a></h2>
+<p><strong>Status: go_with_cautions</strong></p>
+<p>GrantLayer is suitable for staging deployment under the following conditions:</p>
+<p><strong>What works for staging:</strong>
+- The GL-089 startup gate enforces fail-closed behavior in <code>staging</code> and <code>production</code> modes. An incorrectly configured staging instance will refuse to start rather than start in an unsafe state.
+- <code>runtime_config.py</code> is dependency-free, testable, and correctly identifies <code>staging</code> as a production-like mode.
+- The <code>/health</code> and <code>/readiness</code> endpoints are implemented and well-specified. A load balancer or orchestrator can use them to gate traffic.
+- The database backend abstraction supports PostgreSQL via <code>GRANTLAYER_DATABASE_URL</code>. Staging can be configured to use a real PostgreSQL instance.
+- The secret sources module provides safe error handling; staging will surface missing secrets as <code>SecretConfigurationError</code> rather than silently using empty strings.
+- The OpenAPI contract is stable enough for staging integration testing.</p>
+<p><strong>Cautions for staging:</strong>
+- CORS is still wildcarded. Any browser-accessible staging endpoint is open to cross-origin requests from any domain.
+- Structured logging is not active in the request path — staging logs will be unstructured stdout output, making debugging harder.
+- Operator token authentication scans all operators per request. A staging instance with many test operators will have degraded auth performance.
+- Migrations have no rollback. A bad migration on staging requires manual database intervention.
+- PostgreSQL migrations have not been validated in CI. First PostgreSQL staging run may surface schema compatibility issues.</p>
+<hr />
+<h2 id="production-readiness-blockers">Production readiness blockers<a class="headerlink" href="#production-readiness-blockers" title="Permanent link">&para;</a></h2>
+<p>The following findings are HIGH severity and must be resolved before production deployment:</p>
+<h3 id="blocker-1-cors-wildcard-gl094c-finding-001">BLOCKER-1: CORS wildcard (GL094C-FINDING-001)<a class="headerlink" href="#blocker-1-cors-wildcard-gl094c-finding-001" title="Permanent link">&para;</a></h3>
+<p><code>backend/src/server.py</code> returns <code>Access-Control-Allow-Origin: *</code> on all responses. Any browser origin can issue credentialed cross-site requests to the API. This was identified in GL-094A as F-001 (HIGH) and has not been remediated.</p>
+<p><strong>Required action:</strong> GL-095 — Replace wildcard with an explicit allowlist of permitted origins.</p>
+<h3 id="blocker-2-operator-token-auth-on-scan-gl094c-finding-002">BLOCKER-2: Operator token auth O(n) scan (GL094C-FINDING-002)<a class="headerlink" href="#blocker-2-operator-token-auth-on-scan-gl094c-finding-002" title="Permanent link">&para;</a></h3>
+<p><code>operators.py authenticate_operator()</code> iterates all active operators and runs PBKDF2-HMAC-SHA256 (600,000 iterations) per entry. No index exists on <code>token_hash</code>. With even a modest operator count this becomes a CPU-exhaustion vector.</p>
+<p><strong>Required action:</strong> GL-097 — Add database index on <code>operators.token_hash</code>.</p>
+<h3 id="blocker-3-no-migration-rollback-gl094c-finding-003">BLOCKER-3: No migration rollback (GL094C-FINDING-003)<a class="headerlink" href="#blocker-3-no-migration-rollback-gl094c-finding-003" title="Permanent link">&para;</a></h3>
+<p>Migrations are one-way. A failed migration in production requires manual database recovery with no tooling support.</p>
+<p><strong>Required action:</strong> GL-098 — Add <code>rollback(conn)</code> to migration modules and a dry-run preview mode.</p>
+<h3 id="blocker-4-postgresql-not-ci-validated-gl094c-finding-004">BLOCKER-4: PostgreSQL not CI-validated (GL094C-FINDING-004)<a class="headerlink" href="#blocker-4-postgresql-not-ci-validated-gl094c-finding-004" title="Permanent link">&para;</a></h3>
+<p>The persistence design document explicitly requires PostgreSQL schema compatibility to be verified before a production readiness claim. No CI job runs against a real PostgreSQL instance.</p>
+<p><strong>Required action:</strong> GL-101 — Add a PostgreSQL CI job.</p>
+<h3 id="blocker-5-no-concurrent-migration-guard-gl094c-finding-005">BLOCKER-5: No concurrent migration guard (GL094C-FINDING-005)<a class="headerlink" href="#blocker-5-no-concurrent-migration-guard-gl094c-finding-005" title="Permanent link">&para;</a></h3>
+<p>Multiple instances starting simultaneously can race to apply the same migration. No advisory lock or application-level serialization protects the migration runner.</p>
+<p><strong>Required action:</strong> GL-098 — Add advisory lock around migration execution.</p>
+<h3 id="blocker-6-structured-logging-not-integrated-gl094c-finding-006">BLOCKER-6: Structured logging not integrated (GL094C-FINDING-006)<a class="headerlink" href="#blocker-6-structured-logging-not-integrated-gl094c-finding-006" title="Permanent link">&para;</a></h3>
+<p><code>structured_logging.py</code> exists and is tested, but server.py uses <code>print()</code> for all logging. In a production incident there is no structured log trail to query, correlate, or alert on.</p>
+<p><strong>Required action:</strong> GL-099 — Integrate structured logging into the server.py request lifecycle.</p>
+<h3 id="blocker-7-no-operational-runbooks-gl094c-finding-007">BLOCKER-7: No operational runbooks (GL094C-FINDING-007)<a class="headerlink" href="#blocker-7-no-operational-runbooks-gl094c-finding-007" title="Permanent link">&para;</a></h3>
+<p>Backup/restore and incident response design documents exist but are not implemented as executable procedures. Mean time to recovery for a production data loss or service incident is undefined.</p>
+<p><strong>Required action:</strong> GL-100 — Convert designs into tested operational runbooks.</p>
+<hr />
+<h2 id="architecture-risks">Architecture risks<a class="headerlink" href="#architecture-risks" title="Permanent link">&para;</a></h2>
+<h3 id="serverpy-monolith-gl094c-finding-015-informational">server.py monolith (GL094C-FINDING-015, informational)<a class="headerlink" href="#serverpy-monolith-gl094c-finding-015-informational" title="Permanent link">&para;</a></h3>
+<p>All HTTP routes, middleware, auth guards, request parsing, and startup logic are in a single ~1250-line file. This is acceptable for the current MVP phase. As structured logging middleware, rate limiting, correlation ID propagation, and additional auth layers are added, the file will become a maintenance burden. Module decomposition should be planned before the next major feature phase, not during it.</p>
+<p><strong>Risk level:</strong> Low for current phase. Medium for next phase if not addressed before adding middleware layers.</p>
+<h3 id="dual-auth-model-legacy-admin-token-operator-model">Dual auth model (legacy admin token + operator model)<a class="headerlink" href="#dual-auth-model-legacy-admin-token-operator-model" title="Permanent link">&para;</a></h3>
+<p><code>server.py</code> maintains two authentication branches: a legacy admin-token mode (<code>ENABLE_OPERATOR_MODEL=false</code>) and an operator model (<code>ENABLE_OPERATOR_MODEL=true</code>). Both are documented in the OpenAPI contract. This dual-mode design is intentional for backward compatibility but creates two separate auth code paths that must both be hardened. The operator model is the intended production path; the legacy model should have a documented deprecation plan.</p>
+<p><strong>Risk level:</strong> Medium. Both paths exist in production code and must be maintained.</p>
+<hr />
+<h2 id="runtimeconfiguration-risks">Runtime/configuration risks<a class="headerlink" href="#runtimeconfiguration-risks" title="Permanent link">&para;</a></h2>
+<h3 id="startup-gate-assessment">Startup gate assessment<a class="headerlink" href="#startup-gate-assessment" title="Permanent link">&para;</a></h3>
+<p>The GL-089 startup gate in <code>server.py run()</code> is correctly implemented:
+- <code>config.startup_ok()</code> returns <code>False</code> if any fatal config error exists.
+- <code>config.startup_errors()</code> collects the error list.
+- The process exits with code 1 in non-local/non-test modes if the gate fails.</p>
+<p>The gate correctly checks: <code>REQUIRE_ADMIN_TOKEN == True</code>, <code>GRANTLAYER_ADMIN_TOKEN</code> is set and non-empty, <code>REQUIRE_CHALLENGE == True</code>, and <code>ENABLE_DEMO_ENDPOINTS == False</code>.</p>
+<p><strong>Assessment:</strong> The startup gate is solid. A misconfigured staging or production instance will refuse to start rather than silently operate in an unsafe state.</p>
+<h3 id="runtime-mode-boundary">Runtime mode boundary<a class="headerlink" href="#runtime-mode-boundary" title="Permanent link">&para;</a></h3>
+<p><code>runtime_config.py</code> is dependency-free, never logs or returns raw env values, and correctly classifies <code>staging</code> and <code>production</code> as production-like modes. The <code>describe_runtime_config()</code> function returns only safe metadata.</p>
+<p><strong>Assessment:</strong> The runtime mode boundary is clean and correctly implemented.</p>
+<h3 id="configpy-reads-env-vars-directly">Config.py reads env vars directly<a class="headerlink" href="#configpy-reads-env-vars-directly" title="Permanent link">&para;</a></h3>
+<p><code>config.py</code> reads secrets (<code>GRANTLAYER_ADMIN_TOKEN</code>, etc.) via <code>os.environ.get()</code> without using <code>secret_sources.py</code>. The secret boundary layer's safe error handling and redaction guarantees are not active for config loading.</p>
+<p><strong>Risk:</strong> Medium. See GL094C-FINDING-010.</p>
+<hr />
+<h2 id="persistencepostgresql-risks">Persistence/PostgreSQL risks<a class="headerlink" href="#persistencepostgresql-risks" title="Permanent link">&para;</a></h2>
+<h3 id="sqlite-is-the-de-facto-backend">SQLite is the de facto backend<a class="headerlink" href="#sqlite-is-the-de-facto-backend" title="Permanent link">&para;</a></h3>
+<p>The default database path (<code>data/grantlayer.db</code>) and all CI tests use SQLite. PostgreSQL is supported via <code>GRANTLAYER_DATABASE_URL</code> but has never been validated in CI. The persistence design document (<code>persistence_backend_postgresql_readiness_design.md</code>) correctly states that SQLite is not sufficient for production-readiness claims.</p>
+<h3 id="sql-placeholder-translation">SQL placeholder translation<a class="headerlink" href="#sql-placeholder-translation" title="Permanent link">&para;</a></h3>
+<p><code>db.py</code> translates SQLite <code>?</code> placeholders to PostgreSQL <code>%s</code> via a parser that handles string literals, identifiers, and comments. This is a reasonable approach but adds a layer of complexity that must be validated against real PostgreSQL queries, not only unit tests.</p>
+<h3 id="connection-pooling-absent">Connection pooling absent<a class="headerlink" href="#connection-pooling-absent" title="Permanent link">&para;</a></h3>
+<p><code>db.py</code> opens a new connection per operation. This is acceptable for SQLite and low-traffic staging but will become a bottleneck under production load on PostgreSQL. A connection pool (e.g., <code>psycopg2.pool</code> or <code>pgbouncer</code>) is required before production use.</p>
+<h3 id="postgresql-startup-retry-exists">PostgreSQL startup retry exists<a class="headerlink" href="#postgresql-startup-retry-exists" title="Permanent link">&para;</a></h3>
+<p><code>db.py</code> implements bounded retry on PostgreSQL connection failure (<code>GRANTLAYER_DB_RETRY_MAX</code>, default 5 attempts, <code>GRANTLAYER_DB_RETRY_DELAY</code>, default 1.0s). This is operationally useful for container orchestration startup sequencing.</p>
+<hr />
+<h2 id="migration-risks">Migration risks<a class="headerlink" href="#migration-risks" title="Permanent link">&para;</a></h2>
+<h3 id="no-rollback-mechanism">No rollback mechanism<a class="headerlink" href="#no-rollback-mechanism" title="Permanent link">&para;</a></h3>
+<p>Migrations provide only <code>apply(conn)</code>. No <code>rollback(conn)</code> exists. A failed migration in production cannot be reversed without manual database access and custom SQL.</p>
+<h3 id="no-dry-run-mode">No dry-run mode<a class="headerlink" href="#no-dry-run-mode" title="Permanent link">&para;</a></h3>
+<p>There is no way to preview which migrations will run before deploying. This is a standard operational safety mechanism that is absent.</p>
+<h3 id="no-concurrent-execution-guard">No concurrent execution guard<a class="headerlink" href="#no-concurrent-execution-guard" title="Permanent link">&para;</a></h3>
+<p>Multiple instances racing to apply migrations can cause duplicate execution or partial application. While PostgreSQL DDL transactions provide some protection, SQLite WAL mode does not guarantee serialized DDL execution across processes.</p>
+<h3 id="legacy-gl-032-detection-is-implicit">Legacy GL-032 detection is implicit<a class="headerlink" href="#legacy-gl-032-detection-is-implicit" title="Permanent link">&para;</a></h3>
+<p>The migration runner detects an existing pre-migration database by checking for the presence of the <code>grants</code> table without a <code>schema_migrations</code> table. It then validates expected columns and marks all known migrations as applied. This heuristic is pragmatic but could fail silently if the production database has a different schema state than expected.</p>
+<hr />
+<h2 id="observabilitylogging-risks">Observability/logging risks<a class="headerlink" href="#observabilitylogging-risks" title="Permanent link">&para;</a></h2>
+<h3 id="structured-logging-not-integrated">Structured logging not integrated<a class="headerlink" href="#structured-logging-not-integrated" title="Permanent link">&para;</a></h3>
+<p><code>structured_logging.py</code> provides <code>build_log_event()</code>, <code>generate_correlation_id()</code>, and secret-redacting metadata helpers. All of these are implemented and tested. None of them are called from <code>server.py</code>. The server uses <code>print()</code> for all operational output.</p>
+<p><strong>Impact:</strong> In a production incident there is no structured log stream to query. Auth events, permission decisions, approval transitions, and API errors produce no structured output. Log aggregation systems (e.g., Loki, Elasticsearch) cannot parse or alert on unstructured stdout.</p>
+<h3 id="no-correlation-id-propagation">No correlation ID propagation<a class="headerlink" href="#no-correlation-id-propagation" title="Permanent link">&para;</a></h3>
+<p><code>generate_correlation_id()</code> is implemented. No request handler in <code>server.py</code> reads an incoming <code>X-Request-ID</code> header, generates a correlation ID, or includes it in response headers. Cross-system request tracing is not possible.</p>
+<h3 id="no-log-sampling-or-rate-limiting">No log sampling or rate limiting<a class="headerlink" href="#no-log-sampling-or-rate-limiting" title="Permanent link">&para;</a></h3>
+<p>All events would be logged at equal weight once structured logging is integrated. High-volume endpoints (e.g., <code>/health</code>) would flood the log stream. Sampling or rate-limiting for high-frequency low-severity events should be designed before integration.</p>
+<hr />
+<h2 id="secret-management-risks">Secret-management risks<a class="headerlink" href="#secret-management-risks" title="Permanent link">&para;</a></h2>
+<h3 id="secret-sources-module-not-connected-to-config-loading">Secret sources module not connected to config loading<a class="headerlink" href="#secret-sources-module-not-connected-to-config-loading" title="Permanent link">&para;</a></h3>
+<p><code>secret_sources.py</code> provides a safe, consistent secret loading boundary. <code>config.py</code> reads secrets directly from the environment. The boundary layer's guarantees (safe error messages, no value in repr, centralized validation) are not applied during startup.</p>
+<h3 id="no-secret-value-validation">No secret value validation<a class="headerlink" href="#no-secret-value-validation" title="Permanent link">&para;</a></h3>
+<p><code>secret_sources.py</code> validates that a secret is present and non-empty but does not validate format, minimum length, or entropy. A short or weak admin token would pass the existence check.</p>
+<h3 id="no-key-rotation-support">No key rotation support<a class="headerlink" href="#no-key-rotation-support" title="Permanent link">&para;</a></h3>
+<p>The Ed25519 signing keypair is created once by <code>ensure_demo_keypair()</code> in <code>server.py</code>. There is no key rotation mechanism, no key version tracking, and no migration path for rotating the signing key without invalidating all existing signed grants.</p>
+<h3 id="file-permission-enforcement-absent">File permission enforcement absent<a class="headerlink" href="#file-permission-enforcement-absent" title="Permanent link">&para;</a></h3>
+<p>GL-094A F-002 (HIGH) identified that the Ed25519 private key is written to disk without <code>0600</code> permission enforcement. This remains unaddressed.</p>
+<hr />
+<h2 id="operatorauth-lifecycle-risks">Operator/auth lifecycle risks<a class="headerlink" href="#operatorauth-lifecycle-risks" title="Permanent link">&para;</a></h2>
+<h3 id="operator-token-lifecycle">Operator token lifecycle<a class="headerlink" href="#operator-token-lifecycle" title="Permanent link">&para;</a></h3>
+<p>Tokens are issued once during bootstrap, stored as PBKDF2 hashes, and never expire. There is no rotation endpoint, no <code>token_expires_at</code> column, no <code>last_used_at</code> tracking, and no per-session token concept. A leaked operator token is valid indefinitely.</p>
+<h3 id="bootstrap-re-initialization-requires-manual-intervention">Bootstrap re-initialization requires manual intervention<a class="headerlink" href="#bootstrap-re-initialization-requires-manual-intervention" title="Permanent link">&para;</a></h3>
+<p>The bootstrap mechanism runs once when the operators table is empty. After that, <code>GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN</code> is ignored. Re-bootstrapping requires manually deleting all operator rows from the database.</p>
+<h3 id="no-per-resource-permission-enforcement">No per-resource permission enforcement<a class="headerlink" href="#no-per-resource-permission-enforcement" title="Permanent link">&para;</a></h3>
+<p>The operator model supports roles (<code>owner</code>, <code>grant_admin</code>, <code>auditor</code>) but enforces only coarse role membership checks. There are no resource-level permissions, no scope boundaries, and no capability grants. A <code>grant_admin</code> operator has access to all grants regardless of tenant, organization, or grant type.</p>
+<h3 id="auth-caching-per-request">Auth caching per request<a class="headerlink" href="#auth-caching-per-request" title="Permanent link">&para;</a></h3>
+<p><code>server.py</code> caches auth results by the SHA256 hash of the Authorization header for the duration of a single request. This is not a risk — it is a reasonable per-request optimization — but it means that revocation takes effect only on the next request, not mid-request.</p>
+<hr />
+<h2 id="apiopenapi-contract-risks">API/OpenAPI contract risks<a class="headerlink" href="#apiopenapi-contract-risks" title="Permanent link">&para;</a></h2>
+<h3 id="contract-is-at-0310-rc-not-frozen">Contract is at 0.31.0-rc — not frozen<a class="headerlink" href="#contract-is-at-0310-rc-not-frozen" title="Permanent link">&para;</a></h3>
+<p>The <code>-rc</code> suffix signals a release candidate, not a stable contract. The GL-063 hardening roadmap lists API contract freeze as a P0 production gate. Until the version is stabilized and a breaking-change deprecation policy is defined, integrators cannot rely on the contract being stable.</p>
+<h3 id="only-localhost8765-server-declared">Only localhost:8765 server declared<a class="headerlink" href="#only-localhost8765-server-declared" title="Permanent link">&para;</a></h3>
+<p>The <code>servers</code> section in <code>openapi.yaml</code> contains only <code>http://localhost:8765</code>. No staging or production server URL is declared. Generated clients and API tooling must manually substitute the target URL, increasing the risk of accidental production calls from development tooling.</p>
+<h3 id="dual-auth-scheme-documentation">Dual auth scheme documentation<a class="headerlink" href="#dual-auth-scheme-documentation" title="Permanent link">&para;</a></h3>
+<p>The OpenAPI contract documents both <code>LegacyAdminToken</code> and <code>OperatorToken</code> security schemes. Both must remain documented until the legacy mode is formally deprecated. No deprecation notice or timeline is present in the contract.</p>
+<h3 id="health-and-readiness-endpoints-are-adequate">Health and readiness endpoints are adequate<a class="headerlink" href="#health-and-readiness-endpoints-are-adequate" title="Permanent link">&para;</a></h3>
+<p><code>/health</code> (liveness) and <code>/readiness</code> (runtime config check) are correctly specified in the OpenAPI contract. The readiness endpoint returns <code>runtimeMode</code> and <code>isProductionLike</code> without exposing secrets or raw environment values. These endpoints are sufficient for container orchestration health probing.</p>
+<hr />
+<h2 id="deploymentoperations-gaps">Deployment/operations gaps<a class="headerlink" href="#deploymentoperations-gaps" title="Permanent link">&para;</a></h2>
+<h3 id="no-verified-deployment-package">No verified deployment package<a class="headerlink" href="#no-verified-deployment-package" title="Permanent link">&para;</a></h3>
+<p>The <code>docs/deployment/</code> directory and <code>docs/deployment_package_runtime_modes_design.md</code> exist as design artifacts. No Docker image, Compose file, or Kubernetes manifest has been verified against the current codebase. The deployment story is documented but not tested.</p>
+<h3 id="no-backuprestore-procedures">No backup/restore procedures<a class="headerlink" href="#no-backuprestore-procedures" title="Permanent link">&para;</a></h3>
+<p><code>docs/backup_restore_data_lifecycle_design.md</code> is a design document. No automated backup schedule, no tested restore procedure, no point-in-time recovery verification, and no retention policy enforcement exist. Mean time to recovery for data loss is undefined.</p>
+<h3 id="no-incident-response-playbook">No incident response playbook<a class="headerlink" href="#no-incident-response-playbook" title="Permanent link">&para;</a></h3>
+<p><code>docs/operational_runbook_incident_response_design.md</code> is a design document. No on-call playbook, no escalation path, and no runbook checklist exists as an executable procedure.</p>
+<h3 id="connection-pooling-not-implemented">Connection pooling not implemented<a class="headerlink" href="#connection-pooling-not-implemented" title="Permanent link">&para;</a></h3>
+<p>Single-connection-per-operation design in <code>db.py</code> is acceptable for SQLite and low-traffic staging but requires connection pooling before production PostgreSQL use.</p>
+<hr />
+<h2 id="recommended-implementation-issues">Recommended implementation issues<a class="headerlink" href="#recommended-implementation-issues" title="Permanent link">&para;</a></h2>
+<p>The following issues are recommended in priority order:</p>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Issue ID</th>
+<th>Title</th>
+<th>Findings addressed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>GL-095</td>
+<td>CORS Origin Hardening</td>
+<td>GL094C-FINDING-001, GL-094A F-001</td>
+</tr>
+<tr>
+<td>2</td>
+<td>GL-096</td>
+<td>Private key file permission enforcement</td>
+<td>GL-094A F-002</td>
+</tr>
+<tr>
+<td>3</td>
+<td>GL-097</td>
+<td>Operator token performance and security hardening</td>
+<td>GL094C-FINDING-002, GL094C-FINDING-008, GL094C-FINDING-009</td>
+</tr>
+<tr>
+<td>4</td>
+<td>GL-098</td>
+<td>Migration safety: rollback, dry-run, concurrent guard</td>
+<td>GL094C-FINDING-003, GL094C-FINDING-005, GL094C-FINDING-013</td>
+</tr>
+<tr>
+<td>5</td>
+<td>GL-099</td>
+<td>Structured logging integration into server.py request path</td>
+<td>GL094C-FINDING-006, GL094C-FINDING-014</td>
+</tr>
+<tr>
+<td>6</td>
+<td>GL-100</td>
+<td>Operational runbooks: backup/restore and incident response</td>
+<td>GL094C-FINDING-007</td>
+</tr>
+<tr>
+<td>7</td>
+<td>GL-101</td>
+<td>PostgreSQL CI gating for migrations</td>
+<td>GL094C-FINDING-004</td>
+</tr>
+</tbody>
+</table>
+<h3 id="on-gl-095-ordering">On GL-095 ordering<a class="headerlink" href="#on-gl-095-ordering" title="Permanent link">&para;</a></h3>
+<p>GL-095 (CORS Origin Hardening) should remain the next implementation issue. The CORS wildcard is the most trivially exploitable gap: any browser origin can make credentialed cross-site requests to the API without any server-side validation. The fix is a small, well-understood change (allowlist configuration in server.py). No other blocker is simultaneously as impactful, as easy to exploit, and as easy to fix.</p>
+<hr />
+<h2 id="responses-to-review-questions">Responses to review questions<a class="headerlink" href="#responses-to-review-questions" title="Permanent link">&para;</a></h2>
+<p><strong>1. Is the current architecture suitable for staging?</strong>
+Yes, with cautions. The startup gate, runtime mode boundary, and health endpoints are production-like. CORS wildcard and absence of structured logging are the primary staging cautions.</p>
+<p><strong>2. Is the current architecture suitable for production?</strong>
+No. Seven HIGH findings must be addressed before a production deployment claim is credible.</p>
+<p><strong>3. What are the main blockers to production readiness?</strong>
+CORS wildcard, operator auth O(n) scan, no migration rollback, no PostgreSQL CI validation, no concurrent migration guard, structured logging not integrated, no operational runbooks.</p>
+<p><strong>4. Are runtime modes and fail-closed config boundaries clear enough?</strong>
+Yes. The GL-089 startup gate and <code>runtime_config.py</code> boundary are correctly implemented and enforced.</p>
+<p><strong>5. Is the deployment/runtime story complete enough?</strong>
+No. Deployment is documented as design only. No verified deployment package exists.</p>
+<p><strong>6. Is PostgreSQL readiness real or still partial?</strong>
+Partial. The database abstraction layer supports PostgreSQL, but migrations have never been validated against a real PostgreSQL instance in CI.</p>
+<p><strong>7. Are migrations operationally safe enough?</strong>
+No. No rollback, no dry-run, no concurrent guard. Acceptable for single-instance staging with careful manual procedures; not acceptable for production.</p>
+<p><strong>8. Is observability sufficient for production incident diagnosis?</strong>
+No. Structured logging is implemented but not active. All server output is unstructured stdout.</p>
+<p><strong>9. Is structured logging integrated or only available as a helper?</strong>
+Available as a helper only. Not integrated into the server.py request path.</p>
+<p><strong>10. Are secrets handled safely enough for staging/production?</strong>
+Partially. The secret sources module is correct but not used by config loading. File permission enforcement on the private key is absent.</p>
+<p><strong>11. Is operator/admin auth lifecycle production-ready?</strong>
+No. Tokens do not expire, cannot be rotated without database access, and the auth path performs O(n) PBKDF2 scans.</p>
+<p><strong>12. Are API contracts stable and aligned with implementation?</strong>
+The contract is aligned with the implementation. It is not yet stable (0.31.0-rc, no freeze policy, no staging/production server URLs).</p>
+<p><strong>13. Are health/readiness endpoints adequate?</strong>
+Yes. <code>/health</code> and <code>/readiness</code> are correctly implemented and specified.</p>
+<p><strong>14. Are backup/restore, incident response, and operational runbooks missing?</strong>
+Yes. They exist as design documents only.</p>
+<p><strong>15. Are there architecture risks around the server.py monolith / routing?</strong>
+Low risk for the current phase. Medium risk if middleware layers are added without decomposition.</p>
+<p><strong>16. What should be implemented next after GL-094C?</strong>
+GL-095 (CORS Origin Hardening), followed by GL-096, GL-097, GL-098, GL-099, GL-100, GL-101 in the order shown in the recommended issues table.</p>
+<p><strong>17. Should GL-095 still be CORS Origin Hardening, or should another blocker come first?</strong>
+GL-095 (CORS Origin Hardening) should remain the next issue. It is the most trivially exploitable HIGH finding and has the best effort-to-impact ratio of any current blocker.</p>
+<hr />
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p><strong>proceed_with_cautions</strong></p>
+<p>GL-094C confirms that GrantLayer has a sound architectural foundation with correctly implemented runtime mode enforcement, startup safety gates, health/readiness endpoints, and a functional database abstraction. The review does not reveal any new critical security vulnerabilities beyond those already tracked from GL-094A and GL-094B.</p>
+<p>The review also confirms that seven HIGH findings currently block a credible production deployment claim. These blockers are concrete, bounded, and addressable through the recommended implementation sequence (GL-095 through GL-101).</p>
+<p>The review concludes <code>proceed_with_cautions</code>: proceed to GL-095 and the subsequent implementation sequence. Do not claim production readiness until the seven HIGH blockers are resolved.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

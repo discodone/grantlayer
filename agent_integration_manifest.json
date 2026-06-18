@@ -1,0 +1,56 @@
+{
+  "project": "GrantLayer",
+  "status": "developer_preview",
+  "production_saas_ready": false,
+  "tenant_isolation_implemented": false,
+  "public_github_release_completed": false,
+  "license": "Apache-2.0",
+  "primary_language": "Python",
+  "local_first": true,
+  "external_api_key_required_for_quickstart": false,
+  "real_customer_data_required": false,
+  "quickstart": "docs/ten_minute_quickstart.md",
+  "sdk_readme": "sdk/python/README.md",
+  "langgraph_langchain_docs": "docs/langgraph_langchain_integration_example.md",
+  "contributing": "CONTRIBUTING.md",
+  "security": "SECURITY.md",
+  "agents_guide": "AGENTS.md",
+  "llms_txt": "llms.txt",
+  "llms_full_txt": "llms-full.txt",
+  "agent_quickstart": "docs/agent_quickstart.md",
+  "agent_task_contract": "docs/agent_task_contract.md",
+  "safe_default_tasks": [
+    "Documentation and README updates",
+    "Test-only contributions under backend/tests/",
+    "Validation artifacts and JSON manifests under docs/examples/",
+    "SDK README updates (read-only guidance)",
+    " CONTRIBUTING.md and SECURITY.md updates when necessary",
+    "Public readiness docs and feedback logs"
+  ],
+  "forbidden_by_default": [
+    "backend/src/*",
+    "docs/openapi.yaml",
+    "backend/src/migrations/*",
+    "requirements.txt",
+    "requirements-dev.txt",
+    "scripts/*",
+    "frontend/*",
+    "website/*",
+    "design/*",
+    ".claude/*"
+  ],
+  "validation_commands": {
+    "fast_regression": "python3 -m unittest backend.tests.test_security_boundary_regression -v",
+    "issue_specific_gl154": "python3 -m unittest backend.tests.test_gl154_agent_entry_points_manifest -v",
+    "issue_specific_gl153": "python3 -m unittest backend.tests.test_gl153_license_contributing_security_decision -v",
+    "full_backend_suite": "scripts/run-full-backend-suite.sh"
+  },
+  "final_report_dispositions": [
+    "ready_for_merge",
+    "merged_done",
+    "blocked",
+    "needs_manual_review",
+    "provider_timeout_recovery_needed"
+  ],
+  "next_issue": "GL-155 Agent Examples Pack"
+}

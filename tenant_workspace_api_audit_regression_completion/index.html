@@ -1,0 +1,1717 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/tenant_workspace_api_audit_regression_completion/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-200C: Tenant/Workspace API/Audit/Regression Completion - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-200c-tenantworkspace-apiauditregression-completion" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-200C: Tenant/Workspace API/Audit/Regression Completion
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gl-200b-implementation-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200B Implementation Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gap-review-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap Review Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gap Review Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gap-1-grant-execution-tenant-isolation-concrete-gap-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap 1: Grant execution tenant isolation (CONCRETE GAP — FIXED)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gap-2-demo-action-tenant-propagation-concrete-gap-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap 2: Demo action tenant propagation (CONCRETE GAP — FIXED)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gap-3-expire_old_requests-audit-propagation-concrete-gap-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap 3: expire_old_requests() audit propagation (CONCRETE GAP — FIXED)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gap-4-workspace-enforcement-not-fixed-deferred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap 4: Workspace enforcement (NOT FIXED — DEFERRED)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gap-5-evidenceprovenanceauditor-secondary-paths-documented-deferred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap 5: Evidence/provenance/auditor secondary paths (DOCUMENTED — DEFERRED)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gap-6-agent-permissions-stateless-no-tenant-concept-verified-not-a-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap 6: Agent permissions — stateless, no tenant concept (VERIFIED — NOT A GAP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-boundary-completion-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Boundary Completion Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-propagation-completion-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Propagation Completion Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regression-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regression Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi-contract-alignment-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAPI / Contract Alignment Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-schema-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration / Schema Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Gaps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Readiness Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-200c-tenantworkspace-apiauditregression-completion">GL-200C: Tenant/Workspace API/Audit/Regression Completion<a class="headerlink" href="#gl-200c-tenantworkspace-apiauditregression-completion" title="Permanent link">&para;</a></h1>
+<p><strong>Issue:</strong> GL-200C
+<strong>Status:</strong> Implementation completion step — not a production SaaS readiness declaration
+<strong>Branch:</strong> <code>gl-200c-tenant-workspace-api-audit-regression-completion</code>
+<strong>Prerequisite:</strong> GL-200B (merged, Tenant/Workspace Isolation Implementation Baseline)</p>
+<hr />
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<p>GL-200C closes the specific API boundary, audit propagation, and regression gaps left
+after GL-200B. It is an implementation completion and regression verification step, not a
+full production readiness gate.</p>
+<p>GrantLayer remains:
+- Developer Preview
+- Controlled Preview with strict boundaries
+- Not production SaaS
+- Not ready for real customer data, private grant data, or institutional data
+- Not ready to claim tenant/workspace isolation as fully production-complete</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-200B added <code>tenant_id</code> and <code>workspace_id</code> columns to all business resource tables
+(migration 0010) and wired tenant context into grants, grant_requests, challenges, and
+audit_events at the API and DB layers.</p>
+<p>GL-200B explicitly deferred:
+- Workspace enforcement (<code>workspace_id</code> reserved/nullable)
+- Admin-plane isolation (GL-200D)
+- Grant execution tenant isolation (not enforced in GL-200B)
+- Demo action tenant propagation</p>
+<p>GL-200C addresses these concrete, bounded gaps.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p><strong>In scope:</strong>
+- Grant execution (<code>grant_executions</code>) tenant isolation: create, get, list
+- Server routes for grant-executions: pass tenant_id from auth context
+- <code>/grants/{id}/executions</code>: enforce tenant context on grant lookup before listing executions
+- Demo action: propagate tenant_id to audit events and execution records
+- <code>expire_old_requests()</code>: propagate tenant_id to expiry audit events
+- GL-200C regression test suite
+- Documentation and JSON artifact</p>
+<p><strong>Non-goals:</strong>
+- Workspace enforcement (workspace_id remains reserved/nullable)
+- Admin-plane tenant isolation (GL-200D)
+- Tenant provisioning API (GL-200D+)
+- Production secrets/config hardening (GL-201)
+- Evidence/provenance/auditor secondary-path tenant isolation (documented as remaining gap)
+- Frontend/website changes
+- Public GitHub snapshot/publish changes
+- GitHub workflow changes
+- Broad OpenAPI redesign</p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/tenant_workspace_isolation_design_pack.md</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>docs/examples/gl200a/tenant_workspace_isolation_design_pack.json</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_implementation_baseline.md</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>docs/gl200b_merge_report.md</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>docs/production_readiness_gap_report_v2.md</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>docs/examples/gl199/production_readiness_gap_report_v2.json</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>docs/controlled_preview_boundary_pack.md</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>docs/examples/gl198/controlled_preview_boundary_pack.json</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/server.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/auth.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/operators.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/grants.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/grant_requests.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/challenges.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/audit_log.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/grant_executions.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/demo_action.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/agent_permissions.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/agent_permission_assignments.py</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>backend/src/migrations/0010_gl200b_tenant_workspace_isolation.py</td>
+<td>YES</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="gl-200b-implementation-summary">GL-200B Implementation Summary<a class="headerlink" href="#gl-200b-implementation-summary" title="Permanent link">&para;</a></h2>
+<p>GL-200B added:
+- Migration 0010: <code>tenant_id</code> (NOT NULL DEFAULT 'demo') and <code>workspace_id</code> (nullable) to
+  all 7 business resource tables including <code>grant_executions</code>
+- Operator tenant binding (<code>operators.tenant_id</code>)
+- Auth tenant context injection (<code>check_auth()</code> returns <code>tenant_id</code> from operator or 'demo' for admin-token)
+- Tenant filtering in grants, grant_requests, challenges, audit_log
+- 12 server routes updated to pass tenant_id
+- Dual-mode hash-chain: legacy events use original payload; new events include tenant_id</p>
+<hr />
+<h2 id="gap-review-summary">Gap Review Summary<a class="headerlink" href="#gap-review-summary" title="Permanent link">&para;</a></h2>
+<h3 id="gap-1-grant-execution-tenant-isolation-concrete-gap-fixed">Gap 1: Grant execution tenant isolation (CONCRETE GAP — FIXED)<a class="headerlink" href="#gap-1-grant-execution-tenant-isolation-concrete-gap-fixed" title="Permanent link">&para;</a></h3>
+<p><code>grant_executions.py</code> did not use the <code>tenant_id</code> column added by migration 0010:
+- <code>create_grant_execution()</code> did not insert <code>tenant_id</code>
+- <code>get_grant_execution()</code> did not filter by <code>tenant_id</code>
+- <code>list_grant_executions()</code> did not filter by <code>tenant_id</code>
+- <code>list_grant_executions_for_grant()</code> did not filter by <code>tenant_id</code></p>
+<p>Server routes <code>/grant-executions</code>, <code>/grant-executions/{id}</code>, <code>/grants/{id}/executions</code>
+did not pass <code>tenant_id</code> from auth context to the underlying functions.</p>
+<p><strong>Fix:</strong> All four functions now accept <code>tenant_id: Optional[str]</code>. When provided,
+queries include <code>AND tenant_id = ?</code>. Server routes extract <code>tenant_id</code> from auth context
+and pass it down. The grant existence check in <code>/grants/{id}/executions</code> now uses
+<code>get_grant(grant_id, tenant_id=tenant_id)</code> to prevent cross-tenant grant-scoped execution listing.</p>
+<h3 id="gap-2-demo-action-tenant-propagation-concrete-gap-fixed">Gap 2: Demo action tenant propagation (CONCRETE GAP — FIXED)<a class="headerlink" href="#gap-2-demo-action-tenant-propagation-concrete-gap-fixed" title="Permanent link">&para;</a></h3>
+<p><code>handle_demo_action()</code> did not accept or propagate <code>tenant_id</code>:
+- Called <code>list_grants()</code> without <code>tenant_id</code> — could see cross-tenant grants
+- Created audit events without <code>tenant_id</code>
+- Created execution records without <code>tenant_id</code></p>
+<p><strong>Fix:</strong> <code>handle_demo_action()</code> accepts <code>tenant_id: Optional[str]</code> (defaults to 'demo').
+<code>list_grants()</code>, <code>create_grant_execution()</code>, and <code>append_event()</code> all receive the effective
+tenant_id. The server <code>/demo-action</code> route passes <code>tenant_id</code> from the auth payload.</p>
+<h3 id="gap-3-expire_old_requests-audit-propagation-concrete-gap-fixed">Gap 3: expire_old_requests() audit propagation (CONCRETE GAP — FIXED)<a class="headerlink" href="#gap-3-expire_old_requests-audit-propagation-concrete-gap-fixed" title="Permanent link">&para;</a></h3>
+<p><code>expire_old_requests()</code> created audit events for expiring requests without <code>tenant_id</code>,
+even though the request rows have <code>tenant_id</code> populated.</p>
+<p><strong>Fix:</strong> The SQL query in <code>expire_old_requests()</code> now selects <code>tenant_id</code> from each
+expiring request row. The expiry audit event is created with the request's <code>tenant_id</code>
+and <code>scope="tenant"</code>.</p>
+<h3 id="gap-4-workspace-enforcement-not-fixed-deferred">Gap 4: Workspace enforcement (NOT FIXED — DEFERRED)<a class="headerlink" href="#gap-4-workspace-enforcement-not-fixed-deferred" title="Permanent link">&para;</a></h3>
+<p><code>workspace_id</code> remains reserved (nullable). Enforcement is a future issue (GL-200C scope
+had no requirements here beyond verification that the column exists). Confirmed deferred.</p>
+<h3 id="gap-5-evidenceprovenanceauditor-secondary-paths-documented-deferred">Gap 5: Evidence/provenance/auditor secondary paths (DOCUMENTED — DEFERRED)<a class="headerlink" href="#gap-5-evidenceprovenanceauditor-secondary-paths-documented-deferred" title="Permanent link">&para;</a></h3>
+<p>Routes <code>/evidence/executions/{id}</code>, <code>/evidence/executions/{id}/export</code>,
+<code>/evidence/executions/{id}/verify</code>, <code>/evidence/executions/{id}/completeness</code>,
+<code>/provenance/executions/{id}/summary</code>, <code>/auditor/reports/executions/{id}</code>,
+<code>/compliance/gaps/executions/{id}</code> operate on execution IDs. Since executions are now
+tenant-scoped at create/get/list, the primary guard (knowing the execution_id) implies
+you already have access. Full secondary-path tenant isolation would require changes to
+<code>evidence_bundle.py</code>, <code>evidence_verification.py</code>, etc. — deferred to a future issue.</p>
+<h3 id="gap-6-agent-permissions-stateless-no-tenant-concept-verified-not-a-gap">Gap 6: Agent permissions — stateless, no tenant concept (VERIFIED — NOT A GAP)<a class="headerlink" href="#gap-6-agent-permissions-stateless-no-tenant-concept-verified-not-a-gap" title="Permanent link">&para;</a></h3>
+<p><code>evaluate_agent_permission</code> and <code>resolve_agent_permission_assignment</code> are pure logic
+functions with no DB access and no state. They cannot create cross-tenant leakage.</p>
+<hr />
+<h2 id="api-boundary-completion-summary">API Boundary Completion Summary<a class="headerlink" href="#api-boundary-completion-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sensitive endpoints derive tenant from trusted auth/operator context</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>Arbitrary client headers cannot override tenant context</td>
+<td>YES — tenant is resolved from operator record or admin-token</td>
+</tr>
+<tr>
+<td>List endpoints filter by tenant_id</td>
+<td>YES — grants, grant_requests, challenges, audit_events, grant_executions</td>
+</tr>
+<tr>
+<td>Direct ID lookups deny cross-tenant access</td>
+<td>YES — returns None/404 without existence leak</td>
+</tr>
+<tr>
+<td>Mutation endpoints deny cross-tenant before mutation</td>
+<td>YES — revoke/approve/deny via None-lookup chain</td>
+</tr>
+<tr>
+<td>Create endpoints attach tenant/workspace context</td>
+<td>YES — all create paths use effective_tenant</td>
+</tr>
+<tr>
+<td>Admin behavior explicit</td>
+<td>YES — admin-token → 'demo'; not cross-tenant bypass</td>
+</tr>
+<tr>
+<td>Operator behavior bound to tenant</td>
+<td>YES — operator.tenant_id; auth returns tenant_id</td>
+</tr>
+<tr>
+<td>Agent permission flows do not cross tenant</td>
+<td>YES — stateless evaluators; no DB</td>
+</tr>
+<tr>
+<td>Health/readiness remain public</td>
+<td>YES — no auth, no tenant data</td>
+</tr>
+<tr>
+<td>Demo endpoint safety preserved</td>
+<td>YES — ENABLE_DEMO_ENDPOINTS guard unchanged</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="audit-propagation-completion-summary">Audit Propagation Completion Summary<a class="headerlink" href="#audit-propagation-completion-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Grant_request approve/deny/revoke audit events have tenant_id</td>
+<td>YES (GL-200B)</td>
+</tr>
+<tr>
+<td>Demo action audit events have tenant_id</td>
+<td>YES (GL-200C fix)</td>
+</tr>
+<tr>
+<td>Grant execution records have tenant_id</td>
+<td>YES (GL-200C fix)</td>
+</tr>
+<tr>
+<td>expire_old_requests() expiry audit events have tenant_id</td>
+<td>YES (GL-200C fix)</td>
+</tr>
+<tr>
+<td>System-level events (no tenant) remain nullable</td>
+<td>YES — intentional</td>
+</tr>
+<tr>
+<td>Audit list does not leak cross-tenant data</td>
+<td>YES — list_events(tenant_id) filter</td>
+</tr>
+<tr>
+<td>Audit immutability/hash-chain preserved</td>
+<td>YES — dual-mode; verified in tests</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="regression-matrix">Regression Matrix<a class="headerlink" href="#regression-matrix" title="Permanent link">&para;</a></h2>
+<p>Test suite: <code>backend/tests/test_gl200c_tenant_workspace_api_audit_regression.py</code></p>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EX-001</td>
+<td>create_grant_execution stores tenant_id</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>EX-002</td>
+<td>create_grant_execution defaults to 'demo'</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>EX-003</td>
+<td>get_grant_execution cross-tenant returns None</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>EX-004</td>
+<td>get_grant_execution correct tenant succeeds</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>EX-005</td>
+<td>list_grant_executions filters by tenant</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>EX-006</td>
+<td>list_grant_executions without tenant returns all</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>EX-007</td>
+<td>list_grant_executions_for_grant filters by tenant</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>EX-008</td>
+<td>Cross-tenant grant execution list returns empty</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>EX-009</td>
+<td>grant_executions column tenant_id in DB</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>DA-001</td>
+<td>demo_action audit event carries tenant_id</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>DA-002</td>
+<td>demo_action execution record carries tenant_id</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>DA-003</td>
+<td>demo_action uses tenant-scoped grant list</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>DA-004</td>
+<td>Denied demo_action audit has tenant_id</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>DA-005</td>
+<td>demo_action default tenant is 'demo'</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>EXP-001</td>
+<td>expire_old_requests audit event has tenant_id</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>EXP-002</td>
+<td>expiry audit event scope set to 'tenant'</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>AU-001</td>
+<td>audit list filters by tenant (no cross-tenant leak)</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>AU-002</td>
+<td>hash-chain valid after tenant events</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>AU-003</td>
+<td>audit event stores tenant_id</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>AU-004</td>
+<td>system events nullable tenant allowed</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>CTX-001</td>
+<td>operator auth returns tenant_id from record</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>CTX-002</td>
+<td>admin-token resolves to 'demo' tenant</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>CTX-003</td>
+<td>_get_tenant_id falls back to 'demo'</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>CTX-004</td>
+<td>Two operators from different tenants isolated</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>CB-001</td>
+<td>cross-tenant revoke denied</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>CB-002</td>
+<td>cross-tenant get returns None</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>CB-003</td>
+<td>cross-tenant list filtered</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>PUB-001</td>
+<td>/health has no tenant fields</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>PUB-002</td>
+<td>/readiness has no tenant fields</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>PUB-003</td>
+<td>demo endpoint guard config accessible</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>MIG-001</td>
+<td>grant_executions has tenant_id column</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>MIG-002</td>
+<td>grant_executions has workspace_id column</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>MIG-003</td>
+<td>migration idempotent</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>AP-001</td>
+<td>evaluate_agent_permission stateless</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>AP-002</td>
+<td>resolve_agent_permission_assignment stateless</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>DET-001</td>
+<td>evidence bundle example exists</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>SG-001</td>
+<td>GL-200C doc exists</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>SG-002</td>
+<td>GL-200C JSON artifact exists</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>SG-003</td>
+<td>No production SaaS claim in doc</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>SG-004</td>
+<td>No complete isolation claim in doc</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>SG-005</td>
+<td>JSON artifact has issue_id GL-200C</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>SG-006</td>
+<td>SECURITY.md routes to GitHub Advisories</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>SG-007</td>
+<td>JSON no_production_saas_claim=true</td>
+<td>PASS</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="openapi-contract-alignment-assessment">OpenAPI / Contract Alignment Assessment<a class="headerlink" href="#openapi-contract-alignment-assessment" title="Permanent link">&para;</a></h2>
+<p>The existing <code>docs/openapi.yaml</code> documents the API surface as of GL-031. It does not
+expose <code>tenant_id</code> or <code>workspace_id</code> as user-supplied parameters because tenant context
+is implicit from authentication (operator token → operator.tenant_id; admin-token → 'demo').</p>
+<p>GL-200C does not change the external contract: clients do not supply tenant context
+as request parameters or headers. Tenant context remains server-derived.</p>
+<p>No OpenAPI changes are required for GL-200C. The existing auth descriptions in the
+OpenAPI preamble remain accurate. A future issue (GL-201+) should update OpenAPI to
+explicitly document that tenant context is implicit from authentication.</p>
+<p><strong>OpenAPI changed:</strong> NO — not required; existing auth description is accurate.</p>
+<hr />
+<h2 id="migration-schema-assessment">Migration / Schema Assessment<a class="headerlink" href="#migration-schema-assessment" title="Permanent link">&para;</a></h2>
+<p>Migration 0010 (GL-200B) added <code>tenant_id</code> and <code>workspace_id</code> to <code>grant_executions</code>
+as part of the business resource table batch. GL-200C does not add another migration.</p>
+<p>The gap was that <code>grant_executions.py</code> did not use these columns — fixed at the
+application layer only.</p>
+<p><strong>Migration changed:</strong> NO — application layer fix only; no new migration needed.</p>
+<hr />
+<h2 id="remaining-gaps">Remaining Gaps<a class="headerlink" href="#remaining-gaps" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>Severity</th>
+<th>Deferred To</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>workspace_id enforcement</td>
+<td>Low (column exists, reserved)</td>
+<td>Future issue after GL-200C</td>
+</tr>
+<tr>
+<td>Admin-plane tenant isolation (cross-tenant operator management)</td>
+<td>Medium</td>
+<td>GL-200D</td>
+</tr>
+<tr>
+<td>Evidence/provenance/auditor secondary-path tenant enforcement</td>
+<td>Low (execution IDs are already tenant-scoped)</td>
+<td>Future issue</td>
+</tr>
+<tr>
+<td>Full OpenAPI contract update for tenant context</td>
+<td>Low</td>
+<td>GL-201+</td>
+</tr>
+<tr>
+<td>Tenant provisioning API</td>
+<td>Not applicable</td>
+<td>GL-200D+</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="production-readiness-impact">Production Readiness Impact<a class="headerlink" href="#production-readiness-impact" title="Permanent link">&para;</a></h2>
+<p>GL-200C strengthens the tenant isolation implementation baseline by closing the grant
+execution, demo action, and audit propagation gaps. It does not change the production
+readiness status:</p>
+<ul>
+<li>GrantLayer remains Developer Preview / Controlled Preview with strict boundaries.</li>
+<li>Not ready for real customer data, private grant data, or institutional data.</li>
+<li>Security-sensitive reports continue to route to GitHub Security Advisories.</li>
+<li>No exploit details are included in this document.</li>
+<li>Public caveats remain unchanged.</li>
+</ul>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>disposition:</strong> ready_for_merge</p>
+<p><strong>rationale:</strong> All concrete GL-200B gaps identified by GL-200C review are fixed.
+No new real functional regressions. Regression matrix passes. Documentation and
+JSON artifact created. Safety confirmations met.</p>
+<hr />
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>No public GitHub push performed</li>
+<li>No production SaaS claim made</li>
+<li>Tenant/workspace isolation not claimed as production-complete</li>
+<li>No real customer/private grant data readiness claim</li>
+<li>Security-sensitive reports route to GitHub Security Advisories</li>
+<li>No exploit details included</li>
+<li>No frontend/design/public-snapshot changes</li>
+<li>No GitHub workflow changes</li>
+</ul>
+<hr />
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GL-200C Merge</strong> — merge this branch to internal main</li>
+<li><strong>GL-200D</strong> — Admin-plane tenant isolation (cross-tenant operator management)</li>
+<li><strong>GL-201</strong> — Production Auth / Secrets / Config Hardening</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

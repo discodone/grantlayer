@@ -1,0 +1,148 @@
+{
+  "issue_id": "GL-200C",
+  "title": "Tenant/Workspace API/Audit/Regression Completion",
+  "status": "implementation_completion_step",
+  "branch": "gl-200c-tenant-workspace-api-audit-regression-completion",
+  "context": "GL-200C closes the API boundary, audit propagation, and regression gaps identified after GL-200B. It is not a production SaaS readiness gate.",
+  "scope": [
+    "Grant execution tenant_id enforcement (create/get/list)",
+    "Server routes for grant-executions: tenant context from auth",
+    "/grants/{id}/executions: tenant-scoped grant check",
+    "Demo action: tenant_id propagation to audit events and executions",
+    "expire_old_requests(): tenant_id propagation to expiry audit events",
+    "GL-200C regression test suite",
+    "Documentation and JSON artifact"
+  ],
+  "non_goals": [
+    "Workspace enforcement (workspace_id remains reserved/nullable)",
+    "Admin-plane tenant isolation (GL-200D)",
+    "Tenant provisioning API",
+    "Production secrets/config hardening (GL-201)",
+    "Evidence/provenance/auditor secondary-path tenant isolation",
+    "Frontend/website changes",
+    "Public GitHub snapshot/publish changes",
+    "Broad OpenAPI redesign"
+  ],
+  "input_sources_reviewed": {
+    "tenant_workspace_isolation_design_pack": true,
+    "tenant_workspace_isolation_design_pack_json": true,
+    "tenant_workspace_isolation_implementation_baseline": true,
+    "tenant_workspace_isolation_implementation_baseline_json": true,
+    "gl200b_merge_report": true,
+    "production_readiness_gap_report_v2": true,
+    "controlled_preview_boundary_pack": true,
+    "readme": true,
+    "security_md": true,
+    "agents_md": true,
+    "server_py": true,
+    "auth_py": true,
+    "operators_py": true,
+    "grants_py": true,
+    "grant_requests_py": true,
+    "challenges_py": true,
+    "audit_log_py": true,
+    "grant_executions_py": true,
+    "demo_action_py": true,
+    "agent_permissions_py": true,
+    "agent_permission_assignments_py": true,
+    "migration_0010": true
+  },
+  "gap_review": {
+    "grant_execution_tenant_isolation": {
+      "gap_found": true,
+      "gap_fixed": true,
+      "description": "grant_executions.py did not use tenant_id column added by migration 0010; server routes did not pass tenant_id"
+    },
+    "demo_action_tenant_propagation": {
+      "gap_found": true,
+      "gap_fixed": true,
+      "description": "handle_demo_action() called list_grants() without tenant_id, created audit events without tenant_id"
+    },
+    "expire_old_requests_audit_propagation": {
+      "gap_found": true,
+      "gap_fixed": true,
+      "description": "expire_old_requests() created expiry audit events without tenant_id from the request being expired"
+    },
+    "workspace_enforcement": {
+      "gap_found": true,
+      "gap_fixed": false,
+      "description": "workspace_id remains reserved/nullable; enforcement deferred"
+    },
+    "evidence_provenance_auditor_secondary_paths": {
+      "gap_found": true,
+      "gap_fixed": false,
+      "description": "Secondary evidence/provenance/auditor paths do not enforce tenant; deferred since execution IDs are now tenant-scoped"
+    },
+    "agent_permissions_stateless": {
+      "gap_found": false,
+      "gap_fixed": false,
+      "description": "Agent permission evaluators are stateless; no DB access; not a cross-tenant leak vector"
+    }
+  },
+  "api_boundary_completion": {
+    "trusted_tenant_context_enforced": true,
+    "arbitrary_tenant_override_prevented": true,
+    "list_endpoints_filter_by_tenant": true,
+    "direct_lookup_cross_tenant_denied": true,
+    "mutation_cross_tenant_denied": true,
+    "create_attaches_tenant_context": true,
+    "admin_behavior_explicit": true,
+    "operator_tenant_binding_enforced": true,
+    "agent_permission_flows_no_cross_tenant": true,
+    "health_readiness_public": true,
+    "demo_endpoint_safety_preserved": true
+  },
+  "audit_propagation_completion": {
+    "grant_request_state_transitions_have_tenant_id": true,
+    "demo_action_audit_events_have_tenant_id": true,
+    "grant_execution_records_have_tenant_id": true,
+    "expire_old_requests_audit_events_have_tenant_id": true,
+    "system_events_nullable_tenant_intentional": true,
+    "audit_list_no_cross_tenant_leak": true,
+    "audit_immutability_hash_chain_preserved": true
+  },
+  "regression_matrix": {
+    "total_targeted_tests": 43,
+    "passed": 43,
+    "failed": 0,
+    "skipped": 0
+  },
+  "openapi_contract_alignment": {
+    "checked": true,
+    "changed": false,
+    "reason": "Tenant context is implicit from authentication; no user-supplied tenant parameters. Existing auth description remains accurate. Full contract update deferred to GL-201+."
+  },
+  "migration_schema_assessment": {
+    "gap_found": false,
+    "changed": false,
+    "reason": "Migration 0010 (GL-200B) already added tenant_id/workspace_id to grant_executions. GL-200C fixes the application layer only; no new migration needed.",
+    "idempotency_verified": true,
+    "fresh_db_path_verified": true
+  },
+  "remaining_gaps": [
+    "workspace_id enforcement (reserved, deferred)",
+    "Admin-plane tenant isolation (GL-200D)",
+    "Evidence/provenance/auditor secondary-path tenant isolation",
+    "Full OpenAPI contract update for tenant context documentation"
+  ],
+  "production_readiness_impact": "GL-200C strengthens the implementation baseline; does not change production readiness status. GrantLayer remains Developer Preview / Controlled Preview with strict boundaries.",
+  "decision": "ready_for_merge",
+  "decision_rationale": "All concrete GL-200B gaps identified are fixed. No new real functional regressions. Regression matrix passes. Safety confirmations met.",
+  "safety_confirmations": {
+    "no_public_github_push": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "no_production_saas_claim": true,
+    "tenant_workspace_isolation_not_overclaimed": true,
+    "no_real_customer_private_grant_data_readiness_claim": true,
+    "security_sensitive_reports_routed_to_github_security_advisories": true,
+    "no_exploit_details_included": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true
+  },
+  "recommended_next_issues": [
+    "GL-200C Merge — merge to internal main",
+    "GL-200D — Admin-plane tenant isolation",
+    "GL-201 — Production Auth / Secrets / Config Hardening"
+  ]
+}

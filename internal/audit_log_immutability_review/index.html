@@ -1,0 +1,1329 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/audit_log_immutability_review/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-094B Audit Log Immutability Review - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-094b-audit-log-immutability-review" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-094B Audit Log Immutability Review
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#review-only-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review-only statement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-inspected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files inspected
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-audit-model-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current audit model summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#immutability-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Immutability risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Immutability risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-database-level-write-protection-high-confirmed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No database-level write protection (HIGH — confirmed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-application-level-guard-against-direct-database-access-high-confirmed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No application-level guard against direct database access (HIGH — confirmed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tamper_grant-bypasses-grant-signature-without-access-control-medium-confirmed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tamper_grant() bypasses grant signature without access control (MEDIUM — confirmed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transactional-integrity-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transactional integrity risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Transactional integrity risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#approve_grant_request-audit-written-outside-transaction-high-confirmed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        approve_grant_request() audit written outside transaction (HIGH — confirmed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revoke_grant_request-audit-written-outside-transaction-high-confirmed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        revoke_grant_request() audit written outside transaction (HIGH — confirmed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deny_grant_request-audit-written-inside-transaction-informational-resolved-by-existing-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deny_grant_request() audit written inside transaction (informational — resolved by existing work)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expire_old_requests-has-no-audit-trail-medium-confirmed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        expire_old_requests() has no audit trail (MEDIUM — confirmed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tamper-evidence-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tamper-evidence gaps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tamper-evidence gaps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-hash-chain-on-audit-events-high-confirmed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No hash chain on audit events (HIGH — confirmed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-integrity-metadata-fields-high-confirmed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No integrity metadata fields (HIGH — confirmed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grant-lifecycle-not-audited-high-confirmed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grant lifecycle not audited (HIGH — confirmed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grant-signature-verification-not-confirmed-on-read-medium-suspected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grant signature verification not confirmed on read (MEDIUM — suspected)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test gaps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Test gaps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-test-for-audit-event-immutability-medium-test_gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No test for audit event immutability (MEDIUM — test_gap)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-test-for-approverevoke-audit-write-after-crash-scenario-medium-test_gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No test for approve/revoke audit write-after-crash scenario (MEDIUM — test_gap)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-test-for-expire_old_requests-audit-absence-medium-test_gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No test for expire_old_requests() audit absence (MEDIUM — test_gap)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-failure-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit failure handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#semantic-correctness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Semantic correctness
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-implementation-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended implementation issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-094b-audit-log-immutability-review">GL-094B Audit Log Immutability Review<a class="headerlink" href="#gl-094b-audit-log-immutability-review" title="Permanent link">&para;</a></h1>
+<p><strong>Review ID:</strong> GL-094B<br />
+<strong>Review Date:</strong> 2026-05-23<br />
+<strong>Reviewer:</strong> Claude Code (Security Review Agent)<br />
+<strong>Base Commit:</strong> eca46bf582243dfcdafbf0fa330cc083b8b97ea2<br />
+<strong>Branch:</strong> gl-094b-audit-log-immutability-review<br />
+<strong>Predecessor:</strong> GL-094A Phase 1 Security Remediation Review</p>
+<hr />
+<h2 id="review-only-statement">Review-only statement<a class="headerlink" href="#review-only-statement" title="Permanent link">&para;</a></h2>
+<p>This document is review-only. No production code was modified, no implementation fixes were applied, no migrations were added, and no schema changes were made. All findings are advisory. Remediation is deferred to follow-on issues as described in the Recommended implementation issues section.</p>
+<hr />
+<h2 id="executive-summary">Executive Summary<a class="headerlink" href="#executive-summary" title="Permanent link">&para;</a></h2>
+<p>GL-094A identified audit log mutability as a HIGH severity finding (F-003) and recommended GL-094B as the focused follow-up. This review confirms and deepens that finding. The <code>audit_events</code> table is written via append-only application code, but has no database-level immutability enforcement, no tamper-evidence fields, and inconsistent transactional boundaries across the audit write paths. Grant lifecycle events (creation, revocation, consumption) are not logged to the audit trail at all. No hash chain, sequence number, checksum, or cryptographic signature is stored on audit rows, making silent modification or deletion undetectable.</p>
+<p><strong>Conclusion: <code>proceed_with_cautions</code></strong></p>
+<p>No critical findings were identified. Four HIGH findings and three MEDIUM findings confirm that the audit log's integrity posture is insufficient for production compliance or forensic use. The risks are significant but addressable through targeted follow-on issues without blocking the current codebase.</p>
+<hr />
+<h2 id="scope-reviewed">Scope reviewed<a class="headerlink" href="#scope-reviewed" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Audit log append-only enforcement (application and database layers)</li>
+<li>Audit event tamper-evidence (hash chain, sequence, checksum, signature)</li>
+<li>Transactional integrity of audit writes relative to state changes</li>
+<li>Consistency of audit coverage across all sensitive actions</li>
+<li>Audit failure handling (surfaced vs. swallowed)</li>
+<li>Semantic correctness of audit event fields (approve vs. deny/revoke)</li>
+<li>Test coverage gaps for audit immutability</li>
+</ul>
+<hr />
+<h2 id="files-inspected">Files inspected<a class="headerlink" href="#files-inspected" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>backend/src/audit_log.py</code></td>
+<td>Audit event write and read functions</td>
+</tr>
+<tr>
+<td><code>backend/src/grant_requests.py</code></td>
+<td>Grant request lifecycle; audit call sites</td>
+</tr>
+<tr>
+<td><code>backend/src/grants.py</code></td>
+<td>Grant creation, revocation, consumption; tamper demo</td>
+</tr>
+<tr>
+<td><code>backend/src/server.py</code></td>
+<td>HTTP endpoints; audit-related routes</td>
+</tr>
+<tr>
+<td><code>backend/tests/test_gl092_deny_revoke_audit_semantics.py</code></td>
+<td>Rollback and semantic tests</td>
+</tr>
+<tr>
+<td><code>backend/tests/test_grant_requests.py</code></td>
+<td>Grant request integration tests</td>
+</tr>
+<tr>
+<td><code>docs/phase1_security_remediation_review.md</code></td>
+<td>GL-094A findings source</td>
+</tr>
+<tr>
+<td><code>docs/examples/gl094a/phase1_security_review_findings.json</code></td>
+<td>GL-094A findings JSON</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="current-audit-model-summary">Current audit model summary<a class="headerlink" href="#current-audit-model-summary" title="Permanent link">&para;</a></h2>
+<p>The audit log is implemented as a single <code>audit_events</code> table written exclusively through <code>audit_log.append_event()</code> in <code>backend/src/audit_log.py</code>. The function executes a plain SQL <code>INSERT</code> with thirteen fields: <code>id</code>, <code>timestamp</code>, <code>subject_id</code>, <code>role</code>, <code>action</code>, <code>resource</code>, <code>approved</code>, <code>reason</code>, <code>matched_grant_id</code>, <code>challenge_id</code>, <code>challenge_present</code>, <code>challenge_result</code>, <code>grant_signature_result</code>. No UPDATE or DELETE operation is exposed by the <code>audit_log</code> module.</p>
+<p>The application layer is therefore append-only by convention. However, this convention is not enforced at the database layer. Any process with a writable connection to the SQLite database file can issue an arbitrary <code>UPDATE</code> or <code>DELETE</code> against <code>audit_events</code> rows without triggering any application-level guard or database-level constraint.</p>
+<p>Three read functions are present (<code>get_event</code>, <code>list_events</code>, <code>list_events_by_grant</code>), all using <code>SELECT</code>. No HTTP endpoint exposes mutation of audit rows.</p>
+<p>Audit writes are called from <code>grant_requests.py</code> for approve, deny, and revoke actions. They are not called from <code>grants.py</code> for any grant lifecycle operation.</p>
+<hr />
+<h2 id="immutability-risks">Immutability risks<a class="headerlink" href="#immutability-risks" title="Permanent link">&para;</a></h2>
+<h3 id="no-database-level-write-protection-high-confirmed">No database-level write protection (HIGH — confirmed)<a class="headerlink" href="#no-database-level-write-protection-high-confirmed" title="Permanent link">&para;</a></h3>
+<p>The <code>audit_events</code> table has no trigger, row-level policy, <code>CHECK</code> constraint, or <code>STRICT</code> table definition that prevents <code>UPDATE</code> or <code>DELETE</code>. SQLite does not enforce read-only access at the column or row level without explicit application of <code>WITHOUT ROWID</code> or trigger-based protection. Any actor with filesystem access to the database file can modify or erase audit rows without detection.</p>
+<h3 id="no-application-level-guard-against-direct-database-access-high-confirmed">No application-level guard against direct database access (HIGH — confirmed)<a class="headerlink" href="#no-application-level-guard-against-direct-database-access-high-confirmed" title="Permanent link">&para;</a></h3>
+<p>The application accesses SQLite via a shared connection pool. There is no write-blocking view, no separate read-only database credential for audit reads, and no separation between the credential used to write state tables and the credential used to write audit rows. A compromised application process or internal credential can modify audit rows via the same connection used for normal operations.</p>
+<h3 id="tamper_grant-bypasses-grant-signature-without-access-control-medium-confirmed">tamper_grant() bypasses grant signature without access control (MEDIUM — confirmed)<a class="headerlink" href="#tamper_grant-bypasses-grant-signature-without-access-control-medium-confirmed" title="Permanent link">&para;</a></h3>
+<p><code>backend/src/grants.py</code> contains a <code>tamper_grant()</code> function that issues a direct <code>UPDATE</code> on a grant row, deliberately invalidating its signature without re-signing. The function carries a demo comment but has no environment guard, feature flag, or authorization check preventing its invocation in a production context. While this directly affects grant integrity rather than the audit log, it demonstrates that no database-level constraint prevents mutation of sensitive rows.</p>
+<hr />
+<h2 id="transactional-integrity-risks">Transactional integrity risks<a class="headerlink" href="#transactional-integrity-risks" title="Permanent link">&para;</a></h2>
+<h3 id="approve_grant_request-audit-written-outside-transaction-high-confirmed">approve_grant_request() audit written outside transaction (HIGH — confirmed)<a class="headerlink" href="#approve_grant_request-audit-written-outside-transaction-high-confirmed" title="Permanent link">&para;</a></h3>
+<p>In <code>grant_requests.py</code> lines 119–132, the transaction is committed at line 120 (<code>conn.commit()</code>) and the audit event is written afterward at line 123 via <code>audit_log.append_event(...)</code> with no <code>conn</code> argument. If the process crashes, is killed, or encounters an exception between the commit and the audit write, the state transition is persisted but the audit record is lost. There is no retry, compensating write, or dead-letter mechanism.</p>
+<h3 id="revoke_grant_request-audit-written-outside-transaction-high-confirmed">revoke_grant_request() audit written outside transaction (HIGH — confirmed)<a class="headerlink" href="#revoke_grant_request-audit-written-outside-transaction-high-confirmed" title="Permanent link">&para;</a></h3>
+<p>In <code>grant_requests.py</code> lines 238–250, the same post-commit pattern applies to revocation. The grant revocation and request status update are committed at line 238, and the audit event is written at line 241 outside the transaction. The audit record for a revocation can be silently lost on crash between these two operations.</p>
+<h3 id="deny_grant_request-audit-written-inside-transaction-informational-resolved-by-existing-work">deny_grant_request() audit written inside transaction (informational — resolved by existing work)<a class="headerlink" href="#deny_grant_request-audit-written-inside-transaction-informational-resolved-by-existing-work" title="Permanent link">&para;</a></h3>
+<p>In <code>grant_requests.py</code> lines 176–186, the deny path correctly passes <code>conn=conn</code> to <code>audit_log.append_event()</code>, making the audit write atomic with the state update. This is the correct pattern and should be adopted by the approve and revoke paths.</p>
+<h3 id="expire_old_requests-has-no-audit-trail-medium-confirmed">expire_old_requests() has no audit trail (MEDIUM — confirmed)<a class="headerlink" href="#expire_old_requests-has-no-audit-trail-medium-confirmed" title="Permanent link">&para;</a></h3>
+<p>In <code>grant_requests.py</code> lines 262–301, the batch expiration function updates multiple grant requests from <code>requested</code> to <code>expired</code> state with no call to <code>audit_log.append_event()</code>. Expired requests leave no forensic record of when or why they transitioned. This creates a gap in the audit trail for requests that were never explicitly approved, denied, or revoked.</p>
+<hr />
+<h2 id="tamper-evidence-gaps">Tamper-evidence gaps<a class="headerlink" href="#tamper-evidence-gaps" title="Permanent link">&para;</a></h2>
+<h3 id="no-hash-chain-on-audit-events-high-confirmed">No hash chain on audit events (HIGH — confirmed)<a class="headerlink" href="#no-hash-chain-on-audit-events-high-confirmed" title="Permanent link">&para;</a></h3>
+<p>Each <code>audit_events</code> row is independent. There is no sequence number, no previous-row hash, no Merkle root, and no cryptographic commitment linking rows. An adversary who can write to the database can insert, delete, or reorder rows without leaving any detectable artifact. External reference points (log aggregator, SIEM, write-once storage) would be required to detect tampering, but no such integration is present or documented.</p>
+<h3 id="no-integrity-metadata-fields-high-confirmed">No integrity metadata fields (HIGH — confirmed)<a class="headerlink" href="#no-integrity-metadata-fields-high-confirmed" title="Permanent link">&para;</a></h3>
+<p>The thirteen fields stored per audit event include no integrity-bearing metadata: no row hash, no HMAC, no signature, no sequence counter, no monotonic ID, and no write-time nonce. Compare with the grant table, which stores <code>signature</code>, <code>signing_key_id</code>, and <code>payload_hash</code> computed at insert time. Audit events have no equivalent protection.</p>
+<h3 id="grant-lifecycle-not-audited-high-confirmed">Grant lifecycle not audited (HIGH — confirmed)<a class="headerlink" href="#grant-lifecycle-not-audited-high-confirmed" title="Permanent link">&para;</a></h3>
+<p><code>backend/src/grants.py</code> contains <code>create_grant()</code>, <code>revoke_grant()</code>, and <code>try_consume_grant_use()</code>. None of these functions call <code>audit_log.append_event()</code>. Grant creation, direct revocation, and each individual use consumption are invisible in the audit trail. An auditor reviewing <code>audit_events</code> would see approve/deny/revoke actions on grant requests but would have no record of the underlying grant object being created or consumed.</p>
+<h3 id="grant-signature-verification-not-confirmed-on-read-medium-suspected">Grant signature verification not confirmed on read (MEDIUM — suspected)<a class="headerlink" href="#grant-signature-verification-not-confirmed-on-read-medium-suspected" title="Permanent link">&para;</a></h3>
+<p>The grant table stores <code>signature</code>, <code>signing_key_id</code>, and <code>payload_hash</code> fields. The explore agents found no evidence that <code>grants.get_grant()</code> or any retrieval path verifies the signature on read. If verification is absent, the stored signature provides write-time integrity only and does not detect post-insert modification. This is outside the direct scope of audit log immutability but is noted as a related tamper-evidence gap.</p>
+<hr />
+<h2 id="test-gaps">Test gaps<a class="headerlink" href="#test-gaps" title="Permanent link">&para;</a></h2>
+<h3 id="no-test-for-audit-event-immutability-medium-test_gap">No test for audit event immutability (MEDIUM — test_gap)<a class="headerlink" href="#no-test-for-audit-event-immutability-medium-test_gap" title="Permanent link">&para;</a></h3>
+<p>Existing tests in <code>test_grant_requests.py</code> and <code>test_gl092_deny_revoke_audit_semantics.py</code> verify that audit events are created and that <code>approved</code> is set correctly for approve vs. deny/revoke. No test asserts that an existing audit event cannot be modified or deleted after insertion, that direct UPDATE/DELETE is rejected, or that a row retrieved after an attempted modification is identical to the row at insertion time.</p>
+<h3 id="no-test-for-approverevoke-audit-write-after-crash-scenario-medium-test_gap">No test for approve/revoke audit write-after-crash scenario (MEDIUM — test_gap)<a class="headerlink" href="#no-test-for-approverevoke-audit-write-after-crash-scenario-medium-test_gap" title="Permanent link">&para;</a></h3>
+<p>No test simulates a crash or exception between the transaction commit and the post-commit audit write in <code>approve_grant_request()</code> or <code>revoke_grant_request()</code>. The rollback behavior for <code>deny_grant_request()</code> is tested in <code>test_gl092_deny_revoke_audit_semantics.py</code> (lines 164–184), but the equivalent scenario for the post-commit paths is untested.</p>
+<h3 id="no-test-for-expire_old_requests-audit-absence-medium-test_gap">No test for expire_old_requests() audit absence (MEDIUM — test_gap)<a class="headerlink" href="#no-test-for-expire_old_requests-audit-absence-medium-test_gap" title="Permanent link">&para;</a></h3>
+<p>No test verifies whether expiration events should or should not appear in the audit trail. The current behavior (no audit on expiry) is untested and undocumented.</p>
+<hr />
+<h2 id="audit-failure-handling">Audit failure handling<a class="headerlink" href="#audit-failure-handling" title="Permanent link">&para;</a></h2>
+<p><code>audit_log.append_event()</code> has no internal error handling. Exceptions propagate to the caller. In the <code>deny_grant_request()</code> path, this is correct: the exception causes a transaction rollback, preventing state divergence. In the <code>approve_grant_request()</code> and <code>revoke_grant_request()</code> paths, the audit write occurs after the transaction has already committed. An exception in the post-commit audit write is caught by the outer <code>except Exception as e</code> block, which calls <code>conn.rollback()</code> — but the transaction was already committed and the rollback has no effect on the state change. The exception is re-raised to the caller, but the audit record is permanently lost for that operation.</p>
+<hr />
+<h2 id="semantic-correctness">Semantic correctness<a class="headerlink" href="#semantic-correctness" title="Permanent link">&para;</a></h2>
+<p>Audit event semantics for <code>approved</code> field are correctly set: <code>approve_grant_request</code> uses <code>approved=True</code> and <code>deny_grant_request</code> / <code>revoke_grant_request</code> use <code>approved=False</code>. The action field (<code>approve_grant_request</code>, <code>deny_grant_request</code>, <code>revoke_grant_request</code>) provides unambiguous semantic distinction. Tests in <code>test_gl092_deny_revoke_audit_semantics.py</code> verify these semantics. No confusion risk between approval and denial/revocation was found in the event data model.</p>
+<hr />
+<h2 id="recommended-implementation-issues">Recommended implementation issues<a class="headerlink" href="#recommended-implementation-issues" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Issue ID</th>
+<th>Title</th>
+<th>Priority</th>
+<th>Findings addressed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-097</td>
+<td>Enforce audit log immutability at database layer</td>
+<td>High</td>
+<td>GL094B-FINDING-001, GL094B-FINDING-005, GL094B-FINDING-006</td>
+</tr>
+<tr>
+<td>GL-098</td>
+<td>Add hash chain and tamper-evidence fields to audit events</td>
+<td>High</td>
+<td>GL094B-FINDING-001, GL094B-FINDING-005</td>
+</tr>
+<tr>
+<td>GL-099</td>
+<td>Fix approve/revoke transactional audit writes; add expire audit trail</td>
+<td>High</td>
+<td>GL094B-FINDING-002, GL094B-FINDING-004</td>
+</tr>
+<tr>
+<td>GL-100</td>
+<td>Add audit logging to grants.py lifecycle; guard tamper_grant()</td>
+<td>Medium</td>
+<td>GL094B-FINDING-003, GL094B-FINDING-007</td>
+</tr>
+</tbody>
+</table>
+<p><strong>GL-097</strong> should add SQLite triggers (<code>BEFORE UPDATE</code>, <code>BEFORE DELETE</code>) on <code>audit_events</code> that raise an error, or migrate to a write-once partition / ledger table. Database-level enforcement is the only mechanism that prevents bypass by direct database access.</p>
+<p><strong>GL-098</strong> should add a <code>row_hash</code> field (SHA-256 of the row fields at insert time) and a <code>prev_hash</code> field (hash of the preceding row's <code>row_hash</code>) to create a hash chain. The chain can be verified at audit time to detect insertion gaps or row modification.</p>
+<p><strong>GL-099</strong> should refactor <code>approve_grant_request()</code> and <code>revoke_grant_request()</code> to pass <code>conn=conn</code> to <code>audit_log.append_event()</code>, matching the correct pattern already used by <code>deny_grant_request()</code>. Expiration events should be appended inside the <code>expire_old_requests()</code> transaction for each expired request.</p>
+<p><strong>GL-100</strong> should add <code>audit_log.append_event()</code> calls to <code>create_grant()</code>, <code>revoke_grant()</code>, and <code>try_consume_grant_use()</code> in <code>grants.py</code>. The <code>tamper_grant()</code> function should be removed or guarded behind an explicit non-production environment assertion.</p>
+<hr />
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p><strong><code>proceed_with_cautions</code></strong></p>
+<p>The GrantLayer MVP audit log is append-only by application convention and has no HTTP-exposed mutation paths. Audit event semantics (approved vs. denied/revoked) are correct and tested. However, four HIGH findings and three MEDIUM findings confirm that the audit trail lacks the database-level immutability enforcement, tamper-evidence, and transactional consistency required for production compliance or forensic reliability. These gaps are not blocking for continued development but must be addressed before any compliance-sensitive deployment. The recommended issues (GL-097 through GL-100) provide a clear remediation path.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

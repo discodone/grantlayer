@@ -1,0 +1,331 @@
+{
+  "catalogId": "gl065-extension-boundary-catalog",
+  "catalogVersion": "1.0",
+  "status": "product-foundation-planning",
+  "extensionBoundaries": [
+    {
+      "id": "boundary-policy-rule-packs",
+      "name": "Policy rule packs",
+      "purpose": "Custom policy rule definitions that feed into the standard policy evaluation contract.",
+      "coreContract": "Policy requirement result records",
+      "replaceable": true,
+      "expectedInputs": [
+        "Rule definitions",
+        "Exclusion lists",
+        "Thresholds",
+        "Deadline configurations"
+      ],
+      "expectedOutputs": [
+        "Policy requirement results mapped to the Product Core contract"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Product Core provides the evaluation engine; rule packs are injected at runtime."
+    },
+    {
+      "id": "boundary-evidence-source-adapters",
+      "name": "Evidence source adapters",
+      "purpose": "External evidence feeds mapped to the canonical evidence bundle shape.",
+      "coreContract": "Evidence bundle records and evidence hash records",
+      "replaceable": true,
+      "expectedInputs": [
+        "External evidence documents",
+        "Timestamps",
+        "External identifiers"
+      ],
+      "expectedOutputs": [
+        "Canonical evidence bundle records"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Adapters must normalise external data into the flat, deterministic bundle format."
+    },
+    {
+      "id": "boundary-evidence-verification-strategies",
+      "name": "Evidence verification strategies",
+      "purpose": "Alternative or additional verification methods that still produce a standard verification result record.",
+      "coreContract": "Verification result records",
+      "replaceable": true,
+      "expectedInputs": [
+        "Evidence bundles",
+        "Stored hashes",
+        "Optional external attestation"
+      ],
+      "expectedOutputs": [
+        "Verification result record (valid / tampered / missing / error)"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Product Core uses SHA-256 hash recomparison by default; additional strategies may layer on top."
+    },
+    {
+      "id": "boundary-auditor-export-formats",
+      "name": "Auditor export formats",
+      "purpose": "New output formats that still export the canonical auditor export record structure.",
+      "coreContract": "Auditor export records",
+      "replaceable": true,
+      "expectedInputs": [
+        "Auditor export record tree"
+      ],
+      "expectedOutputs": [
+        "Serialized auditor export in the target format (JSON, PDF, XML, etc.)"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Format adapters should not alter the canonical record structure."
+    },
+    {
+      "id": "boundary-compliance-readiness-dimensions",
+      "name": "Compliance readiness dimensions",
+      "purpose": "Additional readiness dimensions that feed into the standard readiness summary.",
+      "coreContract": "Compliance readiness summaries",
+      "replaceable": true,
+      "expectedInputs": [
+        "Dimension configuration",
+        "Evidence and policy evaluation results"
+      ],
+      "expectedOutputs": [
+        "Aggregated readiness score and status"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Dimensions may be added without changing the summary contract."
+    },
+    {
+      "id": "boundary-permission-profiles",
+      "name": "Permission profiles",
+      "purpose": "Optional profile definitions evaluated within the standard permission contract.",
+      "coreContract": "Permission evaluation results",
+      "replaceable": true,
+      "expectedInputs": [
+        "Profile definitions with scopes and role mappings"
+      ],
+      "expectedOutputs": [
+        "Permission evaluation result (permitted / denied / conditional)"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Product Core evaluator is stable; profiles are configuration, not code changes."
+    },
+    {
+      "id": "boundary-approval-workflow-profiles",
+      "name": "Approval workflow profiles",
+      "purpose": "Optional workflow patterns that still produce standard approval lifecycle records.",
+      "coreContract": "Approval lifecycle records",
+      "replaceable": true,
+      "expectedInputs": [
+        "Workflow rules",
+        "Approver lists",
+        "Quorum requirements"
+      ],
+      "expectedOutputs": [
+        "Lifecycle state transitions and final approval / denial record"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Profiles may vary by organisation; the transition record remains canonical."
+    },
+    {
+      "id": "boundary-storage-backends",
+      "name": "Storage / persistence backends",
+      "purpose": "Replaceable storage implementations that preserve Product Core IDs and integrity constraints.",
+      "coreContract": "Persistent IDs across all Product Core entities",
+      "replaceable": true,
+      "expectedInputs": [
+        "Product Core write operations",
+        "Query filters"
+      ],
+      "expectedOutputs": [
+        "Stored records with stable IDs",
+        "Consistent read results"
+      ],
+      "implementationStatus": "partial",
+      "notes": "SQLite is the current default; PostgreSQL is optional. Both are behind the persistence abstraction."
+    },
+    {
+      "id": "boundary-auth-identity-providers",
+      "name": "Auth / identity providers",
+      "purpose": "Replaceable identity and authentication backends that still produce standard operator references and role assignments.",
+      "coreContract": "Operator references and role assignments",
+      "replaceable": true,
+      "expectedInputs": [
+        "Identity assertions",
+        "Token or credential payloads"
+      ],
+      "expectedOutputs": [
+        "Authenticated operator reference with role mapping"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Current auth is local-token only; future providers must map into the operator role model."
+    },
+    {
+      "id": "boundary-sdk-api-clients",
+      "name": "SDK / API clients",
+      "purpose": "Generated or handwritten clients that speak the stable API contract.",
+      "coreContract": "API paths and request/response schemas",
+      "replaceable": true,
+      "expectedInputs": [
+        "API credentials",
+        "Client configuration"
+      ],
+      "expectedOutputs": [
+        "Valid API requests and parsed responses"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Clients are external to the Product Core and must track contract versions."
+    },
+    {
+      "id": "boundary-workflow-orchestrator",
+      "name": "Workflow orchestrator integrations",
+      "purpose": "External orchestrators that interact via the stable API contract.",
+      "coreContract": "API paths and request/response schemas",
+      "replaceable": true,
+      "expectedInputs": [
+        "Orchestrator state",
+        "Trigger events"
+      ],
+      "expectedOutputs": [
+        "API calls conforming to the OpenAPI contract"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Orchestrators are consumers, not extensions, of the Product Core."
+    },
+    {
+      "id": "boundary-observability-sinks",
+      "name": "Observability sinks",
+      "purpose": "Metrics, logging, and alerting backends that consume standard event streams.",
+      "coreContract": "Audit/event records and health endpoints",
+      "replaceable": true,
+      "expectedInputs": [
+        "Structured events",
+        "Health metrics"
+      ],
+      "expectedOutputs": [
+        "External metrics, logs, and alerts"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Sinks must not alter Product Core event structure."
+    },
+    {
+      "id": "boundary-blockchain-anchoring",
+      "name": "Optional blockchain anchoring",
+      "purpose": "Periodic anchoring of integrity hashes to a blockchain for enhanced tamper evidence.",
+      "coreContract": "Evidence hashes and provenance summaries",
+      "replaceable": true,
+      "expectedInputs": [
+        "Integrity hashes",
+        "Timestamping parameters"
+      ],
+      "expectedOutputs": [
+        "Anchoring receipts linked by execution or bundle ID"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Must remain optional; Product Core must not depend on blockchain availability."
+    },
+    {
+      "id": "boundary-wallet-payment",
+      "name": "Optional wallet / payment integration",
+      "purpose": "Wallet signatures, disbursement records, or payment receipts linked to grant executions via stable IDs.",
+      "coreContract": "Grant execution records and stable IDs",
+      "replaceable": true,
+      "expectedInputs": [
+        "Grant execution IDs",
+        "Payment or disbursement payloads"
+      ],
+      "expectedOutputs": [
+        "Receipts linked to executions by Product Core IDs"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "Must remain optional; Product Core must not depend on payment infrastructure."
+    },
+    {
+      "id": "boundary-dashboard-ui",
+      "name": "Dashboard / UI layer",
+      "purpose": "Client applications that consume the stable API contract without embedding Product Core logic.",
+      "coreContract": "API paths and request/response schemas",
+      "replaceable": true,
+      "expectedInputs": [
+        "API responses",
+        "User interaction events"
+      ],
+      "expectedOutputs": [
+        "Rendered UI state and API calls"
+      ],
+      "implementationStatus": "not-implemented",
+      "notes": "UI is a consumer, not a dependency, of the Product Core."
+    }
+  ],
+  "adapterRules": [
+    "Adapters must not redefine Product Core records.",
+    "Adapters must map into stable Product Core contracts.",
+    "Adapters should be replaceable.",
+    "Adapters should not leak secrets into records or examples.",
+    "Adapters should keep sensitive data off-chain.",
+    "Adapters should fail closed where appropriate.",
+    "Adapters should be tested independently from Product Core logic."
+  ],
+  "nonCoreBoundaries": [
+    {
+      "id": "noncore-payment-processing",
+      "name": "Payment processing",
+      "rationale": "Not required for grant verification or audit records."
+    },
+    {
+      "id": "noncore-wallet-custody",
+      "name": "Wallet custody",
+      "rationale": "Financial custody is outside the verification layer."
+    },
+    {
+      "id": "noncore-blockchain",
+      "name": "Blockchain dependency",
+      "rationale": "Currently optional; Product Core must remain independent."
+    },
+    {
+      "id": "noncore-grant-discovery",
+      "name": "Public grant discovery / matchmaking",
+      "rationale": "Discovery is a separate product surface."
+    },
+    {
+      "id": "noncore-saas-tenant",
+      "name": "Full SaaS tenant management",
+      "rationale": "Single-tenant or self-hosted is the current assumption."
+    },
+    {
+      "id": "noncore-dashboard",
+      "name": "Production dashboard",
+      "rationale": "UI is an extension; the API is the Product Core."
+    },
+    {
+      "id": "noncore-legal-certification",
+      "name": "Legal / compliance certification",
+      "rationale": "Structured records support audit workflows but do not replace legal review."
+    },
+    {
+      "id": "noncore-hsm-signing",
+      "name": "HSM-backed signing implementation",
+      "rationale": "Software signing is acceptable for pilots; HSM is a future upgrade path."
+    },
+    {
+      "id": "noncore-deployment-automation",
+      "name": "Hosted production deployment automation",
+      "rationale": "Manual deployment documentation is sufficient for the first pilot."
+    }
+  ],
+  "futureIntegrationCandidates": [
+    "External identity providers (OAuth 2.0, SAML, OIDC)",
+    "Enterprise SIEM and logging platforms",
+    "Third-party evidence vaults (cloud object storage, document management)",
+    "Audit firm report ingestion pipelines",
+    "Regulatory reporting APIs"
+  ],
+  "testingExpectations": [
+    "Adapter tests should run without full Product Core fixtures.",
+    "Boundary tests should verify mapping into stable contracts.",
+    "Replacement tests should confirm interchangeability of two adapter implementations.",
+    "Contract regression tests should flag changes to Product Core record shapes."
+  ],
+  "securityExpectations": [
+    "Adapters must sanitize inputs before mapping to Product Core.",
+    "Adapters must not expose internal identifiers in external-facing output.",
+    "Failure in an adapter must not corrupt Product Core state.",
+    "Secrets must not be logged, stored in records, or returned in API responses."
+  ],
+  "relatedArtifacts": [
+    "docs/product_architecture_extension_boundaries.md",
+    "docs/examples/gl065/product_architecture_map.json",
+    "backend/tests/test_gl065_product_architecture_extension_boundaries.py"
+  ]
+}

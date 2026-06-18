@@ -1,0 +1,3596 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/tenant_workspace_isolation_design_pack/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-200A Tenant/Workspace Isolation Design Pack - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-200a-tenantworkspace-isolation-design-pack" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-200A Tenant/Workspace Isolation Design Pack
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#issue-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue ID
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#title" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Title
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-state-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Terminology
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Terminology">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tenant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workspace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workspace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Actor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grant-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grant Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#challenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Challenge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Event
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#isolation-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Isolation Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#isolation-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Isolation Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resource-scoping-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Scoping Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-tenant_id-only-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A — tenant_id Only Baseline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-tenant_id-workspace_id-on-all-business-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B — tenant_id + workspace_id on All Business Resources
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-c-request-context-isolation-layer-with-staged-db-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option C — Request-Context Isolation Layer with Staged DB Migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-d-full-rbac-tenant-workspace-policy-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option D — Full RBAC / Tenant / Workspace Policy Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#selected-recommended-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selected Recommended Design
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-boundary-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Boundary Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Boundary Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-tenant-context-enters-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How Tenant Context Enters Requests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fail-closed-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fail-Closed Behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-tenant-access-denial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Tenant Access Denial
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin-system-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin / System Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#demo-endpoint-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Demo Endpoint Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-response-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Response Safety
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auth-operator-admin-context-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth / Operator / Admin Context Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Auth / Operator / Admin Context Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-changes-for-gl-200b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Changes for GL-200B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minimum-gl-200b-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimum GL-200B Enforcement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-should-remain-deferred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Should Remain Deferred
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-data-model-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database / Data Model Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Database / Data Model Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#columns-required-gl-200b-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Columns Required (GL-200B Scope)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backfill-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backfill Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Safety
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sqlite-postgresql-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLite / PostgreSQL Implications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indexes-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Indexes / Constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit-immutability-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Immutability Considerations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rollback-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollback / Compatibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Audit Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tenantworkspace-context-in-audit-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant/Workspace Context in Audit Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-tenant-access-denial-audit-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Tenant Access Denial Audit Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#immutable-audit-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Immutable Audit Behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-sensitive-data-in-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No Sensitive Data in Audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permission-model-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permission Model Implications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Permission Model Implications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agent-permission-scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent Permission Scopes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator-role-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Role Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin-token-mode-devdemo-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin Token Mode (Dev/Demo Only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cross-tenant-isolation-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Tenant Isolation Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workspace-isolation-tests-gl-200c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workspace Isolation Tests (GL-200C)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auth-context-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Context Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit-context-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Context Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#demo-endpoint-safety-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Demo Endpoint Safety Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-readiness-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health / Readiness Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples-determinism-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples / Determinism Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-boundary-regression-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Boundary Regression Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rollout-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollout Plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rollout Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-gl-200b-tenant-isolation-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 — GL-200B: Tenant Isolation Baseline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-gl-200c-workspace-isolation-baseline-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 — GL-200C: Workspace Isolation Baseline (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-gl-200d-policy-engine-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 — GL-200D: Policy Engine (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-gl-201-api-contract-update-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 — GL-201: API Contract Update (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-gl-202-audit-propagation-hardening-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5 — GL-202: Audit Propagation Hardening (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-6-gl-203-isolation-regression-smoke-matrix-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 6 — GL-203: Isolation Regression / Smoke Matrix (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compatibility-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compatibility Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Readiness Criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Split
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Split">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gl-200b-tenantworkspace-isolation-implementation-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200B — Tenant/Workspace Isolation Implementation Baseline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-200c-workspace-isolation-baseline-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200C — Workspace Isolation Baseline (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-200d-policy-engine-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200D — Policy Engine (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-201-tenantworkspace-isolation-api-contract-update-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-201 — Tenant/Workspace Isolation API Contract Update (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-202-tenantworkspace-isolation-audit-propagation-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-202 — Tenant/Workspace Isolation Audit Propagation (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-203-tenantworkspace-isolation-regression-smoke-matrix-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-203 — Tenant/Workspace Isolation Regression / Smoke Matrix (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gl-200a-f001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200A-F001
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-200a-f002" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200A-F002
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-200a-f003" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200A-F003
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-200a-f004" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200A-F004
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-200a-f005" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200A-F005
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-200a-f006" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200A-F006
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-200a-f007" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200A-F007
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-200a-f008" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200A-F008
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-200a-f009" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-200A-F009
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-200a-tenantworkspace-isolation-design-pack">GL-200A Tenant/Workspace Isolation Design Pack<a class="headerlink" href="#gl-200a-tenantworkspace-isolation-design-pack" title="Permanent link">&para;</a></h1>
+<h2 id="issue-id">Issue ID<a class="headerlink" href="#issue-id" title="Permanent link">&para;</a></h2>
+<p>GL-200A</p>
+<h2 id="title">Title<a class="headerlink" href="#title" title="Permanent link">&para;</a></h2>
+<p>Tenant/Workspace Isolation Design Pack</p>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GrantLayer is publicly available on GitHub at
+<code>https://github.com/Discodone/grantlayer.git</code> in a Developer Preview /
+controlled-pilot posture.</p>
+<p>GL-199 (Production Readiness Gap Report v2) concluded:</p>
+<ul>
+<li>Developer Preview may continue.</li>
+<li>Controlled Preview may continue only with strict boundaries.</li>
+<li>Production SaaS is not ready.</li>
+<li>Real customer data is no-go.</li>
+<li>Private grant/institutional data is no-go.</li>
+</ul>
+<p>GL-199 identified <strong>GL-200 — Tenant/Workspace Isolation</strong> as the
+highest-priority production blocker (P0). This issue (GL-200A) is the
+<strong>design pack only</strong>. It does not implement tenant/workspace isolation.
+It defines architecture, scope, risks, migration strategy, and the
+implementation plan for GL-200B and later issues.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>This issue is <strong>design / docs / test / artifact only.</strong></p>
+<p>This issue does <strong>not</strong>:
+- implement tenant/workspace isolation
+- modify <code>backend/src/*</code>
+- modify runtime API behavior
+- modify <code>docs/openapi.yaml</code>, migrations, DB/schema
+- modify dependency manifests
+- create SDK implementation or publish packages
+- modify examples runtime behavior
+- modify frontend, website, or design
+- change GitHub workflows or snapshot publish script behavior
+- push to GitHub
+- change GitHub visibility</p>
+<p>Allowed files created in this issue:
+- <code>docs/tenant_workspace_isolation_design_pack.md</code> (this file)
+- <code>docs/examples/gl200a/tenant_workspace_isolation_design_pack.json</code>
+- <code>backend/tests/test_gl200a_tenant_workspace_isolation_design_pack.py</code></p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>README.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/production_readiness_gap_report_v2.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl199/production_readiness_gap_report_v2.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/controlled_preview_boundary_pack.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl198/controlled_preview_boundary_pack.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/api_sdk_agent_value_decision_pack.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl197/api_sdk_agent_value_decision_pack.json</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/public_safety_scanner_claim_consistency_gate.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/public_smoke_matrix_pack.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_boundary_decision.md (GL-132)</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_data_model_design.md (GL-144)</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/production_auth_operator_access_design.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>docs/production_hardening_roadmap.md</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/server.py</td>
+<td>yes (routes, auth guards)</td>
+</tr>
+<tr>
+<td>backend/src/auth.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/grants.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/grant_requests.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/challenges.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/audit_log.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/db.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/agent_permissions.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/agent_permission_assignments.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/models.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/migrations/0001_gl032_baseline.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/migrations/0005_gl102_audit_log_immutability.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/migrations/0006_gl103_audit_hash_chain.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/src/migrations/0007_gl107_operator_token_lookup.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/tests/test_security_boundary_regression.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/tests/test_gl199_production_readiness_gap_report_v2.py</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>backend/tests/test_gl198_controlled_preview_boundary_pack.py</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="current-state-summary">Current State Summary<a class="headerlink" href="#current-state-summary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer has <strong>no production tenant/workspace isolation implemented.</strong></p>
+<p>The following posture statements describe the current system:</p>
+<ul>
+<li>All grants, grant requests, grant executions, challenges, evidence
+  archives, provenance events, and audit events share a <strong>single
+  namespace</strong> within any given deployment.</li>
+<li>There is no <code>tenant_id</code>, <code>workspace_id</code>, or any tenant/workspace
+  entity in the data model, schema, or API.</li>
+<li>The only boundary today is the <strong>operator-bounded workspace model</strong>
+  from GL-132 Option B: all data implicitly belongs to the named
+  operator who controls the deployment.</li>
+<li>Auth provides admin-token mode (dev/demo) and operator-token mode
+  (hardened). Neither mode carries tenant/workspace context.</li>
+<li>Agent permission scopes are globally-scoped within a deployment;
+  no per-tenant or per-workspace scope enforcement exists.</li>
+<li>Audit events carry no tenant/workspace identifier.</li>
+<li>The demo endpoint and health/readiness endpoints are public and
+  intentionally unauthenticated; they are not customer-scoped.</li>
+</ul>
+<p>This state is acceptable for Developer Preview and Controlled Preview
+under strict boundaries (GL-198). It is <strong>not</strong> acceptable for
+Production SaaS with unrelated customers on shared infrastructure.</p>
+<hr />
+<h2 id="terminology">Terminology<a class="headerlink" href="#terminology" title="Permanent link">&para;</a></h2>
+<h3 id="tenant">Tenant<a class="headerlink" href="#tenant" title="Permanent link">&para;</a></h3>
+<p>A <strong>tenant</strong> is the top-level logical isolation boundary in GrantLayer.
+It isolates one customer's or institution's data — grants, grant requests,
+grant executions, evidence, audit records, and operator identities — from
+all other customers. Each production deployment serving multiple customers
+must enforce tenant boundaries at the data, auth, and API layers.</p>
+<p>A tenant maps to: a university, a foundation, a corporation, or any other
+institution that controls a bounded set of grants and operators.</p>
+<h3 id="workspace">Workspace<a class="headerlink" href="#workspace" title="Permanent link">&para;</a></h3>
+<p>A <strong>workspace</strong> is a scoped operating context within a tenant. It maps
+to a team, department, program office, or organizational unit inside the
+tenant that shares grants and evidence but remains isolated from other
+workspaces within the same tenant.</p>
+<p>A workspace is optional in the minimum viable implementation. The
+production baseline (GL-200B) must support <code>tenant_id</code> at minimum;
+<code>workspace_id</code> may be staged.</p>
+<h3 id="actor">Actor<a class="headerlink" href="#actor" title="Permanent link">&para;</a></h3>
+<p>An <strong>actor</strong> is any entity — human operator, automated agent, or admin —
+that performs an action tracked by GrantLayer. Actors must be bound to a
+tenant at minimum; workspaces are optional in the GL-200B baseline.</p>
+<h3 id="operator">Operator<a class="headerlink" href="#operator" title="Permanent link">&para;</a></h3>
+<p>An <strong>operator</strong> is an authenticated individual or service identity that
+performs actions within a tenant/workspace. Operators carry a role
+(<code>owner</code>, <code>grant_admin</code>, <code>grant_reviewer</code>, <code>readonly</code>, <code>auditor</code>) that
+constrains their permitted actions within their tenant/workspace boundary.</p>
+<h3 id="admin">Admin<a class="headerlink" href="#admin" title="Permanent link">&para;</a></h3>
+<p>An <strong>admin</strong> is an operator with elevated privileges (<code>owner</code> or
+<code>grant_admin</code>) who can manage tenant configuration, membership, and
+boundary policies. System-level admin actions (cross-tenant by design)
+must be explicitly marked and restricted.</p>
+<h3 id="agent">Agent<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h3>
+<p>An <strong>agent</strong> is an automated software entity (e.g., a LangChain agent,
+a Claude-powered AI) that performs grant workflow actions on behalf of an
+operator. Agents inherit their owner's tenant/workspace context via
+agent permission assignments. They carry scopes such as
+<code>evidence:read</code>, <code>grant_request:read</code>, etc.</p>
+<h3 id="grant">Grant<a class="headerlink" href="#grant" title="Permanent link">&para;</a></h3>
+<p>A <strong>grant</strong> is a time-bounded authorization record permitting a subject to
+perform a specific action on a specific resource. In a tenant-aware model,
+every grant must carry a <code>tenant_id</code> and optionally a <code>workspace_id</code>.
+Cross-tenant grant access must be impossible.</p>
+<h3 id="grant-request">Grant Request<a class="headerlink" href="#grant-request" title="Permanent link">&para;</a></h3>
+<p>A <strong>grant request</strong> is a structured request for a grant submitted by an
+operator and subject to approval workflow. Grant requests must be scoped
+to the same tenant/workspace as the operator who submitted them.</p>
+<h3 id="challenge">Challenge<a class="headerlink" href="#challenge" title="Permanent link">&para;</a></h3>
+<p>A <strong>challenge</strong> is a cryptographic proof-of-intent token created during
+grant execution. Challenges must be scoped to the same tenant/workspace
+as the actor and grant they are associated with.</p>
+<h3 id="execution">Execution<a class="headerlink" href="#execution" title="Permanent link">&para;</a></h3>
+<p>A <strong>grant execution</strong> is a record of a protected action attempt —
+authorized, denied, or pending. Executions must carry the same
+tenant/workspace context as the grant that produced them.</p>
+<h3 id="evidence">Evidence<a class="headerlink" href="#evidence" title="Permanent link">&para;</a></h3>
+<p><strong>Evidence</strong> is the collection of artifacts — files, verification records,
+attestations — that document the outcome of a grant execution. Evidence
+must be scoped to the same workspace (and tenant) as the execution.</p>
+<h3 id="audit-event">Audit Event<a class="headerlink" href="#audit-event" title="Permanent link">&para;</a></h3>
+<p>An <strong>audit event</strong> is an immutable, hash-chained record of every
+authorization decision. Audit events must carry tenant/workspace context.
+System-level events (e.g., migrations, health checks) are explicitly
+marked as <code>scope: system</code>.</p>
+<hr />
+<h2 id="threat-model">Threat Model<a class="headerlink" href="#threat-model" title="Permanent link">&para;</a></h2>
+<p>The following threat scenarios motivate the isolation design:</p>
+<table>
+<thead>
+<tr>
+<th>Threat</th>
+<th>Vector</th>
+<th>Current Risk</th>
+<th>Required Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cross-tenant data read</td>
+<td>Operator A queries grant list; no tenant filter</td>
+<td>Critical — all grants visible</td>
+<td><code>tenant_id</code> filter on all queries</td>
+</tr>
+<tr>
+<td>Cross-tenant data write</td>
+<td>Operator A creates grant for tenant B's resources</td>
+<td>Critical — no constraint</td>
+<td><code>tenant_id</code> enforcement on create</td>
+</tr>
+<tr>
+<td>Tenant impersonation via token</td>
+<td>Attacker with valid operator token accesses other tenant</td>
+<td>Critical — token carries no tenant claim</td>
+<td>Bind operator token to <code>tenant_id</code> at creation</td>
+</tr>
+<tr>
+<td>Workspace boundary leak</td>
+<td>Workspace A user reads workspace B grants</td>
+<td>High — no workspace filter</td>
+<td><code>workspace_id</code> filter where applicable</td>
+</tr>
+<tr>
+<td>Audit event leakage</td>
+<td>Auditor reads another tenant's audit trail</td>
+<td>Critical — single audit log</td>
+<td><code>tenant_id</code> on audit events + filtered queries</td>
+</tr>
+<tr>
+<td>Agent over-privilege</td>
+<td>Agent with <code>grant:read</code> scope reads all tenants</td>
+<td>Critical — scope is global</td>
+<td>Agent permissions must be tenant-scoped</td>
+</tr>
+<tr>
+<td>Admin cross-tenant access</td>
+<td>System admin reads any tenant's data</td>
+<td>Acceptable only if explicitly marked</td>
+<td>Explicit <code>is_system_admin</code> flag, logged</td>
+</tr>
+<tr>
+<td>Demo endpoint data leak</td>
+<td>Demo endpoint reveals real tenant data</td>
+<td>High if real data exists</td>
+<td>Demo endpoint serves only synthetic data (GL-190)</td>
+</tr>
+<tr>
+<td>Migration data cross-contamination</td>
+<td>Backfill assigns wrong <code>tenant_id</code></td>
+<td>High — data integrity</td>
+<td>Idempotent migration with explicit tenant assignment</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="isolation-goals">Isolation Goals<a class="headerlink" href="#isolation-goals" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Every business resource (grant, grant request, grant execution, challenge,
+   evidence, audit event, agent permission assignment) must carry an explicit
+   <code>tenant_id</code> in the database schema.</li>
+<li>Every API query or mutation involving business resources must filter by the
+   requesting actor's <code>tenant_id</code>; cross-tenant access must be denied.</li>
+<li>Operators must be bound to a <code>tenant_id</code> at creation; operator tokens must
+   carry tenant context in the auth layer.</li>
+<li>Agent permission scopes must be scoped to the operator's tenant context.</li>
+<li>Audit events must record tenant context; the audit chain must be
+   tenant-aware.</li>
+<li>Demo, health, and readiness endpoints are public by design and remain
+   outside tenant scope.</li>
+<li>System/admin operations that require cross-tenant access must be explicitly
+   marked, logged, and restricted to named admin roles.</li>
+<li>The design must support both SQLite (dev/test) and PostgreSQL (production)
+   backends.</li>
+</ol>
+<hr />
+<h2 id="isolation-non-goals">Isolation Non-Goals<a class="headerlink" href="#isolation-non-goals" title="Permanent link">&para;</a></h2>
+<p>The following are <strong>not</strong> required by GL-200B:</p>
+<ul>
+<li>Full RBAC/policy engine (deferred to GL-200D or later)</li>
+<li>Per-workspace row-level security at the DB layer (deferred)</li>
+<li>Billing/subscription tenant model (not in scope)</li>
+<li>Frontend tenant onboarding UI (not in scope)</li>
+<li>Customer-facing tenant admin panel (not in scope)</li>
+<li>Multi-region tenant isolation (not in scope)</li>
+<li>Federated identity / SSO per tenant (not in scope)</li>
+<li>Tenant-level rate limiting (not in scope for GL-200B)</li>
+<li>Workspace sub-isolation as a hard requirement in the GL-200B baseline
+  (workspace support is additive; baseline requires <code>tenant_id</code>)</li>
+</ul>
+<hr />
+<h2 id="resource-scoping-matrix">Resource Scoping Matrix<a class="headerlink" href="#resource-scoping-matrix" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Current Scope Status</th>
+<th>Required Future Scope</th>
+<th>Production Risk</th>
+<th>Recommended GL-200B Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>grants</td>
+<td>global (unscoped)</td>
+<td>tenant (+ optional workspace)</td>
+<td>Critical</td>
+<td>Add <code>tenant_id</code> column; filter all queries</td>
+</tr>
+<tr>
+<td>grant_requests</td>
+<td>global (unscoped)</td>
+<td>tenant (+ optional workspace)</td>
+<td>Critical</td>
+<td>Add <code>tenant_id</code> column; filter all queries</td>
+</tr>
+<tr>
+<td>challenges</td>
+<td>global (unscoped)</td>
+<td>tenant (+ optional workspace)</td>
+<td>Critical</td>
+<td>Add <code>tenant_id</code> column; filter queries</td>
+</tr>
+<tr>
+<td>grant_executions</td>
+<td>global (unscoped)</td>
+<td>tenant (+ optional workspace)</td>
+<td>Critical</td>
+<td>Add <code>tenant_id</code> column; filter queries</td>
+</tr>
+<tr>
+<td>evidence/executions</td>
+<td>global (unscoped)</td>
+<td>tenant (+ optional workspace)</td>
+<td>Critical</td>
+<td>Add <code>tenant_id</code> column; filter queries</td>
+</tr>
+<tr>
+<td>audit_events</td>
+<td>global (unscoped)</td>
+<td>tenant (explicit system scope for system events)</td>
+<td>Critical</td>
+<td>Add <code>tenant_id</code> column; system events get <code>scope: system</code></td>
+</tr>
+<tr>
+<td>operators</td>
+<td>global (unscoped)</td>
+<td>tenant</td>
+<td>Critical</td>
+<td>Add <code>tenant_id</code> column; operator bound to tenant at creation</td>
+</tr>
+<tr>
+<td>operator tokens / token_hash</td>
+<td>implicitly scoped via operator</td>
+<td>tenant (via operator)</td>
+<td>Critical</td>
+<td>Ensure operator lookup enforces tenant context</td>
+</tr>
+<tr>
+<td>agent_permissions (profiles)</td>
+<td>global (unscoped)</td>
+<td>tenant</td>
+<td>High</td>
+<td>Add <code>tenant_id</code> to assignments; profiles may remain global templates</td>
+</tr>
+<tr>
+<td>agent_permission_assignments</td>
+<td>global (unscoped)</td>
+<td>tenant</td>
+<td>High</td>
+<td>Add <code>tenant_id</code> column; enforce tenant context</td>
+</tr>
+<tr>
+<td>demo endpoints (<code>/demo/*</code>)</td>
+<td>global_public (intentional)</td>
+<td>global_public (no change)</td>
+<td>Low</td>
+<td>Document synthetic-data-only; maintain GL-190 guard</td>
+</tr>
+<tr>
+<td>health endpoint (<code>/health</code>)</td>
+<td>global_public (intentional)</td>
+<td>global_public (no change)</td>
+<td>None</td>
+<td>No change required</td>
+</tr>
+<tr>
+<td>readiness endpoint (<code>/readiness</code>)</td>
+<td>global_public (intentional)</td>
+<td>global_public (no change)</td>
+<td>None</td>
+<td>No change required</td>
+</tr>
+<tr>
+<td>configuration / env vars</td>
+<td>system_internal</td>
+<td>system_internal</td>
+<td>Medium</td>
+<td>No tenant-scoping needed; per-deployment config sufficient</td>
+</tr>
+<tr>
+<td>migrations</td>
+<td>system_internal</td>
+<td>system_internal</td>
+<td>Medium</td>
+<td>Migrations must add tenant columns safely; backfill strategy required</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="design-options">Design Options<a class="headerlink" href="#design-options" title="Permanent link">&para;</a></h2>
+<h3 id="option-a-tenant_id-only-baseline">Option A — <code>tenant_id</code> Only Baseline<a class="headerlink" href="#option-a-tenant_id-only-baseline" title="Permanent link">&para;</a></h3>
+<p><strong>Description:</strong> Add a <code>tenant_id</code> column to all business resource tables.
+All API queries filter by the requesting operator's <code>tenant_id</code>. No
+workspace sub-boundary. Operator tokens are bound to a <code>tenant_id</code> at
+creation. Auth layer reads <code>tenant_id</code> from the authenticated operator
+and injects it into all DB queries.</p>
+<p><strong>Benefits:</strong>
+- Minimal schema change (one new column per table).
+- Straightforward migration with backfill.
+- Fail-closed by design: missing <code>tenant_id</code> on an operator → deny.
+- Compatible with both SQLite and PostgreSQL.
+- Unblocks production readiness assessment quickly.</p>
+<p><strong>Risks:</strong>
+- No workspace sub-isolation; all operators in a tenant share access.
+- Workspace isolation deferred — must not be claimed as implemented.
+- Tenant creation/management API not included; tenants are pre-provisioned.</p>
+<p><strong>Implementation Complexity:</strong> Low.
+<strong>Migration Cost:</strong> Medium (backfill existing data to a <code>dev/demo</code> tenant).
+<strong>Test Burden:</strong> Medium (cross-tenant denial tests, audit context tests).
+<strong>Suitability for GL-200B:</strong> High — recommended as the baseline.</p>
+<hr />
+<h3 id="option-b-tenant_id-workspace_id-on-all-business-resources">Option B — <code>tenant_id</code> + <code>workspace_id</code> on All Business Resources<a class="headerlink" href="#option-b-tenant_id-workspace_id-on-all-business-resources" title="Permanent link">&para;</a></h3>
+<p><strong>Description:</strong> Add both <code>tenant_id</code> and <code>workspace_id</code> to all business
+resource tables. Operators are bound to both a tenant and a workspace at
+creation. All API queries filter by both. Workspace membership is explicit.</p>
+<p><strong>Benefits:</strong>
+- Full two-level isolation from the start.
+- Workspace-level export, audit, and evidence boundaries.
+- No technical debt when workspace isolation is eventually required.</p>
+<p><strong>Risks:</strong>
+- Significantly higher implementation complexity than Option A.
+- Every query, model, and API endpoint must carry workspace context.
+- Workspace creation/management API required upfront.
+- Migration complexity doubles (two columns, two backfill dimensions).
+- Risk of shipping a partially-correct implementation under time pressure.</p>
+<p><strong>Implementation Complexity:</strong> High.
+<strong>Migration Cost:</strong> High.
+<strong>Test Burden:</strong> High.
+<strong>Suitability for GL-200B:</strong> Medium — recommended only if workspace
+isolation is required before controlled preview moves to production.</p>
+<hr />
+<h3 id="option-c-request-context-isolation-layer-with-staged-db-migration">Option C — Request-Context Isolation Layer with Staged DB Migration<a class="headerlink" href="#option-c-request-context-isolation-layer-with-staged-db-migration" title="Permanent link">&para;</a></h3>
+<p><strong>Description:</strong> Add a middleware/request-context layer that extracts and
+validates tenant context from the auth token on every request. DB schema
+changes (adding <code>tenant_id</code>) are staged in a separate migration.
+The isolation is enforced at the query layer via a context object passed
+through all resource functions, rather than by changing every call site.</p>
+<p><strong>Benefits:</strong>
+- Decouples schema migration from enforcement rollout.
+- Context object is a clean seam for future workspace support.
+- Enables incremental rollout: enforce at API layer first, then migrate schema.</p>
+<p><strong>Risks:</strong>
+- Two-phase rollout creates a window where schema is migrated but
+  enforcement is incomplete (or vice versa).
+- Context object must be threaded through every resource function —
+  high refactor surface area.
+- Higher risk of incomplete enforcement if staging is not carefully managed.</p>
+<p><strong>Implementation Complexity:</strong> High (context threading).
+<strong>Migration Cost:</strong> Medium (same columns as Option A).
+<strong>Test Burden:</strong> High (must verify enforcement in both phases).
+<strong>Suitability for GL-200B:</strong> Medium — valuable pattern but adds complexity.</p>
+<hr />
+<h3 id="option-d-full-rbac-tenant-workspace-policy-engine">Option D — Full RBAC / Tenant / Workspace Policy Engine<a class="headerlink" href="#option-d-full-rbac-tenant-workspace-policy-engine" title="Permanent link">&para;</a></h3>
+<p><strong>Description:</strong> Implement a complete policy engine with tenant, workspace,
+role, and resource-level access control. Operators, agents, and admins
+are assigned policies. The policy engine evaluates every access decision
+against the policy store.</p>
+<p><strong>Benefits:</strong>
+- Maximum flexibility and granularity.
+- Future-proof for complex institutional permission hierarchies.
+- Enables attribute-based access control (ABAC) patterns.</p>
+<p><strong>Risks:</strong>
+- Very high implementation complexity — likely 4–8× more work than Option A.
+- Policy store becomes a critical dependency; misconfiguration = data breach.
+- Cannot be completed in GL-200B scope; would require multiple issues.
+- Premature for current scale; over-engineering risk is high.</p>
+<p><strong>Implementation Complexity:</strong> Very High.
+<strong>Migration Cost:</strong> Very High.
+<strong>Test Burden:</strong> Very High.
+<strong>Suitability for GL-200B:</strong> Low — deferred to GL-200D or later.</p>
+<hr />
+<h2 id="selected-recommended-design">Selected Recommended Design<a class="headerlink" href="#selected-recommended-design" title="Permanent link">&para;</a></h2>
+<p><strong>Recommendation:</strong> Option A baseline with staged Option B readiness.</p>
+<p><strong>GL-200B should implement Option A:</strong> <code>tenant_id</code> on all business
+resource tables, operator tokens bound to <code>tenant_id</code>, API queries
+filtered by <code>tenant_id</code>, audit events include <code>tenant_id</code>, and fail-closed
+behavior on missing/ambiguous tenant context.</p>
+<p><strong>Option B (<code>workspace_id</code>) is staged:</strong> Schema design should
+reserve a <code>workspace_id</code> column in the migration (nullable, defaulting
+to <code>NULL</code>) so workspace support can be added in GL-200C without a
+further disruptive schema change. <code>workspace_id</code> enforcement is
+<strong>not</strong> required in GL-200B.</p>
+<p><strong>Rationale:</strong>
+- Unblocks production readiness fastest.
+- Minimal schema change with clear migration path.
+- Fail-closed by design.
+- Leaves clean seam for workspace support in GL-200C.
+- Does not over-engineer before scale requires it.</p>
+<hr />
+<h2 id="api-boundary-model">API Boundary Model<a class="headerlink" href="#api-boundary-model" title="Permanent link">&para;</a></h2>
+<h3 id="how-tenant-context-enters-requests">How Tenant Context Enters Requests<a class="headerlink" href="#how-tenant-context-enters-requests" title="Permanent link">&para;</a></h3>
+<p>Tenant context must enter every API request through the authenticated
+operator identity. The recommended approach:</p>
+<ol>
+<li><strong>Operator token carries <code>tenant_id</code> implicitly</strong> — the operator record
+   in the database carries <code>tenant_id</code>. When an operator authenticates,
+   the auth layer loads their tenant context from the operator record.</li>
+<li><strong>No tenant header required from clients</strong> — clients do not send
+   a <code>X-Tenant-ID</code> header. The tenant is resolved server-side from the
+   authenticated operator.</li>
+<li><strong>Admin/system actions</strong> — system-level admin operations that require
+   cross-tenant access must use an explicit <code>is_system_admin</code> flag on the
+   operator record and must be separately logged.</li>
+</ol>
+<h3 id="fail-closed-behavior">Fail-Closed Behavior<a class="headerlink" href="#fail-closed-behavior" title="Permanent link">&para;</a></h3>
+<ul>
+<li>If the authenticated operator has no <code>tenant_id</code> in their record →
+  deny the request with <code>403 tenant_context_missing</code>.</li>
+<li>If the request is for a resource that belongs to a different tenant →
+  deny with <code>404</code> (not <code>403</code>) to avoid leaking tenant existence.</li>
+<li>If tenant context is ambiguous (e.g., multiple tenants for one operator)
+  → deny and require explicit clarification.</li>
+</ul>
+<h3 id="cross-tenant-access-denial">Cross-Tenant Access Denial<a class="headerlink" href="#cross-tenant-access-denial" title="Permanent link">&para;</a></h3>
+<ul>
+<li>No cross-tenant read, write, or mutation is permitted.</li>
+<li>Cross-tenant denial events must be auditable: write an audit event
+  with <code>approved: false</code>, <code>reason: cross_tenant_access_denied</code>.</li>
+<li>Return <code>404</code> (not <code>403</code>) on resource-not-found in tenant scope to
+  prevent tenant enumeration.</li>
+</ul>
+<h3 id="admin-system-exceptions">Admin / System Exceptions<a class="headerlink" href="#admin-system-exceptions" title="Permanent link">&para;</a></h3>
+<ul>
+<li>System admin access (cross-tenant) requires:</li>
+<li>Operator role <code>owner</code> with explicit <code>is_system_admin: true</code>.</li>
+<li>All cross-tenant accesses logged with <code>scope: system_admin</code>.</li>
+<li>No cross-tenant write without explicit intent flag.</li>
+<li>Health (<code>/health</code>) and readiness (<code>/readiness</code>) endpoints remain public
+  by design. They carry no tenant context. They must not return
+  tenant-scoped data.</li>
+</ul>
+<h3 id="demo-endpoint-exceptions">Demo Endpoint Exceptions<a class="headerlink" href="#demo-endpoint-exceptions" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>/demo/*</code> endpoints remain intentionally public and unauthenticated
+  (GL-190 safety guard maintained).</li>
+<li>Demo endpoints must only ever operate on synthetic/test data.</li>
+<li>Demo endpoints must never be routed to tenant-scoped resources.</li>
+</ul>
+<h3 id="error-response-safety">Error Response Safety<a class="headerlink" href="#error-response-safety" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Error responses must never include: raw <code>tenant_id</code> values from other
+  tenants, resource IDs from other tenants, operator tokens, or secrets.</li>
+<li>Generic error messages must be used for cross-tenant denial.</li>
+</ul>
+<hr />
+<h2 id="auth-operator-admin-context-model">Auth / Operator / Admin Context Model<a class="headerlink" href="#auth-operator-admin-context-model" title="Permanent link">&para;</a></h2>
+<h3 id="current-state">Current State<a class="headerlink" href="#current-state" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Admin token mode: <code>GRANTLAYER_ADMIN_TOKEN</code> env var; no tenant context.</li>
+<li>Operator token mode: operator record has <code>id</code>, <code>name</code>, <code>role</code>,
+  <code>token_hash</code>, <code>expires_at</code>; no <code>tenant_id</code>.</li>
+<li>Agent permission scopes: globally-scoped within deployment.</li>
+</ul>
+<h3 id="required-changes-for-gl-200b">Required Changes for GL-200B<a class="headerlink" href="#required-changes-for-gl-200b" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Operator table gains <code>tenant_id</code></strong> — a non-null column binding each
+   operator to exactly one tenant.</li>
+<li><strong>Operator auth returns tenant context</strong> — <code>authenticate_operator()</code>
+   returns the operator's <code>tenant_id</code> alongside their role.</li>
+<li><strong>Admin token mode</strong> — in GL-200B, admin token mode remains a dev/demo
+   fallback. When used, it should be bound to a single <code>dev</code> tenant context.
+   Admin token mode must not be used in production multi-tenant deployments.</li>
+<li><strong>Agent permission assignments gain <code>tenant_id</code></strong> — assignments are
+   scoped to the operator's tenant. Agents may not access resources outside
+   the operator's tenant.</li>
+</ol>
+<h3 id="minimum-gl-200b-enforcement">Minimum GL-200B Enforcement<a class="headerlink" href="#minimum-gl-200b-enforcement" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>authenticate_operator()</code> → resolves <code>tenant_id</code> from operator record.</li>
+<li>Auth guard injects <code>tenant_id</code> into request context.</li>
+<li>All business resource queries include <code>WHERE tenant_id = ?</code> clause.</li>
+<li>Operator creation requires <code>tenant_id</code> parameter.</li>
+</ul>
+<h3 id="what-should-remain-deferred">What Should Remain Deferred<a class="headerlink" href="#what-should-remain-deferred" title="Permanent link">&para;</a></h3>
+<ul>
+<li>OAuth 2.0 / JWT / SSO per tenant — deferred to production auth issue.</li>
+<li>Workspace-level operator membership — deferred to GL-200C.</li>
+<li>Per-tenant rate limits — deferred.</li>
+<li>Tenant provisioning API — deferred (tenants are pre-provisioned in GL-200B).</li>
+</ul>
+<hr />
+<h2 id="database-data-model-strategy">Database / Data Model Strategy<a class="headerlink" href="#database-data-model-strategy" title="Permanent link">&para;</a></h2>
+<h3 id="columns-required-gl-200b-scope">Columns Required (GL-200B Scope)<a class="headerlink" href="#columns-required-gl-200b-scope" title="Permanent link">&para;</a></h3>
+<p>For each business resource table (<code>grants</code>, <code>grant_requests</code>,
+<code>grant_executions</code>, <code>challenges</code>, <code>audit_events</code>, <code>operators</code>,
+<code>agent_permission_assignments</code>):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">tenant_id</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;unassigned&#39;</span><span class="p">,</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">workspace_id</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">NULL</span>
+</code></pre></div>
+<p><code>tenant_id</code> is non-null (defaulting to <code>unassigned</code> during migration backfill,
+then updated). <code>workspace_id</code> is nullable (reserved for GL-200C).</p>
+<h3 id="backfill-strategy">Backfill Strategy<a class="headerlink" href="#backfill-strategy" title="Permanent link">&para;</a></h3>
+<p>Existing demo/dev data in any deployment must be backfilled to a single
+<code>dev/demo</code> tenant:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>tenant_id = &#39;demo&#39;  -- for existing dev/demo rows
+</code></pre></div>
+<p>The migration must:
+1. Add <code>tenant_id TEXT DEFAULT 'unassigned'</code> to each table.
+2. <code>UPDATE &lt;table&gt; SET tenant_id = 'demo' WHERE tenant_id = 'unassigned'</code>
+3. Add <code>workspace_id TEXT DEFAULT NULL</code> to each table (reserved for GL-200C).
+4. Add index: <code>CREATE INDEX idx_&lt;table&gt;_tenant_id ON &lt;table&gt;(tenant_id)</code>.</p>
+<p>Migration must be idempotent: re-running must not fail if columns already exist.</p>
+<h3 id="migration-safety">Migration Safety<a class="headerlink" href="#migration-safety" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Migrations use <code>ALTER TABLE ... ADD COLUMN IF NOT EXISTS</code> (PostgreSQL)
+  or <code>CREATE TABLE IF NOT EXISTS</code> + <code>ALTER TABLE</code> pattern (SQLite does not
+  support <code>IF NOT EXISTS</code> on ALTER; must check column existence first).</li>
+<li>No data is deleted during migration.</li>
+<li>No uniqueness constraints on <code>tenant_id</code> alone (composites with ID remain).</li>
+<li>Rollback: remove columns added. No row data is destructive to remove.</li>
+<li>The <code>audit_events</code> table gains <code>tenant_id</code> but the hash-chain computation
+  must be updated to include <code>tenant_id</code> in the canonical payload to preserve
+  chain integrity post-migration.</li>
+</ul>
+<h3 id="sqlite-postgresql-implications">SQLite / PostgreSQL Implications<a class="headerlink" href="#sqlite-postgresql-implications" title="Permanent link">&para;</a></h3>
+<ul>
+<li>SQLite: <code>ALTER TABLE ADD COLUMN</code> supported without <code>IF NOT EXISTS</code>; must
+  check <code>PRAGMA table_info()</code> first or use <code>CREATE TABLE ... AS SELECT</code>.</li>
+<li>PostgreSQL: <code>ALTER TABLE ADD COLUMN IF NOT EXISTS</code> is supported (v9.6+).</li>
+<li>Both backends must produce identical query behaviour via the existing
+  <code>_translate_placeholders</code> layer in <code>db.py</code>.</li>
+</ul>
+<h3 id="indexes-constraints">Indexes / Constraints<a class="headerlink" href="#indexes-constraints" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add <code>INDEX idx_grants_tenant_id ON grants(tenant_id)</code>.</li>
+<li>Add composite <code>INDEX idx_grants_tenant_subject ON grants(tenant_id, subject_id)</code>.</li>
+<li>Similar indexes for each scoped table.</li>
+<li>No new UNIQUE constraints needed in GL-200B (IDs remain globally unique UUIDs).</li>
+</ul>
+<h3 id="audit-immutability-considerations">Audit Immutability Considerations<a class="headerlink" href="#audit-immutability-considerations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The hash-chain in <code>audit_events</code> covers a canonical JSON payload. Adding
+  <code>tenant_id</code> to the payload breaks the existing chain unless handled carefully.</li>
+<li><strong>Recommended:</strong> New events written after the migration include <code>tenant_id</code>
+  in the canonical hash payload. Historical events (written before migration)
+  retain their original <code>row_hash</code> values; a migration-time marker event
+  (<code>scope: tenant_migration_applied</code>) is appended to the chain to signal the
+  boundary.</li>
+<li>Chain verification must handle mixed chains (pre-migration events without
+  <code>tenant_id</code> in hash, post-migration events with <code>tenant_id</code>).</li>
+</ul>
+<h3 id="rollback-compatibility">Rollback / Compatibility<a class="headerlink" href="#rollback-compatibility" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Rollback of a <code>tenant_id</code> migration is low-risk (column drop) as long as
+  no non-demo data has been written under tenant context.</li>
+<li>Pre-migration clients (tools, examples) that do not send tenant context
+  continue to work via the admin-token / operator-token path (which resolves
+  tenant context server-side from the operator record).</li>
+<li>No API-visible breaking change is required for GL-200B if tenant context
+  is injected server-side from the operator record.</li>
+</ul>
+<hr />
+<h2 id="audit-design">Audit Design<a class="headerlink" href="#audit-design" title="Permanent link">&para;</a></h2>
+<h3 id="tenantworkspace-context-in-audit-events">Tenant/Workspace Context in Audit Events<a class="headerlink" href="#tenantworkspace-context-in-audit-events" title="Permanent link">&para;</a></h3>
+<p>Every audit event written after GL-200B implementation must include:</p>
+<ul>
+<li><code>tenant_id</code>: the tenant context of the action.</li>
+<li><code>workspace_id</code>: the workspace context (nullable in GL-200B; required in
+  GL-200C if workspace isolation is implemented).</li>
+<li><code>scope</code>: one of <code>tenant</code>, <code>tenant_admin</code>, <code>system</code>, <code>system_admin</code>,
+  <code>public</code> (for unauthenticated endpoints).</li>
+</ul>
+<p>System-level events (migration completion, health probes) use
+<code>scope: system</code>, <code>tenant_id: NULL</code>.</p>
+<h3 id="cross-tenant-access-denial-audit-events">Cross-Tenant Access Denial Audit Events<a class="headerlink" href="#cross-tenant-access-denial-audit-events" title="Permanent link">&para;</a></h3>
+<p>Every cross-tenant access denial must produce an audit event:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cross_tenant_access_denied&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;approved&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cross_tenant_access_denied&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;tenant_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;requesting_operator_tenant_id&gt;&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">&quot;scope&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tenant&quot;</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="immutable-audit-behavior">Immutable Audit Behavior<a class="headerlink" href="#immutable-audit-behavior" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Audit events must remain append-only and tamper-evident after GL-200B.</li>
+<li>The hash-chain mechanism is preserved. The migration boundary marker
+  event handles the transition.</li>
+<li><code>tenant_id</code> is included in the canonical hash payload for post-migration
+  events.</li>
+</ul>
+<h3 id="no-sensitive-data-in-audit">No Sensitive Data in Audit<a class="headerlink" href="#no-sensitive-data-in-audit" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Raw token values must never appear in audit events.</li>
+<li>Raw grant payloads must not be embedded; use <code>matched_grant_id</code>.</li>
+<li>No PII (operator names, email addresses) beyond what is already logged.</li>
+</ul>
+<hr />
+<h2 id="permission-model-implications">Permission Model Implications<a class="headerlink" href="#permission-model-implications" title="Permanent link">&para;</a></h2>
+<h3 id="agent-permission-scopes">Agent Permission Scopes<a class="headerlink" href="#agent-permission-scopes" title="Permanent link">&para;</a></h3>
+<p>Current scopes (<code>evidence:read</code>, <code>grant_request:read</code>, etc.) are
+globally-scoped within a deployment. After GL-200B:</p>
+<ul>
+<li>Agent permission assignments carry the operator's <code>tenant_id</code>.</li>
+<li>Scope evaluation (<code>agent_permissions.py</code>) must receive tenant context
+  and verify that the requested resource belongs to the same tenant as
+  the assignment.</li>
+<li>The scope vocabulary itself (e.g., <code>evidence:read</code>) does not change.</li>
+<li>Wildcard scopes (<code>*:*</code>) remain valid but are tenant-bounded.</li>
+</ul>
+<h3 id="operator-role-model">Operator Role Model<a class="headerlink" href="#operator-role-model" title="Permanent link">&para;</a></h3>
+<p>Operator roles (<code>owner</code>, <code>grant_admin</code>, <code>grant_reviewer</code>, <code>readonly</code>,
+<code>auditor</code>) remain unchanged. Roles are enforced within the tenant context.
+Cross-tenant role elevation is forbidden.</p>
+<h3 id="admin-token-mode-devdemo-only">Admin Token Mode (Dev/Demo Only)<a class="headerlink" href="#admin-token-mode-devdemo-only" title="Permanent link">&para;</a></h3>
+<p>In GL-200B, admin token mode may remain as a dev/demo fallback bound to
+a single <code>dev</code> tenant. It must not be used in production multi-tenant
+deployments. Admin token mode must be clearly documented as not
+production-safe.</p>
+<hr />
+<h2 id="testing-strategy">Testing Strategy<a class="headerlink" href="#testing-strategy" title="Permanent link">&para;</a></h2>
+<p>The following tests are required before any tenant-isolation claim:</p>
+<h3 id="cross-tenant-isolation-tests">Cross-Tenant Isolation Tests<a class="headerlink" href="#cross-tenant-isolation-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T-001</td>
+<td>Operator A (tenant_1) cannot read grants belonging to tenant_2</td>
+</tr>
+<tr>
+<td>T-002</td>
+<td>Operator A (tenant_1) cannot write grants to tenant_2</td>
+</tr>
+<tr>
+<td>T-003</td>
+<td>Operator A (tenant_1) cannot read audit events from tenant_2</td>
+</tr>
+<tr>
+<td>T-004</td>
+<td>Operator A (tenant_1) cannot read evidence from tenant_2</td>
+</tr>
+<tr>
+<td>T-005</td>
+<td>Operator A (tenant_1) cannot read grant requests from tenant_2</td>
+</tr>
+<tr>
+<td>T-006</td>
+<td>Cross-tenant access denial is auditable (audit event written)</td>
+</tr>
+<tr>
+<td>T-007</td>
+<td>Cross-tenant denial returns <code>404</code> (not <code>403</code>) for resource endpoints</td>
+</tr>
+</tbody>
+</table>
+<h3 id="workspace-isolation-tests-gl-200c">Workspace Isolation Tests (GL-200C)<a class="headerlink" href="#workspace-isolation-tests-gl-200c" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W-001</td>
+<td>Workspace A operator cannot read grants from workspace B within same tenant</td>
+</tr>
+<tr>
+<td>W-002</td>
+<td>Workspace A operator cannot write grants to workspace B</td>
+</tr>
+<tr>
+<td>W-003</td>
+<td>Cross-workspace denial is auditable</td>
+</tr>
+</tbody>
+</table>
+<h3 id="auth-context-tests">Auth Context Tests<a class="headerlink" href="#auth-context-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A-001</td>
+<td>Missing operator token → <code>401</code> (unchanged)</td>
+</tr>
+<tr>
+<td>A-002</td>
+<td>Invalid operator token → <code>401</code> (unchanged)</td>
+</tr>
+<tr>
+<td>A-003</td>
+<td>Operator with no <code>tenant_id</code> → <code>403 tenant_context_missing</code></td>
+</tr>
+<tr>
+<td>A-004</td>
+<td>Admin token mode resolves to <code>dev</code> tenant context</td>
+</tr>
+</tbody>
+</table>
+<h3 id="audit-context-tests">Audit Context Tests<a class="headerlink" href="#audit-context-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AU-001</td>
+<td>Post-migration audit events include <code>tenant_id</code></td>
+</tr>
+<tr>
+<td>AU-002</td>
+<td>System-level events carry <code>scope: system</code></td>
+</tr>
+<tr>
+<td>AU-003</td>
+<td>Cross-tenant denial events are written to audit log</td>
+</tr>
+<tr>
+<td>AU-004</td>
+<td>Audit chain verification handles pre/post-migration events</td>
+</tr>
+</tbody>
+</table>
+<h3 id="demo-endpoint-safety-tests">Demo Endpoint Safety Tests<a class="headerlink" href="#demo-endpoint-safety-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D-001</td>
+<td><code>/demo/*</code> endpoints remain accessible without auth (GL-190 guard)</td>
+</tr>
+<tr>
+<td>D-002</td>
+<td><code>/demo/*</code> endpoints serve only synthetic data</td>
+</tr>
+<tr>
+<td>D-003</td>
+<td><code>/demo/*</code> endpoints do not expose tenant-scoped data</td>
+</tr>
+</tbody>
+</table>
+<h3 id="health-readiness-tests">Health / Readiness Tests<a class="headerlink" href="#health-readiness-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H-001</td>
+<td><code>/health</code> returns <code>200</code> without auth (unchanged)</td>
+</tr>
+<tr>
+<td>H-002</td>
+<td><code>/readiness</code> returns <code>200</code> without auth (unchanged)</td>
+</tr>
+<tr>
+<td>H-003</td>
+<td>Health/readiness responses contain no tenant-scoped data</td>
+</tr>
+</tbody>
+</table>
+<h3 id="migration-tests">Migration Tests<a class="headerlink" href="#migration-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M-001</td>
+<td>Migration adds <code>tenant_id</code> to all business resource tables</td>
+</tr>
+<tr>
+<td>M-002</td>
+<td>Migration backfill sets existing rows to <code>tenant_id = 'demo'</code></td>
+</tr>
+<tr>
+<td>M-003</td>
+<td>Migration is idempotent (re-run does not fail)</td>
+</tr>
+<tr>
+<td>M-004</td>
+<td>Existing test fixtures continue to pass post-migration</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples-determinism-tests">Examples / Determinism Tests<a class="headerlink" href="#examples-determinism-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E-001</td>
+<td><code>examples/grant_lifecycle_evidence_bundle.py</code> output matches fixture</td>
+</tr>
+<tr>
+<td>E-002</td>
+<td><code>scripts/verify-first-output.sh</code> passes</td>
+</tr>
+<tr>
+<td>E-003</td>
+<td>Public examples remain deterministic after implementation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="security-boundary-regression-tests">Security Boundary Regression Tests<a class="headerlink" href="#security-boundary-regression-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S-001</td>
+<td>Anonymous access remains denied where expected</td>
+</tr>
+<tr>
+<td>S-002</td>
+<td>No raw token/secret leakage in any API response</td>
+</tr>
+<tr>
+<td>S-003</td>
+<td>Security boundary regression suite passes with no new failures</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="rollout-plan">Rollout Plan<a class="headerlink" href="#rollout-plan" title="Permanent link">&para;</a></h2>
+<h3 id="phase-1-gl-200b-tenant-isolation-baseline">Phase 1 — GL-200B: Tenant Isolation Baseline<a class="headerlink" href="#phase-1-gl-200b-tenant-isolation-baseline" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Add <code>tenant_id</code> (non-null, backfilled) and <code>workspace_id</code> (nullable,
+   reserved) columns to all business resource tables via new migration.</li>
+<li>Update <code>operators</code> table: add <code>tenant_id</code> column.</li>
+<li>Update <code>authenticate_operator()</code> to return <code>tenant_id</code>.</li>
+<li>Inject tenant context into all business resource queries.</li>
+<li>Add fail-closed guard: missing <code>tenant_id</code> → <code>403</code>.</li>
+<li>Update audit event writer to include <code>tenant_id</code>.</li>
+<li>Update hash-chain canonical payload to include <code>tenant_id</code> for
+   post-migration events.</li>
+<li>Write and pass all T-xxx, A-xxx, AU-xxx, M-xxx tests.</li>
+<li>Update docs: remove "tenant isolation not implemented" only when
+   GL-200B is merged and verified.</li>
+</ol>
+<h3 id="phase-2-gl-200c-workspace-isolation-baseline-future">Phase 2 — GL-200C: Workspace Isolation Baseline (future)<a class="headerlink" href="#phase-2-gl-200c-workspace-isolation-baseline-future" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Activate <code>workspace_id</code> enforcement on all business resources.</li>
+<li>Add workspace membership model.</li>
+<li>Write and pass all W-xxx tests.</li>
+</ol>
+<h3 id="phase-3-gl-200d-policy-engine-future">Phase 3 — GL-200D: Policy Engine (future)<a class="headerlink" href="#phase-3-gl-200d-policy-engine-future" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Implement full RBAC / tenant / workspace policy engine.</li>
+<li>Replace per-query tenant filter with policy evaluation layer.</li>
+</ol>
+<h3 id="phase-4-gl-201-api-contract-update-future">Phase 4 — GL-201: API Contract Update (future)<a class="headerlink" href="#phase-4-gl-201-api-contract-update-future" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Update <code>docs/openapi.yaml</code> to reflect tenant context in API contract.</li>
+</ol>
+<h3 id="phase-5-gl-202-audit-propagation-hardening-future">Phase 5 — GL-202: Audit Propagation Hardening (future)<a class="headerlink" href="#phase-5-gl-202-audit-propagation-hardening-future" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Harden audit event tenant context; add <code>workspace_id</code> to audit.</li>
+<li>Verify chain integrity across migrations.</li>
+</ol>
+<h3 id="phase-6-gl-203-isolation-regression-smoke-matrix-future">Phase 6 — GL-203: Isolation Regression / Smoke Matrix (future)<a class="headerlink" href="#phase-6-gl-203-isolation-regression-smoke-matrix-future" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Add cross-tenant and workspace isolation to public smoke matrix.</li>
+<li>Verify all T-xxx, W-xxx, AU-xxx tests in CI.</li>
+</ol>
+<hr />
+<h2 id="compatibility-strategy">Compatibility Strategy<a class="headerlink" href="#compatibility-strategy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>No breaking API change in GL-200B</strong> — tenant context is resolved
+  server-side from the operator record; clients do not need to change.</li>
+<li><strong>Existing examples remain deterministic</strong> — examples use a single
+  operator/tenant (demo); no change needed.</li>
+<li><strong>Existing test fixtures continue to work</strong> — test DB is initialized
+  fresh per test; migration runs as part of <code>init_db()</code>; all existing
+  tests remain valid.</li>
+<li><strong>SQLite and PostgreSQL parity</strong> — migration must work on both.</li>
+<li><strong>Admin token dev/demo mode</strong> — remains available as a single-tenant
+  fallback for development; must not be used in multi-tenant production.</li>
+</ul>
+<hr />
+<h2 id="production-readiness-criteria">Production Readiness Criteria<a class="headerlink" href="#production-readiness-criteria" title="Permanent link">&para;</a></h2>
+<p>The following must be true before any tenant isolation claim is made
+in public documentation or any production SaaS claim is made:</p>
+<ol>
+<li><strong>DB schema scoped</strong> — <code>tenant_id</code> column exists on all business
+   resource tables in production schema.</li>
+<li><strong>Request context enforced</strong> — every API request that accesses
+   business resources reads and enforces the operator's <code>tenant_id</code>.</li>
+<li><strong>All sensitive resources scoped</strong> — grants, grant_requests, challenges,
+   grant_executions, evidence/executions, audit_events, operators,
+   agent_permission_assignments all have <code>tenant_id</code> enforced.</li>
+<li><strong>Cross-tenant tests pass</strong> — all T-xxx tests pass in CI.</li>
+<li><strong>Audit context propagated</strong> — all AU-xxx tests pass; audit events
+   include <code>tenant_id</code>.</li>
+<li><strong>Migration verified</strong> — all M-xxx tests pass; migration is idempotent.</li>
+<li><strong>Examples deterministic</strong> — all E-xxx tests pass.</li>
+<li><strong>Security boundary regression passes</strong> — all S-xxx tests pass with
+   no new failures.</li>
+<li><strong>Public docs updated</strong> — <code>docs/production_readiness_gap_report_v2.md</code>
+   and all public claims about tenant isolation are updated <strong>only after</strong>
+   GL-200B is merged and verified, not before.</li>
+<li><strong>Security review complete</strong> — any security-sensitive findings
+    identified during implementation are routed to GitHub Security
+    Advisories before public disclosure.</li>
+</ol>
+<hr />
+<h2 id="implementation-split">Implementation Split<a class="headerlink" href="#implementation-split" title="Permanent link">&para;</a></h2>
+<h3 id="gl-200b-tenantworkspace-isolation-implementation-baseline">GL-200B — Tenant/Workspace Isolation Implementation Baseline<a class="headerlink" href="#gl-200b-tenantworkspace-isolation-implementation-baseline" title="Permanent link">&para;</a></h3>
+<p><strong>Scope:</strong> Implement <code>tenant_id</code> on all business resource tables, operator
+binding, auth context injection, query filtering, and audit context.
+Write all T-xxx, A-xxx, AU-xxx, M-xxx tests.</p>
+<p><strong>Deliverables:</strong>
+- New DB migration adding <code>tenant_id</code>, <code>workspace_id</code> (nullable) to all tables
+- Updated <code>operators</code> table with <code>tenant_id</code>
+- Updated <code>authenticate_operator()</code> returning tenant context
+- Updated resource query functions with <code>tenant_id</code> filter
+- Updated audit event writer with <code>tenant_id</code>
+- Updated hash-chain canonical payload
+- Full test suite for isolation</p>
+<h3 id="gl-200c-workspace-isolation-baseline-future">GL-200C — Workspace Isolation Baseline (future)<a class="headerlink" href="#gl-200c-workspace-isolation-baseline-future" title="Permanent link">&para;</a></h3>
+<p><strong>Scope:</strong> Activate <code>workspace_id</code> enforcement; add workspace membership
+model; write W-xxx tests.</p>
+<h3 id="gl-200d-policy-engine-future">GL-200D — Policy Engine (future)<a class="headerlink" href="#gl-200d-policy-engine-future" title="Permanent link">&para;</a></h3>
+<p><strong>Scope:</strong> Implement full RBAC/policy engine replacing per-query tenant filter.</p>
+<h3 id="gl-201-tenantworkspace-isolation-api-contract-update-future">GL-201 — Tenant/Workspace Isolation API Contract Update (future)<a class="headerlink" href="#gl-201-tenantworkspace-isolation-api-contract-update-future" title="Permanent link">&para;</a></h3>
+<p><strong>Scope:</strong> Update <code>docs/openapi.yaml</code> to reflect tenant context.</p>
+<h3 id="gl-202-tenantworkspace-isolation-audit-propagation-future">GL-202 — Tenant/Workspace Isolation Audit Propagation (future)<a class="headerlink" href="#gl-202-tenantworkspace-isolation-audit-propagation-future" title="Permanent link">&para;</a></h3>
+<p><strong>Scope:</strong> Harden audit chain tenant context; add <code>workspace_id</code> to audit
+canonical payload; verify chain integrity across migrations.</p>
+<h3 id="gl-203-tenantworkspace-isolation-regression-smoke-matrix-future">GL-203 — Tenant/Workspace Isolation Regression / Smoke Matrix (future)<a class="headerlink" href="#gl-203-tenantworkspace-isolation-regression-smoke-matrix-future" title="Permanent link">&para;</a></h3>
+<p><strong>Scope:</strong> Add cross-tenant and workspace isolation to CI smoke matrix.</p>
+<hr />
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk ID</th>
+<th>Risk</th>
+<th>Probability</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R-001</td>
+<td>Hash-chain breaks after migration</td>
+<td>Medium</td>
+<td>High</td>
+<td>Migration boundary marker event; dual-mode chain verification</td>
+</tr>
+<tr>
+<td>R-002</td>
+<td>Incomplete backfill leaves unassigned rows</td>
+<td>Medium</td>
+<td>Critical</td>
+<td>Backfill migration + verification step</td>
+</tr>
+<tr>
+<td>R-003</td>
+<td>Existing tests break due to missing <code>tenant_id</code> in fixtures</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Update test fixtures to supply tenant context</td>
+</tr>
+<tr>
+<td>R-004</td>
+<td>Demo endpoint accidentally exposed to tenant scope</td>
+<td>Low</td>
+<td>High</td>
+<td>GL-190 guard maintained; demo route does not use tenant-filtered queries</td>
+</tr>
+<tr>
+<td>R-005</td>
+<td>Admin token mode bypasses tenant enforcement</td>
+<td>Medium</td>
+<td>Critical</td>
+<td>Admin token mode binds to <code>dev</code> tenant; blocked in production</td>
+</tr>
+<tr>
+<td>R-006</td>
+<td>SQLite <code>ALTER TABLE</code> dialect mismatch</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Check <code>PRAGMA table_info</code> before alter; test on both backends</td>
+</tr>
+<tr>
+<td>R-007</td>
+<td>Cross-tenant 404 vs 403 confusion in error handling</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Standardize: resource-not-in-tenant → 404</td>
+</tr>
+<tr>
+<td>R-008</td>
+<td>Agent permission assignments not tenant-scoped correctly</td>
+<td>Medium</td>
+<td>High</td>
+<td>Add tenant context to all assignment queries</td>
+</tr>
+<tr>
+<td>R-009</td>
+<td>Workspace column added but accidentally enforced too early</td>
+<td>Low</td>
+<td>Medium</td>
+<td><code>workspace_id</code> nullable; no enforcement in GL-200B</td>
+</tr>
+<tr>
+<td>R-010</td>
+<td>Public docs claim tenant isolation before implementation is verified</td>
+<td>Low</td>
+<td>Critical</td>
+<td>Docs update gated on GL-200B merge + test pass</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="findings">Findings<a class="headerlink" href="#findings" title="Permanent link">&para;</a></h2>
+<h3 id="gl-200a-f001">GL-200A-F001<a class="headerlink" href="#gl-200a-f001" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>id:</strong> GL-200A-F001</li>
+<li><strong>severity:</strong> critical</li>
+<li><strong>category:</strong> tenant-isolation</li>
+<li><strong>summary:</strong> No <code>tenant_id</code> column exists on any business resource table.</li>
+<li><strong>evidence:</strong> <code>backend/src/migrations/0001_gl032_baseline.py</code>: <code>grants</code>,
+  <code>grant_requests</code>, <code>grant_executions</code>, <code>challenges</code>, <code>audit_events</code>,
+  <code>operators</code> tables have no <code>tenant_id</code> column. Confirmed by grep:
+  zero occurrences of <code>tenant_id</code> in <code>backend/src/</code>.</li>
+<li><strong>blocking_for_design:</strong> no</li>
+<li><strong>blocking_for_gl200b_implementation:</strong> yes</li>
+<li><strong>blocking_for_production:</strong> yes</li>
+<li><strong>recommended_action:</strong> Add <code>tenant_id</code> column to all business resource
+  tables in a new GL-200B migration. Backfill existing data to <code>demo</code> tenant.</li>
+<li><strong>recommended_issue:</strong> GL-200B</li>
+</ul>
+<hr />
+<h3 id="gl-200a-f002">GL-200A-F002<a class="headerlink" href="#gl-200a-f002" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>id:</strong> GL-200A-F002</li>
+<li><strong>severity:</strong> critical</li>
+<li><strong>category:</strong> auth-context</li>
+<li><strong>summary:</strong> Operator token carries no <code>tenant_id</code>; auth layer returns no
+  tenant context.</li>
+<li><strong>evidence:</strong> <code>backend/src/auth.py</code>: <code>check_auth()</code> returns <code>operator</code>
+  dict with no <code>tenant_id</code> field. <code>backend/src/operators.py</code>: operator
+  model has no <code>tenant_id</code> column. Auth context cannot enforce tenant scope.</li>
+<li><strong>blocking_for_design:</strong> no</li>
+<li><strong>blocking_for_gl200b_implementation:</strong> yes</li>
+<li><strong>blocking_for_production:</strong> yes</li>
+<li><strong>recommended_action:</strong> Add <code>tenant_id</code> to operator table and record;
+  update <code>authenticate_operator()</code> to return <code>tenant_id</code>; inject into
+  request context.</li>
+<li><strong>recommended_issue:</strong> GL-200B</li>
+</ul>
+<hr />
+<h3 id="gl-200a-f003">GL-200A-F003<a class="headerlink" href="#gl-200a-f003" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>id:</strong> GL-200A-F003</li>
+<li><strong>severity:</strong> critical</li>
+<li><strong>category:</strong> API-boundary</li>
+<li><strong>summary:</strong> All API queries are globally-scoped; no <code>WHERE tenant_id = ?</code>
+  clause exists in any resource query.</li>
+<li><strong>evidence:</strong> <code>backend/src/grants.py</code>: <code>list_grants()</code> = <code>SELECT * FROM
+  grants ORDER BY created_at DESC</code> — no tenant filter. Similar pattern
+  in <code>grant_requests.py</code>, <code>challenges.py</code>, <code>grant_executions.py</code>.</li>
+<li><strong>blocking_for_design:</strong> no</li>
+<li><strong>blocking_for_gl200b_implementation:</strong> yes</li>
+<li><strong>blocking_for_production:</strong> yes</li>
+<li><strong>recommended_action:</strong> Update all list/get/create/update/delete query
+  functions to accept and apply <code>tenant_id</code> parameter.</li>
+<li><strong>recommended_issue:</strong> GL-200B</li>
+</ul>
+<hr />
+<h3 id="gl-200a-f004">GL-200A-F004<a class="headerlink" href="#gl-200a-f004" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>id:</strong> GL-200A-F004</li>
+<li><strong>severity:</strong> critical</li>
+<li><strong>category:</strong> audit-context</li>
+<li><strong>summary:</strong> Audit events carry no <code>tenant_id</code>; audit trail is a single
+  global namespace.</li>
+<li><strong>evidence:</strong> <code>backend/src/audit_log.py</code>: <code>AuditEvent</code> dataclass and
+  hash-chain payload include no <code>tenant_id</code>. <code>audit_events</code> table schema
+  (migration 0001) has no <code>tenant_id</code> column.</li>
+<li><strong>blocking_for_design:</strong> no</li>
+<li><strong>blocking_for_gl200b_implementation:</strong> yes</li>
+<li><strong>blocking_for_production:</strong> yes</li>
+<li><strong>recommended_action:</strong> Add <code>tenant_id</code> to <code>audit_events</code> table; update
+  <code>AuditEvent</code> model; update hash-chain canonical payload to include
+  <code>tenant_id</code> for post-migration events; handle dual-mode verification.</li>
+<li><strong>recommended_issue:</strong> GL-200B + GL-202</li>
+</ul>
+<hr />
+<h3 id="gl-200a-f005">GL-200A-F005<a class="headerlink" href="#gl-200a-f005" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>id:</strong> GL-200A-F005</li>
+<li><strong>severity:</strong> high</li>
+<li><strong>category:</strong> permission-model</li>
+<li><strong>summary:</strong> Agent permission assignments are globally-scoped; no tenant
+  binding exists.</li>
+<li><strong>evidence:</strong> <code>backend/src/agent_permission_assignments.py</code>: assignments
+  table has no <code>tenant_id</code> column. Scope evaluation does not check tenant
+  context.</li>
+<li><strong>blocking_for_design:</strong> no</li>
+<li><strong>blocking_for_gl200b_implementation:</strong> yes</li>
+<li><strong>blocking_for_production:</strong> yes</li>
+<li><strong>recommended_action:</strong> Add <code>tenant_id</code> to <code>agent_permission_assignments</code>
+  table; update scope evaluation to verify tenant context.</li>
+<li><strong>recommended_issue:</strong> GL-200B</li>
+</ul>
+<hr />
+<h3 id="gl-200a-f006">GL-200A-F006<a class="headerlink" href="#gl-200a-f006" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>id:</strong> GL-200A-F006</li>
+<li><strong>severity:</strong> high</li>
+<li><strong>category:</strong> database-migration</li>
+<li><strong>summary:</strong> Hash-chain canonical payload does not include <code>tenant_id</code>;
+  adding <code>tenant_id</code> to the payload post-migration will break existing
+  chain verification unless handled carefully.</li>
+<li><strong>evidence:</strong> <code>backend/src/audit_log.py</code>: <code>_hash_payload()</code> computes a
+  canonical JSON payload with no <code>tenant_id</code>. Adding <code>tenant_id</code> post-hoc
+  breaks <code>row_hash</code> values for historical events.</li>
+<li><strong>blocking_for_design:</strong> no</li>
+<li><strong>blocking_for_gl200b_implementation:</strong> no (requires careful implementation)</li>
+<li><strong>blocking_for_production:</strong> yes (if not handled)</li>
+<li><strong>recommended_action:</strong> Use dual-mode chain verification: historical events
+  (no <code>tenant_id</code> in hash) verified with old canonical payload; new events
+  verified with <code>tenant_id</code>-inclusive payload. Migration boundary marker
+  event appended.</li>
+<li><strong>recommended_issue:</strong> GL-200B + GL-202</li>
+</ul>
+<hr />
+<h3 id="gl-200a-f007">GL-200A-F007<a class="headerlink" href="#gl-200a-f007" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>id:</strong> GL-200A-F007</li>
+<li><strong>severity:</strong> medium</li>
+<li><strong>category:</strong> testing</li>
+<li><strong>summary:</strong> No cross-tenant isolation tests exist in the current test suite.</li>
+<li><strong>evidence:</strong> <code>backend/tests/</code>: no test file contains <code>cross_tenant</code> or
+  <code>tenant_id</code> assertions. Security boundary tests check auth but not
+  tenant data isolation.</li>
+<li><strong>blocking_for_design:</strong> no</li>
+<li><strong>blocking_for_gl200b_implementation:</strong> yes (tests must be written
+  alongside implementation)</li>
+<li><strong>blocking_for_production:</strong> yes</li>
+<li><strong>recommended_action:</strong> Write T-001 through T-007 tests as part of GL-200B.
+  Add to CI smoke matrix in GL-203.</li>
+<li><strong>recommended_issue:</strong> GL-200B + GL-203</li>
+</ul>
+<hr />
+<h3 id="gl-200a-f008">GL-200A-F008<a class="headerlink" href="#gl-200a-f008" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>id:</strong> GL-200A-F008</li>
+<li><strong>severity:</strong> medium</li>
+<li><strong>category:</strong> production-readiness</li>
+<li><strong>summary:</strong> Public documentation (README, SECURITY.md, docs/) currently
+  states that tenant isolation is not implemented. This is accurate and must
+  remain accurate until GL-200B is merged and verified.</li>
+<li><strong>evidence:</strong> <code>docs/tenant_workspace_boundary_decision.md</code> (GL-132):
+  "No multi-tenant isolation implemented." <code>SECURITY.md</code> section 6 notes
+  same. <code>docs/production_readiness_gap_report_v2.md</code> confirms not ready.</li>
+<li><strong>blocking_for_design:</strong> no</li>
+<li><strong>blocking_for_gl200b_implementation:</strong> no</li>
+<li><strong>blocking_for_production:</strong> yes (docs must be updated only after
+  implementation is real)</li>
+<li><strong>recommended_action:</strong> Do not update public docs to claim tenant isolation
+  until GL-200B is merged, tested, and verified. Then update in GL-200B PR.</li>
+<li><strong>recommended_issue:</strong> GL-200B</li>
+</ul>
+<hr />
+<h3 id="gl-200a-f009">GL-200A-F009<a class="headerlink" href="#gl-200a-f009" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>id:</strong> GL-200A-F009</li>
+<li><strong>severity:</strong> low</li>
+<li><strong>category:</strong> workspace-isolation</li>
+<li><strong>summary:</strong> <code>workspace_id</code> is not in the current schema; design must
+  reserve it to avoid a second disruptive migration.</li>
+<li><strong>evidence:</strong> No <code>workspace_id</code> in any migration file. GL-144 design doc
+  proposed workspace model but was never implemented.</li>
+<li><strong>blocking_for_design:</strong> no</li>
+<li><strong>blocking_for_gl200b_implementation:</strong> no</li>
+<li><strong>blocking_for_production:</strong> no (workspace isolation is a GL-200C concern)</li>
+<li><strong>recommended_action:</strong> Add <code>workspace_id TEXT DEFAULT NULL</code> to all tables
+  in the GL-200B migration to reserve the column. Do not enforce it in GL-200B.</li>
+<li><strong>recommended_issue:</strong> GL-200B (column reservation) + GL-200C (enforcement)</li>
+</ul>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>tenant_workspace_design_ready_for_implementation</strong></p>
+<hr />
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<p>The design pack is complete. The recommended implementation plan is:</p>
+<ol>
+<li><strong>GL-200B</strong> implements Option A baseline: <code>tenant_id</code> on all business
+   resource tables, operator binding, auth context injection, API query
+   filtering, audit context, and fail-closed enforcement.</li>
+<li><code>workspace_id</code> column is reserved (nullable) in the GL-200B migration
+   to avoid a second disruptive schema change.</li>
+<li>Workspace enforcement is staged to GL-200C.</li>
+<li>The design is compatible with both SQLite and PostgreSQL backends.</li>
+<li>The hash-chain audit integrity concern (GL-200A-F006) is addressed via
+   dual-mode verification and a migration boundary marker event.</li>
+<li>All nine findings are actionable and assigned to concrete follow-up issues.</li>
+<li>No production SaaS claim is made. No real customer/private grant data
+   is requested. No exploit details are included.</li>
+</ol>
+<hr />
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-200A Combined Merge-and-Publish</td>
+<td>GL-200A Combined Merge-and-Publish for Tenant/Workspace Isolation Design Pack</td>
+<td>Merge GL-200A to main and push public snapshot if appropriate</td>
+</tr>
+<tr>
+<td>GL-200B</td>
+<td>Tenant/Workspace Isolation Implementation Baseline</td>
+<td>Implement <code>tenant_id</code> on all business resource tables; operator binding; auth context; query filtering; audit context; fail-closed enforcement; migration; full T-xxx/A-xxx/AU-xxx/M-xxx test suite</td>
+</tr>
+<tr>
+<td>GL-200C</td>
+<td>Workspace Isolation Baseline</td>
+<td>Activate <code>workspace_id</code> enforcement; workspace membership model; W-xxx tests</td>
+</tr>
+<tr>
+<td>GL-200D</td>
+<td>Tenant/Workspace Policy Engine</td>
+<td>Full RBAC/policy engine replacing per-query tenant filter</td>
+</tr>
+<tr>
+<td>GL-201</td>
+<td>Tenant/Workspace Isolation API Contract Update</td>
+<td>Update <code>docs/openapi.yaml</code> to reflect tenant context</td>
+</tr>
+<tr>
+<td>GL-202</td>
+<td>Tenant/Workspace Isolation Audit Propagation</td>
+<td>Harden audit chain tenant context; dual-mode chain verification; <code>workspace_id</code> in audit</td>
+</tr>
+<tr>
+<td>GL-203</td>
+<td>Tenant/Workspace Isolation Regression/Smoke Matrix</td>
+<td>Add cross-tenant and workspace isolation to CI smoke matrix</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Confirmation</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>no_github_push_performed</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_visibility_change_performed</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>internal_repo_not_pushed_directly_to_github</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_github_api_label_changes_performed</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_github_issue_changes_performed</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_reviewer_outreach_sent</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_backend_src_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_openapi_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_migration_db_dependency_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_dependency_manifest_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_sdk_implementation_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_package_publishing_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_examples_runtime_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_frontend_website_design_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_github_workflow_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_snapshot_publish_script_behavior_changes</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_production_saas_claim</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>tenant_workspace_isolation_not_claimed_as_implemented</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_real_customer_data_requested</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_private_grant_data_requested</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_secrets_requested</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>no_exploit_details_included</td>
+<td>confirmed</td>
+</tr>
+<tr>
+<td>security_sensitive_reports_routed_to_github_security_advisories</td>
+<td>confirmed</td>
+</tr>
+</tbody>
+</table>
+<p>This document is <strong>design only</strong>. Tenant/workspace isolation is <strong>not yet implemented</strong> — this design pack defines the architecture for future implementation in GL-200B and later issues. No production SaaS claim is made. No real customer data or private grant data is involved. Security-sensitive findings should be reported via GitHub Security Advisories.</p>
+<p>(End of GL-200A Tenant/Workspace Isolation Design Pack)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

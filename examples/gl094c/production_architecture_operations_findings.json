@@ -1,0 +1,204 @@
+{
+  "reviewId": "GL-094C",
+  "reviewType": "production_architecture_operations_readiness_review",
+  "baseMain": "9bb8b16b5f149ac260f70304dc2e56eb02d6d82e",
+  "stagingReadiness": "go_with_cautions",
+  "productionReadiness": "not_ready",
+  "findings": [
+    {
+      "id": "GL094C-FINDING-001",
+      "severity": "high",
+      "status": "confirmed",
+      "category": "security",
+      "title": "CORS wildcard persists — any browser origin can make credentialed requests",
+      "description": "server.py returns Access-Control-Allow-Origin: * on all responses. First identified as GL-094A F-001 (HIGH). No remediation has been applied. In a browser-based integration context any origin can issue credentialed cross-site requests to the API, enabling CSRF-equivalent attacks and violating same-origin policy controls.",
+      "affectedFiles": ["backend/src/server.py"],
+      "recommendedIssue": "GL-095: CORS Origin Hardening — replace wildcard with explicit allowlist of permitted origins"
+    },
+    {
+      "id": "GL094C-FINDING-002",
+      "severity": "high",
+      "status": "confirmed",
+      "category": "performance",
+      "title": "Operator token authentication is O(n) — no index on token_hash column",
+      "description": "authenticate_operator() in operators.py iterates all active operators and runs PBKDF2-HMAC-SHA256 comparison against each stored token_hash. There is no database index on the token_hash column. With PBKDF2 at 600,000 iterations per comparison, even a small operator table of 10 entries means 6,000,000 PBKDF2 iterations per authenticated request. At scale this becomes a CPU-exhaustion vector. An attacker who can issue many authenticated requests forces O(n * PBKDF2_cost) CPU work per request.",
+      "affectedFiles": ["backend/src/operators.py"],
+      "recommendedIssue": "GL-097: Add index on operators.token_hash; consider pre-lookup by hashed prefix to short-circuit full scan"
+    },
+    {
+      "id": "GL094C-FINDING-003",
+      "severity": "high",
+      "status": "confirmed",
+      "category": "operations",
+      "title": "No migration rollback capability — schema changes are irreversible",
+      "description": "migrations/runner.py discovers and applies migration modules in sorted order. Each migration module provides only an apply(conn) function. There is no rollback(conn) counterpart, no schema versioning with down-migration support, and no mechanism to revert a failed migration. A botched migration in production requires manual database intervention and creates a split-brain risk on multi-instance restarts.",
+      "affectedFiles": ["backend/src/migrations/runner.py"],
+      "recommendedIssue": "GL-098: Add optional rollback(conn) to migration modules and a dry-run preview mode"
+    },
+    {
+      "id": "GL094C-FINDING-004",
+      "severity": "high",
+      "status": "confirmed",
+      "category": "persistence",
+      "title": "PostgreSQL CI validation absent — migrations are only tested against SQLite",
+      "description": "The CI test suite runs exclusively against SQLite. The persistence_backend_postgresql_readiness_design.md design document explicitly states PostgreSQL must be the primary production candidate backend, that schema compatibility must be verified, and that every migration must be tested against PostgreSQL before production readiness can be claimed. No CI job or test targets PostgreSQL. The SQL placeholder translation layer (db.py) provides backend-agnostic queries, but no automated validation confirms this works against a real PostgreSQL instance.",
+      "affectedFiles": ["backend/src/db.py", "backend/src/migrations/runner.py"],
+      "recommendedIssue": "GL-101: Add PostgreSQL CI job — run migration suite and a representative test subset against a real PostgreSQL container"
+    },
+    {
+      "id": "GL094C-FINDING-005",
+      "severity": "high",
+      "status": "confirmed",
+      "category": "operations",
+      "title": "No concurrent migration guard — multi-instance startup race condition",
+      "description": "migrations/runner.py acquires no advisory lock before running migrations. If multiple instances start simultaneously (e.g., rolling deploy, container restart overlap), two processes can both read the schema_migrations table, both decide the same migration is pending, and both attempt to apply it. PostgreSQL DDL inside a transaction provides some protection via implicit locking, but SQLite WAL mode does not guarantee serialized DDL execution across processes. No application-level advisory lock or startup serialization mechanism exists.",
+      "affectedFiles": ["backend/src/migrations/runner.py", "backend/src/db.py"],
+      "recommendedIssue": "GL-098: Add advisory lock (pg_try_advisory_lock for PostgreSQL, file lock for SQLite) around migration runner execution"
+    },
+    {
+      "id": "GL094C-FINDING-006",
+      "severity": "high",
+      "status": "confirmed",
+      "category": "observability",
+      "title": "Structured logging module exists but is not integrated into the server.py request path",
+      "description": "structured_logging.py provides build_log_event(), generate_correlation_id(), and secret-redacting metadata helpers. These are implemented and tested in isolation. However, server.py does not call build_log_event() for any request, response, auth event, or error. All server-side logging is done via print() to stdout with no structured format, no correlation ID, no event type classification, and no secret redaction guarantee. In a production incident there is no structured log trail to query, correlate, or alert on.",
+      "affectedFiles": ["backend/src/server.py", "backend/src/structured_logging.py"],
+      "recommendedIssue": "GL-099: Integrate structured_logging into server.py request/response lifecycle and auth event paths"
+    },
+    {
+      "id": "GL094C-FINDING-007",
+      "severity": "high",
+      "status": "design_gap",
+      "category": "operations",
+      "title": "No operational runbooks for backup/restore and incident response",
+      "description": "docs/backup_restore_data_lifecycle_design.md and docs/operational_runbook_incident_response_design.md exist as design documents but are design-only artifacts. No implemented runbooks, no tested restore procedures, no on-call playbooks, and no automated backup schedules exist. Production operations readiness requires that these be executable procedures verified against the actual deployment, not design aspirations. Until runbooks are implemented and tested, the mean time to recovery for any data loss or service incident is undefined.",
+      "affectedFiles": ["docs/backup_restore_data_lifecycle_design.md", "docs/operational_runbook_incident_response_design.md"],
+      "recommendedIssue": "GL-100: Convert backup/restore and incident response designs into executable, tested operational runbooks"
+    },
+    {
+      "id": "GL094C-FINDING-008",
+      "severity": "medium",
+      "status": "confirmed",
+      "category": "security",
+      "title": "Operator tokens have no expiry or rotation mechanism",
+      "description": "Operator tokens stored in the operators table have no expiry timestamp, no last-used tracking, and no rotation mechanism. Once a token is issued it is valid indefinitely until the operator row is manually deactivated. Bootstrap re-initialization requires manual database row deletion. There is no way to rotate a compromised token without operator table access. For production operator accounts this means any leaked token remains valid forever.",
+      "affectedFiles": ["backend/src/operators.py"],
+      "recommendedIssue": "GL-097: Add token_expires_at column, last_used_at tracking, and a rotation endpoint to the operator model"
+    },
+    {
+      "id": "GL094C-FINDING-009",
+      "severity": "medium",
+      "status": "confirmed",
+      "category": "security",
+      "title": "No rate limiting on operator token validation — brute-force not mitigated at application layer",
+      "description": "authenticate_operator() performs PBKDF2 verification on every Bearer token presentation with no per-IP or per-client request rate limiting. Although PBKDF2 at 600,000 iterations is computationally expensive for an attacker, there is no application-level backoff, lockout, or alerting on repeated auth failures. A distributed brute-force attack against weak operator tokens would produce no observable signals and would not be throttled.",
+      "affectedFiles": ["backend/src/operators.py", "backend/src/server.py"],
+      "recommendedIssue": "GL-097: Add auth failure logging with correlation ID; consider request-rate limiting at reverse-proxy or application layer"
+    },
+    {
+      "id": "GL094C-FINDING-010",
+      "severity": "medium",
+      "status": "confirmed",
+      "category": "architecture",
+      "title": "secret_sources.py is not integrated with config.py — env vars read directly without secret boundary",
+      "description": "secret_sources.py provides read_required_secret(), read_optional_secret(), and validate_required_secrets() with safe error handling and no-value-in-repr guarantees. config.py reads GRANTLAYER_ADMIN_TOKEN and all other secrets directly via os.environ.get() without going through this boundary. The secret boundary layer offers consistent error messages, audit-friendly redaction, and centralized secret validation — none of which are active for the current config loading path.",
+      "affectedFiles": ["backend/src/config.py", "backend/src/secret_sources.py"],
+      "recommendedIssue": "GL-096: Refactor config.py secret reads to use secret_sources.py boundary functions"
+    },
+    {
+      "id": "GL094C-FINDING-011",
+      "severity": "medium",
+      "status": "confirmed",
+      "category": "api",
+      "title": "OpenAPI contract declares only localhost:8765 as server — no staging or production server URL",
+      "description": "openapi.yaml servers section contains only http://localhost:8765. A production API contract should declare at minimum a staging server URL so that generated clients, integration tests, and API tooling can target non-local environments without manual URL substitution. The absence of staging/production server entries signals that the contract has not been validated against a production-like deployment target.",
+      "affectedFiles": ["docs/openapi.yaml"],
+      "recommendedIssue": "GL-095 or a dedicated API contract freeze issue: add staging and production server URLs to openapi.yaml servers list"
+    },
+    {
+      "id": "GL094C-FINDING-012",
+      "severity": "medium",
+      "status": "confirmed",
+      "category": "api",
+      "title": "API contract is still at version 0.31.0-rc — not a frozen stable contract",
+      "description": "openapi.yaml is at version 0.31.0-rc. A release candidate suffix indicates the contract is not yet frozen. The GL-063 production hardening roadmap lists API/OpenAPI contract freeze process as a P0 production gate. Until the version drops the -rc suffix and a breaking-change policy is defined and enforced, any integrator or generated client may encounter unannounced breaking changes.",
+      "affectedFiles": ["docs/openapi.yaml"],
+      "recommendedIssue": "Dedicated API contract freeze issue: define versioning policy, drop -rc suffix, document breaking-change deprecation process"
+    },
+    {
+      "id": "GL094C-FINDING-013",
+      "severity": "medium",
+      "status": "confirmed",
+      "category": "operations",
+      "title": "No dry-run migration mode — operators cannot preview pending migrations before applying",
+      "description": "migrations/runner.py provides no --dry-run or preview mode. An operator deploying a new version cannot inspect which migrations will run before they are applied. For production deployments where migration failures require manual recovery, a preview mode is a standard operational safety mechanism. Its absence increases the risk of accidental schema changes during maintenance windows.",
+      "affectedFiles": ["backend/src/migrations/runner.py"],
+      "recommendedIssue": "GL-098: Add dry-run/preview mode to migration runner that lists pending migrations without applying them"
+    },
+    {
+      "id": "GL094C-FINDING-014",
+      "severity": "low",
+      "status": "confirmed",
+      "category": "observability",
+      "title": "No correlation ID propagation via HTTP headers — requests cannot be traced across systems",
+      "description": "structured_logging.py provides generate_correlation_id() and normalize_correlation_id(). However, server.py does not read an incoming X-Request-ID or X-Correlation-ID header, does not generate one per request, and does not include it in response headers. Without correlation ID propagation, it is impossible to trace a single request across load balancer logs, application logs, and downstream service calls. This makes incident diagnosis dependent on timestamp correlation rather than request identity.",
+      "affectedFiles": ["backend/src/server.py", "backend/src/structured_logging.py"],
+      "recommendedIssue": "GL-099: Add X-Request-ID / X-Correlation-ID header handling to server.py request lifecycle"
+    },
+    {
+      "id": "GL094C-FINDING-015",
+      "severity": "informational",
+      "status": "confirmed",
+      "category": "architecture",
+      "title": "server.py is a monolith — all routes and middleware in a single ~1250-line file",
+      "description": "server.py contains all HTTP route handlers, middleware, auth guards, request parsing, response formatting, and startup logic in a single file of approximately 1250 lines. This is architecturally acceptable for the current MVP phase and does not introduce a correctness or security risk. However, it will become a maintenance burden as the feature surface grows and as structured logging, rate limiting, and middleware layers are added. Module decomposition should be planned before the next major feature phase.",
+      "affectedFiles": ["backend/src/server.py"],
+      "recommendedIssue": "Post-MVP architectural refactor: decompose server.py into route modules and a middleware layer"
+    }
+  ],
+  "recommendedNextIssues": [
+    {
+      "issueId": "GL-095",
+      "title": "CORS Origin Hardening",
+      "priority": 1,
+      "rationale": "High-severity, trivially exploitable in browser-based integrations. Wildcard CORS allows any origin to make credentialed cross-site requests. One-to-few line fix with immediate security value. Confirmed as the correct next issue from GL-094A recommendation."
+    },
+    {
+      "issueId": "GL-096",
+      "title": "Private key file permission enforcement",
+      "priority": 2,
+      "rationale": "High-severity from GL-094A F-002. Ed25519 private key written to disk with no 0600 permission enforcement. Low implementation cost, high security value."
+    },
+    {
+      "issueId": "GL-097",
+      "title": "Operator token performance and security hardening",
+      "priority": 3,
+      "rationale": "Addresses GL094C-FINDING-002 (O(n) auth scan), GL094C-FINDING-008 (no token expiry), and GL094C-FINDING-009 (no rate limiting). Required before operator model can be used in production."
+    },
+    {
+      "issueId": "GL-098",
+      "title": "Migration safety: rollback, dry-run, concurrent guard",
+      "priority": 4,
+      "rationale": "Addresses GL094C-FINDING-003, GL094C-FINDING-005, and GL094C-FINDING-013. Required for safe production deployments and rolling upgrades."
+    },
+    {
+      "issueId": "GL-099",
+      "title": "Structured logging integration into server.py request path",
+      "priority": 5,
+      "rationale": "Addresses GL094C-FINDING-006 and GL094C-FINDING-014. Prerequisite for production incident diagnosis. structured_logging.py is already implemented — this issue wires it in."
+    },
+    {
+      "issueId": "GL-100",
+      "title": "Operational runbooks: backup/restore and incident response",
+      "priority": 6,
+      "rationale": "Addresses GL094C-FINDING-007. Design documents exist; this issue converts them to executable, tested procedures."
+    },
+    {
+      "issueId": "GL-101",
+      "title": "PostgreSQL CI gating for migrations",
+      "priority": 7,
+      "rationale": "Addresses GL094C-FINDING-004. Required before production PostgreSQL deployment claim. Adds a CI job running migrations and tests against a real PostgreSQL container."
+    }
+  ],
+  "conclusion": "proceed_with_cautions"
+}

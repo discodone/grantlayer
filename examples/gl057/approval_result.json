@@ -1,0 +1,9 @@
+{
+  "approvalId": "gl057-approval-001",
+  "grantRequestId": "gl057-request-001",
+  "status": "approved",
+  "approvedBy": "gl057-approver-001",
+  "approvedAt": "2026-01-16T10:00:00Z",
+  "grantId": "gl057-grant-001",
+  "reason": "Request is within policy limits and evidence requirements are satisfied."
+}

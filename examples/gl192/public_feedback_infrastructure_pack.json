@@ -1,0 +1,325 @@
+{
+  "issue_id": "GL-192",
+  "title": "Public Feedback Infrastructure Pack",
+  "context": "GrantLayer is in public Developer Preview on GitHub. GL-187 through GL-191 delivered public docs cleanup, a first-output verify helper, a grant lifecycle evidence bundle, a demo endpoint safety guard, and a developer experience polish pack. GL-192 formalises the public feedback infrastructure: intake categories, severity model, label taxonomy plan, issue template guidance, security-sensitive routing, and round-2 reviewer guidance.",
+  "decision": "templates_added",
+  "public_feedback_categories": [
+    {
+      "name": "quickstart-feedback",
+      "description": "Friction, confusion, or errors when following README or agent_quickstart.md",
+      "template": "developer_feedback.yml",
+      "safe_submission": "public issue okay with synthetic data"
+    },
+    {
+      "name": "first-output-feedback",
+      "description": "Issues with scripts/verify-first-output.sh or docs/first_output_verify_helper.md",
+      "template": "developer_feedback.yml",
+      "safe_submission": "public issue okay with synthetic data"
+    },
+    {
+      "name": "grant-lifecycle-example-feedback",
+      "description": "Issues with examples/grant_lifecycle_evidence_bundle.py or docs/grant_lifecycle_evidence_bundle.md",
+      "template": "developer_feedback.yml",
+      "safe_submission": "public issue okay with synthetic data"
+    },
+    {
+      "name": "documentation-feedback",
+      "description": "Unclear, missing, or inconsistent docs",
+      "template": "documentation_feedback.yml",
+      "safe_submission": "public issue okay"
+    },
+    {
+      "name": "developer-experience-feedback",
+      "description": "General DX pain: setup, error messages, tooling, agent workflow",
+      "template": "developer_feedback.yml",
+      "safe_submission": "public issue okay with synthetic data"
+    },
+    {
+      "name": "bug-report",
+      "description": "Reproducible software bug using synthetic or demo data",
+      "template": "bug_report.yml",
+      "safe_submission": "public issue okay with synthetic data only"
+    },
+    {
+      "name": "feature-request",
+      "description": "Scoped improvement suggestion for Developer Preview stage",
+      "template": "feature_request.yml",
+      "safe_submission": "public issue okay"
+    },
+    {
+      "name": "product-question",
+      "description": "Questions about roadmap, architecture, tenant model, production posture",
+      "template": "plain issue with label type:question",
+      "safe_submission": "public issue okay; answer must preserve Developer Preview caveats"
+    },
+    {
+      "name": "security-sensitive-report",
+      "description": "Vulnerability, auth bypass, secret exposure, audit tampering risk, data leakage",
+      "template": "security_report.md",
+      "safe_submission": "GitHub Security Advisories only — do not file publicly"
+    },
+    {
+      "name": "non-scope-later",
+      "description": "Production SaaS deployment, real multi-tenant isolation, customer data handling",
+      "template": "none — deferred out of Developer Preview scope",
+      "safe_submission": "deferred — not applicable at this stage"
+    }
+  ],
+  "severity_model": {
+    "levels": ["critical", "high", "medium", "low", "info"],
+    "definitions": {
+      "critical": "Production-blocking security issue (auth bypass, secret leak, data exposure). Route to GitHub Security Advisories immediately.",
+      "high": "Significant correctness failure, misleading public safety statement, or security-adjacent concern not yet critical.",
+      "medium": "Reproducible bug that degrades a documented workflow; confusing or incorrect documentation that could mislead developers.",
+      "low": "Minor friction, cosmetic issues, non-blocking doc gaps.",
+      "info": "General feedback, questions, observations with no actionable bug."
+    },
+    "routing": {
+      "critical": "GitHub Security Advisories — private coordinated disclosure only",
+      "high_security_adjacent": "GitHub Security Advisories",
+      "high_non_security": "public issue — type:bug or type:docs",
+      "medium": "public issue",
+      "low": "public issue",
+      "info": "public issue — product question, DX feedback, or docs feedback"
+    }
+  },
+  "label_taxonomy_plan": {
+    "note": "All labels are recommended only. They must be created manually in GitHub repository settings if maintainers choose to adopt them. No labels are created or modified via the GitHub API by GL-192 or any automated process.",
+    "taxonomy_status": "recommended_manual_only",
+    "type_labels": [
+      "type:bug",
+      "type:docs",
+      "type:dx",
+      "type:question",
+      "type:feature",
+      "type:security-sensitive"
+    ],
+    "area_labels": [
+      "area:quickstart",
+      "area:first-output",
+      "area:grant-lifecycle-example",
+      "area:agent-docs",
+      "area:public-preview"
+    ],
+    "severity_labels": [
+      "severity:critical",
+      "severity:high",
+      "severity:medium",
+      "severity:low"
+    ],
+    "status_labels": [
+      "status:needs-triage",
+      "status:accepted",
+      "status:deferred",
+      "status:not-planned"
+    ],
+    "safety_labels": [
+      "safety:no-secrets",
+      "safety:needs-advisory"
+    ]
+  },
+  "issue_template_guidance": {
+    "templates_in_place": [
+      {
+        "file": ".github/ISSUE_TEMPLATE/bug_report.yml",
+        "category": "bug-report",
+        "has_safety_checklist": true,
+        "routes_security_to_advisory": true
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/developer_feedback.yml",
+        "category": "quickstart-feedback, first-output-feedback, grant-lifecycle-example-feedback, developer-experience-feedback",
+        "has_safety_checklist": true,
+        "routes_security_to_advisory": true
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/documentation_feedback.yml",
+        "category": "documentation-feedback",
+        "has_safety_checklist": true,
+        "routes_security_to_advisory": true
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/feature_request.yml",
+        "category": "feature-request",
+        "has_safety_checklist": true,
+        "routes_security_to_advisory": true
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/security_report.md",
+        "category": "security-sensitive-report",
+        "has_safety_checklist": false,
+        "routes_security_to_advisory": true,
+        "note": "This template explicitly redirects to GitHub Security Advisories and instructs reporters not to open public issues for sensitive findings."
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/agent_task_request.yml",
+        "category": "agent-task-scoping (internal use)",
+        "has_safety_checklist": true,
+        "routes_security_to_advisory": false
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/config.yml",
+        "category": "template configuration",
+        "has_safety_checklist": false,
+        "routes_security_to_advisory": true,
+        "note": "Disables blank issues and adds contact links to security policy and agent docs."
+      }
+    ],
+    "required_safety_content": [
+      "Do not include secrets (API keys, tokens, passwords, private keys)",
+      "Do not include real customer data",
+      "Do not include private grants or institutional data",
+      "Do not include exploit details in public issues",
+      "Use synthetic or demo data only",
+      "For security-sensitive reports, use GitHub Security Advisories"
+    ],
+    "developer_preview_caveat_required": "Developer Preview — GrantLayer is not production SaaS. Tenant isolation is not implemented."
+  },
+  "templates_added": true,
+  "templates_deferred_reason": null,
+  "security_sensitive_routing": {
+    "channel": "GitHub Security Advisories",
+    "url": "https://github.com/Discodone/grantlayer/security/advisories",
+    "policy_doc": "SECURITY.md",
+    "public_issues_for_security_sensitive": false,
+    "what_routes_to_advisory": [
+      "authentication bypass or privilege escalation",
+      "secret, token, or credential exposure in tracked files or outputs",
+      "audit log tampering or suppression vectors",
+      "data leakage across intended boundaries",
+      "exploit reproduction details, payloads, or proof-of-concept code",
+      "sensitive system information (internal paths, infrastructure details)"
+    ],
+    "what_public_issues_may_include": [
+      "high-level description of the type of concern without exploit details",
+      "request for a private reporting path if Security Advisories are unavailable"
+    ],
+    "never_in_any_report": [
+      "real secrets, API tokens, or credentials",
+      "real customer data, real grant applications, institutional records",
+      "private personal data (names, addresses, identifiers of real individuals)",
+      "internal infrastructure paths, hostnames, or private remotes"
+    ]
+  },
+  "safe_feedback_instructions": [
+    "Use synthetic or demo data only — do not use real customer data, real grant applications, or real institutional records.",
+    "Do not include secrets, tokens, API keys, passwords, or private keys in any public issue body, comment, or attachment.",
+    "Do not include exploit details, payloads, or sensitive reproduction steps in public issues. File those privately via GitHub Security Advisories.",
+    "For product questions that assume production SaaS or tenant isolation: note the current caveat in your question.",
+    "For security-sensitive reports: use GitHub Security Advisories (https://github.com/Discodone/grantlayer/security/advisories), not public issues.",
+    "Choose the correct issue template for your category.",
+    "Complete all required checklist items in the issue template safety checklist."
+  ],
+  "round_2_reviewer_guidance": {
+    "no_outreach_sent": true,
+    "what_reviewers_can_try": [
+      {
+        "name": "First-output verify helper",
+        "command": "python3 scripts/verify-first-output.sh",
+        "expected": "deterministic JSON output, no backend or secrets required",
+        "reference": "docs/first_output_verify_helper.md"
+      },
+      {
+        "name": "Grant lifecycle evidence bundle",
+        "command": "python3 examples/grant_lifecycle_evidence_bundle.py",
+        "expected": "full grant lifecycle simulation with audit chain, no backend required",
+        "reference": "docs/grant_lifecycle_evidence_bundle.md"
+      },
+      {
+        "name": "Quickstart",
+        "command": "see README — What to try first section",
+        "expected": "clear entry path to both no-install examples",
+        "reference": "README.md"
+      },
+      {
+        "name": "Agent task workflow",
+        "command": "read AGENTS.md and docs/agent_task_contract.md",
+        "expected": "clear agent operating rules and task contract format",
+        "reference": "AGENTS.md, docs/agent_task_contract.md"
+      }
+    ],
+    "how_to_report": [
+      "Use the appropriate issue template (bug, docs, DX feedback, feature request).",
+      "Use synthetic or demo data only.",
+      "For security-sensitive concerns, use GitHub Security Advisories."
+    ],
+    "what_reviewers_should_not_do": [
+      "Do not provide real customer data, real grant applications, or real institutional records.",
+      "Do not include real secrets, tokens, API keys, or passwords.",
+      "Do not include exploit details in public issue bodies.",
+      "Do not assume GrantLayer is production SaaS.",
+      "Do not assume tenant isolation is implemented."
+    ]
+  },
+  "changed_files": [
+    "docs/public_feedback_infrastructure_pack.md",
+    "docs/examples/gl192/public_feedback_infrastructure_pack.json",
+    "backend/tests/test_gl192_public_feedback_infrastructure_pack.py"
+  ],
+  "tests": {
+    "targeted_tests_file": "backend/tests/test_gl192_public_feedback_infrastructure_pack.py",
+    "also_run": [
+      "backend/tests/test_gl191_public_developer_experience_polish_pack.py",
+      "backend/tests/test_gl190_demo_endpoint_safety_guard.py",
+      "backend/tests/test_security_boundary_regression.py"
+    ]
+  },
+  "findings": [
+    {
+      "id": "GL192-F001",
+      "severity": "info",
+      "title": "product-question category has no dedicated issue template",
+      "detail": "The product-question feedback category does not have a dedicated .github/ISSUE_TEMPLATE file. Reporters should open a plain issue with the label type:question. This is acceptable at Developer Preview stage.",
+      "action": "documented as intended — no template required"
+    },
+    {
+      "id": "GL192-F002",
+      "severity": "info",
+      "title": "Label taxonomy is recommended only — not yet created in GitHub",
+      "detail": "The full label taxonomy defined in GL-192 has not been applied to the GitHub repository. Labels must be created manually if maintainers choose to adopt them. No automated API changes are performed.",
+      "action": "documented as intended — manual label creation is a future optional step"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 2
+  },
+  "result": "public_feedback_infrastructure_complete",
+  "next_recommended_step": "GL-192 Combined Merge-and-Publish for Public Feedback Infrastructure Pack — merge gl-192-public-feedback-infrastructure-pack to internal main, then run the snapshot publish process to push the feedback infrastructure documentation to the public GitHub repository.",
+  "non_goals": [
+    "Creating GitHub labels via API",
+    "Creating GitHub issues or pull requests via API",
+    "Sending reviewer outreach",
+    "Modifying backend/src, OpenAPI, migrations, DB/schema, dependency manifests, SDK, examples runtime, frontend, website, design",
+    "Changing GitHub repository settings or visibility",
+    "Changing GitHub Actions or workflow files",
+    "Claiming production SaaS readiness",
+    "Claiming tenant isolation is implemented",
+    "Requesting real customer data, private grants, secrets, or exploit details",
+    "Adding paperclip or external SaaS status updates"
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "no_reviewer_outreach_sent": true,
+    "no_backend_src_changes": true,
+    "no_openapi_changes": true,
+    "no_migration_db_dependency_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_behavior_changes": true,
+    "no_production_saas_claim": true,
+    "tenant_isolation_not_claimed": true,
+    "no_real_customer_data_requested": true,
+    "no_private_grant_data_requested": true,
+    "no_secrets_requested": true,
+    "no_exploit_details_included": true,
+    "security_sensitive_reports_routed_to_github_security_advisories": true
+  }
+}

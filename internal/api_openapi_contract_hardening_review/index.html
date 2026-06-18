@@ -1,0 +1,1268 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/api_openapi_contract_hardening_review/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer API/OpenAPI Contract Hardening Review - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-apiopenapi-contract-hardening-review" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer API/OpenAPI Contract Hardening Review
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-current-readiness-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Current readiness state
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-current-contract-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Current contract artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-what-is-sufficient-for-pilot-ready-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. What is sufficient for Pilot-Ready review
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-why-production-ready-api-contract-is-still-no" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Why Production-Ready API contract is still no
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-p0-contract-hardening-workstreams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. P0 contract-hardening workstreams
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-p1-pilot-expansion-workstreams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. P1 pilot-expansion workstreams
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-p2-productization-workstreams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. P2 productization workstreams
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-recommended-hardening-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Recommended hardening order
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-what-not-to-change-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. What not to change yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-decision-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Decision boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-apiopenapi-contract-hardening-review">GrantLayer API/OpenAPI Contract Hardening Review<a class="headerlink" href="#grantlayer-apiopenapi-contract-hardening-review" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>This review separates <strong>Pilot-Ready API contract confidence</strong> from <strong>Production-Ready API contract requirements</strong>.</p>
+<p>It does not change the API surface, the OpenAPI specification, or any backend behavior. It evaluates the current contract from an Integration-Ready / Pilot-Ready perspective and identifies what must be hardened before any Production-Ready claim can be made.</p>
+<p>The review is intended for internal planning, partner expectation-setting, and Merge Agent review before any production-hardening sprint begins.</p>
+<h2 id="2-current-readiness-state">2. Current readiness state<a class="headerlink" href="#2-current-readiness-state" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Milestone</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Integration-Ready API review</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>Pilot-Ready API review</td>
+<td><strong>Yes, with non-production constraints</strong></td>
+</tr>
+<tr>
+<td>Production-Ready API contract</td>
+<td><strong>No</strong></td>
+</tr>
+</tbody>
+</table>
+<p>GrantLayer has completed Integration-Ready and Pilot-Ready artifacts through GL-052 through GL-063. The Product Core flow is implemented, tested end-to-end, and supported by guides, demo scenarios, quickstart examples, an OpenAPI contract, validation tests, a demo runner, and a pilot partner preparation pack. The current API contract is sufficient for pilot evaluation, but it is not yet hardened for production.</p>
+<h2 id="3-current-contract-artifacts">3. Current contract artifacts<a class="headerlink" href="#3-current-contract-artifacts" title="Permanent link">&para;</a></h2>
+<p>The following artifacts constitute the current API/OpenAPI contract baseline:</p>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Location</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OpenAPI specification</strong></td>
+<td><code>docs/openapi.yaml</code></td>
+<td>Definitive HTTP surface, schema definitions, and security model.</td>
+</tr>
+<tr>
+<td><strong>Integration-Ready checklist</strong></td>
+<td><code>docs/integration_ready_checklist.md</code></td>
+<td>Minimum artifact and verification gate definition for Integration-Ready v0.</td>
+</tr>
+<tr>
+<td><strong>Integration-Ready release candidate</strong></td>
+<td><code>docs/integration_ready_release_candidate.md</code></td>
+<td>Consolidated Integration-Ready v0 review after GL-052 through GL-055.</td>
+</tr>
+<tr>
+<td><strong>Minimum API usage walkthrough</strong></td>
+<td><code>docs/minimal_api_usage_walkthrough.md</code></td>
+<td>Step-by-step API-first walkthrough mapping Product Core stages to OpenAPI paths.</td>
+</tr>
+<tr>
+<td><strong>Demo runner / API smoke</strong></td>
+<td><code>docs/demo_runner_api_smoke.md</code></td>
+<td>Lightweight executable local confidence check for Pilot-Ready artifacts.</td>
+</tr>
+<tr>
+<td><strong>Production-hardening roadmap</strong></td>
+<td><code>docs/production_hardening_roadmap.md</code></td>
+<td>Separates Pilot-Ready from Production-Ready and lists prioritized workstreams.</td>
+</tr>
+<tr>
+<td><strong>Production readiness cut</strong></td>
+<td><code>docs/production_readiness_cut.md</code></td>
+<td>Readiness cut that records what is in place and what is missing for production.</td>
+</tr>
+<tr>
+<td><strong>Integration contract readiness test</strong></td>
+<td><code>backend/tests/test_gl055_integration_contract_readiness.py</code></td>
+<td>Guards expected OpenAPI paths and rejects known legacy paths.</td>
+</tr>
+<tr>
+<td><strong>Minimal API usage walkthrough test</strong></td>
+<td><code>backend/tests/test_gl058_minimal_api_usage_walkthrough.py</code></td>
+<td>Validates walkthrough alignment with OpenAPI paths and GL-057 examples.</td>
+</tr>
+<tr>
+<td><strong>Demo runner smoke test</strong></td>
+<td><code>backend/tests/test_gl061_demo_runner_api_smoke.py</code></td>
+<td>Validates smoke manifest, referenced examples, and dry-run behavior.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-what-is-sufficient-for-pilot-ready-review">4. What is sufficient for Pilot-Ready review<a class="headerlink" href="#4-what-is-sufficient-for-pilot-ready-review" title="Permanent link">&para;</a></h2>
+<p>The following conditions make the current API contract sufficient for Pilot-Ready evaluation:</p>
+<ul>
+<li><strong>OpenAPI exists</strong> — <code>docs/openapi.yaml</code> is present, parseable, and documents the full HTTP surface including paths, methods, request/response schemas, and security schemes.</li>
+<li><strong>Current readiness gate exists</strong> — <code>backend/tests/test_gl055_integration_contract_readiness.py</code> verifies that expected paths are present and known legacy paths are absent.</li>
+<li><strong>Minimal walkthrough references documented paths where declared</strong> — <code>docs/minimal_api_usage_walkthrough.md</code> maps every Product Core stage to a concrete OpenAPI path that is verified against <code>docs/openapi.yaml</code>.</li>
+<li><strong>Demo runner validates dry-run sequence</strong> — <code>scripts/demo/gl061_api_smoke.py</code> validates the smoke manifest and referenced examples without requiring network access or secrets.</li>
+<li><strong>Backend tests provide current confidence</strong> — the full backend suite passes with zero failures and zero errors, and targeted tests (GL-055, GL-058, GL-061) confirm artifact coherence.</li>
+<li><strong>Docs clearly state non-production constraints</strong> — every checklist, walkthrough, and decision document explicitly notes that authentication, deployment, observability, and multi-tenancy are not production-ready.</li>
+</ul>
+<h2 id="5-why-production-ready-api-contract-is-still-no">5. Why Production-Ready API contract is still no<a class="headerlink" href="#5-why-production-ready-api-contract-is-still-no" title="Permanent link">&para;</a></h2>
+<p>The following gaps prevent the API contract from being described as Production-Ready:</p>
+<ul>
+<li><strong>Contract freeze process is not established</strong> — there is no documented versioning strategy, breaking-change policy, or contract review cadence. The OpenAPI version is a release candidate (<code>0.31.0-rc</code>), not a frozen production baseline.</li>
+<li><strong>Auth semantics are not production-grade</strong> — the OpenAPI documents <code>LegacyAdminToken</code> and <code>OperatorToken</code> security schemes, but several endpoints do not currently enforce authentication. The <code>security</code> blocks describe the target contract, not the fully implemented state.</li>
+<li><strong>Error responses may need stronger standardization</strong> — while <code>ErrorResponse</code> is referenced consistently, the exact field contracts (<code>error</code>, <code>errorCode</code>, <code>reason</code>) are described in prose rather than enforced by a single reusable schema with examples for every status code.</li>
+<li><strong>Schema examples may need expansion</strong> — many request and response schemas do not include illustrative examples, making integrator onboarding harder at scale.</li>
+<li><strong>Endpoint versioning policy is not formalized</strong> — paths such as <code>/decision-provenance/v2/build</code> indicate versioning by URL, but the policy (when to bump, how long to support old versions) is undocumented.</li>
+<li><strong>Compatibility/deprecation policy is not formalized</strong> — there is no documented rule for how long legacy paths or fields remain supported, how deprecation is announced, or how breaking changes are communicated to integrators.</li>
+<li><strong>CI contract validation may need hardening</strong> — the GL-055 test checks path presence and legacy-path absence, but it does not validate schema completeness, example coverage, or OpenAPI semantic correctness.</li>
+<li><strong>External SDK/client expectations are not finalized</strong> — without a frozen contract, generated clients would be unstable. SDK readiness is explicitly a post-contract-freeze concern.</li>
+</ul>
+<h2 id="6-p0-contract-hardening-workstreams">6. P0 contract-hardening workstreams<a class="headerlink" href="#6-p0-contract-hardening-workstreams" title="Permanent link">&para;</a></h2>
+<p>P0 workstreams are blockers for any Production-Ready API contract claim. They must be addressed before GrantLayer can be described as having a production-grade API contract.</p>
+<ol>
+<li><strong>Define production API contract freeze process</strong></li>
+<li>Document who can approve contract changes, what qualifies as a breaking change, and how the freeze is announced.</li>
+<li>
+<p>Acceptance gate: a documented contract freeze process and a versioned OpenAPI artifact with a non-RC version.</p>
+</li>
+<li>
+<p><strong>Confirm endpoint inventory and legacy path policy</strong></p>
+</li>
+<li>Produce a complete inventory of every documented path, its maturity level, and whether it is candidate for deprecation.</li>
+<li>
+<p>Acceptance gate: an endpoint inventory document with maturity labels (stable / experimental / deprecated).</p>
+</li>
+<li>
+<p><strong>Standardize error response schema</strong></p>
+</li>
+<li>Ensure every error response references a single, strongly typed <code>ErrorResponse</code> schema with required fields, example values, and documented status-code mappings.</li>
+<li>
+<p>Acceptance gate: OpenAPI <code>ErrorResponse</code> schema is complete and every error status code uses it consistently.</p>
+</li>
+<li>
+<p><strong>Harden auth/permission contract documentation</strong></p>
+</li>
+<li>Clarify which endpoints enforce authentication today, which are target-only, and what the migration path is from legacy admin-token to operator-token or future OAuth/JWT.</li>
+<li>
+<p>Acceptance gate: auth/permission contract document that aligns OpenAPI <code>security</code> blocks with implementation truth.</p>
+</li>
+<li>
+<p><strong>Validate OpenAPI path/schema coverage</strong></p>
+</li>
+<li>Audit every path for missing request examples, missing response examples, undocumented query parameters, and inconsistent field naming.</li>
+<li>
+<p>Acceptance gate: coverage report with zero undocumented public paths and zero schemas lacking examples.</p>
+</li>
+<li>
+<p><strong>Add CI gate for OpenAPI contract validation</strong></p>
+</li>
+<li>Extend existing tests or CI to lint the OpenAPI document for structural correctness, schema completeness, and semantic consistency.</li>
+<li>
+<p>Acceptance gate: a CI stage that fails if OpenAPI is structurally invalid or if documented paths lack schemas.</p>
+</li>
+<li>
+<p><strong>Document compatibility and deprecation rules</strong></p>
+</li>
+<li>Define how long deprecated paths remain available, how breaking changes are versioned, and how integrators are notified.</li>
+<li>Acceptance gate: a published compatibility and deprecation policy document.</li>
+</ol>
+<h2 id="7-p1-pilot-expansion-workstreams">7. P1 pilot-expansion workstreams<a class="headerlink" href="#7-p1-pilot-expansion-workstreams" title="Permanent link">&para;</a></h2>
+<p>P1 workstreams improve pilot confidence and integration readiness but are not strict production blockers for the API contract itself.</p>
+<ol>
+<li><strong>Add richer request/response examples</strong></li>
+<li>Provide illustrative JSON examples for every request body and every success response.</li>
+<li>
+<p>Acceptance gate: every POST/PUT/PATCH request body and every 2xx response has at least one <code>example</code> or <code>examples</code> entry.</p>
+</li>
+<li>
+<p><strong>Add integrator-focused endpoint grouping</strong></p>
+</li>
+<li>Use OpenAPI <code>tags</code> or external documentation to group endpoints by Product Core area (Grant Requests, Grants, Evidence, Compliance, Auditor Export, etc.).</li>
+<li>
+<p>Acceptance gate: integrators can navigate the OpenAPI document by Product Core concept without reading the full path list.</p>
+</li>
+<li>
+<p><strong>Add planned-call smoke validation against documented paths</strong></p>
+</li>
+<li>Extend the GL-061 demo runner or create a new planned-call test that validates every documented path has a corresponding example or fixture.</li>
+<li>
+<p>Acceptance gate: a machine-readable report mapping every OpenAPI path to at least one example or test fixture.</p>
+</li>
+<li>
+<p><strong>Document pagination/filter/query conventions</strong></p>
+</li>
+<li>Standardize how list endpoints accept pagination, filtering, and sorting, and document these conventions in the OpenAPI specification or an integration guide.</li>
+<li>
+<p>Acceptance gate: a conventions document referenced by the OpenAPI spec.</p>
+</li>
+<li>
+<p><strong>Align demo runner with API usage walkthrough</strong></p>
+</li>
+<li>Ensure the GL-061 smoke manifest and the GL-058 walkthrough reference the exact same OpenAPI paths in the same order.</li>
+<li>
+<p>Acceptance gate: a coherence test proving every walkthrough step has a matching smoke manifest entry.</p>
+</li>
+<li>
+<p><strong>Add contract review checklist for pilot partners</strong></p>
+</li>
+<li>Provide a short checklist that a pilot partner can use to evaluate whether the current contract meets their integration needs.</li>
+<li>Acceptance gate: partner-facing contract review checklist document.</li>
+</ol>
+<h2 id="8-p2-productization-workstreams">8. P2 productization workstreams<a class="headerlink" href="#8-p2-productization-workstreams" title="Permanent link">&para;</a></h2>
+<p>P2 workstreams expand the API contract into a productized platform surface but should only be pursued after pilot validation and P0 contract hardening.</p>
+<ol>
+<li><strong>SDK/client generation readiness</strong></li>
+<li>Evaluate OpenAPI generator compatibility, produce minimal generated clients, and document integration patterns.</li>
+<li>
+<p>Acceptance gate: generated Python and TypeScript clients compile and pass basic integration tests against a local server.</p>
+</li>
+<li>
+<p><strong>Versioned API policy</strong></p>
+</li>
+<li>Formalize URL versioning (e.g., <code>/v1/...</code>, <code>/v2/...</code>) or header versioning, and document the migration path between versions.</li>
+<li>
+<p>Acceptance gate: a versioned API policy document and a proof-of-concept versioned path.</p>
+</li>
+<li>
+<p><strong>Public changelog process</strong></p>
+</li>
+<li>Establish a machine-readable and human-readable changelog for every contract change.</li>
+<li>
+<p>Acceptance gate: changelog exists and is updated automatically from merged contract changes.</p>
+</li>
+<li>
+<p><strong>Advanced schema linting</strong></p>
+</li>
+<li>Adopt a linter (e.g., Spectral) to enforce naming conventions, example coverage, and security scheme consistency.</li>
+<li>
+<p>Acceptance gate: linter passes in CI with a documented rule set.</p>
+</li>
+<li>
+<p><strong>External conformance test pack</strong></p>
+</li>
+<li>Build or adopt a third-party conformance test suite that validates the running API against the OpenAPI contract.</li>
+<li>
+<p>Acceptance gate: conformance tests pass against a local GrantLayer instance.</p>
+</li>
+<li>
+<p><strong>Dashboard/API alignment after pilot validation</strong></p>
+</li>
+<li>Ensure the HTML dashboard uses the same endpoints and field names as the documented contract, reducing drift.</li>
+<li>Acceptance gate: dashboard network traffic audit shows no usage of undocumented paths or fields.</li>
+</ol>
+<h2 id="9-recommended-hardening-order">9. Recommended hardening order<a class="headerlink" href="#9-recommended-hardening-order" title="Permanent link">&para;</a></h2>
+<p>The recommended order prioritizes contract stability and clarity before tooling or client generation:</p>
+<ol>
+<li><strong>Endpoint inventory and path stability review</strong> — know what exists, what is stable, and what is legacy.</li>
+<li><strong>Error response consistency review</strong> — standardize the error contract so integrators can handle failures predictably.</li>
+<li><strong>Auth/permission contract documentation review</strong> — align OpenAPI security blocks with implementation truth.</li>
+<li><strong>OpenAPI schema/example coverage review</strong> — fill gaps in examples and schema definitions.</li>
+<li><strong>CI OpenAPI validation gate</strong> — automate structural and semantic checks so contract regressions are caught before merge.</li>
+<li><strong>Planned-call smoke validation</strong> — ensure every documented path has a corresponding example or test fixture.</li>
+<li><strong>Compatibility/deprecation policy</strong> — give integrators confidence that breaking changes will be managed.</li>
+<li><strong>SDK/client readiness after pilot validation</strong> — only after the contract is frozen and the pilot has confirmed integration patterns.</li>
+</ol>
+<h2 id="10-what-not-to-change-yet">10. What not to change yet<a class="headerlink" href="#10-what-not-to-change-yet" title="Permanent link">&para;</a></h2>
+<p>The project should <strong>not</strong> immediately:</p>
+<ul>
+<li><strong>Rename endpoints</strong> — path stability is more important than naming perfection at this stage.</li>
+<li><strong>Remove legacy paths</strong> — deprecation must follow a documented policy and a communicated timeline.</li>
+<li><strong>Generate SDKs</strong> — SDK generation requires a frozen contract and stable version.</li>
+<li><strong>Add a versioned public API surface</strong> — versioning policy must be defined before adding <code>/v1/</code> or <code>/v2/</code> prefixes.</li>
+<li><strong>Change auth behavior</strong> — auth hardening is a separate production-hardening workstream (see GL-063 P0); the contract should document the target model without forcing an implementation change.</li>
+<li><strong>Rewrite OpenAPI broadly</strong> — large-scale restructuring risks introducing errors and breaking existing integrations.</li>
+</ul>
+<p>Any of these changes should only be pursued if a pilot issue or a production-hardening issue explicitly scopes that change.</p>
+<h2 id="11-decision-boundary">11. Decision boundary<a class="headerlink" href="#11-decision-boundary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer may be described as having a <strong>Pilot-Ready API contract review baseline</strong>, but must <strong>not</strong> be described as having a <strong>Production-Ready API contract</strong> until P0 contract gates are implemented and verified.</p>
+<p>Any statement to external partners, documentation, or marketing materials must include the non-production constraint. If a partner asks about production API timelines, reference this review, the P0 workstream list, and the GL-063 production-hardening roadmap.</p>
+<hr />
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="openapi.yaml"><code>docs/openapi.yaml</code></a> — definitive API contract</li>
+<li><a href="../production_hardening_roadmap/"><code>docs/production_hardening_roadmap.md</code></a> — GL-063 production-hardening roadmap with prioritized workstreams</li>
+<li><a href="../production_readiness_cut/"><code>docs/production_readiness_cut.md</code></a> — GL-063 production readiness cut</li>
+<li><a href="../product_architecture_extension_boundaries/"><code>docs/product_architecture_extension_boundaries.md</code></a> — GL-065 product architecture and extension boundaries</li>
+<li><a href="../pilot_ready_release_decision/"><code>docs/pilot_ready_release_decision.md</code></a> — GL-060 pilot-ready release decision</li>
+<li><a href="../integration_ready_checklist/"><code>docs/integration_ready_checklist.md</code></a> — Integration-Ready v0 checklist</li>
+<li><a href="minimal_api_usage_walkthrough.md"><code>docs/minimal_api_usage_walkthrough.md</code></a> — minimal API usage walkthrough</li>
+<li><a href="demo_runner_api_smoke.md"><code>docs/demo_runner_api_smoke.md</code></a> — GL-061 demo runner / API smoke script</li>
+<li><a href="examples/gl064/api_contract_hardening_backlog.json"><code>docs/examples/gl064/api_contract_hardening_backlog.json</code></a> — machine-readable API contract hardening backlog</li>
+<li><a href="examples/gl064/api_contract_readiness_snapshot.json"><code>docs/examples/gl064/api_contract_readiness_snapshot.json</code></a> — machine-readable API contract readiness snapshot</li>
+<li><a href="../backend/tests/test_gl064_api_openapi_contract_hardening_review.py"><code>backend/tests/test_gl064_api_openapi_contract_hardening_review.py</code></a> — validation test for this review and its artifacts</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

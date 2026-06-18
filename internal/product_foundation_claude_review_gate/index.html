@@ -1,0 +1,1455 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/product_foundation_claude_review_gate/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer Product Foundation Claude Review Gate (GL-075) - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-product-foundation-claude-review-gate-gl-075" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer Product Foundation Claude Review Gate (GL-075)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose-and-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose and non-goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-review-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Review scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-reviewed-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Reviewed documents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-architecture-consistency-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Architecture consistency findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-api-first-product-kernel-boundary-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. API-first / Product-kernel boundary findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-runtime-configuration-readiness-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Runtime configuration readiness findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-auth-operator-access-readiness-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Auth / operator-access readiness findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-secret-management-readiness-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Secret-management readiness findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-persistence-postgresql-readiness-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Persistence / PostgreSQL readiness findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-observability-logging-readiness-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Observability / logging readiness findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-backup-restore-data-lifecycle-readiness-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Backup / restore / data-lifecycle readiness findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-operational-runbook-incident-response-readiness-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Operational runbook / incident-response readiness findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-implementation-sequencing-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Implementation sequencing risks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-recommended-gl-076-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Recommended GL-076+ ordering
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-required-stop-gates-before-sensitive-implementation-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Required stop gates before sensitive implementation blocks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-test-strategy-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Test strategy recommendations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-production-readiness-disclaimer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Production-readiness disclaimer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-final-review-disposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Final review disposition
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-product-foundation-claude-review-gate-gl-075">GrantLayer Product Foundation Claude Review Gate (GL-075)<a class="headerlink" href="#grantlayer-product-foundation-claude-review-gate-gl-075" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-purpose-and-non-goals">1. Purpose and non-goals<a class="headerlink" href="#1-purpose-and-non-goals" title="Permanent link">&para;</a></h2>
+<p>This document is a <strong>bounded review-only architecture and implementation-readiness gate</strong> for the first Product Foundation implementation issues (GL-075 onward).</p>
+<p>It consolidates the findings from a systematic review of the Product Foundation design baseline (GL-064 through GL-074) and provides a go / proceed-with-cautions / blocked recommendation before implementation begins.</p>
+<p><strong>GL-075 explicitly states:</strong>
+- GL-075 is review-only.
+- GL-075 adds no implementation.
+- GL-075 does not implement runtime configuration.
+- GL-075 does not implement auth or operator access.
+- GL-075 does not implement secret management.
+- GL-075 does not implement persistence or PostgreSQL.
+- GL-075 does not implement observability, logging, metrics, or tracing.
+- GL-075 does not implement backup, restore, or data lifecycle jobs.
+- GL-075 does not implement incident response, alerting, or monitoring.
+- GL-075 does not implement deployment, Docker, or infrastructure.
+- GL-075 does not change API behavior or the OpenAPI contract.
+- GL-075 does not modify the database schema or migrations.
+- GL-075 does not change the frontend or dashboard.
+- GL-075 does not make GrantLayer production-ready.
+- Any implementation recommendations must be split into small future issues.
+- Claude Code review should be used periodically, not for every issue.</p>
+<h2 id="2-review-scope">2. Review scope<a class="headerlink" href="#2-review-scope" title="Permanent link">&para;</a></h2>
+<p>This review covers:</p>
+<ul>
+<li>Architecture consistency across all Product Foundation design documents (GL-064 through GL-073)</li>
+<li>API-first / Product Core boundary alignment</li>
+<li>Runtime configuration readiness for implementation</li>
+<li>Auth / operator-access readiness for implementation</li>
+<li>Secret-management readiness for implementation</li>
+<li>Persistence / PostgreSQL readiness for implementation</li>
+<li>Observability / structured logging readiness for implementation</li>
+<li>Backup / restore / data-lifecycle readiness for implementation</li>
+<li>Operational runbook / incident-response readiness for implementation</li>
+<li>Implementation sequencing risks and dependencies</li>
+<li>Test strategy sufficiency for the first implementation cut</li>
+</ul>
+<p>This review does <strong>not</strong> cover:
+- Pilot partner integration validation
+- Frontend or dashboard implementation
+- External SDK generation
+- Production deployment automation
+- Multi-tenant SaaS architecture</p>
+<h2 id="3-reviewed-documents">3. Reviewed documents<a class="headerlink" href="#3-reviewed-documents" title="Permanent link">&para;</a></h2>
+<p>The following documents were reviewed as part of this gate:</p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>GL Issue</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/api_openapi_contract_hardening_review.md</code></td>
+<td>GL-064</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/product_architecture_extension_boundaries.md</code></td>
+<td>GL-065</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/runtime_configuration_environment_model.md</code></td>
+<td>GL-066</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/production_auth_operator_access_design.md</code></td>
+<td>GL-067</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/secret_management_baseline_design.md</code></td>
+<td>GL-068</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/deployment_package_runtime_modes_design.md</code></td>
+<td>GL-069</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/persistence_backend_postgresql_readiness_design.md</code></td>
+<td>GL-070</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/observability_structured_logging_baseline_design.md</code></td>
+<td>GL-071</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/backup_restore_data_lifecycle_design.md</code></td>
+<td>GL-072</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/operational_runbook_incident_response_design.md</code></td>
+<td>GL-073</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/product_foundation_readiness_review.md</code></td>
+<td>GL-074</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/product_foundation_implementation_cut.md</code></td>
+<td>GL-074</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/examples/gl074/product_foundation_readiness_matrix.json</code></td>
+<td>GL-074</td>
+<td>Reviewed</td>
+</tr>
+<tr>
+<td><code>docs/examples/gl074/product_foundation_implementation_backlog.json</code></td>
+<td>GL-074</td>
+<td>Reviewed</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-architecture-consistency-findings">4. Architecture consistency findings<a class="headerlink" href="#4-architecture-consistency-findings" title="Permanent link">&para;</a></h2>
+<p><strong>Status:</strong> <code>proceed_with_cautions</code></p>
+<p><strong>Summary:</strong> The Product Foundation design documents (GL-064 through GL-073) form a coherent, layered architecture. The GL-065 architecture boundaries document correctly identifies stable Product Core contracts and extension surfaces. The GL-074 readiness review and implementation cut provide a sensible dependency ordering.</p>
+<p><strong>Observations:</strong>
+- All design documents consistently separate Product Core from replaceable adapters.
+- The nine-layer architecture model (API, Domain, Evidence, Policy, Provenance, Persistence, Runtime Config, Extension, Optional Integration) is well-defined and cross-referenced.
+- The adapter rules (must not redefine Product Core records, must be replaceable, must fail closed) are consistently repeated across docs.
+- Extension boundaries for auth, persistence, observability, secrets, and evidence storage are aligned.</p>
+<p><strong>Cautions:</strong>
+- The extension / adapter interface expectations are documented as principles but not yet formalized as code contracts. The first persistence or auth adapter implementation may reveal interface gaps.
+- The "Optional Integration Layer" is broad (blockchain, wallet, payment, dashboard). Future work should avoid letting optional integrations become hidden Product Core dependencies.</p>
+<p><strong>Risk level:</strong> <code>low</code></p>
+<p><strong>Recommendation:</strong> Proceed. Validate extension boundary assumptions during the first adapter implementation (GL-078 secret boundary or GL-079 persistence abstraction).</p>
+<h2 id="5-api-first-product-kernel-boundary-findings">5. API-first / Product-kernel boundary findings<a class="headerlink" href="#5-api-first-product-kernel-boundary-findings" title="Permanent link">&para;</a></h2>
+<p><strong>Status:</strong> <code>proceed</code></p>
+<p><strong>Summary:</strong> The GL-064 API/OpenAPI contract hardening review correctly separates Pilot-Ready from Production-Ready API contract requirements. The OpenAPI specification is present and parseable. The Product Core is API-first: stable public contracts include API paths, evidence bundles, verification results, and provenance summaries.</p>
+<p><strong>Observations:</strong>
+- The contract freeze process is design-only, which is appropriate at this stage.
+- The OpenAPI version remains a release candidate (<code>0.31.0-rc</code>), consistent with the non-production claim.
+- Endpoint inventory and legacy path policy are documented as future P0 work.
+- Error response schema standardization is documented but not enforced.</p>
+<p><strong>Risk level:</strong> <code>medium</code></p>
+<p><strong>Recommendation:</strong> Proceed. Do not implement API contract changes in the first cut. Reserve contract freeze work for a later dedicated issue after pilot feedback.</p>
+<h2 id="6-runtime-configuration-readiness-findings">6. Runtime configuration readiness findings<a class="headerlink" href="#6-runtime-configuration-readiness-findings" title="Permanent link">&para;</a></h2>
+<p><strong>Status:</strong> <code>proceed</code></p>
+<p><strong>Summary:</strong> The GL-066 runtime configuration environment model is complete and well-structured. It defines six runtime modes (<code>local-dev</code>, <code>test</code>, <code>demo</code>, <code>integration</code>, <code>staging</code>, <code>production</code>), 20 configuration categories, safe local/test/demo defaults, and production-required explicit configuration.</p>
+<p><strong>Observations:</strong>
+- The production fail-closed rules are clearly stated: the system must refuse to start if required configuration is missing.
+- Configuration boundaries are well-defined: no scattered environment variable reads, secrets must not leak into records.
+- The environment matrix summary is machine-readable in <code>docs/examples/gl066/runtime_environment_matrix.json</code>.</p>
+<p><strong>Risk level:</strong> <code>medium</code></p>
+<p><strong>Recommendation:</strong> Proceed with GL-076 (Runtime Configuration Enforcement Baseline) as the first implementation issue. Keep the scope small: config loader, runtime mode detection, and startup validation only.</p>
+<h2 id="7-auth-operator-access-readiness-findings">7. Auth / operator-access readiness findings<a class="headerlink" href="#7-auth-operator-access-readiness-findings" title="Permanent link">&para;</a></h2>
+<p><strong>Status:</strong> <code>proceed_with_cautions</code></p>
+<p><strong>Summary:</strong> The GL-067 production auth and operator access design defines eight stable operator roles, twelve capability boundaries, and a clean auth provider adapter boundary. Production fail-closed rules are well-specified.</p>
+<p><strong>Observations:</strong>
+- Role semantics (<code>system_admin</code>, <code>grant_admin</code>, <code>evidence_operator</code>, <code>policy_admin</code>, <code>auditor</code>, <code>readonly_integrator</code>, <code>external_workflow_agent</code>, <code>service_operator</code>) are stable and well-documented.
+- The auth provider adapter boundary correctly keeps OAuth, JWT, SSO, and mTLS as replaceable adapters.
+- Demo/local shortcuts are explicitly bounded and labeled as non-production.</p>
+<p><strong>Cautions:</strong>
+- Auth model selection (token-based vs. OAuth vs. mTLS) may need pilot partner input before full implementation.
+- The current OpenAPI security blocks describe target contracts, not fully implemented behavior. This is documented and acceptable, but implementation must not claim auth enforcement until GL-081 is complete.
+- Service-to-service access model and operator bootstrap mechanism are design-only and may need refinement during implementation.</p>
+<p><strong>Risk level:</strong> <code>high</code></p>
+<p><strong>Recommendation:</strong> Proceed with caution. Implement GL-081 (Operator Access Hardening) only after GL-075 (runtime config), GL-077 (logging), and GL-078 (secret boundary) are in place. Do not implement OAuth/JWT/SSO in the first cut.</p>
+<h2 id="8-secret-management-readiness-findings">8. Secret-management readiness findings<a class="headerlink" href="#8-secret-management-readiness-findings" title="Permanent link">&para;</a></h2>
+<p><strong>Status:</strong> <code>proceed_with_cautions</code></p>
+<p><strong>Summary:</strong> The GL-068 secret management baseline design defines 14 secret categories, forbidden secret locations, redaction rules, and production fail-closed behavior. The secret source boundary is correctly abstracted.</p>
+<p><strong>Observations:</strong>
+- Secret categories cover admin tokens, service credentials, database credentials, signing keys, evidence storage, webhooks, encryption keys, session secrets, API client credentials, backup credentials, observability sink credentials, and optional blockchain/wallet keys.
+- Forbidden locations are comprehensive: no secrets in committed source, docs, fixtures, logs, exports, git history, or screenshots.
+- The secret source boundary keeps HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, and Google Secret Manager as future adapter targets.</p>
+<p><strong>Cautions:</strong>
+- The repository currently contains a demo Ed25519 keypair. This is documented as a blocker in GL-074 and must be addressed during GL-078 implementation.
+- Secret redaction helpers are design-only. The first logging implementation (GL-077) must include secret redaction before any real secret is wired.
+- Rotation and revocation expectations are documented but not yet implementable without a secret source abstraction.</p>
+<p><strong>Risk level:</strong> <code>high</code></p>
+<p><strong>Recommendation:</strong> Proceed with caution. Implement GL-078 (Secret Source Boundary Hardening) after GL-075 and GL-077. Include a test that verifies the demo keypair is no longer used in production-like runtime modes.</p>
+<h2 id="9-persistence-postgresql-readiness-findings">9. Persistence / PostgreSQL readiness findings<a class="headerlink" href="#9-persistence-postgresql-readiness-findings" title="Permanent link">&para;</a></h2>
+<p><strong>Status:</strong> <code>proceed_with_cautions</code></p>
+<p><strong>Summary:</strong> The GL-070 persistence backend boundary and PostgreSQL readiness design correctly separates Product Core persistence responsibilities from backend-specific implementation. SQLite is bounded to local/test/demo. PostgreSQL is identified as the primary production candidate backend.</p>
+<p><strong>Observations:</strong>
+- Product Core persistence responsibilities (stable IDs, grant records, evidence metadata, audit/provenance, policy records, transaction expectations) are well-defined.
+- The database backend boundary correctly states that backend-specific connection details stay behind configuration boundaries.
+- Schema evolution rules are explicit: migrations must be explicit, reviewable, and backward-compatible where possible.
+- Transaction expectations for grant approval, evidence persistence, and audit consistency are documented.</p>
+<p><strong>Cautions:</strong>
+- SQLite is currently the default and only CI-tested backend. PostgreSQL support exists but is not CI-gated. This is a documented blocker.
+- Connection pooling strategy, retry policies, and health verification are design-only placeholders.
+- Backup/restore expectations are connected to persistence but not yet implemented.
+- Migration execution validation against both SQLite and PostgreSQL is a future requirement.</p>
+<p><strong>Risk level:</strong> <code>high</code></p>
+<p><strong>Recommendation:</strong> Proceed with caution. Implement GL-079 (Persistence Backend Boundary Groundwork) after GL-075 and GL-077. Keep the first cut limited to backend selection abstraction and connection configuration placeholders. Do not rewrite migrations in the first cut.</p>
+<h2 id="10-observability-logging-readiness-findings">10. Observability / logging readiness findings<a class="headerlink" href="#10-observability-logging-readiness-findings" title="Permanent link">&para;</a></h2>
+<p><strong>Status:</strong> <code>proceed</code></p>
+<p><strong>Summary:</strong> The GL-071 observability and structured logging baseline design establishes a strong foundation for future implementation. It defines structured JSON logging baseline, required event categories, correlation ID propagation, boundary between audit records and operational logs, and secret redaction rules.</p>
+<p><strong>Observations:</strong>
+- Structured log baseline is well-defined: single JSON object per line, consistent top-level fields (<code>timestamp</code>, <code>level</code>, <code>msg</code>, <code>eventType</code>, <code>correlationId</code>), explicit event types.
+- Required event categories cover API requests, auth events, permission decisions, evidence verification, approval transitions, persistence operations, and configuration events.
+- Correlation IDs (<code>requestId</code>, <code>correlationId</code>, <code>workflowId</code>, <code>executionId</code>, <code>actorId</code>, <code>agentId</code>) are clearly specified.
+- The boundary between product audit records, security events, operational logs, and debug traces is well-articulated.</p>
+<p><strong>Risk level:</strong> <code>medium</code></p>
+<p><strong>Recommendation:</strong> Proceed with GL-077 (Structured Logging / Correlation ID Helper Baseline) after GL-075. Keep the scope to a logger factory, correlation ID helper, and redaction utility. Do not rewrite all existing log statements in one issue.</p>
+<h2 id="11-backup-restore-data-lifecycle-readiness-findings">11. Backup / restore / data-lifecycle readiness findings<a class="headerlink" href="#11-backup-restore-data-lifecycle-readiness-findings" title="Permanent link">&para;</a></h2>
+<p><strong>Status:</strong> <code>proceed</code></p>
+<p><strong>Summary:</strong> The GL-072 backup, restore, and data lifecycle design defines data categories by recovery criticality, backup/restore scope models, retention policy baseline, and lifecycle stages. It correctly excludes secrets from ordinary backups.</p>
+<p><strong>Observations:</strong>
+- Data categories are well-prioritized: product records, audit records, and provenance records are highest criticality; operational logs are low criticality; secrets are excluded.
+- Restore scope is intentional and scoped: full product restore, audit restore, provenance restore, point-in-time restore, and config rebuild (preferred over restore).
+- Retention policy baseline covers operational data, product records, audit records, provenance records, evidence metadata, and compliance reports.
+- Evidence payload backup is correctly delegated to the evidence storage adapter.</p>
+<p><strong>Risk level:</strong> <code>medium</code></p>
+<p><strong>Recommendation:</strong> Proceed. Schedule backup/restore/data lifecycle implementation (GL-083+) after persistence abstraction (GL-079) and operator access hardening (GL-081) are complete. Do not implement backup jobs in the first cut.</p>
+<h2 id="12-operational-runbook-incident-response-readiness-findings">12. Operational runbook / incident-response readiness findings<a class="headerlink" href="#12-operational-runbook-incident-response-readiness-findings" title="Permanent link">&para;</a></h2>
+<p><strong>Status:</strong> <code>proceed</code></p>
+<p><strong>Summary:</strong> The GL-073 operational runbook and incident response baseline design defines severity model, incident lifecycle, runbook categories, escalation boundaries, safe manual intervention rules, and post-incident review requirements.</p>
+<p><strong>Observations:</strong>
+- Severity model (<code>sev0</code> through <code>sev4</code>) is clear and actionable.
+- Incident lifecycle stages (detection, triage, containment, mitigation, recovery, post-incident review) are well-defined.
+- Runbook categories cover 10 common incident types including API unavailability, auth incidents, secret exposure, persistence issues, evidence verification, audit integrity, backup/restore, config mismatch, and deployment rollback.
+- Escalation boundaries correctly map scenarios to incident commander, security officer, database SME, and audit/compliance officer.
+- Safe manual intervention rules are strong: stop before breaking audit chain, never restart blindly, never rollback secrets from backup, never bypass auth.</p>
+<p><strong>Risk level:</strong> <code>medium</code></p>
+<p><strong>Recommendation:</strong> Proceed. Schedule incident response automation (GL-085+) after observability metrics (GL-084) are operational. Do not implement monitoring or alerting in the first cut.</p>
+<h2 id="13-implementation-sequencing-risks">13. Implementation sequencing risks<a class="headerlink" href="#13-implementation-sequencing-risks" title="Permanent link">&para;</a></h2>
+<p>The following risks could destabilize the implementation sequence if not managed:</p>
+<ol>
+<li>
+<p><strong>Configuration drift risk (HIGH)</strong> — If GL-075 runtime config enforcement is not validated at startup, downstream blocks (auth, persistence, deployment) may run against unintended settings. Mitigation: keep GL-075 small, validate all modes, and fail closed.</p>
+</li>
+<li>
+<p><strong>Secret leakage during logging risk (HIGH)</strong> — If GL-077 structured logging does not include secret redaction before GL-078 secret boundary or GL-081 auth is implemented, secrets may be logged. Mitigation: redaction helper must be the first component of GL-077.</p>
+</li>
+<li>
+<p><strong>Audit/provenance integrity during persistence risk (MEDIUM)</strong> — GL-079 persistence work must not overwrite audit or provenance records. Mitigation: persistence abstraction must treat audit/provenance as append-only.</p>
+</li>
+<li>
+<p><strong>Rollback incompatibility risk (MEDIUM)</strong> — Deploying auth or persistence changes without a tested rollback path could lock operators out or corrupt data. Mitigation: every issue must include a rollback plan; no irreversible schema migrations in the first cut.</p>
+</li>
+<li>
+<p><strong>Testing matrix explosion risk (MEDIUM)</strong> — Adding PostgreSQL, multiple runtime modes, and auth paths multiplies the test surface. Mitigation: each implementation block includes targeted tests; the full backend suite must pass with zero failures before merge.</p>
+</li>
+<li>
+<p><strong>Premature production claims risk (MEDIUM)</strong> — Any successful implementation block must not be used to claim production readiness until all P0 gates are closed. Mitigation: every issue document must restate the non-production disclaimer.</p>
+</li>
+</ol>
+<h2 id="14-recommended-gl-076-ordering">14. Recommended GL-076+ ordering<a class="headerlink" href="#14-recommended-gl-076-ordering" title="Permanent link">&para;</a></h2>
+<p>Based on this review, the recommended implementation order for the first cut is:</p>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-076</td>
+<td>Runtime Configuration Enforcement Baseline</td>
+<td>Foundational enabler; all other blocks depend on it.</td>
+</tr>
+<tr>
+<td>GL-077</td>
+<td>Health / Readiness Endpoint Baseline</td>
+<td>Minimal operational signal required by runbooks and deployment validation.</td>
+</tr>
+<tr>
+<td>GL-078</td>
+<td>Structured Logging / Correlation ID Helper Baseline</td>
+<td>Required before auth, persistence, or incident response can emit auditable, traceable events. Must include secret redaction.</td>
+</tr>
+<tr>
+<td>GL-079</td>
+<td>Secret Source Boundary Hardening</td>
+<td>Secrets must be managed before auth tokens or database credentials are hardened. Must replace demo keypair.</td>
+</tr>
+<tr>
+<td>GL-080</td>
+<td>Persistence Backend Boundary Groundwork</td>
+<td>Database connection and migration patterns must be stable before backup/restore or incident response can rely on them.</td>
+</tr>
+<tr>
+<td>GL-081+</td>
+<td>Operator Access Hardening</td>
+<td>Auth can be wired once configuration, logging, and secrets are in place.</td>
+</tr>
+<tr>
+<td>GL-082+</td>
+<td>Deployment / Runtime Mode Validation</td>
+<td>Deployment artifacts can be hardened once runtime configuration and health signals are implemented.</td>
+</tr>
+<tr>
+<td>GL-083+</td>
+<td>Backup / Restore / Data Lifecycle Jobs</td>
+<td>Depend on persistence, secrets, logging, and operator access.</td>
+</tr>
+<tr>
+<td>GL-084+</td>
+<td>Observability Metrics and Alerting</td>
+<td>Depend on logging, health endpoints, and configuration.</td>
+</tr>
+<tr>
+<td>GL-085+</td>
+<td>Incident Response Automation</td>
+<td>Depend on all of the above.</td>
+</tr>
+</tbody>
+</table>
+<p>Note: The issue numbering may shift as work progresses. The sequence matters more than the exact IDs.</p>
+<h2 id="15-required-stop-gates-before-sensitive-implementation-blocks">15. Required stop gates before sensitive implementation blocks<a class="headerlink" href="#15-required-stop-gates-before-sensitive-implementation-blocks" title="Permanent link">&para;</a></h2>
+<p>The following stop gates must be satisfied before starting the specified blocks:</p>
+<p><strong>Before GL-078 (Secret Source Boundary):</strong>
+- GL-075 runtime config enforcement must be merged and passing.
+- GL-077 structured logging baseline must be merged and passing.
+- A test must verify that no real secrets exist in fixtures or demo data.</p>
+<p><strong>Before GL-079 (Persistence Backend Groundwork):</strong>
+- GL-075 runtime config enforcement must be merged and passing.
+- GL-077 structured logging baseline must be merged and passing.
+- A rollback plan must be documented for any persistence abstraction change.</p>
+<p><strong>Before GL-081 (Operator Access Hardening):</strong>
+- GL-075 runtime config enforcement must be merged and passing.
+- GL-077 structured logging baseline must be merged and passing.
+- GL-078 secret source boundary must be merged and passing.
+- Existing admin-token and operator-token test paths must not be broken.</p>
+<p><strong>Before any production claim:</strong>
+- All P0 gates from <code>docs/production_hardening_roadmap.md</code> must be implemented and verified.
+- PostgreSQL must be a first-class CI target.
+- Backup/restore jobs must be implemented and tested.
+- Observability metrics and alerting must be operational.
+- Incident response automation must be in place.
+- API contract freeze process must be completed.</p>
+<h2 id="16-test-strategy-recommendations">16. Test strategy recommendations<a class="headerlink" href="#16-test-strategy-recommendations" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>Every implementation block must include targeted tests</strong> written in the same issue as the implementation. Targeted tests must pass locally and in CI.</p>
+</li>
+<li>
+<p><strong>The full backend suite must pass with zero failures and zero errors</strong> before any implementation block can be considered complete. No exceptions.</p>
+</li>
+<li>
+<p><strong>Regression test gates:</strong></p>
+</li>
+<li>GL-075 must not break GL-055 (integration contract readiness), GL-058 (minimal API usage walkthrough), or GL-061 (demo runner smoke).</li>
+<li>GL-076 must not break GL-055 or GL-073 (operational runbook design).</li>
+<li>GL-077 must not break GL-071 (observability baseline design tests).</li>
+<li>GL-078 must not break GL-068 (secret management baseline design tests).</li>
+<li>GL-079 must not break GL-070 (persistence backend design tests) or GL-072 (backup/restore design tests).</li>
+<li>GL-080 must not break GL-069 (deployment package design tests).</li>
+<li>
+<p>GL-081 must not break GL-067 (auth design tests) or GL-073 (operational runbook design tests).</p>
+</li>
+<li>
+<p><strong>New test files for the first cut:</strong></p>
+</li>
+<li><code>backend/tests/test_gl075_runtime_configuration_enforcement.py</code></li>
+<li><code>backend/tests/test_gl076_health_readiness_baseline.py</code></li>
+<li><code>backend/tests/test_gl077_structured_logging_baseline.py</code></li>
+<li><code>backend/tests/test_gl078_secret_source_boundary.py</code></li>
+<li><code>backend/tests/test_gl079_persistence_backend_abstraction.py</code></li>
+<li><code>backend/tests/test_gl080_deployment_runtime_mode_validation.py</code></li>
+<li>
+<p><code>backend/tests/test_gl081_operator_access_hardening.py</code></p>
+</li>
+<li>
+<p><strong>Claude Code review-only checkpoints</strong> should be used periodically for security-sensitive or runtime-critical blocks (GL-075, GL-078, GL-081), not for every issue.</p>
+</li>
+</ol>
+<h2 id="17-production-readiness-disclaimer">17. Production-readiness disclaimer<a class="headerlink" href="#17-production-readiness-disclaimer" title="Permanent link">&para;</a></h2>
+<p><strong>GrantLayer is not production-ready yet.</strong></p>
+<p>The completion of this Claude review gate (GL-075) does not constitute a production readiness claim. No foundation area has been implemented. No production deployment should be attempted until all P0 gates are closed and verified.</p>
+<p>Any statement to external partners, documentation, or marketing materials must include the non-production constraint.</p>
+<h2 id="18-final-review-disposition">18. Final review disposition<a class="headerlink" href="#18-final-review-disposition" title="Permanent link">&para;</a></h2>
+<p><strong>Disposition:</strong> <code>proceed_with_cautions</code></p>
+<p>The Product Foundation design baseline (GL-064 through GL-074) is coherent, well-structured, and ready for the first implementation cut. The recommended ordering (GL-076 through GL-080) is sensible and minimizes dependency risk.</p>
+<p>The review recommends proceeding with implementation under the following conditions:</p>
+<ol>
+<li>Each implementation issue must remain small (fewer than 10 changed files, one foundation area per issue).</li>
+<li>The full backend suite must pass with zero failures and zero errors before every merge.</li>
+<li>Secret redaction must be implemented before any real secret wiring.</li>
+<li>No production readiness claims may be made until all P0 gates are closed.</li>
+<li>A Claude Code review-only checkpoint should be used before GL-078 (secret boundary) and GL-081 (operator access), but not for every issue.</li>
+</ol>
+<p>If any of the above conditions cannot be met, the disposition should be downgraded to <code>blocked</code>.</p>
+<hr />
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>docs/product_foundation_readiness_review.md</code> — GL-074 readiness review</li>
+<li><code>docs/product_foundation_implementation_cut.md</code> — GL-074 implementation cut and sequencing</li>
+<li><code>docs/production_hardening_roadmap.md</code> — GL-063 production-hardening roadmap</li>
+<li><code>docs/examples/gl075/product_foundation_review_findings.json</code> — machine-readable review findings</li>
+<li><code>backend/tests/test_gl075_product_foundation_claude_review_gate.py</code> — validation test for this review</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,92 @@
+{
+  "issue_id": "GL-162B",
+  "artifact_type": "public_snapshot_scanner_clean_export",
+  "description": "GL-162B: Make the generated clean public snapshot scanner-clean. Updates the snapshot builder to exclude internal GL gate/scanner/review fixtures and synthetic secret/path marker fixtures. No weakening of internal validation. No GitHub publication.",
+
+  "public_snapshot_export_exclusions_added": true,
+  "scanner_clean_snapshot_required": true,
+  "internal_gate_fixtures_excluded": true,
+  "scanner_meta_files_excluded": true,
+  "synthetic_private_key_marker_fixtures_excluded": true,
+  "internal_path_marker_fixtures_excluded": true,
+  "internal_hostname_marker_fixtures_excluded": true,
+
+  "product_public_docs_preserved": true,
+  "agent_entrypoints_preserved": true,
+  "sdk_preserved": true,
+  "examples_agents_preserved": true,
+  "github_templates_preserved": true,
+
+  "internal_validation_not_weakened": true,
+
+  "github_publication_performed": false,
+  "github_api_called": false,
+  "public_repo_created": false,
+  "git_remotes_changed": false,
+  "history_rewrite_performed": false,
+  "secret_history_cleanup_performed": false,
+
+  "production_code_changed": false,
+  "backend_src_changed": false,
+  "openapi_changed": false,
+  "db_schema_changed": false,
+  "dependencies_changed": false,
+  "sdk_changed": false,
+  "frontend_website_design_changed": false,
+
+  "uses_real_secrets": false,
+  "uses_real_customer_data": false,
+  "includes_private_personal_data": false,
+
+  "excluded_internal_gate_fixtures": [
+    "backend/tests/test_gl157_public_secret_sensitive_scan_gate.py",
+    "backend/tests/test_gl158_git_history_exposure_review_public_snapshot_decision.py",
+    "backend/tests/test_gl159_github_private_mirror_dry_run.py",
+    "backend/tests/test_gl160_public_github_go_no_go_decision.py",
+    "backend/tests/test_gl161_clean_public_snapshot_build.py",
+    "backend/tests/test_gl162_github_public_repository_publish_gate.py",
+    "backend/tests/test_gl162a_pre_publication_security_review_fixes.py",
+    "backend/tests/test_gl162b_public_snapshot_scanner_clean_export.py"
+  ],
+
+  "excluded_scanner_meta_docs": [
+    "docs/public_secret_sensitive_scan_gate.md",
+    "docs/git_history_exposure_review_public_snapshot_decision.md",
+    "docs/github_private_mirror_dry_run.md",
+    "docs/public_github_go_no_go_decision.md",
+    "docs/clean_public_snapshot_build.md",
+    "docs/github_public_repository_publish_gate.md"
+  ],
+
+  "excluded_synthetic_marker_fixtures": [
+    "docs/examples/gl136/key_hygiene.json",
+    "docs/examples/gl157/public_secret_sensitive_scan_gate.json",
+    "docs/examples/gl158/git_history_exposure_review_public_snapshot_decision.json",
+    "docs/examples/gl159/github_private_mirror_dry_run.json",
+    "docs/examples/gl160/public_github_go_no_go_decision.json",
+    "docs/examples/gl161/clean_public_snapshot_build.json",
+    "docs/examples/gl162/github_public_repository_publish_gate.json",
+    "docs/examples/gl162b/public_snapshot_scanner_clean_export.json"
+  ],
+
+  "preserved_public_files": [
+    "README.md",
+    "LICENSE",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/agent_quickstart.md",
+    "docs/agent_task_contract.md",
+    "docs/agent_integration_manifest.json",
+    "docs/integration_guide.md",
+    "docs/ten_minute_quickstart.md",
+    "sdk/python/",
+    "examples/agents/",
+    ".github/ISSUE_TEMPLATE/",
+    ".github/pull_request_template.md"
+  ],
+
+  "next_step": "build clean snapshot, initialize temporary git repo, run scanner, then publish only after manual approval"
+}

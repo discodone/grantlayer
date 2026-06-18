@@ -1,0 +1,1464 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/public_github_go_no_go_decision/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Public GitHub Go/No-Go Decision - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#public-github-gono-go-decision" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Public GitHub Go/No-Go Decision
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#executive-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#required-prerequisites-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Prerequisites Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#go-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Go Criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#no-go-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No-Go Blockers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#publication-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publication Constraints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#required-manual-approval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Manual Approval
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Required Manual Approval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-approval-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Approval Inputs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approval-phrase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approval Phrase
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gl-161-handoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-161 Handoff
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gl-162-handoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-162 Handoff
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rollback-abort-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollback / Abort Procedure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rollback / Abort Procedure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#before-gl-162-no-publication-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Before GL-162 (no publication yet)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-gl-162-if-publication-occurred-and-must-be-reversed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After GL-162 (if publication occurred and must be reversed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#explicit-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicit Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caveats
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Step
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="public-github-gono-go-decision">Public GitHub Go/No-Go Decision<a class="headerlink" href="#public-github-gono-go-decision" title="Permanent link">&para;</a></h1>
+<p><strong>Status</strong>: Developer Preview — pre-public decision<br />
+<strong>Issue</strong>: GL-160<br />
+<strong>Prerequisites</strong>: GL-152 through GL-159 (all merged)</p>
+<hr />
+<h2 id="executive-decision">Executive Decision<a class="headerlink" href="#executive-decision" title="Permanent link">&para;</a></h2>
+<p><strong>Decision</strong>: Public release preparation <strong>may proceed to GL-161 only</strong>.</p>
+<ul>
+<li>Public release may proceed only as a <strong>clean public snapshot</strong>.</li>
+<li><strong>Full internal git history must not be published</strong>.</li>
+<li>Actual publication requires a <strong>separate explicit manual approval</strong> before GL-162.</li>
+<li>No GitHub publication occurs in GL-160.</li>
+<li>No GitHub API is called in GL-160.</li>
+<li>No remotes are changed in GL-160.</li>
+<li>No history rewrite is performed in GL-160.</li>
+</ul>
+<hr />
+<h2 id="required-prerequisites-reviewed">Required Prerequisites Reviewed<a class="headerlink" href="#required-prerequisites-reviewed" title="Permanent link">&para;</a></h2>
+<p>All of the following must be merged to <code>main</code> before this decision is finalized:</p>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-152</td>
+<td>Public Checklist Blocker Fixes</td>
+<td>reviewed</td>
+</tr>
+<tr>
+<td>GL-153</td>
+<td>LICENSE / CONTRIBUTING / SECURITY Decision Pack</td>
+<td>reviewed</td>
+</tr>
+<tr>
+<td>GL-154</td>
+<td>AGENTS.md + llms.txt + Agent Integration Manifest</td>
+<td>reviewed</td>
+</tr>
+<tr>
+<td>GL-155</td>
+<td>Agent Examples Pack</td>
+<td>reviewed</td>
+</tr>
+<tr>
+<td>GL-156</td>
+<td>GitHub Issue Templates / Feedback Templates</td>
+<td>reviewed</td>
+</tr>
+<tr>
+<td>GL-157</td>
+<td>Public Secret / Sensitive Data Scan Gate</td>
+<td>reviewed</td>
+</tr>
+<tr>
+<td>GL-158</td>
+<td>Git History Exposure Review / Public Snapshot Decision</td>
+<td>reviewed</td>
+</tr>
+<tr>
+<td>GL-159</td>
+<td>GitHub Private Mirror Dry Run</td>
+<td>reviewed</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="go-criteria">Go Criteria<a class="headerlink" href="#go-criteria" title="Permanent link">&para;</a></h2>
+<p>The following must all be true before this decision allows GL-161 to proceed:</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Apache-2.0 LICENSE file present</td>
+<td><code>LICENSE</code> exists in repo root</td>
+</tr>
+<tr>
+<td>README.md present with required caveats</td>
+<td>includes Developer Preview and not-production-SaaS language</td>
+</tr>
+<tr>
+<td>CONTRIBUTING.md present</td>
+<td>contributor guidelines in place</td>
+</tr>
+<tr>
+<td>SECURITY.md present with vulnerability disclosure</td>
+<td>security policy documented</td>
+</tr>
+<tr>
+<td>AGENTS.md present</td>
+<td>agent integration entrypoint in place</td>
+</tr>
+<tr>
+<td>llms.txt and llms-full.txt present</td>
+<td>LLM-readable entrypoints in place</td>
+</tr>
+<tr>
+<td>GitHub issue templates present</td>
+<td><code>.github/ISSUE_TEMPLATE/</code> non-empty</td>
+</tr>
+<tr>
+<td>PR template present</td>
+<td><code>.github/pull_request_template.md</code> exists</td>
+</tr>
+<tr>
+<td>Agent examples present</td>
+<td><code>examples/</code> contains agent examples</td>
+</tr>
+<tr>
+<td>GL-157 scan gate script present and validated</td>
+<td><code>scripts/public-secret-sensitive-scan.sh</code> exists and passes</td>
+</tr>
+<tr>
+<td>GL-158 clean snapshot decision documented</td>
+<td><code>docs/git_history_exposure_review_public_snapshot_decision.md</code> present</td>
+</tr>
+<tr>
+<td>GL-159 private mirror dry-run documented</td>
+<td><code>docs/github_private_mirror_dry_run.md</code> present</td>
+</tr>
+<tr>
+<td>GL-157 validation tests pass</td>
+<td><code>test_gl157_public_secret_sensitive_scan_gate.py</code> green</td>
+</tr>
+<tr>
+<td>GL-158 validation tests pass</td>
+<td><code>test_gl158_git_history_exposure_review_public_snapshot_decision.py</code> green</td>
+</tr>
+<tr>
+<td>GL-159 validation tests pass</td>
+<td><code>test_gl159_github_private_mirror_dry_run.py</code> green</td>
+</tr>
+<tr>
+<td>Full backend suite passing on main</td>
+<td>all tests green (or documented deferral)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="no-go-blockers">No-Go Blockers<a class="headerlink" href="#no-go-blockers" title="Permanent link">&para;</a></h2>
+<p>Any of the following is a hard blocker. Publication must not proceed if any blocker is present:</p>
+<table>
+<thead>
+<tr>
+<th>Blocker</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Real secrets</td>
+<td>Real API keys, tokens, or credentials in tracked files</td>
+</tr>
+<tr>
+<td>Real customer data</td>
+<td>Real grant applicants, customer records, or any production data</td>
+</tr>
+<tr>
+<td>Private personal data</td>
+<td>Passport numbers, SSNs, national IDs, bank account data</td>
+</tr>
+<tr>
+<td>Internal hostnames</td>
+<td>Internal service URLs or homelab addresses in snapshot</td>
+</tr>
+<tr>
+<td>Internal absolute paths</td>
+<td>Developer home directories or mount paths in snapshot</td>
+</tr>
+<tr>
+<td>Overclaim: production SaaS</td>
+<td>Claiming production SaaS readiness in public release</td>
+</tr>
+<tr>
+<td>Overclaim: tenant isolation</td>
+<td>Claiming tenant isolation is implemented</td>
+</tr>
+<tr>
+<td>Overclaim: full history clean</td>
+<td>Claiming full internal git history has been verified clean</td>
+</tr>
+<tr>
+<td>Overclaim: public release</td>
+<td>Claiming a public GitHub release has occurred before it has</td>
+</tr>
+<tr>
+<td>Full internal history publication</td>
+<td>Publishing <code>.git/</code> directory or raw git bundle</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="publication-constraints">Publication Constraints<a class="headerlink" href="#publication-constraints" title="Permanent link">&para;</a></h2>
+<p>If the go decision is issued, the following constraints apply at all times:</p>
+<ul>
+<li>Publish <strong>only a clean public snapshot</strong> — never the full internal git history.</li>
+<li><strong>Exclude <code>.claude/</code></strong> from the snapshot at all times.</li>
+<li><strong>Exclude internal remote references</strong> (Forgejo remote configuration, private CI endpoints).</li>
+<li><strong>Exclude private hostnames</strong> from all snapshot content.</li>
+<li><strong>Exclude real customer data</strong> from all snapshot content.</li>
+<li><strong>Exclude private personal data</strong> from all snapshot content.</li>
+<li><strong>Do not claim full git history is clean</strong> — the internal working history is not verified.</li>
+<li><strong>Do not publish any file that fails the GL-157 scan gate</strong>.</li>
+</ul>
+<hr />
+<h2 id="required-manual-approval">Required Manual Approval<a class="headerlink" href="#required-manual-approval" title="Permanent link">&para;</a></h2>
+<p>Manual approval is required before GL-162 may proceed to actual GitHub publication.</p>
+<h3 id="manual-approval-inputs">Manual Approval Inputs<a class="headerlink" href="#manual-approval-inputs" title="Permanent link">&para;</a></h3>
+<p>Before approving, the owner must confirm:</p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Required Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Final snapshot tree hash</td>
+<td>Verified hash of the clean snapshot tree</td>
+</tr>
+<tr>
+<td>Final remote target</td>
+<td>Public GitHub repository URL</td>
+</tr>
+<tr>
+<td>Final repo visibility</td>
+<td>public</td>
+</tr>
+<tr>
+<td>Final repo name</td>
+<td>Confirmed repository slug</td>
+</tr>
+<tr>
+<td>Final repo description</td>
+<td>Public-facing description with Developer Preview caveat</td>
+</tr>
+<tr>
+<td>Final repo topics / labels</td>
+<td>Agreed label set</td>
+</tr>
+<tr>
+<td>Final LICENSE metadata</td>
+<td>Apache-2.0</td>
+</tr>
+<tr>
+<td>GL-157 scan gate result</td>
+<td>Pass (exit code 0)</td>
+</tr>
+<tr>
+<td>GL-159 dry-run result</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>Full backend suite result</td>
+<td>Pass (or documented deferral)</td>
+</tr>
+<tr>
+<td>Security caveats verified</td>
+<td>Developer Preview, not production SaaS, no real data</td>
+</tr>
+</tbody>
+</table>
+<h3 id="approval-phrase">Approval Phrase<a class="headerlink" href="#approval-phrase" title="Permanent link">&para;</a></h3>
+<p>The owner must state the following phrase explicitly before GL-162 proceeds:</p>
+<blockquote>
+<p><strong>"I approve preparing the clean GrantLayer developer-preview snapshot for public GitHub publication."</strong></p>
+</blockquote>
+<p>No automated process may substitute for this explicit approval. Manual approval required for any actual public publication.</p>
+<hr />
+<h2 id="gl-161-handoff">GL-161 Handoff<a class="headerlink" href="#gl-161-handoff" title="Permanent link">&para;</a></h2>
+<p>GL-161 (Clean Public Snapshot Build) must:</p>
+<ol>
+<li>Build the clean public snapshot from the current <code>main</code> tree using <code>git archive</code> or <code>git ls-files</code> (excludes <code>.git/</code> and <code>.claude/</code>).</li>
+<li>Validate the full file allowlist against the expected candidate contents from GL-159.</li>
+<li>Verify all explicit exclusions (<code>.git/</code>, <code>.claude/</code>, private hostnames, internal paths).</li>
+<li>Run the GL-157 scan gate (<code>scripts/public-secret-sensitive-scan.sh</code>) against the snapshot tree.</li>
+<li>Run targeted public-readiness tests against the snapshot.</li>
+<li>Produce a snapshot tree hash for manual approval.</li>
+<li>Document the result for GL-162 handoff.</li>
+</ol>
+<p>GL-161 must not push to any remote. It is a local build and validation step only.</p>
+<hr />
+<h2 id="gl-162-handoff">GL-162 Handoff<a class="headerlink" href="#gl-162-handoff" title="Permanent link">&para;</a></h2>
+<p>GL-162 (GitHub Public Repository Metadata / Publish Gate) must:</p>
+<ol>
+<li>Configure the public repository metadata (name, description, topics, default branch, license).</li>
+<li>Await explicit manual approval using the phrase specified above.</li>
+<li>Publish the clean snapshot to GitHub <strong>only after manual approval</strong>.</li>
+<li>Verify the repository after publication (visibility, file set, no forbidden content, no internal remotes).</li>
+<li>Confirm no GitHub publication occurs without manual approval.</li>
+</ol>
+<hr />
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Accidental publication of full internal git history</td>
+<td>Low</td>
+<td>High</td>
+<td>Snapshot build uses git archive; scope guard blocks <code>.git/</code></td>
+</tr>
+<tr>
+<td>Real secret present in snapshot</td>
+<td>Low</td>
+<td>High</td>
+<td>GL-157 scan gate must exit 0 before any publication</td>
+</tr>
+<tr>
+<td>Internal hostname exposed in snapshot</td>
+<td>Low</td>
+<td>Medium</td>
+<td>GL-157 scan gate detects internal hostnames</td>
+</tr>
+<tr>
+<td>Production SaaS overclaim in public materials</td>
+<td>Low</td>
+<td>Medium</td>
+<td>All public docs include Developer Preview caveat</td>
+</tr>
+<tr>
+<td>Tenant isolation overclaim</td>
+<td>Low</td>
+<td>Medium</td>
+<td>All public docs include tenant isolation caveat</td>
+</tr>
+<tr>
+<td>Snapshot published without manual approval</td>
+<td>Low</td>
+<td>High</td>
+<td>GL-162 requires explicit approval phrase before any push</td>
+</tr>
+<tr>
+<td>Stale scan gate (new secrets added after last scan)</td>
+<td>Medium</td>
+<td>High</td>
+<td>GL-161 re-runs scan gate on the final snapshot tree</td>
+</tr>
+<tr>
+<td>Scope creep into production backend code</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Scope guard in test suite catches backend/src changes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="rollback-abort-procedure">Rollback / Abort Procedure<a class="headerlink" href="#rollback-abort-procedure" title="Permanent link">&para;</a></h2>
+<h3 id="before-gl-162-no-publication-yet">Before GL-162 (no publication yet)<a class="headerlink" href="#before-gl-162-no-publication-yet" title="Permanent link">&para;</a></h3>
+<p>If any validation step fails before GL-162 executes:</p>
+<ol>
+<li><strong>Stop immediately</strong> — do not proceed to GL-162.</li>
+<li>Do not push any snapshot to any remote.</li>
+<li>Document the failure in the GL-160 report artifact.</li>
+<li>Open a blocking issue describing the failure and which go criterion was not met.</li>
+<li>Do not merge GL-161 until the failure is resolved.</li>
+</ol>
+<p>No rollback of git history, remotes, or credentials is needed — no destructive operations are performed in GL-160 or GL-161.</p>
+<h3 id="after-gl-162-if-publication-occurred-and-must-be-reversed">After GL-162 (if publication occurred and must be reversed)<a class="headerlink" href="#after-gl-162-if-publication-occurred-and-must-be-reversed" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Delete the public GitHub repository immediately.</li>
+<li>Identify what was exposed (scan gate output, file list).</li>
+<li>If any real credential was exposed: rotate immediately and notify affected parties.</li>
+<li>Document the incident in a post-mortem.</li>
+<li>Determine root cause and fix before re-attempting publication.</li>
+</ol>
+<hr />
+<h2 id="explicit-non-goals">Explicit Non-Goals<a class="headerlink" href="#explicit-non-goals" title="Permanent link">&para;</a></h2>
+<p>GL-160 explicitly does <strong>not</strong>:</p>
+<ul>
+<li>Publish to a public GitHub repository</li>
+<li>Create a public GitHub repository</li>
+<li>Call the GitHub API</li>
+<li>Create a mirror repository on any remote</li>
+<li>Add a GitHub remote to the local repository</li>
+<li>Push to GitHub or any unapproved remote</li>
+<li>Rewrite git history</li>
+<li>Run <code>git filter-repo</code> or BFG</li>
+<li>Delete commits or remove files from history</li>
+<li>Rotate secrets</li>
+<li>Perform secret-history cleanup</li>
+<li>Claim full git history is clean (the full internal working history is not verified)</li>
+<li>Claim production SaaS readiness</li>
+<li>Claim tenant isolation is implemented</li>
+<li>Claim a public GitHub release has occurred</li>
+<li>No history rewrite is performed in this issue</li>
+</ul>
+<hr />
+<h2 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">&para;</a></h2>
+<p><strong>Developer Preview</strong>: GrantLayer is a developer preview. It is <strong>not production SaaS</strong> ready for enterprise or multi-tenant deployment.</p>
+<p><strong>Tenant isolation is not implemented</strong>: No workspace or tenant isolation exists. All data sharing a GrantLayer instance shares the same database.</p>
+<p><strong>No real secrets</strong>: This repository does not contain real production credentials, API keys, or tokens.</p>
+<p><strong>No real customer data</strong>: This repository does not contain real grant applicants, customer records, or personal data.</p>
+<p><strong>No GitHub publication</strong>: No publication to a public GitHub repository has occurred as part of this issue. No GitHub API was called. No remotes were changed.</p>
+<p><strong>No history rewrite performed</strong>: GL-160 does not perform any git history rewrite. The private working repository's history is unchanged.</p>
+<p><strong>Clean public snapshot required</strong>: Any future public release must be a clean snapshot — not the full internal git history.</p>
+<p><strong>Full internal git history must not be published</strong>: The internal working history contains development artifacts not suitable for public release.</p>
+<p><strong>Manual approval required</strong>: No automated process may substitute for the explicit owner approval phrase before GL-162 proceeds.</p>
+<hr />
+<h2 id="next-step">Next Step<a class="headerlink" href="#next-step" title="Permanent link">&para;</a></h2>
+<p><strong>GL-161 Clean Public Snapshot Build</strong></p>
+<p>After GL-160 artifacts are validated and merged, GL-161 builds and validates the clean public snapshot locally. The snapshot is not pushed until GL-162 receives explicit manual approval.</p>
+<p><strong>GL-162 GitHub Public Repository Metadata / Publish Gate</strong></p>
+<p>After GL-161 validates the clean snapshot and the owner provides explicit approval, GL-162 configures the public repository metadata and performs the actual publication.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

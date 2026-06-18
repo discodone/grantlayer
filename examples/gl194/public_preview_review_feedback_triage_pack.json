@@ -1,0 +1,474 @@
+{
+  "issue_id": "GL-194",
+  "title": "Public Preview Review & Feedback Triage Pack",
+  "context": "GrantLayer is publicly available on GitHub at https://github.com/Discodone/grantlayer.git in a Developer Preview / controlled-pilot posture (GL-176). GL-194 synthesises the current public preview state after GL-187 through GL-193, triages AI/reviewer feedback themes, assesses public preview readiness across sixteen dimensions, converts findings to a prioritised roadmap, and recommends a decision on continuing the public developer preview.",
+  "input_sources_reviewed": [
+    "README.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/first_output_verify_helper.md",
+    "docs/grant_lifecycle_evidence_bundle.md",
+    "docs/public_developer_experience_polish_pack.md",
+    "docs/public_feedback_infrastructure_pack.md",
+    "docs/public_agent_api_walkthrough_refresh.md",
+    "docs/examples/gl191/public_developer_experience_polish_pack.json",
+    "docs/examples/gl192/public_feedback_infrastructure_pack.json",
+    "docs/examples/gl193/public_agent_api_walkthrough_refresh.json",
+    "examples/first_verifiable_output.py",
+    "examples/first_verifiable_output.json",
+    "examples/grant_lifecycle_evidence_bundle.py",
+    "examples/grant_lifecycle_evidence_bundle.json",
+    "scripts/verify-first-output.sh",
+    "SECURITY.md"
+  ],
+  "completed_public_preview_improvements": [
+    {
+      "issue": "GL-187",
+      "title": "Public Docs Stale Claim Cleanup",
+      "status": "merged_done"
+    },
+    {
+      "issue": "GL-187P",
+      "title": "Public Snapshot Correction Push",
+      "status": "merged_done"
+    },
+    {
+      "issue": "GL-188",
+      "title": "First Output Verify Helper",
+      "status": "merged_done"
+    },
+    {
+      "issue": "GL-188P",
+      "title": "Public Snapshot Correction Push",
+      "status": "merged_done"
+    },
+    {
+      "issue": "GL-189",
+      "title": "Second Runnable Grant Lifecycle Evidence Bundle",
+      "status": "merged_done"
+    },
+    {
+      "issue": "GL-189P",
+      "title": "Public Snapshot Push",
+      "status": "merged_done"
+    },
+    {
+      "issue": "GL-190",
+      "title": "Demo Endpoint Safety Guard",
+      "status": "merged_done"
+    },
+    {
+      "issue": "GL-191",
+      "title": "Public Developer Experience Polish Pack",
+      "status": "merged_and_published"
+    },
+    {
+      "issue": "GL-192",
+      "title": "Public Feedback Infrastructure Pack",
+      "status": "merged_and_published"
+    },
+    {
+      "issue": "GL-193",
+      "title": "Public Agent/API Walkthrough Refresh",
+      "status": "merged_and_published"
+    }
+  ],
+  "ai_reviewer_feedback_themes": [
+    {
+      "theme": "entry-point-clarity",
+      "description": "README did not clearly sequence what to run first vs next. Resolved by GL-191 with explicit 'What to try first / next' sections.",
+      "resolved": true,
+      "resolved_by": "GL-191"
+    },
+    {
+      "theme": "stale-public-state-claims",
+      "description": "Phrases like 'coming soon' or 'will be published' persisted from pre-public cycles. Resolved by GL-187.",
+      "resolved": true,
+      "resolved_by": "GL-187"
+    },
+    {
+      "theme": "first-deterministic-output-trust",
+      "description": "Reviewers found value in a runnable example that produces verifiable output with no install. Resolved by GL-188 verify helper.",
+      "resolved": true,
+      "resolved_by": "GL-188"
+    },
+    {
+      "theme": "second-example-gap",
+      "description": "Reviewers requested a second runnable example to show more product concepts. Resolved by GL-189 grant lifecycle evidence bundle.",
+      "resolved": true,
+      "resolved_by": "GL-189"
+    },
+    {
+      "theme": "agent-coding-agent-path",
+      "description": "AI coding agents needed one clear sequence from README to AGENTS.md to walkthrough. Resolved by GL-193.",
+      "resolved": true,
+      "resolved_by": "GL-193"
+    },
+    {
+      "theme": "feedback-routing-and-security-advisory",
+      "description": "Docs did not explicitly route security-sensitive findings away from public issues. Resolved by GL-192.",
+      "resolved": true,
+      "resolved_by": "GL-192"
+    },
+    {
+      "theme": "caveat-consistency",
+      "description": "Developer Preview, not production SaaS, and tenant isolation not implemented needed to be explicit at every developer entry point. Now present in README, AGENTS.md, llms.txt, SECURITY.md, and every public template.",
+      "resolved": true,
+      "resolved_by": "GL-191 GL-192 GL-193"
+    },
+    {
+      "theme": "backend-no-install-separation",
+      "description": "Quickstart previously blended no-install examples with backend setup steps. Resolved by GL-191 Path A / Path A2 / Path B separation.",
+      "resolved": true,
+      "resolved_by": "GL-191"
+    },
+    {
+      "theme": "production-readiness-gap-report",
+      "description": "No formal production-vs-preview gap report exists. Non-blocking for developer preview. Tracked as GL-199.",
+      "resolved": false,
+      "tracked_by": "GL-199"
+    },
+    {
+      "theme": "api-sdk-packaging-decision",
+      "description": "Minimal Python SDK exists but no formal packaging or maturity decision documented. Tracked as GL-197.",
+      "resolved": false,
+      "tracked_by": "GL-197"
+    }
+  ],
+  "triage_categories": [
+    "quickstart-feedback",
+    "first-output-feedback",
+    "grant-lifecycle-example-feedback",
+    "documentation-feedback",
+    "developer-experience-feedback",
+    "bug-report",
+    "feature-request",
+    "product-question",
+    "security-sensitive-report",
+    "non-scope-later"
+  ],
+  "severity_model": [
+    "critical",
+    "high",
+    "medium",
+    "low",
+    "info"
+  ],
+  "readiness_dimensions": [
+    {
+      "dimension": "README clarity",
+      "status": "ready",
+      "severity": null,
+      "rationale": "What to try first/next sections, developer entry path table, and path table all present (GL-191). Caveats explicit.",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "first output helper",
+      "status": "ready",
+      "severity": null,
+      "rationale": "scripts/verify-first-output.sh verified: MATCH (GL-194 smoke check 2026-06-03).",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "second runnable example",
+      "status": "ready",
+      "severity": null,
+      "rationale": "grant_lifecycle_evidence_bundle.py verified: empty diff against reference artifact (GL-194 smoke check 2026-06-03).",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "feedback infrastructure",
+      "status": "ready",
+      "severity": null,
+      "rationale": "Templates, severity model, security advisory routing, label taxonomy plan all in place (GL-192).",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "agent/API walkthrough",
+      "status": "ready",
+      "severity": null,
+      "rationale": "docs/public_agent_api_walkthrough_refresh.md covers all entry points, paths, and caveats (GL-193).",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "security-sensitive routing",
+      "status": "ready",
+      "severity": null,
+      "rationale": "SECURITY.md and GL-192 both route security-sensitive reports to GitHub Security Advisories. Explicit in every template.",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "caveat clarity",
+      "status": "ready",
+      "severity": null,
+      "rationale": "Developer Preview, not production SaaS, tenant isolation not implemented appear in README, AGENTS.md, llms.txt, SECURITY.md, all issue templates.",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "public claim safety",
+      "status": "ready_with_cautions",
+      "severity": "low",
+      "rationale": "All reviewed claims appear accurate. A formal scanner/claim consistency gate (GL-195) would add confidence.",
+      "recommended_follow_up_issue": "GL-195"
+    },
+    {
+      "dimension": "example determinism",
+      "status": "ready",
+      "severity": null,
+      "rationale": "Both examples produce exact match with committed reference artifacts (GL-194 smoke check 2026-06-03).",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "backend quickstart separation",
+      "status": "ready",
+      "severity": null,
+      "rationale": "Path A (no-install), Path A2 (no-install), Path B (requires pip install) clearly separated (GL-191).",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "coding agent readiness",
+      "status": "ready",
+      "severity": null,
+      "rationale": "AGENTS.md, llms.txt, llms-full.txt, agent_quickstart.md, agent_task_contract.md all present and current (GL-193).",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "public snapshot safety",
+      "status": "ready",
+      "severity": null,
+      "rationale": "No private paths, secrets, internal hostnames, or private remotes found during review.",
+      "recommended_follow_up_issue": null
+    },
+    {
+      "dimension": "production readiness",
+      "status": "needs_followup",
+      "severity": "medium",
+      "rationale": "Production readiness explicitly not claimed. No formal production-vs-preview gap report v2 yet written. Non-blocking for developer preview.",
+      "recommended_follow_up_issue": "GL-199"
+    },
+    {
+      "dimension": "tenant isolation",
+      "status": "needs_followup",
+      "severity": "medium",
+      "rationale": "Tenant isolation explicitly not implemented and prominently documented. No formal isolation gap report yet written. Non-blocking for developer preview.",
+      "recommended_follow_up_issue": "GL-199"
+    },
+    {
+      "dimension": "API/SDK maturity",
+      "status": "needs_followup",
+      "severity": "low",
+      "rationale": "Minimal Python SDK exists; no formal packaging maturity decision or public release process documented.",
+      "recommended_follow_up_issue": "GL-197"
+    },
+    {
+      "dimension": "controlled preview readiness",
+      "status": "needs_followup",
+      "severity": "low",
+      "rationale": "No formal controlled-preview boundary document defines reviewer invite criteria, onboarding, offboarding, or data policy.",
+      "recommended_follow_up_issue": "GL-198"
+    }
+  ],
+  "findings": [
+    {
+      "id": "GL-194-F001",
+      "severity": "low",
+      "category": "documentation-feedback",
+      "summary": "llms.txt mentions 'Upcoming issues: GL-193' but GL-193 is now complete.",
+      "evidence": "llms.txt Next Steps section references GL-193 as upcoming. GL-193 is merged_and_published per GL-193 memory record.",
+      "blocking": false,
+      "recommended_action": "Update llms.txt Next Steps to reference the compact roadmap (GL-195 through GL-199) instead of GL-193.",
+      "recommended_issue": "GL-195"
+    },
+    {
+      "id": "GL-194-F002",
+      "severity": "medium",
+      "category": "product-question",
+      "summary": "No formal production readiness gap report v2 consolidating all remaining hardening gates with severity and owner.",
+      "evidence": "README and SECURITY.md list individual caveats but no single consolidated gap report v2 exists.",
+      "blocking": false,
+      "recommended_action": "Create GL-199 Production Readiness Gap Report v2 as a standalone doc listing all remaining hardening gates.",
+      "recommended_issue": "GL-199"
+    },
+    {
+      "id": "GL-194-F003",
+      "severity": "medium",
+      "category": "product-question",
+      "summary": "Tenant isolation prominently caveated but no formal isolation gap report describing what work remains.",
+      "evidence": "README, AGENTS.md, llms.txt, SECURITY.md all state tenant isolation is not implemented. No doc maps the implementation path.",
+      "blocking": false,
+      "recommended_action": "Include tenant isolation gap analysis in GL-199 Production Readiness Gap Report v2.",
+      "recommended_issue": "GL-199"
+    },
+    {
+      "id": "GL-194-F004",
+      "severity": "low",
+      "category": "developer-experience-feedback",
+      "summary": "Minimal Python SDK exists but no formal API/SDK packaging maturity decision or public release process documented.",
+      "evidence": "sdk/python/README.md and sdk/python/grantlayer_client.py exist. No version, release tag, or packaging manifest present.",
+      "blocking": false,
+      "recommended_action": "GL-197 API/SDK/Agent Value Decision Pack should document SDK maturity state and whether a PyPI or packaged release is planned.",
+      "recommended_issue": "GL-197"
+    },
+    {
+      "id": "GL-194-F005",
+      "severity": "low",
+      "category": "product-question",
+      "summary": "No formal controlled-preview boundary document defines reviewer invite criteria, data policy, or onboarding/offboarding.",
+      "evidence": "GL-192 round-2 reviewer guidance covers what reviewers can try and what to report but no invite policy document exists.",
+      "blocking": false,
+      "recommended_action": "GL-198 Controlled Preview Boundary Pack should draft invite criteria, data policy summary, and onboarding/offboarding guidance.",
+      "recommended_issue": "GL-198"
+    },
+    {
+      "id": "GL-194-F006",
+      "severity": "info",
+      "category": "first-output-feedback",
+      "summary": "Both public runnable examples confirmed deterministic and matching committed reference artifacts as of GL-194 smoke check.",
+      "evidence": "scripts/verify-first-output.sh returned MATCH. diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_gl194_grant_lifecycle_check.json returned empty diff. Date: 2026-06-03.",
+      "blocking": false,
+      "recommended_action": "No action needed. Record as positive health indicator. Include in GL-196 Public Smoke Matrix Pack.",
+      "recommended_issue": "GL-196"
+    },
+    {
+      "id": "GL-194-F007",
+      "severity": "info",
+      "category": "developer-experience-feedback",
+      "summary": "Public scanner/claim consistency has not been formally gated since GL-187 cleanup. All reviewed claims appear accurate.",
+      "evidence": "GL-187 cleaned a prior round of stale claims. No formal claim-scan gate has been run since GL-193.",
+      "blocking": false,
+      "recommended_action": "GL-195 Public Safety/Scanner/Claim Consistency Gate should formalise and document the claim scan.",
+      "recommended_issue": "GL-195"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 3,
+    "info": 2,
+    "total": 7
+  },
+  "feedback_to_roadmap": [
+    {
+      "theme": "stale claim cleanup and scanner gate",
+      "finding_ids": ["GL-194-F007"],
+      "recommended_issue": "GL-195",
+      "title": "Public Safety / Scanner / Claim Consistency Gate",
+      "priority": "high"
+    },
+    {
+      "theme": "smoke matrix and determinism coverage",
+      "finding_ids": ["GL-194-F006"],
+      "recommended_issue": "GL-196",
+      "title": "Public Smoke Matrix Pack",
+      "priority": "high"
+    },
+    {
+      "theme": "API/SDK maturity decision",
+      "finding_ids": ["GL-194-F004"],
+      "recommended_issue": "GL-197",
+      "title": "API/SDK/Agent Value Decision Pack",
+      "priority": "medium"
+    },
+    {
+      "theme": "controlled preview boundary",
+      "finding_ids": ["GL-194-F005"],
+      "recommended_issue": "GL-198",
+      "title": "Controlled Preview Boundary Pack",
+      "priority": "medium"
+    },
+    {
+      "theme": "production readiness gap report v2",
+      "finding_ids": ["GL-194-F002", "GL-194-F003"],
+      "recommended_issue": "GL-199",
+      "title": "Production Readiness Gap Report v2",
+      "priority": "medium"
+    }
+  ],
+  "decision": "public_preview_continue_with_cautions",
+  "decision_rationale": "All developer-facing entry points are working and verified. Both runnable examples pass smoke checks as of 2026-06-03. Public caveats are consistent and explicit across README, AGENTS.md, llms.txt, SECURITY.md, and all issue templates. Security-sensitive routing is in place. No private data, no secrets, and no unsafe public claims were found during this review. Zero critical or high findings. All remaining findings are low or info severity and non-blocking for developer preview. Widening the reviewer pool beyond the current controlled-pilot posture is not yet recommended — GL-195 (claim consistency gate) and GL-196 (smoke matrix) should complete first.",
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "no_reviewer_outreach_sent": true,
+    "no_backend_src_changes": true,
+    "no_openapi_changes": true,
+    "no_migration_db_dependency_changes": true,
+    "no_dependency_manifest_changes": true,
+    "no_sdk_implementation_changes": true,
+    "no_examples_runtime_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_behavior_changes": true,
+    "no_production_saas_claim": true,
+    "tenant_isolation_not_claimed": true,
+    "no_real_customer_data_requested": true,
+    "no_private_grant_data_requested": true,
+    "no_secrets_requested": true,
+    "no_exploit_details_included": true,
+    "security_sensitive_reports_routed_to_github_security_advisories": true
+  },
+  "changed_files": [
+    "docs/public_preview_review_feedback_triage_pack.md",
+    "docs/examples/gl194/public_preview_review_feedback_triage_pack.json",
+    "backend/tests/test_gl194_public_preview_review_feedback_triage_pack.py"
+  ],
+  "tests": [
+    {
+      "command": "python3 -m py_compile backend/tests/test_gl194_public_preview_review_feedback_triage_pack.py",
+      "purpose": "syntax check"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl194_public_preview_review_feedback_triage_pack -v",
+      "purpose": "issue-specific validation"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl193_public_agent_api_walkthrough_refresh -v",
+      "purpose": "regression check for GL-193 walkthrough"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_gl192_public_feedback_infrastructure_pack -v",
+      "purpose": "regression check for GL-192 feedback guidance"
+    },
+    {
+      "command": "python3 -m unittest backend.tests.test_security_boundary_regression -v",
+      "purpose": "security boundary regression"
+    },
+    {
+      "command": "scripts/verify-first-output.sh",
+      "purpose": "smoke check for the first deterministic output"
+    },
+    {
+      "command": "python3 examples/grant_lifecycle_evidence_bundle.py --output /tmp/grantlayer_gl194_grant_lifecycle_check.json",
+      "purpose": "smoke check for the second deterministic example"
+    },
+    {
+      "command": "diff -u examples/grant_lifecycle_evidence_bundle.json /tmp/grantlayer_gl194_grant_lifecycle_check.json",
+      "purpose": "compare second example with committed reference"
+    }
+  ],
+  "result": "public_preview_review_feedback_triage_complete",
+  "next_recommended_step": "GL-194 Combined Merge-and-Publish for Public Preview Review & Feedback Triage Pack",
+  "non_goals": [
+    "No GitHub push",
+    "No visibility change",
+    "No GitHub API label changes",
+    "No GitHub issue creation or modification",
+    "No reviewer outreach",
+    "No backend/src changes",
+    "No OpenAPI changes",
+    "No migration, DB/schema, or dependency manifest changes",
+    "No SDK implementation changes",
+    "No examples runtime changes",
+    "No frontend/website/design changes",
+    "No GitHub workflow changes",
+    "No snapshot publish script behavior changes",
+    "No production SaaS claim",
+    "No tenant isolation claim",
+    "No real customer data, private grants, secrets, or exploit details"
+  ]
+}

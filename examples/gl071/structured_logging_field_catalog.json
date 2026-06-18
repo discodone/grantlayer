@@ -1,0 +1,201 @@
+{
+  "description": "Structured logging field catalog for GrantLayer observability baseline. Defines required, optional, forbidden, and redacted fields. This is a design artifact; no logging is implemented.",
+  "version": "1.0",
+  "fieldDefinitions": {
+    "requiredFields": [
+      {
+        "fieldName": "timestamp",
+        "type": "string",
+        "format": "ISO 8601 with timezone offset or UTC (Z)",
+        "description": "Event timestamp. Monotonic wall-clock time."
+      },
+      {
+        "fieldName": "level",
+        "type": "string",
+        "allowedValues": ["ERROR", "WARN", "INFO", "DEBUG"],
+        "description": "Log severity level."
+      },
+      {
+        "fieldName": "msg",
+        "type": "string",
+        "description": "Short human-readable description of the event."
+      },
+      {
+        "fieldName": "eventType",
+        "type": "string",
+        "description": "Event category from the observability event model."
+      },
+      {
+        "fieldName": "serviceName",
+        "type": "string",
+        "description": "Emitting component (e.g., grantlayer-api)."
+      },
+      {
+        "fieldName": "serviceVersion",
+        "type": "string",
+        "description": "Deployed version identifier."
+      }
+    ],
+    "correlationFields": [
+      {
+        "fieldName": "requestId",
+        "type": "string",
+        "description": "Ties all log entries generated during a single HTTP/API request.",
+        "propagation": "inbound_headers, outbound_headers, internal_async"
+      },
+      {
+        "fieldName": "correlationId",
+        "type": "string",
+        "description": "Higher-level identifier spanning multiple requests (batch, callback, etc.).",
+        "propagation": "inbound_headers, outbound_headers, internal_async"
+      },
+      {
+        "fieldName": "workflowId",
+        "type": "string",
+        "description": "Ties all steps of a single GrantLayer workflow.",
+        "propagation": "internal_async, persistence"
+      },
+      {
+        "fieldName": "executionId",
+        "type": "string",
+        "description": "Ties all operations within a single execution instance.",
+        "propagation": "internal_async, persistence"
+      },
+      {
+        "fieldName": "actorId",
+        "type": "string",
+        "description": "Identity of the human or system performing the action.",
+        "propagation": "inbound_headers, internal_async"
+      },
+      {
+        "fieldName": "agentId",
+        "type": "string",
+        "description": "Specific agent or service instance that handled the request.",
+        "propagation": "internal"
+      }
+    ],
+    "optionalFields": [
+      {
+        "fieldName": "sourceFile",
+        "type": "string",
+        "description": "File path relative to repository root."
+      },
+      {
+        "fieldName": "sourceLine",
+        "type": "integer",
+        "description": "Line number in source file."
+      },
+      {
+        "fieldName": "threadId",
+        "type": "string",
+        "description": "Runtime thread identifier for concurrency debugging."
+      },
+      {
+        "fieldName": "processId",
+        "type": "string",
+        "description": "Runtime process identifier."
+      },
+      {
+        "fieldName": "errorCode",
+        "type": "string",
+        "description": "Machine-readable error code for ERROR-level events."
+      },
+      {
+        "fieldName": "errorCategory",
+        "type": "string",
+        "description": "Classification: transient, permanent, internal, external, retryable, fatal."
+      },
+      {
+        "fieldName": "latencyMs",
+        "type": "number",
+        "description": "Operation latency in milliseconds."
+      },
+      {
+        "fieldName": "statusCode",
+        "type": "integer",
+        "description": "HTTP or operation status code."
+      },
+      {
+        "fieldName": "details",
+        "type": "object",
+        "description": "Structured context object for event-specific data. Dynamic keys allowed inside this object only."
+      }
+    ],
+    "futureFields": [
+      {
+        "fieldName": "tenantId",
+        "type": "string",
+        "description": "Tenant or organization identifier. NOT YET IMPLEMENTED. Only to be added when multi-tenant boundaries are explicitly designed.",
+        "status": "future"
+      }
+    ],
+    "forbiddenFields": [
+      {
+        "fieldName": "rawSecret",
+        "type": "any",
+        "description": "Any raw secret value (password, API secret, private key material). Must never appear in logs."
+      },
+      {
+        "fieldName": "accessToken",
+        "type": "string",
+        "description": "Bearer tokens, JWT bodies, session cookies, refresh tokens. Must never appear in logs."
+      },
+      {
+        "fieldName": "privateKey",
+        "type": "string",
+        "description": "Ed25519 signing keys, TLS private keys, SSH keys. Must never appear in logs."
+      },
+      {
+        "fieldName": "fullEvidencePayload",
+        "type": "any",
+        "description": "Raw evidence content or large sensitive evidence documents. Must be referenced by ID or hash only."
+      },
+      {
+        "fieldName": "rawPersonalData",
+        "type": "any",
+        "description": "Personal identifiers, financial account numbers, contact details. Only allowed if explicitly permitted by future data classification policy."
+      },
+      {
+        "fieldName": "connectionString",
+        "type": "string",
+        "description": "Database connection strings containing credentials. Must never appear in logs."
+      },
+      {
+        "fieldName": "rawSql",
+        "type": "string",
+        "description": "Raw SQL queries. Use operation type labels instead."
+      }
+    ],
+    "redactedFields": [
+      {
+        "fieldName": "credentialPayload",
+        "redactionMarker": "[REDACTED]",
+        "appliesTo": ["auth_event"]
+      },
+      {
+        "fieldName": "evidenceContent",
+        "redactionMarker": "[REDACTED]",
+        "appliesTo": ["evidence_verification"]
+      },
+      {
+        "fieldName": "queryParameters",
+        "redactionMarker": "[REDACTED]",
+        "appliesTo": ["persistence_operation"]
+      },
+      {
+        "fieldName": "secretValues",
+        "redactionMarker": "[REDACTED]",
+        "appliesTo": ["configuration_event"]
+      },
+      {
+        "fieldName": "commandArguments",
+        "redactionMarker": "[REDACTED]",
+        "appliesTo": ["operator_action"]
+      }
+    ]
+  },
+  "metadata": {
+    "status": "design-baseline",
+    "note": "No logging library, metrics backend, or tracing system is implemented. This catalog defines the intended schema for future implementation."
+  }
+}

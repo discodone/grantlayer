@@ -1,0 +1,197 @@
+{
+  "issue_id": "GL-214",
+  "title": "Production IAM & Operator Control Completion",
+  "result": "ready_for_merge",
+  "decision": "ready_for_merge",
+  "decision_rationale": "GL-214 implements narrow production IAM/operator-control hardening by constraining route-created operator roles to the current route-guard vocabulary and adding durable tenant-admin audit-chain events for operator create/revoke actions. It preserves Developer Preview and Controlled Preview boundaries and does not claim production SaaS, real-data, official SDK/package, live PostgreSQL production, compliance, or enterprise readiness.",
+  "input_sources_reviewed": [
+    "docs/production_readiness_gap_report_v4.md",
+    "docs/examples/gl213/production_readiness_gap_report_v4.json",
+    "docs/public_external_review_readiness_gate_pack.md",
+    "docs/examples/gl212/public_external_review_readiness_gate_pack.json",
+    "docs/internal/sdk_pilot_production_gate.md",
+    "docs/examples/gl211/sdk_pilot_production_gate.json",
+    "docs/live_postgres_validation_execution_gl206b.md",
+    "docs/examples/gl206b/live_postgres_validation_execution_gl206b.json",
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/runtime_abuse_incident_hardening.md",
+    "docs/examples/gl208/runtime_abuse_incident_hardening.json",
+    "docs/data_governance_audit_operations.md",
+    "docs/examples/gl209/data_governance_audit_operations.json",
+    "docs/tenant_workspace_api_audit_regression_completion.md",
+    "docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json",
+    "docs/tenant_workspace_isolation_implementation_baseline.md",
+    "docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json",
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "docs/openapi.yaml",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "backend/src/auth/auth.py",
+    "backend/src/core/config.py",
+    "backend/src/auth/operators.py",
+    "backend/src/api/app.py",
+    "backend/src/audit/audit_log.py",
+    "backend/src/core/db.py",
+    "backend/src/core/models.py",
+    "backend/src/grants/grant_requests.py",
+    "backend/tests/",
+    "scripts/ops/",
+    "examples/grant_lifecycle_evidence_bundle.py"
+  ],
+  "current_iam_operator_state_summary": {
+    "admin_token_validation": "Admin token validation uses Bearer tokens and constant-time comparison; protected admin routes fail closed for missing or invalid credentials.",
+    "operator_token_validation": "Operator tokens use PBKDF2-HMAC-SHA256 storage with a deterministic lookup hash used only for narrowing before verification.",
+    "revoked_inactive_handling": "Revoked and inactive operators are excluded from authentication queries.",
+    "tenant_context": "Operator tenant context is server-derived from the stored operator row; request headers cannot override it.",
+    "route_protection": "Admin/operator control-plane routes are admin-token protected; normal routes use operator role guards when operator model is enabled.",
+    "production_status": "Baseline exists but production IAM is not complete."
+  },
+  "production_iam_gap_assessment": {
+    "admin_token": "Single static admin token remains a P0 production IAM gap.",
+    "operator_tokens": "Operator token storage and active/expiry checks exist, but automated lifecycle and external secret storage remain incomplete.",
+    "operator_roles": "Routes recognize owner, grant_admin, and auditor; GL-214 aligns new route-created operators to that vocabulary.",
+    "audit": "GL-214 adds durable audit-chain events for operator create/revoke actions.",
+    "workspace": "Workspace ID enforcement remains deferred.",
+    "identity_provider": "No OIDC, SAML, SSO, MFA, browser login, or enterprise IAM provider is implemented."
+  },
+  "implemented_hardening_summary": [
+    "POST /admin/operators now rejects roles outside owner, grant_admin, and auditor.",
+    "POST /admin/operators appends a durable tenant_admin audit-chain event for operator_created without token material.",
+    "POST /admin/operators/{id}/revoke appends a durable tenant_admin audit-chain event for operator_revoked without token material."
+  ],
+  "admin_token_behavior": {
+    "missing": "Fails closed with safe admin_token_required response.",
+    "invalid": "Fails closed with safe admin_token_invalid response.",
+    "production_like_placeholder": "Rejected by GL-201 startup checks.",
+    "leakage": "Responses and audit events do not include raw admin token or authorization header."
+  },
+  "operator_token_behavior": {
+    "storage": "PBKDF2-HMAC-SHA256 with deterministic lookup hash for narrowing.",
+    "admin_routes": "Operator tokens cannot create, list, get, or revoke operators through admin-only routes.",
+    "normal_routes": "Operator tokens authenticate normal operator-protected routes according to role.",
+    "leakage": "Safe responses do not include token_hash, token_lookup_hash, lookup_hash, or raw token except one-time create token."
+  },
+  "revoked_inactive_operator_behavior": {
+    "revoked": "Revoked operators are set inactive and cannot authenticate.",
+    "inactive": "Inactive operators are excluded from authentication queries.",
+    "expired": "Expired and malformed expiry values fail closed."
+  },
+  "operator_tenant_role_scope_boundary": {
+    "tenant": "Tenant ID is assigned at operator creation and server-derived during authentication.",
+    "role": "Route-created roles are constrained to owner, grant_admin, and auditor.",
+    "scope": "Operator lifecycle audit events use tenant_admin scope.",
+    "remaining_gap": "This is not a full production RBAC or workspace policy engine."
+  },
+  "admin_operator_route_protection": {
+    "create": "POST /admin/operators requires admin token.",
+    "list": "GET /admin/operators requires admin token.",
+    "get": "GET /admin/operators/{id} requires admin token.",
+    "revoke": "POST /admin/operators/{id}/revoke requires admin token.",
+    "public_routes": "Health and readiness remain public."
+  },
+  "audit_coverage_for_iam_operator_actions": {
+    "operator_created": "Durable audit-chain event added with safe operator resource and tenant_admin scope.",
+    "operator_revoked": "Durable audit-chain event added with safe operator resource and tenant_admin scope.",
+    "secret_safety": "Audit events do not contain raw tokens, token hashes, authorization headers, DSNs, private keys, or credentials."
+  },
+  "token_secret_safety_model": {
+    "no_raw_tokens_in_audit": true,
+    "no_token_hashes_in_responses": true,
+    "safe_auth_failure_responses": true,
+    "one_time_operator_token_on_create": "Preserved as documented bootstrap behavior."
+  },
+  "fail_closed_behavior": {
+    "admin_mutation_missing_token": "Denied.",
+    "admin_mutation_invalid_token": "Denied.",
+    "revoked_inactive_operator": "Denied.",
+    "unsafe_production_like_config": "Startup blocked by GL-201 checks."
+  },
+  "production_readiness_impact": {
+    "summary": "Materially reduces the P0 Production IAM/operator-control blocker by adding durable lifecycle audit coverage and constraining new operator roles.",
+    "production_saas": "NO-GO",
+    "real_data": "NO-GO",
+    "production_iam_complete": false
+  },
+  "controlled_preview_impact": {
+    "summary": "Improves internal operator accountability for controlled preview use.",
+    "data_boundary": "Synthetic/demo data only.",
+    "tier_change": "No production-readiness tier expansion."
+  },
+  "remaining_iam_blockers": [
+    "Provider-backed identity is not implemented.",
+    "Multi-admin governance and dual-control approval are not implemented.",
+    "Production secret lifecycle automation is incomplete.",
+    "Workspace ID enforcement remains deferred.",
+    "Full production RBAC/policy administration is not implemented.",
+    "External SIEM/SOC/alerting integration is not implemented.",
+    "Production IAM break-glass procedures remain incomplete."
+  ],
+  "risk_register": [
+    {
+      "id": "GL214-R1",
+      "risk": "Single static admin token remains.",
+      "severity": "P0",
+      "status": "open"
+    },
+    {
+      "id": "GL214-R2",
+      "risk": "Workspace enforcement remains deferred.",
+      "severity": "P0",
+      "status": "open"
+    },
+    {
+      "id": "GL214-R3",
+      "risk": "Operator lifecycle audit coverage was incomplete.",
+      "severity": "P0",
+      "status": "reduced"
+    },
+    {
+      "id": "GL214-R4",
+      "risk": "Route-created operator roles were not constrained to current route guards.",
+      "severity": "P1",
+      "status": "reduced"
+    }
+  ],
+  "findings": [
+    "Admin token behavior remains fail-closed for protected admin routes.",
+    "Operator authentication rejects revoked, inactive, expired, malformed, and unknown tokens.",
+    "Operator tenant context remains server-derived.",
+    "GL-214 adds durable tenant-admin audit-chain coverage for operator lifecycle actions.",
+    "Production IAM remains blocked on broader identity, secret lifecycle, RBAC, workspace, and operations controls."
+  ],
+  "safety_confirmations": {
+    "production_saas_no_go": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "compliance_certification_no_go": true,
+    "live_postgresql_production_no_go": true,
+    "ephemeral_postgres_validation_not_overclaimed": true,
+    "controlled_preview_synthetic_demo_data_only": true,
+    "public_publish_avoided": true,
+    "public_snapshot_export_avoided": true,
+    "package_publishing_avoided": true,
+    "package_metadata_avoided": true,
+    "github_security_advisories_for_sensitive_reports": true,
+    "no_exploit_details_included": true,
+    "no_real_secrets_included": true,
+    "no_real_customer_private_data_included": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_public_github_push": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "unrelated_website_design_import_files_excluded": true
+  },
+  "recommended_next_issues": [
+    "GL-214 Merge if ready",
+    "GL-215 Tenant / Workspace Production Guarantee",
+    "GL-216 Production Operations Hardening Pack"
+  ]
+}

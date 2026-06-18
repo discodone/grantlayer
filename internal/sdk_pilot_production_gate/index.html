@@ -1,0 +1,1659 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/sdk_pilot_production_gate/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-211 - SDK / Pilot / Production Gate - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-211-sdk-pilot-production-gate" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-211 - SDK / Pilot / Production Gate
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-state-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sdk-gate-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDK Gate Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#official-sdkpackage-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Official SDK/Package Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experimental-sdkpackage-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experimental SDK/Package Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#internal-sdk-prototype-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Internal SDK Prototype Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package-publishing-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package Publishing Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pilot-gate-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pilot Gate Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pilot-tier-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pilot Tier Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlled-external-review-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled External Review Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#first-external-controlled-pilot-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        First External Controlled Pilot Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-gate-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Gate Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-no-go-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production No-Go Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-data-no-go-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real Data No-Go Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-postgresql-blocker-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live PostgreSQL Blocker Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#website-public-snapshot-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Website / Public Snapshot Gate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-claim-boundary-preservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Claim Boundary Preservation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Blockers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-211-sdk-pilot-production-gate">GL-211 - SDK / Pilot / Production Gate<a class="headerlink" href="#gl-211-sdk-pilot-production-gate" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-211
+<strong>Title:</strong> SDK / Pilot / Production Gate
+<strong>Status:</strong> Internal / Developer Preview</p>
+<p>GL-211 is a gate/decision baseline. It is not a Production SaaS readiness
+declaration, not an SDK release, not a public snapshot, and not a public website
+publish.</p>
+<p>GrantLayer remains Developer Preview / Controlled Preview with strict
+boundaries. Production SaaS is no-go. Real customer data, private grant data,
+and institutional data remain no-go. The internal SDK prototype is not an
+official SDK or package. Experimental public SDK/package work remains deferred
+unless a future projection gate explicitly passes. Live PostgreSQL production
+readiness is not claimed. Compliance certification is not claimed. GDPR, SOC2,
+ISO, and enterprise readiness are not claimed.</p>
+<p>Security-sensitive reports route to GitHub Security Advisories. No exploit
+details are included. No real secrets are included. No real customer/private
+data is used.</p>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-200A through GL-210 are merged internally. The current internal main includes
+tenant/workspace isolation, auth/secrets/config, persistence/PostgreSQL
+migration readiness, API contract, SDK prototype boundary, production ops,
+live PostgreSQL/backup/observability baseline, admin/operator tenant control
+plane, claim safety, runtime/IAM/abuse/incident, data governance/audit
+operations, and static website baselines.</p>
+<p>Those baselines support local evaluation and bounded review with synthetic/demo
+data only. They do not make GrantLayer production SaaS, do not approve real
+customer/private grant/institutional data, do not create an official SDK or
+package, and do not publish the static website.</p>
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Decide the SDK/package posture after GL-200A through GL-210.</li>
+<li>Decide the controlled external review and first external pilot posture.</li>
+<li>Decide the Production SaaS and real/private data posture.</li>
+<li>Decide the public snapshot and website publication posture.</li>
+<li>Record blockers before stronger external claims.</li>
+<li>Add structured documentation, a JSON artifact, an internal-only pilot gate
+  checklist, and regression tests.</li>
+</ul>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>SDK packaging, package metadata, package registry release, or GL-203D.</li>
+<li>Public GitHub push, public snapshot work, public website publish, or
+  repository visibility change.</li>
+<li>Production SaaS enablement or production deployment configuration.</li>
+<li>Live PostgreSQL validation execution.</li>
+<li>Backend/src changes, API behavior changes, migrations, DB/schema changes, or
+  dependency changes.</li>
+<li>GitHub workflow changes, snapshot publish script changes, frontend/website
+  changes, analytics, tracking, external service credentials, or data collection
+  forms.</li>
+<li>Reviewer outreach, public pilot invitation text, release metadata, or
+  compliance certification claims.</li>
+</ul>
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/website_track.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl210/website_track.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/data_governance_audit_operations.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl209/data_governance_audit_operations.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/runtime_abuse_incident_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl208/runtime_abuse_incident_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/claim_safety_controlled_preview_boundary.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl207/claim_safety_controlled_preview_boundary.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/admin_operator_tenant_control_plane.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl206/admin_operator_tenant_control_plane.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/live_postgres_backup_observability_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl205/live_postgres_backup_observability_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_ops_go_no_go_v3.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl204/production_ops_go_no_go_v3.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/sdk_prototype_packaging_boundary.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203c/sdk_prototype_packaging_boundary.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi_api_contract_cleanup.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203b/openapi_api_contract_cleanup.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/api_contract_sdk_packaging_decision.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203/api_contract_sdk_packaging_decision.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/persistence_postgres_migration_readiness.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl202/persistence_postgres_migration_readiness.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_auth_secrets_config_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl201/production_auth_secrets_config_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_api_audit_regression_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_implementation_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_design_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200a/tenant_workspace_isolation_design_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>website/index.html</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>website/styles.css</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>website/README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>examples/sdk_prototype/python/grantlayer_client.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl205_live_postgres_validation.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl205_backup_restore_drill.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/ops/gl209_audit_export_check.py</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="current-state-summary">Current State Summary<a class="headerlink" href="#current-state-summary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer is an API-first Developer Preview with controlled-preview boundaries.
+The codebase has useful baseline controls, documentation, and tests, but the
+production control plane is incomplete. Tenant/workspace isolation baseline
+exists but is not production-complete. Admin/operator tenant control-plane
+baseline exists but is not production-complete. Runtime, IAM, abuse, and
+incident hardening baseline exists but is not production-complete. Data
+governance/audit operations baseline exists but is not production-complete.</p>
+<p>The static website baseline remains internal and unpublished by this repository.
+The internal SDK prototype exists as an internal prototype only. Live PostgreSQL
+validation remains pending until an explicitly ephemeral PostgreSQL instance is
+available.</p>
+<h2 id="sdk-gate-decision">SDK Gate Decision<a class="headerlink" href="#sdk-gate-decision" title="Permanent link">&para;</a></h2>
+<p>SDK gate result: official SDK/package is no-go; experimental public SDK/package
+is deferred; internal SDK prototype remains allowed only as an internal
+prototype.</p>
+<h2 id="official-sdkpackage-decision">Official SDK/Package Decision<a class="headerlink" href="#official-sdkpackage-decision" title="Permanent link">&para;</a></h2>
+<p>Official SDK/package: <strong>NO-GO</strong>.</p>
+<p>GrantLayer must not claim an official SDK or package, must not publish a package
+registry release, and must not add package publishing metadata in GL-211.</p>
+<h2 id="experimental-sdkpackage-decision">Experimental SDK/Package Decision<a class="headerlink" href="#experimental-sdkpackage-decision" title="Permanent link">&para;</a></h2>
+<p>Experimental public SDK/package: <strong>DEFERRED / CONDITIONAL NO-GO</strong>.</p>
+<p>GL-203D remains deferred unless a future projection gate explicitly allows it
+after the required blockers are cleared. GL-211 does not implement GL-203D and
+does not turn the internal SDK prototype into an official or public package.</p>
+<h2 id="internal-sdk-prototype-boundary">Internal SDK Prototype Boundary<a class="headerlink" href="#internal-sdk-prototype-boundary" title="Permanent link">&para;</a></h2>
+<p>The internal SDK prototype may continue to exist for internal Developer Preview
+assessment. It may be referenced only as a prototype. It is not official, not
+published, not production-ready, and not a support commitment. SDK docs may
+describe prototype status only.</p>
+<h2 id="package-publishing-boundary">Package Publishing Boundary<a class="headerlink" href="#package-publishing-boundary" title="Permanent link">&para;</a></h2>
+<p>Package publishing is no-go. GL-211 adds no package metadata, no <code>setup.py</code>, no
+SDK <code>pyproject.toml</code>, no <code>package.json</code>, no <code>package-lock.json</code>, no release
+metadata, and no registry publish flow.</p>
+<h2 id="pilot-gate-decision">Pilot Gate Decision<a class="headerlink" href="#pilot-gate-decision" title="Permanent link">&para;</a></h2>
+<p>First external controlled pilot: <strong>CONDITIONAL</strong>, synthetic/demo data only.</p>
+<p>The pilot gate allows internal demo, Developer Preview review, controlled
+external technical review, and a first external controlled pilot only if every
+participant and artifact stays within strict synthetic/demo-data boundaries.
+The pilot must not imply Production SaaS, real data readiness, compliance
+readiness, official SDK availability, public website publish, or public package
+availability.</p>
+<h2 id="pilot-tier-matrix">Pilot Tier Matrix<a class="headerlink" href="#pilot-tier-matrix" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Decision</th>
+<th>Data Boundary</th>
+<th>Claim Boundary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Internal demo</td>
+<td>Allowed</td>
+<td>Synthetic/demo only</td>
+<td>Developer Preview only</td>
+</tr>
+<tr>
+<td>Developer preview review</td>
+<td>Allowed</td>
+<td>Synthetic/demo only</td>
+<td>Controlled Preview with strict boundaries</td>
+</tr>
+<tr>
+<td>Controlled external technical review</td>
+<td>Conditional</td>
+<td>Synthetic/demo only</td>
+<td>No production, compliance, official SDK, or real data claims</td>
+</tr>
+<tr>
+<td>First external controlled pilot</td>
+<td>Conditional</td>
+<td>Synthetic/demo only</td>
+<td>No Production SaaS or real/private data readiness claims</td>
+</tr>
+<tr>
+<td>Controlled preview expansion</td>
+<td>Conditional</td>
+<td>Synthetic/demo only</td>
+<td>Future explicit gate required for any broader claim</td>
+</tr>
+<tr>
+<td>Real data pilot</td>
+<td>NO-GO</td>
+<td>Real customer/private grant/institutional data forbidden</td>
+<td>No real data readiness claim</td>
+</tr>
+<tr>
+<td>Production pilot</td>
+<td>NO-GO</td>
+<td>Production-like data import forbidden</td>
+<td>No Production SaaS claim</td>
+</tr>
+</tbody>
+</table>
+<h2 id="controlled-external-review-boundary">Controlled External Review Boundary<a class="headerlink" href="#controlled-external-review-boundary" title="Permanent link">&para;</a></h2>
+<p>Controlled external technical review is allowed only with synthetic/demo data,
+safe local or ephemeral environments, and claim-safe instructions. Reviewer
+instructions must prohibit real secrets, real customer data, private grant data,
+institutional data, production-like imports, and exploit details in public
+channels. Security-sensitive reports route to GitHub Security Advisories.</p>
+<h2 id="first-external-controlled-pilot-boundary">First External Controlled Pilot Boundary<a class="headerlink" href="#first-external-controlled-pilot-boundary" title="Permanent link">&para;</a></h2>
+<p>A first external controlled pilot is conditional and synthetic/demo data only.
+It must not require public website publish, public GitHub push, a public SDK
+package, package installation from a registry, production credentials, external
+hostnames, analytics, tracking, or forms collecting user data. It must not be
+represented as Production SaaS, compliance readiness, enterprise readiness, or
+approval for real customer/private grant/institutional data.</p>
+<h2 id="production-gate-decision">Production Gate Decision<a class="headerlink" href="#production-gate-decision" title="Permanent link">&para;</a></h2>
+<p>Production SaaS: <strong>NO-GO</strong>.</p>
+<p>Real customer data: <strong>NO-GO</strong>.</p>
+<p>Private grant/institutional data: <strong>NO-GO</strong>.</p>
+<p>Compliance certification: <strong>NO-GO</strong>.</p>
+<p>Enterprise readiness: <strong>NO-GO</strong>.</p>
+<p>Live PostgreSQL production claim: <strong>NO-GO</strong>.</p>
+<p>Complete DR/backup/restore claim: <strong>NO-GO</strong>.</p>
+<p>Complete production observability claim: <strong>NO-GO</strong>.</p>
+<p>Complete tenant isolation claim: <strong>NO-GO</strong>.</p>
+<p>Complete production IAM claim: <strong>NO-GO</strong>.</p>
+<h2 id="production-no-go-rationale">Production No-Go Rationale<a class="headerlink" href="#production-no-go-rationale" title="Permanent link">&para;</a></h2>
+<p>Production remains no-go because live PostgreSQL validation has not been
+executed, production backup/restore automation is incomplete, production
+observability/alerting is incomplete, production IAM is incomplete,
+admin/operator production controls are incomplete, tenant/workspace production
+guarantees are incomplete, data retention/deletion/redaction implementation is
+not production-complete, external security validation is not complete, and
+support/incident processes are not mature enough for Production SaaS claims.</p>
+<h2 id="real-data-no-go-rationale">Real Data No-Go Rationale<a class="headerlink" href="#real-data-no-go-rationale" title="Permanent link">&para;</a></h2>
+<p>Real customer data, private grant data, and institutional data remain no-go
+because data governance, retention, deletion, redaction, backup, restore,
+incident response, access control, tenant/workspace guarantees, legal review,
+and external validation are not production-complete. No production-like data
+import is allowed under GL-211.</p>
+<h2 id="live-postgresql-blocker-status">Live PostgreSQL Blocker Status<a class="headerlink" href="#live-postgresql-blocker-status" title="Permanent link">&para;</a></h2>
+<p>GL-206B Live PostgreSQL Validation Execution remains pending until an ephemeral
+PostgreSQL instance is available. GL-211 does not start GL-206B. Live PostgreSQL
+production readiness is not claimed.</p>
+<h2 id="website-public-snapshot-gate">Website / Public Snapshot Gate<a class="headerlink" href="#website-public-snapshot-gate" title="Permanent link">&para;</a></h2>
+<p>Public GitHub push is no in GL-211. Public publish is no in GL-211. Website
+public deployment is no in GL-211. Public snapshot update is deferred to a
+separate issue if explicitly approved later. The existing static website
+baseline remains internal until a separate publish gate. Any future public
+update must preserve GL-207 and GL-210 claim boundaries.</p>
+<h2 id="public-claim-boundary-preservation">Public Claim Boundary Preservation<a class="headerlink" href="#public-claim-boundary-preservation" title="Permanent link">&para;</a></h2>
+<p>Public-facing copy and reviewer-facing instructions must preserve these
+boundaries:</p>
+<ul>
+<li>Developer Preview / Controlled Preview with strict boundaries.</li>
+<li>Controlled Preview expansion limited to synthetic/demo data.</li>
+<li>Production SaaS is no-go.</li>
+<li>Real customer/private grant/institutional data is no-go.</li>
+<li>Official SDK/package is no-go.</li>
+<li>Experimental public SDK/package remains deferred unless a future projection
+  gate passes.</li>
+<li>Live PostgreSQL production claim is no-go.</li>
+<li>Compliance certification, GDPR, SOC2, ISO, and enterprise readiness are not
+  claimed.</li>
+<li>Tenant/workspace isolation, admin/operator control plane,
+  runtime/IAM/abuse/incident hardening, and data governance/audit operations are
+  not production-complete.</li>
+</ul>
+<h2 id="remaining-blockers">Remaining Blockers<a class="headerlink" href="#remaining-blockers" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-206B Live PostgreSQL Validation Execution with an ephemeral PostgreSQL
+  instance.</li>
+<li>Production backup/restore automation.</li>
+<li>Production observability and alerting stack.</li>
+<li>Production IAM completion.</li>
+<li>Admin/operator production controls.</li>
+<li>Tenant/workspace production guarantees.</li>
+<li>Data retention, deletion, and redaction implementation.</li>
+<li>Security review and external validation.</li>
+<li>Support and incident process maturity.</li>
+<li>SDK/package release gate if pursued.</li>
+<li>Public publish gate if pursued.</li>
+<li>Packaging security review.</li>
+<li>External compatibility matrix.</li>
+<li>Release/versioning policy.</li>
+<li>Official support policy.</li>
+</ul>
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Status</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SDK prototype is mistaken for official SDK/package</td>
+<td>Open</td>
+<td>Keep official SDK/package no-go and test for no package metadata.</td>
+</tr>
+<tr>
+<td>Experimental SDK is published before projection gate</td>
+<td>Open</td>
+<td>Keep GL-203D deferred and package publishing no-go.</td>
+</tr>
+<tr>
+<td>Controlled pilot drifts into real/private data</td>
+<td>Open</td>
+<td>Require synthetic/demo data only and prohibit production-like imports.</td>
+</tr>
+<tr>
+<td>Pilot copy implies production or compliance readiness</td>
+<td>Controlled</td>
+<td>GL-211 documents explicit no-go claims and adds regression tests.</td>
+</tr>
+<tr>
+<td>Public website or snapshot is published without gate</td>
+<td>Open</td>
+<td>Public publish and public snapshot are deferred to a separate issue.</td>
+</tr>
+<tr>
+<td>Security-sensitive details are disclosed publicly</td>
+<td>Controlled</td>
+<td>Route sensitive reports to GitHub Security Advisories and prohibit exploit details in public channels.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="findings">Findings<a class="headerlink" href="#findings" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Official SDK/package is not allowed now.</li>
+<li>Experimental public SDK/package remains deferred unless a future projection
+  gate explicitly passes.</li>
+<li>Internal SDK prototype remains allowed only as an internal prototype.</li>
+<li>First external controlled pilot is conditional and synthetic/demo data only.</li>
+<li>Production SaaS, real customer data, private grant data, institutional data,
+  compliance certification, enterprise readiness, live PostgreSQL production
+  readiness, complete DR, complete observability, complete tenant isolation, and
+  complete production IAM remain no-go.</li>
+<li>Public GitHub push, public publish, website deployment, and public snapshot
+  update are out of scope for GL-211.</li>
+<li>Unrelated website-design files remain excluded from GL-211.</li>
+</ul>
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-211 Merge if ready.</li>
+<li>GL-206B Live PostgreSQL Validation Execution when ephemeral PostgreSQL is
+  available.</li>
+<li>GL-212 Public Snapshot / External Review Gate only if explicitly approved
+  later.</li>
+</ul>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p>Decision: <code>sdk_pilot_production_gate_approved_with_gaps</code>.</p>
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<p>GL-211 allows continued internal Developer Preview work and conditional
+controlled external technical review or first external controlled pilot with
+synthetic/demo data only. It rejects official SDK/package availability now,
+defers experimental public SDK/package work, rejects Production SaaS and
+real/private data readiness, and defers public snapshot/website publish work to
+future explicit gates.</p>
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-211 is a gate/decision baseline, not a Production SaaS readiness
+  declaration.</li>
+<li>GrantLayer remains Developer Preview / Controlled Preview with strict
+  boundaries.</li>
+<li>Production SaaS is no-go.</li>
+<li>Real customer/private grant/institutional data remains no-go.</li>
+<li>Official SDK/package remains no-go.</li>
+<li>Experimental public SDK/package remains deferred unless a future projection
+  gate passes.</li>
+<li>Internal SDK prototype boundary is documented.</li>
+<li>Package publishing boundary is documented.</li>
+<li>Live PostgreSQL production claim remains no-go.</li>
+<li>Public website publish remains no-go in this issue.</li>
+<li>Security-sensitive reports route to GitHub Security Advisories.</li>
+<li>No exploit details are included.</li>
+<li>No real secrets are included.</li>
+<li>No real customer/private data is used.</li>
+<li>No compliance certification is claimed.</li>
+<li>Tenant/workspace isolation is not production-complete.</li>
+<li>Admin/operator tenant control plane is not production-complete.</li>
+<li>Runtime/IAM/abuse/incident hardening is not production-complete.</li>
+<li>Data governance/audit operations is not production-complete.</li>
+<li>Unrelated website-design files are excluded.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

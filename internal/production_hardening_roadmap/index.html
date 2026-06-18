@@ -1,0 +1,1233 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/production_hardening_roadmap/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer Production-Hardening Roadmap - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-production-hardening-roadmap" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer Production-Hardening Roadmap
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-current-readiness-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Current readiness state
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-what-is-already-ready" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. What is already ready
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-why-production-ready-is-still-no" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Why production-ready is still no
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-p0-production-hardening-workstreams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. P0 production-hardening workstreams
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-p1-pilot-expansion-workstreams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. P1 pilot-expansion workstreams
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-p2-productization-workstreams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. P2 productization workstreams
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-recommended-implementation-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Recommended implementation order
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-what-not-to-build-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. What not to build yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-decision-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Decision boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-production-hardening-roadmap">GrantLayer Production-Hardening Roadmap<a class="headerlink" href="#grantlayer-production-hardening-roadmap" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>This roadmap separates <strong>Pilot-Ready</strong> status from <strong>Production-Ready</strong> requirements.</p>
+<p>It does not implement production hardening. It documents what GrantLayer already has, what is sufficient for first technical pilot discussions, what is still missing for production deployment, and which production-hardening workstreams should be prioritized next.</p>
+<p>The roadmap is intended for internal planning, partner expectation-setting, and Merge Agent review before any production-hardening sprint begins.</p>
+<h2 id="2-current-readiness-state">2. Current readiness state<a class="headerlink" href="#2-current-readiness-state" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Milestone</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Integration-Ready v0</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>Pilot-Ready for technical review</td>
+<td><strong>Yes, with non-production constraints</strong></td>
+</tr>
+<tr>
+<td>Production-Ready</td>
+<td><strong>No</strong></td>
+</tr>
+</tbody>
+</table>
+<p>GrantLayer has completed Integration-Ready and Pilot-Ready artifacts through GL-052 through GL-062. The Product Core flow is implemented, tested end-to-end, and supported by guides, demo scenarios, quickstart examples, an OpenAPI contract, validation tests, a demo runner, and a pilot partner preparation pack.</p>
+<h2 id="3-what-is-already-ready">3. What is already ready<a class="headerlink" href="#3-what-is-already-ready" title="Permanent link">&para;</a></h2>
+<p>The following prior blocks constitute the existing readiness foundation:</p>
+<ul>
+<li><strong>GL-052 Product Core E2E Flow Test</strong> — proves the full institutional grant workflow using real module execution.</li>
+<li><strong>GL-053 Minimum Viable Integration Guide</strong> — explains what GrantLayer is, what it solves, and the Product Core capabilities.</li>
+<li><strong>GL-054 Integration Demo Pack</strong> — provides a deterministic demo scenario and coherent JSON fixture.</li>
+<li><strong>GL-055 Integration Contract &amp; Readiness Gate</strong> — guards the OpenAPI contract and validates artifact presence.</li>
+<li><strong>GL-056 Integration-Ready Release Candidate Review</strong> — consolidates the Integration-Ready v0 state.</li>
+<li><strong>GL-057 Integrator Quickstart Examples</strong> — provides minimal static JSON examples for quick integrator onboarding.</li>
+<li><strong>GL-058 Minimal API Usage Walkthrough</strong> — step-by-step API-first walkthrough mapping Product Core stages to OpenAPI paths.</li>
+<li><strong>GL-059 Pilot-Ready Handoff Plan</strong> — packages Integration-Ready v0 into a clear technical handoff for pilot discussions.</li>
+<li><strong>GL-060 Pilot-Ready Release Decision</strong> — formally records the current Pilot-Ready state and confirms readiness for a first technical pilot discussion.</li>
+<li><strong>GL-061 Demo Runner / API Smoke Script</strong> — lightweight executable local confidence check that validates the smoke manifest and referenced examples without network access.</li>
+<li><strong>GL-062 Pilot Partner Preparation Pack</strong> — turns the Pilot-Ready artifacts into a practical package for a first technical pilot partner discussion.</li>
+</ul>
+<h2 id="4-why-production-ready-is-still-no">4. Why production-ready is still no<a class="headerlink" href="#4-why-production-ready-is-still-no" title="Permanent link">&para;</a></h2>
+<p>The following gaps prevent GrantLayer from being described as Production-Ready:</p>
+<ul>
+<li><strong>Production auth is not implemented</strong> — authentication is admin-token or operator-token only; no OAuth, JWT, SSO, or HSM-backed key management.</li>
+<li><strong>Production secrets are not managed</strong> — the repository uses a demo Ed25519 keypair and synthetic data; no vault integration, secret rotation, or HSM.</li>
+<li><strong>Deployment hardening is not specified</strong> — no containers, load balancing, TLS termination, orchestration, or environment-specific configuration guidance exists.</li>
+<li><strong>Observability is not implemented</strong> — no metrics, logging pipelines, alerting, or tracing.</li>
+<li><strong>Backup/restore is not defined</strong> — no automated backup, point-in-time recovery, or disaster runbooks.</li>
+<li><strong>PostgreSQL CI is not established</strong> — SQLite is the default; PostgreSQL support exists but is not CI-gated.</li>
+<li><strong>OpenAPI may need contract hardening</strong> — the current contract is verified for expected and legacy paths, but a freeze process and external security review may reveal gaps.</li>
+<li><strong>SDK/client story is not complete</strong> — no client libraries (Python, JavaScript, Go) or structured client examples exist.</li>
+<li><strong>Dashboard/UI is not production-ready</strong> — the HTML dashboard is present but not a productized UI and is not a pilot dependency.</li>
+<li><strong>Multi-tenant SaaS architecture is not designed</strong> — no tenant isolation, subscription billing, or SaaS onboarding.</li>
+<li><strong>Compliance/legal review is not certification</strong> — outputs are structured records to support institutional audit workflows, not to replace legal or regulatory review.</li>
+<li><strong>Blockchain/wallet/payment are optional future integrations</strong> — integrity checks use standard SHA-256 and Ed25519 only; no wallet, payment, or blockchain anchoring is implemented. These are not required for Product Core.</li>
+</ul>
+<h2 id="5-p0-production-hardening-workstreams">5. P0 production-hardening workstreams<a class="headerlink" href="#5-p0-production-hardening-workstreams" title="Permanent link">&para;</a></h2>
+<p>P0 workstreams are blockers for any production deployment claim. They must be addressed before GrantLayer can be described as Production-Ready.</p>
+<ol>
+<li><strong>Production auth model</strong></li>
+<li>Define the authentication and authorization architecture (OAuth 2.0, JWT, SSO, mutual TLS, or API tokens with rotation).</li>
+<li>Specify identity provider integration, role mapping, and token lifecycle.</li>
+<li>
+<p>Acceptance gate: a documented auth decision record and a local proof-of-concept implementation plan.</p>
+</li>
+<li>
+<p><strong>Secret management</strong></p>
+</li>
+<li>Replace the demo Ed25519 keypair with a managed secret strategy.</li>
+<li>Define key rotation, encryption-at-rest, and access-control boundaries.</li>
+<li>
+<p>Acceptance gate: a secret-management plan with no synthetic keys in the repository.</p>
+</li>
+<li>
+<p><strong>Deployment environment definition</strong></p>
+</li>
+<li>Document target runtime(s), container strategy, network topology, and environment separation (dev, staging, prod).</li>
+<li>
+<p>Acceptance gate: environment definition document and a reproducible local deployment target.</p>
+</li>
+<li>
+<p><strong>Database production readiness</strong></p>
+</li>
+<li>Establish PostgreSQL as the CI-gated production database.</li>
+<li>Define connection pooling, migration strategy, schema validation, and performance baseline.</li>
+<li>
+<p>Acceptance gate: PostgreSQL passes in CI alongside SQLite; migration rollback tested.</p>
+</li>
+<li>
+<p><strong>Backup/restore plan</strong></p>
+</li>
+<li>Define automated backup schedule, retention policy, point-in-time recovery, and disaster runbooks.</li>
+<li>
+<p>Acceptance gate: documented backup/restore procedure with a tested recovery scenario.</p>
+</li>
+<li>
+<p><strong>Observability baseline</strong></p>
+</li>
+<li>Define minimum metrics (health, latency, error rate), structured logging, and alerting thresholds.</li>
+<li>
+<p>Acceptance gate: a local observability stack that captures the baseline signals.</p>
+</li>
+<li>
+<p><strong>CI gate definition</strong></p>
+</li>
+<li>Define the minimum CI pipeline (lint, type check, unit tests, contract tests, secret scan).</li>
+<li>
+<p>Acceptance gate: all P0 CI stages pass before any merge to main.</p>
+</li>
+<li>
+<p><strong>API/OpenAPI contract freeze process</strong></p>
+</li>
+<li>Define versioning strategy, breaking-change policy, and contract review cadence.</li>
+<li>
+<p>Acceptance gate: a documented contract freeze process and a versioned OpenAPI artifact.</p>
+</li>
+<li>
+<p><strong>Data privacy and evidence-handling boundaries</strong></p>
+</li>
+<li>Define what data may enter GrantLayer, what must stay in the partner perimeter, and how evidence retention maps to regulatory requirements.</li>
+<li>Acceptance gate: a data-classification matrix and evidence retention policy draft.</li>
+</ol>
+<h2 id="6-p1-pilot-expansion-workstreams">6. P1 pilot-expansion workstreams<a class="headerlink" href="#6-p1-pilot-expansion-workstreams" title="Permanent link">&para;</a></h2>
+<p>P1 workstreams improve pilot confidence and integration readiness but are not strict production blockers.</p>
+<ol>
+<li><strong>Local API smoke v2 or planned-call validation</strong></li>
+<li>Extend the GL-061 demo runner to exercise more edge cases or integrate a lightweight local API client.</li>
+<li>
+<p>Acceptance gate: the smoke script validates additional paths and produces a machine-readable confidence report.</p>
+</li>
+<li>
+<p><strong>SDK/client examples</strong></p>
+</li>
+<li>Produce minimal Python and/or JavaScript client examples for common flows.</li>
+<li>
+<p>Acceptance gate: client examples exist, are tested, and map to the OpenAPI contract.</p>
+</li>
+<li>
+<p><strong>External integration checklist</strong></p>
+</li>
+<li>Document how a partner system connects to GrantLayer (intake, approval, evidence bundle, auditor export).</li>
+<li>
+<p>Acceptance gate: a partner-facing integration checklist with touchpoint definitions.</p>
+</li>
+<li>
+<p><strong>Pilot-specific environment documentation</strong></p>
+</li>
+<li>Document how a partner can run GrantLayer locally or in a hosted demo instance.</li>
+<li>
+<p>Acceptance gate: partner environment setup guide with verified commands.</p>
+</li>
+<li>
+<p><strong>Operator/admin runbook</strong></p>
+</li>
+<li>Document common operations (restart, migrate, rotate key, inspect evidence, export audit record).</li>
+<li>
+<p>Acceptance gate: a runbook covering the most frequent operator tasks.</p>
+</li>
+<li>
+<p><strong>Audit/export review workflow</strong></p>
+</li>
+<li>Document how an auditor or compliance officer reviews an exported record.</li>
+<li>
+<p>Acceptance gate: auditor review workflow with example output and interpretation guide.</p>
+</li>
+<li>
+<p><strong>Evidence retention policy draft</strong></p>
+</li>
+<li>Draft a policy covering evidence lifespan, immutable storage guarantees, and deletion constraints.</li>
+<li>Acceptance gate: a policy document reviewed by at least one stakeholder.</li>
+</ol>
+<h2 id="7-p2-productization-workstreams">7. P2 productization workstreams<a class="headerlink" href="#7-p2-productization-workstreams" title="Permanent link">&para;</a></h2>
+<p>P2 workstreams expand GrantLayer into a productized platform but should only be pursued after pilot validation.</p>
+<ol>
+<li><strong>Dashboard/UI</strong></li>
+<li>Productize the HTML dashboard into a robust, accessible, and responsive UI.</li>
+<li>
+<p>Acceptance gate: UI supports all Product Core stages and passes basic accessibility checks.</p>
+</li>
+<li>
+<p><strong>Multi-tenant SaaS architecture</strong></p>
+</li>
+<li>Design tenant isolation, subscription billing, onboarding, and per-tenant configuration.</li>
+<li>
+<p>Acceptance gate: architecture decision record and a local multi-tenant proof of concept.</p>
+</li>
+<li>
+<p><strong>HSM/key-management upgrade path</strong></p>
+</li>
+<li>Plan migration from software Ed25519 signing to HSM-backed key management.</li>
+<li>
+<p>Acceptance gate: HSM integration plan with vendor-agnostic interface definition.</p>
+</li>
+<li>
+<p><strong>Blockchain anchoring</strong></p>
+</li>
+<li>Design optional blockchain anchoring for enhanced integrity proofs.</li>
+<li>
+<p>Acceptance gate: anchoring design document with cost, latency, and reversibility analysis.</p>
+</li>
+<li>
+<p><strong>Wallet/payment integrations</strong></p>
+</li>
+<li>Design optional wallet or payment integration for grant disbursement.</li>
+<li>
+<p>Acceptance gate: integration design document with security and compliance review.</p>
+</li>
+<li>
+<p><strong>Advanced observability</strong></p>
+</li>
+<li>Add distributed tracing, custom business metrics, and SLO dashboards.</li>
+<li>
+<p>Acceptance gate: tracing covers end-to-end grant flow; SLOs are defined and measured.</p>
+</li>
+<li>
+<p><strong>Formal compliance review support</strong></p>
+</li>
+<li>Prepare artifacts and documentation to support external compliance or security review.</li>
+<li>Acceptance gate: compliance package with architecture diagrams, data-flow maps, and control matrices.</li>
+</ol>
+<h2 id="8-recommended-implementation-order">8. Recommended implementation order<a class="headerlink" href="#8-recommended-implementation-order" title="Permanent link">&para;</a></h2>
+<p>The recommended order prioritizes contract clarity and executable validation before infrastructure investment:</p>
+<ol>
+<li><strong>API/OpenAPI contract hardening review</strong> — freeze the contract, version it, and resolve any ambiguities surfaced by pilot partners.</li>
+<li><strong>Production auth and secret-management plan</strong> — decide the auth model and secret strategy before any production deployment is designed.</li>
+<li><strong>Local API smoke v2 / planned-call validation</strong> — extend executable confidence checks to cover more paths and edge cases.</li>
+<li><strong>Deployment/environment definition</strong> — define where GrantLayer will run before building containers or orchestration.</li>
+<li><strong>Observability and backup/restore plan</strong> — define how the system is watched and recovered before accepting live data.</li>
+<li><strong>PostgreSQL CI</strong> — make PostgreSQL a first-class CI target so production database changes are gated.</li>
+<li><strong>SDK/client examples</strong> — give partners code they can copy and adapt.</li>
+<li><strong>Dashboard/UI or multi-tenant architecture</strong> — only after pilot validation confirms product-market fit and integration patterns.</li>
+</ol>
+<h2 id="9-what-not-to-build-yet">9. What not to build yet<a class="headerlink" href="#9-what-not-to-build-yet" title="Permanent link">&para;</a></h2>
+<p>The project should not immediately build the following unless a pilot requirement explicitly demands it:</p>
+<ul>
+<li><strong>Full SaaS dashboard</strong> — the HTML dashboard is sufficient for local evaluation.</li>
+<li><strong>Blockchain/payment layer</strong> — integrity is currently handled by SHA-256 and Ed25519.</li>
+<li><strong>HSM integration</strong> — software signing is acceptable for pilots.</li>
+<li><strong>Multi-tenant platform</strong> — single-tenant or self-hosted is the current assumption.</li>
+<li><strong>Production deployment automation</strong> — manual deployment documentation is sufficient for the first pilot.</li>
+</ul>
+<p>Building these prematurely risks wasted effort before pilot feedback validates the core integration patterns.</p>
+<h2 id="10-decision-boundary">10. Decision boundary<a class="headerlink" href="#10-decision-boundary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer may be described as <strong>Pilot-Ready for technical review</strong>, but must <strong>not</strong> be described as <strong>Production-Ready</strong> until P0 gates are implemented and verified.</p>
+<p>Any statement to external partners, documentation, or marketing materials must include the non-production constraint. If a partner asks about production timelines, reference this roadmap and the P0 workstream list.</p>
+<hr />
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../api_openapi_contract_hardening_review/"><code>docs/api_openapi_contract_hardening_review.md</code></a> — GL-064 API/OpenAPI contract hardening review</li>
+<li><a href="../product_architecture_extension_boundaries/"><code>docs/product_architecture_extension_boundaries.md</code></a> — GL-065 product architecture and extension boundaries</li>
+<li><a href="../production_auth_operator_access_design/"><code>docs/production_auth_operator_access_design.md</code></a> — GL-067 production auth and operator access design</li>
+<li><a href="../production_readiness_cut/"><code>docs/production_readiness_cut.md</code></a> — GL-063 production readiness cut</li>
+<li><a href="../pilot_ready_release_decision/"><code>docs/pilot_ready_release_decision.md</code></a> — GL-060 pilot-ready release decision</li>
+<li><a href="../pilot_partner_preparation_pack/"><code>docs/pilot_partner_preparation_pack.md</code></a> — GL-062 pilot partner preparation pack</li>
+<li><a href="../pilot_ready_handoff_plan/"><code>docs/pilot_ready_handoff_plan.md</code></a> — GL-059 pilot-ready handoff plan</li>
+<li><a href="../deployment_package_runtime_modes_design/"><code>docs/deployment_package_runtime_modes_design.md</code></a> — GL-069 deployment package and runtime modes design</li>
+<li><a href="examples/gl063/production_hardening_backlog.json"><code>docs/examples/gl063/production_hardening_backlog.json</code></a> — machine-readable production hardening backlog</li>
+<li><a href="examples/gl063/production_readiness_cut.json"><code>docs/examples/gl063/production_readiness_cut.json</code></a> — machine-readable production readiness cut</li>
+<li><a href="../backend/tests/test_gl063_production_hardening_roadmap.py"><code>backend/tests/test_gl063_production_hardening_roadmap.py</code></a> — validation test for this roadmap and readiness cut</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

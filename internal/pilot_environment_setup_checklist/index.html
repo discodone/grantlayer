@@ -1,0 +1,1336 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/pilot_environment_setup_checklist/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer Pilot Environment Setup Checklist - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-pilot-environment-setup-checklist" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer Pilot Environment Setup Checklist
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-title-and-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Title and Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-baseline-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Baseline Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-environment-identity-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Environment Identity Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-runtimeconfig-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Runtime/Config Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-secrets-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Secrets Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-database-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Database Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-operator-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Operator Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-required-validation-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Required Validation Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-monitoringalerting-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Monitoring/Alerting Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-incident-response-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Incident Response Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-backuprestore-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Backup/Restore Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-pilot-gono-go" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Pilot Go/No-Go
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Pilot Go/No-Go">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#go-pilot-may-proceed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GO — Pilot may proceed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-go-pilot-must-not-proceed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NO-GO — Pilot must not proceed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-relationship-to-existing-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Relationship to Existing Gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-explicit-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Explicit Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-final-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Final Statement
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-pilot-environment-setup-checklist">GrantLayer Pilot Environment Setup Checklist<a class="headerlink" href="#grantlayer-pilot-environment-setup-checklist" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-title-and-scope">1. Title and Scope<a class="headerlink" href="#1-title-and-scope" title="Permanent link">&para;</a></h2>
+<p>This document is the <strong>GL-131 Pilot Environment Setup Checklist</strong>. It defines the
+minimum review, artifact, and test-only contract for setting up a GrantLayer pilot
+environment before any deployment. It is a checklist for operators and responders,
+not an automation package.</p>
+<p><strong>This is a review-only artifact.</strong> No production code, API behavior, schema,
+migration, or OpenAPI changes are made in GL-131.</p>
+<p><strong>This is NOT deployment automation.</strong>
+<strong>This is NOT infrastructure provisioning.</strong>
+<strong>This is NOT monitoring backend integration.</strong>
+<strong>This is NOT incident automation.</strong>
+<strong>This is NOT production code.</strong></p>
+<h2 id="2-baseline-status">2. Baseline Status<a class="headerlink" href="#2-baseline-status" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pilot environment setup checklist defined</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>deployment automation implemented in GL-131</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>infrastructure provisioning implemented in GL-131</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>backend remains pilot-ready with caveats</td>
+<td><strong>Yes</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The backend is pilot-ready with caveats, not production SaaS complete.
+No deployment automation is implemented in GL-131.
+No infrastructure provisioning is implemented in GL-131.</p>
+<h2 id="3-environment-identity-checklist">3. Environment Identity Checklist<a class="headerlink" href="#3-environment-identity-checklist" title="Permanent link">&para;</a></h2>
+<p>Before any pilot environment is accepted, the following identity fields must be
+documented and known to the operator owner:</p>
+<ol>
+<li><strong>Pilot environment name</strong> — a unique, human-readable name for the environment.</li>
+<li><strong>Environment owner/operator</strong> — named individual or team responsible for the
+   environment lifecycle.</li>
+<li><strong>Technical responder</strong> — named person who can access logs, run gates, and
+   execute runbooks.</li>
+<li><strong>Business/operator owner</strong> — named person who can make go/no-go and
+   continue/degrade/pause decisions.</li>
+<li><strong>Main/release commit</strong> — the exact commit hash deployed to the pilot environment.</li>
+<li><strong>Runtime mode</strong> — one of <code>local</code>, <code>test</code>, <code>demo</code>, <code>staging</code>, <code>production</code>.</li>
+<li><strong>Database mode</strong> — SQLite (local/demo/test only) or PostgreSQL (production-like).</li>
+<li><strong>Pilot start/end window</strong> — agreed calendar window for the pilot.</li>
+</ol>
+<h2 id="4-runtimeconfig-checklist">4. Runtime/Config Checklist<a class="headerlink" href="#4-runtimeconfig-checklist" title="Permanent link">&para;</a></h2>
+<p>The following runtime and configuration checks must pass before the environment
+is accepted:</p>
+<ol>
+<li><strong>Production-like runtime mode intentionally selected</strong> — <code>staging</code> or <code>production</code>
+   is explicitly chosen for real pilot environments.</li>
+<li><strong>Local/test/demo modes not used for real pilot unless explicitly approved</strong> —
+   these modes are for development and CI only.</li>
+<li><strong>Startup fail-closed gates pass</strong> — <code>startup_ok()</code> returns true and
+   <code>startup_errors()</code> is empty.</li>
+<li><strong>Unsafe config rejected</strong> — missing admin token, missing challenge enforcement,
+   or enabled demo endpoints in a production-like mode are rejected.</li>
+<li><strong>Runtime gate command required</strong> — <code>scripts/run-production-runtime-gate.sh</code>
+   must exit 0 before any deployment.</li>
+</ol>
+<h2 id="5-secrets-checklist">5. Secrets Checklist<a class="headerlink" href="#5-secrets-checklist" title="Permanent link">&para;</a></h2>
+<p>Secrets must be configured safely and never exposed in documentation, logs,
+screenshots, or evidence artifacts:</p>
+<ol>
+<li><strong>Admin token configured securely</strong> — <code>GRANTLAYER_ADMIN_TOKEN</code> is present and
+   stored outside the repository.</li>
+<li><strong>Operator token handling defined</strong> — operator tokens are hashed at rest;
+   raw tokens are never stored in the database or logged.</li>
+<li><strong>DB URL/credentials handled securely</strong> — <code>GRANTLAYER_DATABASE_URL</code> or
+   <code>GRANTLAYER_DB</code> is injected via environment variables or a secrets manager.</li>
+<li><strong>Signing/private keys handled securely</strong> — <code>GRANTLAYER_SIGNING_PRIVATE_KEY</code>
+   and <code>GRANTLAYER_SIGNING_PRIVATE_KEY_PASSPHRASE</code> are stored outside the repo.</li>
+<li><strong>No secrets in docs/logs/screenshots</strong> — credentials, tokens, keys, and
+   passphrases are never included in documentation, log snippets, screenshots,
+   or chat messages.</li>
+<li><strong>No raw Authorization headers/tokens/request bodies in evidence</strong> — evidence
+   capture must redact or omit the <code>Authorization</code> header, bearer tokens, and
+   original request payloads.</li>
+</ol>
+<h2 id="6-database-checklist">6. Database Checklist<a class="headerlink" href="#6-database-checklist" title="Permanent link">&para;</a></h2>
+<p>Database configuration must match the runtime mode and pilot requirements:</p>
+<ol>
+<li><strong>SQLite limited to local/demo/test</strong> — SQLite is acceptable only for local
+   development, demo scenarios, and automated tests.</li>
+<li><strong>PostgreSQL expected/preferred for production-like pilot</strong> — staging and
+   production-like pilots should use PostgreSQL.</li>
+<li><strong>Migrations applied</strong> — all database migrations have been applied cleanly
+   and the schema version matches the deployed code.</li>
+<li><strong>Audit immutability expectations understood</strong> — operators understand that
+   <code>audit_events</code> must not be updated or deleted, and immutability triggers
+   block such attempts.</li>
+<li><strong>PostgreSQL connection pooling config reviewed</strong> — min/max pool sizes are
+   configured appropriately for the expected load.</li>
+<li><strong>DB backup method identified</strong> — the operator knows how backups are taken
+   (<code>pg_dump</code>, managed snapshot, or file-level copy for SQLite).</li>
+</ol>
+<h2 id="7-operator-checklist">7. Operator Checklist<a class="headerlink" href="#7-operator-checklist" title="Permanent link">&para;</a></h2>
+<p>A named operator must be accountable and prepared:</p>
+<ol>
+<li><strong>Named operator owner</strong> — a single named person owns operator tokens,
+   role assignments, and environment access.</li>
+<li><strong>Token expiry/rotation understood</strong> — the operator understands token
+   lifetimes, rotation procedures, and how to revoke tokens.</li>
+<li><strong>Revoked/expired behavior verified</strong> — expired or revoked tokens are
+   rejected; the operator has verified this behavior.</li>
+<li><strong>Emergency escalation contact known</strong> — the operator knows who to contact
+   for security or data-integrity escalation.</li>
+</ol>
+<h2 id="8-required-validation-commands">8. Required Validation Commands<a class="headerlink" href="#8-required-validation-commands" title="Permanent link">&para;</a></h2>
+<p>The following commands must be run and pass before any pilot deployment:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 1. Production runtime gate (fast config validation)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>scripts/run-production-runtime-gate.sh
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># 2. Operational smoke tests (fast operational validation)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>scripts/run-operational-smoke-tests.sh
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># 3. Backup/restore minimum drill (data integrity checklist)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>scripts/run-backup-restore-drill.sh
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># 4. Full backend suite (comprehensive regression)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>scripts/run-full-backend-suite.sh
+</code></pre></div>
+<p>All four must exit 0 with no failures and no errors before a pilot deployment
+is permitted.</p>
+<h2 id="9-monitoringalerting-checklist">9. Monitoring/Alerting Checklist<a class="headerlink" href="#9-monitoringalerting-checklist" title="Permanent link">&para;</a></h2>
+<p>Monitoring and alerting ownership must be established before the pilot begins:</p>
+<ol>
+<li><strong>Alert owner assigned</strong> — a named person or team owns monitoring review
+   and alert response.</li>
+<li><strong>Alert receiver/channel known</strong> — the alert owner knows where alerts will
+   be received (email, chat, or manual log review).</li>
+<li><strong>Alert review cadence defined</strong> — frequency of log review and alert triage
+   is documented (e.g., daily during pilot).</li>
+<li><strong>GL-129 baseline acknowledged</strong> — the operator has reviewed and acknowledges
+   the monitoring/alerting baseline defined in GL-129.</li>
+</ol>
+<h2 id="10-incident-response-checklist">10. Incident Response Checklist<a class="headerlink" href="#10-incident-response-checklist" title="Permanent link">&para;</a></h2>
+<p>Incident response ownership and runbook awareness must be established:</p>
+<ol>
+<li><strong>Incident owner assigned</strong> — a single named person owns incident lifecycle
+   from detection to resolution or handoff.</li>
+<li><strong>GL-130 runbook acknowledged</strong> — the operator has reviewed and acknowledges
+   the incident response runbook execution gate defined in GL-130.</li>
+<li><strong>Escalation path documented</strong> — the operator knows how to escalate SEV1 and
+   SEV2 incidents to the technical responder and business owner.</li>
+<li><strong>Evidence capture rules understood</strong> — the operator knows what evidence to
+   capture (timestamps, correlation IDs, safe logs, status codes) and what
+   must never be captured (raw tokens, headers, request bodies, passwords).</li>
+</ol>
+<h2 id="11-backuprestore-checklist">11. Backup/Restore Checklist<a class="headerlink" href="#11-backuprestore-checklist" title="Permanent link">&para;</a></h2>
+<p>Backup and restore readiness must be confirmed:</p>
+<ol>
+<li><strong>Backup method identified</strong> — the operator knows the backup tool or process
+   (<code>pg_dump</code>, managed snapshot, or SQLite file copy).</li>
+<li><strong>Restore drill known</strong> — the operator knows how to run the restore drill
+   and where to find the documentation (<code>docs/backup_restore_minimum_drill.md</code>).</li>
+<li><strong>Isolated restore expectation acknowledged</strong> — restores must be tested in an
+   isolated environment, never directly on the active pilot or production
+   environment.</li>
+<li><strong>No direct restore over pilot/production without review</strong> — a human operator
+   must review any restore operation before it is applied to an active pilot
+   or production environment.</li>
+</ol>
+<h2 id="12-pilot-gono-go">12. Pilot Go/No-Go<a class="headerlink" href="#12-pilot-gono-go" title="Permanent link">&para;</a></h2>
+<h3 id="go-pilot-may-proceed">GO — Pilot may proceed<a class="headerlink" href="#go-pilot-may-proceed" title="Permanent link">&para;</a></h3>
+<p>GO is only permitted when <strong>ALL</strong> of the following are true:</p>
+<ul>
+<li><strong>Environment identity complete</strong> — environment name, owner, technical responder,
+  business owner, commit, runtime mode, database mode, and pilot window are documented.</li>
+<li><strong>Runtime/config safe</strong> — production-like mode is selected, startup gates pass,
+  unsafe config is rejected, and the runtime gate exits 0.</li>
+<li><strong>Secrets safe</strong> — admin token, operator tokens, DB credentials, and signing keys
+  are configured securely; no secrets appear in docs, logs, or screenshots.</li>
+<li><strong>Database ready</strong> — migrations applied, audit immutability understood,
+  connection pooling reviewed, and backup method identified.</li>
+<li><strong>Operator prepared</strong> — named operator owner, token expiry/rotation understood,
+  revoked/expired behavior verified, and emergency contact known.</li>
+<li><strong>Required gates pass</strong> — runtime gate, smoke tests, backup/restore drill,
+  and full backend suite all exit 0.</li>
+<li><strong>Monitoring owned</strong> — alert owner assigned, receiver/channel known, and
+  review cadence defined; GL-129 acknowledged.</li>
+<li><strong>Incident response owned</strong> — incident owner assigned, GL-130 runbook acknowledged,
+  escalation path documented, and evidence capture rules understood.</li>
+<li><strong>Backup/restore ready</strong> — backup method identified, restore drill known,
+  isolated restore acknowledged, and no direct restore over pilot/production
+  without review.</li>
+<li><strong>Pilot commit traceable</strong> — the exact main/release commit deployed is recorded.</li>
+</ul>
+<h3 id="no-go-pilot-must-not-proceed">NO-GO — Pilot must not proceed<a class="headerlink" href="#no-go-pilot-must-not-proceed" title="Permanent link">&para;</a></h3>
+<p>NO-GO if <strong>ANY</strong> of the following are true:</p>
+<ul>
+<li><strong>Any required gate fails</strong> — runtime gate, smoke tests, backup/restore drill,
+  or full backend suite returns non-zero.</li>
+<li><strong>Secrets unsafe</strong> — raw secrets in files, logs, docs, screenshots, or chat.</li>
+<li><strong>DB/audit setup uncertain</strong> — migrations not applied, audit immutability not
+  understood, or backup method unidentified.</li>
+<li><strong>Monitoring unowned</strong> — no named alert owner, no review cadence, or GL-129
+  not acknowledged.</li>
+<li><strong>Incident response unowned</strong> — no named incident owner or GL-130 runbook not
+  acknowledged.</li>
+<li><strong>Backup/restore unclear</strong> — backup method unknown, restore drill not known,
+  or isolated restore not acknowledged.</li>
+<li><strong>Pilot commit not traceable</strong> — the exact deployed commit hash is unknown.</li>
+</ul>
+<h2 id="13-relationship-to-existing-gates">13. Relationship to Existing Gates<a class="headerlink" href="#13-relationship-to-existing-gates" title="Permanent link">&para;</a></h2>
+<p>GL-131 builds on and references the following completed gates:</p>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Relevance to Pilot Environment Setup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-125</td>
+<td>Operational Smoke Test Bundle</td>
+<td>Provides fast post-deployment validation; must pass before pilot begins.</td>
+</tr>
+<tr>
+<td>GL-126</td>
+<td>Production Runtime Gate</td>
+<td>Provides pre-deployment config validation; must pass before pilot begins.</td>
+</tr>
+<tr>
+<td>GL-127</td>
+<td>Backup / Restore Minimum Drill</td>
+<td>Provides backup/restore validation; must pass and be understood before pilot begins.</td>
+</tr>
+<tr>
+<td>GL-128</td>
+<td>Pilot Readiness Release Cut</td>
+<td>Defines the pilot-ready baseline and accepted caveats under which GL-131 is evaluated.</td>
+</tr>
+<tr>
+<td>GL-129</td>
+<td>Monitoring / Alerting Baseline</td>
+<td>Defines monitoring ownership and alert review requirements for the pilot.</td>
+</tr>
+<tr>
+<td>GL-130</td>
+<td>Incident Response / Operational Runbook Execution Gate</td>
+<td>Defines incident ownership, escalation, and evidence capture requirements for the pilot.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="14-explicit-non-goals">14. Explicit Non-Goals<a class="headerlink" href="#14-explicit-non-goals" title="Permanent link">&para;</a></h2>
+<p>The following changes are explicitly out of scope for GL-131:</p>
+<ul>
+<li><strong>No deployment automation</strong> — no CI/CD pipeline, container build automation,
+  or automated release orchestration is implemented.</li>
+<li><strong>No infrastructure provisioning</strong> — no Terraform, CloudFormation, Ansible,
+  or equivalent infrastructure-as-code is implemented.</li>
+<li><strong>No monitoring backend integration</strong> — no Prometheus, Grafana, CloudWatch,
+  Datadog, Sentry, or OpenTelemetry wiring is implemented.</li>
+<li><strong>No incident automation</strong> — no automated remediation, auto-scaling, or
+  self-healing is implemented.</li>
+<li><strong>No tenant/workspace boundary decision</strong> — tenant isolation and multi-tenancy
+  remain future work (GL-132).</li>
+<li><strong>No production code changes</strong> (<code>backend/src/</code>).</li>
+<li><strong>No OpenAPI changes</strong>.</li>
+<li><strong>No database migration or schema changes</strong>.</li>
+<li><strong>No dependency additions or version changes</strong>.</li>
+<li><strong>No frontend, website, design, brand, or marketing file changes</strong>.</li>
+<li><strong>No production SaaS complete claim</strong> — this checklist does not make the
+  backend production SaaS complete by itself.</li>
+</ul>
+<h2 id="15-final-statement">15. Final Statement<a class="headerlink" href="#15-final-statement" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>GL-131 defines the <strong>minimum pilot environment setup contract</strong> for the
+GrantLayer backend. It documents what must be verified before a controlled
+pilot deployment: environment identity, runtime safety, secret handling,
+database readiness, operator preparedness, required validation commands,
+monitoring ownership, incident response ownership, and backup/restore
+readiness. It does <strong>not</strong> complete production SaaS readiness by itself.
+Deployment automation, infrastructure provisioning, monitoring backend
+integration, incident automation, and tenant/workspace boundaries remain
+future work.</p>
+</blockquote>
+<p>(End of file)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

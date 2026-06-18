@@ -1,0 +1,1126 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/persistence_backend_postgresql_readiness_design/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer Persistence Backend Boundary and PostgreSQL Readiness Design - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-persistence-backend-boundary-and-postgresql-readiness-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer Persistence Backend Boundary and PostgreSQL Readiness Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-product-persistence-principle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Product persistence principle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-product-core-persistence-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Product Core persistence responsibilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-database-backend-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Database backend boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-sqlite-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. SQLite boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-postgresql-readiness-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. PostgreSQL readiness boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-migration-and-schema-evolution-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Migration and schema evolution boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-transaction-and-consistency-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Transaction and consistency expectations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-backup-restore-and-data-lifecycle-relationship" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Backup, restore, and data lifecycle relationship
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-future-implementation-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Future implementation expectations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-what-not-to-implement-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. What not to implement yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-decision-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Decision boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-persistence-backend-boundary-and-postgresql-readiness-design">GrantLayer Persistence Backend Boundary and PostgreSQL Readiness Design<a class="headerlink" href="#grantlayer-persistence-backend-boundary-and-postgresql-readiness-design" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>This document defines the persistence/backend boundary for GrantLayer as a <strong>reusable, adaptable API-first product core</strong> and prepares the path for PostgreSQL readiness without implementing it.</p>
+<p>It clarifies:
+- which persistence responsibilities belong to Product Core
+- which database backend choices should remain configurable
+- what is acceptable for local/test/demo SQLite usage
+- what production-grade persistence will require
+- how PostgreSQL readiness should be approached
+- what must not be coupled too early
+- which later implementation blocks should build persistence runtime behavior</p>
+<p>This is a <strong>product-foundation persistence design document</strong>. It does not implement PostgreSQL, migrations, DB adapter code, runtime configuration, or secret management.</p>
+<h2 id="2-product-persistence-principle">2. Product persistence principle<a class="headerlink" href="#2-product-persistence-principle" title="Permanent link">&para;</a></h2>
+<p>GrantLayer should protect <strong>stable Product Core persistence contracts</strong> while keeping concrete database backends configurable.</p>
+<p>The Product Core owns persistent identifiers, record types, and transaction expectations for grant workflows. Concrete database connection details, driver selection, and backend-specific optimizations should remain replaceable adapter boundaries.</p>
+<p>Local, test, and demo SQLite convenience must not accidentally become production persistence behavior. Any runtime mode that permits SQLite-only defaults must explicitly declare that it is not production-ready, and production deployment must refuse to start with unvalidated persistence configuration.</p>
+<h2 id="3-product-core-persistence-responsibilities">3. Product Core persistence responsibilities<a class="headerlink" href="#3-product-core-persistence-responsibilities" title="Permanent link">&para;</a></h2>
+<p>Product Core persistence responsibilities include:</p>
+<ul>
+<li><strong>Stable persistent IDs</strong> — identifiers that survive restarts, migrations, and backend changes</li>
+<li><strong>Grant request records</strong> — create, read, list, and lifecycle state</li>
+<li><strong>Grant records</strong> — approved grants with signatures, payload hashes, and signing key references</li>
+<li><strong>Grant execution records</strong> — execution state, evidence linkage, and audit trail reference</li>
+<li><strong>Evidence bundle records</strong> — stored evidence with integrity hashes and completeness metadata</li>
+<li><strong>Evidence verification records</strong> — verification results, timestamps, and justification</li>
+<li><strong>Provenance/audit records</strong> — decision provenance events, actor attribution, and policy references</li>
+<li><strong>Policy/compliance records</strong> — active policy rules, requirements, exclusions, and permission profiles</li>
+<li><strong>Operator/access records where applicable</strong> — operator identity references, role assignments, and capability mappings</li>
+<li><strong>Transaction expectations for product workflows</strong> — grant approval and grant creation must not leave partially inconsistent state</li>
+<li><strong>Deterministic test fixtures</strong> — test data that is isolated, reproducible, and never mixed with institutional data</li>
+</ul>
+<h2 id="4-database-backend-boundary">4. Database backend boundary<a class="headerlink" href="#4-database-backend-boundary" title="Permanent link">&para;</a></h2>
+<p>The database backend boundary should enforce the following separation:</p>
+<ul>
+<li><strong>Product Core should not depend on SQLite-specific behavior</strong> — queries and migrations should remain as backend-agnostic as possible; backend-specific adjustments belong in migration files and connection wrappers</li>
+<li><strong>Backend-specific connection details should stay behind configuration boundaries</strong> — connection strings, pool settings, driver options, and retry policies should be runtime configuration, not hard-coded logic</li>
+<li><strong>Database credentials are secret-bearing config</strong> — credentials must not be committed to source code, docs, examples, fixtures, or logs; they must be sourced through the approved secret boundary defined in GL-068</li>
+<li><strong>Storage backend choice should not change public API contracts</strong> — switching from SQLite to PostgreSQL must not change API request/response schemas or endpoint behavior</li>
+<li><strong>Persistence errors should map into stable error semantics</strong> — connection failures, transaction rollbacks, and constraint violations must be surfaced through stable error codes, not backend-specific exception text</li>
+<li><strong>Production mode should fail closed if persistence config is missing or invalid</strong> — missing database backend declaration, unvalidated connection credentials, or unreachable persistence backend must block startup</li>
+</ul>
+<h2 id="5-sqlite-boundary">5. SQLite boundary<a class="headerlink" href="#5-sqlite-boundary" title="Permanent link">&para;</a></h2>
+<p>SQLite is acceptable and convenient for:</p>
+<ul>
+<li><strong>local-dev</strong> — single-developer, single-process development with local file storage</li>
+<li><strong>test</strong> — in-memory or temporary file databases for deterministic automated verification</li>
+<li><strong>demo</strong> — illustrative walkthroughs with isolated, non-production data</li>
+<li><strong>deterministic non-production examples</strong> — fixtures and smoke tests that must run without external dependencies</li>
+</ul>
+<p>SQLite is <strong>not sufficient alone for production-readiness claims</strong> because:</p>
+<ul>
+<li>it does not provide the concurrency, durability, and scaling guarantees required for institutional workloads</li>
+<li>file-level locking limits concurrent write throughput</li>
+<li>backup/restore and point-in-time recovery are operator-dependent rather than built-in</li>
+<li>schema migrations and long-running transactions require careful coordination outside the database</li>
+</ul>
+<h2 id="6-postgresql-readiness-boundary">6. PostgreSQL readiness boundary<a class="headerlink" href="#6-postgresql-readiness-boundary" title="Permanent link">&para;</a></h2>
+<p>PostgreSQL should be treated as the <strong>primary production candidate backend</strong>, but not claimed ready until:</p>
+<ul>
+<li><strong>Connection configuration is explicit</strong> — database URL, connection pool size, timeout values, and retry policy must be declared in configuration, not inferred</li>
+<li><strong>Credentials come from approved secret source</strong> — database credentials must be sourced through the secret management boundary defined in GL-068, never from code or default strings</li>
+<li><strong>Schema compatibility is verified</strong> — all Product Core tables, indexes, and constraints must be confirmed to work on PostgreSQL, not only on SQLite</li>
+<li><strong>Migrations are validated</strong> — every migration must be tested against PostgreSQL, not only against SQLite</li>
+<li><strong>Transaction behavior is tested</strong> — grant approval, grant creation, and evidence persistence flows must demonstrate correct transaction semantics on PostgreSQL</li>
+<li><strong>CI can run PostgreSQL-backed tests</strong> — the test suite must be able to execute against a live PostgreSQL instance in CI or local environment</li>
+<li><strong>Backup/restore expectations are defined and verified</strong> — retention, restore procedures, and recovery time objectives must be documented and tested</li>
+<li><strong>Operational runbooks exist</strong> — database health checks, connection troubleshooting, and failover expectations must be documented for operators</li>
+</ul>
+<h2 id="7-migration-and-schema-evolution-boundary">7. Migration and schema evolution boundary<a class="headerlink" href="#7-migration-and-schema-evolution-boundary" title="Permanent link">&para;</a></h2>
+<p>Schema evolution should follow these boundaries:</p>
+<ul>
+<li><strong>Migrations should remain explicit and reviewable</strong> — every schema change must be represented by a numbered migration file with a clear purpose and rollback expectation</li>
+<li><strong>Schema changes must not happen silently</strong> — automatic schema creation or modification without migration review is not acceptable for production</li>
+<li><strong>Backward compatibility should be considered for product releases</strong> — schema changes that break existing Product Core records or API contracts must be versioned and communicated</li>
+<li><strong>Data migration risk should be separated from API behavior</strong> — risky data migrations require dedicated validation and rollback planning, distinct from API feature work</li>
+<li><strong>Production deployment requires migration/runbook guidance</strong> — operators must know which migrations apply, in what order, and what verification steps confirm success</li>
+</ul>
+<h2 id="8-transaction-and-consistency-expectations">8. Transaction and consistency expectations<a class="headerlink" href="#8-transaction-and-consistency-expectations" title="Permanent link">&para;</a></h2>
+<p>Product Core workflows have transaction expectations that future backend work must validate:</p>
+<ul>
+<li><strong>Grant approval and grant creation flows require transactional clarity</strong> — a grant request must not be approved without a corresponding grant record, and a grant record must not exist without a valid signature and payload hash</li>
+<li><strong>Evidence persistence and verification records need consistent linkage</strong> — evidence bundle storage and verification results must refer to the same execution identifier and must not diverge</li>
+<li><strong>Audit/provenance records should not be partially inconsistent with workflow state</strong> — a provenance event for grant approval must correspond to an existing grant record with matching identifiers</li>
+<li><strong>Future PostgreSQL work should include transaction semantics tests</strong> — regression tests must verify that concurrent operations, failures mid-transaction, and rollback scenarios leave Product Core records in a consistent state</li>
+</ul>
+<h2 id="9-backup-restore-and-data-lifecycle-relationship">9. Backup, restore, and data lifecycle relationship<a class="headerlink" href="#9-backup-restore-and-data-lifecycle-relationship" title="Permanent link">&para;</a></h2>
+<p>Persistence backend readiness is connected to backup/restore and data lifecycle design:</p>
+<ul>
+<li><strong>Backup/restore is not implemented in this block</strong> — this design defines the boundary and expectations only</li>
+<li><strong>Production persistence must define retention, restore, and recovery expectations</strong> — operators need documented retention policies, restore procedures, and disaster recovery guidance before production claims are valid</li>
+<li><strong>Data lifecycle design must consider product core record immutability</strong> — evidence bundles, audit records, and provenance events may have stricter retention and deletion constraints than mutable workflow state</li>
+</ul>
+<h2 id="10-future-implementation-expectations">10. Future implementation expectations<a class="headerlink" href="#10-future-implementation-expectations" title="Permanent link">&para;</a></h2>
+<p>The following later implementation blocks should build persistence runtime behavior:</p>
+<ol>
+<li><strong>Persistence configuration schema</strong> — explicit, versioned schema for database backend selection, connection parameters, and pool settings</li>
+<li><strong>Database backend selection boundary</strong> — runtime mechanism to select SQLite or PostgreSQL based on validated configuration, with clear product-core abstraction</li>
+<li><strong>PostgreSQL connection configuration</strong> — explicit, validated PostgreSQL connection parameters with bounded retry and health verification</li>
+<li><strong>PostgreSQL test service / CI gate</strong> — ability to run the full test suite against a live PostgreSQL instance in CI or local development</li>
+<li><strong>Schema compatibility verification</strong> — automated verification that all migrations and Product Core queries work correctly on PostgreSQL</li>
+<li><strong>Migration execution validation</strong> — testing framework that validates every migration against both SQLite and PostgreSQL</li>
+<li><strong>Transaction consistency regression tests</strong> — tests that verify atomic grant creation, approval, and evidence persistence under concurrent and failure conditions</li>
+<li><strong>Backup/restore design and verification</strong> — documented retention, restore procedures, and recovery testing</li>
+<li><strong>Persistence operational runbook</strong> — operator guidance for database health, connection troubleshooting, failover, and incident response</li>
+<li><strong>Production fail-closed persistence startup checks</strong> — startup validation that refuses to start if persistence configuration is missing, invalid, or unreachable in production mode</li>
+</ol>
+<h2 id="11-what-not-to-implement-yet">11. What not to implement yet<a class="headerlink" href="#11-what-not-to-implement-yet" title="Permanent link">&para;</a></h2>
+<p>This block does <strong>not</strong> implement:</p>
+<ul>
+<li>PostgreSQL runtime support</li>
+<li>DB adapter refactor</li>
+<li>Migration changes</li>
+<li>Schema changes</li>
+<li>Docker Compose PostgreSQL service</li>
+<li>CI PostgreSQL service</li>
+<li>Cloud database setup</li>
+<li>Backup/restore automation</li>
+<li>Performance tuning</li>
+<li>Multi-tenant database model</li>
+</ul>
+<h2 id="12-decision-boundary">12. Decision boundary<a class="headerlink" href="#12-decision-boundary" title="Permanent link">&para;</a></h2>
+<p>GrantLayer should <strong>not claim production persistence readiness</strong> until database backend selection, PostgreSQL compatibility, migrations, transactions, secrets, CI, backup/restore, and operational runbooks are implemented and verified.</p>
+<p>SQLite local/test/demo convenience must not become production deployment behavior.</p>
+<hr />
+<h2 id="related-artifacts">Related artifacts<a class="headerlink" href="#related-artifacts" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>docs/persistence_backend_postgresql_readiness_design.md</code> (this document)</li>
+<li><code>docs/examples/gl070/persistence_backend_matrix.json</code></li>
+<li><code>docs/examples/gl070/postgresql_readiness_catalog.json</code></li>
+<li><code>backend/tests/test_gl070_persistence_backend_postgresql_readiness.py</code></li>
+<li><code>docs/deployment_package_runtime_modes_design.md</code></li>
+<li><code>docs/runtime_configuration_environment_model.md</code></li>
+<li><code>docs/product_architecture_extension_boundaries.md</code></li>
+<li><code>docs/production_hardening_roadmap.md</code></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

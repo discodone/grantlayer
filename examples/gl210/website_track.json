@@ -1,0 +1,223 @@
+{
+  "issue_id": "GL-210",
+  "title": "Website Track",
+  "result": "approved_with_gaps",
+  "decision": "website_track_baseline_approved_with_gaps",
+  "decision_rationale": "GL-210 excludes the incomplete untracked website-design placeholder material and creates a small static website baseline with explicit Developer Preview / Controlled Preview claim boundaries. The baseline avoids production, enterprise, compliance, official SDK/package, live PostgreSQL production, and real/private data readiness claims. It adds no publishing, tracking, forms, external dependencies, backend changes, API behavior changes, migrations, package metadata, workflows, or deployment automation.",
+  "input_sources_reviewed": [
+    "docs/claim_safety_controlled_preview_boundary.md",
+    "docs/examples/gl207/claim_safety_controlled_preview_boundary.json",
+    "docs/runtime_abuse_incident_hardening.md",
+    "docs/examples/gl208/runtime_abuse_incident_hardening.json",
+    "docs/data_governance_audit_operations.md",
+    "docs/examples/gl209/data_governance_audit_operations.json",
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/live_postgres_backup_observability_baseline.md",
+    "docs/examples/gl205/live_postgres_backup_observability_baseline.json",
+    "docs/production_ops_go_no_go_v3.md",
+    "docs/examples/gl204/production_ops_go_no_go_v3.json",
+    "docs/sdk_prototype_packaging_boundary.md",
+    "docs/examples/gl203c/sdk_prototype_packaging_boundary.json",
+    "docs/openapi_api_contract_cleanup.md",
+    "docs/examples/gl203b/openapi_api_contract_cleanup.json",
+    "docs/api_contract_sdk_packaging_decision.md",
+    "docs/examples/gl203/api_contract_sdk_packaging_decision.json",
+    "docs/persistence_postgres_migration_readiness.md",
+    "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+    "docs/production_auth_secrets_config_hardening.md",
+    "docs/examples/gl201/production_auth_secrets_config_hardening.json",
+    "docs/tenant_workspace_api_audit_regression_completion.md",
+    "docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json",
+    "docs/tenant_workspace_isolation_implementation_baseline.md",
+    "docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json",
+    "docs/tenant_workspace_isolation_design_pack.md",
+    "docs/examples/gl200a/tenant_workspace_isolation_design_pack.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/openapi.yaml",
+    "docs/website_design_workspace_import_report.md",
+    "docs/website_design_workspace_import_report_dirty_stop.md",
+    "website-design/"
+  ],
+  "existing_website_design_inspection": {
+    "inspected": true,
+    "adopted": false,
+    "decision": "excluded",
+    "reason": "The untracked website-design tree is incomplete and contains only README.md and IMPORT_CHECKLIST.md, while expected design/page/style/script files are absent. Existing import reports say no design files were found or imported. The README contains stale broad positioning such as MVP, pilot-readiness hardening, and production readiness in progress, so no material is adopted for GL-210.",
+    "files_seen": [
+      "website-design/README.md",
+      "website-design/IMPORT_CHECKLIST.md",
+      "docs/website_design_workspace_import_report.md",
+      "docs/website_design_workspace_import_report_dirty_stop.md"
+    ],
+    "requested_missing_path": "docs/website_design_workspace_import_dirty_stop.md",
+    "missing_path_note": "The prompt-referenced path is absent; the present docs/website_design_workspace_import_report_dirty_stop.md stop report was inspected."
+  },
+  "website_claim_boundary": {
+    "posture": "Developer Preview / Controlled Preview with strict boundaries",
+    "data_boundary": "Controlled Preview expansion is synthetic/demo data only",
+    "production_saas": "NO-GO",
+    "real_customer_private_grant_institutional_data": "NO-GO",
+    "official_sdk_package": "NO-GO",
+    "live_postgres_production_claim": "NO-GO",
+    "compliance_certification": "NO-GO",
+    "security_reporting": "Security-sensitive reports route to GitHub Security Advisories"
+  },
+  "allowed_website_claims": [
+    "GrantLayer is an API-first Developer Preview",
+    "GrantLayer is a verification, audit, and compliance-support layer for agentic grant workflows",
+    "Controlled Preview is possible with strict boundaries",
+    "Controlled Preview expansion is synthetic/demo data only",
+    "Tenant/workspace isolation baseline is implemented, but not production-complete",
+    "Admin/operator tenant control-plane baseline exists, but not production-complete",
+    "Runtime/IAM/abuse/incident hardening baseline exists, but not production-complete",
+    "Data governance/audit operations baseline exists, but not production-complete",
+    "Internal SDK prototype exists, but no official SDK/package is available",
+    "Live PostgreSQL validation remains pending unless an ephemeral validation has actually been executed",
+    "Security-sensitive reports route to GitHub Security Advisories"
+  ],
+  "prohibited_website_claims": [
+    "Production SaaS ready",
+    "Enterprise ready",
+    "Compliance certified",
+    "GDPR/SOC2/ISO ready",
+    "Ready for real customer data",
+    "Ready for private grant/institutional data",
+    "Official SDK available",
+    "Public SDK package available",
+    "Production-ready SDK",
+    "Live PostgreSQL production ready",
+    "Complete tenant/workspace production isolation",
+    "Complete production admin/operator tenant-management plane",
+    "Complete production observability stack",
+    "Complete production backup/restore/DR readiness",
+    "Complete incident response program"
+  ],
+  "static_website_implementation_summary": {
+    "implemented": true,
+    "location": "website/",
+    "type": "plain static HTML/CSS",
+    "javascript": "none",
+    "build_system": "none",
+    "external_dependencies": "none",
+    "external_assets": "none",
+    "external_api_calls": "none",
+    "analytics_tracking_cookies_forms": "none",
+    "local_links_only": true,
+    "claim_safe_copy": true
+  },
+  "website_file_list": [
+    "website/index.html",
+    "website/styles.css",
+    "website/README.md"
+  ],
+  "public_publish_status": {
+    "published": false,
+    "public_github_push": false,
+    "visibility_change": false,
+    "status": "not_published_internal_branch_only"
+  },
+  "no_public_publish_confirmation": "No public publish, public GitHub push, deployment automation, or visibility change occurred.",
+  "no_analytics_tracking_forms_confirmation": "The static website baseline contains no JavaScript, analytics, tracking, cookies, forms, external scripts, external assets, external fonts, or external API calls.",
+  "security_reporting_model": {
+    "channel": "GitHub Security Advisories",
+    "public_reports": "Do not include exploit details, secrets, real customer data, private grant data, or institutional data in public reports",
+    "docs_aligned": true
+  },
+  "controlled_preview_boundary": {
+    "status": "Developer Preview / Controlled Preview with strict boundaries",
+    "data_scope": "synthetic/demo data only",
+    "real_customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO",
+    "production_saas": "NO-GO"
+  },
+  "production_readiness_impact": {
+    "advances_production_readiness": false,
+    "summary": "GL-210 documents website claim boundaries and adds a static preview baseline only. It does not make GrantLayer production SaaS, enterprise ready, compliance certified, official SDK/package ready, live PostgreSQL production ready, or ready for real/private data."
+  },
+  "remaining_blockers": [
+    "Public publish review and approval",
+    "Website content/design/accessibility review",
+    "Live PostgreSQL validation execution with ephemeral PostgreSQL",
+    "Production backup/restore/observability gates",
+    "Production IAM and incident program completion",
+    "Official SDK/package decision and publication gates",
+    "Legal/compliance review before any compliance readiness claim",
+    "Real customer/private grant/institutional data gates"
+  ],
+  "risk_register": [
+    {
+      "risk": "Website overclaims production readiness",
+      "status": "controlled",
+      "mitigation": "GL-210 tests scan website copy and decision artifacts for prohibited claims."
+    },
+    {
+      "risk": "Incomplete website-design material is committed accidentally",
+      "status": "controlled",
+      "mitigation": "GL-210 explicitly excludes website-design and documents the reason."
+    },
+    {
+      "risk": "Tracking, forms, or external calls are introduced later",
+      "status": "controlled",
+      "mitigation": "GL-210 tests reject forms, scripts, analytics/tracking keywords, external assets, and external API references."
+    },
+    {
+      "risk": "Security reports disclose sensitive details publicly",
+      "status": "controlled",
+      "mitigation": "Website and docs route security-sensitive reports to GitHub Security Advisories and prohibit exploit details/secrets/private data."
+    },
+    {
+      "risk": "Future publish happens before review",
+      "status": "open",
+      "mitigation": "GL-210 keeps public publish prohibited and recommends a future publish gate."
+    }
+  ],
+  "findings": [
+    "Website claim boundary is documented.",
+    "Allowed and prohibited website claims are documented.",
+    "Static website baseline is implemented without JavaScript, build system, external dependencies, analytics, tracking, cookies, or forms.",
+    "Existing website-design material was inspected and excluded.",
+    "Public publish remains prohibited and did not occur."
+  ],
+  "safety_confirmations": {
+    "production_saas_not_claimed": true,
+    "enterprise_readiness_not_claimed": true,
+    "compliance_certification_not_claimed": true,
+    "gdpr_soc2_iso_readiness_not_claimed": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "developer_preview_controlled_preview_only": true,
+    "controlled_preview_synthetic_demo_only": true,
+    "tenant_workspace_isolation_not_overclaimed": true,
+    "admin_operator_control_plane_not_overclaimed": true,
+    "runtime_iam_abuse_incident_not_overclaimed": true,
+    "data_governance_audit_operations_not_overclaimed": true,
+    "official_sdk_package_no_go": true,
+    "live_postgres_production_claim_no_go": true,
+    "package_publishing_avoided": true,
+    "no_package_publishing_metadata": true,
+    "no_analytics_tracking_forms": true,
+    "no_external_scripts_assets_api_calls": true,
+    "security_reports_to_github_security_advisories": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_data": true,
+    "no_backend_src_changes": true,
+    "no_api_behavior_changes": true,
+    "no_migrations_db_schema_dependency_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_public_github_push": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "unrelated_website_design_files_excluded": true
+  },
+  "recommended_next_issues": [
+    "GL-210 Merge if ready",
+    "GL-211 SDK / Pilot / Production Gate",
+    "GL-206B Live PostgreSQL Validation Execution when ephemeral PostgreSQL is available"
+  ]
+}

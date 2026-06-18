@@ -1,0 +1,1508 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/developer_adoption_strategy_intake/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-145 Developer Adoption Strategy Intake - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-145-developer-adoption-strategy-intake" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-145 Developer Adoption Strategy Intake
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-title-and-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Title and Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-current-posture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Current Posture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-target-developer-audiences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Target Developer Audiences
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-developer-value-proposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Developer Value Proposition
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-adoption-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Adoption Track
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-artifact-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Artifact Map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-messaging-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Messaging Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Risks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-validation-gates-for-gl-146-through-gl-150" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Validation Gates for GL-146 through GL-150
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-proposed-issue-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Proposed Issue Definitions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Proposed Issue Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gl-146-10-minute-quickstart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-146 10-Minute Quickstart
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-147-minimal-python-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-147 Minimal Python SDK
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-148-langgraphlangchain-integration-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-148 LangGraph/LangChain Integration Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-149-public-github-readiness-pack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-149 Public GitHub Readiness Pack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gl-150-first-developer-feedback-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-150 First Developer Feedback Log
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-gono-go-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Go/No-Go Criteria
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Go/No-Go Criteria">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#go-proceed-to-gl-146" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GO — Proceed to GL-146
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-go-do-not-proceed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NO-GO — Do not proceed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-next-issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Next Issue
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-145-developer-adoption-strategy-intake">GL-145 Developer Adoption Strategy Intake<a class="headerlink" href="#gl-145-developer-adoption-strategy-intake" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-title-and-status">1. Title and Status<a class="headerlink" href="#1-title-and-status" title="Permanent link">&para;</a></h2>
+<p>This document is the <strong>GL-145 Developer Adoption Strategy Intake</strong>. It defines the
+strategy, target audiences, value proposition, adoption track, artifact map,
+messaging rules, risk register, validation gates, non-goals, proposed follow-up
+issues, and go/no-go criteria for the Developer Adoption track.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Issue</td>
+<td>GL-145</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>strategy/intake only</td>
+</tr>
+<tr>
+<td>Production code changed</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>SDK implemented</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Quickstart implemented</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>LangGraph/LangChain example implemented</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Public GitHub readiness claimed</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Production SaaS readiness claimed</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Tenant isolation claimed/implemented</td>
+<td><strong>No</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Status and readiness caveats: see <code>README.md</code>.</p>
+<p>This is <strong>NOT SDK implementation.</strong>
+This is <strong>NOT quickstart implementation.</strong>
+This is <strong>NOT LangGraph/LangChain integration implementation.</strong>
+This is <strong>NOT public GitHub release.</strong>
+This is <strong>NOT API work.</strong>
+This is <strong>NOT auth redesign.</strong>
+This is <strong>NOT tenant/workspace implementation.</strong>
+This is <strong>NOT production SaaS enablement.</strong></p>
+<hr />
+<h2 id="2-current-posture">2. Current Posture<a class="headerlink" href="#2-current-posture" title="Permanent link">&para;</a></h2>
+<p>GrantLayer remains suitable for controlled pilot/developer-preview exploration
+with caveats. The canonical public status and readiness posture is maintained
+in <code>README.md</code>; this document only records GL-145-specific developer adoption
+context.</p>
+<ul>
+<li><strong>GL-144 tenant/workspace design exists but implementation is future work</strong> —
+  the data model design is accepted, but no schema changes, migrations, or
+  production code changes have been made.</li>
+<li><strong>GL-136 through GL-144 gates improve readiness but do not equal public SaaS
+  readiness</strong> — key hygiene, dependency manifest, server route decomposition,
+  and tenant/workspace design are planning/design milestones, not implementation
+  completions that authorize public SaaS claims.</li>
+<li><strong>Controlled pilot with accepted caveats remains the appropriate framing</strong> —
+  local evaluators, integrators, and pilot partners should understand the
+  current boundaries before building on GrantLayer.</li>
+</ul>
+<hr />
+<h2 id="3-target-developer-audiences">3. Target Developer Audiences<a class="headerlink" href="#3-target-developer-audiences" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Local evaluator</strong> — a developer who clones the repo, runs the backend
+   locally, and evaluates the Product Core flow using the demo script and
+   quickstart examples.</li>
+<li><strong>AI-agent/LangGraph developer</strong> — a developer building agentic workflows
+   who wants to integrate GrantLayer as a policy-bound grant/evidence layer
+   within a LangGraph or LangChain orchestration.</li>
+<li><strong>Grant/compliance workflow integrator</strong> — a developer integrating
+   GrantLayer into an existing grant management, compliance, or audit workflow
+   who needs API examples, data shape documentation, and deterministic
+   identifier tracing.</li>
+<li><strong>Pilot partner technical reviewer</strong> — a technical stakeholder from a pilot
+   partner organization who reviews the codebase, tests, and documentation to
+   assess integration feasibility and security posture.</li>
+<li><strong>Security-conscious contributor</strong> — a developer or security reviewer who
+   audits the codebase for secrets, auth boundaries, audit integrity, and
+   tamper-evidence guarantees before recommending adoption.</li>
+</ol>
+<hr />
+<h2 id="4-developer-value-proposition">4. Developer Value Proposition<a class="headerlink" href="#4-developer-value-proposition" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Policy-bound grant/evidence workflow experiments</strong> — developers can explore
+  a fail-closed policy engine, approval workflows, and evidence bundles without
+  building these primitives from scratch.</li>
+<li><strong>Auditable execution/evidence flow</strong> — every grant request, approval,
+  execution, and evidence item produces a traceable record with SHA-256 integrity
+  hashes and optional Ed25519 signatures.</li>
+<li><strong>Security-conscious local baseline</strong> — the codebase includes explicit
+  security boundaries, secret-handling policies, and regression tests that
+  demonstrate a security-aware foundation.</li>
+<li><strong>Integration-oriented API examples</strong> — OpenAPI contract, static JSON
+  examples, and E2E tests provide concrete integration targets for client
+  development.</li>
+</ul>
+<hr />
+<h2 id="5-adoption-track">5. Adoption Track<a class="headerlink" href="#5-adoption-track" title="Permanent link">&para;</a></h2>
+<p>The Developer Adoption track consists of the following issues:</p>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-146</td>
+<td>10-Minute Quickstart</td>
+<td>A runnable, copy-paste quickstart that gets a developer from clone to first API call in 10 minutes.</td>
+</tr>
+<tr>
+<td>GL-147</td>
+<td>Minimal Python SDK</td>
+<td>A minimal Python client/SDK that wraps the OpenAPI contract with typed requests and responses.</td>
+</tr>
+<tr>
+<td>GL-148</td>
+<td>LangGraph/LangChain Integration Example</td>
+<td>A concrete example showing how GrantLayer grant requests, evidence bundles, and policy checks fit into a LangGraph node graph.</td>
+</tr>
+<tr>
+<td>GL-149</td>
+<td>Public GitHub Readiness Pack</td>
+<td>A checklist and set of artifacts (README, CONTRIBUTING, issue templates, CI badges) that prepare the repo for public visibility.</td>
+</tr>
+<tr>
+<td>GL-150</td>
+<td>First Developer Feedback Log</td>
+<td>A structured log or template for capturing the first real (or explicitly simulated) developer feedback on the quickstart, SDK, and integration example.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-artifact-map">6. Artifact Map<a class="headerlink" href="#6-artifact-map" title="Permanent link">&para;</a></h2>
+<p>Each adoption issue produces the following artifacts:</p>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Artifact</th>
+<th>Location (proposed)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-146</td>
+<td>Quickstart guide</td>
+<td><code>docs/gl146_10_minute_quickstart.md</code></td>
+</tr>
+<tr>
+<td>GL-146</td>
+<td>Quickstart validation test</td>
+<td><code>backend/tests/test_gl146_10_minute_quickstart.py</code></td>
+</tr>
+<tr>
+<td>GL-147</td>
+<td>Minimal Python SDK</td>
+<td><code>sdk/python/grantlayer/</code> (or similar, TBD in GL-147)</td>
+</tr>
+<tr>
+<td>GL-147</td>
+<td>SDK usage examples</td>
+<td><code>docs/examples/gl147/</code></td>
+</tr>
+<tr>
+<td>GL-148</td>
+<td>LangGraph/LangChain integration example</td>
+<td><code>docs/examples/gl148/</code></td>
+</tr>
+<tr>
+<td>GL-148</td>
+<td>Integration validation test</td>
+<td><code>backend/tests/test_gl148_langgraph_integration.py</code></td>
+</tr>
+<tr>
+<td>GL-149</td>
+<td>Public readiness checklist</td>
+<td><code>docs/gl149_public_github_readiness_pack.md</code></td>
+</tr>
+<tr>
+<td>GL-149</td>
+<td>Readiness JSON artifact</td>
+<td><code>docs/examples/gl149/public_github_readiness_pack.json</code></td>
+</tr>
+<tr>
+<td>GL-150</td>
+<td>Feedback log template</td>
+<td><code>docs/gl150_first_developer_feedback_log.md</code></td>
+</tr>
+<tr>
+<td>GL-150</td>
+<td>Feedback JSON artifact</td>
+<td><code>docs/examples/gl150/first_developer_feedback_log.json</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-messaging-rules">7. Messaging Rules<a class="headerlink" href="#7-messaging-rules" title="Permanent link">&para;</a></h2>
+<p>All developer-facing messaging must follow these rules:</p>
+<ol>
+<li><strong>Avoid production SaaS claims</strong> — never describe GrantLayer as
+   "production-ready SaaS," "enterprise-ready," or "multi-tenant SaaS."</li>
+<li><strong>Avoid tenant isolation claims</strong> — clearly state that tenant/workspace
+   isolation is designed but not implemented.</li>
+<li><strong>Describe pilot/developer-preview status accurately</strong> — use phrases like
+   "controlled pilot with accepted caveats," "developer preview," or
+   "local evaluation only."</li>
+<li><strong>Document security caveats clearly</strong> — list demo keys, missing TLS,
+   missing OAuth/JWT, and single-namespace data model as known limitations.</li>
+<li><strong>Do not expose secrets</strong> — no tokens, keys, passwords, or internal
+   endpoints may appear in public docs, examples, or tests.</li>
+</ol>
+<hr />
+<h2 id="8-risks">8. Risks<a class="headerlink" href="#8-risks" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Severity</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Overclaiming readiness</td>
+<td>High</td>
+<td>Messaging rules (Section 7) and explicit non-goal statements in every adoption issue.</td>
+</tr>
+<tr>
+<td>Stale examples</td>
+<td>Medium</td>
+<td>Validation gates require examples to be tested; quickstart must be copy-paste runnable.</td>
+</tr>
+<tr>
+<td>API drift</td>
+<td>Medium</td>
+<td>Validation gates require no OpenAPI drift unless explicitly planned; SDK must track OpenAPI.</td>
+</tr>
+<tr>
+<td>Hidden local assumptions</td>
+<td>Medium</td>
+<td>Quickstart must work on a clean clone with no hidden config; document all env vars.</td>
+</tr>
+<tr>
+<td>Auth confusion</td>
+<td>Medium</td>
+<td>Clearly distinguish demo-mode from product-mode; never present demo-mode as secure.</td>
+</tr>
+<tr>
+<td>Secrets in public docs</td>
+<td>High</td>
+<td>Automated scan for PEM markers, tokens, and passwords in all docs and examples.</td>
+</tr>
+<tr>
+<td>Dependency/setup friction</td>
+<td>Medium</td>
+<td>Minimal Python SDK must use only stdlib + <code>cryptography</code> (same as backend); document install steps.</td>
+</tr>
+<tr>
+<td>Examples that are not reproducible</td>
+<td>High</td>
+<td>Every example must have a corresponding validation test that runs in CI.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-validation-gates-for-gl-146-through-gl-150">9. Validation Gates for GL-146 through GL-150<a class="headerlink" href="#9-validation-gates-for-gl-146-through-gl-150" title="Permanent link">&para;</a></h2>
+<p>Before any adoption issue is accepted, the following gates must pass:</p>
+<ol>
+<li><strong>Docs are copy-paste runnable where applicable</strong> — the quickstart must work
+   when followed verbatim on a clean clone.</li>
+<li><strong>Examples tested</strong> — every JSON example and code snippet must have a
+   corresponding automated test.</li>
+<li><strong>JSON examples valid</strong> — all JSON artifacts must pass <code>python3 -m json.tool</code>
+   validation.</li>
+<li><strong>No secrets</strong> — no PEM private keys, tokens, or passwords in any doc,
+   example, or test.</li>
+<li><strong>No OpenAPI drift unless explicitly planned</strong> — the SDK and integration
+   examples must match the current <code>docs/openapi.yaml</code> contract.</li>
+<li><strong>Full backend suite on main before push</strong> — <code>python3 -m unittest discover
+   backend.tests</code> must pass with 0 failures and 0 errors before any adoption
+   branch is merged.</li>
+</ol>
+<hr />
+<h2 id="10-non-goals">10. Non-Goals<a class="headerlink" href="#10-non-goals" title="Permanent link">&para;</a></h2>
+<p>The following are explicitly out of scope for GL-145 and the Developer Adoption
+track intake:</p>
+<ul>
+<li><strong>No SDK implementation in GL-145</strong> — SDK work is scoped to GL-147.</li>
+<li><strong>No quickstart implementation in GL-145</strong> — quickstart work is scoped to
+  GL-146.</li>
+<li><strong>No LangGraph/LangChain implementation in GL-145</strong> — integration example
+  work is scoped to GL-148.</li>
+<li><strong>No public GitHub release in GL-145</strong> — public readiness work is scoped to
+  GL-149.</li>
+<li><strong>No API change</strong> — the adoption track must work with the existing OpenAPI
+  contract; any API change requires a separate issue.</li>
+<li><strong>No auth redesign</strong> — the adoption track uses existing auth boundaries;
+  auth redesign is a separate workstream.</li>
+<li><strong>No tenant/workspace implementation</strong> — tenant/workspace implementation is
+  a separate workstream that depends on GL-144 design acceptance and follow-up
+  implementation issues.</li>
+<li><strong>No production SaaS claim</strong> — no adoption issue may claim or imply
+  production SaaS readiness.</li>
+</ul>
+<hr />
+<h2 id="11-proposed-issue-definitions">11. Proposed Issue Definitions<a class="headerlink" href="#11-proposed-issue-definitions" title="Permanent link">&para;</a></h2>
+<h3 id="gl-146-10-minute-quickstart">GL-146 10-Minute Quickstart<a class="headerlink" href="#gl-146-10-minute-quickstart" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Produce a runnable quickstart guide that gets a developer from <code>git clone</code> to
+  a successful API call in 10 minutes.</li>
+<li>Include copy-paste cURL or Python examples for the core flow.</li>
+<li>Include a validation test that asserts the quickstart steps are documented
+  and the examples are syntactically valid.</li>
+<li>Explicitly state local-only scope and security caveats.</li>
+</ul>
+<h3 id="gl-147-minimal-python-sdk">GL-147 Minimal Python SDK<a class="headerlink" href="#gl-147-minimal-python-sdk" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Produce a minimal Python client library that wraps the GrantLayer OpenAPI
+  contract.</li>
+<li>Use only stdlib + <code>cryptography</code> (same dependency footprint as backend).</li>
+<li>Include typed request/response models for core endpoints.</li>
+<li>Include usage examples and a validation test.</li>
+<li>Do not claim production readiness; document local-evaluation scope.</li>
+</ul>
+<h3 id="gl-148-langgraphlangchain-integration-example">GL-148 LangGraph/LangChain Integration Example<a class="headerlink" href="#gl-148-langgraphlangchain-integration-example" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Produce a concrete example showing GrantLayer nodes in a LangGraph graph.</li>
+<li>Demonstrate grant request, approval check, execution, and evidence capture
+  as graph nodes.</li>
+<li>Include a validation test that asserts the example files exist and are
+  syntactically valid.</li>
+<li>Do not require LangGraph/LangChain as a production dependency of the backend.</li>
+</ul>
+<h3 id="gl-149-public-github-readiness-pack">GL-149 Public GitHub Readiness Pack<a class="headerlink" href="#gl-149-public-github-readiness-pack" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Produce a checklist and set of artifacts that prepare the repo for public
+  GitHub visibility.</li>
+<li>Include CONTRIBUTING.md, issue templates, PR template, and CI badge updates.</li>
+<li>Include a validation test that asserts required files exist and contain
+  appropriate non-claims.</li>
+<li>Do not claim public release is complete until all checklist items pass.</li>
+</ul>
+<h3 id="gl-150-first-developer-feedback-log">GL-150 First Developer Feedback Log<a class="headerlink" href="#gl-150-first-developer-feedback-log" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Produce a structured feedback log template for capturing developer feedback.</li>
+<li>Include fields for environment, steps taken, blockers, suggestions, and
+  disposition.</li>
+<li>Include a validation test that asserts the template exists and is valid.</li>
+<li>Feedback may be real or explicitly simulated; simulated feedback must be
+  labeled as such.</li>
+</ul>
+<hr />
+<h2 id="12-gono-go-criteria">12. Go/No-Go Criteria<a class="headerlink" href="#12-gono-go-criteria" title="Permanent link">&para;</a></h2>
+<h3 id="go-proceed-to-gl-146">GO — Proceed to GL-146<a class="headerlink" href="#go-proceed-to-gl-146" title="Permanent link">&para;</a></h3>
+<ul>
+<li>GL-145 strategy intake is accepted.</li>
+<li>All required sections are present in this document.</li>
+<li>JSON artifact passes validation.</li>
+<li>Scope guard confirms no production code changes.</li>
+<li>Messaging rules are understood and agreed by the team.</li>
+</ul>
+<h3 id="no-go-do-not-proceed">NO-GO — Do not proceed<a class="headerlink" href="#no-go-do-not-proceed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Any production SaaS readiness claim appears in the strategy or proposed
+  issues.</li>
+<li>Any tenant isolation claim appears in the strategy or proposed issues.</li>
+<li>Any scope creep into SDK, quickstart, or integration implementation is
+  detected.</li>
+<li>Any secret is found in docs, examples, or tests.</li>
+</ul>
+<h3 id="additional-constraints">Additional constraints<a class="headerlink" href="#additional-constraints" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Do not publish publicly until GL-149 passes</strong> — the repo must not be made
+  publicly visible until the Public GitHub Readiness Pack is complete and
+  validated.</li>
+<li><strong>Do not claim developer adoption until GL-150 captures real or explicitly
+  simulated feedback</strong> — developer adoption metrics or claims require evidence
+  from the feedback log.</li>
+</ul>
+<hr />
+<h2 id="13-next-issue">13. Next Issue<a class="headerlink" href="#13-next-issue" title="Permanent link">&para;</a></h2>
+<p><strong>GL-146 10-Minute Quickstart</strong></p>
+<p>After the developer adoption strategy intake is accepted, the next issue is
+GL-146, which implements the first runnable developer onboarding artifact.</p>
+<hr />
+<blockquote>
+<p>GL-145 documents the <strong>developer adoption strategy intake</strong> for the
+GrantLayer Developer Adoption track. It does <strong>not</strong> implement any SDK,
+quickstart, integration example, public GitHub release, API change, auth
+redesign, tenant/workspace implementation, or production SaaS claim. It
+explicitly preserves all existing gates (GL-136 through GL-144) and mandates
+that no public release or developer adoption claim is made until GL-146
+through GL-150 are completed and validated.</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

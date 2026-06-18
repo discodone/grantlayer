@@ -1,0 +1,1393 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/internal/observability_structured_logging_baseline_design/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GrantLayer Observability and Structured Logging Baseline Design - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#grantlayer-observability-and-structured-logging-baseline-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GrantLayer Observability and Structured Logging Baseline Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-observability-principles-for-grantlayer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Observability principles for GrantLayer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-structured-logging-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Structured logging baseline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-required-log-event-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Required log event categories
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-required-structured-log-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Required structured log fields
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-correlation-ids-request-ids-workflow-ids-execution-ids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Correlation IDs / request IDs / workflow IDs / execution IDs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-boundary-between-product-audit-records-security-events-operational-logs-and-debug-traces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Boundary between product audit records, security events, operational logs, and debug traces
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Boundary between product audit records, security events, operational logs, and debug traces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-product-audit-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Product audit records
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-security-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Security events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-operational-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Operational logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-debug-traces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Debug traces
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-sensitive-data-and-secret-redaction-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Sensitive data and secret redaction rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-error-logging-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Error logging policy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-operator-visibility-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Operator visibility requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-minimal-metrics-candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Minimal metrics candidates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-minimal-tracing-candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Minimal tracing candidates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-localdevtestruntime-mode-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Local/dev/test/runtime mode differences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Local/dev/test/runtime mode differences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        local / dev
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#staging-pilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        staging / pilot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        production (future)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-production-readiness-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Production-readiness gaps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-future-implementation-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Future implementation sequence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="grantlayer-observability-and-structured-logging-baseline-design">GrantLayer Observability and Structured Logging Baseline Design<a class="headerlink" href="#grantlayer-observability-and-structured-logging-baseline-design" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>GrantLayer turns agentic grant workflows into verifiable institutional records.</p>
+<p>GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.</p>
+</blockquote>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>This document establishes the <strong>observability and structured logging baseline</strong> for GrantLayer as a reusable, adaptable API-first product core. It prepares the path for future observability, logging, and tracing readiness without implementing any of them.</p>
+<p>It clarifies:
+- what observability means for GrantLayer and what it does not include at this stage
+- the structured logging baseline that all future implementation must follow
+- the required log event categories and structured log fields
+- how correlation IDs connect requests, workflows, and executions across log entries
+- the clear boundary between operational logs, product audit records, security events, and debug traces
+- what must be redacted or never logged, especially secrets, tokens, and sensitive data
+- the error logging policy expected from future implementations
+- what operators need to see in logs for safe operations
+- candidate metrics and tracing patterns for future implementation
+- how observability expectations differ across local, dev, test, staging, and runtime modes
+- which production-readiness gaps remain before observability is complete
+- the future implementation sequence for observability-related work</p>
+<p>This is a <strong>product-foundation observability design document</strong>.</p>
+<p><strong>GL-078 implements the first structured logging helper baseline</strong> — correlation ID generation, safe structured event construction, and metadata redaction. GL-078 does not add external logging infrastructure, metrics, tracing, or monitoring. It does not make GrantLayer production-ready.</p>
+<p>GL-071 explicitly states:
+- GL-071 adds no observability implementation. GL-071 does not implement any observability.
+- GL-071 adds no logging implementation. GL-071 does not implement any logging.
+- GL-071 adds no metrics implementation. GL-071 does not implement any metrics.
+- GL-071 adds no tracing implementation. GL-071 does not implement any tracing.
+- GL-071 does not make GrantLayer production-ready.
+- GL-071 does not implement any logging, metrics, tracing, monitoring, or runtime configuration.
+- It does not implement runtime configuration, monitoring, or any other observability stack component.</p>
+<h2 id="2-observability-principles-for-grantlayer">2. Observability principles for GrantLayer<a class="headerlink" href="#2-observability-principles-for-grantlayer" title="Permanent link">&para;</a></h2>
+<p>GrantLayer observability should follow these principles:</p>
+<ul>
+<li><strong>Observability serves operational safety first</strong> — operators must be able to detect, triage, and recover from incidents without needing to read source code.</li>
+<li><strong>Structured logs are the primary signal</strong> — every log entry should be machine-parseable JSON with consistent, documented fields.</li>
+<li><strong>Audit and provenance are separate from operational logs</strong> — product audit records and provenance events belong to the product domain and may need separate storage, retention, and access controls. Operational logs exist for system health.</li>
+<li><strong>Security events require dedicated treatment</strong> — authentication failures, permission denials, and anomalies must be logged, but not mixed casually with debug output.</li>
+<li><strong>Debug traces are not operational logs</strong> — debug-level output is for developers and should be disabled in production.</li>
+<li><strong>Logs never include secrets or sensitive payloads</strong> — raw secrets, access tokens, private keys, and full evidence payloads must never appear in logs.</li>
+<li><strong>Correlation IDs tie events together</strong> — a single workflow spans many log lines; correlation fields must make it easy to reconstruct the chain.</li>
+<li><strong>Cardinality discipline</strong> — log fields used for grouping and filtering must be bounded and documented.</li>
+<li><strong>No observability implementation is added in GL-071</strong> — this document is purely a design and readiness baseline.</li>
+</ul>
+<h2 id="3-structured-logging-baseline">3. Structured logging baseline<a class="headerlink" href="#3-structured-logging-baseline" title="Permanent link">&para;</a></h2>
+<p>All future logging in GrantLayer should emit structured JSON with the following baseline:</p>
+<ul>
+<li><strong>Single JSON object per log line</strong> — no multi-line stack traces mixed with the event record; stack traces should be fields inside the JSON.</li>
+<li><strong>Consistent top-level fields</strong> — <code>timestamp</code>, <code>level</code>, <code>msg</code>, <code>eventType</code>, and <code>correlationId</code> are always present.</li>
+<li><strong>Explicit event types</strong> — every log entry declares its category via <code>eventType</code>.</li>
+<li><strong>Human-readable but machine-parseable</strong> — <code>msg</code> is a short human-readable sentence; machine data lives in typed fields.</li>
+<li><strong>No variable-rate fields in top-level keys</strong> — dynamic names (e.g., user IDs as keys) must live inside a <code>details</code> or <code>context</code> sub-object.</li>
+<li><strong>UTF-8 output</strong> — all log output must be valid UTF-8.</li>
+<li><strong>Monotonic wall-clock timestamps with time zone</strong> — timestamps should use ISO 8601 with explicit offset or UTC (<code>Z</code>).</li>
+</ul>
+<h2 id="4-required-log-event-categories">4. Required log event categories<a class="headerlink" href="#4-required-log-event-categories" title="Permanent link">&para;</a></h2>
+<p>Future GrantLayer implementations must support at least these event categories:</p>
+<ul>
+<li><strong>api_request</strong> — HTTP/API request start and completion; method, path, status, latency.</li>
+<li><strong>api_error</strong> — unhandled or structured API errors; status code, error code, error message.</li>
+<li><strong>auth_event</strong> — login, logout, identity verification attempts, and outcomes.</li>
+<li><strong>permission_decision</strong> — authorization checks, granted or denied, with policy context.</li>
+<li><strong>evidence_verification</strong> — evidence submitted for verification and the result.</li>
+<li><strong>approval_transition</strong> — grant state changes, who initiated them, and the resulting state.</li>
+<li><strong>policy_evaluation</strong> — policy rules evaluated during a request or workflow step.</li>
+<li><strong>persistence_operation</strong> — database reads and writes, success or failure, not the raw query.</li>
+<li><strong>configuration_event</strong> — runtime configuration changes, reloads, or validation results.</li>
+<li><strong>operator_action</strong> — operator-initiated commands, configuration changes, or recoveries.</li>
+</ul>
+<p>Each category should map to a known <code>eventType</code> value and have a stable schema. See <code>docs/examples/gl071/observability_event_model.json</code> for a representative example.</p>
+<h2 id="5-required-structured-log-fields">5. Required structured log fields<a class="headerlink" href="#5-required-structured-log-fields" title="Permanent link">&para;</a></h2>
+<p>Every structured log entry should include:</p>
+<ul>
+<li><code>timestamp</code> — ISO 8601 with timezone</li>
+<li><code>level</code> — <code>ERROR</code>, <code>WARN</code>, <code>INFO</code>, <code>DEBUG</code>, or a documented custom severity</li>
+<li><code>msg</code> — short human-readable description</li>
+<li><code>eventType</code> — one of the event categories or a documented extension</li>
+<li><code>serviceName</code> — the emitting component (e.g., <code>grantlayer-api</code>)</li>
+<li><code>serviceVersion</code> — the deployed version identifier</li>
+</ul>
+<p>Optional but strongly recommended fields:</p>
+<ul>
+<li><code>sourceFile</code> — file path relative to repo root</li>
+<li><code>sourceLine</code> — line number</li>
+<li><code>threadId</code> / <code>processId</code> — runtime identifiers for concurrency debugging</li>
+</ul>
+<p>Never emit dynamic or sensitive data as top-level keys.</p>
+<h2 id="6-correlation-ids-request-ids-workflow-ids-execution-ids">6. Correlation IDs / request IDs / workflow IDs / execution IDs<a class="headerlink" href="#6-correlation-ids-request-ids-workflow-ids-execution-ids" title="Permanent link">&para;</a></h2>
+<p>To reconstruct a single workflow across log entries, the following correlation fields are required:</p>
+<ul>
+<li><strong>requestId</strong> — ties all log entries generated during a single HTTP/API request.</li>
+<li><strong>correlationId</strong> — a higher-level identifier that may span multiple requests (e.g., a batch or external callback).</li>
+<li><strong>workflowId</strong> — ties all steps of a single GrantLayer workflow (e.g., grant request → approval → execution).</li>
+<li><strong>executionId</strong> — ties all operations within a single execution instance (e.g., one grant fulfillment run).</li>
+<li><strong>actorId</strong> — the identity of the human or system performing the action.</li>
+<li><strong>agentId</strong> — the specific agent or service instance that handled the request.</li>
+</ul>
+<p>These IDs must be propagated across:
+- inbound API requests
+- outbound API and integration calls
+- internal async tasks and background jobs
+- database transactions where appropriate</p>
+<p>Future implementations should ensure these IDs appear in headers (e.g., <code>X-Request-ID</code>, <code>X-Correlation-ID</code>) so external systems can correlate as well.</p>
+<h2 id="7-boundary-between-product-audit-records-security-events-operational-logs-and-debug-traces">7. Boundary between product audit records, security events, operational logs, and debug traces<a class="headerlink" href="#7-boundary-between-product-audit-records-security-events-operational-logs-and-debug-traces" title="Permanent link">&para;</a></h2>
+<p>GrantLayer must keep these four streams conceptually separate even if they share the same transport in early implementations.</p>
+<h3 id="71-product-audit-records">7.1 Product audit records<a class="headerlink" href="#71-product-audit-records" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong> — permanent, append-only record of decisions and state changes.</li>
+<li><strong>Examples</strong> — grant approved, evidence verified, operator overridden policy rule.</li>
+<li><strong>Retention</strong> — long-term, governed by institutional and regulatory requirements.</li>
+<li><strong>Access</strong> — restricted to auditors, compliance officers, and the provenance system.</li>
+<li><strong>Integrity</strong> — must be tamper-evident (cryptographic hashes or signatures).</li>
+<li><strong>Location</strong> — stored in durable, possibly immutable storage, not ephemeral log files.</li>
+</ul>
+<h3 id="72-security-events">7.2 Security events<a class="headerlink" href="#72-security-events" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong> — detection and forensic analysis of security-relevant activity.</li>
+<li><strong>Examples</strong> — failed login, permission denied, rate limit exceeded, anomaly detected.</li>
+<li><strong>Retention</strong> — long-term, possibly with escalation to a SIEM.</li>
+<li><strong>Sensitivity</strong> — must not include raw secrets, but must include enough context for investigation.</li>
+</ul>
+<h3 id="73-operational-logs">7.3 Operational logs<a class="headerlink" href="#73-operational-logs" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong> — system health, performance, and operator incident response.</li>
+<li><strong>Examples</strong> — request latency, database connection pool status, service start/stop, config reload.</li>
+<li><strong>Retention</strong> — moderate, typically days to weeks depending on volume.</li>
+<li><strong>Access</strong> — operators and SREs.</li>
+</ul>
+<h3 id="74-debug-traces">7.4 Debug traces<a class="headerlink" href="#74-debug-traces" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong> — developer troubleshooting and detailed request inspection.</li>
+<li><strong>Examples</strong> — full request/response dumps, detailed stack traces with local variables.</li>
+<li><strong>Retention</strong> — very short; may be sampled or disabled entirely in production.</li>
+<li><strong>Access</strong> — developers only.</li>
+<li><strong>Rule</strong> — must never be enabled in production, and must never contain sensitive data.</li>
+</ul>
+<p><strong>Key rule:</strong> Operational logs are separate from product audit/provenance records. An event may appear in both, but the streams have different schemas, retention, and access controls. Secrets, tokens, private keys, and full sensitive payloads must never be logged in any stream.</p>
+<h2 id="8-sensitive-data-and-secret-redaction-rules">8. Sensitive data and secret redaction rules<a class="headerlink" href="#8-sensitive-data-and-secret-redaction-rules" title="Permanent link">&para;</a></h2>
+<p>The following must be redacted or omitted from all logs, traces, and metrics:</p>
+<ul>
+<li><strong>Raw secrets</strong> — passwords, private keys, API secrets, encryption keys.</li>
+<li><strong>Access tokens</strong> — bearer tokens, JWT bodies, session cookies, refresh tokens.</li>
+<li><strong>Private keys</strong> — Ed25519 signing keys, TLS private keys, SSH keys.</li>
+<li><strong>Full evidence payloads</strong> — large or sensitive evidence documents should be referenced by ID or hash, never inlined.</li>
+<li><strong>Raw personal data</strong> — unless explicitly allowed by future data classification policy, personal identifiers, financial account numbers, and contact details should be hashed, masked, or omitted.</li>
+</ul>
+<p>Redaction rules for future implementation:
+- Replace redacted fields with a standard marker such as <code>[REDACTED]</code> or <code>{"__redacted": true, "fieldName": "password"}</code>.
+- Do not truncate or partially mask in a way that leaks information (e.g., showing the last four digits of a token).
+- Apply redaction before serialization to the log sink.
+- Log redaction failures as a separate <code>configuration_event</code> or <code>security_event</code>.
+- In test/demo environments, use synthetic placeholder values that follow the same redaction rules as production.</p>
+<h2 id="9-error-logging-policy">9. Error logging policy<a class="headerlink" href="#9-error-logging-policy" title="Permanent link">&para;</a></h2>
+<p>Future GrantLayer error logging should follow these rules:</p>
+<ul>
+<li><strong>Structured error fields</strong> — every error log must include <code>errorCode</code>, <code>errorMessage</code>, and optionally <code>errorCategory</code>.</li>
+<li><strong>No stack traces in INFO logs</strong> — stack traces belong in ERROR or DEBUG output only.</li>
+<li><strong>User-facing vs operator-facing</strong> — user-facing errors go to the API response; operator-facing details go to logs. Never expose internal paths or database details to API consumers.</li>
+<li><strong>Rate limiting for repeated errors</strong> — identical repeated errors should be throttled in logs to prevent log floods.</li>
+<li><strong>Context preservation</strong> — an error log must include the same correlation IDs as the request that triggered it.</li>
+<li><strong>Failure classification</strong> — transient vs permanent, internal vs external, retryable vs fatal.</li>
+</ul>
+<h2 id="10-operator-visibility-requirements">10. Operator visibility requirements<a class="headerlink" href="#10-operator-visibility-requirements" title="Permanent link">&para;</a></h2>
+<p>Operators running GrantLayer in production must be able to answer these questions from logs and metrics alone:</p>
+<ul>
+<li>Is the API healthy and responding within latency targets?</li>
+<li>Are authentication and authorization decisions succeeding or failing?</li>
+<li>Are persistence operations succeeding or timing out?</li>
+<li>Are workflows progressing through states as expected?</li>
+<li>Are there anomalies in error rates or traffic patterns?</li>
+<li>What specific request or workflow is failing right now?</li>
+<li>When did the current configuration version take effect?</li>
+</ul>
+<p>Operator dashboards (future scope) should surface these signals without needing direct database access.</p>
+<h2 id="11-minimal-metrics-candidates">11. Minimal metrics candidates<a class="headerlink" href="#11-minimal-metrics-candidates" title="Permanent link">&para;</a></h2>
+<p>Metrics are not implemented in GL-071. Future implementation should consider at minimum:</p>
+<ul>
+<li><strong>Request count and latency</strong> — by endpoint, method, and status code.</li>
+<li><strong>Error rate</strong> — by error category and endpoint.</li>
+<li><strong>Auth event count</strong> — successes and failures.</li>
+<li><strong>Permission decision count</strong> — granted vs denied.</li>
+<li><strong>Workflow state transition count</strong> — by from-state and to-state.</li>
+<li><strong>Persistence operation latency</strong> — by operation type, not raw SQL.</li>
+<li><strong>Active connection gauge</strong> — database or external service connections.</li>
+<li><strong>Config reload event count</strong> — success and failure.</li>
+</ul>
+<p>These metrics should use bounded labels (low cardinality) to avoid metric explosion. Secret values, user IDs, and raw query text must never be part of metric labels.</p>
+<h2 id="12-minimal-tracing-candidates">12. Minimal tracing candidates<a class="headerlink" href="#12-minimal-tracing-candidates" title="Permanent link">&para;</a></h2>
+<p>Distributed tracing is not implemented in GL-071. Future implementation should consider:</p>
+<ul>
+<li><strong>One trace per API request</strong> — root span on request entry.</li>
+<li><strong>Sub-spans for major operations</strong> — auth check, permission evaluation, persistence operation, integration call.</li>
+<li><strong>Span attributes</strong> — service name, event type, and correlation IDs.</li>
+<li><strong>Error tagging</strong> — spans that encounter errors should be marked with the error category.</li>
+<li><strong>Sampling</strong> — production should use head-based or tail-based sampling to control volume.</li>
+</ul>
+<p>Traces must not include sensitive payloads or secret values in span attributes.</p>
+<h2 id="13-localdevtestruntime-mode-differences">13. Local/dev/test/runtime mode differences<a class="headerlink" href="#13-localdevtestruntime-mode-differences" title="Permanent link">&para;</a></h2>
+<p>Observability expectations differ across runtime modes:</p>
+<h3 id="local-dev">local / dev<a class="headerlink" href="#local-dev" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Structured logging may be pretty-printed to stdout.</li>
+<li>DEBUG level may be enabled by default.</li>
+<li>Debug traces may be printed.</li>
+<li>No production-ready claim is made.</li>
+</ul>
+<h3 id="test">test<a class="headerlink" href="#test" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Logs should be deterministic and isolated per test.</li>
+<li>DEBUG level may be enabled for failing tests.</li>
+<li>No persistent log storage.</li>
+<li>Correlation IDs should be predictable for test assertions.</li>
+</ul>
+<h3 id="staging-pilot">staging / pilot<a class="headerlink" href="#staging-pilot" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Structured JSON logging to a single sink.</li>
+<li>INFO or WARN minimum level.</li>
+<li>Debug traces disabled.</li>
+<li>Metrics may be emitted but not necessarily collected by a full monitoring stack.</li>
+</ul>
+<h3 id="production-future">production (future)<a class="headerlink" href="#production-future" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Structured JSON logging to a dedicated, durable sink.</li>
+<li>WARN or INFO minimum level; ERROR always emitted.</li>
+<li>Debug traces strictly disabled.</li>
+<li>Metrics collected by a monitoring stack.</li>
+<li>Tracing sampled at a configurable rate.</li>
+<li>Secrets and sensitive data explicitly redacted.</li>
+<li>Log retention, rotation, and access controls enforced.</li>
+</ul>
+<h2 id="14-production-readiness-gaps">14. Production-readiness gaps<a class="headerlink" href="#14-production-readiness-gaps" title="Permanent link">&para;</a></h2>
+<p>GL-071 does not claim production observability readiness. The following gaps remain to be closed by later implementation blocks:</p>
+<ul>
+<li>Structured logging library is not integrated.</li>
+<li>Log aggregation sink is not configured.</li>
+<li>Metrics collection and export are not implemented.</li>
+<li>Distributed tracing is not implemented.</li>
+<li>Log redaction helpers are not implemented.</li>
+<li>Production log retention and rotation policies are not enforced.</li>
+<li>Operator dashboard and alerting are not built.</li>
+<li>SIEM integration for security events is not implemented.</li>
+<li>Audit/provenance storage separation from operational logs is not implemented.</li>
+<li>Performance benchmarks for logging overhead are not established.</li>
+<li>Cross-service correlation ID propagation across external integrations is not implemented.</li>
+<li>Production log access controls and encryption at rest are not configured.</li>
+</ul>
+<h2 id="15-future-implementation-sequence">15. Future implementation sequence<a class="headerlink" href="#15-future-implementation-sequence" title="Permanent link">&para;</a></h2>
+<p>The following sequence is recommended for observability-related implementation blocks after GL-071:</p>
+<ol>
+<li><strong>Logging library integration</strong> — choose and configure a structured logging library; emit baseline fields; implement redaction helpers.</li>
+<li><strong>Request/response correlation</strong> — inject <code>X-Request-ID</code>, <code>X-Correlation-ID</code> headers; propagate through the stack.</li>
+<li><strong>Event category implementation</strong> — implement emitters for the required event categories (api_request, auth_event, etc.).</li>
+<li><strong>Metrics collection</strong> — instrument candidate metrics with bounded labels; expose a <code>/metrics</code> or OTLP endpoint.</li>
+<li><strong>Error logging hardening</strong> — classify errors; implement rate limiting; separate user-facing and operator-facing output.</li>
+<li><strong>Distributed tracing</strong> — integrate OpenTelemetry or equivalent; implement sampling; add sub-spans for major operations.</li>
+<li><strong>Security event pipeline</strong> — dedicated security event formatter; consider SIEM export.</li>
+<li><strong>Audit/provenance separation</strong> — separate durable storage for audit records; enforce access controls.</li>
+<li><strong>Operator dashboards and alerting</strong> — build or configure dashboards; define SLOs and alert thresholds.</li>
+<li><strong>Production hardening</strong> — retention, rotation, encryption, access controls, and performance validation.</li>
+</ol>
+<p>Each block should be gated by the preceding blocks to avoid building dashboards on untraced logs or alerting on unclassified errors.</p>
+<h2 id="non-goals">Non-goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-071 does not implement any logging or observability stack.</li>
+<li>GL-071 does not choose a specific logging library, metrics backend, or tracing system.</li>
+<li>GL-071 does not define log storage, retention, or compression formats.</li>
+<li>GL-071 does not create dashboards, alerts, or SLOs.</li>
+<li>GL-071 does not create operator runbooks for incident response.</li>
+<li>GL-071 does not implement secret handling beyond stating that secrets must not be logged.</li>
+<li>GL-071 does not implement runtime configuration.</li>
+<li>GL-071 does not implement authentication, authorization, or permission decisions.</li>
+<li>GL-071 does not implement persistence or database operations.</li>
+<li>GL-071 does not claim production readiness.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

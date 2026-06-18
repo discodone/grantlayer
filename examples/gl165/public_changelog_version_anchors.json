@@ -1,0 +1,41 @@
+{
+  "issue": "GL-165",
+  "title": "Public CHANGELOG / Version Anchors",
+  "status": "developer-preview-version-anchors",
+  "changelogPath": "CHANGELOG.md",
+  "publicSnapshotModel": true,
+  "sourceOfTruth": "internal-forgejo",
+  "caveats": [
+    "GrantLayer is a Developer Preview snapshot.",
+    "GrantLayer is not production SaaS.",
+    "Tenant isolation is not implemented.",
+    "GrantLayer is not a replacement for auditors, legal review, or institutional governance.",
+    "Do not use real secrets.",
+    "Do not use real customer data.",
+    "The public repository is a clean snapshot, not the full internal history."
+  ],
+  "publicUpdateWorkflow": [
+    "internal-issue",
+    "internal-branch",
+    "validation",
+    "merge-to-internal-main",
+    "build-clean-snapshot",
+    "scanner-clean",
+    "publish-public-snapshot"
+  ],
+  "publicHardeningNotes": [
+    "Public snapshot scanner-clean export.",
+    "Removal of backend-dependent public CI workflow from the clean snapshot.",
+    "Safe .env.example with placeholder-only values.",
+    "Dashboard XSS hardening.",
+    "Post-public intake triage workflow.",
+    "GitHub Linguist and repository discovery metadata."
+  ],
+  "forbiddenClaims": [
+    "production SaaS readiness",
+    "enterprise completeness",
+    "full compliance",
+    "tenant isolation implemented claim; tenant isolation is not implemented",
+    "replacement for auditors, legal review, or governance"
+  ]
+}

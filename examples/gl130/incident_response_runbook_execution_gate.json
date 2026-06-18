@@ -1,0 +1,130 @@
+{
+  "issue_id": "GL-130",
+  "title": "Incident Response / Operational Runbook Execution Gate",
+  "baseline_type": "incident_response_runbook_execution_gate",
+  "review_only": true,
+  "incident_automation_implemented": false,
+  "monitoring_backend_implemented": false,
+  "production_code_changed": false,
+  "incident_categories": [
+    "service unavailable",
+    "readiness failure",
+    "elevated 5xx/error rate",
+    "repeated auth failures",
+    "repeated forbidden/operator-role failures",
+    "repeated rate-limit events",
+    "invalid payload/request rejection spike",
+    "audit write failure",
+    "audit/hash-chain integrity anomaly",
+    "database connectivity/pool pressure/failure",
+    "PostgreSQL audit immutability guard failure",
+    "runtime gate failure",
+    "operational smoke failure",
+    "backup/restore drill failure",
+    "unexpected exception spike",
+    "suspected secret exposure"
+  ],
+  "severity_levels": {
+    "SEV1": "critical: active outage, data-integrity issue, secret exposure, audit/hash-chain anomaly",
+    "SEV2": "high: degraded core behavior, repeated security failures, DB instability",
+    "SEV3": "medium: isolated issue, recoverable operational degradation",
+    "SEV4": "low: informational/manual follow-up"
+  },
+  "first_response_checklist": [
+    "assign incident owner",
+    "freeze risky deploys",
+    "capture start time and current main commit",
+    "collect correlation_id values",
+    "identify affected endpoints/components",
+    "check health/readiness",
+    "inspect structured logs safely",
+    "run smoke tests if safe",
+    "run runtime gate if config/runtime issue suspected",
+    "consult backup/restore drill if data integrity issue suspected",
+    "preserve evidence"
+  ],
+  "triage_workflow": [
+    "classify severity",
+    "identify category",
+    "determine user/operator impact",
+    "determine whether security/data integrity is involved",
+    "decide continue / degraded operation / pause pilot"
+  ],
+  "evidence_capture_requirements": [
+    "timestamps",
+    "correlation_id values",
+    "safe log snippets",
+    "status codes and reason codes",
+    "affected command outputs",
+    "current git/main commit",
+    "runtime mode/config summary without secrets"
+  ],
+  "secret_safety_rules": [
+    "no raw Authorization header",
+    "no raw tokens",
+    "no raw request bodies",
+    "no DB passwords",
+    "no private keys/passphrases",
+    "no backup credentials"
+  ],
+  "escalation_roles": [
+    "incident owner",
+    "technical responder",
+    "operator/business owner",
+    "security/data-integrity escalation",
+    "decision log owner"
+  ],
+  "required_commands": [
+    "scripts/run-production-runtime-gate.sh",
+    "scripts/run-operational-smoke-tests.sh",
+    "scripts/run-backup-restore-drill.sh",
+    "scripts/run-full-backend-suite.sh"
+  ],
+  "pilot_go_criteria": [
+    "owner assigned",
+    "incident understood",
+    "evidence captured",
+    "no active security/data-integrity issue",
+    "required gates pass"
+  ],
+  "pilot_no_go_criteria": [
+    "unowned incident",
+    "secret exposure",
+    "audit/hash-chain anomaly",
+    "DB failure",
+    "runtime gate failure",
+    "smoke failure",
+    "backup/restore drill failure",
+    "full suite failure",
+    "unresolved SEV1/SEV2"
+  ],
+  "related_gates": [
+    "GL-117",
+    "GL-118",
+    "GL-120",
+    "GL-125",
+    "GL-126",
+    "GL-127",
+    "GL-128",
+    "GL-129"
+  ],
+  "recommended_next_steps": [
+    "GL-131 Pilot Environment Setup Checklist"
+  ],
+  "explicit_non_goals": [
+    "no incident automation",
+    "no pager/on-call platform integration",
+    "no monitoring backend integration",
+    "no production code changes",
+    "no OpenAPI changes",
+    "no frontend/website/design work"
+  ],
+  "secret_safety": {
+    "no_raw_authorization_header": true,
+    "no_raw_tokens": true,
+    "no_raw_request_bodies": true,
+    "no_db_passwords": true,
+    "no_private_keys": true,
+    "no_backup_credentials": true
+  }
+}

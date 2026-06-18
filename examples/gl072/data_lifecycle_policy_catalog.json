@@ -1,0 +1,80 @@
+{
+  "description": "Data lifecycle policy catalog for GrantLayer. Defines representative lifecycle states and transitions. This is a design artifact; no lifecycle automation is implemented.",
+  "version": "1.0",
+  "policies": [
+    {
+      "state": "active",
+      "description": "Data is currently in use, readable, writable, and included in active backups.",
+      "appliesTo": ["grant_requests", "grants", "grant_executions", "evidence_metadata", "audit_events", "provenance_events"],
+      "allowedTransitions": ["archived", "retained_for_audit", "retained_for_legal_hold", "expired"],
+      "retentionNotes": "No automatic deletion. Retained as long as the record is active or institutionally relevant.",
+      "deletionNotes": "No deletion allowed while active.",
+      "auditabilityNotes": "All state changes are logged as audit events.",
+      "implementationStatus": "design_only"
+    },
+    {
+      "state": "archived",
+      "description": "Data is no longer actively accessed but retained for compliance or historical reference.",
+      "appliesTo": ["grant_requests", "grants", "grant_executions", "evidence_metadata", "compliance_gap_reports"],
+      "allowedTransitions": ["retained_for_audit", "retained_for_legal_hold", "expired"],
+      "retentionNotes": "Read-only. Retained according to institutional policy, typically months to years.",
+      "deletionNotes": "May be expired after retention period passes. Cannot be deleted without audit trail.",
+      "auditabilityNotes": "Archival action is itself an audit event.",
+      "implementationStatus": "not-implemented"
+    },
+    {
+      "state": "retained_for_audit",
+      "description": "Data is kept for institutional audit and compliance purposes. Immutable.",
+      "appliesTo": ["audit_events", "provenance_events", "approval_records"],
+      "allowedTransitions": ["retained_for_legal_hold"],
+      "retentionNotes": "Years, possibly indefinite. Governed by compliance requirements, not ordinary data retention.",
+      "deletionNotes": "Must not be destructively deleted. Transition to legal-hold if required longer than planned.",
+      "auditabilityNotes": "Every access and query may be logged depending on future compliance policy.",
+      "implementationStatus": "not-implemented"
+    },
+    {
+      "state": "retained_for_legal_hold",
+      "description": "Data is kept for legal or regulatory proceedings. Must not be deleted.",
+      "appliesTo": ["grant_requests", "grants", "audit_events", "provenance_events", "evidence_metadata"],
+      "allowedTransitions": ["retained_for_audit"],
+      "retentionNotes": "Duration determined by legal counsel or regulator. Overrides ordinary retention schedules.",
+      "deletionNotes": "Deletion prohibited while legal hold is active. Must be explicitly released by authorized party.",
+      "auditabilityNotes": "Legal hold placement and release are high-sensitivity audit events.",
+      "implementationStatus": "not-implemented"
+    },
+    {
+      "state": "expired",
+      "description": "Data has passed its retention period and is pending deletion or purge review.",
+      "appliesTo": ["grant_requests", "grants", "grant_executions", "evidence_metadata", "compliance_gap_reports", "operational_logs"],
+      "allowedTransitions": ["deletion_pending", "retained_for_legal_hold"],
+      "retentionNotes": "Grace period for operator review before final purge.",
+      "deletionNotes": "May be restored from expired state if needed, or advanced to deletion_pending.",
+      "auditabilityNotes": "Expiration event is logged. Operator review is required before purge.",
+      "implementationStatus": "not-implemented"
+    },
+    {
+      "state": "deletion_pending",
+      "description": "Data is marked for deletion, awaiting operator confirmation or automated purge.",
+      "appliesTo": ["grant_requests", "grants", "grant_executions", "evidence_metadata", "compliance_gap_reports", "operational_logs"],
+      "allowedTransitions": ["deleted_or_purged", "retained_for_legal_hold"],
+      "retentionNotes": "Short window (e.g., days) for operator to cancel or confirm purge.",
+      "deletionNotes": "Requires operator approval or automated job with audit logging.",
+      "auditabilityNotes": "Deletion approval and execution are audit events.",
+      "implementationStatus": "not-implemented"
+    },
+    {
+      "state": "deleted_or_purged",
+      "description": "Data is no longer stored in primary or backup systems, or has been cryptographically shredded.",
+      "appliesTo": ["grant_requests", "grants", "grant_executions", "evidence_metadata", "compliance_gap_reports", "operational_logs"],
+      "allowedTransitions": [],
+      "retentionNotes": "No retention. A record of the purge is the only remaining artifact.",
+      "deletionNotes": "Irreversible. Must not impact audit/provenance records.",
+      "auditabilityNotes": "Purge event itself is an immutable audit event.",
+      "implementationStatus": "not-implemented"
+    }
+  ],
+  "metadata": {
+    "status": "design-baseline",
+    "note": "No lifecycle automation, retention jobs, or deletion jobs are implemented. This catalog defines intended policies for future implementation."
+  }
+}

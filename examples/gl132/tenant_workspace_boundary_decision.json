@@ -1,0 +1,144 @@
+{
+  "issue_id": "GL-132",
+  "title": "Tenant / Workspace Boundary Decision",
+  "decision_type": "tenant_workspace_boundary_decision",
+  "review_only": true,
+  "tenant_implementation_added": false,
+  "workspace_implementation_added": false,
+  "production_code_changed": false,
+  "db_schema_changed": false,
+  "auth_semantics_changed": false,
+  "production_multitenancy_implemented": false,
+  "commercial_saas_complete": false,
+  "current_posture": {
+    "single_pilot_environment_or_operator_bounded": true,
+    "unrelated_customer_data_must_not_be_mixed": true,
+    "multi_tenant_isolation_must_not_be_assumed": true,
+    "shared_namespace_without_explicit_tenant": true
+  },
+  "terms": [
+    {
+      "term": "tenant",
+      "definition": "a logical boundary that isolates one customer's data, grants, evidence, audit records, and operator identities from another customer's"
+    },
+    {
+      "term": "workspace",
+      "definition": "a scoped operating context within a tenant, typically mapping to a team, department, or organizational unit that shares grants and evidence but remains isolated from other workspaces"
+    },
+    {
+      "term": "operator",
+      "definition": "an authenticated individual or service identity that performs actions within a tenant/workspace boundary"
+    },
+    {
+      "term": "pilot environment",
+      "definition": "a single, controlled deployment of GrantLayer used for evaluation, demonstration, or early partner validation"
+    },
+    {
+      "term": "grant boundary",
+      "definition": "the scope within which a grant record, its rules, and its execution history are visible and manageable"
+    },
+    {
+      "term": "evidence boundary",
+      "definition": "the scope within which evidence files, verification records, and attestations are visible and manageable"
+    },
+    {
+      "term": "audit boundary",
+      "definition": "the scope within which audit events, immutability chains, and tamper-evident records are visible and manageable"
+    }
+  ],
+  "options_considered": [
+    {
+      "option": "A",
+      "name": "single-tenant pilot only",
+      "description": "Run each pilot on a fully isolated deployment; no tenant/workspace concepts needed inside the application"
+    },
+    {
+      "option": "B",
+      "name": "operator-bounded workspace model",
+      "description": "Run a single deployment where all data is implicitly bounded by the operator owner and their scope of control"
+    },
+    {
+      "option": "C",
+      "name": "full multi-tenant SaaS model",
+      "description": "Implement explicit tenant/workspace identity, tenant-aware authorization, tenant-scoped data models, and cross-tenant access prevention"
+    },
+    {
+      "option": "D",
+      "name": "defer tenant implementation but explicitly forbid multi-tenant claims",
+      "description": "Document that tenant/workspace isolation is not implemented and explicitly forbid multi-tenant claims"
+    }
+  ],
+  "recommended_decision": {
+    "near_term": "controlled pilot may proceed under single-environment/operator-bounded assumptions",
+    "before_production_saas": "explicit tenant/workspace data and authorization boundary must be designed, implemented, and verified",
+    "go_for": "controlled pilot under Option A or Option B assumptions",
+    "no_go_for": "shared multi-tenant SaaS under Option C until follow-up issues are completed",
+    "documented_under": "Option D — no multi-tenant claims are permitted"
+  },
+  "production_saas_requirements": [
+    "tenant/workspace identity",
+    "tenant-aware authorization",
+    "tenant-aware operator/admin permissions",
+    "tenant-aware grants/executions/evidence/audit records",
+    "tenant-aware export/report boundaries",
+    "tenant-aware backup/restore boundaries",
+    "tenant-aware log/monitoring redaction rules",
+    "cross-tenant access prevention tests"
+  ],
+  "explicit_non_claims": [
+    "no multi-tenant isolation implemented",
+    "no tenant model implemented",
+    "no workspace model implemented",
+    "no customer account model implemented",
+    "no billing model implemented",
+    "no frontend onboarding implemented",
+    "no shared SaaS environment approved for unrelated customers"
+  ],
+  "pilot_go_criteria": [
+    "single pilot environment or clearly bounded operator/workspace scope",
+    "named operator owner",
+    "no unrelated customer data mixed",
+    "pilot data boundary documented",
+    "backup/restore boundary documented",
+    "monitoring/incident owners assigned"
+  ],
+  "pilot_no_go_criteria": [
+    "unrelated customers share an environment",
+    "unclear data ownership",
+    "unclear operator permission boundaries",
+    "cross-customer data mixing risk",
+    "tenant isolation is assumed but not implemented"
+  ],
+  "follow_up_issues": [
+    "GL-133",
+    "GL-134",
+    "GL-135",
+    "GL-136",
+    "GL-137",
+    "GL-138"
+  ],
+  "related_gates": [
+    "GL-128",
+    "GL-129",
+    "GL-130",
+    "GL-131"
+  ],
+  "explicit_non_goals": [
+    "no tenant implementation",
+    "no workspace implementation",
+    "no DB migration",
+    "no auth change",
+    "no API/OpenAPI change",
+    "no frontend/onboarding/billing",
+    "no deployment/infrastructure change",
+    "no production code changes",
+    "no dependency additions",
+    "no website/landing page/design changes"
+  ],
+  "secret_safety": {
+    "no_raw_tokens": true,
+    "no_raw_authorization_header": true,
+    "no_db_passwords": true,
+    "no_private_keys": true
+  }
+}

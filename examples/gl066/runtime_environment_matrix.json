@@ -1,0 +1,263 @@
+{
+  "matrixId": "gl066-runtime-environment-matrix",
+  "matrixVersion": "1.0",
+  "status": "product-foundation-planning",
+  "productStatement": "GrantLayer turns agentic grant workflows into verifiable institutional records.",
+  "runtimeModes": [
+    {
+      "mode": "local-dev",
+      "purpose": "Developer convenience during active development.",
+      "allowedDefaults": [
+        "SQLite local database",
+        "Local file paths for evidence storage",
+        "Demo admin tokens",
+        "Simplified logging",
+        "No external secret manager",
+        "No backup/restore guarantee",
+        "No production observability",
+        "Local-only API binding"
+      ],
+      "requiredExplicitSettings": [
+        "Runtime mode declaration",
+        "Basic logging level"
+      ],
+      "dataSensitivity": "none",
+      "persistenceExpectation": "ephemeral",
+      "authExpectation": "demo or none",
+      "secretHandlingExpectation": "demo keys acceptable",
+      "observabilityExpectation": "optional",
+      "backupExpectation": "none",
+      "networkExposureExpectation": "localhost only",
+      "productionClaimAllowed": false
+    },
+    {
+      "mode": "test",
+      "purpose": "Deterministic automated verification in CI and local test suites.",
+      "allowedDefaults": [
+        "SQLite in-memory or temporary files",
+        "Synthetic data fixtures",
+        "Mock authentication",
+        "No external integrations",
+        "No network exposure",
+        "Deterministic test seeds"
+      ],
+      "requiredExplicitSettings": [
+        "Runtime mode declaration",
+        "Test fixture isolation"
+      ],
+      "dataSensitivity": "none",
+      "persistenceExpectation": "ephemeral",
+      "authExpectation": "mock or bypass",
+      "secretHandlingExpectation": "test keys acceptable",
+      "observabilityExpectation": "none",
+      "backupExpectation": "none",
+      "networkExposureExpectation": "none",
+      "productionClaimAllowed": false
+    },
+    {
+      "mode": "demo",
+      "purpose": "Illustrative non-production walkthrough for integrators, partners, and stakeholders.",
+      "allowedDefaults": [
+        "Demo fixtures and example data",
+        "Local-only API binding",
+        "Simplified authentication",
+        "No real secrets",
+        "No backup/restore guarantee",
+        "No compliance certification",
+        "Demo evidence examples"
+      ],
+      "requiredExplicitSettings": [
+        "Runtime mode declaration",
+        "Demo fixture mode flag",
+        "Local binding enforcement"
+      ],
+      "dataSensitivity": "synthetic-only",
+      "persistenceExpectation": "temporary",
+      "authExpectation": "demo tokens",
+      "secretHandlingExpectation": "no real secrets",
+      "observabilityExpectation": "optional",
+      "backupExpectation": "none",
+      "networkExposureExpectation": "localhost only",
+      "productionClaimAllowed": false
+    },
+    {
+      "mode": "integration",
+      "purpose": "Controlled external technical integration with partner systems.",
+      "allowedDefaults": [
+        "Partner-agreed database configuration",
+        "Partner-agreed authentication",
+        "Limited network exposure",
+        "Basic observability"
+      ],
+      "requiredExplicitSettings": [
+        "Runtime mode declaration",
+        "Database backend and connection",
+        "Authentication provider",
+        "Network binding and exposure rules",
+        "CORS and external access configuration",
+        "Observability configuration",
+        "Partner integration boundaries"
+      ],
+      "dataSensitivity": "partner-confidential",
+      "persistenceExpectation": "partner-agreed durability",
+      "authExpectation": "partner-agreed provider",
+      "secretHandlingExpectation": "partner-agreed secret management",
+      "observabilityExpectation": "basic required",
+      "backupExpectation": "documented expectations",
+      "networkExposureExpectation": "limited and documented",
+      "productionClaimAllowed": false
+    },
+    {
+      "mode": "staging",
+      "purpose": "Production-like validation before production deployment.",
+      "allowedDefaults": [
+        "Same backend and auth as production target",
+        "Realistic synthetic or anonymized data",
+        "Full observability",
+        "Tested backup/restore",
+        "Limited and documented network exposure"
+      ],
+      "requiredExplicitSettings": [
+        "Runtime mode declaration",
+        "Database backend and connection",
+        "Authentication provider",
+        "Operator/admin access model",
+        "Secret management",
+        "Signing/key management",
+        "Evidence storage",
+        "Retention policy",
+        "Observability configuration",
+        "Backup/restore configuration",
+        "Network binding",
+        "CORS/external access",
+        "Deployment environment"
+      ],
+      "dataSensitivity": "anonymized or synthetic",
+      "persistenceExpectation": "production-like durability",
+      "authExpectation": "production target provider",
+      "secretHandlingExpectation": "production-like secret management",
+      "observabilityExpectation": "full",
+      "backupExpectation": "tested and documented",
+      "networkExposureExpectation": "documented and restricted",
+      "productionClaimAllowed": false
+    },
+    {
+      "mode": "production",
+      "purpose": "Explicit hardened operation only.",
+      "allowedDefaults": [],
+      "requiredExplicitSettings": [
+        "Runtime mode declaration",
+        "Database backend and connection",
+        "Authentication provider",
+        "Operator/admin access model",
+        "Secret management",
+        "Signing/key management",
+        "Evidence storage",
+        "Retention policy",
+        "Observability configuration",
+        "Backup/restore configuration",
+        "Network binding",
+        "CORS/external access",
+        "Deployment environment",
+        "Compliance/legal boundary",
+        "Policy/rule pack profile",
+        "Feature flags / extension toggles",
+        "Safe failure behavior"
+      ],
+      "dataSensitivity": "institutional",
+      "persistenceExpectation": "durable and guaranteed",
+      "authExpectation": "explicit production-grade provider",
+      "secretHandlingExpectation": "managed with rotation and access control",
+      "observabilityExpectation": "full and required",
+      "backupExpectation": "automated with tested recovery",
+      "networkExposureExpectation": "explicit and hardened",
+      "productionClaimAllowed": true
+    }
+  ],
+  "productionClaimRules": [
+    "Production claim is allowed only when runtime mode is explicitly set to production.",
+    "Production claim requires all requiredExplicitSettings to be present, validated, and non-default.",
+    "Production claim requires fail-closed behavior on missing or invalid configuration.",
+    "Production claim requires active observability and alerting.",
+    "Production claim requires documented backup and restore procedures with tested recovery.",
+    "Production claim requires explicit auth provider configuration with no demo tokens.",
+    "Production claim requires managed secrets with no synthetic or demo keypairs.",
+    "Production claim requires explicit network binding, TLS, and access controls."
+  ],
+  "safeDefaults": [
+    {
+      "default": "SQLite local database",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "SQLite is not recommended for production workloads without explicit justification and configuration."
+    },
+    {
+      "default": "Local file paths for evidence storage",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "Local file paths lack durability guarantees and shared access needed in production."
+    },
+    {
+      "default": "Demo admin tokens",
+      "allowedInModes": ["local-dev", "demo"],
+      "productionRisk": "Demo tokens provide no identity verification or auditability."
+    },
+    {
+      "default": "In-memory or synthetic test fixtures",
+      "allowedInModes": ["test", "demo"],
+      "productionRisk": "Synthetic fixtures must not be mistaken for or mixed with institutional data."
+    },
+    {
+      "default": "Local-only API binding",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "Local binding prevents external access but is not a substitute for production network hardening."
+    },
+    {
+      "default": "Simplified logging",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "Unstructured logging impedes incident response and audit review."
+    },
+    {
+      "default": "No external secret manager",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "Manual secret handling increases exposure and rotation risk."
+    },
+    {
+      "default": "No backup/restore guarantee",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "Data loss is acceptable only in non-production modes."
+    },
+    {
+      "default": "No production observability",
+      "allowedInModes": ["local-dev", "test", "demo"],
+      "productionRisk": "Blind spots in production prevent timely incident detection."
+    },
+    {
+      "default": "Demo evidence examples",
+      "allowedInModes": ["demo"],
+      "productionRisk": "Demo examples must never be presented as real institutional records."
+    }
+  ],
+  "productionRequiredConfiguration": [
+    "Runtime mode",
+    "Database backend and connection",
+    "Auth provider",
+    "Operator/admin access model",
+    "Secret management",
+    "Signing/key management",
+    "Evidence storage",
+    "Retention policy",
+    "Observability/logging",
+    "Backup/restore",
+    "Network binding",
+    "CORS/external access",
+    "Deployment environment",
+    "Compliance/legal boundary"
+  ],
+  "relatedArtifacts": [
+    "docs/runtime_configuration_environment_model.md",
+    "docs/examples/gl066/configuration_contract_catalog.json",
+    "backend/tests/test_gl066_runtime_configuration_environment_model.py",
+    "docs/product_architecture_extension_boundaries.md",
+    "docs/production_hardening_roadmap.md",
+    "docs/api_openapi_contract_hardening_review.md"
+  ]
+}

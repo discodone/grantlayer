@@ -1,0 +1,214 @@
+{
+  "issue_id": "GL-206B",
+  "title": "Live PostgreSQL Validation Execution",
+  "result": "ready_for_merge",
+  "decision": "ready_for_merge",
+  "decision_rationale": "A disposable local PostgreSQL container was created only for GL-206B, no host port was published, synthetic/demo data only was used, and the existing GL-205 live validation command ran in true live mode with explicit environment gates. The run passed after two narrow validation-script fixes: using the existing PostgreSQL connection wrapper for migrations and aligning the synthetic audit approved value with the integer schema. The result is ephemeral-only and is not production PostgreSQL readiness.",
+  "input_sources_reviewed": [
+    "docs/live_postgres_backup_observability_baseline.md",
+    "docs/examples/gl205/live_postgres_backup_observability_baseline.json",
+    "docs/admin_operator_tenant_control_plane.md",
+    "docs/examples/gl206/admin_operator_tenant_control_plane.json",
+    "docs/claim_safety_controlled_preview_boundary.md",
+    "docs/examples/gl207/claim_safety_controlled_preview_boundary.json",
+    "docs/runtime_abuse_incident_hardening.md",
+    "docs/examples/gl208/runtime_abuse_incident_hardening.json",
+    "docs/data_governance_audit_operations.md",
+    "docs/examples/gl209/data_governance_audit_operations.json",
+    "docs/website_track.md",
+    "docs/examples/gl210/website_track.json",
+    "docs/sdk_pilot_production_gate.md",
+    "docs/examples/gl211/sdk_pilot_production_gate.json",
+    "docs/controlled_pilot_gate_checklist.md",
+    "docs/persistence_postgres_migration_readiness.md",
+    "docs/examples/gl202/persistence_postgres_migration_readiness.json",
+    "docs/production_ops_go_no_go_v3.md",
+    "docs/examples/gl204/production_ops_go_no_go_v3.json",
+    "README.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/openapi.yaml",
+    "scripts/ops/gl205_live_postgres_validation.py",
+    "scripts/ops/gl205_backup_restore_drill.py",
+    "scripts/ops/gl209_audit_export_check.py",
+    "backend/src/db.py",
+    "backend/src/migrations",
+    "backend/src/audit_log.py",
+    "backend/src/server.py",
+    "backend/src/auth.py",
+    "backend/src/operators.py",
+    "backend/tests",
+    "examples/grant_lifecycle_evidence_bundle.py"
+  ],
+  "ephemeral_postgres_safety_assessment": {
+    "ephemeral_postgres_available": true,
+    "source": "Disposable local Docker PostgreSQL container created only for GL-206B",
+    "host_port_published": false,
+    "production_staging_shared_database_used": false,
+    "real_customer_private_grant_institutional_data_used": false,
+    "synthetic_demo_data_only": true,
+    "raw_dsn_avoided_in_artifacts": true,
+    "credentials_avoided_in_artifacts": true,
+    "destructive_operations_confined_to_ephemeral_database": true,
+    "container_cleanup_confirmed": true
+  },
+  "live_validation_execution_status": {
+    "executed": true,
+    "mode": "true_live_mode",
+    "gated": true,
+    "enable_env_var": "GRANTLAYER_GL205_ENABLE_LIVE_POSTGRES",
+    "dsn_env_var": "GRANTLAYER_GL205_POSTGRES_DSN",
+    "raw_dsn_logged_or_committed": false
+  },
+  "command_class_without_raw_dsn": "GRANTLAYER_GL205_ENABLE_LIVE_POSTGRES=1 GRANTLAYER_GL205_POSTGRES_DSN=<safe_ephemeral_postgres_dsn> python3 scripts/ops/gl205_live_postgres_validation.py --live",
+  "live_validation_result": {
+    "result": "passed_with_cleanup_caveat",
+    "postgres_reachable": true,
+    "migrations_applied": true,
+    "migration_idempotency_confirmed": true,
+    "tenant_workspace_columns_verified": true,
+    "audit_hash_chain_verified": true,
+    "synthetic_crud_verified": true,
+    "cleanup_caveat": "PostgreSQL audit immutability prevented deleting the synthetic audit event; disposable container destruction completed cleanup.",
+    "production_postgres_readiness_claimed": false
+  },
+  "migration_readiness_result": {
+    "ephemeral_postgres_migrations_apply": true,
+    "migration_runner_postgres_compatible_for_covered_surface": true,
+    "audit_event_baseline_preserved": true,
+    "tenant_workspace_baseline_preserved_where_tested": true,
+    "sqlite_only_assumptions_not_overclaimed": true,
+    "production_readiness_claimed": false
+  },
+  "backup_restore_governance_alignment": {
+    "gl205_backup_restore_dry_run_and_plan_safe": true,
+    "postgres_live_backup_restore_executed": false,
+    "postgres_live_backup_restore_deferred_reason": "Existing script documents an ephemeral-only manual checklist; no automated PostgreSQL restore drill was in scope.",
+    "non_ephemeral_destructive_operations": false
+  },
+  "audit_governance_alignment": {
+    "gl209_audit_export_dry_run_and_plan_safe": true,
+    "source_audit_rows_mutated": false,
+    "synthetic_audit_hash_verified": true,
+    "immutability_preserved": true,
+    "raw_audit_payload_exported": false
+  },
+  "tenant_workspace_preservation_assessment": {
+    "tenant_columns_present_where_tested": true,
+    "synthetic_grant_readback_scoped_to_expected_tenant": true,
+    "workspace_enforcement_overclaimed": false,
+    "production_complete_tenant_isolation_claimed": false
+  },
+  "admin_operator_preservation_assessment": {
+    "admin_operator_source_changed": false,
+    "api_behavior_changed": false,
+    "server_derived_operator_tenant_context_preserved": true,
+    "production_iam_claimed": false
+  },
+  "secret_safety_confirmation": {
+    "no_raw_dsn_in_artifacts": true,
+    "no_password_in_artifacts": true,
+    "no_token_in_artifacts": true,
+    "no_auth_header_in_artifacts": true,
+    "no_private_key_in_artifacts": true,
+    "no_credentials_in_artifacts": true,
+    "no_real_secrets": true
+  },
+  "production_readiness_impact": {
+    "live_postgres_ephemeral_validation_executed": true,
+    "production_saas": "NO-GO",
+    "real_customer_data": "NO-GO",
+    "private_grant_institutional_data": "NO-GO",
+    "official_sdk_package": "NO-GO",
+    "compliance_certification": "NO-GO",
+    "live_postgres_production_claim": "NO-GO",
+    "successful_ephemeral_validation_is_not_production_postgres_readiness": true
+  },
+  "controlled_preview_impact": {
+    "posture": "Developer Preview / Controlled Preview with strict boundaries",
+    "synthetic_demo_data_only": true,
+    "controlled_preview_expansion_authorized_by_gl206b": false,
+    "public_publish_authorized_by_gl206b": false
+  },
+  "remaining_blockers": [
+    "Production PostgreSQL readiness is not established",
+    "Automated PostgreSQL backup/restore drill remains deferred",
+    "Production backup retention, encryption, offsite storage, and DR runbooks remain incomplete",
+    "Production observability, alerting, tracing, and incident operations remain incomplete",
+    "Production IAM, OAuth/JWT/SSO, workspace enforcement, and production tenant administration remain incomplete",
+    "Public website publish and public snapshot update remain no-go unless a later gate explicitly approves them"
+  ],
+  "risk_register": [
+    {
+      "id": "R-001",
+      "risk": "Ephemeral success is overclaimed as production PostgreSQL readiness",
+      "classification": "claim-safety",
+      "mitigation": "Document no-go production impact and enforce wording in tests"
+    },
+    {
+      "id": "R-002",
+      "risk": "Raw DSN or credential leaks into artifacts",
+      "classification": "secret-safety",
+      "mitigation": "Use placeholder command class and scan docs/JSON"
+    },
+    {
+      "id": "R-003",
+      "risk": "Audit cleanup warning is misread as validation failure",
+      "classification": "audit-governance",
+      "mitigation": "Document immutable audit row behavior and container destruction cleanup"
+    },
+    {
+      "id": "R-004",
+      "risk": "Backup/restore is assumed complete after live migration validation",
+      "classification": "operations",
+      "mitigation": "Keep PostgreSQL backup/restore live drill explicitly deferred"
+    },
+    {
+      "id": "R-005",
+      "risk": "Validation-script fixes broaden into product behavior changes",
+      "classification": "scope",
+      "mitigation": "Keep changes confined to validation script; no backend/src or API behavior changes"
+    }
+  ],
+  "findings": [
+    "Live PostgreSQL validation can execute safely against a disposable local PostgreSQL container when GL-205 gates are set.",
+    "The existing migration runner is PostgreSQL-compatible when invoked through the repo connection wrapper.",
+    "The covered tenant/workspace and audit hash-chain baseline passed on ephemeral PostgreSQL.",
+    "PostgreSQL audit immutability blocked synthetic audit deletion; container destruction completed cleanup."
+  ],
+  "safety_confirmations": {
+    "developer_preview_controlled_preview_with_strict_boundaries": true,
+    "production_saas_no_go": true,
+    "real_customer_private_grant_institutional_data_no_go": true,
+    "official_sdk_package_no_go": true,
+    "compliance_certification_no_go": true,
+    "live_postgres_production_claim_no_go": true,
+    "successful_ephemeral_validation_not_production_readiness": true,
+    "raw_dsn_avoided": true,
+    "credentials_avoided_in_docs_logs_artifacts": true,
+    "no_production_staging_shared_db_used": true,
+    "synthetic_demo_data_only": true,
+    "package_publishing_avoided": true,
+    "security_reports_route_to_github_security_advisories": true,
+    "no_exploit_details": true,
+    "no_real_secrets": true,
+    "no_real_customer_private_data": true,
+    "no_public_github_push": true,
+    "no_public_publish": true,
+    "no_visibility_change": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_changes": true,
+    "no_backend_src_changes": true,
+    "no_api_behavior_changes": true,
+    "no_migrations_db_schema_dependency_changes": true
+  },
+  "recommended_next_issues": [
+    "GL-206B Merge",
+    "Production PostgreSQL backup/restore automation and DR drill issue",
+    "Production observability/alerting/tracing remediation issue",
+    "Production IAM/workspace enforcement remediation issue",
+    "GL-212 Public Snapshot / External Review Gate only if explicitly approved later"
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "issue_id": "GL-133",
+  "title": "External Security Review Preparation",
+  "artifact_type": "external_security_review_preparation",
+  "review_only": true,
+  "external_review_completed": false,
+  "penetration_test_completed": false,
+  "security_controls_implemented": false,
+  "production_code_changed": false,
+  "production_saas_complete": false,
+  "commercial_saas_complete": false,
+  "production_multitenancy_implemented": false,
+  "shared_saas_for_unrelated_customers_approved": false,
+  "review_posture": {
+    "backend_pilot_ready_with_caveats": true,
+    "production_saas_complete": false,
+    "commercial_saas_complete": false,
+    "multi_tenant_isolation_implemented": false,
+    "gl133_prepares_external_review": true,
+    "gl133_completes_external_review": false
+  },
+  "review_scope": [
+    "backend API security",
+    "operator authentication and authorization",
+    "operator token expiry and rotation",
+    "startup fail-closed configuration",
+    "request body / payload validation",
+    "rate limiting baseline",
+    "structured logging / correlation IDs / secret safety",
+    "audit persistence / hash-chain / PostgreSQL immutability",
+    "PostgreSQL connection pooling",
+    "backup / restore drill",
+    "runtime gate / smoke tests",
+    "monitoring / alerting baseline",
+    "incident response runbook",
+    "tenant / workspace boundary decision"
+  ],
+  "out_of_scope_non_claims": [
+    "no external security review completed by GL-133",
+    "no penetration test completed by GL-133",
+    "no multi-tenant isolation implemented",
+    "no shared SaaS environment approved for unrelated customers",
+    "no customer account / billing / onboarding model implemented",
+    "no frontend / website security review completed"
+  ],
+  "security_sensitive_components": [
+    "auth / operator token handling",
+    "permission checks",
+    "request parsing and validation",
+    "rate limiting",
+    "audit / event persistence",
+    "cryptographic signing / signature verification",
+    "secret source boundary",
+    "database configuration / migrations / PostgreSQL mode",
+    "backup / restore procedure",
+    "logs / structured events / correlation ID"
+  ],
+  "threat_model_review_areas": [
+    "unauthenticated access",
+    "unauthorized operator access",
+    "token expiry / rotation failures",
+    "malformed request bodies and oversized payloads",
+    "state mutation after rejection / rate-limit",
+    "audit tampering",
+    "hash-chain / immutability gaps",
+    "secret leakage through logs / errors / docs",
+    "DB connectivity / config failures",
+    "backup / restore misuse",
+    "tenant / workspace boundary ambiguity"
+  ],
+  "reviewer_checklist": [
+    "verify auth fail-closed behavior",
+    "verify role / permission boundaries",
+    "verify token expiry / rotation semantics",
+    "verify unsafe startup is blocked",
+    "verify request body limits and malformed JSON rejection",
+    "verify rate limiting does not mutate state when rejected",
+    "verify logs do not expose secrets",
+    "verify audit immutability assumptions and CI gate",
+    "verify backup / restore expectations and non-destructive restore guidance",
+    "verify tenant / workspace non-claims and pilot boundary"
+  ],
+  "evidence_artifacts": [
+    "GL-128 pilot readiness release cut",
+    "GL-129 monitoring / alerting baseline",
+    "GL-130 incident response runbook execution gate",
+    "GL-131 pilot environment setup checklist",
+    "GL-132 tenant / workspace boundary decision",
+    "security boundary regression tests",
+    "full backend suite runner"
+  ],
+  "required_validation_commands": [
+    "scripts/run-full-backend-suite.sh",
+    "python3 -m unittest backend.tests.test_security_boundary_regression -v",
+    "python3 -m unittest backend.tests.test_gl128_pilot_readiness_release_cut -v",
+    "python3 -m unittest backend.tests.test_gl129_monitoring_alerting_baseline -v",
+    "python3 -m unittest backend.tests.test_gl130_incident_response_runbook_execution_gate -v",
+    "python3 -m unittest backend.tests.test_gl131_pilot_environment_setup_checklist -v",
+    "python3 -m unittest backend.tests.test_gl132_tenant_workspace_boundary_decision -v"
+  ],
+  "expected_reviewer_outputs": [
+    "reviewed scope",
+    "findings by severity",
+    "must-fix-before-pilot findings",
+    "must-fix-before-production-SaaS findings",
+    "acceptable pilot caveats",
+    "recommended follow-up issues"
+  ],
+  "review_go_criteria": [
+    "scope is defined",
+    "evidence artifacts are accessible",
+    "security boundaries are clear",
+    "no multi-tenant claims are made",
+    "no secrets are exposed",
+    "must-fix findings are resolved"
+  ],
+  "review_no_go_criteria": [
+    "reviewer cannot access evidence",
+    "security boundaries are unclear",
+    "multi-tenant claims are made",
+    "secrets are exposed",
+    "must-fix findings are unresolved"
+  ],
+  "related_gates": [
+    "GL-128",
+    "GL-129",
+    "GL-130",
+    "GL-131",
+    "GL-132"
+  ],
+  "recommended_next_steps": [
+    "GL-134 Pilot Partner Dry Run"
+  ],
+  "explicit_non_goals": [
+    "no security fix implementation",
+    "no penetration test execution",
+    "no external reviewer sign-off",
+    "no production SaaS approval",
+    "no tenant implementation",
+    "no workspace implementation",
+    "no API / OpenAPI change",
+    "no frontend / security UI work",
+    "no production code changes",
+    "no DB migration or schema change",
+    "no dependency additions or version changes",
+    "no website / landing page / design / brand / marketing file changes",
+    "no deployment automation",
+    "no monitoring backend integration",
+    "no incident automation"
+  ],
+  "secret_safety": {
+    "no_raw_tokens": true,
+    "no_raw_authorization_header": true,
+    "no_raw_request_bodies": true,
+    "no_db_passwords": true,
+    "no_private_keys": true,
+    "no_backup_credentials": true
+  }
+}

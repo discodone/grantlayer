@@ -1,0 +1,2514 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/live_postgres_backup_observability_baseline/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-205 — Live PostgreSQL Validation / Backup-Restore Drill / Observability Baseline - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-205-live-postgresql-validation-backup-restore-drill-observability-baseline" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-205 — Live PostgreSQL Validation / Backup-Restore Drill / Observability Baseline
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-state-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current State Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#achieved-from-prior-gls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Achieved (from prior GLs)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remaining-p0-blockers-as-of-gl-205" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining P0 Blockers (as of GL-205)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-postgresql-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live PostgreSQL Validation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Live PostgreSQL Validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gating-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gating Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation Plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backup-restore-drill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup / Restore Drill
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backup / Restore Drill">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baseline-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Baseline Approach
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#safety-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-status_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-backup-remaining-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL Backup Remaining Gaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observability-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observability Baseline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Observability Baseline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-structured-log-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Structured Log Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#correlation-request-id-expectations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Correlation / Request ID Expectations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#startup-config-failure-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Startup / Config Failure Signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-success-failure-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Success / Failure Signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#live-postgresql-validation-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live PostgreSQL Validation Signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backup-restore-drill-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup / Restore Drill Signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auth-failure-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Failure Signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tenant-workspace-access-denial-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant / Workspace Access Denial Signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit-verification-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Verification Signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secret-safety-logging-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secret-Safety Logging Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alert-categories-minimum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alert Categories (Minimum)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minimum-dashboard-checklist-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimum Dashboard / Checklist Ideas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remaining-implementation-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Implementation Gaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tenant-workspace-preservation-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tenant / Workspace Preservation Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-immutability-preservation-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Immutability Preservation Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gl-201-auth-secrets-config-preservation-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-201 Auth / Secrets / Config Preservation Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gl-203c-sdk-package-boundary-preservation-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GL-203C SDK / Package Boundary Preservation Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Readiness Impact
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Production Readiness Impact">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-gl-205-does-not-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What GL-205 Does NOT Change
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Blockers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-205-live-postgresql-validation-backup-restore-drill-observability-baseline">GL-205 — Live PostgreSQL Validation / Backup-Restore Drill / Observability Baseline<a class="headerlink" href="#gl-205-live-postgresql-validation-backup-restore-drill-observability-baseline" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-205
+<strong>Branch:</strong> <code>gl-205-live-postgres-backup-observability-baseline</code>
+<strong>Status:</strong> Internal / Developer Preview</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-200A, GL-200B, GL-200C, GL-201, GL-202, GL-203, GL-203B, GL-203C, and
+GL-204 are merged internally. The GL-200 tenant/workspace isolation block,
+GL-201 production auth/secrets/config hardening, GL-202 persistence/PostgreSQL/
+migration readiness, GL-203 API contract/SDK packaging decision, GL-203B
+OpenAPI contract cleanup, GL-203C SDK prototype/packaging boundary, and
+GL-204 Production Ops / Go-No-Go v3 are all represented by clean doc, JSON, and
+test artifacts.</p>
+<p><strong>GrantLayer remains:</strong>
+- Developer Preview / Controlled Preview with strict boundaries
+- Not production SaaS
+- Not ready for real customer data, private grant data, or institutional data
+- Tenant/workspace isolation baseline implemented but not production-complete
+- No official SDK/package is claimed or published</p>
+<p>GL-205 is an <strong>operational readiness baseline</strong>, not a production SaaS
+readiness declaration. It addresses three of the P0 blockers identified in
+GL-204:
+1. Live PostgreSQL validation
+2. Backup/restore drill baseline
+3. Observability baseline</p>
+<p>Security-sensitive reports route to GitHub Security Advisories. No exploit
+details are included. No real secrets are included. No real customer/private
+grant/institutional data is used.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>GL-205 covers:
+- A gated live PostgreSQL validation path (<code>scripts/ops/gl205_live_postgres_validation.py</code>)
+- A deterministic SQLite backup/restore drill baseline (<code>scripts/ops/gl205_backup_restore_drill.py</code>)
+- A PostgreSQL backup/restore manual checklist (documented, not automated)
+- An observability baseline covering log events, correlation IDs, signal categories, and secret-safety rules
+- Documentation of remaining operational blockers
+- Preservation assessment for GL-200 through GL-204 constraints</p>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>GL-205 is not:
+- A production SaaS readiness declaration
+- Real customer/private grant/institutional data readiness
+- An automated backup system or production monitoring stack
+- A live PostgreSQL production deployment
+- An official SDK/package implementation or publication
+- Frontend, website, or design changes
+- GitHub workflow changes
+- Public publish, GitHub push, or visibility change</p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/production_ops_go_no_go_v3.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl204/production_ops_go_no_go_v3.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/sdk_prototype_packaging_boundary.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203c/sdk_prototype_packaging_boundary.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi_api_contract_cleanup.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203b/openapi_api_contract_cleanup.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/api_contract_sdk_packaging_decision.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl203/api_contract_sdk_packaging_decision.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/persistence_postgres_migration_readiness.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl202/persistence_postgres_migration_readiness.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_auth_secrets_config_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl201/production_auth_secrets_config_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_api_audit_regression_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200c/tenant_workspace_api_audit_regression_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_implementation_baseline.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200b/tenant_workspace_isolation_implementation_baseline.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_isolation_design_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl200a/tenant_workspace_isolation_design_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_readiness_gap_report_v2.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl199/production_readiness_gap_report_v2.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/controlled_preview_boundary_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl198/controlled_preview_boundary_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/db.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/config.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/audit_log.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/auth.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/operators.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/grants.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/grant_requests.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/challenges.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/models.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/migrations/*</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/structured_logging.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/logging_utils.py</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/backup_restore_minimum_drill.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scripts/run-backup-restore-drill.sh</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="current-state-summary">Current State Summary<a class="headerlink" href="#current-state-summary" title="Permanent link">&para;</a></h2>
+<h3 id="achieved-from-prior-gls">Achieved (from prior GLs)<a class="headerlink" href="#achieved-from-prior-gls" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Tenant/workspace isolation baseline: columns, filtering, auth context injection (GL-200A/B/C)</li>
+<li>Production auth/secrets/config hardening: fail-closed startup, placeholder rejection, CORS warning (GL-201)</li>
+<li>Migration runner hardening: failure context, dry-run API, audit backfill immutability fix (GL-202)</li>
+<li>OpenAPI contract cleanup: 36 paths documented, consistent error shapes (GL-203B)</li>
+<li>Internal SDK prototype: examples/sdk_prototype/python/, no official SDK (GL-203C)</li>
+<li>In-process structured logging baseline: logging_utils.py, structured_logging.py, correlation ID (prior GLs)</li>
+<li>Audit hash-chain with dual-mode for legacy and new events</li>
+<li>Basic backup/restore procedures documented for SQLite (GL-127)</li>
+</ul>
+<h3 id="remaining-p0-blockers-as-of-gl-205">Remaining P0 Blockers (as of GL-205)<a class="headerlink" href="#remaining-p0-blockers-as-of-gl-205" title="Permanent link">&para;</a></h3>
+<ul>
+<li>No live PostgreSQL validation <strong>executed</strong> (script added; live run not possible without ephemeral service)</li>
+<li>No automated backup system; no DR runbooks for production</li>
+<li>No production observability stack (no external metrics, alerting, tracing)</li>
+<li>Admin-plane tenant isolation (GL-200D) deferred</li>
+<li>No production deployment hardening (TLS, container, orchestration)</li>
+<li>No production IAM (OAuth/JWT/SSO)</li>
+</ul>
+<hr />
+<h2 id="live-postgresql-validation">Live PostgreSQL Validation<a class="headerlink" href="#live-postgresql-validation" title="Permanent link">&para;</a></h2>
+<h3 id="gating-model">Gating Model<a class="headerlink" href="#gating-model" title="Permanent link">&para;</a></h3>
+<p>The live PostgreSQL validation path is gated by <strong>two explicit environment variables</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required Value</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GRANTLAYER_GL205_ENABLE_LIVE_POSTGRES</code></td>
+<td><code>1</code></td>
+<td>Explicit consent gate</td>
+</tr>
+<tr>
+<td><code>GRANTLAYER_GL205_POSTGRES_DSN</code></td>
+<td><code>postgres://...</code></td>
+<td>Ephemeral/synthetic DSN</td>
+</tr>
+</tbody>
+</table>
+<p>The script <strong>fails closed</strong> if either variable is absent or the DSN fails safety
+checks. It rejects:
+- SQLite DSNs
+- Empty or whitespace-only DSNs
+- DSNs containing placeholder fragments (<code>localhost</code>, <code>127.0.0.1</code>, <code>example.com</code>,
+  <code>placeholder</code>, <code>changeme</code>, etc.)
+- DSNs with production-like hostnames (<code>.prod.</code>, <code>-prod.</code>, <code>production-</code>, etc.)</p>
+<p>The script <strong>never prints raw DSN or password values</strong> — all diagnostic output
+uses a masked form: <code>scheme://user:***@host:port/db</code>.</p>
+<h3 id="validation-plan">Validation Plan<a class="headerlink" href="#validation-plan" title="Permanent link">&para;</a></h3>
+<p>The script (<code>scripts/ops/gl205_live_postgres_validation.py</code>) validates:</p>
+<ol>
+<li>Explicit environment gate</li>
+<li>Explicit DSN present and passes safety checks</li>
+<li>Connection to ephemeral/synthetic PostgreSQL instance</li>
+<li>PostgreSQL version is reachable</li>
+<li>Migrations can apply</li>
+<li>Migration idempotency (re-run confirms no error)</li>
+<li>GL-200B tenant_id columns exist on grants and audit_events tables</li>
+<li>audit_events table and hash-chain columns exist</li>
+<li>No unsafe legacy audit backfill triggers</li>
+<li>Synthetic tenant + workspace insert and tenant-scoped CRUD</li>
+<li>Synthetic audit event with hash-chain integrity</li>
+<li>Cleanup of synthetic objects</li>
+<li>Results summary</li>
+</ol>
+<h3 id="execution-status">Execution Status<a class="headerlink" href="#execution-status" title="Permanent link">&para;</a></h3>
+<p><strong>Live PostgreSQL validation: NOT EXECUTED.</strong></p>
+<p>No safe ephemeral PostgreSQL instance was available at the time of GL-205
+implementation. The validation script is complete and verified for:
+- <code>--dry-run</code> mode (configuration validation, no connection)
+- <code>--plan</code> mode (shows all steps, no mutation)
+- Gating logic (refuses without explicit env vars)
+- DSN safety checks</p>
+<p><strong>Live PostgreSQL production claim remains NO-GO.</strong></p>
+<p>This is a remaining blocker for production SaaS readiness.</p>
+<h3 id="modes">Modes<a class="headerlink" href="#modes" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Validate config only — no connection</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>python3<span class="w"> </span>scripts/ops/gl205_live_postgres_validation.py<span class="w"> </span>--dry-run
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Show validation plan — no mutation</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>python3<span class="w"> </span>scripts/ops/gl205_live_postgres_validation.py<span class="w"> </span>--plan
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Live validation — requires explicit ephemeral instance</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nv">GRANTLAYER_GL205_ENABLE_LIVE_POSTGRES</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="nv">GRANTLAYER_GL205_POSTGRES_DSN</span><span class="o">=</span>postgres://&lt;ephemeral-dsn&gt;<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span>python3<span class="w"> </span>scripts/ops/gl205_live_postgres_validation.py<span class="w"> </span>--live
+</code></pre></div>
+<hr />
+<h2 id="backup-restore-drill">Backup / Restore Drill<a class="headerlink" href="#backup-restore-drill" title="Permanent link">&para;</a></h2>
+<h3 id="baseline-approach">Baseline Approach<a class="headerlink" href="#baseline-approach" title="Permanent link">&para;</a></h3>
+<p>The backup/restore drill (<code>scripts/ops/gl205_backup_restore_drill.py</code>) provides:</p>
+<ol>
+<li><strong>SQLite drill</strong> — deterministic, fully automated, synthetic data only:</li>
+<li>Creates ephemeral synthetic SQLite database</li>
+<li>Applies GrantLayer migrations</li>
+<li>Inserts synthetic tenant, workspace, grant, and audit event records</li>
+<li>Verifies audit hash-chain integrity BEFORE backup</li>
+<li>Copies database to temp backup path</li>
+<li>Copies backup to temp restore path</li>
+<li>Verifies schema in restored DB (migrations table)</li>
+<li>Verifies tenant/workspace data separation in restored DB</li>
+<li>Verifies audit hash-chain integrity AFTER restore</li>
+<li>
+<p>Cleans up temp files (unless <code>--keep-artifacts</code> is set)</p>
+</li>
+<li>
+<p><strong>PostgreSQL drill</strong> — manual checklist only:</p>
+</li>
+<li>No automated PostgreSQL backup/restore without an explicit ephemeral service</li>
+<li>Manual drill checklist provided in <code>--plan</code> mode</li>
+<li>Checklist covers: pre-drill requirements, pg_dump steps, restore steps,
+     post-drill cleanup</li>
+</ol>
+<h3 id="safety-rules">Safety Rules<a class="headerlink" href="#safety-rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Uses synthetic/demo data only — no production data required</li>
+<li>Does not log secrets or DB credentials</li>
+<li>Cleans up all temp files by default</li>
+<li><code>--keep-artifacts</code> warns operator about retained synthetic data</li>
+<li>Dry-run and plan modes perform no file operations</li>
+</ul>
+<h3 id="execution-status_1">Execution Status<a class="headerlink" href="#execution-status_1" title="Permanent link">&para;</a></h3>
+<p><strong>SQLite backup/restore drill: EXECUTABLE</strong> (use <code>--sqlite-drill</code> flag).</p>
+<p><strong>PostgreSQL backup/restore drill: DOCUMENTED ONLY</strong> (manual checklist in <code>--plan</code> mode).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Dry-run — describe actions only</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>python3<span class="w"> </span>scripts/ops/gl205_backup_restore_drill.py<span class="w"> </span>--dry-run
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Plan — show full steps and PostgreSQL checklist</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>python3<span class="w"> </span>scripts/ops/gl205_backup_restore_drill.py<span class="w"> </span>--plan
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Execute SQLite drill (synthetic data only)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>python3<span class="w"> </span>scripts/ops/gl205_backup_restore_drill.py<span class="w"> </span>--sqlite-drill
+</code></pre></div>
+<h3 id="postgresql-backup-remaining-gaps">PostgreSQL Backup Remaining Gaps<a class="headerlink" href="#postgresql-backup-remaining-gaps" title="Permanent link">&para;</a></h3>
+<ul>
+<li>No automated PostgreSQL backup integration</li>
+<li>No backup scheduling or retention policy</li>
+<li>No DR runbook for production failover</li>
+<li>No offsite backup storage configured</li>
+<li>PostgreSQL backup/restore production readiness: <strong>LIMITED</strong>
+  (manual checklist only; automated drill requires explicit ephemeral service)</li>
+</ul>
+<hr />
+<h2 id="observability-baseline">Observability Baseline<a class="headerlink" href="#observability-baseline" title="Permanent link">&para;</a></h2>
+<h3 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h3>
+<p>This section documents the minimum observability expectations for GrantLayer
+in Developer Preview / Controlled Preview mode. It does not claim that a
+production observability backend exists — none does.</p>
+<h3 id="required-structured-log-events">Required Structured Log Events<a class="headerlink" href="#required-structured-log-events" title="Permanent link">&para;</a></h3>
+<p>The following event types are defined in <code>backend/src/structured_logging.py</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Event Type</th>
+<th>When Emitted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>api_request</code></td>
+<td>Every HTTP request (with correlation ID)</td>
+</tr>
+<tr>
+<td><code>api_error</code></td>
+<td>Any 4xx/5xx response</td>
+</tr>
+<tr>
+<td><code>auth_event</code></td>
+<td>Authentication success/failure</td>
+</tr>
+<tr>
+<td><code>permission_decision</code></td>
+<td>Grant allow/deny decision</td>
+</tr>
+<tr>
+<td><code>evidence_verification</code></td>
+<td>Evidence verification outcome</td>
+</tr>
+<tr>
+<td><code>approval_transition</code></td>
+<td>Workflow state transition</td>
+</tr>
+<tr>
+<td><code>policy_evaluation</code></td>
+<td>Policy rule evaluation</td>
+</tr>
+<tr>
+<td><code>persistence_operation</code></td>
+<td>DB read/write/migration operations</td>
+</tr>
+<tr>
+<td><code>configuration_event</code></td>
+<td>Startup, config load, fail-closed trigger</td>
+</tr>
+<tr>
+<td><code>operator_action</code></td>
+<td>Operator management operations</td>
+</tr>
+<tr>
+<td><code>health_check</code></td>
+<td>Health/liveness probe response</td>
+</tr>
+<tr>
+<td><code>readiness_check</code></td>
+<td>Readiness probe response</td>
+</tr>
+</tbody>
+</table>
+<h3 id="correlation-request-id-expectations">Correlation / Request ID Expectations<a class="headerlink" href="#correlation-request-id-expectations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Every HTTP request must carry a correlation ID.</li>
+<li>Correlation IDs must propagate through all log events for that request.</li>
+<li>Correlation IDs must use safe characters only: <code>[A-Za-z0-9_.:-]</code>.</li>
+<li>Correlation IDs must not exceed 128 characters.</li>
+<li>Correlation IDs must never contain secret values.</li>
+</ul>
+<h3 id="startup-config-failure-signals">Startup / Config Failure Signals<a class="headerlink" href="#startup-config-failure-signals" title="Permanent link">&para;</a></h3>
+<p>The following startup/config failure conditions must emit structured log events:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Event Type</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Placeholder/empty operator token detected</td>
+<td><code>configuration_event</code></td>
+<td><code>critical</code></td>
+</tr>
+<tr>
+<td>Database connection failure on startup</td>
+<td><code>configuration_event</code></td>
+<td><code>critical</code></td>
+</tr>
+<tr>
+<td>Migration failure on startup</td>
+<td><code>configuration_event</code></td>
+<td><code>critical</code></td>
+</tr>
+<tr>
+<td>Insecure CORS origin on startup</td>
+<td><code>configuration_event</code></td>
+<td><code>warning</code></td>
+</tr>
+<tr>
+<td>Runtime mode is <code>demo</code> or <code>test</code> (not <code>production</code>)</td>
+<td><code>configuration_event</code></td>
+<td><code>info</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="migration-success-failure-signals">Migration Success / Failure Signals<a class="headerlink" href="#migration-success-failure-signals" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Event Type</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Migration run start</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Migration applied (per version)</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Migration idempotency confirmed</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Migration failure</td>
+<td><code>persistence_operation</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Dry-run migration (no mutation)</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="live-postgresql-validation-signals">Live PostgreSQL Validation Signals<a class="headerlink" href="#live-postgresql-validation-signals" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Event Type</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gate not set (validation skipped)</td>
+<td><code>configuration_event</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Gate set, DSN validation passed</td>
+<td><code>configuration_event</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>DSN safety validation failed</td>
+<td><code>configuration_event</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Connection established</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Connection failed</td>
+<td><code>persistence_operation</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Schema verification passed</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Schema verification failed</td>
+<td><code>persistence_operation</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Synthetic data cleanup complete</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="backup-restore-drill-signals">Backup / Restore Drill Signals<a class="headerlink" href="#backup-restore-drill-signals" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Event Type</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Drill start</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Backup copy created</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Backup failed</td>
+<td><code>persistence_operation</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Restore copy created</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Restore failed</td>
+<td><code>persistence_operation</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Hash-chain verified (before backup)</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Hash-chain verified (after restore)</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Hash-chain mismatch detected</td>
+<td><code>persistence_operation</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Temp artifact cleanup complete</td>
+<td><code>persistence_operation</code></td>
+<td><code>info</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="auth-failure-signals">Auth Failure Signals<a class="headerlink" href="#auth-failure-signals" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Event Type</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Missing or invalid token</td>
+<td><code>auth_event</code></td>
+<td><code>warning</code></td>
+</tr>
+<tr>
+<td>Placeholder/empty token</td>
+<td><code>auth_event</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Token hash mismatch</td>
+<td><code>auth_event</code></td>
+<td><code>warning</code></td>
+</tr>
+<tr>
+<td>Operator not found</td>
+<td><code>auth_event</code></td>
+<td><code>warning</code></td>
+</tr>
+<tr>
+<td>Rate limit exceeded</td>
+<td><code>auth_event</code></td>
+<td><code>warning</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tenant-workspace-access-denial-signals">Tenant / Workspace Access Denial Signals<a class="headerlink" href="#tenant-workspace-access-denial-signals" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Event Type</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cross-tenant access attempt</td>
+<td><code>permission_decision</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Cross-workspace access attempt</td>
+<td><code>permission_decision</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Missing tenant context</td>
+<td><code>permission_decision</code></td>
+<td><code>warning</code></td>
+</tr>
+<tr>
+<td>Workspace not found for tenant</td>
+<td><code>permission_decision</code></td>
+<td><code>warning</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="audit-verification-signals">Audit Verification Signals<a class="headerlink" href="#audit-verification-signals" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Event Type</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash-chain verified</td>
+<td><code>evidence_verification</code></td>
+<td><code>info</code></td>
+</tr>
+<tr>
+<td>Hash-chain gap detected</td>
+<td><code>evidence_verification</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Audit event tamper detected</td>
+<td><code>evidence_verification</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td>Backfill attempt rejected</td>
+<td><code>evidence_verification</code></td>
+<td><code>error</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="secret-safety-logging-rules">Secret-Safety Logging Rules<a class="headerlink" href="#secret-safety-logging-rules" title="Permanent link">&para;</a></h3>
+<p>The following values <strong>must never appear in log output</strong>:</p>
+<ul>
+<li>Raw operator tokens</li>
+<li>Raw API keys or API secrets</li>
+<li>Database connection strings (DSNs) with passwords</li>
+<li>Private keys or signing keys</li>
+<li>Evidence payload bodies</li>
+<li>Request bodies containing customer/private data</li>
+<li>Correlation IDs derived from or containing secrets</li>
+<li>Raw customer identifiers or private grant data</li>
+<li>Institutional data fields</li>
+</ul>
+<p>Redaction rules enforced by <code>backend/src/structured_logging.py</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Key Substring</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>password</code></td>
+<td>Always redacted (<code>[REDACTED]</code>)</td>
+</tr>
+<tr>
+<td><code>secret</code></td>
+<td>Always redacted</td>
+</tr>
+<tr>
+<td><code>token</code></td>
+<td>Always redacted</td>
+</tr>
+<tr>
+<td><code>api_key</code></td>
+<td>Always redacted</td>
+</tr>
+<tr>
+<td><code>private_key</code></td>
+<td>Always redacted</td>
+</tr>
+<tr>
+<td><code>authorization</code></td>
+<td>Always redacted</td>
+</tr>
+<tr>
+<td><code>cookie</code></td>
+<td>Always redacted</td>
+</tr>
+<tr>
+<td><code>database_url</code></td>
+<td>Always redacted</td>
+</tr>
+<tr>
+<td><code>db_url</code></td>
+<td>Always redacted</td>
+</tr>
+<tr>
+<td><code>operator_token</code></td>
+<td>Always redacted</td>
+</tr>
+</tbody>
+</table>
+<h3 id="alert-categories-minimum">Alert Categories (Minimum)<a class="headerlink" href="#alert-categories-minimum" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Trigger</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Auth failure spike</td>
+<td>&gt;N auth failures in sliding window</td>
+</tr>
+<tr>
+<td>Cross-tenant access attempt</td>
+<td>Any single event</td>
+</tr>
+<tr>
+<td>Hash-chain mismatch</td>
+<td>Any single event</td>
+</tr>
+<tr>
+<td>Migration failure</td>
+<td>Any single event</td>
+</tr>
+<tr>
+<td>Startup config failure</td>
+<td>Any single event</td>
+</tr>
+<tr>
+<td>Database connection failure</td>
+<td>Any single event</td>
+</tr>
+<tr>
+<td>Backup/restore failure</td>
+<td>Any single event</td>
+</tr>
+</tbody>
+</table>
+<h3 id="minimum-dashboard-checklist-ideas">Minimum Dashboard / Checklist Ideas<a class="headerlink" href="#minimum-dashboard-checklist-ideas" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Auth event rate (success vs. failure) over time</li>
+<li>API error rate by status code</li>
+<li>Migration status per deploy</li>
+<li>Audit hash-chain verification status</li>
+<li>Tenant isolation access denial count</li>
+<li>Backup/restore drill last-run status</li>
+<li>Startup config failure count</li>
+</ul>
+<h3 id="remaining-implementation-gaps">Remaining Implementation Gaps<a class="headerlink" href="#remaining-implementation-gaps" title="Permanent link">&para;</a></h3>
+<ul>
+<li>No external metrics backend (Prometheus, DataDog, etc.)</li>
+<li>No distributed tracing (OpenTelemetry, Jaeger, etc.)</li>
+<li>No alerting integration (PagerDuty, OpsGenie, etc.)</li>
+<li>No log aggregation (ELK, Loki, CloudWatch, etc.)</li>
+<li>No production dashboard exists</li>
+<li>Structured log events are emitted in-process but not shipped externally</li>
+<li>Observability stack production readiness: <strong>NOT READY</strong></li>
+</ul>
+<hr />
+<h2 id="tenant-workspace-preservation-assessment">Tenant / Workspace Preservation Assessment<a class="headerlink" href="#tenant-workspace-preservation-assessment" title="Permanent link">&para;</a></h2>
+<p>GL-205 does not weaken any GL-200 tenant/workspace isolation guarantees:</p>
+<ul>
+<li>GL-200A: Tenant/workspace data model design — preserved, not modified</li>
+<li>GL-200B: Tenant/workspace isolation implementation baseline — preserved</li>
+<li>GL-200C: Tenant/workspace API/audit regression tests — preserved, all pass</li>
+<li>All GL-200 test suites pass with no new regressions</li>
+</ul>
+<p>The synthetic data inserted by GL-205 scripts uses explicit <code>_SYNTHETIC_TENANT_ID</code>
+and <code>_SYNTHETIC_WORKSPACE_ID</code> values. These are cleaned up after each drill.</p>
+<p><strong>Tenant/workspace isolation not overclaimed.</strong>
+Admin-plane tenant isolation (GL-200D) remains deferred.</p>
+<hr />
+<h2 id="audit-immutability-preservation-assessment">Audit Immutability Preservation Assessment<a class="headerlink" href="#audit-immutability-preservation-assessment" title="Permanent link">&para;</a></h2>
+<p>GL-205 does not modify audit log behavior:</p>
+<ul>
+<li><code>backend/src/audit_log.py</code> is unchanged</li>
+<li>Hash-chain logic is unchanged</li>
+<li>The dual-mode hash payload (tenant_id included only when explicitly set) is preserved</li>
+<li>The genesis hash (64 zeros) convention is preserved</li>
+<li>No backfill triggers or unsafe legacy audit behavior is introduced</li>
+<li>The GL-205 drill scripts use the same hash function as the main codebase for consistency</li>
+</ul>
+<p><strong>Audit immutability preservation: CONFIRMED.</strong></p>
+<hr />
+<h2 id="gl-201-auth-secrets-config-preservation-assessment">GL-201 Auth / Secrets / Config Preservation Assessment<a class="headerlink" href="#gl-201-auth-secrets-config-preservation-assessment" title="Permanent link">&para;</a></h2>
+<p>GL-205 does not weaken GL-201 auth/secrets/config hardening:</p>
+<ul>
+<li><code>backend/src/auth.py</code> is unchanged</li>
+<li><code>backend/src/config.py</code> is unchanged</li>
+<li>Fail-closed startup behavior is preserved</li>
+<li>Placeholder token rejection is preserved</li>
+<li>CORS security behavior is preserved</li>
+<li>No new secrets, credentials, or tokens are introduced</li>
+</ul>
+<p><strong>GL-201 auth/secrets/config hardening preserved: CONFIRMED.</strong></p>
+<hr />
+<h2 id="gl-203c-sdk-package-boundary-preservation-assessment">GL-203C SDK / Package Boundary Preservation Assessment<a class="headerlink" href="#gl-203c-sdk-package-boundary-preservation-assessment" title="Permanent link">&para;</a></h2>
+<p>GL-205 does not modify SDK or package boundaries:</p>
+<ul>
+<li>No package publishing metadata is added</li>
+<li>No setup.py, pyproject.toml (SDK), or package.json changes</li>
+<li>The internal SDK prototype remains <code>examples/sdk_prototype/</code> only</li>
+<li>No official SDK is claimed or published</li>
+<li>GL-203D (Experimental Public SDK) remains deferred</li>
+</ul>
+<p><strong>GL-203C SDK/package boundary preserved: CONFIRMED.</strong></p>
+<hr />
+<h2 id="production-readiness-impact">Production Readiness Impact<a class="headerlink" href="#production-readiness-impact" title="Permanent link">&para;</a></h2>
+<p>GL-205 advances operational readiness in the following ways:</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Before GL-205</th>
+<th>After GL-205</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Live PostgreSQL validation</td>
+<td>No script</td>
+<td>Gated script added; live run not executed</td>
+</tr>
+<tr>
+<td>Backup/restore drill</td>
+<td>Shell runner + unit tests only</td>
+<td>Python drill script + SQLite drill executable</td>
+</tr>
+<tr>
+<td>PostgreSQL backup/restore</td>
+<td>Not documented</td>
+<td>Manual checklist documented</td>
+</tr>
+<tr>
+<td>Observability baseline</td>
+<td>In-process logging only</td>
+<td>Signal catalog and secret-safety rules documented</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-gl-205-does-not-change">What GL-205 Does NOT Change<a class="headerlink" href="#what-gl-205-does-not-change" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Production SaaS readiness: <strong>NO-GO</strong> (unchanged)</li>
+<li>Real customer/private grant/institutional data: <strong>NO-GO</strong> (unchanged)</li>
+<li>Official SDK/package: <strong>NO-GO</strong> (unchanged)</li>
+<li>Live PostgreSQL production claim: <strong>NO-GO</strong> (unchanged — live run not executed)</li>
+<li>Backup/restore/DR production readiness: <strong>LIMITED</strong> (manual drill only)</li>
+<li>Observability production readiness: <strong>NOT READY</strong> (no external backend)</li>
+</ul>
+<hr />
+<h2 id="remaining-blockers">Remaining Blockers<a class="headerlink" href="#remaining-blockers" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Blocker</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RB-001</td>
+<td>No live PostgreSQL validation executed</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>RB-002</td>
+<td>No automated backup system or DR runbooks</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>RB-003</td>
+<td>No production observability stack</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>RB-004</td>
+<td>Admin-plane tenant isolation (GL-200D) deferred</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>RB-005</td>
+<td>No production deployment hardening (TLS, container)</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>RB-006</td>
+<td>No production IAM (OAuth/JWT/SSO)</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>RB-007</td>
+<td>No external metrics or alerting backend</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>RB-008</td>
+<td>No log aggregation or distributed tracing</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>RB-009</td>
+<td>PostgreSQL backup/restore automated drill not executed</td>
+<td>P1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R-01</td>
+<td>Live PostgreSQL behavior diverges from SQLite in production</td>
+<td>Medium</td>
+<td>High</td>
+<td>Execute live validation against ephemeral instance before production</td>
+</tr>
+<tr>
+<td>R-02</td>
+<td>Backup restore fails silently on PostgreSQL</td>
+<td>Medium</td>
+<td>Critical</td>
+<td>Implement automated PostgreSQL drill with explicit verification</td>
+</tr>
+<tr>
+<td>R-03</td>
+<td>Audit hash-chain becomes invalid after PostgreSQL restore</td>
+<td>Low</td>
+<td>Critical</td>
+<td>Hash-chain verification built into restore drill; test mandatory</td>
+</tr>
+<tr>
+<td>R-04</td>
+<td>Observability gap masks auth or isolation failures in production</td>
+<td>Medium</td>
+<td>High</td>
+<td>Implement external log aggregation and alerting before production</td>
+</tr>
+<tr>
+<td>R-05</td>
+<td>Synthetic data inadvertently resembles real customer data</td>
+<td>Low</td>
+<td>Medium</td>
+<td>GL-205 scripts use explicit <code>gl205-synthetic-*</code> prefixes; review before live use</td>
+</tr>
+<tr>
+<td>R-06</td>
+<td>PostgreSQL migration idempotency failure on real schema</td>
+<td>Low</td>
+<td>High</td>
+<td>Step 7 of live validation script explicitly tests idempotency</td>
+</tr>
+<tr>
+<td>R-07</td>
+<td>Tenant isolation bypass on PostgreSQL due to missing RLS</td>
+<td>Medium</td>
+<td>Critical</td>
+<td>Admin-plane tenant isolation (GL-200D) deferred; must not claim production-complete</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>GL-205: Operational Readiness Baseline — PROCEED (with documented gaps)</strong></p>
+<p>This decision is <strong>not</strong> a production SaaS go/no-go. It documents the current
+state of operational readiness tooling and advances the baseline.</p>
+<p>GrantLayer remains <strong>Developer Preview / Controlled Preview with strict
+boundaries</strong>. No production SaaS, real customer data, or official SDK claim.</p>
+<hr />
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<p>GL-205 adds:
+1. A gated, safe live PostgreSQL validation script with dry-run and plan modes
+2. A deterministic SQLite backup/restore drill script (executable)
+3. A PostgreSQL backup/restore manual checklist
+4. A comprehensive observability baseline document
+5. Tests for all new artifacts and scripts</p>
+<p>Live PostgreSQL execution was not possible (no safe ephemeral service available).
+This is documented as a remaining blocker (RB-001). The script is ready to run
+when a safe ephemeral instance is provided.</p>
+<p>The backup/restore drill executes successfully for SQLite (synthetic data only).
+PostgreSQL backup/restore remains a manual checklist.</p>
+<p>No production SaaS, real customer data, or official SDK claims are made.
+All GL-200 through GL-204 constraints are preserved.</p>
+<hr />
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-205 is an operational readiness baseline, not a production SaaS readiness declaration.</li>
+<li>GrantLayer remains Developer Preview / Controlled Preview with strict boundaries.</li>
+<li>Real customer/private grant/institutional data remains no-go.</li>
+<li>Official SDK/package remains no-go.</li>
+<li>Security-sensitive reports route to GitHub Security Advisories.</li>
+<li>No exploit details are included.</li>
+<li>No real secrets are included.</li>
+<li>No real customer/private grant data is used.</li>
+<li>Live PostgreSQL production claim remains no-go — live validation not executed.</li>
+<li>Backup/restore/DR production readiness remains limited — manual checklist only.</li>
+<li>No public publish, GitHub push, or visibility change.</li>
+<li>No frontend/website/design changes.</li>
+<li>No GitHub workflow changes.</li>
+<li>Unrelated untracked website files (website-design/, docs/website_design_workspace_import_*.md) are excluded from GL-205.</li>
+</ul>
+<hr />
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Description</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-205 Merge</td>
+<td>Merge GL-205 to internal main if tests pass</td>
+<td>Immediate</td>
+</tr>
+<tr>
+<td>GL-206</td>
+<td>Admin-plane tenant isolation planning (GL-200D)</td>
+<td>High</td>
+</tr>
+<tr>
+<td>GL-206B</td>
+<td>Live PostgreSQL validation execution (ephemeral instance required)</td>
+<td>High</td>
+</tr>
+<tr>
+<td>GL-207</td>
+<td>Stale claim correction if any overclaimed items found</td>
+<td>High</td>
+</tr>
+<tr>
+<td>GL-208</td>
+<td>Production observability stack baseline (external backend)</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>GL-209</td>
+<td>Automated PostgreSQL backup/restore drill</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>GL-203D</td>
+<td>Experimental Public SDK — only after GL-203D projection gate passes</td>
+<td>Deferred</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

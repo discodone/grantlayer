@@ -1,0 +1,708 @@
+{
+  "issue_id": "GL-199",
+  "title": "Production Readiness Gap Report v2",
+  "context": "GrantLayer is publicly available on GitHub at https://github.com/Discodone/grantlayer.git in a Developer Preview / controlled-pilot posture. The sequence GL-191 through GL-198 delivered the public hardening sequence culminating in the controlled preview boundary pack (GL-198). GL-199 consolidates all remaining production-readiness gaps after that sequence. This is a review/docs/test artifact only.",
+  "input_sources_reviewed": [
+    "README.md",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "docs/controlled_preview_boundary_pack.md",
+    "docs/api_sdk_agent_value_decision_pack.md",
+    "docs/public_safety_scanner_claim_consistency_gate.md",
+    "docs/public_smoke_matrix_pack.md",
+    "docs/public_preview_review_feedback_triage_pack.md",
+    "docs/public_feedback_infrastructure_pack.md",
+    "docs/public_agent_api_walkthrough_refresh.md",
+    "docs/demo_endpoint_safety_guard.md",
+    "docs/first_output_verify_helper.md",
+    "docs/grant_lifecycle_evidence_bundle.md",
+    "docs/agent_quickstart.md",
+    "docs/ten_minute_quickstart.md",
+    "docs/production_hardening_roadmap.md",
+    "docs/tenant_workspace_boundary_decision.md",
+    "docs/full_product_readiness_gap_review.md",
+    "examples/first_verifiable_output.py",
+    "examples/first_verifiable_output.json",
+    "examples/grant_lifecycle_evidence_bundle.py",
+    "examples/grant_lifecycle_evidence_bundle.json",
+    "scripts/verify-first-output.sh",
+    "docs/examples/gl190/demo_endpoint_safety_guard.json",
+    "docs/examples/gl191/public_developer_experience_polish_pack.json",
+    "docs/examples/gl192/public_feedback_infrastructure_pack.json",
+    "docs/examples/gl193/public_agent_api_walkthrough_refresh.json",
+    "docs/examples/gl194/public_preview_review_feedback_triage_pack.json",
+    "docs/examples/gl195/public_safety_scanner_claim_consistency_gate.json",
+    "docs/examples/gl196/public_smoke_matrix_pack.json",
+    "docs/examples/gl197/api_sdk_agent_value_decision_pack.json",
+    "docs/examples/gl198/controlled_preview_boundary_pack.json"
+  ],
+  "executive_summary": "GrantLayer has completed the public Developer Preview hardening sequence GL-191 through GL-198. The Developer Preview posture is solid: the public snapshot is clean, the examples are deterministic and verified, and the feedback and security reporting routing are established. The controlled preview is allowed under strict boundaries (GL-198). Production SaaS readiness is not claimed and is not achievable without completing the P0 and P1 hardening gates documented in this report. All production blockers are mapped, classified, and assigned to recommended follow-up issues.",
+  "readiness_classification": {
+    "developer_preview": {
+      "status": "ready",
+      "rationale": "Public snapshot clean; examples deterministic and verified; feedback routing established; safety/claim gate passed; smoke matrix passed"
+    },
+    "controlled_preview": {
+      "status": "ready_with_cautions",
+      "rationale": "Strict boundaries required (GL-198); synthetic data only; no real data; no production deployments"
+    },
+    "production_saas": {
+      "status": "not_ready",
+      "rationale": "Multiple P0 blockers remain: tenant isolation, production auth, secrets, deployment hardening, observability, backup/DR, PostgreSQL CI, compliance"
+    },
+    "real_customer_data": {
+      "status": "not_ready",
+      "rationale": "No tenant isolation; no encryption at rest guarantee; data safety boundary not met"
+    },
+    "private_grant_institutional_data": {
+      "status": "not_ready",
+      "rationale": "Compliance requirements not met; no institutional data handling certification"
+    },
+    "official_sdk_package": {
+      "status": "not_ready",
+      "rationale": "No pip package published; no PyPI release; no stable API v1 contract"
+    }
+  },
+  "decisions": {
+    "developer_preview_decision": "developer_preview_continue",
+    "controlled_preview_decision": "controlled_preview_continue_with_strict_boundaries",
+    "production_saas_decision": "production_saas_not_ready"
+  },
+  "readiness_dimensions": [
+    {
+      "name": "public developer preview",
+      "status": "ready",
+      "severity": "info",
+      "rationale": "Public snapshot clean; examples deterministic and verified; feedback routing established; safety/claim gate passed; smoke matrix passed",
+      "evidence": "GL-195 scanner gate, GL-196 smoke matrix, GL-197 smoke checks (MATCH + DIFF CLEAN), GL-198 boundary pack",
+      "recommended_action": "Continue Developer Preview; maintain smoke matrix and safety gate on each public snapshot update",
+      "recommended_issue": "None — ongoing maintenance"
+    },
+    {
+      "name": "controlled preview boundary",
+      "status": "ready_with_cautions",
+      "severity": "medium",
+      "rationale": "Controlled preview allowed under strict boundaries (GL-198); synthetic data only; no real data; no production deployments; cautions: tenant isolation not implemented, API has no stability commitment, sdk/ name may imply more maturity",
+      "evidence": "GL-198 decision: controlled_preview_allowed_with_strict_boundaries; GL-198 boundary doc published",
+      "recommended_action": "Reference GL-198 boundary doc for all controlled preview communications; enforce data and participant boundaries",
+      "recommended_issue": "None — boundary established; next is controlled reviewer feedback round"
+    },
+    {
+      "name": "production SaaS",
+      "status": "not_ready",
+      "severity": "critical",
+      "rationale": "Multiple P0 blockers remain: tenant isolation not implemented, production auth not implemented, secret management not complete, deployment hardening not specified, observability not implemented, backup/DR not defined, PostgreSQL CI not established, compliance not assessed",
+      "evidence": "docs/production_hardening_roadmap.md section 4; docs/full_product_readiness_gap_review.md (GL-101); GL-199 blocker table PB-001 through PB-008",
+      "recommended_action": "Do not claim production SaaS readiness; complete P0 blockers in sequence before next readiness gate",
+      "recommended_issue": "GL-200+ production hardening sequence"
+    },
+    {
+      "name": "tenant/workspace isolation",
+      "status": "not_ready",
+      "severity": "critical",
+      "rationale": "Tenant isolation is not implemented; all data in single namespace; implementation is a production blocker and data-safety blocker",
+      "evidence": "docs/tenant_workspace_boundary_decision.md (GL-132): 'no tenant/workspace implementation is added'; SECURITY.md section 6; GL-198 boundary pack",
+      "recommended_action": "Implement tenant/workspace data model and enforcement before any real customer data is introduced",
+      "recommended_issue": "Tenant isolation design and implementation issue (GL-200+)"
+    },
+    {
+      "name": "auth and token handling",
+      "status": "needs_followup",
+      "severity": "critical",
+      "rationale": "Admin-token/operator-token only; no OAuth, JWT, SSO, or HSM-backed key management; production auth architecture not defined",
+      "evidence": "docs/production_auth_operator_access_design.md (design only); docs/production_hardening_roadmap.md section 4",
+      "recommended_action": "Define and implement production auth architecture (OAuth 2.0, JWT, SSO decision record)",
+      "recommended_issue": "Production auth implementation issue (GL-200+)"
+    },
+    {
+      "name": "production secrets/configuration",
+      "status": "not_ready",
+      "severity": "critical",
+      "rationale": "Demo Ed25519 keypair in repo as placeholder; no vault, rotation, or HSM; .env.example documents placeholder secrets",
+      "evidence": "docs/secret_management_baseline_design.md (design only); docs/production_hardening_roadmap.md section 4",
+      "recommended_action": "Replace demo keypair with managed secret strategy; implement rotation and access-control boundaries",
+      "recommended_issue": "Secret management implementation issue (GL-200+)"
+    },
+    {
+      "name": "persistence/database/Postgres readiness",
+      "status": "needs_followup",
+      "severity": "high",
+      "rationale": "SQLite is default; PostgreSQL support exists but is not CI-gated; migration rollback not tested in CI; no production connection pooling baseline",
+      "evidence": "docs/production_hardening_roadmap.md section 4; scripts/run-postgres-tests.sh exists but not in CI gate; docker-compose.postgres.yml is local only",
+      "recommended_action": "Make PostgreSQL CI-gated primary database; test migration rollback; define connection pooling baseline",
+      "recommended_issue": "PostgreSQL CI and persistence hardening issue (GL-200+)"
+    },
+    {
+      "name": "audit immutability/tamper evidence",
+      "status": "ready_with_cautions",
+      "severity": "medium",
+      "rationale": "Audit hash chain and tamper-evident records implemented and tested; production-level immutability guarantees (backup, write-lock, replication) require additional hardening",
+      "evidence": "backend/tests/test_gl099_transactional_audit_consistency.py; backend/tests/test_gl100_grant_lifecycle_audit_tamper_guard.py; docs/audit_hash_chain_write_lock.md; docs/audit_log_immutability_review.md",
+      "recommended_action": "Document current audit guarantees vs production-level requirements; identify gaps before production claim",
+      "recommended_issue": "Audit production hardening issue"
+    },
+    {
+      "name": "API contract/OpenAPI completeness",
+      "status": "needs_followup",
+      "severity": "high",
+      "rationale": "OpenAPI contract exists as local draft; no stability commitment; no external hosting; no versioning policy; sufficient for Developer Preview evaluation only",
+      "evidence": "docs/openapi.yaml (local draft); GL-197 API assessment: ready_with_cautions; no API v1 freeze criteria defined",
+      "recommended_action": "Define API v1 freeze criteria, versioning policy, and external stability commitment before SDK or production integration claims",
+      "recommended_issue": "API contract/OpenAPI review and freeze issue (GL-200+)"
+    },
+    {
+      "name": "SDK/package maturity",
+      "status": "not_ready",
+      "severity": "medium",
+      "rationale": "No official SDK or pip package; minimal local Python client wrapper is local reference only; no pyproject.toml; no PyPI release; no version policy",
+      "evidence": "GL-197 decision: api_first_agent_examples_now_sdk_later; sdk/python/README.md: 'No pip package is published'",
+      "recommended_action": "Defer SDK packaging until API v1 stability commitment and demonstrated external demand; do not claim SDK availability",
+      "recommended_issue": "SDK prototype decision and implementation issue (future)"
+    },
+    {
+      "name": "agent workflow readiness",
+      "status": "ready_with_cautions",
+      "severity": "low",
+      "rationale": "Agent entry points (AGENTS.md, llms.txt, llms-full.txt) are ready; two deterministic no-install examples verified; LangGraph/LangChain example exists; standalone agent-to-API example is missing; llms.txt Next Steps reference is stale",
+      "evidence": "GL-197 agent workflow assessment: ready_with_cautions; GL-196 smoke matrix; GL-188 first output helper (MATCH)",
+      "recommended_action": "Add standalone agent-to-API integration example; update llms.txt Next Steps reference",
+      "recommended_issue": "Agent-to-API example issue; llms.txt update"
+    },
+    {
+      "name": "demo endpoint safety",
+      "status": "ready",
+      "severity": "info",
+      "rationale": "Demo endpoint safety guard in place (GL-190); disabled by default; non-local exposure blocked at startup; error message contains no secrets",
+      "evidence": "docs/demo_endpoint_safety_guard.md; GRANTLAYER_ENABLE_DEMO_ENDPOINTS=false default; GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS guard; GL-190 tests",
+      "recommended_action": "Maintain demo endpoint guard; document in any future deployment guides",
+      "recommended_issue": "None — guard is in place"
+    },
+    {
+      "name": "data privacy/customer data readiness",
+      "status": "not_ready",
+      "severity": "critical",
+      "rationale": "No real customer data allowed; no tenant isolation; no encryption at rest guarantee; all examples use synthetic identifiers only",
+      "evidence": "SECURITY.md section 6; GL-198 boundary pack forbidden data table; GL-199 blocker PB-001",
+      "recommended_action": "Do not accept real customer data until tenant isolation and encryption at rest are implemented",
+      "recommended_issue": "Tenant isolation + data protection implementation"
+    },
+    {
+      "name": "private grant/institutional data readiness",
+      "status": "not_ready",
+      "severity": "critical",
+      "rationale": "Private grants and institutional records must not enter the preview environment; compliance requirements not yet met; no institutional data handling certification",
+      "evidence": "GL-198 boundary pack forbidden data table; GL-199 blocker PB-008; docs/production_hardening_roadmap.md section 4",
+      "recommended_action": "Do not accept private grants or institutional records until compliance gap assessment and hardening gates are complete",
+      "recommended_issue": "Compliance review issue (GL-200+)"
+    },
+    {
+      "name": "observability/logging",
+      "status": "needs_followup",
+      "severity": "high",
+      "rationale": "Structured logging helpers exist but not integrated into production observability stack; no metrics, alerting, or tracing",
+      "evidence": "backend/src/structured_logging.py (helpers only); docs/production_hardening_roadmap.md section 4: 'Observability is not implemented'",
+      "recommended_action": "Implement metrics, alerting, and logging pipeline integration before production deployment",
+      "recommended_issue": "Observability/logging implementation issue (GL-200+)"
+    },
+    {
+      "name": "deployment/ops",
+      "status": "not_ready",
+      "severity": "critical",
+      "rationale": "No containers, TLS, load balancing, orchestration, or environment-specific deployment guidance exists for production deployment",
+      "evidence": "docs/production_hardening_roadmap.md section 4: 'Deployment hardening is not specified'; docs/deployment/ is design reference only",
+      "recommended_action": "Define and document target deployment environment before production claim",
+      "recommended_issue": "Deployment environment definition issue (GL-200+)"
+    },
+    {
+      "name": "backup/restore/DR",
+      "status": "not_ready",
+      "severity": "high",
+      "rationale": "No automated backup, point-in-time recovery, or DR runbooks; backup/restore minimum drill exists as design reference only",
+      "evidence": "docs/backup_restore_minimum_drill.md (design); docs/production_hardening_roadmap.md section 4: 'Backup/restore is not defined'",
+      "recommended_action": "Define backup strategy, test DR runbooks, implement automated backup before production data is stored",
+      "recommended_issue": "Backup/DR implementation issue (GL-200+)"
+    },
+    {
+      "name": "rate limiting/abuse prevention",
+      "status": "needs_followup",
+      "severity": "medium",
+      "rationale": "No rate limiting or brute-force mitigation layer; acceptable for local/controlled preview but blocks production API exposure",
+      "evidence": "GL-101 full product readiness gap review; no rate-limiting middleware identified",
+      "recommended_action": "Implement rate limiting and abuse prevention before production API exposure",
+      "recommended_issue": "Rate limiting implementation issue (GL-200+)"
+    },
+    {
+      "name": "CORS/public exposure",
+      "status": "needs_followup",
+      "severity": "medium",
+      "rationale": "CORS hardening addressed for local demo (GL-095); production CORS policy for hosted service not specified",
+      "evidence": "GL-095 CORS hardening (backend/tests/test_gl095_cors_origin_hardening.py); no hosted origin allowlist policy defined",
+      "recommended_action": "Define and implement production CORS policy with explicit origin allowlist before production hosting",
+      "recommended_issue": "Production CORS policy issue"
+    },
+    {
+      "name": "security reporting",
+      "status": "ready",
+      "severity": "info",
+      "rationale": "GitHub Security Advisories routing established; SECURITY.md documents reporting path; GL-192 public feedback infrastructure confirms routing",
+      "evidence": "SECURITY.md section 2; docs/public_feedback_infrastructure_pack.md (GL-192); GL-195 claim consistency gate",
+      "recommended_action": "Maintain security reporting routing on all future public snapshot updates",
+      "recommended_issue": "None — routing established"
+    },
+    {
+      "name": "public claim consistency",
+      "status": "ready",
+      "severity": "info",
+      "rationale": "Public safety/claim consistency gate passed (GL-195); forbidden claims documented (GL-198); allowed claims documented (GL-198); no overclaiming found in GL-195 through GL-198 review; README 'Python SDK' label needs minor qualifier (GL-199-F013)",
+      "evidence": "GL-195 scanner gate; GL-198 public claim boundary table",
+      "recommended_action": "Enforce forbidden claim list on any future public communications; fix README 'Python SDK' label qualifier",
+      "recommended_issue": "README label fix (MG-005); small docs update"
+    },
+    {
+      "name": "test suite health",
+      "status": "needs_followup",
+      "severity": "medium",
+      "rationale": "Full backend suite has 23 pre-existing scope-guard false positive failures; test suite is otherwise healthy with 7413 tests total; false positives reduce CI signal quality",
+      "evidence": "GL-198 post-merge: 7413 tests, 23 failures, 217 skipped — all 23 failures confirmed as pre-existing scope-guard FPs",
+      "recommended_action": "Audit and fix scope-guard test patterns to eliminate false positives; track count to ensure it does not grow",
+      "recommended_issue": "Test-suite scope-guard cleanup issue"
+    },
+    {
+      "name": "public snapshot safety",
+      "status": "ready",
+      "severity": "info",
+      "rationale": "Public snapshot verified clean: no internal paths, no real secrets, no private data — confirmed by GL-195 scanner gate and GL-196 smoke matrix",
+      "evidence": "GL-195 public_safety_scanner_claim_consistency_gate.md; GL-196 public_smoke_matrix_pack.md; GL-198 safety confirmations",
+      "recommended_action": "Re-run scanner gate and smoke matrix on each public snapshot update",
+      "recommended_issue": "None — ongoing maintenance"
+    }
+  ],
+  "findings": [
+    {
+      "id": "GL-199-F001",
+      "severity": "critical",
+      "category": "tenant-isolation",
+      "summary": "Tenant/workspace isolation is not implemented. All grant records, evidence, audit events, and operator identities exist in a single shared namespace.",
+      "evidence": "docs/tenant_workspace_boundary_decision.md (GL-132): 'no tenant/workspace implementation is added.' SECURITY.md section 6: 'Tenant isolation not implemented.' GL-198 boundary pack. No implementation issue has closed this gap.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": true,
+      "recommended_action": "Create a tenant/workspace design and implementation issue. Implement tenant data model, migration, and enforcement before any real customer data is introduced.",
+      "recommended_issue": "Tenant isolation design and implementation issue (GL-200+)"
+    },
+    {
+      "id": "GL-199-F002",
+      "severity": "critical",
+      "category": "auth-security",
+      "summary": "Production authentication is not implemented. Admin-token and operator-token only; no OAuth 2.0, JWT, SSO, mutual TLS, or HSM-backed key management.",
+      "evidence": "docs/production_auth_operator_access_design.md (design only); docs/production_hardening_roadmap.md section 4: 'Production auth is not implemented.'",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": true,
+      "recommended_action": "Define and implement production auth architecture (OAuth 2.0, JWT, SSO decision record).",
+      "recommended_issue": "Production auth implementation issue (GL-200+)"
+    },
+    {
+      "id": "GL-199-F003",
+      "severity": "critical",
+      "category": "auth-security",
+      "summary": "Production secret management is not complete. Demo Ed25519 keypair in repository as placeholder; no vault integration, secret rotation, HSM, or encryption-at-rest guarantee.",
+      "evidence": "docs/secret_management_baseline_design.md (design only); docs/production_hardening_roadmap.md section 4: 'Production secrets are not managed.' .env.example documents placeholder key paths.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": true,
+      "recommended_action": "Replace demo keypair with managed secret strategy; implement rotation and access-control boundaries.",
+      "recommended_issue": "Secret management implementation issue (GL-200+)"
+    },
+    {
+      "id": "GL-199-F004",
+      "severity": "critical",
+      "category": "production-ops",
+      "summary": "Deployment hardening is not specified. No containers, load balancing, TLS termination, orchestration, or environment-specific configuration guidance exists.",
+      "evidence": "docs/production_hardening_roadmap.md section 4: 'Deployment hardening is not specified.' No Dockerfile for production use. docker-compose.yml is for local development only.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": true,
+      "recommended_action": "Define target runtime, container strategy, network topology, and environment separation before production deployment.",
+      "recommended_issue": "Deployment environment definition issue (GL-200+)"
+    },
+    {
+      "id": "GL-199-F005",
+      "severity": "high",
+      "category": "persistence",
+      "summary": "PostgreSQL CI path is not established as the primary production database. SQLite is default. PostgreSQL support exists but is not CI-gated. Migration rollback not tested in CI.",
+      "evidence": "docs/production_hardening_roadmap.md section 4: 'PostgreSQL CI is not established.' scripts/run-postgres-tests.sh exists but not in CI gate. docker-compose.postgres.yml is local only.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": true,
+      "recommended_action": "Make PostgreSQL CI-gated primary database; test migration rollback; define connection pooling baseline.",
+      "recommended_issue": "PostgreSQL CI and persistence hardening issue (GL-200+)"
+    },
+    {
+      "id": "GL-199-F006",
+      "severity": "high",
+      "category": "production-ops",
+      "summary": "Observability is not implemented. No metrics, logging pipelines, alerting, or tracing beyond local structured logging helpers.",
+      "evidence": "docs/production_hardening_roadmap.md section 4: 'Observability is not implemented.' backend/src/structured_logging.py exists as helpers only.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": true,
+      "recommended_action": "Implement metrics, alerting, and logging pipeline integration before production deployment.",
+      "recommended_issue": "Observability/logging implementation issue (GL-200+)"
+    },
+    {
+      "id": "GL-199-F007",
+      "severity": "high",
+      "category": "production-ops",
+      "summary": "Backup, restore, and disaster recovery are not defined. No automated backup, point-in-time recovery, or DR runbooks exist for production data.",
+      "evidence": "docs/backup_restore_minimum_drill.md (design reference only); docs/production_hardening_roadmap.md section 4: 'Backup/restore is not defined.'",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": true,
+      "recommended_action": "Define backup strategy, test DR runbooks, and implement automated backup before production data is stored.",
+      "recommended_issue": "Backup/DR implementation issue (GL-200+)"
+    },
+    {
+      "id": "GL-199-F008",
+      "severity": "high",
+      "category": "compliance",
+      "summary": "Compliance and institutional readiness has not been assessed. No regulatory framework mapping, compliance gap assessment, or institutional data handling certification exists.",
+      "evidence": "docs/production_hardening_roadmap.md section 4: 'Compliance/legal review is not certification.' No compliance documents beyond SECURITY.md data handling rules.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": true,
+      "recommended_action": "Commission a compliance gap assessment covering relevant regulatory frameworks before institutional deployment.",
+      "recommended_issue": "Compliance review issue (GL-200+)"
+    },
+    {
+      "id": "GL-199-F009",
+      "severity": "high",
+      "category": "api-contract",
+      "summary": "The API contract has no stability commitment, versioning policy, or deprecation cycle. The OpenAPI contract is a local draft only.",
+      "evidence": "GL-197 API assessment: 'No stability commitment made.' docs/openapi.yaml local draft. No external hosting. No API v1 freeze criteria defined.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": true,
+      "recommended_action": "Define API v1 freeze criteria, versioning policy, and external stability commitment.",
+      "recommended_issue": "API contract/OpenAPI review and freeze issue (GL-200+)"
+    },
+    {
+      "id": "GL-199-F010",
+      "severity": "medium",
+      "category": "sdk-packaging",
+      "summary": "No official SDK or pip package is available. The minimal local Python client wrapper is a local convenience module only.",
+      "evidence": "GL-197 decision: api_first_agent_examples_now_sdk_later. sdk/python/README.md: 'No pip package is published.' No pyproject.toml. No PyPI release.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": false,
+      "recommended_action": "Defer SDK packaging until API v1 stability commitment and demonstrated external demand.",
+      "recommended_issue": "SDK prototype decision and implementation issue (future)"
+    },
+    {
+      "id": "GL-199-F011",
+      "severity": "medium",
+      "category": "test-health",
+      "summary": "The full backend test suite has 23 pre-existing scope-guard false positive failures, reducing CI signal quality.",
+      "evidence": "GL-198 post-merge: 7413 tests, 23 failures, 217 skipped — all 23 failures confirmed as pre-existing scope-guard FPs. Same count in GL-196 and GL-197.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": false,
+      "recommended_action": "Audit and fix scope-guard test patterns to eliminate false positives. Track count to ensure it does not grow.",
+      "recommended_issue": "Test-suite scope-guard cleanup issue"
+    },
+    {
+      "id": "GL-199-F012",
+      "severity": "medium",
+      "category": "auth-security",
+      "summary": "No rate limiting or abuse prevention layer exists for public API endpoints. Acceptable for local/controlled-preview use but blocks production API exposure.",
+      "evidence": "GL-101 full product readiness gap review. No rate-limiting middleware identified in backend/src/server.py.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": true,
+      "recommended_action": "Implement rate limiting and abuse prevention before production API exposure.",
+      "recommended_issue": "Rate limiting implementation issue (GL-200+)"
+    },
+    {
+      "id": "GL-199-F013",
+      "severity": "medium",
+      "category": "public-claims",
+      "summary": "README Developer entry path table labels Step 5 as 'Python SDK' without a qualifier, which may set incorrect expectations about published package availability.",
+      "evidence": "GL-197-F002, GL-198-F002. README.md Developer entry path table, Step 5: 'Python SDK.' SDK README correctly states 'No pip package is published' but the table label alone is ambiguous.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": false,
+      "recommended_action": "Add qualifier to README: change 'Python SDK' to 'Minimal Python client (local only, not published)' or equivalent.",
+      "recommended_issue": "README label fix (small docs update)"
+    },
+    {
+      "id": "GL-199-F014",
+      "severity": "low",
+      "category": "developer-experience",
+      "summary": "llms.txt Next Steps section still references GL-193 as an upcoming issue, but GL-193 was merged and published. Carried from GL-195-F003 through GL-198-F003.",
+      "evidence": "llms.txt Next Steps: references GL-193 as upcoming. GL-193 merged and published.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": false,
+      "recommended_action": "Update llms.txt Next Steps to reference current roadmap. Minimal one-line fix.",
+      "recommended_issue": "Small docs update (bundle with GL-199P or next snapshot push)"
+    },
+    {
+      "id": "GL-199-F015",
+      "severity": "low",
+      "category": "developer-experience",
+      "summary": "Quickstart docs (ten-minute quickstart and agent quickstart) lack a prominent tenant isolation caveat at the top.",
+      "evidence": "GL-198-F004. docs/ten_minute_quickstart.md and docs/agent_quickstart.md do not surface the tenant isolation caveat prominently.",
+      "blocking_for_developer_preview": false,
+      "blocking_for_controlled_preview": false,
+      "blocking_for_production": false,
+      "recommended_action": "Add a one-line Developer Preview caveat to the top of each quickstart.",
+      "recommended_issue": "Small docs update"
+    }
+  ],
+  "finding_counts_by_severity": {
+    "critical": 4,
+    "high": 5,
+    "medium": 4,
+    "low": 2,
+    "info": 0,
+    "total": 15
+  },
+  "production_blockers": [
+    {
+      "id": "PB-001",
+      "name": "Tenant/workspace isolation not implemented",
+      "category": "tenant-isolation",
+      "severity": "critical",
+      "why_blocks": "All data in a single namespace; real customer data would commingle; no data boundary between tenants",
+      "resolution": "Implement tenant/workspace data model and enforcement",
+      "recommended_issue": "GL-200 or tenant-isolation design issue",
+      "finding_ref": "GL-199-F001"
+    },
+    {
+      "id": "PB-002",
+      "name": "Production auth not implemented",
+      "category": "auth-security",
+      "severity": "critical",
+      "why_blocks": "Admin-token/operator-token only; no OAuth, JWT, SSO, or IAM; no production identity model",
+      "resolution": "Define and implement auth architecture",
+      "recommended_issue": "Auth hardening issue (GL-200+)",
+      "finding_ref": "GL-199-F002"
+    },
+    {
+      "id": "PB-003",
+      "name": "Production secret management not complete",
+      "category": "auth-security",
+      "severity": "critical",
+      "why_blocks": "Demo Ed25519 keypair in repo; no vault integration, rotation, or HSM",
+      "resolution": "Secret management plan + vault/rotation implementation",
+      "recommended_issue": "Secret management issue (GL-200+)",
+      "finding_ref": "GL-199-F003"
+    },
+    {
+      "id": "PB-004",
+      "name": "Deployment hardening not specified",
+      "category": "production-ops",
+      "severity": "critical",
+      "why_blocks": "No containers, TLS termination, orchestration, or env separation",
+      "resolution": "Define deployment environment + container strategy",
+      "recommended_issue": "Deployment definition issue (GL-200+)",
+      "finding_ref": "GL-199-F004"
+    },
+    {
+      "id": "PB-005",
+      "name": "Observability not implemented",
+      "category": "production-ops",
+      "severity": "high",
+      "why_blocks": "No metrics, alerting, logging pipelines, or tracing; cannot operate production service",
+      "resolution": "Implement structured logging, metrics, alerting",
+      "recommended_issue": "Observability issue (GL-200+)",
+      "finding_ref": "GL-199-F006"
+    },
+    {
+      "id": "PB-006",
+      "name": "Backup/restore and DR not defined",
+      "category": "production-ops",
+      "severity": "high",
+      "why_blocks": "No automated backup, point-in-time recovery, or DR runbooks; unacceptable for production data",
+      "resolution": "Define backup strategy + test DR runbooks",
+      "recommended_issue": "Backup/DR issue (GL-200+)",
+      "finding_ref": "GL-199-F007"
+    },
+    {
+      "id": "PB-007",
+      "name": "PostgreSQL CI path not established",
+      "category": "persistence",
+      "severity": "high",
+      "why_blocks": "SQLite is default; PostgreSQL not CI-gated; migration rollback not tested; no production DB guarantee",
+      "resolution": "Make PostgreSQL CI-gated primary database; test migration rollback",
+      "recommended_issue": "PostgreSQL CI issue (GL-200+)",
+      "finding_ref": "GL-199-F005"
+    },
+    {
+      "id": "PB-008",
+      "name": "Compliance/institutional readiness not claimed",
+      "category": "compliance",
+      "severity": "high",
+      "why_blocks": "Regulatory, legal, or compliance-sensitive requirements not assessed; cannot make institutional claims",
+      "resolution": "Compliance gap assessment and remediation",
+      "recommended_issue": "Compliance review issue (GL-200+)",
+      "finding_ref": "GL-199-F008"
+    }
+  ],
+  "go_no_go": {
+    "Developer Preview": "go",
+    "Controlled Preview": "go with strict boundaries (GL-198 boundaries apply)",
+    "Production SaaS": "no-go",
+    "Real customer data": "no-go",
+    "Private grant/institutional data": "no-go",
+    "Official SDK/package claim": "no-go"
+  },
+  "recommended_post_gl199_roadmap": [
+    {
+      "priority": "P0",
+      "issue": "GL-200",
+      "title": "Tenant/Workspace Isolation Design and Implementation",
+      "category": "tenant-isolation",
+      "notes": "Define and implement tenant data model and enforcement; prerequisite for real customer data"
+    },
+    {
+      "priority": "P0",
+      "issue": "GL-201",
+      "title": "Production Auth Architecture",
+      "category": "production auth/secrets/config",
+      "notes": "OAuth 2.0/JWT/SSO decision record and implementation plan"
+    },
+    {
+      "priority": "P0",
+      "issue": "GL-202",
+      "title": "Secret Management and Key Rotation",
+      "category": "production auth/secrets/config",
+      "notes": "Replace demo keypair; vault integration; rotation policy"
+    },
+    {
+      "priority": "P0",
+      "issue": "GL-203",
+      "title": "Deployment Environment Definition and Container Strategy",
+      "category": "production deployment/ops",
+      "notes": "Target runtime, TLS, load balancing, orchestration, env separation"
+    },
+    {
+      "priority": "P1",
+      "issue": "GL-204",
+      "title": "PostgreSQL CI Gate and Persistence Hardening",
+      "category": "persistence/Postgres",
+      "notes": "CI-gate PostgreSQL; test migration rollback; connection pooling baseline"
+    },
+    {
+      "priority": "P1",
+      "issue": "GL-205",
+      "title": "Observability and Logging Pipeline",
+      "category": "production deployment/ops",
+      "notes": "Metrics, alerting, logging pipeline, tracing integration"
+    },
+    {
+      "priority": "P1",
+      "issue": "GL-206",
+      "title": "Backup/Restore and DR Runbooks",
+      "category": "production deployment/ops",
+      "notes": "Automated backup, point-in-time recovery, DR test runbooks"
+    },
+    {
+      "priority": "P1",
+      "issue": "GL-207",
+      "title": "API Contract/OpenAPI Review and Freeze",
+      "category": "API contract/OpenAPI",
+      "notes": "API v1 stability commitment, versioning policy, external hosting"
+    },
+    {
+      "priority": "P2",
+      "issue": "GL-208",
+      "title": "Controlled Reviewer Feedback Round",
+      "category": "controlled reviewer feedback",
+      "notes": "Capture and triage feedback from first controlled preview participants"
+    },
+    {
+      "priority": "P2",
+      "issue": "GL-209",
+      "title": "Test-Suite Scope-Guard Cleanup",
+      "category": "test-suite scope-guard cleanup",
+      "notes": "Audit and fix 23 pre-existing scope-guard false positives"
+    },
+    {
+      "priority": "P2",
+      "issue": "GL-210",
+      "title": "Production Deployment/Ops Checklist",
+      "category": "production deployment/ops checklist",
+      "notes": "Consolidated pre-deployment checklist for production launch"
+    },
+    {
+      "priority": "P3",
+      "issue": "GL-211",
+      "title": "SDK Prototype Decision and Implementation",
+      "category": "SDK/package",
+      "notes": "Only after API v1 stability commitment and demonstrated external demand"
+    },
+    {
+      "priority": "P3",
+      "issue": "GL-212",
+      "title": "Compliance Gap Assessment",
+      "category": "compliance",
+      "notes": "Regulatory framework mapping and institutional data handling certification"
+    }
+  ],
+  "safety_confirmations": {
+    "no_github_push_performed": true,
+    "no_visibility_change_performed": true,
+    "internal_repo_not_pushed_directly_to_github": true,
+    "no_github_api_label_changes_performed": true,
+    "no_github_issue_changes_performed": true,
+    "no_reviewer_outreach_sent": true,
+    "no_backend_src_changes": true,
+    "no_openapi_changes": true,
+    "no_migration_db_dependency_changes": true,
+    "no_dependency_manifest_changes": true,
+    "no_sdk_implementation_changes": true,
+    "no_package_publishing_changes": true,
+    "no_examples_runtime_changes": true,
+    "no_frontend_website_design_changes": true,
+    "no_github_workflow_changes": true,
+    "no_snapshot_publish_script_behavior_changes": true,
+    "no_production_saas_claim": true,
+    "tenant_isolation_not_claimed": true,
+    "official_sdk_package_not_claimed_unless_verified": true,
+    "no_real_customer_data_requested": true,
+    "no_private_grant_data_requested": true,
+    "no_secrets_requested": true,
+    "no_exploit_details_included": true,
+    "security_sensitive_reports_routed_to_github_security_advisories": true
+  },
+  "changed_files": [
+    "docs/production_readiness_gap_report_v2.md",
+    "docs/examples/gl199/production_readiness_gap_report_v2.json",
+    "backend/tests/test_gl199_production_readiness_gap_report_v2.py"
+  ],
+  "tests": "backend/tests/test_gl199_production_readiness_gap_report_v2.py",
+  "result": "production_readiness_gap_report_v2_complete",
+  "next_recommended_step": "GL-199 Combined Merge-and-Publish for Production Readiness Gap Report v2",
+  "non_goals": [
+    "implement tenant isolation, production auth, secret management, or any other backend feature",
+    "change backend/src/*",
+    "change OpenAPI, migrations, DB/schema, or dependency manifests",
+    "publish packages to PyPI or any registry",
+    "push to GitHub or change GitHub visibility",
+    "create or modify GitHub labels/issues via API",
+    "send reviewer outreach or contact reviewers",
+    "change frontend, website, or design",
+    "change snapshot publish script behavior",
+    "change examples runtime implementation",
+    "change GitHub workflow files",
+    "claim production SaaS readiness",
+    "claim tenant isolation is implemented",
+    "request real customer data, private grants, or secrets",
+    "include exploit details",
+    "make production deployment decisions"
+  ]
+}

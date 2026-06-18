@@ -1,0 +1,93 @@
+{
+  "description": "GL-078 structured logging and correlation ID helper safe examples",
+  "examples": [
+    {
+      "name": "api_request_event",
+      "description": "Example api_request event with safe metadata and correlation ID",
+      "event": {
+        "eventType": "api_request",
+        "message": "GET /health request received",
+        "severity": "info",
+        "service": "grantlayer",
+        "correlationId": "corr_abc123",
+        "requestId": "req_001",
+        "timestamp": "2024-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "readiness_check_event",
+      "description": "Example readiness_check event with runtime mode",
+      "event": {
+        "eventType": "readiness_check",
+        "message": "Readiness check passed",
+        "severity": "info",
+        "service": "grantlayer",
+        "correlationId": "corr_def456",
+        "runtimeMode": "staging",
+        "timestamp": "2024-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "configuration_event",
+      "description": "Example configuration_event with safe context",
+      "event": {
+        "eventType": "configuration_event",
+        "message": "Runtime configuration validated",
+        "severity": "info",
+        "service": "grantlayer",
+        "correlationId": "corr_ghi789",
+        "actorId": "operator_001",
+        "timestamp": "2024-01-01T00:00:00Z",
+        "metadata": {
+          "configSource": "environment",
+          "isProductionLike": true
+        }
+      }
+    },
+    {
+      "name": "metadata_redaction_example",
+      "description": "Example showing metadata redaction of secrets and tokens",
+      "input_metadata": {
+        "path": "/api/v1/grants",
+        "status_code": 200,
+        "password": "supersecret",
+        "api_key": "ak_live_12345",
+        "authorization": "Bearer tok_abc_xyz",
+        "database_url": "postgres://user:pass@localhost:5432/db",
+        "operator_token": "op_tok_xyz789",
+        "private_key": "FAKE_PLACEHOLDER_PRIVATE_KEY_VALUE",
+        "cookie": "session=abc123; HttpOnly",
+        "nested": {
+          "safe_field": "visible",
+          "secret_token": "hidden_value"
+        }
+      },
+      "redacted_metadata": {
+        "path": "/api/v1/grants",
+        "status_code": 200,
+        "password": "[REDACTED]",
+        "api_key": "[REDACTED]",
+        "authorization": "[REDACTED]",
+        "database_url": "[REDACTED]",
+        "operator_token": "[REDACTED]",
+        "private_key": "[REDACTED]",
+        "cookie": "[REDACTED]",
+        "nested": {
+          "safe_field": "visible",
+          "secret_token": "[REDACTED]"
+        }
+      }
+    },
+    {
+      "name": "unsafe_input_normalization_example",
+      "description": "Example showing unsafe correlation IDs being normalized to safe generated values",
+      "unsafe_inputs": [
+        "<script>alert(1)</script>",
+        "foo; DROP TABLE grants; --",
+        "foo bar baz",
+        "a".repeat(129)
+      ],
+      "normalization_behavior": "Each unsafe input is replaced with a newly generated 32-character hexadecimal correlation ID. The raw unsafe input is never exposed in output or error messages."
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "snapshotId": "gl064-api-contract-readiness-snapshot",
+  "snapshotVersion": "1.0",
+  "integrationReadyApiReview": true,
+  "pilotReadyApiReview": true,
+  "productionReadyApiContract": false,
+  "basis": [
+    "GL-052 Product Core E2E Flow Test",
+    "GL-053 Minimum Viable Integration Guide",
+    "GL-054 Integration Demo Pack",
+    "GL-055 Integration Contract & Readiness Gate",
+    "GL-056 Integration-Ready Release Candidate Review",
+    "GL-057 Integrator Quickstart Examples",
+    "GL-058 Minimal API Usage Walkthrough",
+    "GL-059 Pilot-Ready Handoff Plan",
+    "GL-060 Pilot-Ready Release Decision",
+    "GL-061 Demo Runner / API Smoke Script",
+    "GL-062 Pilot Partner Preparation Pack",
+    "GL-063 Production-Hardening Roadmap / Readiness Cut"
+  ],
+  "contractStrengths": [
+    {
+      "strengthId": "s01-openapi-exists",
+      "title": "OpenAPI specification exists and is parseable",
+      "description": "docs/openapi.yaml documents the full HTTP surface including paths, methods, request/response schemas, and security schemes."
+    },
+    {
+      "strengthId": "s02-path-guarded",
+      "title": "Expected paths are present and legacy paths are guarded",
+      "description": "backend/tests/test_gl055_integration_contract_readiness.py verifies expected paths and rejects known legacy paths."
+    },
+    {
+      "strengthId": "s03-walkthrough-aligned",
+      "title": "Minimal API usage walkthrough aligns with OpenAPI paths",
+      "description": "docs/minimal_api_usage_walkthrough.md maps every Product Core stage to a concrete OpenAPI path verified against docs/openapi.yaml."
+    },
+    {
+      "strengthId": "s04-dry-run-validated",
+      "title": "Demo runner performs successful dry-run validation",
+      "description": "scripts/demo/gl061_api_smoke.py validates manifests and referenced examples locally without network access."
+    },
+    {
+      "strengthId": "s05-backend-suite-passes",
+      "title": "Full backend test suite passes with zero failures",
+      "description": "python3 -m unittest discover backend.tests -v runs with 0 failures and 0 errors."
+    },
+    {
+      "strengthId": "s06-constraints-documented",
+      "title": "Non-production constraints are explicitly documented",
+      "description": "Every checklist, walkthrough, and decision document notes that auth, deployment, observability, and multi-tenancy are not production-ready."
+    }
+  ],
+  "productionBlockers": [
+    {
+      "blockerId": "b01-freeze-process",
+      "title": "Contract freeze process is not established",
+      "description": "No documented versioning strategy, breaking-change policy, or contract review cadence exists."
+    },
+    {
+      "blockerId": "b02-auth-semantics",
+      "title": "Auth semantics are not production-grade",
+      "description": "Several endpoints document security blocks that are not fully enforced; the contract describes a target model, not the current implementation."
+    },
+    {
+      "blockerId": "b03-error-standardization",
+      "title": "Error responses need stronger standardization",
+      "description": "ErrorResponse schema is referenced consistently but lacks strict enforcement, per-status-code examples, and documented mappings."
+    },
+    {
+      "blockerId": "b04-example-coverage",
+      "title": "Schema examples need expansion",
+      "description": "Many request and response schemas do not include illustrative examples."
+    },
+    {
+      "blockerId": "b05-versioning-policy",
+      "title": "Endpoint versioning policy is not formalized",
+      "description": "Paths such as /decision-provenance/v2/build indicate URL versioning, but the policy is undocumented."
+    },
+    {
+      "blockerId": "b06-compatibility-policy",
+      "title": "Compatibility/deprecation policy is not formalized",
+      "description": "No documented rule for how long legacy paths remain supported or how breaking changes are communicated."
+    },
+    {
+      "blockerId": "b07-ci-validation",
+      "title": "CI contract validation may need hardening",
+      "description": "GL-055 checks path presence and legacy-path absence but does not validate schema completeness or semantic correctness."
+    },
+    {
+      "blockerId": "b08-sdk-expectations",
+      "title": "External SDK/client expectations are not finalized",
+      "description": "Without a frozen contract, generated clients would be unstable."
+    }
+  ],
+  "pilotPermittedScope": [
+    "Review docs/openapi.yaml to understand the current HTTP surface.",
+    "Run backend/tests/test_gl055_integration_contract_readiness.py to verify expected paths and legacy-path absence.",
+    "Follow docs/minimal_api_usage_walkthrough.md to trace Product Core stages through documented API paths.",
+    "Run scripts/demo/gl061_api_smoke.py --dry-run for local confidence checks.",
+    "Inspect static JSON examples in docs/examples/gl057/ and docs/examples/gl058/."
+  ],
+  "contractClaimStopConditions": [
+    "Contract freeze process is missing or undocumented.",
+    "Auth semantics remain unaligned between OpenAPI and implementation.",
+    "Error responses lack a standardized schema with per-status-code examples.",
+    "Versioning or compatibility policy is undefined.",
+    "Production-Ready API contract is claimed accidentally or implicitly."
+  ],
+  "nextRecommendedOptions": [
+    {
+      "optionId": "opt-01",
+      "title": "Implement P0 contract-hardening workstreams",
+      "description": "Execute the seven P0 workstreams defined in docs/api_openapi_contract_hardening_review.md to reach a production-grade contract baseline."
+    },
+    {
+      "optionId": "opt-02",
+      "title": "Local API Smoke v2 / planned-call validation",
+      "description": "Extend the GL-061 demo runner to produce a machine-readable report mapping every OpenAPI path to an example or fixture."
+    }
+  ],
+  "verificationCommands": [
+    "python3 -m unittest backend.tests.test_gl064_api_openapi_contract_hardening_review -v",
+    "python3 -m unittest backend.tests.test_gl063_production_hardening_roadmap -v",
+    "python3 -m unittest backend.tests.test_gl055_integration_contract_readiness -v",
+    "python3 -m unittest discover backend.tests -v"
+  ]
+}

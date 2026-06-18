@@ -1,0 +1,2395 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Secure AI Agent Grant Management — API Documentation">
+      
+      
+      
+        <link rel="canonical" href="https://discodone.github.io/grantlayer/controlled_external_review_handoff_pack/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GL-222 — Controlled External Technical Review Handoff Pack - GrantLayer Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gl-222-controlled-external-technical-review-handoff-pack" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="GrantLayer Docs" class="md-header__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GrantLayer Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GL-222 — Controlled External Technical Review Handoff Pack
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../authentication/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Authentication
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../webhooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Webhooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk-python/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../self-hosting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Self-Hosting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="GrantLayer Docs" class="md-nav__button md-logo" aria-label="GrantLayer Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GrantLayer Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/discodone/grantlayer" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    discodone/grantlayer
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript/TypeScript SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self-Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-sources-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Sources Reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-controlled-external-review-posture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Controlled External Review Posture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handoff-package-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handoff Package Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reviewer-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reviewer Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#excluded-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Excluded Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#eligible-review-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eligible Review Materials
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prohibited-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prohibited Materials
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allowed-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed Claims
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prohibited-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prohibited Claims
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-boundary-synthetic-demo-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Boundary: Synthetic / Demo Only
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-customer-private-grant-institutional-data-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real Customer / Private Grant / Institutional Data Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-saas-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production SaaS Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-snapshot-export-publish-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Snapshot / Export / Publish Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#official-sdk-package-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Official SDK / Package Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compliance-certification-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compliance Certification Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-postgresql-production-readiness-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live PostgreSQL Production Readiness Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#identity-access-status-after-gl-219" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity / Access Status After GL-219
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runtime-infrastructure-status-after-gl-220" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime / Infrastructure Status After GL-220
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workspace-status-after-gl-221" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workspace Status After GL-221
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-export-safety-status-after-gl-218" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public / Export Safety Status After GL-218
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-full-suite-false-positive-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Full-Suite False-Positive Classes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reviewer-safe-verification-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reviewer-Safe Verification Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-sensitive-reporting-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security-Sensitive Reporting Instructions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optional-handoff-gate-script-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional Handoff Gate Script Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-readiness-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production-Readiness Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlled-preview-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled-Preview Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Blockers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Rationale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-confirmations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Confirmations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gl-222-controlled-external-technical-review-handoff-pack">GL-222 — Controlled External Technical Review Handoff Pack<a class="headerlink" href="#gl-222-controlled-external-technical-review-handoff-pack" title="Permanent link">&para;</a></h1>
+<p><strong>Issue ID:</strong> GL-222
+<strong>Title:</strong> Controlled External Technical Review Handoff Pack
+<strong>Branch:</strong> <code>gl-222-controlled-external-review-handoff-pack</code>
+<strong>Status:</strong> Internal / Developer Preview</p>
+<p>GL-222 is an internal controlled-review handoff pack, not reviewer outreach.
+GL-222 does not create a public export.
+GL-222 does not publish to public GitHub.
+GL-222 does not change repository visibility.
+GL-222 does not approve public snapshot/export/publish.
+GL-222 does not contact or invite reviewers.</p>
+<p>Controlled External Technical Review is GO only with strict boundaries.
+Review materials remain synthetic/demo only.
+Production SaaS remains NO-GO.
+Real customer/private grant/institutional data remains NO-GO.
+Official SDK/package remains NO-GO.
+Compliance certification remains NO-GO.
+Live PostgreSQL production readiness remains NO-GO.
+Security-sensitive reports route to GitHub Security Advisories.
+No exploit details are included.
+No real secrets are included.
+No real customer/private data is included.</p>
+<p>Unrelated website-design/import files (<code>website-design/</code>,
+<code>docs/website_design_workspace_import_report.md</code>,
+<code>docs/website_design_workspace_import_report_dirty_stop.md</code>,
+and similarly named files) are excluded from GL-222.</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>GL-214 through GL-221 are merged internally. The final readiness matrix v6 from
+GL-221 shows:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Developer Preview</td>
+<td>GO / CONTINUE</td>
+</tr>
+<tr>
+<td>Controlled External Technical Review</td>
+<td>GO with strict boundaries</td>
+</tr>
+<tr>
+<td>Synthetic/Demo Controlled Pilot</td>
+<td>CONDITIONAL</td>
+</tr>
+<tr>
+<td>Public Snapshot Preparation</td>
+<td>CONDITIONAL — separate explicit gate required</td>
+</tr>
+<tr>
+<td>Public Website Publish</td>
+<td>DEFER / NO-GO</td>
+</tr>
+<tr>
+<td>Official SDK / Package</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Real Customer Data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Private Grant / Institutional Data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Production SaaS</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Compliance Certification</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Live PostgreSQL Production Readiness</td>
+<td>NO-GO</td>
+</tr>
+</tbody>
+</table>
+<p>Main branch after GL-221 merge: <code>382ac17</code></p>
+<p>Full suite baseline after GL-221:
+- 9004 tests / 43 failures / 3 errors / 253 skipped / 0 real regressions</p>
+<p>The Controlled External Technical Review gate (GO with strict boundaries) has
+been authorised since GL-217 and confirmed through GL-218, GL-219, GL-220, and
+GL-221 without change. GL-222 prepares the internal handoff documentation that
+would be used to brief a reviewer, but does not initiate that review.</p>
+<hr />
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>GL-222 covers:
+- Documenting the current allowed review posture and strict boundaries.
+- Answering the ten required handoff questions.
+- Specifying eligible and prohibited review materials.
+- Specifying allowed and prohibited claims.
+- Documenting known limitations and NO-GO areas.
+- Documenting known full-suite false-positive classes.
+- Providing reviewer-safe reproduction commands.
+- Specifying security-sensitive report routing.
+- Specifying the approval boundary for any future public/export/publish action.
+- Adding a local-only dry-run/plan handoff gate script.
+- Adding a machine-readable JSON artifact and focused tests.</p>
+<hr />
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>GL-222 does not:
+- Contact, invite, or outreach to any external reviewer.
+- Create a public export directory or public snapshot worktree.
+- Push to public GitHub or change repository visibility.
+- Approve public snapshot/export/publish — that requires a separate explicit gate.
+- Implement product features, workspace enforcement, or production infrastructure.
+- Add migrations, schema changes, or dependency updates.
+- Change <code>backend/src/</code>, GitHub workflows, or snapshot publish scripts.
+- Add production deployment config, cloud integration, or TLS certificates.
+- Claim production SaaS readiness, compliance certification, or official SDK availability.
+- Include exploit details, real secrets, or real customer/private data.</p>
+<hr />
+<h2 id="input-sources-reviewed">Input Sources Reviewed<a class="headerlink" href="#input-sources-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Reviewed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>docs/workspace_enforcement_final_go_no_go_v6.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl221/workspace_enforcement_final_go_no_go_v6.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_runtime_infrastructure_hardening_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl220/production_runtime_infrastructure_hardening_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_identity_access_hardening_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl219/production_identity_access_hardening_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/public_external_review_export_safety_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl218/public_external_review_export_safety_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_go_no_go_v5.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl217/production_go_no_go_v5.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_operations_hardening_pack.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl216/production_operations_hardening_pack.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/tenant_workspace_production_guarantee.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl215/tenant_workspace_production_guarantee.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/production_iam_operator_control_completion.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl214/production_iam_operator_control_completion.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/admin_operator_tenant_control_plane.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl206/admin_operator_tenant_control_plane.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/runtime_abuse_incident_hardening.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl208/runtime_abuse_incident_hardening.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/data_governance_audit_operations.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/examples/gl209/data_governance_audit_operations.json</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>docs/openapi.yaml</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>SECURITY.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>llms-full.txt</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>backend/src/server.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>backend/src/config.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>backend/src/auth.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>backend/src/identity_access.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>backend/src/operators.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>backend/src/audit_log.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>backend/src/db.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>backend/src/models.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>backend/src/grants.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>backend/src/grant_requests.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>backend/tests/*</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>scripts/ops/gl216_production_operations_gate.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>scripts/ops/gl218_public_export_safety_scan.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>scripts/ops/gl219_identity_access_gate.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>scripts/ops/gl220_runtime_infrastructure_gate.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>scripts/ops/gl221_workspace_go_no_go_gate.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>scripts/ops/gl205_live_postgres_validation.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>scripts/ops/gl205_backup_restore_drill.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>scripts/ops/gl209_audit_export_check.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>scripts/run-full-backend-suite.sh</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>examples/grant_lifecycle_evidence_bundle.py</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>examples/grant_lifecycle_evidence_bundle.json</td>
+<td>Yes (reference only)</td>
+</tr>
+<tr>
+<td>examples/first_verifiable_output.json</td>
+<td>Yes (reference only)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="current-controlled-external-review-posture">Current Controlled External Review Posture<a class="headerlink" href="#current-controlled-external-review-posture" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Posture</td>
+<td>Developer Preview / Controlled Preview with strict boundaries</td>
+</tr>
+<tr>
+<td>Developer Preview</td>
+<td>GO / CONTINUE</td>
+</tr>
+<tr>
+<td>Controlled External Technical Review</td>
+<td>GO with strict boundaries</td>
+</tr>
+<tr>
+<td>Synthetic/Demo Controlled Pilot</td>
+<td>CONDITIONAL</td>
+</tr>
+<tr>
+<td>Public Snapshot Preparation</td>
+<td>CONDITIONAL — separate explicit gate required</td>
+</tr>
+<tr>
+<td>Public Website Publish</td>
+<td>DEFER / NO-GO</td>
+</tr>
+<tr>
+<td>Official SDK / Package</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Real Customer Data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Private Grant / Institutional Data</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Production SaaS</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Compliance Certification</td>
+<td>NO-GO</td>
+</tr>
+<tr>
+<td>Live PostgreSQL Production Readiness</td>
+<td>NO-GO</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="handoff-package-purpose">Handoff Package Purpose<a class="headerlink" href="#handoff-package-purpose" title="Permanent link">&para;</a></h2>
+<p>This pack answers the ten required questions for a future controlled external
+technical review:</p>
+<ol>
+<li>
+<p><strong>What may be shared with an external technical reviewer under strict boundaries?</strong>
+   See <a href="#eligible-review-materials">Eligible Review Materials</a> below.</p>
+</li>
+<li>
+<p><strong>What must not be shared?</strong>
+   See <a href="#prohibited-materials">Prohibited Materials</a> below.</p>
+</li>
+<li>
+<p><strong>What exact claims are allowed and prohibited?</strong>
+   See <a href="#allowed-claims">Allowed Claims</a> and <a href="#prohibited-claims">Prohibited Claims</a> below.</p>
+</li>
+<li>
+<p><strong>What review scope should a reviewer inspect?</strong>
+   See <a href="#reviewer-scope">Reviewer Scope</a> below.</p>
+</li>
+<li>
+<p><strong>What known limitations and NO-GO areas must be explicit?</strong>
+   See <a href="#known-limitations">Known Limitations</a> and the individual NO-GO boundaries below.</p>
+</li>
+<li>
+<p><strong>What commands can reproduce the core verification locally?</strong>
+   See <a href="#reviewer-safe-verification-commands">Reviewer-Safe Verification Commands</a> below.</p>
+</li>
+<li>
+<p><strong>What known full-suite false positives should be disclosed without hiding them?</strong>
+   See <a href="#known-full-suite-false-positive-classes">Known Full-Suite False-Positive Classes</a> below.</p>
+</li>
+<li>
+<p><strong>What security-sensitive findings must route to GitHub Security Advisories?</strong>
+   See <a href="#security-sensitive-reporting-instructions">Security-Sensitive Reporting Instructions</a> below.</p>
+</li>
+<li>
+<p><strong>What approval is required before any public snapshot/export/publish?</strong>
+   See <a href="#public-snapshot--export--publish-boundary">Public Snapshot / Export / Publish Boundary</a> below.</p>
+</li>
+<li>
+<p><strong>What are the next issues after the controlled review handoff?</strong>
+    See <a href="#recommended-next-issues">Recommended Next Issues</a> below.</p>
+</li>
+</ol>
+<hr />
+<h2 id="reviewer-scope">Reviewer Scope<a class="headerlink" href="#reviewer-scope" title="Permanent link">&para;</a></h2>
+<p>A controlled external technical reviewer may inspect:</p>
+<ul>
+<li><strong>Auth baseline</strong>: fail-closed startup, operator token hashing, tenant binding,
+  challenge-response auth, token expiry, rotation model.</li>
+<li><strong>Audit log baseline</strong>: append-only hash-chain, tamper-evidence, immutability
+  triggers, hash-chain verification helper.</li>
+<li><strong>Tenant isolation baseline</strong>: server-derived tenant context, application-layer
+  tenant-scoped routing, absence of cross-tenant data leakage in test suite.</li>
+<li><strong>API contract</strong>: <code>docs/openapi.yaml</code> endpoints, request/response shapes, error
+  semantics.</li>
+<li><strong>Grant lifecycle</strong>: create/approve/deny/revoke grant and grant-request flows
+  with synthetic/demo data.</li>
+<li><strong>Rate-limit baseline</strong>: request rate limiting, structured logging, correlation ID.</li>
+<li><strong>Runtime hardening</strong>: JSON body enforcement, query parameter validation, CORS
+  origin hardening, private key file permissions.</li>
+<li><strong>Identity/access posture</strong>: static admin token baseline, absence of production
+  OAuth/OIDC/JWT, identity gap documentation (GL-219).</li>
+<li><strong>Infrastructure posture</strong>: ephemeral/local-only SQLite and optional PostgreSQL,
+  dry-run backup/restore, no production infrastructure (GL-220).</li>
+<li><strong>Workspace posture</strong>: <code>workspace_id</code> reserved/nullable, not production-enforced,
+  gap documentation (GL-221).</li>
+<li><strong>Test suite</strong>: full backend test suite structure, known false-positive classes,
+  absence of real regressions.</li>
+<li><strong>Verification scripts</strong>: local-only dry-run/plan gate scripts; grant lifecycle
+  evidence bundle; first verifiable output helper.</li>
+</ul>
+<hr />
+<h2 id="excluded-scope">Excluded Scope<a class="headerlink" href="#excluded-scope" title="Permanent link">&para;</a></h2>
+<p>A reviewer must not inspect or receive:</p>
+<ul>
+<li>Real customer data, real grant applications, or real institutional data.</li>
+<li>Real credentials, tokens, DSNs, private keys, or auth headers.</li>
+<li>Internal Forgejo URLs, private IP addresses, private hostnames, or private
+  filesystem paths.</li>
+<li>Internal CI/CD configuration referencing private services.</li>
+<li>The <code>website-design/</code> directory or any website-design import/report files.</li>
+<li>Any <code>setup.py</code>, SDK <code>pyproject.toml</code>, <code>package.json</code>, <code>package-lock.json</code>,
+  or package publishing metadata.</li>
+<li>Production deployment configuration (Kubernetes, Terraform, Helm, cloud
+  provider integration).</li>
+<li>TLS certificates or private key files.</li>
+<li>GitHub workflow files without a separate review gate.</li>
+<li>Snapshot publish scripts unless separately reviewed and approved.</li>
+<li>Any public release branches, public release tags, or public export directories.</li>
+<li>Database dumps, backup files, or operational logs with real data.</li>
+<li>The <code>.git/</code> directory, venvs, <code>__pycache__/</code>, or build artifacts.</li>
+</ul>
+<hr />
+<h2 id="eligible-review-materials">Eligible Review Materials<a class="headerlink" href="#eligible-review-materials" title="Permanent link">&para;</a></h2>
+<p>The following materials are eligible for a controlled external technical review,
+subject to per-file secret/claim scanning before any future export:</p>
+<p><strong>Documentation and contracts:</strong>
+- <code>README.md</code> (claim-safe after GL-207)
+- <code>SECURITY.md</code> (routes to GitHub Security Advisories)
+- <code>AGENTS.md</code> (claim-safe)
+- <code>llms.txt</code> (claim-safe)
+- <code>llms-full.txt</code> (claim-safe)
+- <code>docs/openapi.yaml</code> (API contract, no real credentials)
+- Reviewed <code>docs/</code> artifacts for resolved issues (no internal-infrastructure references)</p>
+<p><strong>Examples and verification helpers:</strong>
+- <code>examples/first_verifiable_output.py</code> (local-only, synthetic only)
+- <code>examples/first_verifiable_output.json</code> (synthetic reference artifact)
+- <code>examples/grant_lifecycle_evidence_bundle.py</code> (local-only, synthetic/demo only)
+- <code>examples/grant_lifecycle_evidence_bundle.json</code> (synthetic evidence bundle)
+- <code>scripts/verify-first-output.sh</code> (local-only verification helper)</p>
+<p><strong>Gate scripts (dry-run/plan only, no real credentials):</strong>
+- <code>scripts/ops/gl205_live_postgres_validation.py</code>
+- <code>scripts/ops/gl205_backup_restore_drill.py</code>
+- <code>scripts/ops/gl209_audit_export_check.py</code>
+- <code>scripts/ops/gl216_production_operations_gate.py</code>
+- <code>scripts/ops/gl218_public_export_safety_scan.py</code>
+- <code>scripts/ops/gl219_identity_access_gate.py</code>
+- <code>scripts/ops/gl220_runtime_infrastructure_gate.py</code>
+- <code>scripts/ops/gl221_workspace_go_no_go_gate.py</code>
+- <code>scripts/ops/gl222_controlled_review_handoff_gate.py</code></p>
+<p><strong>Backend source (reference, no real secrets, subject to per-file scan):</strong>
+- <code>backend/src/server.py</code>, <code>backend/src/config.py</code>, <code>backend/src/auth.py</code>
+- <code>backend/src/identity_access.py</code>, <code>backend/src/operators.py</code>
+- <code>backend/src/audit_log.py</code>, <code>backend/src/db.py</code>, <code>backend/src/models.py</code>
+- <code>backend/src/grants.py</code>, <code>backend/src/grant_requests.py</code></p>
+<p><strong>Test suite:</strong>
+- <code>backend/tests/</code> (synthetic/demo data only, known false-positive classes disclosed)</p>
+<hr />
+<h2 id="prohibited-materials">Prohibited Materials<a class="headerlink" href="#prohibited-materials" title="Permanent link">&para;</a></h2>
+<p>The following must not be included in any controlled review handoff:</p>
+<ul>
+<li><code>.env*</code> files with real credentials</li>
+<li>Raw PostgreSQL DSNs with real hostnames or passwords</li>
+<li>Raw tokens, auth headers, or Bearer tokens</li>
+<li>PEM private key blocks (RSA, OPENSSH, EC, DSA)</li>
+<li>Real admin tokens or operator tokens</li>
+<li>Real SMTP, S3, or cloud credentials</li>
+<li>Real customer data, real grant applications, real institutional data, real PII</li>
+<li>Real private grant data or private attachments</li>
+<li>Database dumps, backup files, or logs containing real data</li>
+<li>Internal Forgejo URLs, private IPs, private hostnames, internal filesystem paths</li>
+<li><code>website-design/</code> directory and all contents</li>
+<li><code>docs/website_design_workspace_import_report.md</code> and similarly named files</li>
+<li><code>setup.py</code>, SDK <code>pyproject.toml</code>, <code>package.json</code>, <code>package-lock.json</code></li>
+<li>Analytics/tracking integrations or data collection forms</li>
+<li><code>.github/workflows/</code> files without separate review</li>
+<li>Snapshot publish scripts unless separately reviewed</li>
+<li>Production deployment config (Kubernetes, Terraform, Helm, cloud)</li>
+<li>Release metadata, public release branches, public release tags</li>
+<li>Data directories with real operational data</li>
+<li><code>.git/</code>, caches, venvs, <code>__pycache__/</code></li>
+</ul>
+<hr />
+<h2 id="allowed-claims">Allowed Claims<a class="headerlink" href="#allowed-claims" title="Permanent link">&para;</a></h2>
+<p>A reviewer may be told the following:</p>
+<ul>
+<li>"GrantLayer is Developer Preview / Controlled Preview with strict boundaries."</li>
+<li>"Local evaluation and controlled pilot with synthetic/demo data only."</li>
+<li>"Tenant/workspace isolation: baseline implemented, not production-complete."</li>
+<li>"Ephemeral live PostgreSQL validation passed with synthetic/demo data (GL-206B)."</li>
+<li>"Fail-closed auth baseline implemented; not production-grade IAM."</li>
+<li>"Append-only hash-chained audit baseline implemented."</li>
+<li>"Operator token hashing and tenant binding implemented."</li>
+<li>"Structured logging and rate-limit baseline implemented."</li>
+<li>"Controlled external technical review allowed only with strict boundaries and synthetic/demo data."</li>
+<li>"All examples use synthetic identifiers only."</li>
+<li>"All tokens and keys in examples are placeholders."</li>
+<li>"Security-sensitive reports route to GitHub Security Advisories."</li>
+<li>"Production SaaS is not claimed and not supported."</li>
+<li>"Real customer/private grant/institutional data is not ready."</li>
+<li>"Official SDK/package is not published."</li>
+<li>"workspace_id is reserved/nullable and not production-enforced."</li>
+<li>"Identity/access posture: static admin token baseline; no OIDC/SAML/SSO/MFA."</li>
+<li>"Runtime/infrastructure: ephemeral/local-only; no production infrastructure."</li>
+<li>"Public snapshot/export requires a later explicit approval gate."</li>
+</ul>
+<hr />
+<h2 id="prohibited-claims">Prohibited Claims<a class="headerlink" href="#prohibited-claims" title="Permanent link">&para;</a></h2>
+<p>A reviewer must not be told:</p>
+<ul>
+<li>"Production SaaS ready / production-grade / enterprise ready."</li>
+<li>"Ready for real customer data / private grant data / institutional data."</li>
+<li>"Compliance certification achieved (GDPR, SOC2, ISO, or any other)."</li>
+<li>"Official SDK available / official package published."</li>
+<li>"Live PostgreSQL production ready."</li>
+<li>"Independent security audit completed / penetration test passed."</li>
+<li>"Multi-tenant production isolation guaranteed / database RLS enforced."</li>
+<li>"OIDC / SAML / SSO / MFA implemented."</li>
+<li>"Public website is a production marketing launch."</li>
+<li>"Any claim implying a support SLA or uptime guarantee."</li>
+<li>"Any claim that implies real customer deployments are running."</li>
+<li>"workspace_id enforcement is production-complete."</li>
+</ul>
+<hr />
+<h2 id="data-boundary-synthetic-demo-only">Data Boundary: Synthetic / Demo Only<a class="headerlink" href="#data-boundary-synthetic-demo-only" title="Permanent link">&para;</a></h2>
+<p>Review materials are strictly synthetic/demo data only. This means:
+- All example outputs use synthetic grant IDs, tenant IDs, and applicant names.
+- No real applicant records, real grant applications, or real funding decisions.
+- No real institutional records or personal data.
+- No real private grant data or private attachments.
+- Any database fixture in the test suite uses synthetic identifiers only.
+- Reviewer must not supply real data to the local test environment.</p>
+<hr />
+<h2 id="real-customer-private-grant-institutional-data-boundary">Real Customer / Private Grant / Institutional Data Boundary<a class="headerlink" href="#real-customer-private-grant-institutional-data-boundary" title="Permanent link">&para;</a></h2>
+<p>Real customer data, private grant data, and institutional data are NO-GO for
+this controlled review. Any engagement that would involve real data requires:
+- Separate data governance and legal approval.
+- Production-grade security controls (not yet implemented).
+- Compliance certification relevant to the jurisdiction and data type (not yet
+  achieved).
+- Explicit owner sign-off beyond GL-222.</p>
+<hr />
+<h2 id="production-saas-boundary">Production SaaS Boundary<a class="headerlink" href="#production-saas-boundary" title="Permanent link">&para;</a></h2>
+<p>Production SaaS is NO-GO. GrantLayer does not support:
+- Live customer-facing grant management operations.
+- Production SLAs or uptime guarantees.
+- Production incident response in a customer environment.
+- Production scaling or multi-region deployment.</p>
+<p>Any claim of production SaaS readiness is prohibited.</p>
+<hr />
+<h2 id="public-snapshot-export-publish-boundary">Public Snapshot / Export / Publish Boundary<a class="headerlink" href="#public-snapshot-export-publish-boundary" title="Permanent link">&para;</a></h2>
+<p>Any public snapshot, export, or publish requires:
+- A separate explicit gate issue (not GL-222).
+- All items in the GL-218 safety scan checklist to pass.
+- Per-file secret scanning and claim-safety scanning of the candidate export.
+- Explicit owner approval for the specific export candidate.
+- No forbidden files (secrets, real data, internal infrastructure references,
+  forbidden path types) in the export candidate.
+- Manual human review of the export candidate before any push.</p>
+<p>GL-222 does not approve, initiate, or constitute any public export or publish.</p>
+<hr />
+<h2 id="official-sdk-package-boundary">Official SDK / Package Boundary<a class="headerlink" href="#official-sdk-package-boundary" title="Permanent link">&para;</a></h2>
+<p>Official SDK/package is NO-GO. The internal SDK prototype (<code>backend/sdk/</code>)
+is a local reference implementation only. It is not published to PyPI, npm,
+or any package registry. No <code>setup.py</code>, SDK <code>pyproject.toml</code>, <code>package.json</code>,
+or <code>package-lock.json</code> is added by GL-222. Official SDK/package availability
+is not claimed.</p>
+<hr />
+<h2 id="compliance-certification-boundary">Compliance Certification Boundary<a class="headerlink" href="#compliance-certification-boundary" title="Permanent link">&para;</a></h2>
+<p>Compliance certification is NO-GO. GrantLayer has not achieved and does not
+claim GDPR, SOC2, ISO, or any other compliance certification. Security-sensitive
+reports route to GitHub Security Advisories, not to a compliance body.</p>
+<hr />
+<h2 id="live-postgresql-production-readiness-boundary">Live PostgreSQL Production Readiness Boundary<a class="headerlink" href="#live-postgresql-production-readiness-boundary" title="Permanent link">&para;</a></h2>
+<p>Live PostgreSQL production readiness is NO-GO. GL-206B validated an ephemeral
+live PostgreSQL connection with synthetic/demo data only. No production
+PostgreSQL deployment is in place. No production database credentials, DSNs,
+or connection strings are present in review materials.</p>
+<hr />
+<h2 id="identity-access-status-after-gl-219">Identity / Access Status After GL-219<a class="headerlink" href="#identity-access-status-after-gl-219" title="Permanent link">&para;</a></h2>
+<p>GL-219 documented the identity and access hardening posture:
+- Static admin token baseline: implemented.
+- Operator token hashing and tenant binding: implemented.
+- Token expiry and rotation model: implemented.
+- OIDC / SAML / SSO / MFA: not implemented; explicitly NO-GO for production.
+- External identity provider integration: not implemented.
+- Production-grade IAM: not achieved.</p>
+<p>A reviewer may inspect the identity/access posture documentation but must be
+told that this is a Developer Preview baseline only, not a production-grade
+identity solution.</p>
+<hr />
+<h2 id="runtime-infrastructure-status-after-gl-220">Runtime / Infrastructure Status After GL-220<a class="headerlink" href="#runtime-infrastructure-status-after-gl-220" title="Permanent link">&para;</a></h2>
+<p>GL-220 documented the runtime and infrastructure hardening posture:
+- SQLite (ephemeral/dev): default runtime backend.
+- PostgreSQL (optional): validated with synthetic/demo data in ephemeral mode.
+- No production infrastructure: no production database, no production cloud
+  provider, no production Kubernetes/Terraform/Helm deployment.
+- Structured logging, rate limiting, and health/readiness endpoints: baseline only.
+- No production observability stack.
+- No production backup/restore automation.</p>
+<p>A reviewer may inspect the runtime/infrastructure posture documentation but
+must be told this is a local/ephemeral baseline only.</p>
+<hr />
+<h2 id="workspace-status-after-gl-221">Workspace Status After GL-221<a class="headerlink" href="#workspace-status-after-gl-221" title="Permanent link">&para;</a></h2>
+<p>GL-221 confirmed:
+- <code>workspace_id</code> is reserved/nullable and not production-enforced.
+- Tenant context is server-derived and enforced at application level.
+- Cross-workspace lookup and mutation denial: not yet claimed.
+- Trusted workspace context derivation: not implemented.
+- Workspace identity/membership/ownership model: not implemented.</p>
+<p>A reviewer may inspect the workspace posture documentation and test suite but
+must be told explicitly that workspace enforcement is a known gap.</p>
+<hr />
+<h2 id="public-export-safety-status-after-gl-218">Public / Export Safety Status After GL-218<a class="headerlink" href="#public-export-safety-status-after-gl-218" title="Permanent link">&para;</a></h2>
+<p>GL-218 documented:
+- No public export directory created.
+- No public snapshot worktree created.
+- No public GitHub push performed.
+- No repository visibility change performed.
+- Safety scan helper (<code>gl218_public_export_safety_scan.py</code>) is local-only.
+- Any future export requires all GL-218 checklist items and explicit approval.</p>
+<hr />
+<h2 id="known-limitations">Known Limitations<a class="headerlink" href="#known-limitations" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Limitation</th>
+<th>Severity</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>workspace_id</code> reserved/nullable — not production-enforced</td>
+<td>P1</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>Cross-workspace lookup/mutation denial not implemented</td>
+<td>P1</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>Static admin token — no OIDC/SAML/SSO/MFA</td>
+<td>P1</td>
+<td>Open (Developer Preview acceptable)</td>
+</tr>
+<tr>
+<td>No production database RLS or row-level isolation</td>
+<td>P1</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>No production infrastructure (PostgreSQL, cloud, Kubernetes)</td>
+<td>P1</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>No production observability stack</td>
+<td>P1</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>No production backup/restore automation</td>
+<td>P1</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>Tenant lifecycle (suspend/terminate/archive) not implemented</td>
+<td>P1</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>Workspace propagation for audit/evidence/provenance not complete</td>
+<td>P1</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>No compliance certification (GDPR, SOC2, ISO)</td>
+<td>P0</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>No independent security audit</td>
+<td>P1</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>No official SDK/package</td>
+<td>P0</td>
+<td>Open</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="known-full-suite-false-positive-classes">Known Full-Suite False-Positive Classes<a class="headerlink" href="#known-full-suite-false-positive-classes" title="Permanent link">&para;</a></h2>
+<p>The full backend test suite after GL-221 has 43 failures and 3 errors, all
+classified as pre-existing or scope-guard false positives. No real regressions
+exist. The known false-positive classes are:</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stale/branch-only scope guards</td>
+<td>Tests checking that certain branch-only changes are absent from main; trigger on branches that introduce new docs/scripts.</td>
+</tr>
+<tr>
+<td>Scanner/meta/path false positives</td>
+<td>Tests scanning for forbidden file patterns that match legitimate test or script names.</td>
+</tr>
+<tr>
+<td>Public/readiness stale wording false positives</td>
+<td>Tests checking for stale readiness language that match updated documentation wording.</td>
+</tr>
+<tr>
+<td>Stale migration-count guards</td>
+<td>Tests asserting a specific migration count that becomes stale when new migrations are added.</td>
+</tr>
+<tr>
+<td>Pre-existing GL-172 publish-worktree errors</td>
+<td>Errors from the publish-worktree path that pre-date GL-214 and are unresolved pre-existing issues.</td>
+</tr>
+<tr>
+<td>Unrelated pre-existing website-design import false positives</td>
+<td>Failures from unrelated <code>website-design/</code> import test scope that existed before GL-214.</td>
+</tr>
+<tr>
+<td>Pre-existing GRANTLAYER env errors</td>
+<td>Errors triggered by missing <code>GRANTLAYER_*</code> environment variables in bare test runs.</td>
+</tr>
+</tbody>
+</table>
+<p>GL-222 may add new branch-only scope-guard false positives for
+<code>docs/controlled_external_review_handoff_pack.md</code>,
+<code>docs/examples/gl222/controlled_external_review_handoff_pack.json</code>,
+<code>scripts/ops/gl222_controlled_review_handoff_gate.py</code>, and
+<code>backend/tests/test_gl222_controlled_external_review_handoff_pack.py</code>.
+These are expected and are not real regressions.</p>
+<hr />
+<h2 id="reviewer-safe-verification-commands">Reviewer-Safe Verification Commands<a class="headerlink" href="#reviewer-safe-verification-commands" title="Permanent link">&para;</a></h2>
+<p>The following commands reproduce core verification locally. They require no
+real credentials and produce no destructive side effects. All use synthetic
+or demo data only.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Core test suites</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl222_controlled_external_review_handoff_pack<span class="w"> </span>-v
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl221_workspace_enforcement_final_go_no_go_v6<span class="w"> </span>-v
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl220_production_runtime_infrastructure_hardening_pack<span class="w"> </span>-v
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl219_production_identity_access_hardening_pack<span class="w"> </span>-v
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl218_public_external_review_export_safety_pack<span class="w"> </span>-v
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl217_production_go_no_go_v5<span class="w"> </span>-v
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl216_production_operations_hardening_pack<span class="w"> </span>-v
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl215_tenant_workspace_production_guarantee<span class="w"> </span>-v
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl214_production_iam_operator_control_completion<span class="w"> </span>-v
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_security_boundary_regression<span class="w"> </span>-v
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>python3<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>backend.tests.test_gl089_auth_default_fail_closed_startup<span class="w"> </span>-v
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="c1"># First verifiable output</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>scripts/verify-first-output.sh
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="c1"># Grant lifecycle evidence bundle (synthetic/demo only)</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>python3<span class="w"> </span>examples/grant_lifecycle_evidence_bundle.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">  </span>--output<span class="w"> </span>/tmp/grantlayer_review_grant_lifecycle_check.json
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>diff<span class="w"> </span>-u<span class="w"> </span>examples/grant_lifecycle_evidence_bundle.json<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">  </span>/tmp/grantlayer_review_grant_lifecycle_check.json
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="c1"># Dry-run/plan gate scripts (no real credentials required)</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>python3<span class="w"> </span>scripts/ops/gl205_live_postgres_validation.py<span class="w"> </span>--dry-run
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>python3<span class="w"> </span>scripts/ops/gl205_live_postgres_validation.py<span class="w"> </span>--plan
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>python3<span class="w"> </span>scripts/ops/gl205_backup_restore_drill.py<span class="w"> </span>--dry-run
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>python3<span class="w"> </span>scripts/ops/gl205_backup_restore_drill.py<span class="w"> </span>--plan
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>python3<span class="w"> </span>scripts/ops/gl209_audit_export_check.py<span class="w"> </span>--dry-run
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>python3<span class="w"> </span>scripts/ops/gl209_audit_export_check.py<span class="w"> </span>--plan
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>python3<span class="w"> </span>scripts/ops/gl216_production_operations_gate.py<span class="w"> </span>--dry-run
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>python3<span class="w"> </span>scripts/ops/gl216_production_operations_gate.py<span class="w"> </span>--plan
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>python3<span class="w"> </span>scripts/ops/gl218_public_export_safety_scan.py<span class="w"> </span>--plan
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>python3<span class="w"> </span>scripts/ops/gl219_identity_access_gate.py<span class="w"> </span>--dry-run
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>python3<span class="w"> </span>scripts/ops/gl219_identity_access_gate.py<span class="w"> </span>--plan
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>python3<span class="w"> </span>scripts/ops/gl220_runtime_infrastructure_gate.py<span class="w"> </span>--dry-run
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>python3<span class="w"> </span>scripts/ops/gl220_runtime_infrastructure_gate.py<span class="w"> </span>--plan
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>python3<span class="w"> </span>scripts/ops/gl221_workspace_go_no_go_gate.py<span class="w"> </span>--dry-run
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>python3<span class="w"> </span>scripts/ops/gl221_workspace_go_no_go_gate.py<span class="w"> </span>--plan
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="c1"># GL-222 handoff gate (local-only, dry-run/plan only)</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>python3<span class="w"> </span>scripts/ops/gl222_controlled_review_handoff_gate.py<span class="w"> </span>--dry-run
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>python3<span class="w"> </span>scripts/ops/gl222_controlled_review_handoff_gate.py<span class="w"> </span>--plan
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="c1"># Full backend test suite (optional, ~9004 tests)</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>scripts/run-full-backend-suite.sh
+</code></pre></div>
+<hr />
+<h2 id="security-sensitive-reporting-instructions">Security-Sensitive Reporting Instructions<a class="headerlink" href="#security-sensitive-reporting-instructions" title="Permanent link">&para;</a></h2>
+<p>Security-sensitive findings must be reported via:</p>
+<p><strong>GitHub Security Advisories</strong> — use the private security disclosure mechanism
+on the GrantLayer GitHub repository.</p>
+<p>Do <strong>not</strong> file security findings as public GitHub issues. Do <strong>not</strong> share
+exploit details in public channels, pull request comments, or public forums.
+Do <strong>not</strong> include real credentials, tokens, private keys, or customer data
+in any security report.</p>
+<p>Exploit details are excluded from all GL-222 materials. This policy is
+consistent with SECURITY.md and has been in place since GL-153.</p>
+<hr />
+<h2 id="optional-handoff-gate-script-summary">Optional Handoff Gate Script Summary<a class="headerlink" href="#optional-handoff-gate-script-summary" title="Permanent link">&para;</a></h2>
+<p><code>scripts/ops/gl222_controlled_review_handoff_gate.py</code> is a local-only,
+dry-run/plan-only gate script. It:</p>
+<ul>
+<li>Verifies that <code>docs/controlled_external_review_handoff_pack.md</code> exists.</li>
+<li>Verifies that <code>docs/examples/gl222/controlled_external_review_handoff_pack.json</code>
+  exists and is valid JSON.</li>
+<li>Verifies that the JSON contains <code>issue_id: GL-222</code>.</li>
+<li>Checks for forbidden file patterns (public export dirs, snapshot worktrees,
+  setup.py, SDK pyproject.toml, package.json, deployment/cloud/Kubernetes files,
+  TLS cert/key files, GitHub workflow changes for GL-222).</li>
+<li>Scans GL-222 documentation and artifact content for obvious secret-like text
+  patterns, redacting any findings in output.</li>
+<li>Explicitly states in output that it is not approval to publish and not a full
+  security audit.</li>
+<li>Does not create public export directories.</li>
+<li>Does not copy files to a public snapshot.</li>
+<li>Does not contact external services or require credentials.</li>
+<li>Does not run destructive commands.</li>
+<li>Does not modify repository files.</li>
+</ul>
+<hr />
+<h2 id="production-readiness-impact">Production-Readiness Impact<a class="headerlink" href="#production-readiness-impact" title="Permanent link">&para;</a></h2>
+<p>GL-222 has no impact on production readiness. It is documentation and
+tooling only. All NO-GO decisions from GL-221 remain in force.</p>
+<hr />
+<h2 id="controlled-preview-impact">Controlled-Preview Impact<a class="headerlink" href="#controlled-preview-impact" title="Permanent link">&para;</a></h2>
+<p>GL-222 confirms that the Controlled External Technical Review posture remains
+GO with strict boundaries. It provides the internal handoff documentation that
+would be used if and when a review is initiated. It does not change the
+controlled preview scope or the synthetic/demo-only data boundary.</p>
+<hr />
+<h2 id="remaining-blockers">Remaining Blockers<a class="headerlink" href="#remaining-blockers" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Severity</th>
+<th>Category</th>
+<th>Description</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0-production-saas</td>
+<td>P0</td>
+<td>Production SaaS</td>
+<td>No production SaaS readiness</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>P0-real-data</td>
+<td>P0</td>
+<td>Data</td>
+<td>No real customer/private/institutional data readiness</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>P0-compliance</td>
+<td>P0</td>
+<td>Compliance</td>
+<td>No compliance certification achieved</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>P1-workspace</td>
+<td>P1</td>
+<td>Workspace</td>
+<td>workspace_id not production-enforced</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>P1-iam</td>
+<td>P1</td>
+<td>IAM</td>
+<td>No OIDC/SAML/SSO/MFA; static admin token only</td>
+<td>Open (Dev Preview OK)</td>
+</tr>
+<tr>
+<td>P1-infra</td>
+<td>P1</td>
+<td>Infrastructure</td>
+<td>No production database or cloud infra</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>P1-audit-workspace</td>
+<td>P1</td>
+<td>Audit</td>
+<td>Workspace propagation in audit/evidence not complete</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>P1-cross-workspace</td>
+<td>P1</td>
+<td>Isolation</td>
+<td>Cross-workspace lookup/mutation denial not implemented</td>
+<td>Open</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Severity</th>
+<th>Status</th>
+<th>Mitigation</th>
+<th>Remaining Work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Workspace boundary overclaim</td>
+<td>P0</td>
+<td>Open</td>
+<td>Explicit NO-GO language and tests</td>
+<td>Implement and verify workspace model</td>
+</tr>
+<tr>
+<td>Real-data misuse in preview</td>
+<td>P0</td>
+<td>Open</td>
+<td>Synthetic/demo-only boundary enforced</td>
+<td>Legal/security/data-governance approval</td>
+</tr>
+<tr>
+<td>Public/export leakage</td>
+<td>P1</td>
+<td>Controlled</td>
+<td>GL-218 separate gate and scans</td>
+<td>Manual export candidate review</td>
+</tr>
+<tr>
+<td>Static admin token in production context</td>
+<td>P1</td>
+<td>Open (Dev Preview OK)</td>
+<td>Token is dev-only; never in production</td>
+<td>Production IAM implementation</td>
+</tr>
+<tr>
+<td>Missing database RLS</td>
+<td>P1</td>
+<td>Open</td>
+<td>Tenant-scoped app controls preserved</td>
+<td>Production DB isolation implementation</td>
+</tr>
+<tr>
+<td>Review boundary drift</td>
+<td>P1</td>
+<td>Controlled</td>
+<td>GL-222 handoff pack documents boundaries</td>
+<td>Periodic boundary review</td>
+</tr>
+<tr>
+<td>Reviewer receives prohibited materials</td>
+<td>P1</td>
+<td>Controlled</td>
+<td>GL-222 prohibited materials list</td>
+<td>Pre-handoff export scan</td>
+</tr>
+<tr>
+<td>Security-sensitive finding disclosed publicly</td>
+<td>P1</td>
+<td>Controlled</td>
+<td>GitHub Security Advisories routing</td>
+<td>Reviewer briefing</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><code>controlled_external_review_handoff_pack_ready_for_merge</code></p>
+<p>The handoff pack is complete. Controlled External Technical Review remains
+GO with strict boundaries per GL-221 final readiness matrix v6. This pack
+may be used to brief a future controlled external technical reviewer. No
+public export, publish, or reviewer outreach is initiated by GL-222.</p>
+<hr />
+<h2 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Permanent link">&para;</a></h2>
+<p>GL-222 answers all ten required handoff questions. It documents the current
+allowed review posture, eligible and prohibited materials, allowed and prohibited
+claims, known limitations, known false-positive classes, reviewer-safe
+reproduction commands, security-sensitive report routing, the public/export/
+publish approval boundary, and the next roadmap. All NO-GO decisions from
+GL-221 remain unchanged. No backend source, migrations, schema, dependencies,
+GitHub workflows, snapshot publish scripts, or production deployment config
+are modified. No public export is created. No reviewer is contacted.</p>
+<hr />
+<h2 id="safety-confirmations">Safety Confirmations<a class="headerlink" href="#safety-confirmations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GL-222 is an internal controlled-review handoff pack, not reviewer outreach: YES</li>
+<li>GL-222 does not create a public export: YES</li>
+<li>GL-222 does not publish to public GitHub: YES</li>
+<li>GL-222 does not change repository visibility: YES</li>
+<li>GL-222 does not approve public snapshot/export/publish: YES</li>
+<li>Controlled External Technical Review is GO only with strict boundaries: YES</li>
+<li>Review materials remain synthetic/demo only: YES</li>
+<li>Production SaaS remains NO-GO: YES</li>
+<li>Real customer/private grant/institutional data remains NO-GO: YES</li>
+<li>Official SDK/package remains NO-GO: YES</li>
+<li>Compliance certification remains NO-GO: YES</li>
+<li>Live PostgreSQL production readiness remains NO-GO: YES</li>
+<li>Security-sensitive reports route to GitHub Security Advisories: YES</li>
+<li>No exploit details included: YES</li>
+<li>No real secrets included: YES</li>
+<li>No real customer/private data included: YES</li>
+<li>No backend/src changes: YES</li>
+<li>No migrations/DB/schema/dependency changes: YES</li>
+<li>No GitHub workflow changes: YES</li>
+<li>No snapshot publish script changes: YES</li>
+<li>No package publishing metadata: YES</li>
+<li>No deployment/cloud/Kubernetes/Terraform/Helm changes: YES</li>
+<li>No TLS certificate/private key files: YES</li>
+<li>No public snapshot export directory: YES</li>
+<li>No public snapshot worktree: YES</li>
+<li>No force-push: YES</li>
+<li>Unrelated website-design/import files excluded: YES</li>
+<li>GL-214 IAM/operator-control hardening preserved: YES</li>
+<li>GL-215 tenant/workspace guarantees preserved: YES</li>
+<li>GL-216 production operations hardening preserved: YES</li>
+<li>GL-217 Go/No-Go v5 decisions preserved: YES</li>
+<li>GL-218 public/export safety boundaries preserved: YES</li>
+<li>GL-219 identity/access hardening preserved: YES</li>
+<li>GL-220 runtime/infrastructure hardening preserved: YES</li>
+<li>GL-221 final Go/No-Go v6 decisions preserved: YES</li>
+</ul>
+<hr />
+<h2 id="recommended-next-issues">Recommended Next Issues<a class="headerlink" href="#recommended-next-issues" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Title</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GL-223</td>
+<td>Workspace Identity / Membership / Ownership Implementation Plan</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>GL-224</td>
+<td>Workspace-Scoped Lookup and Mutation Enforcement</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>GL-225</td>
+<td>Workspace Propagation for Evidence / Provenance / Audit / Compliance / Export</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>GL-226</td>
+<td>Production Identity Provider Readiness Gate (OIDC/SAML/SSO/MFA)</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>GL-227</td>
+<td>Live PostgreSQL Production Readiness Gate</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>GL-228</td>
+<td>Production Backup / Restore Automation</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>GL-229</td>
+<td>Production Observability Stack Baseline</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>GL-230</td>
+<td>Compliance Certification Readiness Assessment</td>
+<td>P0</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/discodone/grantlayer" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

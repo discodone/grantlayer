@@ -1,0 +1,291 @@
+{
+  "schemaVersion": "gl075-1.0",
+  "description": "Product Foundation Claude Review Gate findings. This JSON is a review artifact; no implementation is provided by GL-075.",
+  "generatedBy": "GL-075",
+  "reviewDate": "2026-05-20",
+  "review_scope": [
+    "Architecture consistency across GL-064 through GL-073",
+    "API-first / Product Core boundary alignment",
+    "Runtime configuration readiness for implementation",
+    "Auth / operator-access readiness for implementation",
+    "Secret-management readiness for implementation",
+    "Persistence / PostgreSQL readiness for implementation",
+    "Observability / structured logging readiness for implementation",
+    "Backup / restore / data-lifecycle readiness for implementation",
+    "Operational runbook / incident-response readiness for implementation",
+    "Implementation sequencing risks and dependencies",
+    "Test strategy sufficiency for the first implementation cut"
+  ],
+  "reviewed_documents": [
+    "docs/api_openapi_contract_hardening_review.md",
+    "docs/product_architecture_extension_boundaries.md",
+    "docs/runtime_configuration_environment_model.md",
+    "docs/production_auth_operator_access_design.md",
+    "docs/secret_management_baseline_design.md",
+    "docs/deployment_package_runtime_modes_design.md",
+    "docs/persistence_backend_postgresql_readiness_design.md",
+    "docs/observability_structured_logging_baseline_design.md",
+    "docs/backup_restore_data_lifecycle_design.md",
+    "docs/operational_runbook_incident_response_design.md",
+    "docs/product_foundation_readiness_review.md",
+    "docs/product_foundation_implementation_cut.md",
+    "docs/examples/gl074/product_foundation_readiness_matrix.json",
+    "docs/examples/gl074/product_foundation_implementation_backlog.json"
+  ],
+  "findings": [
+    {
+      "category": "api_contract",
+      "status": "proceed",
+      "summary": "API/OpenAPI contract hardening review (GL-064) correctly separates Pilot-Ready from Production-Ready. Contract freeze process is design-only and appropriately deferred until after pilot feedback.",
+      "risk_level": "medium",
+      "recommendation": "Do not implement API contract changes in the first cut. Reserve contract freeze work for a later dedicated issue.",
+      "related_docs": [
+        "docs/api_openapi_contract_hardening_review.md",
+        "docs/openapi.yaml",
+        "docs/production_hardening_roadmap.md"
+      ]
+    },
+    {
+      "category": "architecture_boundaries",
+      "status": "proceed_with_cautions",
+      "summary": "Product architecture extension boundaries (GL-065) are coherent. Stable Product Core and extension surfaces are well-defined. Adapter rules are consistent across documents.",
+      "risk_level": "low",
+      "recommendation": "Proceed. Validate extension boundary assumptions during the first adapter implementation (GL-078 or GL-079). Avoid letting optional integrations become hidden Product Core dependencies.",
+      "related_docs": [
+        "docs/product_architecture_extension_boundaries.md",
+        "docs/examples/gl065/product_architecture_map.json",
+        "docs/examples/gl065/extension_boundary_catalog.json"
+      ]
+    },
+    {
+      "category": "runtime_configuration",
+      "status": "proceed",
+      "summary": "Runtime configuration environment model (GL-066) is complete. Six runtime modes, 20 configuration categories, and production fail-closed rules are well-specified.",
+      "risk_level": "medium",
+      "recommendation": "Implement GL-076 (Runtime Configuration Enforcement Baseline) as the first issue. Keep scope to config loader, runtime mode detection, and startup validation.",
+      "related_docs": [
+        "docs/runtime_configuration_environment_model.md",
+        "docs/examples/gl066/runtime_environment_matrix.json",
+        "docs/examples/gl066/configuration_contract_catalog.json"
+      ]
+    },
+    {
+      "category": "operator_auth_access",
+      "status": "proceed_with_cautions",
+      "summary": "Production auth and operator access design (GL-067) defines eight stable roles and twelve capability boundaries. Auth provider adapter boundary is correctly abstracted.",
+      "risk_level": "high",
+      "recommendation": "Implement operator access hardening only after runtime config, logging, and secret boundary are in place. Do not implement OAuth/JWT/SSO in the first cut.",
+      "related_docs": [
+        "docs/production_auth_operator_access_design.md",
+        "docs/examples/gl067/auth_operator_role_matrix.json",
+        "docs/examples/gl067/operator_access_boundary_catalog.json"
+      ]
+    },
+    {
+      "category": "secret_management",
+      "status": "proceed_with_cautions",
+      "summary": "Secret management baseline design (GL-068) defines 14 secret categories, forbidden locations, and redaction rules. Secret source boundary is correctly abstracted.",
+      "risk_level": "high",
+      "recommendation": "Implement GL-078 (Secret Source Boundary Hardening) after runtime config and logging. Include a test verifying the demo keypair is no longer used in production-like modes. Ensure redaction is in place before real secrets are wired.",
+      "related_docs": [
+        "docs/secret_management_baseline_design.md",
+        "docs/examples/gl068/secret_inventory_model.json",
+        "docs/examples/gl068/secret_handling_policy_catalog.json"
+      ]
+    },
+    {
+      "category": "persistence_postgresql",
+      "status": "proceed_with_cautions",
+      "summary": "Persistence backend boundary and PostgreSQL readiness design (GL-070) correctly separates Product Core persistence from backend-specific implementation. SQLite is bounded to non-production. PostgreSQL is the primary production candidate.",
+      "risk_level": "high",
+      "recommendation": "Implement GL-079 (Persistence Backend Boundary Groundwork) after runtime config and logging. Keep first cut limited to backend selection abstraction and connection placeholders. Do not rewrite migrations.",
+      "related_docs": [
+        "docs/persistence_backend_postgresql_readiness_design.md",
+        "docs/examples/gl070/persistence_backend_matrix.json",
+        "docs/examples/gl070/postgresql_readiness_catalog.json"
+      ]
+    },
+    {
+      "category": "observability_logging",
+      "status": "proceed",
+      "summary": "Observability and structured logging baseline design (GL-071) establishes a strong foundation. Structured JSON baseline, event categories, correlation IDs, and log/audit boundary are well-defined.",
+      "risk_level": "medium",
+      "recommendation": "Implement GL-077 (Structured Logging / Correlation ID Helper Baseline) after runtime config. Scope to logger factory, correlation helper, and redaction utility. Do not rewrite all existing log statements in one issue.",
+      "related_docs": [
+        "docs/observability_structured_logging_baseline_design.md",
+        "docs/examples/gl071/structured_logging_field_catalog.json",
+        "docs/examples/gl071/observability_event_model.json"
+      ]
+    },
+    {
+      "category": "backup_restore_lifecycle",
+      "status": "proceed",
+      "summary": "Backup, restore, and data lifecycle design (GL-072) defines data categories by recovery criticality, scoped restore models, retention baseline, and lifecycle stages. Secrets are correctly excluded from ordinary backups.",
+      "risk_level": "medium",
+      "recommendation": "Schedule backup/restore/data lifecycle jobs after persistence abstraction and operator access are complete. Do not implement backup jobs in the first cut.",
+      "related_docs": [
+        "docs/backup_restore_data_lifecycle_design.md",
+        "docs/examples/gl072/backup_restore_scope_matrix.json",
+        "docs/examples/gl072/data_lifecycle_policy_catalog.json"
+      ]
+    },
+    {
+      "category": "operational_runbook_incident_response",
+      "status": "proceed",
+      "summary": "Operational runbook and incident response baseline design (GL-073) defines severity model, incident lifecycle, runbook categories, escalation boundaries, and safe manual intervention rules.",
+      "risk_level": "medium",
+      "recommendation": "Schedule incident response automation after observability metrics are operational. Do not implement monitoring or alerting in the first cut.",
+      "related_docs": [
+        "docs/operational_runbook_incident_response_design.md",
+        "docs/examples/gl073/incident_severity_matrix.json",
+        "docs/examples/gl073/operational_runbook_catalog.json"
+      ]
+    },
+    {
+      "category": "implementation_sequence",
+      "status": "proceed_with_cautions",
+      "summary": "The GL-074 implementation cut proposes a sensible dependency order. Cross-cutting risks (configuration drift, secret leakage during logging, audit integrity during persistence, rollback incompatibility, test matrix explosion, premature claims) are identified.",
+      "risk_level": "medium",
+      "recommendation": "Follow the recommended ordering strictly. Keep each issue small. Include rollback plans. Use periodic Claude Code review for security-sensitive blocks, not every issue.",
+      "related_docs": [
+        "docs/product_foundation_implementation_cut.md",
+        "docs/examples/gl074/product_foundation_implementation_backlog.json"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "id": "risk-001",
+      "title": "Configuration drift",
+      "description": "If runtime configuration is not validated at startup, downstream blocks may run against unintended settings.",
+      "risk_level": "high",
+      "mitigation": "Keep GL-075 small, validate all modes, and fail closed."
+    },
+    {
+      "id": "risk-002",
+      "title": "Secret leakage during logging",
+      "description": "If structured logging does not include secret redaction before secret or auth implementation, secrets may be logged.",
+      "risk_level": "high",
+      "mitigation": "Redaction helper must be the first component of GL-077."
+    },
+    {
+      "id": "risk-003",
+      "title": "Audit/provenance integrity during persistence",
+      "description": "Persistence work must not overwrite audit or provenance records.",
+      "risk_level": "medium",
+      "mitigation": "Persistence abstraction must treat audit/provenance as append-only."
+    },
+    {
+      "id": "risk-004",
+      "title": "Rollback incompatibility",
+      "description": "Auth or persistence changes without a tested rollback path could lock operators out or corrupt data.",
+      "risk_level": "medium",
+      "mitigation": "Every issue must include a rollback plan; no irreversible schema migrations in the first cut."
+    },
+    {
+      "id": "risk-005",
+      "title": "Testing matrix explosion",
+      "description": "Adding PostgreSQL, multiple runtime modes, and auth paths multiplies the test surface.",
+      "risk_level": "medium",
+      "mitigation": "Each block includes targeted tests; full backend suite must pass with zero failures before merge."
+    },
+    {
+      "id": "risk-006",
+      "title": "Premature production claims",
+      "description": "Successful implementation blocks may be misinterpreted as production readiness.",
+      "risk_level": "medium",
+      "mitigation": "Every issue document must restate the non-production disclaimer."
+    }
+  ],
+  "recommended_next_issues": [
+    {
+      "id": "GL-076",
+      "title": "Runtime Configuration Enforcement Baseline",
+      "rationale": "Foundational enabler; all other blocks depend on a validated configuration model."
+    },
+    {
+      "id": "GL-077",
+      "title": "Health / Readiness Endpoint Baseline",
+      "rationale": "Minimal operational signal required by runbooks and deployment validation."
+    },
+    {
+      "id": "GL-078",
+      "title": "Structured Logging / Correlation ID Helper Baseline",
+      "rationale": "Required before auth, persistence, or incident response can emit auditable, traceable events. Must include secret redaction."
+    },
+    {
+      "id": "GL-079",
+      "title": "Secret Source Boundary Hardening",
+      "rationale": "Secrets must be managed before auth tokens or database credentials are hardened. Must replace demo keypair."
+    },
+    {
+      "id": "GL-080",
+      "title": "Persistence Backend Boundary Groundwork",
+      "rationale": "Database connection and migration patterns must be stable before backup/restore or incident response can rely on them."
+    },
+    {
+      "id": "GL-081+",
+      "title": "Operator Access Hardening",
+      "rationale": "Auth can be wired once configuration, logging, and secrets are in place."
+    },
+    {
+      "id": "GL-082+",
+      "title": "Deployment / Runtime Mode Validation",
+      "rationale": "Deployment artifacts can be hardened once runtime configuration and health signals are implemented."
+    },
+    {
+      "id": "GL-083+",
+      "title": "Backup / Restore / Data Lifecycle Jobs",
+      "rationale": "Depends on persistence, secrets, logging, and operator access."
+    },
+    {
+      "id": "GL-084+",
+      "title": "Observability Metrics and Alerting",
+      "rationale": "Depends on logging, health endpoints, and configuration."
+    },
+    {
+      "id": "GL-085+",
+      "title": "Incident Response Automation",
+      "rationale": "Depends on all of the above."
+    }
+  ],
+  "stop_gates": [
+    {
+      "trigger": "Before GL-078 (Secret Source Boundary)",
+      "requirements": [
+        "GL-075 runtime config enforcement must be merged and passing",
+        "GL-077 structured logging baseline must be merged and passing",
+        "A test must verify that no real secrets exist in fixtures or demo data"
+      ]
+    },
+    {
+      "trigger": "Before GL-079 (Persistence Backend Groundwork)",
+      "requirements": [
+        "GL-075 runtime config enforcement must be merged and passing",
+        "GL-077 structured logging baseline must be merged and passing",
+        "A rollback plan must be documented for any persistence abstraction change"
+      ]
+    },
+    {
+      "trigger": "Before GL-081 (Operator Access Hardening)",
+      "requirements": [
+        "GL-075 runtime config enforcement must be merged and passing",
+        "GL-077 structured logging baseline must be merged and passing",
+        "GL-078 secret source boundary must be merged and passing",
+        "Existing admin-token and operator-token test paths must not be broken"
+      ]
+    },
+    {
+      "trigger": "Before any production claim",
+      "requirements": [
+        "All P0 gates from docs/production_hardening_roadmap.md must be implemented and verified",
+        "PostgreSQL must be a first-class CI target",
+        "Backup/restore jobs must be implemented and tested",
+        "Observability metrics and alerting must be operational",
+        "Incident response automation must be in place",
+        "API contract freeze process must be completed"
+      ]
+    }
+  ],
+  "review_disposition": "proceed_with_cautions"
+}
