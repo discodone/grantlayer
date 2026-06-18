@@ -191,5 +191,5 @@ backend/
 docs/
   openapi.yaml            OpenAPI 3.0 specification
 sdk/
-  python/                 Python client SDK (canonical)
+  grantlayer/             Python client SDK (canonical, pip-installable package)
 ```
