@@ -10,11 +10,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from ..admin import router as admin_ui_module
 from ..core import config
 from ..core.db import init_db
 from ..core.logging_utils import get_logger, reset_correlation_id, set_correlation_id
 from ..core.rate_limiter import create_rate_limiter
 from ..core.structured_logging import normalize_correlation_id
+from ..core.telemetry import get_current_trace_id, instrument_fastapi, setup_telemetry
 from .routers import (
     admin,
     agent_permissions,
@@ -22,15 +24,19 @@ from .routers import (
     audit_events,
     auditor,
     auth,
+    bulk,
     challenges,
     compliance,
     decision_provenance,
     demo,
     evidence,
     executions,
+    exports,
     grant_requests,
     grants,
     health,
+    jobs,
+    notifications,
     oidc,
     operators_me,
     policy_requirements,
@@ -50,9 +56,11 @@ _SECURITY_HEADERS = {
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
-    """Initialize DB on startup."""
+    """Initialize DB and OTEL on startup."""
     app.state.start_time = time.time()
     init_db()
+    setup_telemetry("grantlayer")
+    instrument_fastapi(app)
     _logger.info("GrantLayer FastAPI layer started (Phase 2)")
     yield
     _logger.info("GrantLayer FastAPI layer shutting down")
@@ -125,6 +133,9 @@ def create_app() -> FastAPI:
             response = await call_next(request)
             status_code = response.status_code
             response.headers["X-Correlation-ID"] = correlation_id
+            trace_id = get_current_trace_id()
+            if trace_id:
+                response.headers["X-Trace-Id"] = trace_id
             return response
         except Exception:
             had_exception = True
@@ -238,6 +249,9 @@ def create_app() -> FastAPI:
             },
         )
 
+    # Admin UI — served at /admin (outside /v1/ versioning)
+    app.include_router(admin_ui_module.router)
+
     # Health endpoints — no versioning (infrastructure checks must be stable)
     app.include_router(health.router)
 
@@ -260,6 +274,11 @@ def create_app() -> FastAPI:
     app.include_router(decision_provenance.router, prefix="/v1")
     app.include_router(policy_requirements.router, prefix="/v1")
     app.include_router(webhooks.router, prefix="/v1")
+    app.include_router(jobs.router, prefix="/v1")
+    app.include_router(notifications.router, prefix="/v1")
+    app.include_router(exports.router, prefix="/v1")
+    app.include_router(bulk.grants_bulk_router, prefix="/v1")
+    app.include_router(bulk.grant_requests_bulk_router, prefix="/v1")
     app.include_router(demo.router, prefix="/v1")
     if config.ENABLE_DEMO_ENDPOINTS:
         app.include_router(demo.tamper_router, prefix="/v1")
