@@ -151,13 +151,11 @@ paths:
         - OperatorToken: []
       responses:
         "200":
-          description: List of grants
+          description: Paginated list of grants (wrapper object, not raw array)
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Grant"
+                $ref: "#/components/schemas/GrantListResponse"
         "401":
           description: Authentication required
           content:
@@ -331,13 +329,11 @@ paths:
         - OperatorToken: []
       responses:
         "200":
-          description: List of grant requests
+          description: Paginated list of grant requests (wrapper object, not raw array)
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/GrantRequest"
+                $ref: "#/components/schemas/GrantRequestListResponse"
         "401":
           description: Authentication required
           content:
@@ -2237,6 +2233,46 @@ components:
         creation and are not retrievable afterward.
 
   schemas:
+    GrantListResponse:
+      type: object
+      required: [items, total, limit, offset]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Grant"
+        total:
+          type: integer
+          description: Total number of matching grants across all pages
+        limit:
+          type: integer
+        offset:
+          type: integer
+        next_cursor:
+          type: string
+          nullable: true
+          description: Opaque cursor for the next page; null when on the last page
+
+    GrantRequestListResponse:
+      type: object
+      required: [items, total, limit, offset]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrantRequest"
+        total:
+          type: integer
+          description: Total number of matching grant requests across all pages
+        limit:
+          type: integer
+        offset:
+          type: integer
+        next_cursor:
+          type: string
+          nullable: true
+          description: Opaque cursor for the next page; null when on the last page
+
     ErrorResponse:
       type: object
       required: [error]
