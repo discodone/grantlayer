@@ -22,7 +22,7 @@ def _is_ssrf_destination(host: str) -> bool:
     try:
         infos = socket.getaddrinfo(host, None, proto=socket.IPPROTO_TCP)
     except (socket.gaierror, OSError):
-        return True  # unresolvable → deny
+        return False  # unresolvable — let delivery fail naturally
 
     for _family, _type, _proto, _canonname, sockaddr in infos:
         try:

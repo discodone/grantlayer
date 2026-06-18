@@ -1014,10 +1014,11 @@ class TestOpaCoverage(unittest.TestCase):
             result = evaluate_policy_sync("grant.create", {"role": "admin"}, {})
         self.assertTrue(result)
 
-    def test_evaluate_policy_sync_unreachable_returns_true(self):
-        """evaluate_policy_sync returns True (graceful fallback) when OPA unreachable."""
+    def test_evaluate_policy_sync_unreachable_raises_503(self):
+        """evaluate_policy_sync raises HTTPException 503 (fail-closed) when OPA unreachable."""
         from backend.src.policy.opa_client import evaluate_policy_sync
         import httpx
+        from fastapi import HTTPException
         with patch.dict(os.environ, {"GRANTLAYER_OPA_URL": "http://opa:8181"}):
             with patch("httpx.Client") as mock_cls:
                 mock_client = MagicMock()
@@ -1025,8 +1026,9 @@ class TestOpaCoverage(unittest.TestCase):
                 mock_client.__exit__ = MagicMock(return_value=None)
                 mock_client.post = MagicMock(side_effect=httpx.ConnectError("refused"))
                 mock_cls.return_value = mock_client
-                result = evaluate_policy_sync("grant.create", {"role": "admin"}, {})
-        self.assertTrue(result)
+                with self.assertRaises(HTTPException) as ctx:
+                    evaluate_policy_sync("grant.create", {"role": "admin"}, {})
+        self.assertEqual(ctx.exception.status_code, 503)
 
     def test_evaluate_policy_sync_allowed_returns_true(self):
         """evaluate_policy_sync returns True when OPA allows."""

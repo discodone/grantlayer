@@ -470,7 +470,7 @@ class TestWebhookModuleEndpoints:
     def test_post_test_records_failed_delivery(self):
         """POST /test records a delivery attempt even when the target is unreachable."""
         import httpx
-        wh = self._create_webhook(url="http://localhost:19999/unreachable")
+        wh = self._create_webhook(url="http://93.184.216.34:19999/unreachable")
 
         with patch("httpx.AsyncClient.post", side_effect=httpx.ConnectError("refused")):
             resp = self.client.post(f"/v1/webhooks/{wh['id']}/test", headers=self.auth)
@@ -485,7 +485,7 @@ class TestWebhookModuleEndpoints:
     def test_post_test_records_delivery_in_history(self):
         """After POST /test, the delivery shows up in GET /deliveries."""
         import httpx
-        wh = self._create_webhook(url="http://localhost:19998/unreachable")
+        wh = self._create_webhook(url="http://93.184.216.34:19998/unreachable")
 
         with patch("httpx.AsyncClient.post", side_effect=httpx.ConnectError("refused")):
             self.client.post(f"/v1/webhooks/{wh['id']}/test", headers=self.auth)

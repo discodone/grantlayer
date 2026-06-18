@@ -287,7 +287,7 @@ async def test_service_deliver_webhook_raises_on_network_error():
     with patch("httpx.AsyncClient.post", side_effect=httpx.ConnectError("refused")):
         with pytest.raises(httpx.ConnectError):
             await svc.deliver_webhook(
-                url="http://localhost:9/unreachable",
+                url="http://93.184.216.34:9/unreachable",
                 secret="s",
                 event_type="grant.created",
                 payload={},
@@ -411,7 +411,7 @@ async def test_service_deliver_with_retry_all_fail():
     ):
         await svc._deliver_with_retry(
             webhook_id="wh-1",
-            url="http://localhost:9/unreachable",
+            url="http://93.184.216.34:9/unreachable",
             secret="s",
             event_type="grant.created",
             body=b"{}",

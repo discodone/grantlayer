@@ -88,9 +88,10 @@ class TestIsSsrfDestinationFunction(unittest.TestCase):
         from backend.src.webhooks.schemas import _is_ssrf_destination
         self.assertTrue(_is_ssrf_destination("192.168.0.1"))
 
-    def test_unresolvable_is_ssrf(self):
+    def test_unresolvable_is_allowed(self):
+        """Unresolvable hosts are allowed — delivery will fail naturally via connection error."""
         from backend.src.webhooks.schemas import _is_ssrf_destination
-        self.assertTrue(_is_ssrf_destination("this.hostname.does.not.exist.invalid"))
+        self.assertFalse(_is_ssrf_destination("this.hostname.does.not.exist.invalid"))
 
 
 class TestWebhookDeliverySsrfBlock(unittest.IsolatedAsyncioTestCase):

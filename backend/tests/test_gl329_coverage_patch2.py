@@ -1303,9 +1303,10 @@ class TestMiscCoverage(_JwtEnvMixin, unittest.TestCase):
         except Exception:
             pass  # Expected — either 400 or workspace resolution succeeds with demo fallback
 
-    def test_opa_client_sync_graceful_fallback(self):
-        """evaluate_policy_sync returns True on network error (graceful fallback)."""
+    def test_opa_client_sync_fail_closed_on_error(self):
+        """evaluate_policy_sync raises HTTPException 503 (fail-closed) on network error."""
         from backend.src.policy.opa_client import evaluate_policy_sync
+        from fastapi import HTTPException
         with patch.dict(os.environ, {"GRANTLAYER_OPA_URL": "http://localhost:8181"}):
             with patch("httpx.Client") as mock_cls:
                 mock_inst = MagicMock()
@@ -1313,12 +1314,13 @@ class TestMiscCoverage(_JwtEnvMixin, unittest.TestCase):
                 mock_inst.__exit__ = MagicMock(return_value=None)
                 mock_inst.post.side_effect = Exception("opa unavailable")
                 mock_cls.return_value = mock_inst
-                result = evaluate_policy_sync(
-                    "read",
-                    {"sub": "test", "role": "grant_admin"},
-                    {"type": "grants"},
-                )
-        self.assertTrue(result)
+                with self.assertRaises(HTTPException) as ctx:
+                    evaluate_policy_sync(
+                        "read",
+                        {"sub": "test", "role": "grant_admin"},
+                        {"type": "grants"},
+                    )
+        self.assertEqual(ctx.exception.status_code, 503)
 
     def test_verify_ndjson_manifest_valid(self):
         """verify_ndjson_export with valid HMAC manifest covers manifest_valid path."""

@@ -356,7 +356,8 @@ class TestWebhookEndpoints:
         assert resp.status_code == 401
 
     def test_create_webhook_http_url_accepted(self):
-        payload = self._webhook_payload(url="http://localhost:9000/hook")
+        # Use public IP (93.184.216.34 = example.com) — localhost is now SSRF-blocked
+        payload = self._webhook_payload(url="http://93.184.216.34:9000/hook")
         resp = self.client.post("/v1/webhooks", json=payload, headers=self.auth)
         assert resp.status_code == 201
 

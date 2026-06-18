@@ -288,7 +288,7 @@ async def test_async_test_endpoint_records_failed_delivery():
         async with client:
             create_resp = await client.post(
                 "/v1/webhooks",
-                json={"url": "http://localhost:19997/hook", "events": ["grant.created"]},
+                json={"url": "http://93.184.216.34:19997/hook", "events": ["grant.created"]},
                 headers={"Authorization": f"Bearer {token}"},
             )
             wh_id = create_resp.json()["id"]
