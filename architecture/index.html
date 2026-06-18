@@ -23,7 +23,7 @@
     
     
       
-        <title>GrantLayer MVP — Architecture - GrantLayer Docs</title>
+        <title>GrantLayer — Architecture - GrantLayer Docs</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#grantlayer-mvp-architecture" class="md-skip">
+        <a href="#grantlayer-architecture" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              GrantLayer MVP — Architecture
+              GrantLayer — Architecture
             
           </span>
         </div>
@@ -744,10 +744,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#stack-decision" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Stack decision
+        Overview
       
     </span>
   </a>
@@ -755,22 +755,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#component-overview" class="md-nav__link">
+  <a href="#layer-responsibilities" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Component overview
+        Layer responsibilities
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Component overview">
+    <nav class="md-nav" aria-label="Layer responsibilities">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cli-design" class="md-nav__link">
+  <a href="#router-backendsrcapirouters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CLI design
+        Router (backend/src/api/routers/)
       
     </span>
   </a>
@@ -778,10 +778,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#canonicalhash-consistency-with-gl-026" class="md-nav__link">
+  <a href="#service-layer-backendsrcservicepy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Canonical/hash consistency with GL-026
+        Service layer (backend/src/*/service.py)
       
     </span>
   </a>
@@ -789,10 +789,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#export-artifact-compatibility-with-gl-027" class="md-nav__link">
+  <a href="#repository-layer-backendsrccorerepositoriespy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Export artifact compatibility with GL-027
+        Repository layer (backend/src/core/repositories*.py)
       
     </span>
   </a>
@@ -800,21 +800,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#what-verification-proves-and-does-not-prove" class="md-nav__link">
+  <a href="#orm-models-backendsrccoreormpy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What verification proves and does not prove
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#gl-028-does-not-include" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GL-028 does NOT include
+        ORM models (backend/src/core/orm.py)
       
     </span>
   </a>
@@ -827,22 +816,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#gl-029-evidence-audit-finalization-sprint" class="md-nav__link">
+  <a href="#auth-and-multi-tenancy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GL-029 — Evidence &amp; Audit Finalization Sprint
+        Auth and multi-tenancy
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="GL-029 — Evidence &amp; Audit Finalization Sprint">
+    <nav class="md-nav" aria-label="Auth and multi-tenancy">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#evidence-verification-report-flow" class="md-nav__link">
+  <a href="#authentication" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Evidence Verification Report flow
+        Authentication
       
     </span>
   </a>
@@ -850,43 +839,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#evidence-completeness-check-flow" class="md-nav__link">
+  <a href="#workspace-isolation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Evidence Completeness Check flow
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#denial-error-code-consistency-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Denial / Error-Code consistency flow
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cli-json-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI --json output
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#gl-029-explicit-non-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GL-029 explicit non-scope
+        Workspace isolation
       
     </span>
   </a>
@@ -899,124 +855,68 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#gl-032-health-readiness-flow" class="md-nav__link">
+  <a href="#policy-engine-opa" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GL-032 — Health Readiness Flow
+        Policy engine (OPA)
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="GL-032 — Health Readiness Flow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#health-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Health flow
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#safety-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Safety rules
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#environment-variables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environment variables
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-gl-032-does-not-include" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What GL-032 does NOT include
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#gl-032-health-readiness-flow_1" class="md-nav__link">
+  <a href="#rate-limiting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GL-032 — Health Readiness Flow
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="GL-032 — Health Readiness Flow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#health-flow_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Health flow
+        Rate limiting
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#safety-rules_1" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#webhook-delivery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Safety rules
+        Webhook delivery
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#environment-variables_1" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#startup-gate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Environment variables
+        Startup gate
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#what-gl-032-does-not-include_1" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#database-conventions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What GL-032 does NOT include
+        Database conventions
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#directory-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory map
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1040,881 +940,207 @@
   
 
 
-<h1 id="grantlayer-mvp-architecture">GrantLayer MVP — Architecture<a class="headerlink" href="#grantlayer-mvp-architecture" title="Permanent link">&para;</a></h1>
-<h2 id="stack-decision">Stack decision<a class="headerlink" href="#stack-decision" title="Permanent link">&para;</a></h2>
-<p>The task specified Node.js + TypeScript + Express as the preferred stack. Node.js 20 is available in the Debian 13 repo but requires <code>sudo apt install</code>, which is not available in the current environment. External download sources (nvm, nodejs.org) are also not accessible.</p>
-<p><strong>Decision:</strong> Python 3.13 stdlib + SQLite — both already installed on the VM. Zero external dependencies. This produces a more portable demo: runs anywhere Python 3.10+ is installed, with no <code>npm install</code> step.</p>
-<h2 id="component-overview">Component overview<a class="headerlink" href="#component-overview" title="Permanent link">&para;</a></h2>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────────────────┐
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│                  GrantLayer MVP                         │
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│                                                         │
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  Dashboard (browser)                                    │
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   └─ dashboard/index.html  (vanilla JS, served by API)  │
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│                                                         │
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  Backend (Python 3, stdlib + cryptography v43)          │
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├─ src/config.py         Centralized config (GL-020)  │
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├─ src/server.py         HTTP server + routing        │
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├─ src/policy_engine.py  evaluateAccess()             │
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├─ src/grants.py         Grant CRUD (SQLite)          │
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├─ src/grant_requests.py Grant Request workflow (GL-022) │
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├─ src/audit_log.py      Audit events (SQLite)        │
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├─ src/challenges.py     Challenge store + validation  │
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├─ src/demo_action.py    Protected action handler     │
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├─ src/crypto_signing.py Ed25519 sign + verify        │
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├─ src/models.py         Dataclasses                  │
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   └─ src/db.py             SQLite init + connection       │
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│                                                         │
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│  Data                                                   │
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   ├─ data/grantlayer.db            SQLite (WAL mode)    │
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   ├─ data/demo_ed25519_private_key.pem  (gitignored)    │
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│   └─ data/demo_ed25519_public_key.pem  (gitignored)     │
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│                                                         │
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│  Tests                                                  │
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│   ├─ tests/test_policy_engine.py  unittest (36 tests)   │
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   ├─ tests/test_admin_token.py     unittest (8 tests)   │
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│   └─ tests/test_product_core.py    unittest (8 tests)   │
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>└─────────────────────────────────────────────────────────┘
+<h1 id="grantlayer-architecture">GrantLayer — Architecture<a class="headerlink" href="#grantlayer-architecture" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>GrantLayer is an async FastAPI application providing grant lifecycle management,
+multi-tenant workspace isolation, and policy-driven access control.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>HTTP Client
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    ▼
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>FastAPI ASGI (uvicorn)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    │  Rate-limit middleware (Redis sliding window)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    │  Correlation-ID middleware
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    │  JWT / API-key authentication (per-route Depends)
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    ▼
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>Router layer  (backend/src/api/routers/)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    │  Input validation (Pydantic schemas)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    │  Workspace context resolution
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    │  OPA policy check (optional, fail-closed)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    ▼
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>Service layer (backend/src/*/service.py)
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    │  Business logic — grants, grant-requests, operators, etc.
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    │  Audit event emission
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    ▼
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>Repository layer (backend/src/core/repositories*.py)
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    │  SQLAlchemy async sessions
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    │  ORM queries — no handwritten SQL (see exceptions below)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    ▼
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>Database (SQLite for dev/test · PostgreSQL 16 for production)
 </code></pre></div>
-┌─────────────────────────────────────────────────────────┐
-│                  GrantLayer MVP                         │
-│                                                         │
-│  Dashboard (browser)                                    │
-│   └─ dashboard/index.html  (vanilla JS, served by API)  │
-│                                                         │
-│  Backend (Python 3, stdlib + cryptography v43)          │
-│   ├─ src/config.py         Centralized config (GL-020)  │
-│   ├─ src/server.py         HTTP server + routing        │
-│   ├─ src/policy_engine.py  evaluateAccess()             │
-│   ├─ src/grants.py         Grant CRUD (SQLite)          │
-│   ├─ src/grant_requests.py Grant Request workflow (GL-022) │
-│   ├─ src/audit_log.py      Audit events (SQLite)        │
-│   ├─ src/challenges.py     Challenge store + validation  │
-│   ├─ src/demo_action.py    Protected action handler     │
-│   ├─ src/crypto_signing.py Ed25519 sign + verify        │
-│   ├─ src/models.py         Dataclasses                  │
-│   └─ src/db.py             SQLite init + connection       │
-│                                                         │
-│  Data                                                   │
-│   ├─ data/grantlayer.db            SQLite (WAL mode)    │
-│   ├─ data/demo_ed25519_private_key.pem  (gitignored)    │
-│   └─ data/demo_ed25519_public_key.pem  (gitignored)     │
-│                                                         │
-│  Tests                                                  │
-│   ├─ tests/test_policy_engine.py  unittest (36 tests)   │
-│   ├─ tests/test_admin_token.py     unittest (8 tests)   │
-│   └─ tests/test_product_core.py    unittest (8 tests)   │
-└─────────────────────────────────────────────────────────┘
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>## Request flow — Demo Action (Sprint 2B)
-</code></pre></div>
-Browser / curl
-  │
-  POST /demo-action  {subjectId, role, action, resource, challengeId?}
-  │
-  ▼
-server.py  →  demo_action.handle_demo_action()
-                │
-                ├─ grants.list_grants()             reads SQLite
-                ├─ policy_engine.evaluate_access()
-                │     checks: subject / role / action / resource /
-                │             time window / revocation
-                │     returns: PolicyResult {approved, reason, matchedGrantId}
-                │
-                ├─ (if matchedGrantId present)
-                │   crypto_signing.verify_grant_signature(matchedGrant)
-                │     1. checks signature fields present → else "missing"
-                │     2. recomputes canonical payload hash, compares stored hash
-                │        → mismatch = "hash_mismatch" (fail-closed)
-                │     3. verifies Ed25519 signature against public key
-                │        → invalid = "invalid" (fail-closed)
-                │     returns: valid | missing | invalid | hash_mismatch
-                │     if not "valid" → deny (grant_signature_<em> reason)
-                │
-                ├─ (if challengeId present)
-                │   challenges.validate_challenge()
-                │     checks: exists / subject match / action match /
-                │             resource match / not expired / not used
-                │     on success: marks challenge as used (replay blocked)
-                │     fail-closed: invalid challenge → deny even with valid grant
-                │
-                └─ audit_log.append_event()         writes SQLite
-                       includes: challenge_</em>, grant_signature_result
-                │
-                ▼
-          JSON response  {approved, message|reason, challengeId, challengeResult,
-                          grantSignatureResult, auditEventId}
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>## Challenge flow — Sprint 2A
-</code></pre></div>
-POST /challenges  {subjectId, action, resource}
-  → Challenge stored with 5-min TTL, status=active
-  ← {challengeId, expiresAt}</p>
-<p>POST /demo-action  + challengeId
-  → validate_challenge():
-      not_found       → deny (fail-closed)
-      expired         → deny
-      already_used    → deny (replay blocked)
-      mismatch        → deny (wrong subject/action/resource)
-      valid           → mark used, allow grant check to proceed
-  → audit event always written with challenge_result
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>## Policy Engine — fail-closed logic
-</code></pre></div>
-evaluate_access(request, grants, now):
-  candidates = [g for g in grants if g.subject_id == request.subject_id]
-  if not candidates → DENY "No grant found"
-  for grant in candidates:
-    if role mismatch       → skip
-    if action mismatch     → skip  (unless action == "<em>")
-    if resource mismatch   → skip  (unless resource == "</em>")
-    if now &lt; valid_from    → DENY "not yet valid"
-    if now &gt; valid_until   → DENY "expired"
-    if grant.revoked       → DENY "revoked"
-    if grant.max_uses is not None and grant.use_count &gt;= grant.max_uses
-                           → DENY "grant_usage_exhausted"
-    → APPROVE
-  → DENY "No matching grant"
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>### Atomic usage consumption (GL-024)
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>After `evaluate_access()` returns `approved=true`, the protected action handler performs an atomic consumption step:
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>1. `try_consume_grant_use(grant_id)` runs an `UPDATE` that increments `use_count` only if `max_uses IS NULL OR use_count &lt; max_uses`.
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>2. If the update affects zero rows (race condition or pre-check miss), the result is rewritten to `approved=false, reason=&quot;grant_usage_exhausted&quot;`.
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>3. The action proceeds only if consumption succeeds.
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>This ensures:
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>- **No over-use** even under concurrent requests.
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>- **Denied/failed attempts do not increment usage.** Consumption happens only after all other checks pass.
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>- **Exhausted attempts are fully logged.** A denied `GrantExecution` and audit event are created with `error_code = &quot;grant_usage_exhausted&quot;`.
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>## API Endpoints
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
-<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>| Method | Path | Description |
-<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>|--------|------|-------------|
-<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>| GET | /health | Service health |
-<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>| GET | /grants | List all grants |
-<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>| GET | /grants/:id | Get a single grant (includes signatureValid) |
-<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>| POST | /grants | Create a grant |
-<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>| POST | /grants/:id/revoke | Revoke a grant |
-<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>| POST | /grant-requests | Create a grant request (GL-022) |
-<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>| GET | /grant-requests | List grant requests (GL-022) |
-<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>| GET | /grant-requests/:id | Get a single grant request (GL-022) |
-<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>| POST | /grant-requests/:id/approve | Approve a grant request and create the grant (GL-022) |
-<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>| POST | /grant-requests/:id/deny | Deny a grant request (GL-022) |
-<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>| POST | /challenges | Create a challenge (5-min TTL) |
-<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>| GET | /challenges | List all challenges |
-<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>| POST | /demo-action | Run a protected demo action (optional challengeId) |
-<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>| GET | /audit-events | List audit events |
-<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>| GET | / | Dashboard |
-<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a>| POST | /demo/tamper-grant/:id | **Demo only** — corrupt a grant without re-signing. **Disabled by default** (`ENABLE_DEMO_ENDPOINTS=false`). Must be explicitly enabled. |
-<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>| GET | /operators/me | Return the currently authenticated operator&#39;s safe metadata (no token hash). Only available when `ENABLE_OPERATOR_MODEL=true`. |
-<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a>
-<a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a>## Product-Mode Configuration (GL-020)
-<a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a>
-<a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a>The MVP now supports opt-in product-mode hardening via environment variables:
-<a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a>
-<a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a>| Variable | Default | Description |
-<a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a>|----------|---------|-------------|
-<a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a>| `GRANTLAYER_REQUIRE_ADMIN_TOKEN` | `false` | When `true`, protected endpoints fail closed without a valid Bearer token. |
-<a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a>| `GRANTLAYER_ADMIN_TOKEN` | *(empty)* | The static Bearer token for admin endpoints. Token value is never logged or returned. |
-<a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a>| `GRANTLAYER_REQUIRE_CHALLENGE` | `false` | When `true`, `POST /demo-action` without `challengeId` denies with `challenge_required`. |
-<a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a>| `GRANTLAYER_ENABLE_DEMO_ENDPOINTS` | `false` | When `false` (default), `POST /demo/tamper-grant/:id` returns `403 demo_endpoints_disabled`. |
-<a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a>| `GRANTLAYER_HOST` | `127.0.0.1` | Bind address. |
-<a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a>| `GRANTLAYER_PORT` | `8765` | HTTP port. |
-<a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a>| `GRANTLAYER_DB` | *(empty)* | SQLite database path. If empty, a default path is used. |
-<a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a>
-<a id="__codelineno-4-50" name="__codelineno-4-50" href="#__codelineno-4-50"></a>### Startup warnings
-<a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a>
-<a id="__codelineno-4-52" name="__codelineno-4-52" href="#__codelineno-4-52"></a>If any unsafe default is active, the server prints explicit warnings at startup:
-<a id="__codelineno-4-53" name="__codelineno-4-53" href="#__codelineno-4-53"></a>- `ENABLE_DEMO_ENDPOINTS=true` — warns about exposed demo-only tamper endpoint.
-<a id="__codelineno-4-54" name="__codelineno-4-54" href="#__codelineno-4-54"></a>- `REQUIRE_ADMIN_TOKEN=false` — warns that protected endpoints are not mandatory.
-<a id="__codelineno-4-55" name="__codelineno-4-55" href="#__codelineno-4-55"></a>- `REQUIRE_CHALLENGE=false` — warns that demo-action accepts requests without challenge.
-<a id="__codelineno-4-56" name="__codelineno-4-56" href="#__codelineno-4-56"></a>- `ADMIN_TOKEN` missing — warns that admin endpoints are unprotected.
-<a id="__codelineno-4-57" name="__codelineno-4-57" href="#__codelineno-4-57"></a>
-<a id="__codelineno-4-58" name="__codelineno-4-58" href="#__codelineno-4-58"></a>These warnings are printed to stdout and never contain token values.
-<a id="__codelineno-4-59" name="__codelineno-4-59" href="#__codelineno-4-59"></a>
-<a id="__codelineno-4-60" name="__codelineno-4-60" href="#__codelineno-4-60"></a>## Operator Model (GL-021)
-<a id="__codelineno-4-61" name="__codelineno-4-61" href="#__codelineno-4-61"></a>
-<a id="__codelineno-4-62" name="__codelineno-4-62" href="#__codelineno-4-62"></a>| Variable | Default | Description |
-<a id="__codelineno-4-63" name="__codelineno-4-63" href="#__codelineno-4-63"></a>|----------|---------|-------------|
-<a id="__codelineno-4-64" name="__codelineno-4-64" href="#__codelineno-4-64"></a>| `GRANTLAYER_ENABLE_OPERATOR_MODEL` | `false` | When `true`, use per-operator Bearer tokens and RBAC. |
-<a id="__codelineno-4-65" name="__codelineno-4-65" href="#__codelineno-4-65"></a>| `GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN` | *(empty)* | Plaintext token for the bootstrap operator. Never stored plaintext. |
-<a id="__codelineno-4-66" name="__codelineno-4-66" href="#__codelineno-4-66"></a>| `GRANTLAYER_BOOTSTRAP_OPERATOR_ID` | `bootstrap-admin` | ID of the bootstrap operator. |
-<a id="__codelineno-4-67" name="__codelineno-4-67" href="#__codelineno-4-67"></a>| `GRANTLAYER_BOOTSTRAP_OPERATOR_NAME` | `Bootstrap Admin` | Display name. |
-<a id="__codelineno-4-68" name="__codelineno-4-68" href="#__codelineno-4-68"></a>| `GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE` | `owner` | Role assigned to the bootstrap operator. |
-<a id="__codelineno-4-69" name="__codelineno-4-69" href="#__codelineno-4-69"></a>
-<a id="__codelineno-4-70" name="__codelineno-4-70" href="#__codelineno-4-70"></a>### Auth behavior
-<a id="__codelineno-4-71" name="__codelineno-4-71" href="#__codelineno-4-71"></a>
-<a id="__codelineno-4-72" name="__codelineno-4-72" href="#__codelineno-4-72"></a>1. **Legacy admin-token mode** (`ENABLE_OPERATOR_MODEL=false`): Uses `GRANTLAYER_ADMIN_TOKEN` with no RBAC.
-<a id="__codelineno-4-73" name="__codelineno-4-73" href="#__codelineno-4-73"></a>2. **Operator mode** (`ENABLE_OPERATOR_MODEL=true`): Requires `Authorization: Bearer &lt;token&gt;` header. The token is verified against PBKDF2-HMAC-SHA256 hashes stored in the `operators` table.
-<a id="__codelineno-4-74" name="__codelineno-4-74" href="#__codelineno-4-74"></a>3. **Role checks**: Endpoints enforce role requirements. For example, `POST /grants` requires `owner` or `grant_admin`. `POST /demo/tamper-grant/:id` requires `owner` or `demo_operator`.
-<a id="__codelineno-4-75" name="__codelineno-4-75" href="#__codelineno-4-75"></a>
-<a id="__codelineno-4-76" name="__codelineno-4-76" href="#__codelineno-4-76"></a>### Role authorization matrix (GL-021 + GL-022)
-<a id="__codelineno-4-77" name="__codelineno-4-77" href="#__codelineno-4-77"></a>
-<a id="__codelineno-4-78" name="__codelineno-4-78" href="#__codelineno-4-78"></a>| Role | `POST /grants` | `POST /grants/:id/revoke` | `GET /grants` | `GET /audit-events` | `POST /grant-requests` | `GET /grant-requests` | `POST /grant-requests/:id/approve` | `POST /grant-requests/:id/deny` | `POST /demo/tamper-grant/:id` |
-<a id="__codelineno-4-79" name="__codelineno-4-79" href="#__codelineno-4-79"></a>|------|----------------|---------------------------|---------------|---------------------|------------------------|-----------------------|------------------------------------|---------------------------------|-------------------------------|
-<a id="__codelineno-4-80" name="__codelineno-4-80" href="#__codelineno-4-80"></a>| `owner` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-<a id="__codelineno-4-81" name="__codelineno-4-81" href="#__codelineno-4-81"></a>| `grant_admin` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-<a id="__codelineno-4-82" name="__codelineno-4-82" href="#__codelineno-4-82"></a>| `auditor` | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
-<a id="__codelineno-4-83" name="__codelineno-4-83" href="#__codelineno-4-83"></a>| `demo_operator` | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
-<a id="__codelineno-4-84" name="__codelineno-4-84" href="#__codelineno-4-84"></a>
-<a id="__codelineno-4-85" name="__codelineno-4-85" href="#__codelineno-4-85"></a>## Grant Request Approval Workflow (GL-022)
-<a id="__codelineno-4-86" name="__codelineno-4-86" href="#__codelineno-4-86"></a>
-<a id="__codelineno-4-87" name="__codelineno-4-87" href="#__codelineno-4-87"></a>GL-022 introduces a real approval workflow as a separate lifecycle from grants. A grant request is created, reviewed, and either approved (which creates an actual signed grant) or denied.
-<a id="__codelineno-4-88" name="__codelineno-4-88" href="#__codelineno-4-88"></a>
-<a id="__codelineno-4-89" name="__codelineno-4-89" href="#__codelineno-4-89"></a>### Design decision: separate entity
-<a id="__codelineno-4-90" name="__codelineno-4-90" href="#__codelineno-4-90"></a>
-<a id="__codelineno-4-91" name="__codelineno-4-91" href="#__codelineno-4-91"></a>- **GrantRequest lives in its own `grant_requests` table.** It is never mixed into the `grants` table.
-<a id="__codelineno-4-92" name="__codelineno-4-92" href="#__codelineno-4-92"></a>- **No `approval_status` on grants.** The rejected design proposed adding `approval_status` to the `grants` table. GL-022 explicitly does not do this.
-<a id="__codelineno-4-93" name="__codelineno-4-93" href="#__codelineno-4-93"></a>- **Approval creates a real Grant.** The newly created grant is signed with Ed25519 exactly like a grant created via `POST /grants`.
-<a id="__codelineno-4-94" name="__codelineno-4-94" href="#__codelineno-4-94"></a>
-<a id="__codelineno-4-95" name="__codelineno-4-95" href="#__codelineno-4-95"></a>### GrantRequest state machine
-</code></pre></div>
-┌───────────┐    ┌───────────┐    ┌───────────┐
-│ requested │───→│ approved  │───→│ revoked   │
-└───────────┘    └───────────┘    └───────────┘
-      │               │
-      ▼               │
-┌───────────┐         │
-│  denied   │         │
-└───────────┘         │
-                      │
-                 ┌────┴────┐
-                 │  grant  │  ← actual Grant created
-                 └─────────┘
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>| Transition | Trigger | Result |
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>|------------|---------|--------|
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>| `requested` → `approved` | `POST /grant-requests/:id/approve` by `owner` or `grant_admin` | Creates signed Grant. Writes `grant_request_created`, `grant_request_approved`, `grant_created_from_request` audit events. |
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>| `requested` → `denied` | `POST /grant-requests/:id/deny` by `owner` or `grant_admin` | No grant created. Writes `grant_request_denied` audit event. |
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>| `approved` → `revoked` | Internal revocation | Revokes linked grant. Writes `revoke_grant_request` audit event. |
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>| `requested` → `expired` | Background job (`expire_old_requests`) after 24h | No grant created. No audit event. |
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>### Request → Approve → Grant creation flow
-</code></pre></div>
-POST /grant-requests  {subjectId, role, action, resource, validFrom, validUntil, reason}
-  → validate operator role (owner or grant_admin)
-  → create_grant_request() inserts row into grant_requests with status='requested'
-  → audit_log: grant_request_created
-  ← {id, subject_id, role, action, resource, status: 'requested', ...}</p>
-<p>POST /grant-requests/:id/approve  (by a different operator)
-  → validate operator role (owner or grant_admin)
-  → check requested_by != operator_id  (self-approval blocked)
-  → BEGIN TRANSACTION
-     1. grants.create_grant()  → inserts signed row into grants
-     2. UPDATE grant_requests SET status='approved', approved_by=..., grant_id=...
-     3. audit_log: grant_request_approved
-     4. audit_log: grant_created_from_request
-  → COMMIT
-  ← {ok: true, request: {..., status: 'approved'}, grant: {...}}</p>
-<p>POST /grant-requests/:id/deny  (by a different operator)
-  → validate operator role (owner or grant_admin)
-  → check requested_by != operator_id  (self-denial blocked)
-  → UPDATE grant_requests SET status='denied', denied_by=..., denial_reason=...
-  → audit_log: grant_request_denied
-  ← {ok: true, request: {..., status: 'denied'}}
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>### GL-022 audit events
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>| Event | When | Payload |
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>|-------|------|---------|
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>| `grant_request_created` | On `POST /grant-requests` | `subject_id=operator_id`, `resource=&#39;grant_request/{id}&#39;`, `approved=true` |
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>| `grant_request_approved` | On `POST /grant-requests/:id/approve` | `subject_id=operator_id`, `resource=&#39;grant_request/{id}&#39;`, `approved=true` |
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>| `grant_created_from_request` | On `POST /grant-requests/:id/approve` (same transaction) | `subject_id=operator_id`, `resource=&#39;grant_request/{id}&#39;`, `approved=true` |
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>| `grant_request_denied` | On `POST /grant-requests/:id/deny` | `subject_id=operator_id`, `resource=&#39;grant_request/{id}&#39;`, `approved=true` |
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>Note: `approved=true` in these audit events means the action itself was permitted, not that a grant was approved.
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
-<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>### Data model additions
-<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
-<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>**GrantRequest** (GL-022)
-</code></pre></div>
-id, subject_id, role, action, resource,
-valid_from, valid_until,
-requested_by, reason, status,
-approved_by, approved_at,
-denied_by, denied_at, denial_reason,
-revoked_by, revoked_at, revoked_reason,
-grant_id,
-created_at, updated_at
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>| Field | Meaning |
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>|-------|---------|
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>| `status` | `requested` \| `approved` \| `denied` \| `revoked` \| `expired` |
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>| `requested_by` | Operator ID who created the request |
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>| `grant_id` | FK-like reference to the grant created on approval (nullable) |
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>## Tamper &amp; Verify Flow (Demo-UX Sprint)
-</code></pre></div>
-Dashboard "Tamper &amp; Verify Demo" section:</p>
-<p>Step 1 — Tamper:
-    POST /demo/tamper-grant/:id
-      → DB UPDATE grants SET role = 'tampered-role'  (no re-sign)
-      ← {ok, tamperedField, oldValue, newValue, subjectId, action, resource}</p>
-<p>Step 2 — Verify (blocked):
-    POST /demo-action  {subjectId, role='tampered-role', action, resource}
-      → policy_engine finds grant  (role now matches 'tampered-role')
-      → verify_grant_signature():
-          stored payloadHash was computed with role='technician'
-          current canonical has role='tampered-role'
-          → sha256(current) ≠ stored hash → "hash_mismatch"
-      → approved: false, reason: grant_payload_hash_mismatch
-      → audit event: grant_signature_result = hash_mismatch
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>## Ed25519 Crypto Flow (Sprint 2B)
-</code></pre></div>
-Grant creation (POST /grants):
-  1. Grant stored in DB (id, subject_id, role, action, resource, ...)
-  2. canonical_grant_payload(grant) → sorted key=value lines, UTF-8
-     Fields included: action, createdBy, id, reason, resource, role,
-                       subjectId, validFrom, validUntil
-     Fields excluded: revocation fields, signature, payloadHash, signingKeyId
-     (Revocation excluded so a grant can be revoked without re-signing)
-  3. Ed25519PrivateKey.sign(payload) → signature_bytes
-  4. SHA-256(payload) → payload_hash
-  5. DB UPDATE: signature=hex(sig), signing_key_id="demo-ed25519-v1",
-                payload_hash=hash_hex</p>
-<p>Verification (POST /demo-action):
-  1. Load matched grant from DB (includes signature, signing_key_id, payload_hash)
-  2. If any of the three fields is missing → "missing" (legacy unsigned grant)
-  3. Recompute SHA-256(canonical_grant_payload(grant)) → expected_hash
-  4. If stored payload_hash != expected_hash → "hash_mismatch" (field tampered)
-  5. Ed25519PublicKey.verify(sig_bytes, payload)
-     → InvalidSignature → "invalid"
-     → success → "valid"</p>
-<p>Key management (DEMO ONLY):
-  data/demo_ed25519_private_key.pem  — unencrypted, gitignored
-  data/demo_ed25519_public_key.pem   — gitignored
-  ensure_demo_keypair() — generates on first run, idempotent
-  signing_key_id = "demo-ed25519-v1" (single key, no rotation)
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>## Data model
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>**Grant** (Sprint 2B adds signature fields; GL-024 adds usage limit fields)
-</code></pre></div>
-id, subject_id, role, action, resource,
-valid_from, valid_until, created_by, reason,
-revoked (bool), revoked_by, revoked_reason, revoked_at,
-created_at,
-signature (TEXT), signing_key_id (TEXT), payload_hash (TEXT),
-max_uses (INTEGER, nullable), use_count (INTEGER, default 0)
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>**Operator** (Sprint 2E — GL-021)
-</code></pre></div>
-id, name, role, token_hash, active, created_at
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>Token hashes use PBKDF2-HMAC-SHA256 with 600,000 iterations:
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>`pbkdf2_sha256$600000$&lt;salt&gt;$&lt;hash&gt;`
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>Token values are never stored plaintext.
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>**Challenge** (Sprint 2A)
-</code></pre></div>
-id, subject_id, action, resource,
-created_at, expires_at, used_at,
-status: active | used | expired
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>**AuditEvent** (Sprint 2B adds grant_signature_result)
-</code></pre></div>
-id, timestamp, subject_id, role, action, resource,
-approved (bool), reason, matched_grant_id,
-challenge_id, challenge_present (bool), challenge_result,
-grant_signature_result
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>challenge_result values: valid | missing | not_found | expired | already_used | mismatch | legacy_mode
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>grant_signature_result values: valid | missing | invalid | hash_mismatch | not_checked
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>## Grant Execution Ledger (GL-023)
-<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
-<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>GL-023 adds a minimal execution/usage ledger that records every protected action attempt. It binds execution to operator, grant, grant request, challenge, and audit event.
-<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
-<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>### Design decision: one row per attempt
-<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>
-<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>- Every call to `POST /demo-action` creates a `GrantExecution` record.
-<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>- The record is created **before** the action result is known, then updated with the outcome.
-<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>- Success, denial, and internal failure paths are all recorded.
-<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>
-<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>### GrantExecution entity
-</code></pre></div>
-id, grant_id, grant_request_id, operator_id,
-action, resource,
-challenge_id, challenge_result,
-policy_result, result, error_code,
-executed_at, audit_event_id, metadata_json
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>### Result values
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>| Value | Meaning |
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>|-------|---------|
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>| `succeeded` | Protected action executed |
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>| `denied` | Policy, challenge, signature, auth, grant, or role condition blocked execution |
-<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>| `failed` | Internal handler error after authorization path began |
-<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
-<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>### Linkage
-<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>
-<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>- `grant_id` → the matched grant (if any)
-<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>- `grant_request_id` → the original request (reverse lookup via `grant_requests.grant_id`)
-<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>- `operator_id` → the authenticated operator (when operator model is enabled)
-<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>- `challenge_id` / `challenge_result` → the challenge used (if any)
-<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>- `audit_event_id` → the audit event written for this attempt
-<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>
-<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>### Read-only endpoints
-<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>
-<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>| Endpoint | Auth | Description |
-<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>|----------|------|-------------|
-<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>| `GET /grant-executions` | owner, grant_admin, auditor | List executions (filterable by `grantId`, `operatorId`) |
-<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>| `GET /grant-executions/:id` | owner, grant_admin, auditor | Get single execution |
-<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a>| `GET /grants/:id/executions` | owner, grant_admin, auditor | List executions for a specific grant |
-<a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a>
-<a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a>### What GL-023 does NOT include
-<a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a>
-<a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a>- ~~No usage caps (`max_uses`, `use_count`)~~ Addressed by GL-024.
-<a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a>- No write endpoints for executions (append-only)
-<a id="__codelineno-14-29" name="__codelineno-14-29" href="#__codelineno-14-29"></a>- No dashboard or frontend changes
-<a id="__codelineno-14-30" name="__codelineno-14-30" href="#__codelineno-14-30"></a>- No `approval_status` on grants
-<a id="__codelineno-14-31" name="__codelineno-14-31" href="#__codelineno-14-31"></a>
-<a id="__codelineno-14-32" name="__codelineno-14-32" href="#__codelineno-14-32"></a>## GL-024 — Grant Usage Limits &amp; Exhaustion Policy
-<a id="__codelineno-14-33" name="__codelineno-14-33" href="#__codelineno-14-33"></a>
-<a id="__codelineno-14-34" name="__codelineno-14-34" href="#__codelineno-14-34"></a>GL-024 adds optional usage limits to the `Grant` entity. It uses the `GrantExecution` ledger (GL-023) to track every exhausted attempt.
-<a id="__codelineno-14-35" name="__codelineno-14-35" href="#__codelineno-14-35"></a>
-<a id="__codelineno-14-36" name="__codelineno-14-36" href="#__codelineno-14-36"></a>### Data model additions
-<a id="__codelineno-14-37" name="__codelineno-14-37" href="#__codelineno-14-37"></a>
-<a id="__codelineno-14-38" name="__codelineno-14-38" href="#__codelineno-14-38"></a>**Grant** fields added by GL-024:
-<a id="__codelineno-14-39" name="__codelineno-14-39" href="#__codelineno-14-39"></a>
-<a id="__codelineno-14-40" name="__codelineno-14-40" href="#__codelineno-14-40"></a>| Field | Type | Meaning |
-<a id="__codelineno-14-41" name="__codelineno-14-41" href="#__codelineno-14-41"></a>|-------|------|---------|
-<a id="__codelineno-14-42" name="__codelineno-14-42" href="#__codelineno-14-42"></a>| `max_uses` | `INTEGER` (nullable) | Usage cap. `null` = unlimited. |
-<a id="__codelineno-14-43" name="__codelineno-14-43" href="#__codelineno-14-43"></a>| `use_count` | `INTEGER` (default 0) | Successful executions so far. |
-<a id="__codelineno-14-44" name="__codelineno-14-44" href="#__codelineno-14-44"></a>
-<a id="__codelineno-14-45" name="__codelineno-14-45" href="#__codelineno-14-45"></a>Derived from the two:
-<a id="__codelineno-14-46" name="__codelineno-14-46" href="#__codelineno-14-46"></a>- `remainingUses` = `max_uses - use_count` (when `max_uses` is set).
-<a id="__codelineno-14-47" name="__codelineno-14-47" href="#__codelineno-14-47"></a>
-<a id="__codelineno-14-48" name="__codelineno-14-48" href="#__codelineno-14-48"></a>### Relation to GrantExecution ledger
-<a id="__codelineno-14-49" name="__codelineno-14-49" href="#__codelineno-14-49"></a>
-<a id="__codelineno-14-50" name="__codelineno-14-50" href="#__codelineno-14-50"></a>- Every protected action attempt creates a `GrantExecution` record (GL-023).
-<a id="__codelineno-14-51" name="__codelineno-14-51" href="#__codelineno-14-51"></a>- Successful executions consume one use and record `result = &quot;succeeded&quot;`.
-<a id="__codelineno-14-52" name="__codelineno-14-52" href="#__codelineno-14-52"></a>- Exhausted attempts record `result = &quot;denied&quot;` and `error_code = &quot;grant_usage_exhausted&quot;`.
-<a id="__codelineno-14-53" name="__codelineno-14-53" href="#__codelineno-14-53"></a>- Denied and failed attempts do **not** increment `use_count`, but they still create `GrantExecution` records.
-<a id="__codelineno-14-54" name="__codelineno-14-54" href="#__codelineno-14-54"></a>
-<a id="__codelineno-14-55" name="__codelineno-14-55" href="#__codelineno-14-55"></a>### Policy flow with usage limits
-</code></pre></div>
-POST /demo-action
-  ├─ Existing checks remain (role, action, resource, time window, revocation)
-  ├─ Exhaustion pre-check: if max_uses is set and use_count &gt;= max_uses → DENY
-  ├─ Signature verification (Sprint 2B)
-  ├─ Challenge validation (Sprint 2A)
-  ├─ Atomic consumption: UPDATE use_count = use_count + 1 WHERE use_count &lt; max_uses
-  │   → if 0 rows updated → DENY "grant_usage_exhausted"
-  └─ Action executed → GrantExecution.result = "succeeded"
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>### Response fields
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>Grant responses (`GET /grants`, `GET /grants/:id`) include:
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>| Field | Type | Meaning |
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>|-------|------|---------|
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>| `maxUses` | `integer \| null` | Usage limit from `max_uses`. |
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>| `useCount` | `integer` | Current `use_count`. |
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>| `remainingUses` | `integer \| null` | `maxUses - useCount` when limited. |
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>
-<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>### `grant_usage_exhausted`
-<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>
-<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>- **Policy engine reason:** `grant_usage_exhausted` — returned when `max_uses` is set and `use_count &gt;= max_uses`.
-<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>- **Audit event:** `approved = false`, `reason = &quot;grant_usage_exhausted&quot;`.
-<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>- **GrantExecution:** `result = &quot;denied&quot;`, `error_code = &quot;grant_usage_exhausted&quot;`.
-<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>- **Response:** `POST /demo-action` returns `&quot;approved&quot;: false`, `&quot;reason&quot;: &quot;grant_usage_exhausted&quot;`.
-<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>
-<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>### Updated role authorization matrix (GL-021 + GL-022 + GL-023 + GL-024)
-<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>
-<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>| Role | `POST /grants` | `POST /grants/:id/revoke` | `GET /grants` | `GET /audit-events` | `POST /grant-requests` | `GET /grant-requests` | `POST /grant-requests/:id/approve` | `POST /grant-requests/:id/deny` | `POST /demo/tamper-grant/:id` | `GET /grant-executions` |
-<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>|------|----------------|---------------------------|---------------|---------------------|------------------------|-----------------------|------------------------------------|--------------------------------|-------------------------------|-------------------------|
-<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>| `owner` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>| `grant_admin` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
-<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>| `auditor` | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
-<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>| `demo_operator` | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>
-<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>## GL-026 — Evidence Bundle Integrity Hash &amp; Export Readiness
-<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a>
-<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a>GL-026 makes the evidence bundle cryptographically stable by adding a deterministic canonical representation and a SHA-256 integrity hash. No schema migration, no new endpoint, no persisted hash.
-<a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a>
-<a id="__codelineno-15-31" name="__codelineno-15-31" href="#__codelineno-15-31"></a>### Architecture
-</code></pre></div>
-GET /evidence/executions/:id
-  │
-  ▼
-evidence_bundle.build_evidence_bundle(execution_id)
-  │
-  ├─ Load GrantExecution from SQLite
-  ├─ Load linked Grant, GrantRequest, AuditEvent
-  ├─ Load related audit events (bounded, safe)
-  │
-  ├─ Assemble bundle dict:
-  │   evidenceId, generatedAt, executionId, grantId, grantRequestId,
-  │   request, approval, grant, execution, usageLimits, auditTrail
-  │
-  ├─ Sort auditTrail by (timestamp, id)          ← deterministic ordering
-  │
-  ├─ canonical_evidence_bundle(bundle):
-  │     scrub generatedAt, evidenceHash, canonicalVersion, hashAlgorithm
-  │     recursively sort all dict keys alphabetically
-  │     json.dumps with separators=(",", ":")
-  │
-  ├─ compute_evidence_hash(bundle):
-  │     hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
-  │     → 64-char lowercase hex string
-  │
-  └─ Attach metadata:
-        bundle["evidenceHash"]      = &lt;64-char hex&gt;
-        bundle["canonicalVersion"]  = "gl-evidence-v1"
-        bundle["hashAlgorithm"]     = "sha256"
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>### Design decisions
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>| Decision | Rationale |
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>|----------|-----------|
-<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>| **No schema migration** | The hash is computed at build time; no new DB columns. |
-<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>| **No new endpoint** | `GET /evidence/executions/:id` is unchanged except for added response fields. |
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>| **No persisted hash** | The hash is not stored in SQLite. Recomputing on read is cheap and guarantees consistency with current data. |
-<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>| **Strip four fields from canonical form** | `generatedAt` (wall-clock volatile), `evidenceHash` (self-reference), `canonicalVersion` and `hashAlgorithm` (metadata, not evidence). |
-<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>| **Recursive key sort** | Guarantees identical JSON output regardless of Python dict insertion order. |
-<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>| **Compact separators** | `json.dumps(..., separators=(&quot;,&quot;, &quot;:&quot;))` removes whitespace for a stable byte stream. |
-<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>| **64-char lowercase hex** | Standard SHA-256 representation; human-readable, URL-safe, no prefixes. |
-<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>| **No verify endpoint** | Offline auditor recomputation is preferred; no new write-like endpoint needed. |
-<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>
-<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>### Deterministic audit trail ordering
-<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>
-<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>Before hashing, the audit trail is sorted by:
-<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>1. `timestamp` ascending (ISO string)
-<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>2. `id` ascending (UUID string, tie-breaker)
-<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>
-<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>This ensures the same set of events always produces the same canonical JSON, even if SQLite query plans change.
-<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a>
-<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>### What is included in the hash
-<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a>
-<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a>- `evidenceId`, `executionId`, `grantId`, `grantRequestId`
-<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a>- `request` block (if present): `id`, `requestedBy`, `requestedAt`, `reason`
-<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a>- `approval` block (if present): `approvedBy`/`deniedBy`, `approvedAt`/`deniedAt`, `denialReason`
-<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a>- `grant` block (if present): `id`, `subjectId`, `role`, `action`, `resource`, `validFrom`, `validUntil`, `createdBy`, `createdAt`, `signingKeyId`, `payloadHash`, `maxUses`, `useCount`, `grantSignatureResult`
-<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a>- `execution` block: `action`, `resource`, `operatorId`, `challengeId`, `challengeResult`, `policyResult`, `result`, `errorCode`, `executedAt`, `auditEventId`
-<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a>- `usageLimits` block: `affectedOutcome`, `maxUses`, `useCount`, `reason`
-<a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a>- `auditTrail` array: each event&#39;s safe fields (`id`, `timestamp`, `subject_id`, `role`, `action`, `resource`, `approved`, `reason`, `matched_grant_id`, `challenge_id`, `challenge_present`, `challenge_result`, `grant_signature_result`)
-<a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a>
-<a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a>### What is NOT included in the hash
-<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a>
-<a id="__codelineno-16-34" name="__codelineno-16-34" href="#__codelineno-16-34"></a>- `generatedAt` — volatile wall-clock timestamp
-<a id="__codelineno-16-35" name="__codelineno-16-35" href="#__codelineno-16-35"></a>- `evidenceHash` — cannot include itself
-<a id="__codelineno-16-36" name="__codelineno-16-36" href="#__codelineno-16-36"></a>- `canonicalVersion` — serialization version metadata
-<a id="__codelineno-16-37" name="__codelineno-16-37" href="#__codelineno-16-37"></a>- `hashAlgorithm` — algorithm metadata
-<a id="__codelineno-16-38" name="__codelineno-16-38" href="#__codelineno-16-38"></a>- Any tokens, token hashes, salts, env values, private keys, or raw signatures
-<a id="__codelineno-16-39" name="__codelineno-16-39" href="#__codelineno-16-39"></a>
-<a id="__codelineno-16-40" name="__codelineno-16-40" href="#__codelineno-16-40"></a>### GL-026 does NOT include
-<a id="__codelineno-16-41" name="__codelineno-16-41" href="#__codelineno-16-41"></a>
-<a id="__codelineno-16-42" name="__codelineno-16-42" href="#__codelineno-16-42"></a>- No blockchain anchoring
-<a id="__codelineno-16-43" name="__codelineno-16-43" href="#__codelineno-16-43"></a>- No external notarization service
-<a id="__codelineno-16-44" name="__codelineno-16-44" href="#__codelineno-16-44"></a>- No PDF/ZIP/download export
-<a id="__codelineno-16-45" name="__codelineno-16-45" href="#__codelineno-16-45"></a>- No UI/dashboard/frontend changes
-<a id="__codelineno-16-46" name="__codelineno-16-46" href="#__codelineno-16-46"></a>- No new endpoint
-<a id="__codelineno-16-47" name="__codelineno-16-47" href="#__codelineno-16-47"></a>- No schema migration
-<a id="__codelineno-16-48" name="__codelineno-16-48" href="#__codelineno-16-48"></a>- No persisted hash in database
-<a id="__codelineno-16-49" name="__codelineno-16-49" href="#__codelineno-16-49"></a>- No `POST /evidence/verify` endpoint
-<a id="__codelineno-16-50" name="__codelineno-16-50" href="#__codelineno-16-50"></a>
-<a id="__codelineno-16-51" name="__codelineno-16-51" href="#__codelineno-16-51"></a>## GL-026 — Evidence Bundle Integrity Hash &amp; Export Readiness
-<a id="__codelineno-16-52" name="__codelineno-16-52" href="#__codelineno-16-52"></a>
-<a id="__codelineno-16-53" name="__codelineno-16-53" href="#__codelineno-16-53"></a>GL-026 makes the evidence bundle cryptographically stable by adding a deterministic canonical representation and a SHA-256 integrity hash. No schema migration, no new endpoint, no persisted hash.
-<a id="__codelineno-16-54" name="__codelineno-16-54" href="#__codelineno-16-54"></a>
-<a id="__codelineno-16-55" name="__codelineno-16-55" href="#__codelineno-16-55"></a>### Architecture
-</code></pre></div>
-GET /evidence/executions/:id
-  │
-  ▼
-evidence_bundle.build_evidence_bundle(execution_id)
-  │
-  ├─ Load GrantExecution from SQLite
-  ├─ Load linked Grant, GrantRequest, AuditEvent
-  ├─ Load related audit events (bounded, safe)
-  │
-  ├─ Assemble bundle dict:
-  │   evidenceId, generatedAt, executionId, grantId, grantRequestId,
-  │   request, approval, grant, execution, usageLimits, auditTrail
-  │
-  ├─ Sort auditTrail by (timestamp, id)          ← deterministic ordering
-  │
-  ├─ canonical_evidence_bundle(bundle):
-  │     scrub generatedAt, evidenceHash, canonicalVersion, hashAlgorithm
-  │     recursively sort all dict keys alphabetically
-  │     json.dumps with separators=(",", ":")
-  │
-  ├─ compute_evidence_hash(bundle):
-  │     hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
-  │     → 64-char lowercase hex string
-  │
-  └─ Attach metadata:
-        bundle["evidenceHash"]      = &lt;64-char hex&gt;
-        bundle["canonicalVersion"]  = "gl-evidence-v1"
-        bundle["hashAlgorithm"]     = "sha256"
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>### Design decisions
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>| Decision | Rationale |
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>|----------|-----------|
-<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>| **No schema migration** | The hash is computed at build time; no new DB columns. |
-<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>| **No new endpoint** | `GET /evidence/executions/:id` is unchanged except for added response fields. |
-<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>| **No persisted hash** | The hash is not stored in SQLite. Recomputing on read is cheap and guarantees consistency with current data. |
-<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>| **Strip four fields from canonical form** | `generatedAt` (wall-clock volatile), `evidenceHash` (self-reference), `canonicalVersion` and `hashAlgorithm` (metadata, not evidence). |
-<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>| **Recursive key sort** | Guarantees identical JSON output regardless of Python dict insertion order. |
-<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>| **Compact separators** | `json.dumps(..., separators=(&quot;,&quot;, &quot;:&quot;))` removes whitespace for a stable byte stream. |
-<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>| **64-char lowercase hex** | Standard SHA-256 representation; human-readable, URL-safe, no prefixes. |
-<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>| **No verify endpoint** | Offline auditor recomputation is preferred; no new write-like endpoint needed. |
-<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>
-<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>### Deterministic audit trail ordering
-<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>
-<a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>Before hashing, the audit trail is sorted by:
-<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>1. `timestamp` ascending (ISO string)
-<a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a>2. `id` ascending (UUID string, tie-breaker)
-<a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a>
-<a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a>This ensures the same set of events always produces the same canonical JSON, even if SQLite query plans change.
-<a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a>
-<a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a>### What is included in the hash
-<a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a>
-<a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a>- `evidenceId`, `executionId`, `grantId`, `grantRequestId`
-<a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a>- `request` block (if present): `id`, `requestedBy`, `requestedAt`, `reason`
-<a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a>- `approval` block (if present): `approvedBy`/`deniedBy`, `approvedAt`/`deniedAt`, `denialReason`
-<a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a>- `grant` block (if present): `id`, `subjectId`, `role`, `action`, `resource`, `validFrom`, `validUntil`, `createdBy`, `createdAt`, `signingKeyId`, `payloadHash`, `maxUses`, `useCount`, `grantSignatureResult`
-<a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a>- `execution` block: `action`, `resource`, `operatorId`, `challengeId`, `challengeResult`, `policyResult`, `result`, `errorCode`, `executedAt`, `auditEventId`
-<a id="__codelineno-17-29" name="__codelineno-17-29" href="#__codelineno-17-29"></a>- `usageLimits` block: `affectedOutcome`, `maxUses`, `useCount`, `reason`
-<a id="__codelineno-17-30" name="__codelineno-17-30" href="#__codelineno-17-30"></a>- `auditTrail` array: each event&#39;s safe fields (`id`, `timestamp`, `subject_id`, `role`, `action`, `resource`, `approved`, `reason`, `matched_grant_id`, `challenge_id`, `challenge_present`, `challenge_result`, `grant_signature_result`)
-<a id="__codelineno-17-31" name="__codelineno-17-31" href="#__codelineno-17-31"></a>
-<a id="__codelineno-17-32" name="__codelineno-17-32" href="#__codelineno-17-32"></a>### What is NOT included in the hash
-<a id="__codelineno-17-33" name="__codelineno-17-33" href="#__codelineno-17-33"></a>
-<a id="__codelineno-17-34" name="__codelineno-17-34" href="#__codelineno-17-34"></a>- `generatedAt` — volatile wall-clock timestamp
-<a id="__codelineno-17-35" name="__codelineno-17-35" href="#__codelineno-17-35"></a>- `evidenceHash` — cannot include itself
-<a id="__codelineno-17-36" name="__codelineno-17-36" href="#__codelineno-17-36"></a>- `canonicalVersion` — serialization version metadata
-<a id="__codelineno-17-37" name="__codelineno-17-37" href="#__codelineno-17-37"></a>- `hashAlgorithm` — algorithm metadata
-<a id="__codelineno-17-38" name="__codelineno-17-38" href="#__codelineno-17-38"></a>- Any tokens, token hashes, salts, env values, private keys, or raw signatures
-<a id="__codelineno-17-39" name="__codelineno-17-39" href="#__codelineno-17-39"></a>
-<a id="__codelineno-17-40" name="__codelineno-17-40" href="#__codelineno-17-40"></a>### GL-026 does NOT include
-<a id="__codelineno-17-41" name="__codelineno-17-41" href="#__codelineno-17-41"></a>
-<a id="__codelineno-17-42" name="__codelineno-17-42" href="#__codelineno-17-42"></a>- No blockchain anchoring
-<a id="__codelineno-17-43" name="__codelineno-17-43" href="#__codelineno-17-43"></a>- No external notarization service
-<a id="__codelineno-17-44" name="__codelineno-17-44" href="#__codelineno-17-44"></a>- No PDF/ZIP/download export
-<a id="__codelineno-17-45" name="__codelineno-17-45" href="#__codelineno-17-45"></a>- No UI/dashboard/frontend changes
-<a id="__codelineno-17-46" name="__codelineno-17-46" href="#__codelineno-17-46"></a>- No new endpoint
-<a id="__codelineno-17-47" name="__codelineno-17-47" href="#__codelineno-17-47"></a>- No schema migration
-<a id="__codelineno-17-48" name="__codelineno-17-48" href="#__codelineno-17-48"></a>- No persisted hash in database
-<a id="__codelineno-17-49" name="__codelineno-17-49" href="#__codelineno-17-49"></a>- No `POST /evidence/verify` endpoint
-<a id="__codelineno-17-50" name="__codelineno-17-50" href="#__codelineno-17-50"></a>
-<a id="__codelineno-17-51" name="__codelineno-17-51" href="#__codelineno-17-51"></a>## GL-028 — Offline Evidence Bundle Verification
-<a id="__codelineno-17-52" name="__codelineno-17-52" href="#__codelineno-17-52"></a>
-<a id="__codelineno-17-53" name="__codelineno-17-53" href="#__codelineno-17-53"></a>GL-028 adds a local, offline-only verification utility for exported evidence bundle JSON artifacts.
-<a id="__codelineno-17-54" name="__codelineno-17-54" href="#__codelineno-17-54"></a>
-<a id="__codelineno-17-55" name="__codelineno-17-55" href="#__codelineno-17-55"></a>### Architecture
-</code></pre></div>
-exported JSON artifact
-  → parse JSON
-  → validate metadata (canonicalVersion, hashAlgorithm, evidenceHash format)
-  → canonical rebuild (same rules as GL-026)
-    → strip generatedAt, evidenceHash, canonicalVersion, hashAlgorithm
-    → recursively sort keys alphabetically
-    → compact JSON separators
-  → SHA-256 recompute
-  → compare to embedded evidenceHash
-  → stdout result + exit code
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>### Components
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>| Component | Location | Purpose |
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>|-----------|----------|---------|
-<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>| Verification helper | `backend/src/evidence_bundle.py` | `verify_evidence_export_artifact(bundle)` — reusable function |
-<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>| CLI script | `scripts/verify_evidence_bundle.py` | Standalone stdlib-only verifier |
-<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>
-<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>### Verification helper design
-<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
-<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>```python
-<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>def verify_evidence_export_artifact(bundle: dict) -&gt; dict:
-<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>    ...
-</code></pre></div></p>
+<hr />
+<h2 id="layer-responsibilities">Layer responsibilities<a class="headerlink" href="#layer-responsibilities" title="Permanent link">&para;</a></h2>
+<h3 id="router-backendsrcapirouters">Router (<code>backend/src/api/routers/</code>)<a class="headerlink" href="#router-backendsrcapirouters" title="Permanent link">&para;</a></h3>
+<p>Each domain has its own router module (e.g., <code>grants.py</code>, <code>grant_requests.py</code>,
+<code>webhooks.py</code>). Routers:</p>
 <ul>
-<li><strong>Input:</strong> already-parsed evidence bundle dict (e.g. from <code>json.loads</code>)</li>
-<li><strong>Output:</strong> <code>{ok: true, evidenceId, canonicalVersion, hashAlgorithm}</code> or <code>{ok: false, error, reason}</code></li>
-<li><strong>Validation order:</strong> canonicalVersion → hashAlgorithm → evidenceHash format → hash recompute → compare</li>
-<li><strong>Error codes:</strong> <code>hash_mismatch</code>, <code>invalid_artifact</code>, <code>unsupported_format</code></li>
+<li>Accept and validate HTTP requests via Pydantic schemas.</li>
+<li>Authenticate callers through <code>resolve_auth_and_workspace()</code> (a synchronous
+  helper that validates JWTs, API keys, and admin tokens, then resolves the
+  <code>tenant_id</code>/<code>workspace_id</code> from the token payload or request headers).</li>
+<li>Enforce write-scope on API keys (<code>enforce_api_key_write_scope</code>).</li>
+<li>Optionally call the OPA policy engine before mutating state.</li>
+<li>Delegate business logic to the service layer; never touch the DB directly.</li>
 </ul>
-<h3 id="cli-design">CLI design<a class="headerlink" href="#cli-design" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>python3<span class="w"> </span>scripts/verify_evidence_bundle.py<span class="w"> </span>path/to/evidence.json
-</code></pre></div>
+<h3 id="service-layer-backendsrcservicepy">Service layer (<code>backend/src/*/service.py</code>)<a class="headerlink" href="#service-layer-backendsrcservicepy" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Pure stdlib (<code>json</code>, <code>sys</code>, <code>pathlib</code>)</li>
-<li>No network, no database, no secrets printed</li>
-<li>Exit codes: 0 (OK), 2 (hash mismatch), 3 (invalid artifact), 4 (unsupported format), 5 (file/parse error)</li>
+<li><code>AsyncGrantService</code> — grant CRUD, expiry, use-count enforcement.</li>
+<li><code>AsyncGrantRequestService</code> — approval/denial workflow, state-machine transitions.</li>
+<li><code>OperatorService</code> — operator record management.</li>
+<li><code>WebhookService</code> — webhook fan-out, delivery with exponential backoff, SSRF guard.</li>
 </ul>
-<h3 id="canonicalhash-consistency-with-gl-026">Canonical/hash consistency with GL-026<a class="headerlink" href="#canonicalhash-consistency-with-gl-026" title="Permanent link">&para;</a></h3>
-<p>The verification helper <strong>must reuse</strong> the existing <code>canonical_evidence_bundle()</code> and <code>compute_evidence_hash()</code> functions from <code>backend/src/evidence_bundle.py</code>. This guarantees bit-for-bit identical canonical JSON between generation and verification.</p>
-<h3 id="export-artifact-compatibility-with-gl-027">Export artifact compatibility with GL-027<a class="headerlink" href="#export-artifact-compatibility-with-gl-027" title="Permanent link">&para;</a></h3>
-<p>GL-027 exports deterministic pretty-printed JSON (<code>sort_keys=True, indent=2</code>). The verifier parses JSON with <code>json.loads</code>, so whitespace and key order in the export file do not matter.</p>
-<h3 id="what-verification-proves-and-does-not-prove">What verification proves and does not prove<a class="headerlink" href="#what-verification-proves-and-does-not-prove" title="Permanent link">&para;</a></h3>
-<p><strong>Proves:</strong> The exported JSON artifact content has not been altered since the hash was generated.</p>
-<p><strong>Does NOT prove:</strong>
-- Database integrity (hash is read-time only)
-- Grant signature validity (separate Ed25519 mechanism)
-- Legal validity or compliance
-- Blockchain anchoring or external notarization</p>
-<h3 id="gl-028-does-not-include">GL-028 does NOT include<a class="headerlink" href="#gl-028-does-not-include" title="Permanent link">&para;</a></h3>
-<ul>
-<li>No <code>/evidence/verify</code> endpoint</li>
-<li>No server-side file storage</li>
-<li>No database reads</li>
-<li>No UI/dashboard/frontend changes</li>
-<li>No PDF/ZIP export</li>
-<li>No bulk verification</li>
-<li>No blockchain, no external notarization, no external services</li>
-</ul>
-<h2 id="gl-029-evidence-audit-finalization-sprint">GL-029 — Evidence &amp; Audit Finalization Sprint<a class="headerlink" href="#gl-029-evidence-audit-finalization-sprint" title="Permanent link">&para;</a></h2>
-<p>GL-029 hardens the evidence bundle from GL-025 through GL-028 by adding structured verification reports, completeness checks, and denial-code consistency — without new API endpoints, schema migrations, or UI changes.</p>
-<h3 id="evidence-verification-report-flow">Evidence Verification Report flow<a class="headerlink" href="#evidence-verification-report-flow" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>exported JSON artifact
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>  → verify_evidence_export_artifact(bundle_dict)
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    → validate canonicalVersion == &quot;gl-evidence-v1&quot;
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    → validate hashAlgorithm == &quot;sha256&quot;
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    → validate evidenceHash is 64-char lowercase hex
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>    → rebuild canonical input (strip generatedAt, evidenceHash, canonicalVersion, hashAlgorithm)
-<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    → recursively sort keys, compact JSON separators
-<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>    → recompute SHA-256
-<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>    → compare to embedded evidenceHash
-<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>  → return structured report dict
-<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>      success: {ok: true, evidenceId, evidenceHash, canonicalVersion, hashAlgorithm, verifiedAt}
-<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>      failure: {ok: false, error, reason, evidenceId}
-</code></pre></div>
-<h3 id="evidence-completeness-check-flow">Evidence Completeness Check flow<a class="headerlink" href="#evidence-completeness-check-flow" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>evidence bundle dict
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>  → check_evidence_completeness(bundle)
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    → executionPresent?
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    → grantLinkage? (grantId set → grant section present)
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    → grantRequestLinkage? (grantRequestId set → request + approval present)
-<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>    → auditTrail present, sorted, deduplicated?
-<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>    → usageLimits consistent with grant_usage_exhausted?
-<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a>    → outcomeConsistent? (succeeded → errorCode null; denied → errorCode present)
-<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>  → return {complete, checks, warnings, errors}
-</code></pre></div>
-<h3 id="denial-error-code-consistency-flow">Denial / Error-Code consistency flow<a class="headerlink" href="#denial-error-code-consistency-flow" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>evidence bundle dict
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>  → check_denial_code_consistency(bundle)
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    → result matches errorCode? (succeeded → null; denied → present)
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    → errorCode in KNOWN_DENIAL_CODES catalog? (warn on unknown, do not break)
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    → outcome matches bundle data? (no_grant → no grant section; grant_request_denied → no grant)
-<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    → usageLimits.affectedOutcome matches grant_usage_exhausted?
-<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>  → return {consistent, result, errorCode, denialReason, checks, warnings, errors}
-</code></pre></div>
-<h3 id="cli-json-output">CLI <code>--json</code> output<a class="headerlink" href="#cli-json-output" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>python3<span class="w"> </span>scripts/verify_evidence_bundle.py<span class="w"> </span>path/to/evidence.json<span class="w"> </span>--json
-</code></pre></div>
-<ul>
-<li>With <code>--json</code>: prints the structured report dict as JSON to stdout. Exit codes unchanged.</li>
-<li>Without <code>--json</code>: preserves existing human-readable output.</li>
-<li>No raw bundle content printed.</li>
-<li>No secrets printed.</li>
-<li>Exit codes: 0 (valid), 2 (hash_mismatch), 3 (invalid_artifact), 4 (unsupported_format), 5 (I/O or parse error).</li>
-</ul>
-<h3 id="gl-029-explicit-non-scope">GL-029 explicit non-scope<a class="headerlink" href="#gl-029-explicit-non-scope" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>No new API endpoint.</strong> <code>GET /evidence/executions/:id</code> is unchanged.</li>
-<li><strong>No schema migration.</strong> Helpers are pure functions; no database columns added.</li>
-<li><strong>No audit-chain hash.</strong> No <code>chain_hash</code>, no <code>audit_events.chain_hash</code>, no <code>/audit-events/verify-chain</code>.</li>
-<li><strong>No UI/dashboard/frontend changes.</strong> The helpers are backend/CLI only.</li>
-<li><strong>No PDF/ZIP/download export.</strong> The bundle remains a JSON API response.</li>
-<li><strong>No blockchain anchoring or external notarization.</strong> All verification is local-only.</li>
-</ul>
-<h2 id="gl-032-health-readiness-flow">GL-032 — Health Readiness Flow<a class="headerlink" href="#gl-032-health-readiness-flow" title="Permanent link">&para;</a></h2>
-<p>GL-032 extends <code>GET /health</code> with additive, safe readiness fields from <code>get_db_health()</code>. No absolute paths, no secrets are exposed.</p>
-<h3 id="health-flow">Health flow<a class="headerlink" href="#health-flow" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>GET /health
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>  │
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>  ├─ Build static payload (ok, service, timestamp, config booleans)
-<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>  │
-<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>  ├─ get_db_health()
-<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>  │     ├─ dbPathKind: &quot;file&quot; or &quot;memory&quot;
-<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>  │     ├─ dbFilePresent: os.path.isfile(DB_PATH) [file only]
-<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>  │     ├─ dbSizeBytes: os.path.getsize(DB_PATH) [file only]
-<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>  │     ├─ dbDirectoryWritable: os.access(db_dir, W_OK) [file only]
-<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>  │     ├─ dbConnected: SELECT 1 succeeds
-<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>  │     ├─ journalMode: PRAGMA journal_mode
-<a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>  │     └─ dbWritable: CREATE TEMP TABLE _gl032_health_probe → INSERT → DROP
-<a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a>  │
-<a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>  └─ Merge and return JSON
-</code></pre></div>
-<h3 id="safety-rules">Safety rules<a class="headerlink" href="#safety-rules" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>dbPathKind</code> is <code>"file"</code> or <code>"memory"</code> — never the raw path.</li>
-<li><code>dbSizeBytes</code> is <code>None</code> for in-memory databases.</li>
-<li><code>dbFilePresent</code> and <code>dbDirectoryWritable</code> are <code>False</code> for in-memory databases.</li>
-<li>The temp-table write probe ensures no persistent schema change.</li>
-</ul>
-<h3 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h3>
+<p>Services own the audit trail: every mutating action emits a structured audit
+event (row-hash chained for tamper evidence).</p>
+<h3 id="repository-layer-backendsrccorerepositoriespy">Repository layer (<code>backend/src/core/repositories*.py</code>)<a class="headerlink" href="#repository-layer-backendsrccorerepositoriespy" title="Permanent link">&para;</a></h3>
+<p>Two implementations behind a common Protocol:</p>
 <table>
 <thead>
 <tr>
-<th>Variable</th>
-<th>Default</th>
-<th>Description</th>
+<th>Module</th>
+<th>Engine</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>GRANTLAYER_LOG_LEVEL</code></td>
-<td><code>INFO</code></td>
-<td>One of DEBUG, INFO, WARNING, ERROR. Invalid values fall back to INFO.</td>
+<td><code>repositories.py</code></td>
+<td>In-memory (for unit tests)</td>
 </tr>
 <tr>
-<td><code>GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS</code></td>
-<td><code>2000</code></td>
-<td>Health probe timeout in milliseconds.</td>
+<td><code>repositories_sqlalchemy.py</code></td>
+<td>SQLAlchemy <code>AsyncSession</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="what-gl-032-does-not-include">What GL-032 does NOT include<a class="headerlink" href="#what-gl-032-does-not-include" title="Permanent link">&para;</a></h3>
-<ul>
-<li>No new REST endpoints — only extends <code>GET /health</code> response.</li>
-<li>No schema migration — temp table is transient.</li>
-<li>No PostgreSQL or storage adapter.</li>
-<li>No distributed system — SQLite remains local-only.</li>
-</ul>
-<h2 id="gl-032-health-readiness-flow_1">GL-032 — Health Readiness Flow<a class="headerlink" href="#gl-032-health-readiness-flow_1" title="Permanent link">&para;</a></h2>
-<p>GL-032 extends <code>GET /health</code> with additive, safe readiness fields from <code>get_db_health()</code>. No absolute paths, no secrets are exposed.</p>
-<h3 id="health-flow_1">Health flow<a class="headerlink" href="#health-flow_1" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>GET /health
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>  │
-<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>  ├─ Build static payload (ok, service, timestamp, config booleans)
-<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>  │
-<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>  ├─ get_db_health()
-<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>  │     ├─ dbPathKind: &quot;file&quot; or &quot;memory&quot;
-<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>  │     ├─ dbFilePresent: os.path.isfile(DB_PATH) [file only]
-<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>  │     ├─ dbSizeBytes: os.path.getsize(DB_PATH) [file only]
-<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>  │     ├─ dbDirectoryWritable: os.access(db_dir, W_OK) [file only]
-<a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>  │     ├─ dbConnected: SELECT 1 succeeds
-<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>  │     ├─ journalMode: PRAGMA journal_mode
-<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a>  │     └─ dbWritable: CREATE TEMP TABLE _gl032_health_probe → INSERT → DROP
-<a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a>  │
-<a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a>  └─ Merge and return JSON
-</code></pre></div>
-<h3 id="safety-rules_1">Safety rules<a class="headerlink" href="#safety-rules_1" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>dbPathKind</code> is <code>"file"</code> or <code>"memory"</code> — never the raw path.</li>
-<li><code>dbSizeBytes</code> is <code>None</code> for in-memory databases.</li>
-<li><code>dbFilePresent</code> and <code>dbDirectoryWritable</code> are <code>False</code> for in-memory databases.</li>
-<li>The temp-table write probe ensures no persistent schema change.</li>
-</ul>
-<h3 id="environment-variables_1">Environment variables<a class="headerlink" href="#environment-variables_1" title="Permanent link">&para;</a></h3>
+<p>Repositories are injected as FastAPI dependencies via factory functions
+(<code>get_async_grant_service</code>, etc.).</p>
+<h3 id="orm-models-backendsrccoreormpy">ORM models (<code>backend/src/core/orm.py</code>)<a class="headerlink" href="#orm-models-backendsrccoreormpy" title="Permanent link">&para;</a></h3>
+<p>Twelve SQLAlchemy ORM classes: <code>Grant</code>, <code>GrantRequest</code>, <code>GrantExecution</code>,
+<code>Operator</code>, <code>AuditEvent</code>, <code>Workspace</code>, <code>WorkspaceMember</code>, <code>ApiKey</code>, <code>Webhook</code>,
+<code>WebhookDelivery</code>, <code>Challenge</code>, <code>AuditSeq</code>.</p>
+<p>Schema migrations are managed by Alembic (<code>alembic/</code>).</p>
+<hr />
+<h2 id="auth-and-multi-tenancy">Auth and multi-tenancy<a class="headerlink" href="#auth-and-multi-tenancy" title="Permanent link">&para;</a></h2>
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h3>
+<p>Three credential types are supported simultaneously:</p>
 <table>
 <thead>
 <tr>
-<th>Variable</th>
-<th>Default</th>
-<th>Description</th>
+<th>Type</th>
+<th>Where validated</th>
+<th>Typical callers</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>GRANTLAYER_LOG_LEVEL</code></td>
-<td><code>INFO</code></td>
-<td>One of DEBUG, INFO, WARNING, ERROR. Invalid values fall back to INFO.</td>
+<td>RS256/HS256 JWT</td>
+<td><code>validate_jwt_header()</code></td>
+<td>Operators, agents</td>
 </tr>
 <tr>
-<td><code>GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS</code></td>
-<td><code>2000</code></td>
-<td>Health probe timeout in milliseconds.</td>
+<td>API key (HMAC-SHA256 prefix)</td>
+<td><code>validate_api_key()</code></td>
+<td>M2M integrations</td>
+</tr>
+<tr>
+<td>Admin token</td>
+<td><code>validate_admin_token()</code></td>
+<td>Bootstrap / internal tooling</td>
 </tr>
 </tbody>
 </table>
-<h3 id="what-gl-032-does-not-include_1">What GL-032 does NOT include<a class="headerlink" href="#what-gl-032-does-not-include_1" title="Permanent link">&para;</a></h3>
-<ul>
-<li>No new REST endpoints — only extends <code>GET /health</code> response.</li>
-<li>No schema migration — temp table is transient.</li>
-<li>No PostgreSQL or storage adapter.</li>
-<li>No distributed system — SQLite remains local-only.</li>
-</ul>
+<p><code>JWT_STRICT_CLAIMS=true</code> (the default) rejects tokens missing <code>iss</code> or <code>aud</code>.</p>
+<h3 id="workspace-isolation">Workspace isolation<a class="headerlink" href="#workspace-isolation" title="Permanent link">&para;</a></h3>
+<p>Every data-access call carries <code>tenant_id</code> and <code>workspace_id</code>. Both values
+come from the authenticated token — never from user-supplied request parameters.
+<code>resolve_auth_and_workspace()</code> enforces membership checks before any query runs.</p>
+<hr />
+<h2 id="policy-engine-opa">Policy engine (OPA)<a class="headerlink" href="#policy-engine-opa" title="Permanent link">&para;</a></h2>
+<p>When <code>GRANTLAYER_OPA_URL</code> is set, the <code>evaluate_policy</code> / <code>evaluate_policy_sync</code>
+helpers POST to OPA's <code>/v1/data/grantlayer/allow</code> endpoint. On error (OPA
+unreachable or misconfigured) the helpers <strong>raise <code>HTTPException(503)</code></strong>
+rather than defaulting to allow. This is the fail-closed posture.</p>
+<hr />
+<h2 id="rate-limiting">Rate limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">&para;</a></h2>
+<p>A Redis-backed sliding-window rate limiter (<code>backend/src/api/rate_limit.py</code>)
+applies per-IP limits. Client IP is extracted from <code>X-Forwarded-For</code> (first
+hop) with a fallback to the direct TCP peer. The <code>plan_tier</code> claim in the JWT
+payload selects among <code>free</code>, <code>pro</code>, and <code>enterprise</code> bucket sizes.</p>
+<p>The <code>/v1/auth/token</code> endpoint has a tighter per-IP limit (10 req/min) to
+throttle credential stuffing.</p>
+<hr />
+<h2 id="webhook-delivery">Webhook delivery<a class="headerlink" href="#webhook-delivery" title="Permanent link">&para;</a></h2>
+<p>Webhooks are delivered by <code>WebhookService._deliver_with_retry</code>:</p>
+<ol>
+<li>SSRF guard — blocks private and loopback IPs using <code>socket.getaddrinfo</code> +
+   <code>ipaddress</code>; unresolvable hosts are allowed (delivery fails naturally).</li>
+<li>HMAC-SHA256 payload signature added as <code>X-GrantLayer-Signature</code>.</li>
+<li>Up to 3 retries with exponential back-off (<code>asyncio.sleep</code>).</li>
+<li>Every attempt (success or failure) is recorded in <code>WebhookDelivery</code>.</li>
+</ol>
+<hr />
+<h2 id="startup-gate">Startup gate<a class="headerlink" href="#startup-gate" title="Permanent link">&para;</a></h2>
+<p>In production-like modes (<code>GRANTLAYER_RUNTIME_MODE=production</code>), the FastAPI
+lifespan context calls <code>config.startup_errors()</code> at boot. If any required
+configuration is absent or invalid the process exits immediately rather than
+serving 500s at request time.</p>
+<p>The <code>/readiness</code> probe checks database connectivity with <code>SELECT 1</code> and Redis
+availability; it returns <code>503</code> when either is unavailable.</p>
+<hr />
+<h2 id="database-conventions">Database conventions<a class="headerlink" href="#database-conventions" title="Permanent link">&para;</a></h2>
+<p><strong>Standard path:</strong> SQLAlchemy ORM or <code>session.execute(text(…).bindparams(…))</code>.</p>
+<p><strong>Known exceptions using raw <code>text()</code> SQL:</strong></p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>audit/audit_log.py</code></td>
+<td>Audit hash-chain insert uses parameterised <code>text()</code> to guarantee column ordering across SQLite and PostgreSQL</td>
+</tr>
+<tr>
+<td><code>api/routers/api_keys.py</code></td>
+<td>API-key lookup/revoke/last-used-update using <code>conn.execute(text(…))</code> through the legacy <code>_ConnectionWrapper</code> shim</td>
+</tr>
+<tr>
+<td><code>core/db.py</code></td>
+<td><code>_ConnectionWrapper</code> compatibility layer that translates <code>?</code>-style placeholders to named params for both engines</td>
+</tr>
+</tbody>
+</table>
+<p>These are <strong>parameterised queries</strong> — no string interpolation into SQL. The
+CLAUDE.md guideline "no raw SQL" means no ad-hoc string interpolation, not
+that <code>text()</code> is banned.</p>
+<hr />
+<h2 id="directory-map">Directory map<a class="headerlink" href="#directory-map" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>backend/
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  src/
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    api/
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>      app.py              FastAPI factory + lifespan + middleware
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>      deps.py             Shared FastAPI Depends helpers (auth, workspace, services)
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>      auth_jwt.py         JWT encode/decode, validate_jwt_header()
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>      rate_limit.py       Redis sliding-window rate limiter
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>      schemas.py          Pydantic request/response models
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>      routers/            One module per domain (grants, grant_requests, …)
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    audit/                Audit log + hash-chain + export
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    core/
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>      config.py           Environment-driven configuration
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>      db.py               DB engine factory + _ConnectionWrapper shim
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>      models.py           Domain dataclasses
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>      orm.py              SQLAlchemy ORM classes
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>      repositories*.py    Repository Protocol + SA implementation
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    grants/               Grant service + grant-request service
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    operators/            Operator service
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    policy/               OPA client + compliance helpers
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    webhooks/             Webhook service, schemas, repository, router
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>  tests/                  pytest test suite (~4500 functional tests)
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>docs/
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>  openapi.yaml            OpenAPI 3.0 specification
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>sdk/
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>  python/                 Python client SDK (canonical)
+</code></pre></div>
 
 
 
