@@ -14,6 +14,7 @@ from ..auth.auth import (
     check_workspace_resource_access,
     resolve_workspace_context,
 )
+from ..auth.oidc import validate_oidc_header
 from ..auth.operator_service import AsyncOperatorService, OperatorService
 from ..core.db import get_async_db, get_db
 from ..core.repositories import (
@@ -44,23 +45,33 @@ def resolve_auth_and_workspace(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Authenticate and resolve workspace context.
 
-    tries JWT first when GRANTLAYER_JWT_SECRET is set; falls back to
-    the existing static-token / operator-model path when JWT is not configured.
+    Auth priority (first match wins):
+    1. OIDC — when GRANTLAYER_ENABLE_OIDC=true and fully configured.
+    2. Internal JWT — when GRANTLAYER_JWT_SECRET or GRANTLAYER_JWT_PUBLIC_KEY is set.
+    3. Legacy static-token / operator-model.
 
     Returns (auth_ctx, ws_ctx).  Raises HTTPException on failure.
     """
-    jwt_ok, jwt_status, jwt_result = validate_jwt_header(authorization)
     payload: dict[str, Any]
-    if jwt_ok is not None:
-        # JWT auth is configured — use JWT result, do not fall through to legacy.
-        if not jwt_ok:
-            raise HTTPException(status_code=jwt_status or 401, detail=jwt_result)
-        payload = cast(dict[str, Any], jwt_result)
+
+    # 1. OIDC validation (externally-issued JWTs from Keycloak/Okta/Azure AD).
+    oidc_ok, oidc_status, oidc_result = validate_oidc_header(authorization)
+    if oidc_ok is not None:
+        if not oidc_ok:
+            raise HTTPException(status_code=oidc_status or 401, detail=oidc_result)
+        payload = cast(dict[str, Any], oidc_result)
     else:
-        # JWT not configured — use legacy static-token / operator-model auth.
-        ok, http_status, payload = check_auth(authorization, required_roles=required_roles)
-        if not ok:
-            raise HTTPException(status_code=http_status, detail=payload)
+        # 2. Internal JWT validation.
+        jwt_ok, jwt_status, jwt_result = validate_jwt_header(authorization)
+        if jwt_ok is not None:
+            if not jwt_ok:
+                raise HTTPException(status_code=jwt_status or 401, detail=jwt_result)
+            payload = cast(dict[str, Any], jwt_result)
+        else:
+            # 3. Legacy static-token / operator-model auth.
+            ok, http_status, payload = check_auth(authorization, required_roles=required_roles)
+            if not ok:
+                raise HTTPException(status_code=http_status, detail=payload)
 
     ws_id, ws_status, ws_ctx = resolve_workspace_context(payload, workspace_id)
 
