@@ -131,8 +131,30 @@ def create_app() -> FastAPI:
         if request.method != "OPTIONS" and request.url.path.startswith("/v1/"):
             limiter = getattr(request.app.state, "auth_rate_limiter", None)
             if limiter is not None:
-                client_ip = request.client.host if request.client else "unknown"
-                # Resolve plan tier from workspace context (lightweight JWT decode)
+                # Honour X-Forwarded-For so clients behind a load-balancer each
+                # get their own bucket rather than sharing one IP.
+                xff = request.headers.get("X-Forwarded-For", "")
+                client_ip = xff.split(",")[0].strip() if xff else (
+                    request.client.host if request.client else "unknown"
+                )
+                # Populate plan_tier from JWT claim before resolving rate limits.
+                # Decode non-strictly (no signature/expiry check) to extract the claim.
+                if not hasattr(request.state, "plan_tier"):
+                    auth_header = request.headers.get("Authorization", "")
+                    if auth_header.lower().startswith("bearer "):
+                        raw_token = auth_header[7:]
+                        try:
+                            import base64
+                            import json as _json
+                            parts = raw_token.split(".")
+                            if len(parts) == 3:
+                                padded = parts[1] + "=" * (-len(parts[1]) % 4)
+                                claims = _json.loads(base64.urlsafe_b64decode(padded))
+                                tier = claims.get("plan_tier", "free")
+                                if tier in ("free", "pro", "enterprise"):
+                                    request.state.plan_tier = tier
+                        except Exception:
+                            pass
                 plan_tier, rate_limit_override = _resolve_plan_tier(request)
                 allowed, retry_after = limiter.check(
                     client_ip, "api",
