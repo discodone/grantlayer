@@ -6,6 +6,30 @@ Thank you for your interest in contributing. This document covers everything you
 
 ---
 
+## Prerequisites
+
+- **Python 3.11+** — `python3 --version`
+- **Docker + Docker Compose** — for the full stack
+- **Git** — with a GitHub account to fork the repo
+- **make** — standard GNU make (comes with most Linux/macOS installs)
+
+Optional but recommended:
+- `pre-commit` — installed automatically by `make install`
+
+---
+
+## Developer setup (local, without Docker)
+
+```bash
+git clone https://github.com/discodone/grantlayer.git
+cd grantlayer
+make install         # creates .venv, installs deps, pre-commit hooks, copies .env
+source .venv/bin/activate
+make test            # ~3 400 functional tests, should pass 0 failures
+```
+
+---
+
 ## Quick start for first-time contributors
 
 ```bash

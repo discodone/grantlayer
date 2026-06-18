@@ -1,8 +1,13 @@
-.PHONY: test test-all test-functional lint fix push coverage clean help
+.PHONY: install test test-all test-functional test-contract lint format fix migrate \
+        docker-up docker-down audit push coverage clean help
 
 # Default: functional tests only (application logic, HTTP, DB, auth, grants).
 # ~120 files / ~3 400 test methods.  Fast and meaningful for CI.
 test: test-functional
+
+# Install dev dependencies and pre-commit hooks (idempotent).
+install:
+	@./scripts/dev-setup.sh
 
 # Functional tests: exclude doc-guard tests via pytest marker.
 test-functional:
@@ -13,13 +18,44 @@ test-functional:
 test-all:
 	@./scripts/run-full-backend-suite.sh
 
+# Contract tests: OpenAPI schema + SDK contract + schemathesis fuzz.
+test-contract:
+	pytest backend/tests/contract/ -v --tb=short -m "contract"
+
 # Linting: ruff + mypy (must both pass before every commit).
 lint:
 	ruff check backend/src/ && python3 -m mypy backend/src/
 
+# Format source code in-place with ruff.
+format:
+	ruff format backend/src/
+	ruff check --fix backend/src/
+
 # Auto-fix ruff violations where possible.
 fix:
 	ruff check --fix backend/src/
+
+# Run Alembic migrations against the configured database.
+migrate:
+	python3 -m alembic -c backend/alembic.ini upgrade head
+
+# Start all services via Docker Compose (detached).
+docker-up:
+	docker compose up -d
+
+# Stop all Docker Compose services.
+docker-down:
+	docker compose down
+
+# Print last 100 audit events from the local SQLite DB.
+audit:
+	python3 -c "\
+from backend.src.core.db import get_engine; \
+from sqlalchemy import text; \
+e = get_engine(); \
+conn = e.connect(); \
+rows = conn.execute(text('SELECT timestamp, subject_id, action, resource, approved FROM audit_events ORDER BY seq DESC LIMIT 100')).fetchall(); \
+[print(r) for r in rows]"
 
 # Push to both remotes (origin = Forgejo, github = GitHub).
 push:
@@ -38,12 +74,19 @@ help:
 	@echo ""
 	@echo "GrantLayer — available make targets"
 	@echo ""
-	@echo "  make test       Run functional test suite (~3 400 tests, no doc_guard)"
-	@echo "  make test-all   Run full suite including doc-guard (~9 400 tests)"
-	@echo "  make lint       ruff check + mypy (baseline: 0 errors each)"
-	@echo "  make fix        Auto-fix ruff violations"
-	@echo "  make push       git push origin main && git push github main"
-	@echo "  make coverage   Functional tests with --cov-report=term-missing"
-	@echo "  make clean      Remove Claude Code temp files on ai-agent VM"
-	@echo "  make help       Show this message"
+	@echo "  make install          Install dev dependencies + pre-commit hooks"
+	@echo "  make test             Run functional test suite (~3 400 tests, no doc_guard)"
+	@echo "  make test-all         Run full suite including doc-guard (~9 400 tests)"
+	@echo "  make test-contract    Run OpenAPI contract + schemathesis fuzz tests"
+	@echo "  make lint             ruff check + mypy (baseline: 0 errors each)"
+	@echo "  make format           ruff format + ruff fix in-place"
+	@echo "  make fix              Auto-fix ruff violations"
+	@echo "  make migrate          Run Alembic DB migrations"
+	@echo "  make docker-up        docker compose up -d"
+	@echo "  make docker-down      docker compose down"
+	@echo "  make audit            Print last 100 audit events"
+	@echo "  make push             git push origin main && git push github main"
+	@echo "  make coverage         Functional tests with --cov-report=term-missing"
+	@echo "  make clean            Remove Claude Code temp files on ai-agent VM"
+	@echo "  make help             Show this message"
 	@echo ""

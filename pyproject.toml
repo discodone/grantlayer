@@ -1,3 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "grantlayer"
+version = "1.0.0"
+description = "Secure AI Agent Grant Management — API-first, multi-tenant"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+
 [tool.ruff]
 line-length = 100
 exclude = [
@@ -13,3 +25,13 @@ ignore = ["E501", "E402"]
 [tool.mypy]
 python_version = "3.11"
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+tmp_path_retention_policy = "none"
+markers = [
+    "doc_guard: Tests that verify documentation artifacts exist and contain expected content (not application logic).",
+    "scope_guard: Tests that assert branch/diff scope constraints rather than application behavior.",
+    "contract: OpenAPI contract and schemathesis fuzz tests (run with make test-contract).",
+]
+asyncio_mode = "strict"
