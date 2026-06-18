@@ -3,7 +3,7 @@
 [![PostgreSQL CI](https://github.com/Discodone/grantlayer/actions/workflows/postgres-ci.yml/badge.svg)](https://github.com/Discodone/grantlayer/actions/workflows/postgres-ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-91%25%2B-brightgreen)](https://github.com/Discodone/grantlayer)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
 GrantLayer is a verification, audit, and compliance layer for agentic grant and funding workflows. When AI agents prepare funding applications, evaluate eligibility, or trigger approval decisions, GrantLayer makes every step traceable, tamper-evident, and independently auditable. It is in **Developer Preview** — local evaluation and controlled pilot only. It is not production SaaS; production SaaS readiness is not claimed. No GitHub push and no repository visibility change are part of this local quickstart.
 

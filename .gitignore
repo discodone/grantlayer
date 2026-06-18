@@ -63,3 +63,11 @@ docs/website_design_workspace_import_report*.md
 docs/website_design_workspace_import_dirty_stop*.md
 docs/website-design-workspace-import-report*.md
 website-design/
+
+# CI/run artifacts (repo clutter)
+coverage.json
+=0.19.0
+scripts/output.log
+logs/
+scripts/run-issues.sh
+scripts/run-remaining.sh
