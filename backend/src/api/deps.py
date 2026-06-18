@@ -213,8 +213,30 @@ def get_operator_service(db: Session = Depends(get_db)) -> OperatorService:
     return OperatorService(repo=SqlAlchemyOperatorRepository(db))
 
 
-def enforce_workspace_mutation(ws_ctx: dict) -> None:
-    """Raise 403 if the caller's workspace context does not allow mutation."""
+def enforce_api_key_write_scope(auth_ctx: dict) -> None:
+    """Raise 403 if the caller is a read_only API key (no write permission)."""
+    if auth_ctx.get("auth_method") != "api_key":
+        return
+    scopes: list[str] = auth_ctx.get("scopes") or []
+    if "read_write" in scopes or "admin" in scopes:
+        return
+    raise HTTPException(
+        status_code=403,
+        detail={
+            "error": "Forbidden",
+            "errorCode": "insufficient_scope",
+            "reason": "This API key has read_only scope. A read_write or admin key is required for write operations.",
+        },
+    )
+
+
+def enforce_workspace_mutation(ws_ctx: dict, auth_ctx: Optional[dict] = None) -> None:
+    """Raise 403 if the caller's workspace context does not allow mutation.
+
+    When auth_ctx is provided, also enforces API key write-scope gate.
+    """
+    if auth_ctx is not None:
+        enforce_api_key_write_scope(auth_ctx)
     access_ok, access_status, access_err = check_workspace_resource_access(
         resource_workspace_id=None,
         caller_workspace_id=ws_ctx["workspace_id"],

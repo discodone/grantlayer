@@ -234,7 +234,7 @@ async def approve_grant_request_endpoint(
             },
         )
 
-    enforce_workspace_mutation(ws_ctx)
+    enforce_workspace_mutation(ws_ctx, auth_ctx)
 
     try:
         updated_req, new_grant = await svc.approve_request(
@@ -296,7 +296,7 @@ async def deny_grant_request_endpoint(
             detail={"error": "Invalid field", "errorCode": "invalid_field", "reason": str(exc)},
         ) from exc
 
-    enforce_workspace_mutation(ws_ctx)
+    enforce_workspace_mutation(ws_ctx, auth_ctx)
 
     try:
         updated_req = await svc.deny_request(
