@@ -31,6 +31,7 @@ from .routers import (
     grant_requests,
     grants,
     health,
+    oidc,
     operators_me,
     policy_requirements,
     provenance,
@@ -241,6 +242,7 @@ def create_app() -> FastAPI:
 
     # All API routers under /v1/
     app.include_router(auth.router, prefix="/v1")
+    app.include_router(oidc.router, prefix="/v1")
     app.include_router(grants.router, prefix="/v1")
     app.include_router(grant_requests.router, prefix="/v1")
     app.include_router(audit_events.router, prefix="/v1")
@@ -276,6 +278,7 @@ def create_app() -> FastAPI:
         "/evidence", "/provenance", "/auditor", "/compliance", "/operators",
         "/admin", "/challenges", "/agent-permissions", "/approvals",
         "/decision-provenance", "/policy-requirements", "/demo", "/demo-action",
+        "/oidc",
     ]
 
     def _make_redirect_handler():

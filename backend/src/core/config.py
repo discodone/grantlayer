@@ -184,6 +184,20 @@ JWT_AUDIENCE: str = _env_str("GRANTLAYER_JWT_AUDIENCE", "grantlayer-api")
 JWT_STRICT_CLAIMS: bool = _env_bool("GRANTLAYER_JWT_STRICT_CLAIMS", default=False)
 
 # ──────────────────────────────────────────────────────────────
+# OIDC / External Identity Provider
+# ──────────────────────────────────────────────────────────────
+
+GRANTLAYER_ENABLE_OIDC: bool = _env_bool("GRANTLAYER_ENABLE_OIDC", default=False)
+GRANTLAYER_OIDC_ISSUER: str = _env_str("GRANTLAYER_OIDC_ISSUER", "")
+GRANTLAYER_OIDC_AUDIENCE: str = _env_str("GRANTLAYER_OIDC_AUDIENCE", "")
+GRANTLAYER_OIDC_JWKS_URL: str = _env_str("GRANTLAYER_OIDC_JWKS_URL", "")
+GRANTLAYER_OIDC_ALGORITHMS: str = _env_str("GRANTLAYER_OIDC_ALGORITHMS", "RS256,ES256")
+GRANTLAYER_OIDC_TENANT_CLAIM: str = _env_str("GRANTLAYER_OIDC_TENANT_CLAIM", "tenant_id")
+GRANTLAYER_OIDC_ROLE_CLAIM: str = _env_str("GRANTLAYER_OIDC_ROLE_CLAIM", "role")
+GRANTLAYER_OIDC_CLOCK_SKEW_SECONDS: int = _env_int("GRANTLAYER_OIDC_CLOCK_SKEW_SECONDS", 30)
+GRANTLAYER_OIDC_JWKS_CACHE_TTL_SECONDS: int = _env_int("GRANTLAYER_OIDC_JWKS_CACHE_TTL_SECONDS", 300)
+
+# ──────────────────────────────────────────────────────────────
 # Rate Limiting
 # ──────────────────────────────────────────────────────────────
 
@@ -362,6 +376,10 @@ def startup_errors() -> list[str]:
         )
 
     errs.extend(external_identity_startup_errors(os.environ, RUNTIME_MODE))
+
+    # OIDC-specific startup errors (missing required OIDC config when OIDC is enabled).
+    from ..auth.oidc import OIDCConfig
+    errs.extend(OIDCConfig.from_env().startup_errors())
 
     return errs
 
