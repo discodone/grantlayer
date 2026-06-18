@@ -110,6 +110,7 @@ class GrantListResponse(BaseModel):
     total: int
     limit: int
     offset: int
+    next_cursor: Optional[str] = Field(default=None, alias="nextCursor")
 
     model_config = {"populate_by_name": True}
 
@@ -172,6 +173,7 @@ class GrantRequestListResponse(BaseModel):
     total: int
     limit: int
     offset: int
+    next_cursor: Optional[str] = Field(default=None, alias="nextCursor")
 
     model_config = {"populate_by_name": True}
 

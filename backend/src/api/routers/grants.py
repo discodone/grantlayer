@@ -98,11 +98,15 @@ async def list_grants_endpoint(
         limit=limit,
         offset=offset,
     )
+    items = [_grant_to_response(g) for g in grants]
+    next_offset = offset + limit
+    next_cursor = str(next_offset) if next_offset < total else None
     return GrantListResponse(
-        items=[_grant_to_response(g) for g in grants],
+        items=items,
         total=total,
         limit=limit,
         offset=offset,
+        nextCursor=next_cursor,
     )
 
 
