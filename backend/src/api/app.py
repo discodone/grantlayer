@@ -35,6 +35,7 @@ from .routers import (
     operators_me,
     policy_requirements,
     provenance,
+    webhooks,
 )
 
 _logger = get_logger("grantlayer.fastapi")
@@ -258,6 +259,7 @@ def create_app() -> FastAPI:
     app.include_router(approvals.router, prefix="/v1")
     app.include_router(decision_provenance.router, prefix="/v1")
     app.include_router(policy_requirements.router, prefix="/v1")
+    app.include_router(webhooks.router, prefix="/v1")
     app.include_router(demo.router, prefix="/v1")
     if config.ENABLE_DEMO_ENDPOINTS:
         app.include_router(demo.tamper_router, prefix="/v1")
@@ -278,7 +280,7 @@ def create_app() -> FastAPI:
         "/evidence", "/provenance", "/auditor", "/compliance", "/operators",
         "/admin", "/challenges", "/agent-permissions", "/approvals",
         "/decision-provenance", "/policy-requirements", "/demo", "/demo-action",
-        "/oidc",
+        "/oidc", "/webhooks",
     ]
 
     def _make_redirect_handler():

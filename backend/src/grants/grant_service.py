@@ -11,6 +11,7 @@ from ..audit import audit_log as _audit_log
 from ..core.crypto_signing import sign_grant as _sign_grant
 from ..core.models import AuditEvent, Grant
 from ..core.repositories import IGrantRepository
+from ..core.webhook_dispatcher import dispatch as _webhook_dispatch
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -147,6 +148,21 @@ class AsyncGrantService:
         await self._session.run_sync(
             lambda sync_sess: _audit_log.append_event(event, conn=sync_sess.connection())
         )
+        await _webhook_dispatch(
+            "grant.created",
+            {
+                "id": grant.id,
+                "subject_id": grant.subject_id,
+                "role": grant.role,
+                "action": grant.action,
+                "resource": grant.resource,
+                "valid_from": grant.valid_from,
+                "valid_until": grant.valid_until,
+                "created_by": grant.created_by,
+            },
+            tenant_id=tenant_id,
+            workspace_id=workspace_id,
+        )
         return grant
 
     async def revoke_grant(
@@ -157,6 +173,14 @@ class AsyncGrantService:
         revoked_by: str,
         reason: str,
     ) -> bool:
-        return await self._repo.revoke(
+        result = await self._repo.revoke(
             grant_id, revoked_by, reason, tenant_id=tenant_id, workspace_id=workspace_id
         )
+        if result:
+            await _webhook_dispatch(
+                "grant.revoked",
+                {"id": grant_id, "revoked_by": revoked_by, "reason": reason},
+                tenant_id=tenant_id,
+                workspace_id=workspace_id,
+            )
+        return result
