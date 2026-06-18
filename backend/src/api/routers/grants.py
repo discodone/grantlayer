@@ -19,7 +19,7 @@ from ...core.validation import (
 )
 from ...grants.grant_requests import ALLOWED_GRANT_ROLES
 from ...grants.grant_service import AsyncGrantService
-from ..deps import get_async_grant_service, resolve_auth_and_workspace
+from ..deps import enforce_api_key_write_scope, get_async_grant_service, resolve_auth_and_workspace
 from ..schemas import GrantCreateRequest, GrantListResponse, GrantResponse
 
 router = APIRouter(prefix="/grants", tags=["grants"])
@@ -153,6 +153,7 @@ async def create_grant_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
+    enforce_api_key_write_scope(auth_ctx)
 
     # Validate that string fields are non-empty
     for alias, value in (
@@ -242,6 +243,7 @@ async def revoke_grant_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
+    enforce_api_key_write_scope(auth_ctx)
     operator_id = auth_ctx.get("sub") or auth_ctx.get("operator", {}).get("operatorId", "unknown")
     revoked = await svc.revoke_grant(
         grant_id,
