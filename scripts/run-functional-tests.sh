@@ -36,10 +36,10 @@ echo ""
 
 EXIT_CODE=0
 
-echo "Runner: pytest -n auto -m 'not doc_guard and not scope_guard'"
+echo "Runner: pytest -n auto -m 'not doc_guard and not scope_guard and not performance'"
 echo ""
 python3 -m pytest backend/tests/ -n auto \
-    -m "not doc_guard and not scope_guard" \
+    -m "not doc_guard and not scope_guard and not performance" \
     -o cache_dir=/home/adminuser/tmp/grantlayer-pytest-cache \
     --tb=short -q || EXIT_CODE=$?
 

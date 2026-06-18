@@ -4,6 +4,74 @@ All notable changes to GrantLayer are documented here.
 
 ---
 
+## [0.19.0] — 2026-06-18
+
+### Developer Portal + API Documentation Site
+- MkDocs Material site with dark theme (slate palette).
+- Docs: index, getting-started, authentication, webhooks, sdk-python, sdk-js, self-hosting, contributing.
+- `make docs` (build) and `make docs-serve` (local preview) targets.
+- GitHub Actions workflow deploys to gh-pages on push to main.
+
+### Multi-Workspace Grant Templates
+- `GrantTemplate` model: id, workspace_id, name, description, schema_json, default_values, version, parent_id, is_active, locked.
+- CRUD: `/v1/grant-templates/` (list, create, get, deactivate, new-version).
+- Templates immutable after first use; new-version creates incremented record with parent_id.
+- `GET /v1/grant-templates/public` returns system-wide templates.
+- Migration 0018; tests for CRUD, versioning, deactivation.
+
+### OPA Policy Engine Integration
+- OPA sidecar in docker-compose (openpolicyagent/opa:latest).
+- `opa/policies/main.rego`: role-based grant approval, workspace_id match, API key scope enforcement.
+- `policy/opa_client.py`: async `evaluate_policy()` + sync fallback; graceful degradation if OPA unreachable.
+- `require_policy()` FastAPI dependency — raises 403 on deny.
+
+### TypeScript/JavaScript SDK
+- `sdk-js/` — TypeScript strict mode, ESM + CJS dual output.
+- `GrantLayerClient` covering all endpoints: auth, grants, grant requests, audit, webhooks, API keys, workspaces, GDPR.
+- Fetch-based (no axios), Node.js 18+ + browser compatible.
+- Retry: 3 attempts, exponential backoff, 429 Retry-After awareness.
+- Jest tests: mock fetch, assert correct endpoints called.
+
+### Audit Log Compliance Export + Immutability Proof
+- `GET /v1/audit/export` — streams NDJSON with SHA-256 chain hash per entry + HMAC manifest.
+- `GET /v1/audit/verify` — verifies chain integrity, returns `{valid, checked, broken_at}`.
+- `scripts/verify-audit.py` — offline CLI verifier (no network required).
+- Tests: round-trip passes, tamper detection, empty export.
+
+### Helm Chart + Kubernetes Manifests
+- `deploy/helm/grantlayer/` — Chart.yaml, values.yaml, 7 templates (deployment-api, deployment-worker, service, ingress, configmap, hpa, pdb).
+- PostgreSQL and Redis as external DSN (no subcharts).
+- `deploy/k8s/` — raw manifests (namespace, secret, deployment).
+- `deploy/README.md` — k3s quickstart.
+- `make helm-lint` target.
+
+### Performance Benchmarking Suite
+- `backend/tests/performance/` with pytest benchmarks (marked `performance`).
+- Scenarios: grant list, grant create, bulk-approve 100, audit log query.
+- Baselines in `baselines.json`; p95 within 2x baseline regression detection.
+- `make perf-test` target; excluded from normal `make test`.
+
+### GDPR Compliance Tooling
+- `POST /v1/users/{id}/export-data` — returns JSON archive of user data (async job_id).
+- `POST /v1/users/{id}/erase` — anonymize PII, revoke tokens/API keys, audit entry.
+- Self-erasure allowed; admin can erase any user; non-admin cannot erase others (403).
+
+### Long-lived API Key Management
+- `ApiKey` model: id, workspace_id, user_id, key_hash, name, scopes, expires_at, last_used_at, revoked_at.
+- Key format: `gl_live_` + 32 random hex bytes; SHA-256 hashed, stored only as hash.
+- CRUD: `POST /v1/api-keys` (returns raw key once), `GET /v1/api-keys`, `DELETE /v1/api-keys/{id}`.
+- Audit events: `api_key_created`, `api_key_revoked`.
+- Migration 0017.
+
+### Tiered Rate Limiting Per-Workspace Plans
+- `plan_tier` (free/pro/enterprise) + `rate_limit_override` columns on Workspace.
+- Rate limits: free=100 req/min, pro=1000, enterprise=unlimited.
+- `PATCH /v1/workspaces/{id}/plan` endpoint (admin only).
+- `X-Plan-Tier` response header on all `/v1/` responses.
+- Migration 0016.
+
+---
+
 ## [Unreleased] — v2.0.0 candidate
 
 ### Redis Hard Requirement + API Rate Limiting

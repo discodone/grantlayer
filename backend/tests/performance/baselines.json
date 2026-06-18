@@ -1,0 +1,6 @@
+{
+  "grant_list_1k": {"p95_ms": 500, "unit": "ms"},
+  "grant_create": {"p95_ms": 200, "unit": "ms"},
+  "bulk_approve_100": {"p95_ms": 2000, "unit": "ms"},
+  "audit_log_query_10k": {"p95_ms": 1000, "unit": "ms"}
+}

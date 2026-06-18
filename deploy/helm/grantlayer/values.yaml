@@ -1,0 +1,104 @@
+replicaCount:
+  api: 2
+  worker: 1
+
+image:
+  repository: grantlayer/api
+  pullPolicy: IfNotPresent
+  tag: ""  # defaults to Chart.appVersion
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+  hosts:
+    - host: grantlayer.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: grantlayer-tls
+      hosts:
+        - grantlayer.example.com
+
+resources:
+  api:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+  worker:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+# External DSNs — must be provided; no subcharts bundled.
+# Reference K8s secrets via env vars (see configmap.yaml + deployment-api.yaml).
+postgresql:
+  # DSN injected from a K8s Secret (key: GRANTLAYER_DATABASE_URL)
+  secretName: grantlayer-secrets
+  secretKey: GRANTLAYER_DATABASE_URL
+
+redis:
+  # DSN injected from a K8s Secret (key: GRANTLAYER_REDIS_URL)
+  secretName: grantlayer-secrets
+  secretKey: GRANTLAYER_REDIS_URL
+
+config:
+  runtimeMode: production
+  corsAllowedOrigins: ""
+  rateLimitAuth: "10"
+  rateLimitApi: "120"
+  enableDemoEndpoints: "false"
+  logLevel: "INFO"
+  jwtAlgorithm: "RS256"
+
+# Reference an existing K8s Secret for JWT keys and admin token.
+secrets:
+  secretName: grantlayer-secrets
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

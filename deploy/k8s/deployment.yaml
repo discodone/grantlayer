@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grantlayer-api
+  namespace: grantlayer
+  labels:
+    app: grantlayer
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: grantlayer
+      component: api
+  template:
+    metadata:
+      labels:
+        app: grantlayer
+        component: api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: api
+          image: grantlayer/api:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: RUNTIME_MODE
+              value: "production"
+            - name: GRANTLAYER_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: grantlayer-secrets
+                  key: GRANTLAYER_DATABASE_URL
+            - name: GRANTLAYER_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: grantlayer-secrets
+                  key: GRANTLAYER_REDIS_URL
+            - name: GRANTLAYER_ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: grantlayer-secrets
+                  key: GRANTLAYER_ADMIN_TOKEN
+            - name: GRANTLAYER_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: grantlayer-secrets
+                  key: GRANTLAYER_JWT_SECRET
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grantlayer
+  namespace: grantlayer
+spec:
+  selector:
+    app: grantlayer
+    component: api
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: ClusterIP

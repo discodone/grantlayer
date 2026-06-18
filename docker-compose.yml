@@ -96,6 +96,29 @@ services:
     networks:
       - grantlayer
 
+  # ── OPA sidecar (optional — enables policy engine) ─────────────
+  # Set GRANTLAYER_OPA_URL=http://opa:8181 to activate policy evaluation in the API.
+  opa:
+    image: openpolicyagent/opa:latest
+    container_name: grantlayer-opa
+    command:
+      - run
+      - --server
+      - --addr=0.0.0.0:8181
+      - /policies
+    volumes:
+      - ./opa/policies:/policies:ro
+    ports:
+      - "8181:8181"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8181/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - grantlayer
+
 volumes:
   grantlayer-data:
   grantlayer-postgres-data:

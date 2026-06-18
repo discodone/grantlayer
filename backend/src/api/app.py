@@ -20,7 +20,9 @@ from ..core.telemetry import get_current_trace_id, instrument_fastapi, setup_tel
 from .routers import (
     admin,
     agent_permissions,
+    api_keys,
     approvals,
+    audit_compliance,
     audit_events,
     auditor,
     auth,
@@ -32,7 +34,9 @@ from .routers import (
     evidence,
     executions,
     exports,
+    gdpr,
     grant_requests,
+    grant_templates,
     grants,
     health,
     jobs,
@@ -42,9 +46,18 @@ from .routers import (
     policy_requirements,
     provenance,
     webhooks,
+    workspaces,
 )
 
 _logger = get_logger("grantlayer.fastapi")
+
+
+def _resolve_plan_tier(request: Request) -> tuple[str, int | None]:
+    """Extract plan_tier from request state (set by workspace router) or return defaults."""
+    plan_tier = getattr(request.state, "plan_tier", "free")
+    rate_limit_override = getattr(request.state, "rate_limit_override", None)
+    return plan_tier, rate_limit_override
+
 
 _SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
@@ -96,7 +109,7 @@ def create_app() -> FastAPI:
             allow_headers=["Content-Type", "Authorization", "X-Correlation-ID"],
         )
 
-    # API rate limiting — all /v1/ routes, "api" group (120 req/min per IP default).
+    # API rate limiting — all /v1/ routes, "api" group (tier-based per workspace).
     # OPTIONS (CORS preflight) requests are excluded — they carry no payload and
     # must not be blocked by rate limiting.
     # The auth router applies an additional stricter "auth" group check on /v1/auth/token.
@@ -106,7 +119,13 @@ def create_app() -> FastAPI:
             limiter = getattr(request.app.state, "auth_rate_limiter", None)
             if limiter is not None:
                 client_ip = request.client.host if request.client else "unknown"
-                allowed, retry_after = limiter.check(client_ip, "api")
+                # Resolve plan tier from workspace context (lightweight JWT decode)
+                plan_tier, rate_limit_override = _resolve_plan_tier(request)
+                allowed, retry_after = limiter.check(
+                    client_ip, "api",
+                    plan_tier=plan_tier,
+                    rate_limit_override=rate_limit_override,
+                )
                 if not allowed:
                     from fastapi.responses import JSONResponse as _JSONResponse
                     return _JSONResponse(
@@ -116,9 +135,17 @@ def create_app() -> FastAPI:
                             "errorCode": "rate_limit_exceeded",
                             "reason": f"Too many requests. Retry after {retry_after} seconds.",
                         },
-                        headers={"Retry-After": str(retry_after)},
+                        headers={
+                            "Retry-After": str(retry_after),
+                            "X-Plan-Tier": plan_tier,
+                        },
                     )
-        return await call_next(request)
+        response = await call_next(request)
+        # Inject plan tier header on all /v1/ responses
+        if request.url.path.startswith("/v1/"):
+            plan_tier, _ = _resolve_plan_tier(request)
+            response.headers["X-Plan-Tier"] = plan_tier
+        return response
 
     # Request logging and correlation ID propagation
     @app.middleware("http")
@@ -279,6 +306,11 @@ def create_app() -> FastAPI:
     app.include_router(exports.router, prefix="/v1")
     app.include_router(bulk.grants_bulk_router, prefix="/v1")
     app.include_router(bulk.grant_requests_bulk_router, prefix="/v1")
+    app.include_router(workspaces.router, prefix="/v1")
+    app.include_router(api_keys.router, prefix="/v1")
+    app.include_router(grant_templates.router, prefix="/v1")
+    app.include_router(gdpr.router, prefix="/v1")
+    app.include_router(audit_compliance.router, prefix="/v1")
     app.include_router(demo.router, prefix="/v1")
     if config.ENABLE_DEMO_ENDPOINTS:
         app.include_router(demo.tamper_router, prefix="/v1")

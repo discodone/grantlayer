@@ -1,0 +1,62 @@
+site_name: GrantLayer Docs
+site_description: Secure AI Agent Grant Management — API Documentation
+site_url: https://discodone.github.io/grantlayer/
+repo_url: https://github.com/discodone/grantlayer
+repo_name: discodone/grantlayer
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: deep purple
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Authentication: authentication.md
+  - Webhooks: webhooks.md
+  - SDK:
+      - Python SDK: sdk-python.md
+      - JavaScript/TypeScript SDK: sdk-js.md
+  - Self-Hosting: self-hosting.md
+  - Contributing: contributing.md
+  - Changelog: ../CHANGELOG.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/discodone/grantlayer

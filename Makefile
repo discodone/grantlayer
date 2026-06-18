@@ -1,5 +1,5 @@
-.PHONY: install test test-all test-functional test-contract lint format fix migrate \
-        docker-up docker-down audit push coverage clean help
+.PHONY: install test test-all test-functional test-contract perf-test helm-lint docs docs-serve \
+        lint format fix migrate docker-up docker-down audit push coverage clean help
 
 # Default: functional tests only (application logic, HTTP, DB, auth, grants).
 # ~120 files / ~3 400 test methods.  Fast and meaningful for CI.
@@ -21,6 +21,23 @@ test-all:
 # Contract tests: OpenAPI schema + SDK contract + schemathesis fuzz.
 test-contract:
 	pytest backend/tests/contract/ -v --tb=short -m "contract"
+
+# Performance benchmarks: relative regression detection (p95 within 2x baseline).
+# Excluded from normal make test — run manually or in dedicated CI stage.
+perf-test:
+	pytest backend/tests/performance/ -v --tb=short -m "performance"
+
+# Helm chart lint (requires helm CLI).
+helm-lint:
+	helm lint deploy/helm/grantlayer/
+
+# Build MkDocs documentation site.
+docs:
+	mkdocs build
+
+# Serve documentation locally.
+docs-serve:
+	mkdocs serve
 
 # Linting: ruff + mypy (must both pass before every commit).
 lint:
@@ -87,6 +104,10 @@ help:
 	@echo "  make audit            Print last 100 audit events"
 	@echo "  make push             git push origin main && git push github main"
 	@echo "  make coverage         Functional tests with --cov-report=term-missing"
+	@echo "  make perf-test        Performance benchmarks (p95 regression detection)"
+	@echo "  make helm-lint        Lint the Helm chart in deploy/helm/grantlayer/"
+	@echo "  make docs             Build MkDocs documentation site"
+	@echo "  make docs-serve       Serve documentation locally"
 	@echo "  make clean            Remove Claude Code temp files on ai-agent VM"
 	@echo "  make help             Show this message"
 	@echo ""

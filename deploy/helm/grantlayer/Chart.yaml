@@ -1,0 +1,17 @@
+apiVersion: v2
+name: grantlayer
+description: Secure AI Agent Grant Management System
+type: application
+version: 0.19.0
+appVersion: "0.19.0"
+keywords:
+  - grantlayer
+  - grants
+  - ai-agent
+  - authorization
+home: https://github.com/discodone/grantlayer
+sources:
+  - https://github.com/discodone/grantlayer
+maintainers:
+  - name: GrantLayer Team
+    email: hello@grantlayer.dev

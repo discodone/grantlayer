@@ -283,6 +283,9 @@ class Workspace(Base):
     description = Column(Text)
     created_at = Column(Text, nullable=False)
     updated_at = Column(Text, nullable=False)
+    # from migration 0016: tiered rate limiting
+    plan_tier = Column(Text, nullable=False, default="free")
+    rate_limit_override = Column(Integer)
 
     __table_args__ = (
         Index("idx_workspaces_tenant_id", "tenant_id"),
@@ -323,6 +326,54 @@ class WorkspaceInvite(Base):
     __table_args__ = (
         Index("idx_workspace_invites_workspace_id", "workspace_id"),
         Index("idx_workspace_invites_email_hash", "email_hash"),
+    )
+
+
+# ── API Key table ─────────────────────────────────────────────────────────────
+
+class ApiKey(Base):
+    __tablename__ = "api_keys"
+
+    id = Column(Text, primary_key=True)
+    workspace_id = Column(Text, nullable=False)
+    user_id = Column(Text, nullable=False)
+    key_hash = Column(Text, nullable=False, unique=True)
+    name = Column(Text, nullable=False)
+    scopes = Column(Text, nullable=False, default="[]")
+    expires_at = Column(Text)
+    last_used_at = Column(Text)
+    created_at = Column(Text, nullable=False)
+    revoked_at = Column(Text)
+
+    __table_args__ = (
+        Index("idx_api_keys_workspace_id", "workspace_id"),
+        Index("idx_api_keys_user_id", "user_id"),
+        Index("idx_api_keys_key_hash", "key_hash"),
+    )
+
+
+# ── Grant Template table ───────────────────────────────────────────────────────
+
+class GrantTemplate(Base):
+    __tablename__ = "grant_templates"
+
+    id = Column(Text, primary_key=True)
+    workspace_id = Column(Text)
+    name = Column(Text, nullable=False)
+    description = Column(Text)
+    schema_json = Column(Text, nullable=False, default="{}")
+    default_values = Column(Text, nullable=False, default="{}")
+    version = Column(Integer, nullable=False, default=1)
+    parent_id = Column(Text)
+    is_active = Column(Integer, nullable=False, default=1)
+    locked = Column(Integer, nullable=False, default=0)
+    created_at = Column(Text, nullable=False)
+    created_by = Column(Text, nullable=False)
+
+    __table_args__ = (
+        Index("idx_grant_templates_workspace_id", "workspace_id"),
+        Index("idx_grant_templates_parent_id", "parent_id"),
+        Index("idx_grant_templates_is_active", "is_active"),
     )
 
 

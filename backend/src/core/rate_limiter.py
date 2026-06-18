@@ -5,6 +5,11 @@ When Redis is unavailable or unconfigured, falls back to an in-process
 deque-based sliding window (not shared across workers).
 
 Set GRANTLAYER_REDIS_URL to enable the Redis backend.
+
+Plan tiers apply per-workspace limits:
+  free       → 100 req/min
+  pro        → 1000 req/min
+  enterprise → unlimited (always allowed)
 """
 
 from __future__ import annotations
@@ -14,6 +19,13 @@ import threading
 import time
 import uuid
 from typing import Any, Optional
+
+# Limits per plan tier (requests per minute)
+TIER_LIMITS: dict[str, Optional[int]] = {
+    "free": 100,
+    "pro": 1000,
+    "enterprise": None,  # unlimited
+}
 
 try:
     import redis as _redis_lib
@@ -66,20 +78,46 @@ class RateLimiter:
         self._storage: dict[tuple[str, str], collections.deque[float]] = {}
         self._lock = threading.Lock()
 
+    def limit_for_tier(
+        self,
+        plan_tier: str,
+        rate_limit_override: Optional[int] = None,
+    ) -> Optional[int]:
+        """Return effective req/min limit for a plan tier, or None for unlimited."""
+        if rate_limit_override is not None:
+            return rate_limit_override
+        return TIER_LIMITS.get(plan_tier, TIER_LIMITS["free"])
+
     def check(
         self,
         client_ip: str,
         group: str,
         now: float | None = None,
+        plan_tier: str = "free",
+        rate_limit_override: Optional[int] = None,
     ) -> tuple[bool, int]:
         """Return *(allowed, retry_after_seconds)* for *client_ip* in *group*.
 
         *now* is optional and intended for deterministic tests.
+        *plan_tier* controls per-workspace limits (free/pro/enterprise).
+        *rate_limit_override* overrides the tier limit when set.
+
+        For "api" group: effective limit = min(api_limit, tier_limit) so that
+        the configured api_limit is always respected (backward compat).
+        Enterprise tier bypasses all limits.
         """
         if now is None:
             now = time.time()
 
-        limit = self.auth_limit if group == "auth" else self.api_limit
+        if group == "auth":
+            limit: int = self.auth_limit
+        else:
+            tier_limit = self.limit_for_tier(plan_tier, rate_limit_override)
+            if tier_limit is None:
+                return True, 0  # enterprise: unlimited
+            # Use the more restrictive of configured api_limit vs tier limit
+            limit = min(self.api_limit, tier_limit)
+
         key = (client_ip, group)
 
         with self._lock:
@@ -186,11 +224,21 @@ class RedisRateLimiter:
         except Exception:
             pass
 
+    def limit_for_tier(
+        self,
+        plan_tier: str,
+        rate_limit_override: Optional[int] = None,
+    ) -> Optional[int]:
+        """Return effective req/min limit for a plan tier, or None for unlimited."""
+        return self._fallback.limit_for_tier(plan_tier, rate_limit_override)
+
     def check(
         self,
         client_ip: str,
         group: str,
         now: float | None = None,
+        plan_tier: str = "free",
+        rate_limit_override: Optional[int] = None,
     ) -> tuple[bool, int]:
         """Return *(allowed, retry_after_seconds)* — Redis-backed, in-process fallback."""
         with self._lock:
@@ -198,12 +246,12 @@ class RedisRateLimiter:
 
         if r is not None:
             try:
-                return self._redis_check(r, client_ip, group, now)
+                return self._redis_check(r, client_ip, group, now, plan_tier, rate_limit_override)
             except Exception:
                 with self._lock:
                     self._redis = None
 
-        return self._fallback.check(client_ip, group, now)
+        return self._fallback.check(client_ip, group, now, plan_tier, rate_limit_override)
 
     def _redis_check(
         self,
@@ -211,12 +259,22 @@ class RedisRateLimiter:
         client_ip: str,
         group: str,
         now: float | None = None,
+        plan_tier: str = "free",
+        rate_limit_override: Optional[int] = None,
     ) -> tuple[bool, int]:
         if now is None:
             now = time.time()
-        limit = self._fallback.auth_limit if group == "auth" else self._fallback.api_limit
+
+        if group == "auth":
+            limit: Optional[int] = self._fallback.auth_limit
+        else:
+            tier_limit = self.limit_for_tier(plan_tier, rate_limit_override)
+            if tier_limit is None:
+                return True, 0  # enterprise: unlimited
+            limit = min(self._fallback.api_limit, tier_limit)
+
         window = self._fallback.window_seconds
-        key = f"rl:{client_ip}:{group}"
+        key = f"rl:{client_ip}:{group}:{plan_tier}"
         member = f"{now}:{uuid.uuid4()}"
 
         result = r.eval(_LUA_SLIDING_WINDOW, 1, key, now, window, limit, member)
