@@ -2,11 +2,42 @@
 
 from __future__ import annotations
 
+import ipaddress
+import socket
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, field_validator
 
 from .events import ALL_WEBHOOK_EVENTS
+
+
+def _is_ssrf_destination(host: str) -> bool:
+    """Return True if *host* resolves to a private/loopback/link-local address.
+
+    Blocks: loopback (127.x, ::1), link-local (169.254.x, fe80::/10),
+    private RFC-1918 (10.x, 172.16-31.x, 192.168.x), and unspecified (0.0.0.0).
+    DNS rebinding is mitigated by resolving here and again at delivery time.
+    """
+    try:
+        infos = socket.getaddrinfo(host, None, proto=socket.IPPROTO_TCP)
+    except (socket.gaierror, OSError):
+        return True  # unresolvable → deny
+
+    for _family, _type, _proto, _canonname, sockaddr in infos:
+        try:
+            ip = ipaddress.ip_address(sockaddr[0])
+        except ValueError:
+            continue
+        if (
+            ip.is_loopback
+            or ip.is_link_local
+            or ip.is_private
+            or ip.is_unspecified
+            or ip.is_multicast
+        ):
+            return True
+    return False
 
 
 class WebhookCreateRequest(BaseModel):
@@ -24,6 +55,15 @@ class WebhookCreateRequest(BaseModel):
             raise ValueError("url must be non-empty")
         if not (v.startswith("https://") or v.startswith("http://")):
             raise ValueError("url must start with http:// or https://")
+        parsed = urlparse(v)
+        host = parsed.hostname or ""
+        if not host:
+            raise ValueError("url must contain a valid hostname")
+        if _is_ssrf_destination(host):
+            raise ValueError(
+                "url destination is not allowed: loopback, link-local, and private "
+                "network addresses are blocked to prevent SSRF attacks"
+            )
         return v
 
     @field_validator("events")

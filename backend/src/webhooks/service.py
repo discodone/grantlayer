@@ -11,11 +11,13 @@ import logging
 import secrets
 import uuid
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 import httpx
 
 from .events import ALL_WEBHOOK_EVENTS
 from .repository import WebhookRepository
+from .schemas import _is_ssrf_destination
 
 _logger = logging.getLogger("grantlayer.webhooks.service")
 
@@ -144,7 +146,13 @@ class WebhookService:
         """Deliver a single webhook POST and return HTTP status code.
 
         Raises httpx.HTTPError on network failures.
+        SSRF guard: re-checks destination IP at delivery time (DNS rebinding protection).
         """
+        parsed = urlparse(url)
+        host = parsed.hostname or ""
+        if _is_ssrf_destination(host):
+            _logger.error("webhook_ssrf_blocked_at_delivery", extra={"url": url, "host": host})
+            raise ValueError(f"Webhook delivery blocked: destination {host!r} is a private address")
         body = json.dumps(payload, separators=(",", ":")).encode()
         delivery_id = str(uuid.uuid4())
         sig = _sign_payload(secret, body)
@@ -169,6 +177,15 @@ class WebhookService:
         body: bytes,
         tenant_id: str,
     ) -> None:
+        # Re-check SSRF at delivery time to defend against DNS rebinding.
+        parsed = urlparse(url)
+        host = parsed.hostname or ""
+        if _is_ssrf_destination(host):
+            _logger.error(
+                "webhook_ssrf_blocked_at_delivery",
+                extra={"webhook_id": webhook_id, "host": host},
+            )
+            return
         delivery_id = str(uuid.uuid4())
         sig = _sign_payload(secret, body)
         req_headers = {
