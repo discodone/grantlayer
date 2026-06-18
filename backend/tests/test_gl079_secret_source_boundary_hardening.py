@@ -334,9 +334,13 @@ class TestIsolationAndDependencies(unittest.TestCase):
     def test_no_persistence_files_changed(self) -> None:
         import os
 
+        # GL-307: config.py is explicitly allowed to import SecretResolver from
+        # secret_sources to wire Vault > Docker Secrets > env resolution.
+        _allowed = {"secret_sources.py", "config.py"}
+
         for root, _dirs, files in os.walk("backend/src"):
             for f in files:
-                if f.endswith(".py") and f not in ("secret_sources.py",):
+                if f.endswith(".py") and f not in _allowed:
                     path = os.path.join(root, f)
                     with open(path, "r", encoding="utf-8") as fh:
                         content = fh.read()

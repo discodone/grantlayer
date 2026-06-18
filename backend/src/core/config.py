@@ -16,6 +16,7 @@ import os
 
 from ..auth.identity_access import external_identity_startup_errors
 from .runtime_config import PRODUCTION_LIKE_MODES, get_runtime_mode
+from .secret_sources import SecretResolver
 
 # ──────────────────────────────────────────────────────────────
 # Placeholder/weak token detection constants
@@ -73,6 +74,19 @@ def _env_list(name: str, default: list[str] | None = None) -> list[str]:
 RUNTIME_MODE: str = get_runtime_mode()
 
 # ──────────────────────────────────────────────────────────────
+# Secret Resolver — Vault > Docker Secrets file > env var
+# ──────────────────────────────────────────────────────────────
+
+_SECRET_RESOLVER: SecretResolver = SecretResolver.from_env()
+
+
+def _secret(name: str, default: str = "") -> str:
+    """Resolve *name* via the priority chain; return *default* when absent."""
+    value = _SECRET_RESOLVER.resolve(name)
+    return value if value is not None else default
+
+
+# ──────────────────────────────────────────────────────────────
 # Product / Demo Mode Flags
 # ──────────────────────────────────────────────────────────────
 
@@ -118,7 +132,7 @@ GRANTLAYER_HEALTH_PROBE_DB_TIMEOUT_MS: int = _env_int("GRANTLAYER_HEALTH_PROBE_D
 # Admin Token (Demo / Sprint-2C only)
 # ──────────────────────────────────────────────────────────────
 
-GRANTLAYER_ADMIN_TOKEN: str = _env_str("GRANTLAYER_ADMIN_TOKEN", "")
+GRANTLAYER_ADMIN_TOKEN: str = _secret("GRANTLAYER_ADMIN_TOKEN")
 
 # ──────────────────────────────────────────────────────────────
 # Operator Model
@@ -126,7 +140,7 @@ GRANTLAYER_ADMIN_TOKEN: str = _env_str("GRANTLAYER_ADMIN_TOKEN", "")
 
 ENABLE_OPERATOR_MODEL: bool = _env_bool("GRANTLAYER_ENABLE_OPERATOR_MODEL", default=True)
 
-GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN", "")
+GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN: str = _secret("GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN")
 GRANTLAYER_BOOTSTRAP_OPERATOR_ID: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_ID", "bootstrap-admin")
 GRANTLAYER_BOOTSTRAP_OPERATOR_NAME: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_NAME", "Bootstrap Admin")
 GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE: str = _env_str("GRANTLAYER_BOOTSTRAP_OPERATOR_ROLE", "owner")
@@ -148,7 +162,7 @@ CORS_ALLOWED_ORIGINS: list[str] = _env_list(
 # ──────────────────────────────────────────────────────────────
 
 # Externalized private key material (PEM string). Takes precedence over file.
-GRANTLAYER_SIGNING_PRIVATE_KEY: str = _env_str("GRANTLAYER_SIGNING_PRIVATE_KEY", "")
+GRANTLAYER_SIGNING_PRIVATE_KEY: str = _secret("GRANTLAYER_SIGNING_PRIVATE_KEY")
 
 # Explicit private key file path. Falls back to default data/ path if unset.
 GRANTLAYER_SIGNING_PRIVATE_KEY_FILE: str = _env_str("GRANTLAYER_SIGNING_PRIVATE_KEY_FILE", "")

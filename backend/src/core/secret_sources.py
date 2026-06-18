@@ -1,20 +1,26 @@
 """GrantLayer secret source boundary hardening helpers.
 
 This module provides isolated, dependency-free helpers for safe secret lookup
-and validation. It does not integrate with vault/KMS/cloud secret managers,
-does not change server or API behavior, and does not expose secret values in
-representations or error messages.
+from environment variables, Docker Secrets files, and HashiCorp Vault KV v2.
+No secret values are ever logged, printed, or exposed in representations or
+error messages.
 """
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import urllib.error
+import urllib.request
 from collections.abc import Iterable
 from typing import Mapping, Optional, Sequence
 
 REDACTED_SECRET_VALUE = "[REDACTED]"
 SECRET_SOURCE_ENVIRONMENT = "environment"
+SECRET_SOURCE_FILE = "file"
+SECRET_SOURCE_VAULT = "vault"
+DOCKER_SECRETS_DEFAULT_DIR = "/run/secrets"
 
 _SECRET_KEY_PATTERNS = frozenset(
     [
@@ -239,3 +245,244 @@ def _validate_name_sequence(names: object) -> None:
     for name in names:
         if not isinstance(name, str) or not name.strip():
             raise ValueError("names must be a sequence of non-empty strings")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Docker Secrets / file-based secret sources
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def read_file_secret(path: str) -> Optional[str]:
+    """Read a secret from *path*, returning the stripped value or None.
+
+    Returns None when the file does not exist or is empty/whitespace-only.
+    Raises ValueError for empty or non-string path.
+    Raises SecretConfigurationError on permission or OS errors (never forwards
+    the raw OS error reason into the exception message).
+    """
+    if not isinstance(path, str):
+        raise TypeError("path must be a string")
+    if not path:
+        raise ValueError("path must be a non-empty string")
+    try:
+        with open(path, "r") as f:
+            content = f.read()
+    except FileNotFoundError:
+        return None
+    except PermissionError:
+        raise SecretConfigurationError("permission denied reading secret file")
+    except OSError:
+        raise SecretConfigurationError("error reading secret file")
+    stripped = content.strip()
+    return stripped if stripped else None
+
+
+def read_docker_secret(
+    name: str,
+    *,
+    secrets_dir: str = DOCKER_SECRETS_DEFAULT_DIR,
+) -> Optional[str]:
+    """Read secret *name* from the Docker Secrets directory.
+
+    Raises ValueError for empty name or secrets_dir.
+    Returns None when the file is absent or empty.
+    """
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("secret name must be a non-empty string")
+    if not isinstance(secrets_dir, str) or not secrets_dir.strip():
+        raise ValueError("secrets_dir must be a non-empty string")
+    return read_file_secret(os.path.join(secrets_dir, name))
+
+
+def describe_file_secret_source(
+    name: str,
+    *,
+    secrets_dir: str = DOCKER_SECRETS_DEFAULT_DIR,
+) -> dict:
+    """Return safe metadata for the Docker Secret *name* (no secret values)."""
+    path = os.path.join(secrets_dir, name)
+    try:
+        value = read_file_secret(path)
+    except SecretConfigurationError:
+        value = None
+    present = value is not None
+    return {
+        "name": name,
+        "source": SECRET_SOURCE_FILE,
+        "present": present,
+        "valuePreview": REDACTED_SECRET_VALUE if present else None,
+        "path": path,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HashiCorp Vault KV v2
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class VaultSecretReader:
+    """Reads secrets from HashiCorp Vault KV v2 using urllib (no extra deps).
+
+    Token is never included in __repr__ or error messages.
+    """
+
+    def __init__(
+        self,
+        addr: str,
+        token: str,
+        mount: str = "secret",
+        path_prefix: str = "",
+    ) -> None:
+        self._addr = addr.rstrip("/")
+        self._token = token
+        self._mount = mount
+        self._path_prefix = path_prefix
+
+    @classmethod
+    def from_env(
+        cls,
+        env: Optional[Mapping[str, str]] = None,
+    ) -> Optional["VaultSecretReader"]:
+        """Construct from env dict (or os.environ if None).  Returns None when not configured."""
+        source: Mapping[str, str] = env if env is not None else os.environ
+        addr = source.get("GRANTLAYER_VAULT_ADDR", "").strip()
+        token = source.get("GRANTLAYER_VAULT_TOKEN", "").strip()
+        if not addr or not token:
+            return None
+        mount = source.get("GRANTLAYER_VAULT_MOUNT", "secret").strip() or "secret"
+        path_prefix = source.get("GRANTLAYER_VAULT_PATH", "").strip()
+        return cls(addr=addr, token=token, mount=mount, path_prefix=path_prefix)
+
+    def _build_url(self, name: str) -> str:
+        if self._path_prefix:
+            path = f"{self._path_prefix}/{name}"
+        else:
+            path = name
+        return f"{self._addr}/v1/{self._mount}/data/{path}"
+
+    def read(self, name: str) -> Optional[str]:
+        """Fetch *name* from Vault KV v2.  Returns None on 404, raises on errors."""
+        url = self._build_url(name)
+        req = urllib.request.Request(url, headers={"X-Vault-Token": self._token})
+        try:
+            with urllib.request.urlopen(req) as resp:
+                body = resp.read()
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                return None
+            if exc.code == 403:
+                raise SecretConfigurationError(
+                    f"Vault 403 permission denied reading secret '{name}'"
+                )
+            raise SecretConfigurationError(
+                f"Vault {exc.code} error reading secret '{name}'"
+            )
+        except urllib.error.URLError:
+            raise SecretConfigurationError(
+                f"Vault connection error reading secret '{name}'"
+            )
+        try:
+            data = json.loads(body)
+            return data["data"]["data"].get(name)
+        except (json.JSONDecodeError, KeyError, TypeError):
+            raise SecretConfigurationError(
+                f"Vault response malformed reading secret '{name}'"
+            )
+
+    def describe(self, name: str) -> dict:
+        """Return safe metadata for *name* (never includes token or value)."""
+        try:
+            value = self.read(name)
+            present = value is not None
+        except SecretConfigurationError:
+            present = False
+        return {
+            "source": SECRET_SOURCE_VAULT,
+            "present": present,
+            "valuePreview": REDACTED_SECRET_VALUE if present else None,
+        }
+
+    def __repr__(self) -> str:
+        return (
+            f"VaultSecretReader(addr={self._addr!r}, mount={self._mount!r}, "
+            f"path_prefix={self._path_prefix!r})"
+        )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SecretResolver — priority chain: Vault > file > environment
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class SecretResolver:
+    """Resolves secrets in priority order: Vault > Docker Secret file > env var."""
+
+    def __init__(
+        self,
+        vault: Optional[VaultSecretReader],
+        secrets_dir: str,
+        env: Optional[Mapping[str, str]] = None,
+    ) -> None:
+        self._vault = vault
+        self._secrets_dir = secrets_dir
+        self._env = env  # None → use os.environ at resolution time
+
+    @classmethod
+    def from_env(
+        cls,
+        env: Optional[Mapping[str, str]] = None,
+    ) -> "SecretResolver":
+        """Build a resolver from *env* (or os.environ when None)."""
+        source: Mapping[str, str] = env if env is not None else os.environ
+        vault = VaultSecretReader.from_env(source)
+        secrets_dir = (
+            source.get("GRANTLAYER_SECRETS_DIR", "").strip() or DOCKER_SECRETS_DEFAULT_DIR
+        )
+        return cls(vault=vault, secrets_dir=secrets_dir, env=env)
+
+    def resolve(self, name: str) -> Optional[str]:
+        """Return the secret value from the highest-priority source, or None."""
+        if self._vault is not None:
+            try:
+                value = self._vault.read(name)
+                if value is not None:
+                    return value
+            except SecretConfigurationError:
+                pass
+
+        try:
+            value = read_docker_secret(name, secrets_dir=self._secrets_dir)
+            if value is not None:
+                return value
+        except (SecretConfigurationError, ValueError):
+            pass
+
+        live_env: Mapping[str, str] = self._env if self._env is not None else os.environ
+        raw = live_env.get(name, "").strip()
+        return raw if raw else None
+
+    def resolve_required(self, name: str) -> str:
+        """Return the secret value or raise SecretConfigurationError when absent."""
+        value = self.resolve(name)
+        if value is None:
+            raise SecretConfigurationError(
+                f"required secret '{name}' is missing from all sources"
+            )
+        return value
+
+    def describe_sources(self) -> dict:
+        """Return safe configuration metadata (no tokens or secret values)."""
+        vault_configured = self._vault is not None
+        vault_addr = self._vault._addr if self._vault is not None else None
+        return {
+            "vault": {"configured": vault_configured, "addr": vault_addr},
+            "file": {"configured": True, "secretsDir": self._secrets_dir},
+            "environment": {"configured": True},
+            "sources": [SECRET_SOURCE_VAULT, SECRET_SOURCE_FILE, SECRET_SOURCE_ENVIRONMENT],
+        }
+
+    def __repr__(self) -> str:
+        return (
+            f"SecretResolver(vault_configured={self._vault is not None!r}, "
+            f"secrets_dir={self._secrets_dir!r})"
+        )
