@@ -72,8 +72,18 @@ _SECURITY_HEADERS = {
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
-    """Initialize DB and OTEL on startup."""
+    """Initialize DB and OTEL on startup. Fail-fast on invalid config in non-local/test modes."""
     app.state.start_time = time.time()
+    _skip_modes = frozenset({"test", "local"})
+    if config.RUNTIME_MODE not in _skip_modes:
+        errs = config.startup_errors()
+        if errs:
+            for msg in errs:
+                _logger.error("startup_config_error: %s", msg)
+            raise RuntimeError(
+                "GrantLayer startup aborted — invalid production configuration. "
+                "Run 'python3 -m backend' for details."
+            )
     init_db()
     setup_telemetry("grantlayer")
     instrument_fastapi(app)
