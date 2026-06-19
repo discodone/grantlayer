@@ -27,6 +27,28 @@ def _resolve_user(authorization: Optional[str]) -> dict[str, Any]:
     return result  # type: ignore[return-value]
 
 
+def _verified_workspace_id(payload: dict[str, Any], requested: Optional[str]) -> str:
+    """Return the caller's signature-verified workspace.
+
+    SECURITY: the workspace authority is the verified JWT/API-key claim,
+    never a request-supplied value. A client-supplied workspace_id (body or query),
+    if present, must equal the authenticated workspace or the request is rejected
+    with 403 — preventing cross-tenant writes/reads.
+    """
+    verified = payload.get("workspace_id") or "default"
+    candidate = (requested or "").strip()
+    if candidate and candidate != verified:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "Forbidden",
+                "errorCode": "workspace_mismatch",
+                "reason": "workspace_id must match your authenticated workspace.",
+            },
+        )
+    return verified
+
+
 class GrantTemplateCreateRequest(BaseModel):
     name: str
     description: Optional[str] = None
@@ -67,7 +89,7 @@ async def list_templates(
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     payload = _resolve_user(authorization)
-    ws_id = workspace_id or payload.get("workspace_id", "default")
+    ws_id = _verified_workspace_id(payload, workspace_id)
 
     result = await db.execute(
         text(
@@ -89,7 +111,7 @@ async def create_template(
 ) -> Any:
     payload = _resolve_user(authorization)
     user_id = payload.get("sub", "unknown")
-    ws_id = body.workspace_id or payload.get("workspace_id", "default")
+    ws_id = _verified_workspace_id(payload, body.workspace_id)
     tmpl_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
 
@@ -134,15 +156,18 @@ async def get_template(
     authorization: Annotated[Optional[str], Header()] = None,
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    _resolve_user(authorization)
+    payload = _resolve_user(authorization)
+    ws_id = _verified_workspace_id(payload, None)
 
+    # SECURITY: scope the lookup to the caller's workspace (public
+    # templates have workspace_id IS NULL and remain readable). Closes cross-tenant IDOR.
     result = await db.execute(
         text(
             "SELECT id, workspace_id, name, description, schema_json, default_values, "
             "version, parent_id, is_active, locked, created_at, created_by "
-            "FROM grant_templates WHERE id=:id"
+            "FROM grant_templates WHERE id=:id AND (workspace_id=:ws OR workspace_id IS NULL)"
         ),
-        {"id": template_id},
+        {"id": template_id, "ws": ws_id},
     )
     row = result.mappings().first()
     if row is None:
@@ -159,11 +184,13 @@ async def deactivate_template(
     authorization: Annotated[Optional[str], Header()] = None,
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    _resolve_user(authorization)
+    payload = _resolve_user(authorization)
+    ws_id = _verified_workspace_id(payload, None)
 
+    # SECURITY: only the owning workspace can deactivate its template.
     result = await db.execute(
-        text("SELECT id, locked FROM grant_templates WHERE id=:id"),
-        {"id": template_id},
+        text("SELECT id, locked FROM grant_templates WHERE id=:id AND workspace_id=:ws"),
+        {"id": template_id, "ws": ws_id},
     )
     row = result.mappings().first()
     if row is None:
@@ -174,8 +201,8 @@ async def deactivate_template(
 
     now = datetime.now(timezone.utc).isoformat()
     await db.execute(
-        text("UPDATE grant_templates SET is_active=0 WHERE id=:id"),
-        {"id": template_id},
+        text("UPDATE grant_templates SET is_active=0 WHERE id=:id AND workspace_id=:ws"),
+        {"id": template_id, "ws": ws_id},
     )
     await db.commit()
     return {"id": template_id, "is_active": False, "deactivated_at": now}
@@ -191,10 +218,16 @@ async def create_new_version(
     """Create a new version of a locked template (parent_id references original)."""
     payload = _resolve_user(authorization)
     user_id = payload.get("sub", "unknown")
+    ws_id = _verified_workspace_id(payload, body.workspace_id)
 
+    # SECURITY: a new version can only be derived from a parent in the
+    # caller's own workspace, and is always bound to that verified workspace.
     result = await db.execute(
-        text("SELECT id, workspace_id, version, locked FROM grant_templates WHERE id=:id"),
-        {"id": template_id},
+        text(
+            "SELECT id, workspace_id, version, locked FROM grant_templates "
+            "WHERE id=:id AND workspace_id=:ws"
+        ),
+        {"id": template_id, "ws": ws_id},
     )
     parent = result.mappings().first()
     if parent is None:
@@ -206,7 +239,6 @@ async def create_new_version(
     new_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     new_version = (parent["version"] or 1) + 1
-    ws_id = body.workspace_id or parent["workspace_id"]
 
     await db.execute(
         text(

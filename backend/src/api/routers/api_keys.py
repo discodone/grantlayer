@@ -70,7 +70,21 @@ async def create_api_key(
         )
 
     user_id = payload.get("sub", "unknown")
-    workspace_id = body.workspace_id or payload.get("workspace_id", "default")
+    # SECURITY: the workspace binding comes exclusively from the
+    # signature-verified auth context. A body workspace_id, if present, must equal
+    # the authenticated workspace — it can never override it (cross-tenant priv-esc).
+    verified_workspace_id = payload.get("workspace_id") or "default"
+    requested_workspace_id = body.workspace_id.strip() if body.workspace_id else ""
+    if requested_workspace_id and requested_workspace_id != verified_workspace_id:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "Forbidden",
+                "errorCode": "workspace_mismatch",
+                "reason": "workspace_id must match your authenticated workspace.",
+            },
+        )
+    workspace_id = verified_workspace_id
     raw_key = _generate_raw_key()
     key_hash = _hash_key(raw_key)
     key_id = str(uuid.uuid4())
