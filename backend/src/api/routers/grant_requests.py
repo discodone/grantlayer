@@ -127,13 +127,15 @@ async def create_grant_request_endpoint(
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
     svc: AsyncGrantRequestService = Depends(get_async_grant_request_service),
 ) -> Any:
-    _require_operator_model()
+    # Auth + authz MUST run before any business-logic gate so that
+    # unauthorized callers never observe feature-flag state (operator model).
     auth_ctx, ws_ctx = resolve_auth_and_workspace(
         authorization,
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
     await require_mutation_authz(auth_ctx, ws_ctx)
+    _require_operator_model()
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     if not operator_id:
         raise HTTPException(
@@ -202,13 +204,14 @@ async def approve_grant_request_endpoint(
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
     svc: AsyncGrantRequestService = Depends(get_async_grant_request_service),
 ) -> Any:
-    _require_operator_model()
+    # Auth + authz MUST run before any business-logic gate.
     auth_ctx, ws_ctx = resolve_auth_and_workspace(
         authorization,
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
     await require_mutation_authz(auth_ctx, ws_ctx)
+    _require_operator_model()
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
@@ -263,13 +266,14 @@ async def deny_grant_request_endpoint(
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
     svc: AsyncGrantRequestService = Depends(get_async_grant_request_service),
 ) -> Any:
-    _require_operator_model()
+    # Auth + authz MUST run before any business-logic gate.
     auth_ctx, ws_ctx = resolve_auth_and_workspace(
         authorization,
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
     await require_mutation_authz(auth_ctx, ws_ctx)
+    _require_operator_model()
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
