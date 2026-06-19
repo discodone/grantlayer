@@ -22,7 +22,7 @@ PRODUCTION_LIKE_MODES = frozenset([
 ])
 
 RUNTIME_MODE_ENV_VAR = "GRANTLAYER_RUNTIME_MODE"
-DEFAULT_MODE = "local"
+DEFAULT_MODE = "production"
 
 
 def get_runtime_mode(env: Optional[Mapping[str, str]] = None) -> str:

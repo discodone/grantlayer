@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ipaddress
 import time
 from contextlib import asynccontextmanager
 
@@ -17,6 +18,7 @@ from ..core.logging_utils import get_logger, reset_correlation_id, set_correlati
 from ..core.rate_limiter import create_rate_limiter
 from ..core.structured_logging import normalize_correlation_id
 from ..core.telemetry import get_current_trace_id, instrument_fastapi, setup_telemetry
+from .auth_jwt import _safe_extract_plan_tier
 from .routers import (
     admin,
     agent_permissions,
@@ -57,6 +59,20 @@ def _resolve_plan_tier(request: Request) -> tuple[str, int | None]:
     plan_tier = getattr(request.state, "plan_tier", "free")
     rate_limit_override = getattr(request.state, "rate_limit_override", None)
     return plan_tier, rate_limit_override
+
+
+def _is_trusted_proxy(peer_ip: str) -> bool:
+    """True when peer_ip is within a configured TRUSTED_PROXY_CIDRS network."""
+    if not config.TRUSTED_PROXY_CIDRS:
+        return False
+    try:
+        addr = ipaddress.ip_address(peer_ip)
+        return any(
+            addr in ipaddress.ip_network(cidr, strict=False)
+            for cidr in config.TRUSTED_PROXY_CIDRS
+        )
+    except ValueError:
+        return False
 
 
 _SECURITY_HEADERS = {
@@ -131,30 +147,20 @@ def create_app() -> FastAPI:
         if request.method != "OPTIONS" and request.url.path.startswith("/v1/"):
             limiter = getattr(request.app.state, "auth_rate_limiter", None)
             if limiter is not None:
-                # Honour X-Forwarded-For so clients behind a load-balancer each
-                # get their own bucket rather than sharing one IP.
+                # Only honour X-Forwarded-For when the direct peer is a configured
+                # trusted proxy; untrusted peers cannot influence their own bucket.
+                peer_ip = request.client.host if request.client else "unknown"
                 xff = request.headers.get("X-Forwarded-For", "")
-                client_ip = xff.split(",")[0].strip() if xff else (
-                    request.client.host if request.client else "unknown"
-                )
-                # Populate plan_tier from JWT claim before resolving rate limits.
-                # Decode non-strictly (no signature/expiry check) to extract the claim.
+                if xff and _is_trusted_proxy(peer_ip):
+                    client_ip = xff.split(",")[0].strip()
+                else:
+                    client_ip = peer_ip
+                # Derive plan_tier only from a signature-verified JWT so an
+                # attacker cannot forge a higher tier by crafting a raw payload.
                 if not hasattr(request.state, "plan_tier"):
-                    auth_header = request.headers.get("Authorization", "")
-                    if auth_header.lower().startswith("bearer "):
-                        raw_token = auth_header[7:]
-                        try:
-                            import base64
-                            import json as _json
-                            parts = raw_token.split(".")
-                            if len(parts) == 3:
-                                padded = parts[1] + "=" * (-len(parts[1]) % 4)
-                                claims = _json.loads(base64.urlsafe_b64decode(padded))
-                                tier = claims.get("plan_tier", "free")
-                                if tier in ("free", "pro", "enterprise"):
-                                    request.state.plan_tier = tier
-                        except Exception:
-                            pass
+                    request.state.plan_tier = _safe_extract_plan_tier(
+                        request.headers.get("Authorization")
+                    )
                 plan_tier, rate_limit_override = _resolve_plan_tier(request)
                 allowed, retry_after = limiter.check(
                     client_ip, "api",

@@ -8,7 +8,7 @@ HOST = os.environ.get("GRANTLAYER_HOST", "127.0.0.1")
 PORT = int(os.environ.get("GRANTLAYER_PORT", "8765"))
 _SKIP_STARTUP_CHECK_MODES = {"test", "local"}
 
-runtime_mode = os.environ.get("GRANTLAYER_RUNTIME_MODE", "local").strip().lower()
+runtime_mode = os.environ.get("GRANTLAYER_RUNTIME_MODE", "production").strip().lower()
 if runtime_mode not in _SKIP_STARTUP_CHECK_MODES:
     from backend.src.core.config import startup_errors
     errors = startup_errors()

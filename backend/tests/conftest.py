@@ -1,3 +1,9 @@
+# Set GRANTLAYER_RUNTIME_MODE=test before any backend.src.core.config import
+# so the startup gate is skipped and production-mode defaults don't break tests.
+# Individual tests that need a specific mode override this in setUp/tearDown.
+import os as _os
+_os.environ.setdefault("GRANTLAYER_RUNTIME_MODE", "test")
+
 """
 Pytest configuration for GrantLayer backend tests.
 

@@ -236,6 +236,12 @@ GRANTLAYER_RATE_LIMIT_API: int = max(1, _env_int("GRANTLAYER_RATE_LIMIT_API", 12
 _redis_url_raw: str = _env_str("GRANTLAYER_REDIS_URL", "")
 GRANTLAYER_REDIS_URL: str | None = _redis_url_raw if _redis_url_raw else None
 
+# Trusted reverse-proxy CIDRs for X-Forwarded-For keying.
+# Only when the direct peer IP falls within one of these CIDRs will the
+# X-Forwarded-For header be trusted for rate-limit bucket selection.
+# Default: empty list — XFF is never trusted unless explicitly configured.
+TRUSTED_PROXY_CIDRS: list[str] = _env_list("GRANTLAYER_TRUSTED_PROXY_CIDRS", default=[])
+
 # ──────────────────────────────────────────────────────────────
 # Demo Endpoint Host Safety
 # ──────────────────────────────────────────────────────────────

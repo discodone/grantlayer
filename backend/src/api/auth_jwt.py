@@ -387,3 +387,44 @@ def validate_jwt_header(
             "errorCode": "jwt_invalid",
             "reason": "Invalid JWT token.",
         }
+
+
+def _safe_extract_plan_tier(auth_header: str | None) -> str:
+    """Return plan_tier from a signature-verified JWT, or 'free' on any failure.
+
+    Used by the rate-limit middleware to derive the client's plan tier without
+    re-decoding the token unsigned.  All validation errors silently fall back to
+    the free tier — this function never raises.
+    """
+    if not auth_header or not auth_header.lower().startswith("bearer "):
+        return "free"
+    token = auth_header[7:].strip()
+    if not token:
+        return "free"
+    try:
+        algo = _get_algorithm()
+        secret = _get_jwt_secret()
+        pub_pem = _get_public_key_pem()
+        priv_pem = _get_private_key_pem()
+
+        if algo == "HS256":
+            if not secret:
+                return "free"
+            payload = decode_token(token, secret)
+        else:  # RS256
+            if not pub_pem and not priv_pem:
+                return "free"
+            if not pub_pem:
+                from cryptography.hazmat.primitives import serialization
+                from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+                assert priv_pem is not None
+                priv_key = serialization.load_pem_private_key(priv_pem, password=None)
+                pub_pem = priv_key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+            payload = decode_token_rs256(token, pub_pem)
+
+        tier = payload.get("plan_tier", "free")
+        if tier in ("free", "pro", "enterprise"):
+            return tier
+        return "free"
+    except Exception:
+        return "free"

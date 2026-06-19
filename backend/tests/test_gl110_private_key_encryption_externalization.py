@@ -54,6 +54,9 @@ class _BaseGl110(unittest.TestCase):
         }
         for key in self._env_vars:
             os.environ.pop(key, None)
+        # Base state for these tests is "local" mode so plaintext key loading is
+        # permitted by default.  Subclass setUp methods override this as needed.
+        os.environ["GRANTLAYER_RUNTIME_MODE"] = "local"
 
         # Reload config with cleared env vars to ensure clean state
         import backend.src.core.config as config_mod

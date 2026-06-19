@@ -16,19 +16,19 @@ class TestGetRuntimeMode(unittest.TestCase):
     """Tests for get_runtime_mode env parsing and validation."""
 
     def test_default_when_env_absent(self):
-        """Default runtime mode is local when GRANTLAYER_RUNTIME_MODE is absent."""
+        """Default runtime mode is production when GRANTLAYER_RUNTIME_MODE is absent (fail-closed)."""
         env = {}
-        self.assertEqual(get_runtime_mode(env), "local")
+        self.assertEqual(get_runtime_mode(env), "production")
 
     def test_default_when_env_empty(self):
-        """Empty runtime mode defaults to local."""
+        """Empty runtime mode defaults to production (fail-closed)."""
         env = {"GRANTLAYER_RUNTIME_MODE": ""}
-        self.assertEqual(get_runtime_mode(env), "local")
+        self.assertEqual(get_runtime_mode(env), "production")
 
     def test_default_when_env_whitespace_only(self):
-        """Whitespace-only runtime mode defaults to local."""
+        """Whitespace-only runtime mode defaults to production (fail-closed)."""
         env = {"GRANTLAYER_RUNTIME_MODE": "   "}
-        self.assertEqual(get_runtime_mode(env), "local")
+        self.assertEqual(get_runtime_mode(env), "production")
 
     def test_all_supported_modes_accepted(self):
         """All supported modes are accepted."""
@@ -161,10 +161,10 @@ class TestDescribeRuntimeConfig(unittest.TestCase):
             self.assertNotIn("op_token_xyz", str(value))
 
     def test_default_mode_when_env_absent(self):
-        """Default mode metadata is local when env absent."""
+        """Default mode metadata is production when env absent (fail-closed)."""
         result = describe_runtime_config({})
         self.assertEqual(result["runtimeMode"], DEFAULT_MODE)
-        self.assertFalse(result["isProductionLike"])
+        self.assertTrue(result["isProductionLike"])
 
 
 class TestNoForbiddenFilesChanged(unittest.TestCase):
