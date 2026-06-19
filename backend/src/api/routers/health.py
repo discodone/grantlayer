@@ -109,11 +109,18 @@ async def readiness(request: Request):
         db_ok = False
         errors.append(f"db: {exc}")
 
-    # Probe Redis connectivity
+    # Probe Redis connectivity with a LIVE PING at probe time (not a cached
+    # property), so a Redis that dies post-startup flips readiness to 503 on the
+    # next probe. A configured-but-unreachable Redis is a hard readiness failure;
+    # an unconfigured Redis ("disabled") is not a dependency.
     limiter = getattr(request.app.state, "auth_rate_limiter", None)
     redis_ok = True
     if limiter is not None:
-        redis_status = getattr(limiter, "redis_status", "disabled")
+        probe = getattr(limiter, "live_redis_health", None)
+        if callable(probe):
+            redis_status = probe()
+        else:
+            redis_status = getattr(limiter, "redis_status", "disabled")
         if redis_status not in ("ok", "connected", "disabled"):
             redis_ok = False
             errors.append(f"redis: {redis_status}")

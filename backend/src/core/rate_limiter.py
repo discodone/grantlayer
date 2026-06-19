@@ -145,6 +145,10 @@ class RateLimiter:
     def redis_status(self) -> str:
         return "disabled"
 
+    def live_redis_health(self) -> str:
+        """In-process limiter has no Redis dependency — always 'disabled'."""
+        return "disabled"
+
 
 class RedisRateLimiter:
     """Redis-backed sliding-window rate limiter with in-process fallback.
@@ -201,10 +205,56 @@ class RedisRateLimiter:
 
     @property
     def redis_status(self) -> str:
+        """Cached status — reflects the last known connection state.
+
+        This only flips to "unavailable" after a check() round-trip has already
+        failed, so it can be stale between failures. Use it for liveness/info
+        only; readiness must use live_redis_health() instead.
+        """
         if not self._redis_url:
             return "disabled"
         with self._lock:
             return "connected" if self._redis is not None else "unavailable"
+
+    def live_redis_health(self) -> str:
+        """Perform a real Redis PING at call time (for the readiness probe).
+
+        Unlike the cached redis_status property — which only flips to
+        "unavailable" after a check() round-trip has already failed — this
+        issues a live PING so a Redis that died *after* startup is detected on
+        the very next readiness probe, before any user traffic fails. It also
+        attempts a fresh connect when none is held, so recovery is detected live.
+
+        Design: the limiter is intentionally *soft* at request time (it falls
+        back to the in-process window so requests are never dropped when Redis
+        blips). Readiness is intentionally *hard*: a configured-but-unreachable
+        Redis means rate limiting is degraded to per-process (unsafe across
+        workers), so the instance reports not-ready and is pulled from the load
+        balancer until Redis recovers. Readiness is authoritative for "is the
+        configured Redis healthy"; the limiter is authoritative for "never drop
+        a request".
+
+        Returns "disabled" when no Redis is configured, "ok" on a successful
+        live PING, "unavailable" otherwise.
+        """
+        if not self._redis_url:
+            return "disabled"
+        with self._lock:
+            r = self._redis
+        if r is None:
+            # Attempt a fresh connection so recovery is also detected live.
+            self._try_connect()
+            with self._lock:
+                r = self._redis
+            if r is None:
+                return "unavailable"
+        try:
+            r.ping()
+            return "ok"
+        except Exception:
+            with self._lock:
+                self._redis = None
+            return "unavailable"
 
     # ── internals ───────────────────────────────────────────────────────────
 

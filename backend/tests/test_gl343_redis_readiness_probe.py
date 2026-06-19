@@ -33,9 +33,17 @@ def _make_client():
 
 
 def _limiter_with_status(status: str):
-    """Return a mock limiter whose redis_status property returns *status*."""
+    """Return a mock limiter that reports *status* for both the cached property
+    and the live health probe.
+
+    GL-346 changed the readiness probe to call live_redis_health() (a real PING)
+    instead of reading the cached redis_status property. These GL-343 tests verify
+    the status->HTTP-code MAPPING, so the mock now drives that mapping through the
+    new method; live-detection itself is covered by test_gl346_readiness_live_redis_ping.
+    """
     limiter = MagicMock()
     type(limiter).redis_status = property(lambda self: status)
+    limiter.live_redis_health = lambda: status
     return limiter
 
 
