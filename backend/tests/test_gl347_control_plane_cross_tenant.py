@@ -79,6 +79,7 @@ def _reset_db_to_file():
 
 def _make_client():
     from fastapi.testclient import TestClient
+
     from backend.src.api.app import create_app
     return TestClient(create_app(), raise_server_exceptions=False)
 
@@ -156,6 +157,7 @@ class TestAdminCreateOperatorTenantScope(unittest.TestCase):
         from backend.src.core.db import init_db
         init_db()
         from fastapi.testclient import TestClient
+
         from backend.src.api.app import create_app
         client = TestClient(create_app(), raise_server_exceptions=False)
         try:

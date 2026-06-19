@@ -20,12 +20,12 @@ import os
 import unittest
 import uuid
 
-
 _TEST_SECRET = "gl319-test-hs256-secret-32chars!!"
 
 
 def _make_client():
     from fastapi.testclient import TestClient
+
     from backend.src.api.app import create_app
     return TestClient(create_app(), raise_server_exceptions=False)
 
