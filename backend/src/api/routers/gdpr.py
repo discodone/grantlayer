@@ -46,6 +46,61 @@ def _check_permission(caller: dict[str, Any], target_user_id: str) -> None:
         )
 
 
+async def _resolve_user_tenants(user_id: str, db: AsyncSession) -> set[str]:
+    """Return every tenant the target user demonstrably belongs to.
+
+    A "user" maps to an operator row (operators.id) and/or to API keys whose
+    workspace resolves to a tenant. Used to confirm the target belongs to the
+    caller's tenant before a control-plane admin exports/erases their data.
+    """
+    tenants: set[str] = set()
+    op_rows = await db.execute(
+        text("SELECT tenant_id FROM operators WHERE id=:uid"),
+        {"uid": user_id},
+    )
+    tenants.update(r[0] for r in op_rows.fetchall() if r[0])
+    key_rows = await db.execute(
+        text(
+            "SELECT w.tenant_id FROM api_keys k "
+            "JOIN workspaces w ON k.workspace_id = w.id "
+            "WHERE k.user_id=:uid"
+        ),
+        {"uid": user_id},
+    )
+    tenants.update(r[0] for r in key_rows.fetchall() if r[0])
+    return tenants
+
+
+async def _authorize_user_action(
+    caller: dict[str, Any], target_user_id: str, db: AsyncSession
+) -> None:
+    """Authorize a GDPR export/erase, enforcing tenant scope for admins.
+
+    Self-service (caller acting on their own ``sub``) is always allowed. A
+    non-admin acting on another user is rejected. A deployment-level admin (no
+    ``tenant_id`` claim) retains full authority. A tenant-scoped admin may only
+    act on a target that demonstrably belongs to the same tenant; if the target
+    belongs to a different tenant the request is rejected with 403. A target with
+    no tenant footprint at all exposes no cross-tenant data and is permitted.
+    """
+    _check_permission(caller, target_user_id)
+    if caller.get("sub") == target_user_id:
+        return
+    caller_tenant = caller.get("tenant_id")
+    if caller_tenant is None:
+        return
+    target_tenants = await _resolve_user_tenants(target_user_id, db)
+    if target_tenants and caller_tenant not in target_tenants:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "Forbidden",
+                "errorCode": "cross_tenant_forbidden",
+                "reason": "Admin authority is scoped to your own tenant; this user belongs to another tenant.",
+            },
+        )
+
+
 @router.post("/{user_id}/export-data", status_code=202, response_model=dict[str, Any])
 async def export_user_data(
     user_id: str,
@@ -54,7 +109,7 @@ async def export_user_data(
 ) -> Any:
     """Enqueue async job to export all user data. Returns job_id."""
     caller = _resolve_caller(authorization)
-    _check_permission(caller, user_id)
+    await _authorize_user_action(caller, user_id, db)
 
     job_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
@@ -98,7 +153,7 @@ async def erase_user_data(
 ) -> Any:
     """Erase (anonymize) all PII for a user. Audit trail preserved."""
     caller = _resolve_caller(authorization)
-    _check_permission(caller, user_id)
+    await _authorize_user_action(caller, user_id, db)
 
     job_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()

@@ -12,7 +12,7 @@ from ...auth.operator_service import AsyncOperatorService
 from ...core.db import get_async_db
 from ...core.logging_utils import get_logger, safe_log
 from ...core.models import AuditEvent
-from ..deps import get_async_operator_service, require_admin
+from ..deps import assert_admin_tenant_scope, get_async_operator_service, require_admin
 from ..schemas import DynamicResponse
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -65,7 +65,7 @@ async def create_operator_endpoint(
     svc: AsyncOperatorService = Depends(get_async_operator_service),
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    require_admin(authorization)
+    admin_payload = require_admin(authorization)
 
     name = body.name
     role = body.role
@@ -83,6 +83,10 @@ async def create_operator_endpoint(
         )
     if not isinstance(tenant_id, str) or not tenant_id.strip():
         raise HTTPException(status_code=400, detail={"error": "Invalid field: tenantId", "errorCode": "invalid_field", "reason": "tenantId must be a non-empty string."})
+
+    # A tenant-scoped admin may only create operators within its own tenant;
+    # the body-supplied tenant_id must not let it escalate into another tenant.
+    assert_admin_tenant_scope(admin_payload, tenant_id.strip())
 
     try:
         op, returned_token = await svc.create_operator(

@@ -182,6 +182,37 @@ def require_admin(authorization: Optional[str]) -> dict:
     return payload
 
 
+def assert_admin_tenant_scope(
+    admin_payload: dict, target_tenant_id: Optional[str]
+) -> None:
+    """Reject a tenant-scoped admin acting on a resource in a different tenant.
+
+    Control-plane admin authority is NOT global for tenant-scoped admins. A
+    deployment-level admin (static admin token) carries no tenant context in its
+    payload and retains full cross-tenant authority. A tenant-scoped admin (JWT
+    with a ``tenant_id`` claim) may only act within its own tenant; acting on
+    another tenant's resource is a privilege escalation and is rejected with 403.
+
+    ``target_tenant_id`` is the tenant the action targets, derived from the
+    verified request (request body for create, or the persisted resource row for
+    reads/updates) — never trusted from an unauthenticated source.
+    """
+    caller_tenant = admin_payload.get("tenant_id")
+    if (
+        caller_tenant is not None
+        and target_tenant_id is not None
+        and caller_tenant != target_tenant_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "Forbidden",
+                "errorCode": "cross_tenant_forbidden",
+                "reason": "Admin authority is scoped to your own tenant; you cannot act on another tenant's resources.",
+            },
+        )
+
+
 def get_grant_repo(db: Session = Depends(get_db)) -> IGrantRepository:
     return SqlAlchemyGrantRepository(db)
 

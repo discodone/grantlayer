@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import os
 import unittest
+import uuid
 
 
 _TEST_SECRET = "gl319-test-hs256-secret-32chars!!"
@@ -27,6 +28,23 @@ def _make_client():
     from fastapi.testclient import TestClient
     from backend.src.api.app import create_app
     return TestClient(create_app(), raise_server_exceptions=False)
+
+
+def _seed_operator(op_id: str, tenant_id: str) -> None:
+    """Insert an operator row so the target user has a tenant footprint."""
+    from backend.src.core.db import get_session, init_db
+    from backend.src.core.orm import Operator
+    init_db()
+    s = get_session()
+    try:
+        s.merge(Operator(
+            id=op_id, name=f"op-{op_id}", role="owner",
+            token_hash="gl319-unused-hash", active=1,
+            created_at="2026-01-01T00:00:00Z", tenant_id=tenant_id,
+        ))
+        s.commit()
+    finally:
+        s.close()
 
 
 def _jwt(sub: str, role: str = "viewer") -> str:
@@ -70,9 +88,14 @@ class TestGdprExportData(unittest.TestCase):
         self.assertEqual(data["user_id"], "self-user")
         self.assertEqual(data["status"], "queued")
 
-    def test_export_data_admin_can_export_any(self):
+    def test_export_data_admin_can_export_same_tenant_user(self):
+        # GL-347 narrowed admin authority to the caller's own tenant. The admin
+        # JWT is scoped to tenant "t1"; seed the target into t1 so the export is a
+        # legitimate same-tenant action (deterministic regardless of suite order).
+        target = f"export-target-{uuid.uuid4().hex[:8]}"
+        _seed_operator(target, "t1")
         resp = self.client.post(
-            "/v1/users/other-user/export-data",
+            f"/v1/users/{target}/export-data",
             headers={"Authorization": f"Bearer {_jwt('admin-user', 'grant_admin')}"},
         )
         self.assertEqual(resp.status_code, 202)
@@ -111,9 +134,13 @@ class TestGdprErase(unittest.TestCase):
         self.assertIn("job_id", data)
         self.assertEqual(data["user_id"], "erase-self")
 
-    def test_erase_admin_can_erase_any(self):
+    def test_erase_admin_can_erase_same_tenant_user(self):
+        # GL-347: admin authority is tenant-scoped. Seed the target into the
+        # admin's tenant ("t1") so the erase is a legitimate same-tenant action.
+        target = f"erase-target-{uuid.uuid4().hex[:8]}"
+        _seed_operator(target, "t1")
         resp = self.client.post(
-            "/v1/users/target-user/erase",
+            f"/v1/users/{target}/erase",
             headers={"Authorization": f"Bearer {_jwt('admin-user', 'owner')}"},
         )
         self.assertEqual(resp.status_code, 202)
