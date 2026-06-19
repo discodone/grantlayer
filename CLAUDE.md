@@ -13,6 +13,12 @@
 - python3 -m mypy backend/src/ → 0 errors
 - ruff check backend/src/ → 0 errors
 
+## Coverage (actual, re-measured 2026-06-19)
+- **91% repo-wide** (9,348 statements / 795 missed), measured via `pytest backend/tests/ --cov=backend.src`.
+- The full doc_guard-inclusive suite reports the same 91% — doc_guard tests add no material coverage.
+- The earlier "95.2%" figure is STALE: it was measured at GL-302 when the codebase was ~6,619 statements. The codebase has since grown ~40% to 9,348 statements and real coverage is now 91%. Do NOT repeat the 95.2% claim in reviews, docs, or the website.
+- Raising coverage back to 95% is honest follow-up work tracked as GL-348 — do it with real tests, never by padding trivial tests to hit a number.
+
 ## CI Ignored Tests (known issues, do not re-ignore without fixing)
 - test_gl112_audit_log_duplication_cleanup.py
 - test_gl139_audit_hash_chain_write_lock.py
@@ -38,7 +44,8 @@
 - tmpDir is configured in ~/.config/claude/settings.json
 
 ## Current Roadmap
-- GL-302: Test coverage 95%+ ✅ DONE (95.2%, 297 new tests)
+- GL-302: Test coverage push (95.2% at the time, 6,619 stmts; now 91% repo-wide after ~40% codebase growth — see Coverage section)
+- GL-348: Raise coverage back to 95% (honest follow-up, real tests only)
 - GL-303: Redis hard requirement + rate limiting on all endpoints
 - GL-304: BIGSERIAL audit tiebreak + cursor-based pagination
 - GL-305: Async FastAPI
