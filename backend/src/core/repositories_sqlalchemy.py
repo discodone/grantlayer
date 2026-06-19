@@ -539,8 +539,10 @@ class SqlAlchemyOperatorRepository:
         ).scalars().first()
         return _orm_to_operator(row) if row else None
 
-    def list(self) -> "List[Operator]":
+    def list(self, tenant_id: "Optional[str]" = None) -> "List[Operator]":
         stmt = select(OrmOperator).order_by(OrmOperator.created_at.desc())
+        if tenant_id is not None:
+            stmt = stmt.where(OrmOperator.tenant_id == tenant_id)
         return [_orm_to_operator(r) for r in self._s.execute(stmt).scalars().all()]
 
     def count(self) -> int:
@@ -1078,8 +1080,10 @@ class SqlAlchemyAsyncOperatorRepository:
         )).scalars().first()
         return _orm_to_operator(row) if row else None
 
-    async def list(self) -> "List[Operator]":
+    async def list(self, tenant_id: "Optional[str]" = None) -> "List[Operator]":
         stmt = select(OrmOperator).order_by(OrmOperator.created_at.desc())
+        if tenant_id is not None:
+            stmt = stmt.where(OrmOperator.tenant_id == tenant_id)
         return [_orm_to_operator(r) for r in (await self._s.execute(stmt)).scalars().all()]
 
     async def count(self) -> int:

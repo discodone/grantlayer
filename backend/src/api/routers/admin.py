@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any, Optional
+from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...audit.audit_log import append_event
@@ -12,7 +12,7 @@ from ...auth.operator_service import AsyncOperatorService
 from ...core.db import get_async_db
 from ...core.logging_utils import get_logger, safe_log
 from ...core.models import AuditEvent
-from ..deps import assert_admin_tenant_scope, get_async_operator_service, require_admin
+from ..deps import AdminScope, get_async_operator_service, require_admin_scope
 from ..schemas import DynamicResponse
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -35,38 +35,37 @@ class OperatorCreateRequest(BaseModel):
 
 @router.get("/operators", response_model=list[dict[str, Any]])
 async def list_operators_endpoint(
-    authorization: Annotated[Optional[str], Header()] = None,
+    scope: AdminScope = Depends(require_admin_scope),
     svc: AsyncOperatorService = Depends(get_async_operator_service),
 ) -> Any:
-    require_admin(authorization)
-    return await svc.list_operators_for_admin()
+    # Data-layer scoping: a tenant-scoped admin's query is filtered to its own tenant;
+    # a deployment admin (tenant_filter is None) sees every tenant.
+    return await svc.list_operators_for_admin(caller_tenant_id=scope.tenant_filter)
 
 
 @router.get("/operators/{operator_id}", response_model=dict[str, Any])
 async def get_operator_endpoint(
     operator_id: str,
-    authorization: Annotated[Optional[str], Header()] = None,
+    scope: AdminScope = Depends(require_admin_scope),
     svc: AsyncOperatorService = Depends(get_async_operator_service),
 ) -> Any:
-    require_admin(authorization)
     op_safe = await svc.get_operator_safe(operator_id)
     if op_safe is None:
         raise HTTPException(
             status_code=404,
             detail={"error": "Operator not found", "errorCode": "operator_not_found", "reason": "The requested operator does not exist."},
         )
+    scope.assert_target(op_safe.get("tenantId"))
     return op_safe
 
 
 @router.post("/operators", status_code=201, response_model=DynamicResponse)
 async def create_operator_endpoint(
     body: OperatorCreateRequest,
-    authorization: Annotated[Optional[str], Header()] = None,
+    scope: AdminScope = Depends(require_admin_scope),
     svc: AsyncOperatorService = Depends(get_async_operator_service),
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    admin_payload = require_admin(authorization)
-
     name = body.name
     role = body.role
     tenant_id = body.tenant_id
@@ -86,7 +85,7 @@ async def create_operator_endpoint(
 
     # A tenant-scoped admin may only create operators within its own tenant;
     # the body-supplied tenant_id must not let it escalate into another tenant.
-    assert_admin_tenant_scope(admin_payload, tenant_id.strip())
+    scope.assert_target(tenant_id.strip())
 
     try:
         op, returned_token = await svc.create_operator(
@@ -127,11 +126,20 @@ async def create_operator_endpoint(
 @router.post("/operators/{operator_id}/revoke", response_model=DynamicResponse)
 async def revoke_operator_endpoint(
     operator_id: str,
-    authorization: Annotated[Optional[str], Header()] = None,
+    scope: AdminScope = Depends(require_admin_scope),
     svc: AsyncOperatorService = Depends(get_async_operator_service),
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    require_admin(authorization)
+    # Resolve the target operator's tenant and enforce scope BEFORE the write, so a
+    # tenant-scoped admin can never revoke another tenant's operator (cross-tenant DoS).
+    op_safe = await svc.get_operator_safe(operator_id)
+    if op_safe is None:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": "Operator not found", "errorCode": "operator_not_found", "reason": "The requested operator does not exist."},
+        )
+    scope.assert_target(op_safe.get("tenantId"))
+
     revoked = await svc.revoke_operator(operator_id)
     if not revoked:
         raise HTTPException(
@@ -139,7 +147,6 @@ async def revoke_operator_endpoint(
             detail={"error": "Operator not found", "errorCode": "operator_not_found", "reason": "The requested operator does not exist."},
         )
     safe_log(_logger, "info", "operator_action", action="operator_revoked", operator_id=operator_id)
-    op_safe = await svc.get_operator_safe(operator_id) or {}
     event = AuditEvent(
         subject_id="admin",
         role="admin",

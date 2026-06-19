@@ -50,8 +50,13 @@ class OperatorService:
             return None
         return _operator_to_safe_dict(op)
 
-    def list_operators_for_admin(self) -> List[dict]:
-        operators = self._repo.list()
+    def list_operators_for_admin(self, caller_tenant_id: Optional[str] = None) -> List[dict]:
+        """List operators, scoped to ``caller_tenant_id`` when the caller is tenant-bound.
+
+        A deployment-level admin passes ``None`` and sees every tenant; a tenant-scoped
+        admin passes its own tenant so the query never returns another tenant's rows.
+        """
+        operators = self._repo.list(tenant_id=caller_tenant_id)
         return [_operator_to_safe_dict(op) for op in operators]
 
     def bootstrap(self) -> None:
@@ -91,6 +96,11 @@ class AsyncOperatorService:
             return None
         return _operator_to_safe_dict(op)
 
-    async def list_operators_for_admin(self) -> "List[dict]":
-        operators = await self._repo.list()
+    async def list_operators_for_admin(self, caller_tenant_id: Optional[str] = None) -> "List[dict]":
+        """List operators, scoped to ``caller_tenant_id`` when the caller is tenant-bound.
+
+        A deployment-level admin passes ``None`` and sees every tenant; a tenant-scoped
+        admin passes its own tenant so the query never returns another tenant's rows.
+        """
+        operators = await self._repo.list(tenant_id=caller_tenant_id)
         return [_operator_to_safe_dict(op) for op in operators]

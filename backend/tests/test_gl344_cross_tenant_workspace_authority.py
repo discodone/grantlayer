@@ -19,9 +19,7 @@ template lookups are unfiltered) and pass after the fix.
 from __future__ import annotations
 
 import os
-import re
 import unittest
-from pathlib import Path
 
 _TEST_SECRET = "gl344-test-hs256-secret-32chars!!!"
 
@@ -162,40 +160,139 @@ class TestCrossTenantTemplateIdor(unittest.TestCase):
         self.assertEqual(get_resp.status_code, 200, get_resp.text)
 
 
-class TestNoBodyWorkspaceAuthorityRepoWide(unittest.TestCase):
-    """Positive guard: enumerate ALL routers and assert no mutation handler reads
-    workspace_id (or tenant_id) from the request body as an authority.
+class TestVerifiedAuthorityPositiveAllowlist(unittest.TestCase):
+    """GL-349 POSITIVE allowlist (replaces the old 4-pattern regex denylist).
+
+    Enumerate EVERY create/update/delete handler + EVERY admin-plane handler from the
+    live router table and assert each one derives tenant/workspace authority from a
+    VERIFIED source. For each route a marker substring must appear in the handler's own
+    source (``inspect.getsource(route.endpoint)``) — e.g. ``require_mutation_authz``,
+    ``require_admin_scope``, ``assert_admin_tenant_scope``, ``_verified_workspace_id``.
+
+    Fail-closed: a newly-added mutation/admin handler not present in these maps is RED by
+    default, and a handler whose required verified-authority marker is missing is RED —
+    so the cross-tenant class cannot recur one level deeper via a forgotten check.
     """
 
-    # Patterns that signal "request body overrides the verified workspace authority".
-    _FORBIDDEN = (
-        re.compile(r"\bbody\.workspace_id\s+or\b"),
-        re.compile(r"\bbody\.tenant_id\s+or\b"),
-        re.compile(r"\bworkspace_id\s+or\s+payload\b"),
-        re.compile(r"\bor\s+parent\[[\"']workspace_id[\"']\]"),
-    )
+    _MUTATION_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+    _ADMIN_PLANE_PREFIXES = ("/v1/admin", "/v1/workspaces", "/v1/jobs")
 
-    def _router_files(self) -> list[Path]:
-        root = Path(__file__).parent.parent / "src" / "api" / "routers"
-        files = [p for p in root.glob("*.py") if p.name != "__init__.py"]
-        webhooks = Path(__file__).parent.parent / "src" / "webhooks" / "router.py"
-        if webhooks.exists():
-            files.append(webhooks)
-        return files
+    # (method, path) → substring that MUST appear in the handler source as proof the
+    # tenant/workspace authority comes from verified auth context.
+    _VERIFIED_AUTHORITY: dict[tuple[str, str], str] = {
+        # Standard mutation routes: shared authz gate over the resolved workspace ctx.
+        ("POST", "/v1/grants"): "require_mutation_authz",
+        ("POST", "/v1/grants/bulk-update"): "require_mutation_authz",
+        ("POST", "/v1/grants/{grant_id}/revoke"): "require_mutation_authz",
+        ("POST", "/v1/grant-requests"): "require_mutation_authz",
+        ("POST", "/v1/grant-requests/bulk-approve"): "require_mutation_authz",
+        ("POST", "/v1/grant-requests/bulk-reject"): "require_mutation_authz",
+        ("POST", "/v1/grant-requests/{request_id}/approve"): "require_mutation_authz",
+        ("POST", "/v1/grant-requests/{request_id}/deny"): "require_mutation_authz",
+        ("POST", "/v1/approvals/evaluate"): "require_mutation_authz",
+        ("POST", "/v1/approvals/lifecycle/build"): "require_mutation_authz",
+        ("POST", "/v1/approvals/lifecycle/transition"): "require_mutation_authz",
+        ("POST", "/v1/agent-permissions/assignments/resolve"): "require_mutation_authz",
+        ("POST", "/v1/agent-permissions/evaluate"): "require_mutation_authz",
+        ("POST", "/v1/compliance/readiness/build"): "require_mutation_authz",
+        ("POST", "/v1/decision-provenance/v2/build"): "require_mutation_authz",
+        ("POST", "/v1/policy-requirements/evaluate"): "require_mutation_authz",
+        ("POST", "/v1/webhooks"): "require_mutation_authz",
+        ("DELETE", "/v1/webhooks/{webhook_id}"): "require_mutation_authz",
+        ("POST", "/v1/webhooks/{webhook_id}/test"): "require_mutation_authz",
+        # Control-plane admin: shared AdminScope dependency (auth + tenant scope).
+        ("GET", "/v1/admin/operators"): "require_admin_scope",
+        ("GET", "/v1/admin/operators/{operator_id}"): "require_admin_scope",
+        ("POST", "/v1/admin/operators"): "require_admin_scope",
+        ("POST", "/v1/admin/operators/{operator_id}/revoke"): "require_admin_scope",
+        ("GET", "/v1/workspaces"): "require_admin_scope",
+        ("GET", "/v1/workspaces/{workspace_id}"): "require_admin_scope",
+        ("PATCH", "/v1/workspaces/{workspace_id}/plan"): "require_admin_scope",
+        ("GET", "/v1/jobs"): "require_admin_scope",
+        ("GET", "/v1/jobs/{job_id}"): "require_admin_scope",
+        # API-key management (JWT): create binds verified workspace + role-gates scope;
+        # revoke confines a non-owner admin to the key's tenant.
+        ("POST", "/v1/api-keys"): "verified_workspace_id",
+        ("DELETE", "/v1/api-keys/{key_id}"): "assert_admin_tenant_scope",
+        # Grant templates (JWT): workspace authority via _verified_workspace_id helper.
+        ("POST", "/v1/grant-templates"): "_verified_workspace_id",
+        ("POST", "/v1/grant-templates/{template_id}/deactivate"): "_verified_workspace_id",
+        ("POST", "/v1/grant-templates/{template_id}/new-version"): "_verified_workspace_id",
+        # GDPR (JWT): self-or-same-tenant-admin authorization.
+        ("POST", "/v1/users/{user_id}/erase"): "_authorize_user_action",
+        ("POST", "/v1/users/{user_id}/export-data"): "_authorize_user_action",
+        # Challenge + auditor: workspace resolved from verified auth context.
+        ("POST", "/v1/challenges"): "resolve_auth_and_workspace",
+        ("POST", "/v1/auditor/exports/build"): "resolve_auth_and_workspace",
+    }
 
-    def test_no_router_derives_workspace_from_body(self):
-        offenders: list[str] = []
-        for path in self._router_files():
-            src = path.read_text()
-            for pat in self._FORBIDDEN:
-                for m in pat.finditer(src):
-                    line_no = src[: m.start()].count("\n") + 1
-                    offenders.append(f"{path.name}:{line_no}: {m.group(0)!r}")
+    # Routes whose resource has NO tenant/workspace dimension (nothing to derive).
+    # Still enumerated (fail-closed) with a documented reason.
+    _NO_TENANT_AUTHORITY: dict[tuple[str, str], str] = {
+        ("POST", "/v1/auth/token"): "credential exchange; issues a token, no tenant resource.",
+        ("POST", "/v1/demo-action"): "demo bypass guarded by demo-mode flag.",
+        ("POST", "/v1/notifications/unsubscribe"): "signed query-param token; no tenant resource.",
+    }
+
+    def _discover(self):
+        import os
+        os.environ.setdefault("GRANTLAYER_JWT_SECRET", "gl344-discover-secret-32chars!!!")
+        from backend.src.api.app import create_app
+        app = create_app()
+        universe: dict[tuple[str, str], object] = {}
+        for route in app.routes:
+            methods = getattr(route, "methods", None)
+            path = getattr(route, "path", "")
+            if not methods or not path.startswith("/v1/"):
+                continue
+            is_mut = bool(methods & self._MUTATION_METHODS)
+            is_admin = path.startswith(self._ADMIN_PLANE_PREFIXES)
+            if not (is_mut or is_admin):
+                continue
+            for m in methods:
+                if m in ("HEAD", "OPTIONS"):
+                    continue
+                if m not in self._MUTATION_METHODS and not is_admin:
+                    continue
+                universe[(m, path)] = getattr(route, "endpoint", None)
+        return universe
+
+    def test_every_handler_is_classified(self):
+        universe = set(self._discover().keys())
+        classified = set(self._VERIFIED_AUTHORITY) | set(self._NO_TENANT_AUTHORITY)
+        unclassified = universe - classified
+        stale = classified - universe
         self.assertEqual(
-            offenders,
-            [],
-            "Mutation handlers must derive workspace_id from the verified auth "
-            "context, never from the request body:\n" + "\n".join(offenders),
+            unclassified, set(),
+            "New mutation/admin handler(s) not in the GL-349 verified-authority allowlist "
+            "(classify each with the source of its tenant/workspace authority): "
+            f"{sorted(unclassified)}",
+        )
+        self.assertEqual(
+            stale, set(),
+            f"Allowlist references handler(s) no longer in the router table: {sorted(stale)}",
+        )
+
+    def test_each_handler_derives_authority_from_verified_source(self):
+        import inspect
+        universe = self._discover()
+        offenders: list[str] = []
+        for (method, path), marker in self._VERIFIED_AUTHORITY.items():
+            endpoint = universe.get((method, path))
+            if endpoint is None:
+                offenders.append(f"{method} {path}: route not found")
+                continue
+            try:
+                src = inspect.getsource(endpoint)
+            except OSError:
+                offenders.append(f"{method} {path}: source unavailable")
+                continue
+            if marker not in src:
+                offenders.append(f"{method} {path}: missing verified-authority marker {marker!r}")
+        self.assertEqual(
+            offenders, [],
+            "Handler(s) do not derive tenant/workspace authority from a verified source:\n"
+            + "\n".join(offenders),
         )
 
 

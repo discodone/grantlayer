@@ -29,24 +29,30 @@ from unittest.mock import AsyncMock, patch
 
 _TEST_SECRET = "gl342-test-hs256-secret-32chars!!"
 
-# Paths that legitimately skip the read_only API-key scope gate.
-_SCOPE_EXEMPT_PATHS = frozenset({
-    "/v1/auth/token",
-    "/v1/admin/operators",
-    "/v1/admin/operators/{operator_id}/revoke",
-    "/v1/api-keys",
-    "/v1/api-keys/{key_id}",
-    "/v1/demo-action",
-    "/v1/challenges",
-    "/v1/auditor/exports/build",
-    "/v1/grant-templates",
-    "/v1/grant-templates/{template_id}/deactivate",
-    "/v1/grant-templates/{template_id}/new-version",
-    "/v1/users/{user_id}/erase",
-    "/v1/users/{user_id}/export-data",
-    "/v1/workspaces/{workspace_id}/plan",
-    "/v1/notifications/unsubscribe",
-})
+# GL-349: the old silent `_SCOPE_EXEMPT_PATHS` denylist is DISSOLVED. A mutation route
+# may skip the *read_only API-key scope* gate ONLY because it authenticates via a
+# different scheme (no gl_live_ API key reaches it) — never because it has no security.
+# Every entry below carries (a) the reason it is exempt from the API-key scope gate and
+# (b) the test that DOES enforce its tenant/authz scope. `test_no_mutation_route_is_silently_exempt`
+# asserts this map exactly matches the non-API-key mutation routes (fail-closed): a new
+# exempt route with no documented justification is RED.
+_SCOPE_GATE_JUSTIFICATION: dict[str, str] = {
+    "/v1/auth/token": "credential exchange; no API key; per-IP rate-limited (test_gl251).",
+    "/v1/admin/operators": "admin bearer; tenant-scoped + enumerated in test_gl349.",
+    "/v1/admin/operators/{operator_id}/revoke": "admin bearer; tenant-scoped + enumerated in test_gl349.",
+    "/v1/api-keys": "API-key mgmt via JWT; create role-gated + workspace-bound (test_gl344/test_gl349).",
+    "/v1/api-keys/{key_id}": "API-key mgmt via JWT; revoke tenant-scoped (test_gl349).",
+    "/v1/demo-action": "demo bypass, guarded by demo-mode flag (test_gl190/test_gl262).",
+    "/v1/challenges": "challenge protocol; auth + workspace resolved (test_gl345 wired-list).",
+    "/v1/auditor/exports/build": "auditor-role gate via resolve_auth_and_workspace.",
+    "/v1/grant-templates": "JWT-only; workspace-bound authority (test_gl344).",
+    "/v1/grant-templates/{template_id}/deactivate": "JWT-only; workspace-scoped IDOR closed (test_gl344).",
+    "/v1/grant-templates/{template_id}/new-version": "JWT-only; workspace-scoped IDOR closed (test_gl344).",
+    "/v1/users/{user_id}/erase": "GDPR JWT-only; tenant-scoped (test_gl347).",
+    "/v1/users/{user_id}/export-data": "GDPR JWT-only; tenant-scoped (test_gl347).",
+    "/v1/workspaces/{workspace_id}/plan": "admin bearer; tenant-scoped + enumerated in test_gl349.",
+    "/v1/notifications/unsubscribe": "query-param signed token, no bearer auth.",
+}
 
 _MUTATION_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
@@ -85,6 +91,7 @@ def _make_client():
     os.environ.pop("GRANTLAYER_JWT_PRIVATE_KEY", None)
     os.environ.pop("GRANTLAYER_JWT_PUBLIC_KEY", None)
     from fastapi.testclient import TestClient
+
     from backend.src.api.app import create_app
     return TestClient(create_app(), raise_server_exceptions=False)
 
@@ -130,11 +137,28 @@ def _collect_testable_mutation_routes() -> list[tuple[str, str]]:
         path: str = getattr(route, "path", "")
         if not path.startswith("/v1/"):
             continue
-        if path in _SCOPE_EXEMPT_PATHS:
+        if path in _SCOPE_GATE_JUSTIFICATION:
             continue
         for m in sorted(methods):
             routes.append((m, path))
     return sorted(routes, key=lambda x: (x[1], x[0]))
+
+
+def _all_v1_mutation_paths() -> set[str]:
+    """Every distinct /v1/ path that exposes at least one mutation method."""
+    os.environ["GRANTLAYER_JWT_SECRET"] = _TEST_SECRET
+    from backend.src.api.app import create_app
+    app = create_app()
+    paths: set[str] = set()
+    for route in app.routes:
+        if not hasattr(route, "methods"):
+            continue
+        if not (route.methods & _MUTATION_METHODS):
+            continue
+        path: str = getattr(route, "path", "")
+        if path.startswith("/v1/"):
+            paths.add(path)
+    return paths
 
 
 def _to_test_path(path: str) -> str:
@@ -145,6 +169,37 @@ def _to_test_path(path: str) -> str:
 def _body_for(path: str) -> dict:
     """Return a valid minimal body for the given route path, or {} for dict-body routes."""
     return _ROUTE_BODY.get(path, {})
+
+
+class TestNoSilentExemption(unittest.TestCase):
+    """GL-349: the dissolved denylist must be a documented, fail-closed allowlist.
+
+    Every /v1/ mutation route is EITHER scope-gated (tested for read_only/OPA above)
+    OR carries a non-empty documented justification in _SCOPE_GATE_JUSTIFICATION. A new
+    mutation route that is neither is RED — it cannot be silently exempted from security.
+    """
+
+    def test_no_mutation_route_is_silently_exempt(self):
+        all_paths = _all_v1_mutation_paths()
+        gated_paths = {p for _, p in _collect_testable_mutation_routes()}
+        justified_paths = set(_SCOPE_GATE_JUSTIFICATION)
+
+        uncovered = all_paths - gated_paths - justified_paths
+        self.assertEqual(
+            uncovered, set(),
+            "Mutation route(s) neither scope-gated nor justified — silent exemption is "
+            f"forbidden. Add scope enforcement or a documented justification: {sorted(uncovered)}",
+        )
+
+        stale = justified_paths - all_paths
+        self.assertEqual(
+            stale, set(),
+            f"_SCOPE_GATE_JUSTIFICATION references path(s) no longer in the router table: {sorted(stale)}",
+        )
+
+    def test_every_justification_is_non_empty(self):
+        empty = [p for p, reason in _SCOPE_GATE_JUSTIFICATION.items() if not reason.strip()]
+        self.assertEqual(empty, [], f"Exempt path(s) missing a documented justification: {empty}")
 
 
 class TestScopeEnforcementDiscovery(unittest.TestCase):
@@ -356,7 +411,9 @@ class TestRequireMutationAuthzUnit(unittest.TestCase):
     def test_require_mutation_authz_blocks_read_only_api_key(self):
         """require_mutation_authz must raise 403 insufficient_scope for a read_only API key."""
         import asyncio
+
         from fastapi import HTTPException
+
         from backend.src.api.deps import require_mutation_authz
 
         auth_ctx = {
@@ -376,6 +433,7 @@ class TestRequireMutationAuthzUnit(unittest.TestCase):
     def test_require_mutation_authz_calls_evaluate_policy(self):
         """require_mutation_authz must call evaluate_policy once per invocation."""
         import asyncio
+
         from backend.src.api.deps import require_mutation_authz
 
         auth_ctx = {
@@ -395,7 +453,9 @@ class TestRequireMutationAuthzUnit(unittest.TestCase):
     def test_require_mutation_authz_raises_403_on_opa_deny(self):
         """require_mutation_authz must raise 403 policy_denied when OPA returns False."""
         import asyncio
+
         from fastapi import HTTPException
+
         from backend.src.api.deps import require_mutation_authz
 
         auth_ctx = {

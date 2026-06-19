@@ -18,11 +18,15 @@ from ...audit.audit_log import append_event
 from ...core.db import get_async_db
 from ...core.models import AuditEvent
 from ..auth_jwt import validate_jwt_header
+from ..deps import assert_admin_tenant_scope
 
 router = APIRouter(prefix="/api-keys", tags=["api-keys"])
 
 _KEY_PREFIX = "gl_live_"
 _VALID_SCOPES = {"read_only", "read_write", "admin"}
+# Roles permitted to mint an ``admin``-scoped API key. A non-admin caller must not be
+# able to escalate by issuing itself an admin key.
+_ADMIN_ROLES = {"admin", "grant_admin", "owner"}
 
 
 def _hash_key(raw_key: str) -> str:
@@ -66,6 +70,18 @@ async def create_api_key(
                 "error": "Invalid scopes",
                 "errorCode": "invalid_scopes",
                 "reason": f"Unknown scopes: {', '.join(sorted(invalid_scopes))}. Valid: {', '.join(sorted(_VALID_SCOPES))}",
+            },
+        )
+
+    # SECURITY: scope is gated by the caller's role. A non-admin must not be able to
+    # mint an admin-scoped key (privilege escalation to a key more powerful than itself).
+    if "admin" in body.scopes and payload.get("role") not in _ADMIN_ROLES:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "Forbidden",
+                "errorCode": "insufficient_role_for_scope",
+                "reason": "Only an admin (owner, grant_admin, admin) may create an admin-scoped API key.",
             },
         )
 
@@ -179,9 +195,15 @@ async def revoke_api_key(
     payload = _resolve_user(authorization)
     user_id = payload.get("sub", "unknown")
 
-    # Check key exists and belongs to user (or admin)
+    # Resolve the key's owning tenant (via its workspace) so an admin acting on a key
+    # it does not own is confined to its own tenant.
     result = await db.execute(
-        text("SELECT id, user_id, name FROM api_keys WHERE id=:id AND revoked_at IS NULL"),
+        text(
+            "SELECT ak.id, ak.user_id, ak.name, "
+            "COALESCE(w.tenant_id, ak.workspace_id) AS tenant_id "
+            "FROM api_keys ak LEFT JOIN workspaces w ON w.id = ak.workspace_id "
+            "WHERE ak.id=:id AND ak.revoked_at IS NULL"
+        ),
         {"id": key_id},
     )
     row = result.mappings().first()
@@ -191,12 +213,17 @@ async def revoke_api_key(
             detail={"error": "API key not found", "errorCode": "api_key_not_found"},
         )
 
-    is_admin = payload.get("role") in ("admin", "grant_admin", "owner")
-    if row["user_id"] != user_id and not is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail={"error": "Forbidden", "errorCode": "forbidden"},
-        )
+    # The owner may always revoke their own key. Otherwise the caller must be an admin
+    # AND scoped to the key's tenant — is_admin must NOT short-circuit the tenant check
+    # (a prior cross-tenant revoke hole let an admin disable another tenant's key).
+    if row["user_id"] != user_id:
+        is_admin = payload.get("role") in _ADMIN_ROLES
+        if not is_admin:
+            raise HTTPException(
+                status_code=403,
+                detail={"error": "Forbidden", "errorCode": "forbidden"},
+            )
+        assert_admin_tenant_scope(payload, row["tenant_id"])
 
     now = datetime.now(timezone.utc).isoformat()
     await db.execute(

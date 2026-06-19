@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Annotated, Any, Optional
+from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.db import get_async_db
-from ..deps import assert_admin_tenant_scope, require_admin
+from ..deps import AdminScope, require_admin_scope
 
 router = APIRouter(prefix="/workspaces", tags=["workspaces"])
 
@@ -25,17 +25,28 @@ class PlanUpdateRequest(BaseModel):
 
 @router.get("", response_model=list[dict[str, Any]])
 async def list_workspaces(
-    authorization: Annotated[Optional[str], Header()] = None,
+    scope: AdminScope = Depends(require_admin_scope),
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    require_admin(authorization)
-    result = await db.execute(
-        text(
-            "SELECT id, tenant_id, name, slug, owner_id, status, description, "
-            "plan_tier, rate_limit_override, created_at, updated_at "
-            "FROM workspaces ORDER BY created_at DESC"
+    # Data-layer scoping: a tenant-scoped admin only sees its own tenant's workspaces;
+    # a deployment admin (tenant_filter is None) sees all of them.
+    if scope.tenant_filter is None:
+        result = await db.execute(
+            text(
+                "SELECT id, tenant_id, name, slug, owner_id, status, description, "
+                "plan_tier, rate_limit_override, created_at, updated_at "
+                "FROM workspaces ORDER BY created_at DESC"
+            )
         )
-    )
+    else:
+        result = await db.execute(
+            text(
+                "SELECT id, tenant_id, name, slug, owner_id, status, description, "
+                "plan_tier, rate_limit_override, created_at, updated_at "
+                "FROM workspaces WHERE tenant_id = :t ORDER BY created_at DESC"
+            ),
+            {"t": scope.tenant_filter},
+        )
     rows = result.mappings().all()
     return [dict(r) for r in rows]
 
@@ -43,10 +54,9 @@ async def list_workspaces(
 @router.get("/{workspace_id}", response_model=dict[str, Any])
 async def get_workspace(
     workspace_id: str,
-    authorization: Annotated[Optional[str], Header()] = None,
+    scope: AdminScope = Depends(require_admin_scope),
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    admin_payload = require_admin(authorization)
     result = await db.execute(
         text(
             "SELECT id, tenant_id, name, slug, owner_id, status, description, "
@@ -66,7 +76,7 @@ async def get_workspace(
             },
         )
     # A tenant-scoped admin may only read workspaces in its own tenant.
-    assert_admin_tenant_scope(admin_payload, row.get("tenant_id"))
+    scope.assert_target(row.get("tenant_id"))
     return dict(row)
 
 
@@ -74,11 +84,9 @@ async def get_workspace(
 async def update_workspace_plan(
     workspace_id: str,
     body: PlanUpdateRequest,
-    authorization: Annotated[Optional[str], Header()] = None,
+    scope: AdminScope = Depends(require_admin_scope),
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    admin_payload = require_admin(authorization)
-
     if body.plan_tier not in _VALID_TIERS:
         raise HTTPException(
             status_code=422,
@@ -115,7 +123,7 @@ async def update_workspace_plan(
                 "reason": "The requested workspace does not exist.",
             },
         )
-    assert_admin_tenant_scope(admin_payload, target_row.get("tenant_id"))
+    scope.assert_target(target_row.get("tenant_id"))
 
     now = datetime.now(timezone.utc).isoformat()
     update_result = await db.execute(

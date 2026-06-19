@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional, cast
+from typing import Annotated, Any, Optional, cast
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
@@ -211,6 +211,69 @@ def assert_admin_tenant_scope(
                 "reason": "Admin authority is scoped to your own tenant; you cannot act on another tenant's resources.",
             },
         )
+
+
+class AdminScope:
+    """Resolved admin caller + the SINGLE shared tenant-scope mechanism.
+
+    Injected via ``Depends(require_admin_scope)`` so every admin-plane route enforces
+    tenant scope the same way instead of hand-bolting checks per handler (the prior
+    root cause: ``require_admin`` was hand-called and sibling routes forgot the check).
+
+    Authority model:
+      - deployment-level admin (static admin token, NO ``tenant_id`` claim) →
+        ``tenant_id is None`` → full cross-tenant authority.
+      - tenant-scoped admin (JWT with a ``tenant_id`` claim) → confined to its tenant.
+
+    Usage:
+      - ``scope.tenant_filter``        → caller's tenant_id, or None for a deployment
+        admin; pass to list/query methods so reads are scoped at the data layer.
+      - ``scope.assert_target(t)``     → 403 cross_tenant_forbidden if a tenant-scoped
+        admin targets another tenant (no-op for a deployment admin).
+      - ``scope.require_deployment_admin()`` → 403 for a tenant-scoped admin on a route
+        whose resource has no tenant dimension (e.g. the infra job queue), where
+        ownership cannot be proven.
+    """
+
+    __slots__ = ("payload", "tenant_id")
+
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+        self.tenant_id: Optional[str] = payload.get("tenant_id")
+
+    @property
+    def is_deployment_admin(self) -> bool:
+        return self.tenant_id is None
+
+    @property
+    def tenant_filter(self) -> Optional[str]:
+        """Tenant to scope reads to, or None (deployment admin → unrestricted)."""
+        return self.tenant_id
+
+    def assert_target(self, target_tenant_id: Optional[str]) -> None:
+        assert_admin_tenant_scope(self.payload, target_tenant_id)
+
+    def require_deployment_admin(self) -> None:
+        if self.tenant_id is not None:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "Forbidden",
+                    "errorCode": "deployment_admin_required",
+                    "reason": "This resource has no tenant scope; only a deployment-level admin may access it.",
+                },
+            )
+
+
+def require_admin_scope(
+    authorization: Annotated[Optional[str], Header()] = None,
+) -> AdminScope:
+    """FastAPI dependency: authenticate an admin and return its tenant-scope guard.
+
+    Replaces the hand-called ``require_admin(authorization)`` so admin auth + the
+    shared tenant-scope mechanism are declared structurally in the route signature.
+    """
+    return AdminScope(require_admin(authorization))
 
 
 def get_grant_repo(db: Session = Depends(get_db)) -> IGrantRepository:
