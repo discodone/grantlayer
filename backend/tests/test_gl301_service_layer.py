@@ -424,7 +424,10 @@ class TestAdminRouterIntegration(_IntegrationBase):
         resp = self.client.post(
             "/v1/admin/operators",
             headers=self.jwt_header,
-            json={"name": "Test Operator GL301", "tenantId": "t1", "role": "owner"},
+            # GL-347: admin operator creation is now tenant-scoped. The dev JWT is
+            # scoped to tenant "demo", so the operator must be created in "demo"
+            # (a cross-tenant create would correctly be rejected with 403).
+            json={"name": "Test Operator GL301", "tenantId": "demo", "role": "owner"},
         )
         self.assertEqual(resp.status_code, 201)
         data = resp.json()

@@ -11,7 +11,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.db import get_async_db
-from ..deps import require_admin
+from ..deps import assert_admin_tenant_scope, require_admin
 
 router = APIRouter(prefix="/workspaces", tags=["workspaces"])
 
@@ -46,7 +46,7 @@ async def get_workspace(
     authorization: Annotated[Optional[str], Header()] = None,
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    require_admin(authorization)
+    admin_payload = require_admin(authorization)
     result = await db.execute(
         text(
             "SELECT id, tenant_id, name, slug, owner_id, status, description, "
@@ -65,6 +65,8 @@ async def get_workspace(
                 "reason": "The requested workspace does not exist.",
             },
         )
+    # A tenant-scoped admin may only read workspaces in its own tenant.
+    assert_admin_tenant_scope(admin_payload, row.get("tenant_id"))
     return dict(row)
 
 
@@ -75,7 +77,7 @@ async def update_workspace_plan(
     authorization: Annotated[Optional[str], Header()] = None,
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    require_admin(authorization)
+    admin_payload = require_admin(authorization)
 
     if body.plan_tier not in _VALID_TIERS:
         raise HTTPException(
@@ -96,6 +98,24 @@ async def update_workspace_plan(
                 "reason": "rate_limit_override must be a non-negative integer.",
             },
         )
+
+    # Resolve the target workspace's tenant before mutating so a tenant-scoped
+    # admin cannot change another tenant's plan.
+    target = await db.execute(
+        text("SELECT tenant_id FROM workspaces WHERE id=:id"),
+        {"id": workspace_id},
+    )
+    target_row = target.mappings().first()
+    if target_row is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "Workspace not found",
+                "errorCode": "workspace_not_found",
+                "reason": "The requested workspace does not exist.",
+            },
+        )
+    assert_admin_tenant_scope(admin_payload, target_row.get("tenant_id"))
 
     now = datetime.now(timezone.utc).isoformat()
     update_result = await db.execute(
