@@ -21,6 +21,7 @@ from ...grants.grant_requests import ALLOWED_GRANT_ROLES, VALID_REQUEST_STATUSES
 from ..deps import (
     enforce_workspace_mutation,
     get_async_grant_request_service,
+    require_mutation_authz,
     resolve_auth_and_workspace,
 )
 from ..schemas import DynamicResponse, GrantRequestListResponse, GrantRequestResponse
@@ -132,6 +133,7 @@ async def create_grant_request_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
+    await require_mutation_authz(auth_ctx, ws_ctx)
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     if not operator_id:
         raise HTTPException(
@@ -206,6 +208,7 @@ async def approve_grant_request_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
+    await require_mutation_authz(auth_ctx, ws_ctx)
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
@@ -266,6 +269,7 @@ async def deny_grant_request_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
+    await require_mutation_authz(auth_ctx, ws_ctx)
     operator_id = auth_ctx.get("operator", {}).get("operatorId") or auth_ctx.get("sub")
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]

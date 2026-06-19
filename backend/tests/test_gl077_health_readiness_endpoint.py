@@ -128,10 +128,10 @@ class TestGL077HealthReadinessEndpoint(unittest.TestCase):
         resp = client.get("/readiness")
         self.assertEqual(resp.json().get("status"), "ready")
 
-    def test_readiness_includes_runtime_mode_local_by_default(self):
+    def test_readiness_includes_runtime_mode_production_by_default(self):
         client = self._make_client_with_runtime_mode(None)
         resp = client.get("/readiness")
-        self.assertEqual(resp.json().get("runtimeMode"), "local")
+        self.assertEqual(resp.json().get("runtimeMode"), "production")
 
     def test_readiness_is_production_like_false_for_local(self):
         client = self._make_client_with_runtime_mode("local")

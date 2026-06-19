@@ -11,7 +11,7 @@ from ...policy.approval_lifecycle import (
     transition_approval_request,
 )
 from ...policy.approval_rules import evaluate_approval_requirements
-from ..deps import resolve_auth_and_workspace
+from ..deps import require_mutation_authz, resolve_auth_and_workspace
 
 router = APIRouter(prefix="/approvals", tags=["approvals"])
 
@@ -21,7 +21,8 @@ async def build_lifecycle(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
-    resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     return build_approval_request_lifecycle(
         approval_requirement=body.get("approvalRequirement"),
         request_id=body.get("requestId"),
@@ -43,7 +44,8 @@ async def transition_lifecycle(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
-    resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     missing = [f for f in ("approvalRequest", "transition") if f not in body or body.get(f) is None]
     if missing:
         raise HTTPException(
@@ -66,7 +68,8 @@ async def evaluate_approvals(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
-    resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     missing = [f for f in ("action",) if f not in body or body.get(f) is None]
     if missing:
         raise HTTPException(

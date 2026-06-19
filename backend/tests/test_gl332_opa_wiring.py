@@ -74,7 +74,7 @@ class TestOpaWiredToGrantCreate(unittest.TestCase):
         with (
             patch("backend.src.api.routers.grants.resolve_auth_and_workspace",
                   return_value=(_MOCK_AUTH_CTX, _MOCK_WS_CTX)),
-            patch("backend.src.api.routers.grants.evaluate_policy", opa_mock),
+            patch("backend.src.api.deps.evaluate_policy", opa_mock),
         ):
             client = _make_client()
             return client.post("/v1/grants", json=body or _GRANT_BODY,

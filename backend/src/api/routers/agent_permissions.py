@@ -12,7 +12,7 @@ from ...policy.agent_permission_profiles import (
     list_agent_permission_profiles,
 )
 from ...policy.agent_permissions import evaluate_agent_permission
-from ..deps import resolve_auth_and_workspace
+from ..deps import require_mutation_authz, resolve_auth_and_workspace
 
 router = APIRouter(prefix="/agent-permissions", tags=["agent-permissions"])
 
@@ -50,7 +50,8 @@ async def evaluate_permission(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
-    resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     missing = [f for f in ("agentId", "requestedScope", "assignedScopes") if f not in body or body.get(f) is None]
     if missing:
         raise HTTPException(
@@ -72,7 +73,8 @@ async def resolve_assignment(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
-    resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     missing = [f for f in ("agentId", "requestedScope") if f not in body or body.get(f) is None]
     if missing:
         raise HTTPException(

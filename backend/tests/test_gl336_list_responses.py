@@ -92,7 +92,7 @@ class TestGrantListNextCursor(unittest.TestCase):
 
         with (
             patch("backend.src.api.routers.grants.resolve_auth_and_workspace", return_value=_AUTH),
-            patch("backend.src.api.routers.grants.evaluate_policy", new_callable=AsyncMock, return_value=True),
+            patch("backend.src.api.deps.evaluate_policy", new_callable=AsyncMock, return_value=True),
         ):
             from unittest.mock import MagicMock, patch as _patch
             with _patch.object(__import__("backend.src.grants.grant_service", fromlist=["AsyncGrantService"]).AsyncGrantService, "list_grants", new_callable=AsyncMock, return_value=([], 0)):

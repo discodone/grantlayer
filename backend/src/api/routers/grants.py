@@ -19,8 +19,7 @@ from ...core.validation import (
 )
 from ...grants.grant_requests import ALLOWED_GRANT_ROLES
 from ...grants.grant_service import AsyncGrantService
-from ...policy.opa_client import evaluate_policy
-from ..deps import enforce_api_key_write_scope, get_async_grant_service, resolve_auth_and_workspace
+from ..deps import get_async_grant_service, require_mutation_authz, resolve_auth_and_workspace
 from ..schemas import GrantCreateRequest, GrantListResponse, GrantResponse
 
 router = APIRouter(prefix="/grants", tags=["grants"])
@@ -158,19 +157,7 @@ async def create_grant_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
-    enforce_api_key_write_scope(auth_ctx)
-    allowed = await evaluate_policy(
-        "grant.create",
-        {"role": auth_ctx.get("role"), "workspace_id": ws_ctx.get("workspace_id"),
-         "tenant_id": ws_ctx.get("tenant_id"), "scopes": auth_ctx.get("scopes", [])},
-        {"workspace_id": ws_ctx.get("workspace_id"), "tenant_id": ws_ctx.get("tenant_id")},
-    )
-    if not allowed:
-        raise HTTPException(
-            status_code=403,
-            detail={"error": "Forbidden", "errorCode": "policy_denied",
-                    "reason": "Policy denied action 'grant.create'."},
-        )
+    await require_mutation_authz(auth_ctx, ws_ctx)
 
     # Validate that string fields are non-empty
     for alias, value in (
@@ -260,7 +247,7 @@ async def revoke_grant_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
-    enforce_api_key_write_scope(auth_ctx)
+    await require_mutation_authz(auth_ctx, ws_ctx)
     operator_id = auth_ctx.get("sub") or auth_ctx.get("operator", {}).get("operatorId", "unknown")
     revoked = await svc.revoke_grant(
         grant_id,
