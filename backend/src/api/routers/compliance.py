@@ -9,7 +9,7 @@ from fastapi import APIRouter, Header, HTTPException, Query
 from ...grants.grant_executions import get_grant_execution
 from ...policy.compliance_gap_report import build_compliance_gap_report_for_execution
 from ...policy.compliance_readiness import build_compliance_readiness_summary
-from ..deps import resolve_auth_and_workspace
+from ..deps import require_mutation_authz, resolve_auth_and_workspace
 
 router = APIRouter(prefix="/compliance", tags=["compliance"])
 
@@ -46,7 +46,8 @@ async def build_readiness(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
-    resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin", "auditor"])
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin", "auditor"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     policy_req_eval = body.get("policyRequirementEvaluation")
     summary = build_compliance_readiness_summary(
         subject_id=body.get("subjectId"),

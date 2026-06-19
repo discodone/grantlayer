@@ -16,7 +16,7 @@ from fastapi.responses import Response
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..api.deps import resolve_auth_and_workspace
+from ..api.deps import require_mutation_authz, resolve_auth_and_workspace
 from ..core.db import get_async_db
 from .schemas import (
     WebhookCreateRequest,
@@ -64,6 +64,7 @@ async def create_webhook_endpoint(
         required_roles=_ALLOWED_CREATE_ROLES,
         workspace_id=x_workspace_id,
     )
+    await require_mutation_authz(auth_ctx, ws_ctx)
 
     webhook_id = str(uuid.uuid4())
     secret = body.secret if body.secret else secrets.token_hex(32)
@@ -171,11 +172,12 @@ async def test_webhook_endpoint(
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     """Send a test ping event to the webhook endpoint and record the delivery attempt."""
-    _, ws_ctx = resolve_auth_and_workspace(
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(
         authorization,
         required_roles=_ALLOWED_CREATE_ROLES,
         workspace_id=x_workspace_id,
     )
+    await require_mutation_authz(auth_ctx, ws_ctx)
 
     result = await db.execute(
         text(
@@ -292,11 +294,12 @@ async def delete_webhook_endpoint(
     db: AsyncSession = Depends(get_async_db),
 ) -> Response:
     """Deactivate (soft-delete) a webhook subscription."""
-    _, ws_ctx = resolve_auth_and_workspace(
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(
         authorization,
         required_roles=_ALLOWED_CREATE_ROLES,
         workspace_id=x_workspace_id,
     )
+    await require_mutation_authz(auth_ctx, ws_ctx)
 
     row = await _fetch_webhook(db, webhook_id, ws_ctx["tenant_id"])
     if row is None:

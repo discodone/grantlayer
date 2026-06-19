@@ -7,17 +7,18 @@ from typing import Annotated, Any, Optional
 from fastapi import APIRouter, Header
 
 from ...policy.policy_requirements import evaluate_policy_requirements
-from ..deps import resolve_auth_and_workspace
+from ..deps import require_mutation_authz, resolve_auth_and_workspace
 
 router = APIRouter(prefix="/policy-requirements", tags=["policy-requirements"])
 
 
 @router.post("/evaluate", response_model=dict[str, Any])
-async def evaluate_policy(
+async def evaluate_policy_requirements_endpoint(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
-    resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin", "auditor"])
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin", "auditor"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     return evaluate_policy_requirements(
         policy_pack=body.get("policyPack"),
         subject=body.get("subject"),

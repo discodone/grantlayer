@@ -35,6 +35,7 @@ from ..core.repositories_sqlalchemy import (
 )
 from ..grants.grant_request_service import AsyncGrantRequestService, GrantRequestService
 from ..grants.grant_service import AsyncGrantService, GrantService
+from ..policy.opa_client import evaluate_policy
 from .auth_jwt import validate_jwt_header
 
 
@@ -228,6 +229,32 @@ def enforce_api_key_write_scope(auth_ctx: dict) -> None:
             "reason": "This API key has read_only scope. A read_write or admin key is required for write operations.",
         },
     )
+
+
+async def require_mutation_authz(auth_ctx: dict, ws_ctx: dict) -> None:
+    """Shared gate for all mutation routes: API-key scope check + OPA policy evaluation.
+
+    Call immediately after resolve_auth_and_workspace, before any business logic or
+    DB lookups, so that unauthorized callers never observe resource existence.
+    """
+    enforce_api_key_write_scope(auth_ctx)
+    allowed = await evaluate_policy(
+        action="resource.mutate",
+        subject={"sub": auth_ctx.get("sub"), "role": auth_ctx.get("role")},
+        resource={
+            "workspace_id": ws_ctx.get("workspace_id"),
+            "tenant_id": ws_ctx.get("tenant_id"),
+        },
+    )
+    if not allowed:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "Forbidden",
+                "errorCode": "policy_denied",
+                "reason": "OPA policy denied this operation.",
+            },
+        )
 
 
 def enforce_workspace_mutation(ws_ctx: dict, auth_ctx: Optional[dict] = None) -> None:

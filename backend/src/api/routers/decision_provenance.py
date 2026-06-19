@@ -7,7 +7,7 @@ from typing import Annotated, Any, Optional
 from fastapi import APIRouter, Header
 
 from ...policy.decision_provenance import build_decision_provenance_v2
-from ..deps import resolve_auth_and_workspace
+from ..deps import require_mutation_authz, resolve_auth_and_workspace
 
 router = APIRouter(prefix="/decision-provenance", tags=["decision-provenance"])
 
@@ -17,7 +17,8 @@ async def build_provenance_v2(
     body: dict,
     authorization: Annotated[Optional[str], Header()] = None,
 ) -> Any:
-    resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin", "auditor"])
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin", "auditor"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     return build_decision_provenance_v2(
         decision_id=body.get("decisionId"),
         decision_type=body.get("decisionType"),

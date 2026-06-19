@@ -16,6 +16,7 @@ from ...grants.grant_service import AsyncGrantService
 from ..deps import (
     get_async_grant_request_service,
     get_async_grant_service,
+    require_mutation_authz,
     resolve_auth_and_workspace,
 )
 from ..schemas import DynamicResponse
@@ -56,6 +57,7 @@ async def bulk_update_grants(
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     grant_ids = body.grantIds
     if len(grant_ids) > _MAX_BULK:
         raise HTTPException(
@@ -125,6 +127,7 @@ async def bulk_approve_grant_requests(
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     request_ids = body.requestIds
     if len(request_ids) > _MAX_BULK:
         raise HTTPException(
@@ -184,6 +187,7 @@ async def bulk_reject_grant_requests(
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin"])
+    await require_mutation_authz(auth_ctx, ws_ctx)
     request_ids = body.requestIds
     if len(request_ids) > _MAX_BULK:
         raise HTTPException(
