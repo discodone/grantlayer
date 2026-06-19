@@ -99,6 +99,7 @@ def _make_client():
     os.environ.pop("GRANTLAYER_JWT_PRIVATE_KEY", None)
     os.environ.pop("GRANTLAYER_JWT_PUBLIC_KEY", None)
     from fastapi.testclient import TestClient
+
     from backend.src.api.app import create_app
     return TestClient(create_app(), raise_server_exceptions=False)
 
