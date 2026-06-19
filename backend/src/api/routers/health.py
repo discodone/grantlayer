@@ -114,7 +114,7 @@ async def readiness(request: Request):
     redis_ok = True
     if limiter is not None:
         redis_status = getattr(limiter, "redis_status", "disabled")
-        if redis_status not in ("ok", "disabled"):
+        if redis_status not in ("ok", "connected", "disabled"):
             redis_ok = False
             errors.append(f"redis: {redis_status}")
 
