@@ -10,9 +10,20 @@ from __future__ import annotations
 
 import pytest
 
+# Optional dependency. Under pytest the pytestmark below skips every test in
+# this module when schemathesis is absent. We deliberately do NOT use
+# pytest.importorskip(), because that raises at import time and breaks
+# `unittest discover` (used by scripts/run-full-backend-suite.sh) with a module
+# load error instead of a clean skip. With this guard the module imports cleanly
+# under unittest (it defines no TestCase, so it contributes zero tests there).
+try:
+    import schemathesis
+except ImportError:  # pragma: no cover - exercised only when dependency missing
+    schemathesis = None
 
-# Skip entire module if schemathesis is not installed
-schemathesis = pytest.importorskip("schemathesis")
+pytestmark = pytest.mark.skipif(
+    schemathesis is None, reason="schemathesis not installed"
+)
 
 
 @pytest.fixture(scope="module")
