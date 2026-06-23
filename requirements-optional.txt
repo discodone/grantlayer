@@ -1,0 +1,25 @@
+# GrantLayer optional runtime integrations
+#
+# Every package below is imported by backend/src behind a try/except ImportError
+# guard: the corresponding feature degrades cleanly when the package is absent
+# (HTTP 501 for PDF export, no-op telemetry, RuntimeError only when the SES email
+# backend is explicitly selected). They are therefore NOT in the core
+# requirements.txt — install this file only when you need the feature.
+#
+#   pip install -r requirements.txt -r requirements-optional.txt
+
+# PDF grant reports — backend/src/api/routers/exports.py::_generate_pdf
+# (falls back to HTTP 501 "pdf_unavailable" when missing)
+reportlab>=4.0.0
+
+# Distributed tracing — backend/src/core/telemetry.py
+# (setup_telemetry() is a no-op when these are missing; _OTEL_AVAILABLE=False)
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+opentelemetry-exporter-otlp-proto-grpc>=1.20.0
+opentelemetry-instrumentation-fastapi>=0.40b0
+opentelemetry-instrumentation-sqlalchemy>=0.40b0
+
+# AWS SES email backend — backend/src/notifications/email.py::_send_ses
+# (raises a clear RuntimeError only if GRANTLAYER_EMAIL_BACKEND=ses without boto3)
+boto3>=1.28.0
