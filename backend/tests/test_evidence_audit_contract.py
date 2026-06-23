@@ -282,14 +282,27 @@ class TestEvidenceAuditContract(unittest.TestCase):
     # 10. Usage limits affectedOutcome consistency
     # ──────────────────────────────────────────────
     def test_usage_limits_affected_outcome_consistency(self):
+        import uuid
+
         from backend.src.core.models import Grant
+
+        # Unique subject/resource per run so THIS max_uses=1 grant is the only
+        # grant that can match. Other tests in this class create unlimited grants
+        # for the shared "tech-01"/"restart-service"/"customer-env-a" tuple; on
+        # PostgreSQL (where GRANTLAYER_DATABASE_URL overrides the per-test
+        # GRANTLAYER_DB temp SQLite, so the DB is shared) those would otherwise
+        # leak in and let the second action match an *unlimited* grant — wrongly
+        # approving it. Unique IDs restore the intended single-grant scenario and
+        # follow the repo's uuid4-per-test isolation rule.
+        subject = f"tech-{uuid.uuid4().hex[:8]}"
+        resource = f"customer-env-{uuid.uuid4().hex[:8]}"
 
         # Grant with max_uses=1
         g = Grant(
-            subject_id="tech-01",
+            subject_id=subject,
             role="technician",
             action="restart-service",
-            resource="customer-env-a",
+            resource=resource,
             valid_from="2026-01-01T00:00:00Z",
             valid_until="2099-12-31T23:59:59Z",
             created_by="admin",
@@ -300,7 +313,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
 
         # First execution succeeds
         result1 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a",
+            subject, "technician", "restart-service", resource,
             tenant_id="demo",
         )
         self.assertTrue(result1["approved"])
@@ -309,7 +322,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
 
         # Second execution is denied due to usage exhaustion
         result2 = self.demo_mod.handle_demo_action(
-            "tech-01", "technician", "restart-service", "customer-env-a",
+            subject, "technician", "restart-service", resource,
             tenant_id="demo",
         )
         self.assertFalse(result2["approved"])
