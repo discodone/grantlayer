@@ -93,11 +93,12 @@ jobs:
     runs-on: ubuntu-latest
     name: PostgreSQL 16 Full Suite
     needs: [sqlite-unit-tests]
-    # NON-BLOCKING (reports but does not gate merges). The PG full-suite parity
-    # backlog (PG/SQLite divergences surfaced now that the suite runs to
-    # completion: URL ArgumentError, workspace_id NOT NULL from migration 0012,
-    # and likely more) is tracked separately as GL-351. Until those divergences
-    # are triaged and fixed, the SQLite Unit Tests job is the merge gate. This
+    # NON-BLOCKING (reports but does not gate merges). Now that the suite runs to
+    # completion it surfaces a backlog of PostgreSQL/SQLite parity divergences
+    # (sync-engine URL ArgumentError in the evidence-export path; workspace_id
+    # NOT NULL enforced only on PostgreSQL by migration 0012; and likely more).
+    # That backlog is triaged separately in the issue tracker; until the
+    # divergences are resolved the SQLite Unit Tests job is the merge gate. This
     # job must keep running and reporting — do NOT delete or weaken it.
     continue-on-error: true
     services:
