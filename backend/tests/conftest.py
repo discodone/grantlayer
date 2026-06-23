@@ -88,6 +88,41 @@ try:
     # Migration bookkeeping must survive truncation so the schema is not dropped.
     _APP_TABLES_SKIP = {"schema_migrations"}
 
+    # Migration-seeded reference data (the canonical demo workspace from migration
+    # 0011) is created ONCE at schema-init time. On SQLite each test re-runs
+    # migrations on a fresh temp DB, so that row is always present; truncating it
+    # on PostgreSQL without restoring would diverge from the SQLite baseline and
+    # 500 any code that resolves the demo workspace. We snapshot the seeded rows
+    # once and re-insert them after every truncate, so each test starts from the
+    # exact same baseline SQLite gets from a fresh migrated database.
+    _PG_SEED_ROWS: dict = {}
+
+    def _pg_app_tables(conn):
+        rows = conn.execute(
+            "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
+        ).fetchall()
+        return [r["tablename"] for r in rows if r["tablename"] not in _APP_TABLES_SKIP]
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _pg_capture_seed_rows():
+        # Capture migration-seeded reference rows BEFORE any test runs (CI
+        # initialises the schema before pytest). No-op / best-effort otherwise.
+        import backend.src.core.db as _db
+
+        if getattr(_db, "DB_BACKEND", None) == "postgres":
+            try:
+                conn = _db.get_conn()
+                try:
+                    for t in _pg_app_tables(conn):
+                        rows = conn.execute(f'SELECT * FROM "{t}"').fetchall()
+                        if rows:
+                            _PG_SEED_ROWS[t] = [dict(r) for r in rows]
+                finally:
+                    conn.close()
+            except Exception:
+                pass  # schema not ready yet → restore is a harmless no-op
+        yield
+
     @pytest.fixture(autouse=True)
     def _pg_clean_between_tests(request):
         # Post-test (yield → truncate): ordering-independent w.r.t. unittest
@@ -100,23 +135,27 @@ try:
         # SQLite path is untouched → byte-for-byte zero change for local/CI-unit.
         if getattr(_db, "DB_BACKEND", None) != "postgres":
             return
-        # Opt-out for classes that seed shared data in setUpClass (e.g. gl108).
+        # Opt-out for classes that seed shared data in setUpClass.
         if request.node.get_closest_marker("no_db_truncate"):
             return
 
         conn = _db.get_conn()
         try:
-            rows = conn.execute(
-                "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
-            ).fetchall()
-            tables = [
-                r["tablename"] for r in rows
-                if r["tablename"] not in _APP_TABLES_SKIP
-            ]
+            tables = _pg_app_tables(conn)
             if tables:
                 quoted = ", ".join(f'"{t}"' for t in tables)
                 conn.execute(f"TRUNCATE {quoted} RESTART IDENTITY CASCADE")
-                conn.commit()
+            # Restore migration-seeded reference rows (e.g. the demo workspace).
+            for table, rows in _PG_SEED_ROWS.items():
+                for row in rows:
+                    cols = list(row.keys())
+                    collist = ", ".join(f'"{c}"' for c in cols)
+                    placeholders = ", ".join("?" for _ in cols)
+                    conn.execute(
+                        f'INSERT INTO "{table}" ({collist}) VALUES ({placeholders})',
+                        tuple(row[c] for c in cols),
+                    )
+            conn.commit()
         finally:
             conn.close()
 
