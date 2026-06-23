@@ -1,0 +1,6 @@
+# Netlify deploy config for grantlayer.de.
+# Static marketing site lives in site/ (homepage + /dashboard + /docs).
+# No build step — files are served as-is. The MkDocs docs/ source is NOT
+# part of this publish dir; it deploys separately to gh-pages.
+[build]
+  publish = "site"
