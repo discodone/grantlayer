@@ -2,7 +2,13 @@
 # These are the non-stdlib packages imported by backend/src/* at runtime.
 
 cryptography>=42.0.0
+
+# PostgreSQL drivers — the documented production database is PostgreSQL.
+# psycopg2 backs the sync engine; asyncpg backs the async engine, which
+# core/db.py builds via a postgresql+asyncpg:// URL. Both are required at
+# runtime for any PostgreSQL deployment (not optional).
 psycopg2-binary>=2.9.0
+asyncpg>=0.29.0
 
 # FastAPI layer (strangler fig migration)
 fastapi>=0.110.0,<0.137.0

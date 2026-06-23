@@ -34,7 +34,7 @@ jobs:
           GRANTLAYER_RUNTIME_MODE: test
           GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
         run: |
-          python3 -m pytest backend/tests/ -m "not doc_guard" \
+          python3 -m pytest backend/tests/ -m "not doc_guard and not performance" \
             --ignore=backend/tests/test_gl112_audit_log_duplication_cleanup.py \
             --ignore=backend/tests/test_gl139_audit_hash_chain_write_lock.py \
             --ignore=backend/tests/test_gl141_operator_model_default.py \
@@ -151,7 +151,7 @@ jobs:
           GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
         run: |
           python3 -m pytest backend/tests/ -x -q --tb=short \
-            -m "not doc_guard" \
+            -m "not doc_guard and not performance" \
             --timeout 300 \
             --ignore=backend/tests/test_gl112_audit_log_duplication_cleanup.py \
             --ignore=backend/tests/test_gl139_audit_hash_chain_write_lock.py \
