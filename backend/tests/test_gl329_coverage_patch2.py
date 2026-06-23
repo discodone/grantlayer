@@ -17,11 +17,17 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import importlib.util
 import os
 import unittest
 import uuid
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
+
+# OpenTelemetry is an optional, gracefully-degraded integration (pinned in
+# requirements-optional.txt, not the core runtime set). The OTEL-available code
+# paths below can only be exercised when the package is actually installed.
+_OTEL_INSTALLED = importlib.util.find_spec("opentelemetry") is not None
 
 # --------------------------------------------------------------------------- #
 # Shared helpers
@@ -72,8 +78,14 @@ def _run(coro):
 # --------------------------------------------------------------------------- #
 # 1. Telemetry — OTEL-available paths (27 missed lines)
 # --------------------------------------------------------------------------- #
+@unittest.skipUnless(_OTEL_INSTALLED, "OpenTelemetry not installed (optional dependency)")
 class TestTelemetryOtelAvailable(unittest.TestCase):
-    """Cover telemetry.py module-level and OTEL-branch lines via importlib.reload."""
+    """Cover telemetry.py module-level and OTEL-branch lines via importlib.reload.
+
+    These assertions only hold when OpenTelemetry is installed; the no-OTEL
+    fallback (no-op) path is covered organically and by the *_otel_unavailable
+    tests in test_gl330_coverage_patch3.py.
+    """
 
     def _reload(self):
         import backend.src.core.telemetry as tel

@@ -231,6 +231,7 @@ class TestTelemetryMissedLines:
 
     def test_setup_telemetry_otlp_except_block(self):
         """Lines 51-52: OTLPSpanExporter instantiation raises → except pass."""
+        pytest.importorskip("opentelemetry.exporter.otlp.proto.grpc.trace_exporter")
         import backend.src.core.telemetry as tel
         with patch.dict(os.environ, {"OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317"}):
             with patch(
@@ -241,6 +242,7 @@ class TestTelemetryMissedLines:
 
     def test_setup_telemetry_jaeger_except_block(self):
         """Lines 61-62: Jaeger OTLPSpanExporter raises → except pass."""
+        pytest.importorskip("opentelemetry.exporter.otlp.proto.grpc.trace_exporter")
         import backend.src.core.telemetry as tel
         with patch.dict(os.environ, {"OTEL_JAEGER_HOST": "localhost-test"}):
             with patch(
@@ -251,6 +253,7 @@ class TestTelemetryMissedLines:
 
     def test_setup_telemetry_outer_except_block(self):
         """Lines 66-67: Resource.create raises → outer except pass."""
+        pytest.importorskip("opentelemetry.sdk.resources")
         import backend.src.core.telemetry as tel
         with patch(
             "opentelemetry.sdk.resources.Resource.create",
@@ -271,6 +274,7 @@ class TestTelemetryMissedLines:
 
     def test_get_current_trace_id_with_active_span(self):
         """Line 86: returns trace_id hex when inside an active SDK span."""
+        pytest.importorskip("opentelemetry.sdk.trace")
         import backend.src.core.telemetry as tel
         from opentelemetry import trace
         from opentelemetry.sdk.trace import TracerProvider
@@ -285,6 +289,7 @@ class TestTelemetryMissedLines:
 
     def test_get_current_trace_id_exception_path(self):
         """Lines 87-88: get_current_span raises → except pass → return None."""
+        pytest.importorskip("opentelemetry.trace")
         import backend.src.core.telemetry as tel
         saved = tel._OTEL_AVAILABLE
         tel._OTEL_AVAILABLE = True
@@ -310,6 +315,7 @@ class TestTelemetryMissedLines:
 
     def test_instrument_fastapi_exception_path(self):
         """Lines 99-100: FastAPIInstrumentor.instrument_app raises → except pass."""
+        pytest.importorskip("opentelemetry.instrumentation.fastapi")
         import backend.src.core.telemetry as tel
         saved = tel._OTEL_AVAILABLE
         tel._OTEL_AVAILABLE = True
@@ -334,6 +340,7 @@ class TestTelemetryMissedLines:
 
     def test_instrument_sqlalchemy_exception_path(self):
         """Lines 110-111: SQLAlchemyInstrumentor.instrument raises → except pass."""
+        pytest.importorskip("opentelemetry.instrumentation.sqlalchemy")
         import backend.src.core.telemetry as tel
         saved = tel._OTEL_AVAILABLE
         tel._OTEL_AVAILABLE = True
@@ -511,6 +518,7 @@ class TestLoggingUtilsMissedLines:
 
     def test_json_formatter_includes_trace_id_when_active(self):
         """Line 229: if trace_id: payload['trace_id'] = trace_id — cover with active span."""
+        pytest.importorskip("opentelemetry.sdk.trace")
         from opentelemetry.sdk.trace import TracerProvider
 
         from backend.src.core.logging_utils import _JsonFormatter
