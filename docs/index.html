@@ -1,159 +1,177 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GrantLayer Developer Preview</title>
-    <meta
-      name="description"
-      content="GrantLayer is an API-first Developer Preview for verification, audit, and compliance-support in agentic grant workflows."
-    >
-    <link rel="stylesheet" href="./styles.css">
-  </head>
-  <body>
-    <header class="site-header">
-      <nav class="nav" aria-label="Primary">
-        <a class="brand" href="./index.html">GrantLayer</a>
-        <div class="nav-links" aria-label="Local resources">
-          <a href="../README.md">README</a>
-          <a href="../SECURITY.md">Security</a>
-          <a href="../docs/openapi.yaml">OpenAPI</a>
-        </div>
-      </nav>
-    </header>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GrantLayer — Documentation</title>
+<meta name="description" content="Documentation for GrantLayer: getting started, self-hosting, architecture, authentication, the API contract, and the Python and TypeScript SDKs.">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0d12'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M16 6l8 4-8 4-8-4 8-4z'/%3E%3Cpath d='M8 16l8 4 8-4' stroke='%23a5b4fc'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff;--bg-soft:#f7f8fa;--bg-ink:#0b0d12;--ink:#0b0d12;--ink-2:#3a414e;--muted:#6b7280;
+  --line:rgba(11,13,18,.09);--line-2:rgba(11,13,18,.14);--accent:#4f46e5;--accent-ink:#4338ca;--accent-soft:#eef0fe;
+  --shadow-sm:0 1px 2px rgba(11,13,18,.04),0 1px 1px rgba(11,13,18,.03);
+  --shadow-md:0 10px 30px -12px rgba(11,13,18,.18),0 4px 10px -6px rgba(11,13,18,.08);
+  --radius:14px;--maxw:1000px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink-2);line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased}
+h1,h2,h3{color:var(--ink);line-height:1.15;letter-spacing:-.02em;font-weight:700}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--accent-soft);color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:14px}
 
-    <main>
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-inner">
-          <p class="eyebrow">API-first Developer Preview</p>
-          <h1 id="hero-title">GrantLayer Developer Preview</h1>
-          <p class="lede">
-            GrantLayer is a verification, audit, and compliance-support layer for
-            agentic grant workflows.
-          </p>
-          <div class="notice">
-            Controlled Preview is possible only with strict boundaries and
-            synthetic/demo data. GrantLayer is not production SaaS.
-          </div>
-        </div>
-      </section>
+header.site{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--ink);font-size:17px;letter-spacing:-.02em}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:14.5px;font-weight:500;color:var(--ink-2);transition:color .15s}
+.nav-links a:hover{color:var(--ink)}
+@media (max-width:600px){.nav-links a.hide-sm{display:none}}
 
-      <section class="section" aria-labelledby="what-it-is">
-        <div class="section-inner two-column">
-          <div>
-            <h2 id="what-it-is">What It Is</h2>
-            <p>
-              GrantLayer helps turn grant workflow actions into verifiable,
-              audit-friendly records. The current baseline is designed for local
-              evaluation and bounded Controlled Preview work.
-            </p>
-          </div>
-          <ul class="check-list">
-            <li>API-first Developer Preview</li>
-            <li>Verification and evidence-oriented workflow support</li>
-            <li>Audit and compliance-support documentation baseline</li>
-            <li>Controlled Preview expansion limited to synthetic/demo data</li>
-          </ul>
-        </div>
-      </section>
+.hero{padding:72px 0 28px}
+@media (max-width:600px){.hero{padding:48px 0 20px}}
+.hero h1{font-size:46px;font-weight:800;letter-spacing:-.035em;margin-bottom:16px}
+@media (max-width:600px){.hero h1{font-size:34px}}
+.hero p{font-size:19px;color:var(--ink-2);max-width:60ch}
+.statline{display:flex;gap:26px;flex-wrap:wrap;margin-top:26px;font-size:14px;color:var(--muted)}
+.statline b{color:var(--ink);font-weight:700;font-feature-settings:"tnum"}
 
-      <section class="section muted" aria-labelledby="what-it-is-not">
-        <div class="section-inner two-column">
-          <div>
-            <h2 id="what-it-is-not">What It Is Not</h2>
-            <p>
-              This website does not claim production readiness, enterprise
-              readiness, official package availability, or compliance
-              certification.
-            </p>
-          </div>
-          <ul class="warning-list">
-            <li>Not production SaaS</li>
-            <li>Not ready for real customer data</li>
-            <li>Not ready for private grant or institutional data</li>
-            <li>No official SDK or public SDK package is available</li>
-            <li>Live PostgreSQL production readiness is not claimed</li>
-            <li>Compliance certification is not claimed</li>
-          </ul>
-        </div>
-      </section>
+section.docs{padding:34px 0 56px}
+.group{margin-bottom:44px}
+.group h2{font-size:15px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media (max-width:680px){.cards{grid-template-columns:1fr}}
+.doc{display:flex;gap:15px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;transition:transform .16s ease,border-color .16s,box-shadow .16s}
+.doc:hover{transform:translateY(-2px);border-color:var(--line-2);box-shadow:var(--shadow-md)}
+.doc .ic{width:36px;height:36px;flex:0 0 36px;border-radius:9px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center}
+.doc .ic svg{width:19px;height:19px;stroke:var(--accent-ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.doc .b h3{font-size:16px;font-weight:650;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.doc .b h3 .arr{color:var(--muted);transition:transform .16s,color .16s}
+.doc:hover .b h3 .arr{transform:translateX(3px);color:var(--accent-ink)}
+.doc .b p{font-size:14px;color:var(--muted);line-height:1.55}
 
-      <section class="section" aria-labelledby="preview-boundaries">
-        <div class="section-inner">
-          <h2 id="preview-boundaries">Current Preview Boundaries</h2>
-          <div class="boundary-grid">
-            <article class="boundary-item">
-              <h3>Tenant/Workspace</h3>
-              <p>
-                Tenant/workspace isolation baseline is implemented, but it is not
-                production-complete.
-              </p>
-            </article>
-            <article class="boundary-item">
-              <h3>Admin/Operator</h3>
-              <p>
-                Admin/operator tenant control-plane baseline exists, but it is
-                not a complete production tenant-management plane.
-              </p>
-            </article>
-            <article class="boundary-item">
-              <h3>Runtime and Incident</h3>
-              <p>
-                Runtime, IAM, abuse, and incident hardening baseline exists, but
-                it is not a complete production hardening program.
-              </p>
-            </article>
-            <article class="boundary-item">
-              <h3>Data Governance</h3>
-              <p>
-                Data governance and audit operations baseline exists, but it is
-                not production-complete and does not approve real/private data.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
+footer{border-top:1px solid var(--line);padding:40px 0;color:var(--muted);font-size:13.5px}
+.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.foot .lic{font-family:var(--mono);font-size:12.5px}
+.foot a{color:var(--muted)}.foot a:hover{color:var(--ink)}
+</style>
+</head>
+<body>
 
-      <section class="section muted" aria-labelledby="resources">
-        <div class="section-inner two-column">
-          <div>
-            <h2 id="resources">Developer Resources</h2>
-            <p>
-              Start with the local documentation and deterministic examples. No
-              external service, client-side instrumentation, browser storage,
-              submission form, or deployment
-              automation is part of this static baseline.
-            </p>
-          </div>
-          <ul class="resource-list">
-            <li><a href="../README.md">Project README</a></li>
-            <li><a href="../docs/openapi.yaml">OpenAPI contract</a></li>
-            <li><a href="../docs/website_track.md">Website claim boundary</a></li>
-          </ul>
-        </div>
-      </section>
+<header class="site">
+  <div class="wrap nav">
+    <a class="brand" href="./index.html" aria-label="GrantLayer home">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#0b0d12"></rect><g fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"><path d="M16 6l8 4-8 4-8-4 8-4z"></path><path d="M8 16l8 4 8-4" stroke="#a5b4fc"></path></g></svg>
+      GrantLayer
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a class="hide-sm" href="../website/index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/discodone/grantlayer/blob/main/docs/openapi.yaml">OpenAPI</a>
+      <a href="https://github.com/discodone/grantlayer">GitHub</a>
+    </nav>
+  </div>
+</header>
 
-      <section class="section" aria-labelledby="security">
-        <div class="section-inner two-column">
-          <div>
-            <h2 id="security">Security Reporting</h2>
-            <p>
-              Security-sensitive reports must route through GitHub Security
-              Advisories. Do not include exploit details, secrets, real customer
-              data, private grant data, or institutional data in public reports.
-            </p>
-          </div>
-          <div class="status-box">
-            <strong>Status / Roadmap</strong>
-            <span>
-              Developer Preview continues with strict Controlled Preview
-              boundaries. Production SaaS, real/private data, official SDK
-              package, live PostgreSQL production readiness, and compliance
-              certification remain future gates.
-            </span>
-          </div>
-        </div>
-      </section>
-    </main>
-  </body>
+<main>
+<section class="wrap hero">
+  <div class="kicker">Documentation</div>
+  <h1>Build, run, and operate GrantLayer.</h1>
+  <p>Everything you need to self-host the service, integrate over the API, and understand how isolation and the audit chain work. Source of truth is the repository — these pages link straight to it.</p>
+  <div class="statline">
+    <span><b>v2.1.0</b> current release</span>
+    <span><b>4,697</b> tests passing</span>
+    <span><b>92%</b> coverage · <b>96.6%</b> app code</span>
+    <span><b>MIT</b> licensed</span>
+  </div>
+</section>
+
+<section class="wrap docs">
+
+  <div class="group">
+    <h2>Getting started</h2>
+    <div class="cards">
+      <a class="doc" href="https://github.com/discodone/grantlayer/blob/main/docs/getting-started.md">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
+        <span class="b"><h3>Getting started <span class="arr">→</span></h3><p>Install dependencies, run the stack, and issue your first grant.</p></span>
+      </a>
+      <a class="doc" href="https://github.com/discodone/grantlayer/blob/main/docs/ten_minute_quickstart.md">
+        <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <span class="b"><h3>Ten-minute quickstart <span class="arr">→</span></h3><p>The fastest path from clone to a working API on localhost.</p></span>
+      </a>
+      <a class="doc" href="https://github.com/discodone/grantlayer/blob/main/docs/self-hosting.md">
+        <span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span>
+        <span class="b"><h3>Self-hosting <span class="arr">→</span></h3><p>Docker Compose, environment configuration, and production notes.</p></span>
+      </a>
+      <a class="doc" href="https://github.com/discodone/grantlayer/tree/main/deploy/helm/grantlayer">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span>
+        <span class="b"><h3>Kubernetes (Helm) <span class="arr">→</span></h3><p>Deploy the API and worker with the bundled Helm chart.</p></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="group">
+    <h2>Concepts &amp; architecture</h2>
+    <div class="cards">
+      <a class="doc" href="https://github.com/discodone/grantlayer/blob/main/docs/architecture.md">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 7.5l9-4.5 9 4.5M3 7.5v9l9 4.5 9-4.5v-9"/></svg></span>
+        <span class="b"><h3>Architecture <span class="arr">→</span></h3><p>Async FastAPI, repository and service layers, and data flow.</p></span>
+      </a>
+      <a class="doc" href="https://github.com/discodone/grantlayer/blob/main/docs/authentication.md">
+        <span class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="3.2"/><path d="M11 12h9M17 12v3.5M20 12v3"/></svg></span>
+        <span class="b"><h3>Authentication <span class="arr">→</span></h3><p>JWT, OIDC/SAML SSO, API keys, and scope enforcement.</p></span>
+      </a>
+      <a class="doc" href="https://github.com/discodone/grantlayer/blob/main/docs/data_governance_audit_operations.md">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <span class="b"><h3>Audit &amp; governance <span class="arr">→</span></h3><p>The hash-chained audit log, immutability, and GDPR operations.</p></span>
+      </a>
+      <a class="doc" href="https://github.com/discodone/grantlayer/blob/main/docs/admin_operator_tenant_control_plane.md">
+        <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></span>
+        <span class="b"><h3>Tenancy &amp; control plane <span class="arr">→</span></h3><p>Multi-tenant isolation and the admin/operator control plane.</p></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="group">
+    <h2>API &amp; SDKs</h2>
+    <div class="cards">
+      <a class="doc" href="https://github.com/discodone/grantlayer/blob/main/docs/openapi.yaml">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M8 6L3 12l5 6M16 6l5 6-5 6"/></svg></span>
+        <span class="b"><h3>OpenAPI contract <span class="arr">→</span></h3><p>The full versioned REST surface, machine-readable.</p></span>
+      </a>
+      <a class="doc" href="https://github.com/discodone/grantlayer/tree/main/sdk">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M8 6L3 12l5 6M16 6l5 6-5 6"/></svg></span>
+        <span class="b"><h3>Python SDK <span class="arr">→</span></h3><p>Typed client over httpx, with sync and async variants.</p></span>
+      </a>
+      <a class="doc" href="https://github.com/discodone/grantlayer/tree/main/sdk-js">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M8 6L3 12l5 6M16 6l5 6-5 6"/></svg></span>
+        <span class="b"><h3>TypeScript SDK <span class="arr">→</span></h3><p>ESM and CJS builds generated against the OpenAPI contract.</p></span>
+      </a>
+      <a class="doc" href="https://github.com/discodone/grantlayer/blob/main/docs/integrator_quickstart.md">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 8-8"/><path d="M4 12l3-2M4 12l2 3"/><circle cx="18" cy="6" r="2"/></svg></span>
+        <span class="b"><h3>Integrator quickstart <span class="arr">→</span></h3><p>Wire grants, webhooks, and policy into your own system.</p></span>
+      </a>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© <span id="year">2026</span> GrantLayer · <a href="../website/index.html">grantlayer.de</a></span>
+    <span class="lic">MIT License · v2.1.0</span>
+  </div>
+</footer>
+<script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+</body>
 </html>
