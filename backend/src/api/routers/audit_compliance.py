@@ -235,7 +235,7 @@ def verify_ndjson_export(ndjson_content: str) -> dict[str, Any]:
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# GL-350 anchor export — single-workspace, full chain, stable seq-ASC order.
+# Anchor export — single-workspace, full chain, stable seq-ASC order.
 # ──────────────────────────────────────────────────────────────────────────
 
 def _load_workspace_entries(session: Any, workspace_id: str) -> list[dict]:

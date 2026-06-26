@@ -1,4 +1,4 @@
-"""Anchor metadata model (GL-350).
+"""Anchor metadata model.
 
 The on-chain payload structurally carries ONLY {h, s, t}:
   h = export-chain final_hash (64-char lowercase hex SHA-256 digest)

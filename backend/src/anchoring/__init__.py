@@ -1,4 +1,4 @@
-"""GrantLayer audit-chain anchoring (GL-350).
+"""GrantLayer audit-chain anchoring.
 
 Pins the externally-exportable audit trail's head hash to a public chain so an
 outside party can prove the trail has not been rewritten since a given time.

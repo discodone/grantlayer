@@ -1,4 +1,4 @@
-"""Cardano anchoring configuration (GL-350).
+"""Cardano anchoring configuration.
 
 Opt-in, fail-closed subsystem config mirroring backend/src/auth/oidc.py
 OIDCConfig: a frozen dataclass with from_env() / is_fully_configured() /
