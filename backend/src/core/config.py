@@ -425,6 +425,12 @@ def startup_errors() -> list[str]:
     from ..auth.oidc import OIDCConfig
     errs.extend(OIDCConfig.from_env().startup_errors())
 
+    # Cardano anchoring startup errors (missing required config when anchoring is enabled).
+    # Imported lazily: anchoring/config.py imports _secret from this module, so a
+    # top-level import here would create a cycle.
+    from ..anchoring.config import CardanoConfig
+    errs.extend(CardanoConfig.from_env().startup_errors())
+
     return errs
 
 

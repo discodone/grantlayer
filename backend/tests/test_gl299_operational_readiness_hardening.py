@@ -206,5 +206,51 @@ class TestGeneric500Handler(unittest.TestCase):
         self.assertIn(Exception, handlers)
 
 
+# ──────────────────────────────────────────────────────────────
+# GL-350b: CardanoConfig wired into the global startup gate
+# ──────────────────────────────────────────────────────────────
+
+class TestCardanoStartupGateIntegration(unittest.TestCase):
+    """The global config.startup_errors() must surface CardanoConfig errors.
+
+    Mirrors the OIDCConfig integration: config.startup_errors() extends with
+    CardanoConfig.from_env().startup_errors() so an enabled-but-misconfigured
+    anchoring setup refuses to boot (third fail-closed gate).
+    """
+
+    _CARDANO_KEYS = [
+        "GRANTLAYER_ENABLE_CARDANO_ANCHORING",
+        "GRANTLAYER_BLOCKFROST_PROJECT_ID",
+        "GRANTLAYER_CARDANO_SIGNING_KEY",
+        "GRANTLAYER_CARDANO_ANCHOR_WORKSPACE_ID",
+    ]
+
+    def setUp(self):
+        self._saved = {k: os.environ.get(k) for k in self._CARDANO_KEYS}
+        for k in self._CARDANO_KEYS:
+            os.environ.pop(k, None)
+
+    def tearDown(self):
+        for k, v in self._saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+    def test_global_startup_errors_includes_cardano_when_enabled_misconfigured(self):
+        from backend.src.core.config import startup_errors
+        os.environ["GRANTLAYER_ENABLE_CARDANO_ANCHORING"] = "true"
+        errs = startup_errors()
+        assert any("GRANTLAYER_BLOCKFROST_PROJECT_ID" in e for e in errs), errs
+        assert any("GRANTLAYER_CARDANO_SIGNING_KEY" in e for e in errs), errs
+        assert any("GRANTLAYER_CARDANO_ANCHOR_WORKSPACE_ID" in e for e in errs), errs
+
+    def test_global_startup_errors_clean_when_cardano_disabled(self):
+        from backend.src.core.config import startup_errors
+        # anchoring disabled (default) → no Cardano entries in the global gate
+        errs = startup_errors()
+        assert not any("CARDANO" in e or "BLOCKFROST" in e for e in errs), errs
+
+
 if __name__ == "__main__":
     unittest.main()
