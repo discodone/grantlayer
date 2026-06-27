@@ -136,6 +136,112 @@ async def email_notification(
         raise
 
 
+async def anchor_audit_chain(ctx: dict, workspace_id: Optional[str] = None) -> dict:
+    """Daily fail-closed Cardano anchor of one workspace's audit-export head.
+
+    The worker process bypasses the app boot gates, so this re-checks full
+    configuration AND chain reachability at job start, and never leaves a partial
+    anchor. The body is synchronous (the anchor read + ORM writes are sync) and is
+    run off the event loop via a thread.
+    """
+    import asyncio
+
+    return await asyncio.to_thread(_anchor_audit_chain_sync, workspace_id)
+
+
+def _anchor_audit_chain_sync(workspace_id: Optional[str]) -> dict:
+    import uuid
+    from datetime import datetime, timezone
+
+    from ..anchoring import writer
+    from ..anchoring.config import CardanoConfig
+    from ..api.routers.audit_compliance import anchor_head
+    from ..core.db import get_session_maker
+    from ..core.orm import AnchorRecord
+
+    config = CardanoConfig.from_env()
+    if workspace_id is None:
+        workspace_id = config.workspace_id
+
+    # Gate 4a — re-check full configuration (worker bypasses the boot gates).
+    if not config.is_fully_configured():
+        logger.warning("anchor_audit_chain: not fully configured — skipping")
+        return {"status": "skipped_not_configured"}
+    # is_fully_configured() guarantees a workspace_id is present.
+    assert workspace_id is not None
+
+    chain = writer.build_chain_context(config)
+
+    # Gate 4b — fail-closed reachability: abort BEFORE writing any 'submitted' row.
+    try:
+        writer.probe_reachable(chain)
+    except Exception as exc:
+        logger.warning("anchor_audit_chain: chain unreachable — aborting: %s", exc)
+        return {"status": "aborted_unreachable", "error": str(exc)}
+
+    now = datetime.now(timezone.utc)
+    day = now.date().isoformat()
+    maker = get_session_maker()
+
+    # Idempotency guard — one anchor per (workspace, UTC day). Abort before submit.
+    with maker() as session:
+        existing = (
+            session.query(AnchorRecord)
+            .filter(
+                AnchorRecord.workspace_id == workspace_id,
+                AnchorRecord.status.in_(("submitted", "confirmed")),
+                AnchorRecord.anchored_at.like(f"{day}%"),
+            )
+            .first()
+        )
+        if existing is not None:
+            logger.info("anchor_audit_chain: already anchored today for %s — skipping", workspace_id)
+            return {"status": "skipped_already_anchored_today"}
+
+        head = anchor_head(session, workspace_id)
+
+    payload = writer.head_to_payload(head, now)
+    record_id = uuid.uuid4().hex
+
+    # Write the 'submitted' row BEFORE submit so a crash mid-submit is recoverable.
+    with maker() as session:
+        session.add(
+            AnchorRecord(
+                id=record_id,
+                workspace_id=workspace_id,
+                final_hash=payload.h,
+                entry_count=payload.s,
+                anchored_at=now.isoformat(),
+                tx_id=None,
+                network=config.network,
+                anchor_label=config.anchor_label,
+                status="submitted",
+            )
+        )
+        session.commit()
+
+    try:
+        tx_id = writer.submit_anchor(chain, config, payload)
+    except Exception as exc:
+        logger.error("anchor_audit_chain: submit failed — marking failed: %s", exc)
+        with maker() as session:
+            row = session.get(AnchorRecord, record_id)
+            if row is not None:
+                row.status = "failed"
+                session.commit()
+        return {"status": "submit_failed", "error": str(exc)}
+
+    # Confirm only after the chain acknowledges the submission.
+    with maker() as session:
+        row = session.get(AnchorRecord, record_id)
+        if row is not None:
+            row.status = "confirmed"
+            row.tx_id = tx_id
+            session.commit()
+    logger.info("anchor_audit_chain: confirmed %s tx=%s", workspace_id, tx_id)
+    return {"status": "confirmed", "tx_id": tx_id, "record_id": record_id}
+
+
 async def _move_to_dlq(ctx: dict, job_name: str, data: dict) -> None:
     """Store a failed job in the dead-letter queue (Redis hash)."""
     import json

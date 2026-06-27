@@ -418,3 +418,31 @@ class WebhookSubscription(Base):
         Index("idx_webhook_subscriptions_tenant_id", "tenant_id"),
         Index("idx_webhook_subscriptions_active", "tenant_id", "active"),
     )
+
+
+class AnchorRecord(Base):
+    """Bookkeeping for one on-chain anchor of a workspace's audit-export head.
+
+    PII-PREVENTION INVARIANT: exactly these 9 columns, no foreign keys to
+    grants/applications, no free-text. It carries only the same {h, s, t} the
+    chain payload carries (final_hash/entry_count/anchored_at) plus the chain
+    bookkeeping needed to make the daily job idempotent (tx_id, network,
+    anchor_label, status). ``workspace_id`` is an opaque uuid, not PII.
+    """
+
+    __tablename__ = "anchor_records"
+
+    id = Column(Text, primary_key=True)
+    workspace_id = Column(Text, nullable=False)
+    final_hash = Column(Text, nullable=False)
+    entry_count = Column(Integer, nullable=False)
+    anchored_at = Column(Text, nullable=False)
+    tx_id = Column(Text)
+    network = Column(Text, nullable=False)
+    anchor_label = Column(Integer, nullable=False)
+    status = Column(Text, nullable=False)
+
+    __table_args__ = (
+        Index("idx_anchor_records_workspace_id", "workspace_id"),
+        Index("idx_anchor_records_status", "workspace_id", "status"),
+    )
