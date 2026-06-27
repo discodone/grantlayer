@@ -53,6 +53,55 @@ services:
     networks:
       - grantlayer
 
+  # ── ARQ worker (background jobs + daily Cardano anchor cron) ──
+  # Same image/env as `api`, but runs the ARQ worker instead of the HTTP server.
+  # The anchor cron self-gates at entry (fail-closed), so it stays dormant unless
+  # GRANTLAYER_ENABLE_CARDANO_ANCHORING=true AND the two secrets below are set.
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: grantlayer-worker
+    command: ["arq", "backend.src.workers.worker.WorkerSettings"]
+    environment:
+      # Cloned from the api service so DB/Redis/JWT resolution is identical.
+      - GRANTLAYER_RUNTIME_MODE=${GRANTLAYER_RUNTIME_MODE:-production}
+      - GRANTLAYER_HOST=0.0.0.0
+      - GRANTLAYER_PORT=8765
+      - GRANTLAYER_ADMIN_TOKEN=${GRANTLAYER_ADMIN_TOKEN:-}
+      - GRANTLAYER_REQUIRE_ADMIN_TOKEN=${GRANTLAYER_REQUIRE_ADMIN_TOKEN:-true}
+      - GRANTLAYER_JWT_PRIVATE_KEY=${GRANTLAYER_JWT_PRIVATE_KEY:-}
+      - GRANTLAYER_JWT_PUBLIC_KEY=${GRANTLAYER_JWT_PUBLIC_KEY:-}
+      - GRANTLAYER_JWT_SECRET=${GRANTLAYER_JWT_SECRET:-}
+      - GRANTLAYER_DATABASE_URL=${GRANTLAYER_DATABASE_URL:-postgresql://${GRANTLAYER_POSTGRES_USER:-grantlayer}:${GRANTLAYER_POSTGRES_PASSWORD:-changeme_in_env}@db:5432/${GRANTLAYER_POSTGRES_DB:-grantlayer}}
+      - GRANTLAYER_DB=${GRANTLAYER_DB:-/app/data/grantlayer.db}
+      - GRANTLAYER_REDIS_URL=${GRANTLAYER_REDIS_URL:-redis://redis:6379}
+      - GRANTLAYER_LOG_LEVEL=${GRANTLAYER_LOG_LEVEL:-INFO}
+      - GRANTLAYER_ENABLE_OPERATOR_MODEL=${GRANTLAYER_ENABLE_OPERATOR_MODEL:-true}
+      - GRANTLAYER_ENABLE_DEMO_ENDPOINTS=${GRANTLAYER_ENABLE_DEMO_ENDPOINTS:-false}
+      # Cardano anchoring (opt-in, fail-closed). Non-secret knobs; the cron is
+      # registered at boot from these and self-gates at runtime.
+      - GRANTLAYER_ENABLE_CARDANO_ANCHORING=${GRANTLAYER_ENABLE_CARDANO_ANCHORING:-false}
+      - GRANTLAYER_CARDANO_NETWORK=${GRANTLAYER_CARDANO_NETWORK:-preprod}
+      - GRANTLAYER_CARDANO_ANCHOR_WORKSPACE_ID=${GRANTLAYER_CARDANO_ANCHOR_WORKSPACE_ID:-}
+      - GRANTLAYER_CARDANO_ANCHOR_CRON_HOUR=${GRANTLAYER_CARDANO_ANCHOR_CRON_HOUR:-2}
+      - GRANTLAYER_CARDANO_ANCHOR_CRON_MINUTE=${GRANTLAYER_CARDANO_ANCHOR_CRON_MINUTE:-0}
+      # pycardano 0.19.2 must use the cbor2 C backend, not the pure-Python fallback.
+      - CBOR_C_EXTENSION=1
+    secrets:
+      - GRANTLAYER_BLOCKFROST_PROJECT_ID
+      - GRANTLAYER_CARDANO_SIGNING_KEY
+    volumes:
+      - grantlayer-data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - grantlayer
+
   # ── Nginx TLS reverse proxy ───────────────────────────────────
   # Requires certs in nginx/certs/ — run ./nginx/generate-certs.sh first.
   nginx:
@@ -140,6 +189,15 @@ services:
 volumes:
   grantlayer-data:
   grantlayer-postgres-data:
+
+# Docker secrets mounted at /run/secrets/<NAME>; resolved by the SecretResolver
+# file source (Vault > /run/secrets file > env). Empty files = fail-closed skip.
+# See secrets/README.md. Replace the placeholder files with real values to anchor.
+secrets:
+  GRANTLAYER_BLOCKFROST_PROJECT_ID:
+    file: ./secrets/blockfrost_project_id
+  GRANTLAYER_CARDANO_SIGNING_KEY:
+    file: ./secrets/cardano_signing_key
 
 networks:
   grantlayer:

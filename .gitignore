@@ -32,7 +32,13 @@ backend/data/*.db-shm
 .env
 .env.*
 !.env.example
-secrets/
+# Ignore ALL secret contents; track ONLY docs + an empty .gitkeep so the dir
+# exists on a fresh clone. The actual secret data files (blockfrost_project_id,
+# cardano_signing_key) are NEVER tracked — an operator creates them locally
+# before `docker compose up`. See secrets/README.md.
+secrets/*
+!secrets/README.md
+!secrets/.gitkeep
 private/
 keys/
 certs/
