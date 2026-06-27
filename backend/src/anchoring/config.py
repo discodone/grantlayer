@@ -28,7 +28,9 @@ class CardanoConfig:
     workspace_id: Optional[str]
     network: str = "preprod"
     anchor_label: int = ANCHOR_LABEL
-    interval_seconds: int = 86400
+    # Daily cron schedule (NOT a polling interval). Default 02:00 UTC.
+    cron_hour: int = 2
+    cron_minute: int = 0
 
     @classmethod
     def from_env(cls) -> "CardanoConfig":
@@ -52,7 +54,8 @@ class CardanoConfig:
             workspace_id=_env_str("GRANTLAYER_CARDANO_ANCHOR_WORKSPACE_ID") or None,
             network=_env_str("GRANTLAYER_CARDANO_NETWORK", "preprod"),
             anchor_label=_env_int("GRANTLAYER_CARDANO_ANCHOR_LABEL", ANCHOR_LABEL),
-            interval_seconds=_env_int("GRANTLAYER_CARDANO_ANCHOR_INTERVAL_SECONDS", 86400),
+            cron_hour=_env_int("GRANTLAYER_CARDANO_ANCHOR_CRON_HOUR", 2),
+            cron_minute=_env_int("GRANTLAYER_CARDANO_ANCHOR_CRON_MINUTE", 0),
         )
 
     def is_fully_configured(self) -> bool:

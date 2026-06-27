@@ -32,7 +32,8 @@ class TestCardanoConfig(unittest.TestCase):
         "GRANTLAYER_CARDANO_ANCHOR_WORKSPACE_ID",
         "GRANTLAYER_CARDANO_NETWORK",
         "GRANTLAYER_CARDANO_ANCHOR_LABEL",
-        "GRANTLAYER_CARDANO_ANCHOR_INTERVAL_SECONDS",
+        "GRANTLAYER_CARDANO_ANCHOR_CRON_HOUR",
+        "GRANTLAYER_CARDANO_ANCHOR_CRON_MINUTE",
     ]
 
     def setUp(self):
@@ -86,6 +87,33 @@ class TestCardanoConfig(unittest.TestCase):
         from backend.src.anchoring.config import CardanoConfig
         cfg = CardanoConfig.from_env()
         assert cfg.anchor_label == 923350
+
+    # 5 ──────────────────────────────────────────────────────────────────
+    def test_cron_schedule_fields_default_to_0200_utc(self):
+        # The schedule is a daily cron, NOT a polling interval. Default 02:00 UTC.
+        from backend.src.anchoring.config import CardanoConfig
+        cfg = CardanoConfig.from_env()
+        assert cfg.cron_hour == 2
+        assert cfg.cron_minute == 0
+
+    # 6 ──────────────────────────────────────────────────────────────────
+    def test_cron_schedule_overridable_via_env(self):
+        from backend.src.anchoring.config import CardanoConfig
+        os.environ["GRANTLAYER_CARDANO_ANCHOR_CRON_HOUR"] = "5"
+        os.environ["GRANTLAYER_CARDANO_ANCHOR_CRON_MINUTE"] = "30"
+        cfg = CardanoConfig.from_env()
+        assert cfg.cron_hour == 5
+        assert cfg.cron_minute == 30
+
+    # 7 ──────────────────────────────────────────────────────────────────
+    def test_interval_seconds_is_gone(self):
+        # The config must not claim a cadence it does not honor: the polling
+        # interval was replaced by a cron schedule (cron_hour/cron_minute).
+        from backend.src.anchoring.config import CardanoConfig
+        cfg = CardanoConfig.from_env()
+        assert not hasattr(cfg, "interval_seconds"), (
+            "interval_seconds must not exist — it was replaced by cron_hour/cron_minute"
+        )
 
 
 if __name__ == "__main__":
