@@ -133,10 +133,9 @@ async def export_user_data(
         workspace_id=SYSTEM_WORKSPACE,
         scope="system",
     )
-    try:
-        await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
-    except Exception:
-        pass
+    # Export commits no mutation, but the audit write must not be silently swallowed:
+    # a failure surfaces to the caller rather than logging an export that was never recorded.
+    await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
 
     return {
         "job_id": job_id,
@@ -180,8 +179,6 @@ async def erase_user_data(
         {"name": anon_name, "uid": user_id},
     )
 
-    await db.commit()
-
     audit_evt = AuditEvent(
         id=str(uuid.uuid4()),
         timestamp=now,
@@ -194,10 +191,10 @@ async def erase_user_data(
         workspace_id=SYSTEM_WORKSPACE,
         scope="system",
     )
-    try:
-        await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
-    except Exception:
-        pass
+    # Audit on the SAME request session as the anonymization UPDATEs, before the single
+    # teardown commit. If the audit write fails the erasure rolls back — irreversible PII
+    # anonymization must never be committed without its audit record.
+    await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
 
     return {
         "job_id": job_id,

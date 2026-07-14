@@ -105,8 +105,13 @@ class TestGdprMissedLines:
                 )
         assert resp.status_code in (200, 202)
 
-    def test_export_audit_event_exception_silenced(self):
-        """Lines 81-82: db.run_sync(lambda: append_event()) raises → except pass."""
+    def test_export_audit_event_exception_surfaces(self):
+        """A failing audit write on export must SURFACE (500), not be swallowed.
+
+        The GDPR export audit write was previously wrapped in ``except: pass`` so a
+        lost audit event was invisible. It is now a plain await — an audit-store
+        failure propagates rather than logging an export that was never recorded.
+        """
         token = _make_token()
         client = _make_client()
         with patch.dict(os.environ, _GDPR_ENV):
@@ -118,10 +123,16 @@ class TestGdprMissedLines:
                     "/v1/users/cov-user-330/export-data",
                     headers={"Authorization": f"Bearer {token}"},
                 )
-        assert resp.status_code in (200, 202)
+        assert resp.status_code == 500
 
-    def test_erase_audit_event_exception_silenced(self):
-        """Lines 140-141: db.run_sync(lambda: append_event()) raises in erasure → except pass."""
+    def test_erase_audit_event_exception_surfaces(self):
+        """A failing audit write on erasure must SURFACE (500) and roll the erasure back.
+
+        Irreversible PII anonymization previously committed before a silently
+        swallowed audit write. The audit event now rides the same request session,
+        so an audit-store failure rolls the anonymization back — never erase without
+        an audit record. See test_audit_write_atomicity for the PII-intact assertion.
+        """
         token = _make_token()
         client = _make_client()
         with patch.dict(os.environ, _GDPR_ENV):
@@ -133,7 +144,7 @@ class TestGdprMissedLines:
                     "/v1/users/cov-user-330/erase",
                     headers={"Authorization": f"Bearer {token}"},
                 )
-        assert resp.status_code in (200, 202)
+        assert resp.status_code == 500
 
 
 # ── deps.py lines 105, 128, 129, 130, 150, 228, 241, 251 ─────────────────────

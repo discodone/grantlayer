@@ -122,8 +122,6 @@ async def create_api_key(
             "now": now,
         },
     )
-    await db.commit()
-
     audit_evt = AuditEvent(
         id=str(uuid.uuid4()),
         timestamp=now,
@@ -135,10 +133,10 @@ async def create_api_key(
         reason=f"API key '{body.name}' created",
         workspace_id=workspace_id,
     )
-    try:
-        await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
-    except Exception:
-        pass
+    # Write the audit event on the SAME request session as the INSERT above, before
+    # the single get_async_db teardown commit. If the audit write fails the whole
+    # transaction rolls back — an api key is never created without its audit record.
+    await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
 
     return {
         "id": key_id,
@@ -231,8 +229,6 @@ async def revoke_api_key(
         text("UPDATE api_keys SET revoked_at=:now WHERE id=:id"),
         {"now": now, "id": key_id},
     )
-    await db.commit()
-
     audit_evt = AuditEvent(
         id=str(uuid.uuid4()),
         timestamp=now,
@@ -244,10 +240,9 @@ async def revoke_api_key(
         reason=f"API key '{row['name']}' revoked",
         workspace_id=row["workspace_id"] or payload.get("workspace_id") or "default",
     )
-    try:
-        await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
-    except Exception:
-        pass
+    # Audit on the same request session as the UPDATE; teardown commits both atomically.
+    # A failed audit write rolls back the revocation rather than leaving it unrecorded.
+    await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
 
     return {"id": key_id, "revokedAt": now, "status": "revoked"}
 
