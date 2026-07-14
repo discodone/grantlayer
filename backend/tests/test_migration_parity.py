@@ -274,5 +274,179 @@ class TestMigrationParityPostgresSmoke(unittest.TestCase):
             conn.close()
 
 
+def _pg_point_app_layer_at(dsn: str):
+    """Point the application DB layer (core.db + audit_log) at ``dsn``.
+
+    ``audit_log`` snapshots ``DB_BACKEND`` at import and ``core.db`` caches its
+    engine on module globals, so both are patched in place — a module reload
+    would rebind audit_log's imported helpers to a stale module object. Returns a
+    zero-arg ``restore()`` that reverts every patched global.
+    """
+    from backend.src.audit import audit_log
+    from backend.src.core import db
+
+    saved = (
+        db.DB_BACKEND,
+        db.DB_PATH_OR_URL,
+        db._sa_engine,
+        db._engine_url,
+        audit_log.DB_BACKEND,
+    )
+    db.DB_BACKEND = "postgres"
+    db.DB_PATH_OR_URL = dsn
+    db._sa_engine = None
+    db._engine_url = None
+    audit_log.DB_BACKEND = "postgres"
+
+    def restore() -> None:
+        (
+            db.DB_BACKEND,
+            db.DB_PATH_OR_URL,
+            db._sa_engine,
+            db._engine_url,
+            audit_log.DB_BACKEND,
+        ) = saved
+
+    return restore
+
+
+@unittest.skipUnless(_PG_DSN and _alembic_importable(), "no disposable PG DSN provided")
+class TestMigrationParityPostgresFunctional(unittest.TestCase):
+    """The AUTHORITATIVE (Alembic) PostgreSQL schema must not merely CONTAIN the
+    audit_events append-only objects — it must ENFORCE them and support the
+    seq-dependent features the application depends on.
+
+    Structural presence is verified by the smoke test above; this drives the real
+    write / verify / paginate code paths against a pure ``alembic upgrade head``
+    schema, so a future revision that drops the seq column, drops an immutability
+    trigger, or otherwise regresses their behaviour fails this test loudly:
+
+      (a) seq is populated on insert and strictly increasing
+      (b) UPDATE on an audit_events row is rejected by the DB
+      (c) DELETE on an audit_events row is rejected by the DB
+      (d) verify_audit_hash_chain validates against this schema
+      (e) cursor pagination over seq pages the full set with no overlap or gap
+    """
+
+    N = 5
+
+    def setUp(self):
+        # Provision the authoritative schema at head on the disposable PG.
+        env = dict(os.environ)
+        env["DATABASE_URL"] = _PG_DSN
+        env.pop("GRANTLAYER_DATABASE_URL", None)
+        r = subprocess.run(
+            [sys.executable, "-m", "alembic", "-c", _ALEMBIC_INI, "upgrade", "head"],
+            cwd=_ROOT, env=env, capture_output=True, text=True,
+        )
+        self.assertEqual(r.returncode, 0, f"alembic upgrade failed:\n{r.stdout}\n{r.stderr}")
+
+        # Start from an empty audit_events so the chain and seq assertions are
+        # deterministic. TRUNCATE bypasses the row-level immutability triggers
+        # (they fire BEFORE UPDATE/DELETE, not on TRUNCATE).
+        import psycopg2
+
+        conn = psycopg2.connect(_PG_DSN)
+        conn.autocommit = True
+        conn.cursor().execute("TRUNCATE audit_events")
+        conn.close()
+
+        self._restore = _pg_point_app_layer_at(_PG_DSN)
+
+    def tearDown(self):
+        from backend.src.core import db
+
+        try:
+            if db._sa_engine is not None:
+                db._sa_engine.dispose()
+        finally:
+            self._restore()
+
+    def _expect_rejected(self, sql: str, params: tuple) -> None:
+        import psycopg2
+
+        conn = psycopg2.connect(_PG_DSN)
+        conn.autocommit = True
+        try:
+            with self.assertRaises(psycopg2.Error) as ctx:
+                conn.cursor().execute(sql, params)
+            self.assertIn("immutable", str(ctx.exception).lower())
+        finally:
+            conn.close()
+
+    def test_alembic_pg_audit_events_functional_parity(self):
+        import psycopg2
+
+        from backend.src.audit import audit_log
+        from backend.src.core.models import AuditEvent
+
+        # Write a real hash-chained run through the production append path. On the
+        # PostgreSQL path seq is assigned by the column DEFAULT (nextval), so it
+        # exercises the schema's own sequence, not a Python-computed value.
+        events = []
+        for i in range(self.N):
+            ev = AuditEvent(
+                subject_id=f"s{i}", role="operator", action="read", resource=f"file:{i}",
+                approved=True, reason="parity-func",
+                timestamp=f"2026-05-0{i + 1}T00:00:00.000000Z",
+                tenant_id="demo", workspace_id="ws-parity",
+            )
+            audit_log.append_event(ev)
+            events.append(ev)
+
+        conn = psycopg2.connect(_PG_DSN)
+        conn.autocommit = True
+        cur = conn.cursor()
+        cur.execute("SELECT id, seq FROM audit_events ORDER BY seq ASC")
+        rows = cur.fetchall()
+        conn.close()
+        seqs = [r[1] for r in rows]
+
+        # (a) seq populated on insert and strictly increasing (unique + ordered).
+        with self.subTest("seq populated and strictly increasing"):
+            self.assertEqual(len(rows), self.N)
+            self.assertTrue(all(s is not None for s in seqs), f"NULL seq present: {seqs}")
+            self.assertEqual(seqs, sorted(seqs), f"seq not ordered: {seqs}")
+            self.assertEqual(len(set(seqs)), len(seqs), f"seq not unique: {seqs}")
+
+        # (b) UPDATE rejected by the DB immutability trigger.
+        with self.subTest("UPDATE rejected"):
+            self._expect_rejected(
+                "UPDATE audit_events SET reason='tampered' WHERE id=%s", (events[0].id,)
+            )
+
+        # (c) DELETE rejected by the DB immutability trigger.
+        with self.subTest("DELETE rejected"):
+            self._expect_rejected(
+                "DELETE FROM audit_events WHERE id=%s", (events[0].id,)
+            )
+
+        # (d) hash-chain verification passes against the Alembic PG schema.
+        with self.subTest("verify_audit_hash_chain valid"):
+            report = audit_log.verify_audit_hash_chain()
+            self.assertTrue(report["valid"], f"chain invalid: {report}")
+            self.assertEqual(report["checked"], self.N)
+
+        # (e) cursor pagination over seq returns the full set, newest-first, with
+        #     no overlap and no gap. list_events orders DESC and treats the cursor
+        #     as "seq < after_seq".
+        with self.subTest("cursor pagination pages correctly"):
+            collected = []
+            after_seq = None
+            for _ in range(self.N + 1):  # +1 guards against a non-terminating cursor
+                page = audit_log.list_events(
+                    limit=2, tenant_id="demo", workspace_id="ws-parity", after_seq=after_seq
+                )
+                if not page:
+                    break
+                collected.extend(page)
+                after_seq = page[-1].seq
+            paged_seqs = [e.seq for e in collected]
+            self.assertEqual(
+                paged_seqs, sorted(seqs, reverse=True), f"pagination order wrong: {paged_seqs}"
+            )
+            self.assertEqual(len(set(paged_seqs)), self.N, "pagination produced overlap/gap")
+
+
 if __name__ == "__main__":
     unittest.main()

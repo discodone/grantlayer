@@ -26,6 +26,30 @@ The two PostgreSQL runtime parity bugs enumerated below (sync-engine URL
 `ArgumentError`; `workspace_id` `NOT NULL` enforced only on PostgreSQL) are
 separate and remain open.
 
+## Verified closed 2026-07-14 — audit_events seq + immutability triggers on Alembic PG
+
+**Item:** a pure Alembic-provisioned PostgreSQL database was reported to be
+missing `audit_events.seq` and the `no_update`/`no_delete` immutability triggers,
+leaving the production audit log without DB-level append-only protection and
+breaking `verify_audit_hash_chain` / cursor pagination.
+
+**Status: RESOLVED by revision `d4e5f6a7b8c9` (commit `32f0e5e`).** Confirmed
+empirically on throwaway PostgreSQL 16 containers: at the pre-catch-up revision
+`c3d4e5f6a7b8` the drift is real (`seq` absent, zero triggers); at head
+(`d4e5f6a7b8c9`, `alembic upgrade head`) `audit_events` has `seq` (+ backing
+sequence + index) and both immutability triggers, and functionally UPDATE and
+DELETE are rejected by the DB, `verify_audit_hash_chain` validates, and cursor
+pagination over `seq` pages correctly. A permanent PG-only regression test
+(`backend/tests/test_migration_parity.py::TestMigrationParityPostgresFunctional`,
+gated on `GRANTLAYER_PARITY_PG_DSN`) pins these five guarantees and fails loudly
+if a future revision regresses any of them. No new migration was required; a
+production DB provisioned before this revision only needs `alembic upgrade head`.
+
+Known/intentional: on a fresh DB the first inserted row gets `seq = 2` (the
+catch-up runs `setval(sequence, MAX(seq) + 1)` on an empty table). This is not
+fixed — the seq contract is strict monotonicity + uniqueness, which holds; the
+absolute starting value is irrelevant to ordering, verification, and pagination.
+
 ## Summary
 
 The PostgreSQL 16 Full Suite CI job had never run to completion before. Clearing
