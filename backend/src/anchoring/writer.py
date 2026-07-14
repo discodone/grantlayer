@@ -76,7 +76,9 @@ def submit_anchor(ctx: Any, config: CardanoConfig, payload: AnchorPayload) -> st
     sk = load_signing_key(config.signing_key or "")
     network = Network.MAINNET if config.network == "mainnet" else Network.TESTNET
     vk = PaymentVerificationKey.from_signing_key(sk)
-    address = Address(vk.hash(), network)
+    # Address(payment_part, staking_part, network): network MUST be keyword — a
+    # positional 2nd arg lands in staking_part and pycardano rejects it.
+    address = Address(vk.hash(), network=network)
 
     builder = TransactionBuilder(ctx)
     builder.add_input_address(address)  # required: builder selects UTXOs to pay the fee
