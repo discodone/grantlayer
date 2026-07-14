@@ -6,6 +6,7 @@ psycopg2 is lazy-imported only when a postgres:// URL is configured.
 
 from __future__ import annotations
 
+import logging
 import os
 import sqlite3
 import threading
@@ -19,6 +20,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import Session, sessionmaker
 
 from .. import migrations
+
+_logger = logging.getLogger("grantlayer.db")
 
 # ──────────────────────────────────────────────────────────────
 # SQLAlchemy engine (ORM layer)
@@ -404,6 +407,27 @@ def _close_pg_pool() -> None:
         _pg_pool = None
 
 
+def _alembic_owns_schema(conn: Any) -> bool:
+    """True if an Alembic version table is present.
+
+    Alembic is the authoritative production provisioner; the file-based runner is
+    frozen for local/SQLite development and test only. When Alembic owns the
+    schema the runner must not touch it — it would otherwise refuse (fail-closed)
+    and abort boot.
+    """
+    if getattr(conn, "backend", "sqlite") == "postgres":
+        row = conn.execute(
+            "SELECT 1 FROM information_schema.tables WHERE table_name = %s",
+            ("alembic_version",),
+        ).fetchone()
+    else:
+        row = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name = ?",
+            ("alembic_version",),
+        ).fetchone()
+    return row is not None
+
+
 def init_db() -> None:
     if DB_BACKEND == "sqlite" and DB_PATH_OR_URL != ":memory:" and not DB_PATH_OR_URL.startswith("file::memory:"):
         db_dir = os.path.dirname(os.path.abspath(DB_PATH_OR_URL))
@@ -411,7 +435,13 @@ def init_db() -> None:
             os.makedirs(db_dir, exist_ok=True)
     conn = get_conn()
     try:
-        migrations.run_migrations(conn)
+        if _alembic_owns_schema(conn):
+            _logger.info(
+                "Alembic-provisioned schema detected; skipping the dev/test "
+                "migration runner (Alembic is authoritative for this database)."
+            )
+        else:
+            migrations.run_migrations(conn)
         # Bootstrap operators if needed
         from ..auth import operators
 

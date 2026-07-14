@@ -140,16 +140,16 @@ jobs:
       - name: Initialise schema
         env:
           # Ephemeral CI-only test database credential; not a production secret.
+          DATABASE_URL: postgresql://grantlayer:grantlayer_test_password@localhost:5432/grantlayer
           GRANTLAYER_DATABASE_URL: postgresql://grantlayer:grantlayer_test_password@localhost:5432/grantlayer
           GRANTLAYER_RUNTIME_MODE: test
           GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
         run: |
-          python3 -c "
-          import sys; sys.path.insert(0, 'backend')
-          from backend.src.core.db import init_db
-          init_db()
-          print('Schema initialised.')
-          "
+          # Provision via Alembic — the authoritative production path. The
+          # file-based runner is frozen dev/test-only (and does not cleanly
+          # provision PostgreSQL), so CI exercises the real prod provisioning.
+          python3 -m alembic -c backend/alembic.ini upgrade head
+          echo "Schema initialised via Alembic."
 
       - name: Run full functional test suite (PostgreSQL)
         env:
