@@ -206,6 +206,24 @@ def _validate_gl032_baseline(conn: Any) -> None:
 # Public API
 # ──────────────────────────────────────────────────────────────
 
+_ALEMBIC_COLLISION_MESSAGE = (
+    "Two migration systems detected on this database. The Alembic version table "
+    "(alembic_version) exists, but the runner's schema_migrations tracker is empty "
+    "while the application schema is already present. The runner refuses to mark its "
+    "migrations as applied on an Alembic-provisioned database: doing so would record "
+    "every migration as done without executing it, silently leaving the schema missing "
+    "whatever the runner adds that Alembic does not (for example the audit-immutability "
+    "triggers and the audit sequence column).\n"
+    "Resolve this in one of two ways:\n"
+    "  1. Make Alembic authoritative — port every runner migration's effect into the "
+    "Alembic revisions so parity holds, and provision this database with Alembic only "
+    "(do not run the file-based runner against it); or\n"
+    "  2. Provision this database with the runner from an empty database (no Alembic), "
+    "so the runner owns the complete schema.\n"
+    "The application will not start until exactly one migration system owns this database."
+)
+
+
 def run_migrations(conn: Any) -> None:
     """Run all pending migrations in order.
 
@@ -222,6 +240,13 @@ def run_migrations(conn: Any) -> None:
     # runner was introduced; mark all known migrations applied so incremental
     # runs can proceed from a clean state.
     if not applied and _table_exists(conn, "grants"):
+        # Fail-closed guard against a two-migration-system collision. If the
+        # Alembic version table is present, this database was provisioned by
+        # Alembic. Marking the runner's migrations "applied" here would record
+        # them as done without executing them, silently leaving out whatever the
+        # runner adds that Alembic does not. Refuse rather than corrupt the DB.
+        if _table_exists(conn, "alembic_version"):
+            raise RuntimeError(_ALEMBIC_COLLISION_MESSAGE)
         _validate_gl032_baseline(conn)
         for version, _filepath in _discovery():
             _mark_applied(conn, version)
