@@ -281,6 +281,25 @@ server {
 
 ## 5. First Start and Bootstrap Operator
 
+### Provision the schema first (PostgreSQL / production)
+
+On PostgreSQL you **must** provision the schema with Alembic before the first
+start:
+
+```bash
+docker compose run --rm api \
+  python3 -m alembic -c backend/alembic.ini upgrade head
+# or, outside Docker:  make migrate
+```
+
+Alembic is the only supported provisioner for a production database. The
+file-based migration runner under `backend/src/migrations/` is frozen and
+dev/test-only (SQLite); it does not cleanly provision PostgreSQL. `init_db()`
+detects an Alembic-provisioned schema (`alembic_version` table) and defers to it,
+so once you have run `alembic upgrade head` the container will not touch the
+schema. For local SQLite evaluation the runner still auto-provisions on first
+start and no separate step is needed.
+
 On a fresh database, GrantLayer automatically creates one operator when `GRANTLAYER_BOOTSTRAP_OPERATOR_TOKEN` is set.
 
 ### Step-by-step
@@ -667,6 +686,37 @@ docker compose restart api
 
 ---
 
+### API fails to start — `Two migration systems detected on this database`
+
+**Cause:** The frozen file-based migration runner was pointed at a database that
+Alembic already provisioned (an `alembic_version` table is present, but the
+runner's `schema_migrations` tracker is empty while the schema already exists).
+Rather than mark its migrations applied without executing them — which would
+silently leave the schema missing whatever the runner adds that Alembic does not,
+such as the audit-immutability triggers and the `audit_events.seq` column — the
+runner refuses to start. This is the fail-loud guard, not data loss: nothing was
+written.
+
+**Fix — make exactly one migration system own the database:**
+
+1. **Make Alembic authoritative (recommended for production).** Provision and
+   upgrade only with Alembic and never run the file-based runner against this
+   database:
+
+   ```bash
+   docker compose run --rm api \
+     python3 -m alembic -c backend/alembic.ini upgrade head
+   ```
+
+   With an `alembic_version` table present, `init_db()` detects it and skips the
+   runner on subsequent starts.
+
+2. **Let the runner own an empty database (local/dev, SQLite).** Start the runner
+   from a database with no Alembic version table so it provisions the complete
+   schema itself. Do not use this path for PostgreSQL/production.
+
+---
+
 ### `401 jwt_invalid` — tokens being rejected
 
 **Possible causes and fixes:**
@@ -733,7 +783,7 @@ The repository ships three GitHub Actions jobs in `.github/workflows/postgres-ci
 | `postgres-integration` | every push/PR | PostgreSQL 16 | Single immutability integration test |
 | `postgresql-integration` | after `sqlite-unit-tests` passes | PostgreSQL 16 | Full functional suite against real Postgres |
 
-The `postgresql-integration` job starts a **temporary, ephemeral** PostgreSQL 16 container (credentials are CI-only and never used in production), runs `init_db()` to apply all schema migrations, then executes the full pytest functional suite with a 5-minute per-test timeout.
+The `postgresql-integration` job starts a **temporary, ephemeral** PostgreSQL 16 container (credentials are CI-only and never used in production), provisions the schema with `alembic upgrade head` — the authoritative production path, not the frozen dev/test runner — then executes the full pytest functional suite with a 5-minute per-test timeout.
 
 ### Running PostgreSQL tests locally
 

@@ -54,11 +54,24 @@ For production, replace these with a real cert (e.g. Let's Encrypt).
 
 ---
 
-## 3. Start the stack
+## 3. Provision the database and start the stack
+
+PostgreSQL is the default backend, and the app does **not** self-provision a
+production database. Apply the schema with Alembic before starting the API —
+skip this and the API container fails to start on a fresh database:
 
 ```bash
+# Start PostgreSQL, then apply migrations with Alembic (the authoritative path)
+docker compose up -d db
+docker compose run --rm api python3 -m alembic -c backend/alembic.ini upgrade head
+
+# Start the full stack
 docker compose up -d
 ```
+
+> **SQLite-only local dev** (`docker compose -f docker-compose.dev.yml up -d`, or
+> `GRANTLAYER_DATABASE_URL=""`) needs no separate step — the bundled dev runner
+> auto-provisions SQLite on first start.
 
 Services started:
 | Service | URL |

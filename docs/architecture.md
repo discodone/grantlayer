@@ -75,7 +75,24 @@ Twelve SQLAlchemy ORM classes: `Grant`, `GrantRequest`, `GrantExecution`,
 `Operator`, `AuditEvent`, `Workspace`, `WorkspaceMember`, `ApiKey`, `Webhook`,
 `WebhookDelivery`, `Challenge`, `AuditSeq`.
 
-Schema migrations are managed by Alembic (`alembic/`).
+### Schema migrations
+
+Alembic is authoritative for provisioning and upgrading a production database.
+The revisions live in `backend/migrations_alembic/` (config `backend/alembic.ini`);
+`make migrate` — equivalently `alembic upgrade head` — is the **only** supported
+way to provision or upgrade a production (PostgreSQL) database.
+
+A second, file-based migration runner exists under `backend/src/migrations/`. It
+is **dev/test-only, SQLite-only, and frozen** — no new runner migrations are
+added. `init_db()` runs it only when Alembic does **not** own the schema; once an
+`alembic_version` table is present, `init_db()` detects it and skips the runner,
+so it no longer provisions Alembic-managed databases. If the runner ever finds an
+Alembic-provisioned database, it fails loud (`RuntimeError`) rather than silently
+diverging.
+
+A directional parity test — `backend/tests/test_migration_parity.py` — fails CI
+if a runner migration ever adds an object Alembic lacks (Alembic is allowed to be
+ahead; the frozen runner never received `anchor_records`).
 
 ---
 

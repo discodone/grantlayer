@@ -1,5 +1,13 @@
 # GL-202 — Persistence / PostgreSQL / Migration Readiness
 
+> **Stale — historical record only.** This is a dated GL-202 review artifact. Its
+> description of the file-based migration runner as the PostgreSQL provisioning
+> path has been **superseded** by the Alembic-authoritative deployment contract:
+> Alembic provisions and upgrades production databases, and the file-based runner
+> is frozen dev/test-only (SQLite). See `docs/architecture.md` ("Schema
+> migrations") and `DEPLOYMENT.md` §5 for the current contract. This document is
+> kept for history and is not maintained.
+
 **Issue ID:** GL-202
 **Branch:** `gl-202-persistence-postgres-migration-readiness`
 **Status:** Internal / Developer Preview

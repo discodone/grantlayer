@@ -39,6 +39,12 @@ git clone https://github.com/Discodone/grantlayer.git
 cd grantlayer
 cp .env.example .env          # set GRANTLAYER_JWT_SECRET
 ./nginx/generate-certs.sh     # self-signed TLS for local dev
+
+# Provision the schema with Alembic. PostgreSQL is the default backend and the
+# app does not self-provision it — skip this and the API fails to start.
+docker compose up -d db
+docker compose run --rm api python3 -m alembic -c backend/alembic.ini upgrade head
+
 docker compose up -d
 curl -k https://localhost/health
 ```

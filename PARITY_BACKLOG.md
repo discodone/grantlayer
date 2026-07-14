@@ -2,6 +2,30 @@
 
 **Status:** open · **Opened:** 2026-06-23 · **Tracking:** no external tracker (repo-internal)
 
+## Landed 2026-07-14 — migration-system drift closed
+
+Three fixes reconciled the two migration systems and made the deployment
+contract fail-loud instead of silently divergent:
+
+- **Audit-write atomicity** (`af831d7`) — mutation and its `append_event` now
+  share the request session, so a failed audit write rolls back the mutation
+  instead of leaving a Cardano-anchored gap.
+- **Runner fail-loud guard** (`fd93265`) — the runner's legacy-baseline shortcut
+  now raises `RuntimeError` instead of marking every migration applied without
+  executing it when it finds an Alembic-provisioned database. See
+  DEPLOYMENT.md §11 for the operator remedy.
+- **Migration parity + runner freeze** (`32f0e5e`) — one Alembic catch-up
+  revision (`d4e5f6a7b8c9`) brings Alembic to full parity with the frozen
+  runner (tables, indexes, 19 server defaults, `audit_events.seq`, immutability
+  triggers); the file-based runner is frozen dev/test-only; `init_db()` defers
+  to Alembic when it owns the schema; PostgreSQL CI now provisions with
+  `alembic upgrade head`; and `backend/tests/test_migration_parity.py` fails CI
+  if a runner migration ever adds an object Alembic lacks.
+
+The two PostgreSQL runtime parity bugs enumerated below (sync-engine URL
+`ArgumentError`; `workspace_id` `NOT NULL` enforced only on PostgreSQL) are
+separate and remain open.
+
 ## Summary
 
 The PostgreSQL 16 Full Suite CI job had never run to completion before. Clearing
