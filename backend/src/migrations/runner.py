@@ -206,6 +206,18 @@ def _validate_gl032_baseline(conn: Any) -> None:
 # Public API
 # ──────────────────────────────────────────────────────────────
 
+_POSTGRES_UNSUPPORTED_MESSAGE = (
+    "The file-based migration runner does not support PostgreSQL. It is frozen "
+    "for local/SQLite development and test only and must never execute against a "
+    "PostgreSQL database — its per-dialect SQL is unmaintained for Postgres and "
+    "would risk a partial or divergent schema.\n"
+    "Alembic is the authoritative provisioner for PostgreSQL. Run `make migrate` "
+    "(equivalently `alembic upgrade head`) to provision or upgrade a production "
+    "database. See docs/architecture.md (\"Schema migrations\").\n"
+    "The runner refuses to run rather than corrupt the database."
+)
+
+
 _ALEMBIC_COLLISION_MESSAGE = (
     "Two migration systems detected on this database. The Alembic version table "
     "(alembic_version) exists, but the runner's schema_migrations tracker is empty "
@@ -231,6 +243,13 @@ def run_migrations(conn: Any) -> None:
     On an existing DB the baseline is validated and marked
     as applied without re-executing CREATE statements.
     """
+    # Fail closed before any database access. When the connection's backend is
+    # postgres (set from a postgres:// or postgresql:// URL scheme, either
+    # variant), the runner must not touch the database at all: Alembic is the
+    # authoritative provisioner for PostgreSQL.
+    if _backend(conn) == "postgres":
+        raise RuntimeError(_POSTGRES_UNSUPPORTED_MESSAGE)
+
     _ensure_migrations_table(conn)
 
     applied = set(_applied_versions(conn))
