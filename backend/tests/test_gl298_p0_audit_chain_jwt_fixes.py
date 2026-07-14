@@ -117,7 +117,7 @@ class TestAuditChainDispatch(unittest.TestCase):
 
     def _make_event(self) -> "AuditEvent":
         from backend.src.core.models import AuditEvent
-        return AuditEvent(
+        return AuditEvent(workspace_id="default",
             subject_id="sys",
             role="system",
             action="test_action",
@@ -169,7 +169,7 @@ class TestAuditChainDispatch(unittest.TestCase):
         """_append_event_postgres_with_conn must call pg_advisory_xact_lock."""
         from backend.src.audit import audit_log
         from backend.src.core.models import AuditEvent
-        event = AuditEvent(
+        event = AuditEvent(workspace_id="default",
             subject_id="s", role="r", action="a", resource="res",
             approved=True, reason="x", tenant_id="t",
         )
@@ -187,7 +187,7 @@ class TestAuditChainDispatch(unittest.TestCase):
         """_append_event_postgres_with_conn must NOT commit — caller owns the transaction."""
         from backend.src.audit import audit_log
         from backend.src.core.models import AuditEvent
-        event = AuditEvent(
+        event = AuditEvent(workspace_id="default",
             subject_id="s", role="r", action="a", resource="res",
             approved=True, reason="x", tenant_id="t",
         )

@@ -129,6 +129,7 @@ async def export_grants_csv(
         approved=True,
         reason="Data export",
         tenant_id=tenant_id,
+        workspace_id=workspace_id,
         scope="export",
     )
     await db.run_sync(lambda s: append_event(event, conn=s.connection()))
@@ -162,6 +163,7 @@ async def export_audit_csv(
         approved=True,
         reason="Data export",
         tenant_id=tenant_id,
+        workspace_id=workspace_id,
         scope="export",
     )
     await db.run_sync(lambda s: append_event(event, conn=s.connection()))
@@ -184,6 +186,7 @@ async def export_grant_pdf(
 ) -> Any:
     auth_ctx, ws_ctx = resolve_auth_and_workspace(authorization, required_roles=["owner", "grant_admin", "auditor"])
     tenant_id: str = ws_ctx.get("tenant_id") or "demo"
+    workspace_id: str = ws_ctx.get("workspace_id") or ""
 
     from sqlalchemy import text as sa_text
 
@@ -209,6 +212,7 @@ async def export_grant_pdf(
         approved=True,
         reason="PDF report export",
         tenant_id=tenant_id,
+        workspace_id=workspace_id,
         scope="export",
     )
     await db.run_sync(lambda s: append_event(event, conn=s.connection()))

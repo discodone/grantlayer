@@ -150,7 +150,7 @@ class _BaseGl108(unittest.TestCase):
                 os.environ[key] = orig
 
     def _append_audit_event(self, event_id, action="test_action", approved=True):
-        event = self.models_mod.AuditEvent(
+        event = self.models_mod.AuditEvent(workspace_id="default",
             id=event_id,
             timestamp="2026-01-01T00:00:00Z",
             subject_id="test-subject",

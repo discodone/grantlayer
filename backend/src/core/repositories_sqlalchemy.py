@@ -369,14 +369,25 @@ class SqlAlchemyGrantRequestRepository:
     def list_pending_for_expiry(
         self,
         cutoff: str,
-    ) -> List[Tuple[str, Optional[str]]]:
+    ) -> List[Tuple[str, Optional[str], Optional[str]]]:
         rows = self._s.execute(
-            select(OrmGrantRequest.id, OrmGrantRequest.tenant_id).where(
+            select(
+                OrmGrantRequest.id,
+                OrmGrantRequest.tenant_id,
+                OrmGrantRequest.workspace_id,
+            ).where(
                 OrmGrantRequest.status == "requested",
                 OrmGrantRequest.created_at < cutoff,
             )
         ).fetchall()
-        return [(str(r.id), str(r.tenant_id) if r.tenant_id is not None else None) for r in rows]
+        return [
+            (
+                str(r.id),
+                str(r.tenant_id) if r.tenant_id is not None else None,
+                str(r.workspace_id) if r.workspace_id is not None else None,
+            )
+            for r in rows
+        ]
 
     def mark_expired(self, request_id: str, now: str) -> None:
         self._s.execute(

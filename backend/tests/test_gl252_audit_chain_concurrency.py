@@ -29,6 +29,7 @@ def _make_event(**kwargs):
         resource="res",
         approved=True,
         reason="test",
+        workspace_id="default",
         matched_grant_id=None,
         challenge_id=None,
         challenge_present=False,

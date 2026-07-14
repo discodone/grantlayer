@@ -515,7 +515,7 @@ class TestAuditTenantContext(unittest.TestCase):
         """AU-001: audit event with tenant_id is stored and retrieved."""
         import backend.src.audit.audit_log as al
         from backend.src.core.models import AuditEvent
-        event = AuditEvent(
+        event = AuditEvent(workspace_id="default",
             subject_id="op1", role="operator", action="test_action",
             resource="test/resource", approved=True, reason="test",
             tenant_id="tenant_alpha", scope="tenant",
@@ -530,7 +530,7 @@ class TestAuditTenantContext(unittest.TestCase):
         """AU-002: audit event without tenant_id is accepted (legacy/system event)."""
         import backend.src.audit.audit_log as al
         from backend.src.core.models import AuditEvent
-        event = AuditEvent(
+        event = AuditEvent(workspace_id="default",
             subject_id="system", role="system", action="health_check",
             resource="health", approved=True, reason="probe",
         )
@@ -543,12 +543,12 @@ class TestAuditTenantContext(unittest.TestCase):
         """T-003: list_events(tenant_id='t1') excludes t2 events."""
         import backend.src.audit.audit_log as al
         from backend.src.core.models import AuditEvent
-        e1 = AuditEvent(
+        e1 = AuditEvent(workspace_id="default",
             subject_id="op1", role="operator", action="act1",
             resource="res1", approved=True, reason="r",
             tenant_id="t1",
         )
-        e2 = AuditEvent(
+        e2 = AuditEvent(workspace_id="default",
             subject_id="op2", role="operator", action="act2",
             resource="res2", approved=True, reason="r",
             tenant_id="t2",
@@ -564,7 +564,7 @@ class TestAuditTenantContext(unittest.TestCase):
         """AuditEvent.to_dict() includes tenant_id and scope."""
         import backend.src.audit.audit_log as al
         from backend.src.core.models import AuditEvent
-        event = AuditEvent(
+        event = AuditEvent(workspace_id="default",
             subject_id="op1", role="operator", action="act",
             resource="res", approved=True, reason="r",
             tenant_id="t_test", scope="tenant",
@@ -595,7 +595,7 @@ class TestAuditHashChainIntegrity(unittest.TestCase):
         import backend.src.audit.audit_log as al
         from backend.src.core.models import AuditEvent
         for i in range(3):
-            al.append_event(AuditEvent(
+            al.append_event(AuditEvent(workspace_id="default",
                 subject_id="op1", role="operator", action=f"act{i}",
                 resource="res", approved=True, reason="r",
                 tenant_id="t1", scope="tenant",
@@ -609,12 +609,12 @@ class TestAuditHashChainIntegrity(unittest.TestCase):
         import backend.src.audit.audit_log as al
         from backend.src.core.models import AuditEvent
         # Pre-migration event (no tenant_id)
-        al.append_event(AuditEvent(
+        al.append_event(AuditEvent(workspace_id="default",
             subject_id="sys", role="system", action="bootstrap",
             resource="system", approved=True, reason="init",
         ))
         # Post-migration event (with tenant_id)
-        al.append_event(AuditEvent(
+        al.append_event(AuditEvent(workspace_id="default",
             subject_id="op1", role="operator", action="create_grant",
             resource="grants/123", approved=True, reason="created",
             tenant_id="t1", scope="tenant",
@@ -635,7 +635,7 @@ class TestAuditHashChainIntegrity(unittest.TestCase):
         import backend.src.audit.audit_log as al
         from backend.src.core.models import AuditEvent
         for i in range(3):
-            al.append_event(AuditEvent(
+            al.append_event(AuditEvent(workspace_id="default",
                 subject_id="op1", role="operator", action=f"legacy{i}",
                 resource="res", approved=True, reason="r",
             ))

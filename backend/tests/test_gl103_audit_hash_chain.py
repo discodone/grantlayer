@@ -147,7 +147,7 @@ class _BaseGl103(unittest.TestCase):
         return resp.status_code, data
 
     def _append_audit_event(self, event_id, action="test_action", approved=True, reason="test reason"):
-        event = self.models_mod.AuditEvent(
+        event = self.models_mod.AuditEvent(workspace_id="default",
             id=event_id,
             timestamp="2026-01-01T00:00:00Z",
             subject_id="test-subject",
@@ -230,7 +230,7 @@ class TestGl103AuditInsertPreserved(_BaseGl103):
     def test_append_event_with_conn_parameter(self):
         conn = self.db_mod.get_conn()
         try:
-            event = self.models_mod.AuditEvent(
+            event = self.models_mod.AuditEvent(workspace_id="default",
                 id="evt-conn-001",
                 timestamp="2026-01-01T00:00:00Z",
                 subject_id="sub",
@@ -363,7 +363,7 @@ class TestGl103RowHashDeterministic(_BaseGl103):
         """Two events with identical fields (and same prev_hash context)
         should produce the same row_hash because prev_hash is based on the
         chain state, but we can test determinism by computing manually."""
-        event1 = self.models_mod.AuditEvent(
+        event1 = self.models_mod.AuditEvent(workspace_id="default",
             id="evt-same",
             timestamp="2026-01-01T00:00:00Z",
             subject_id="sub",
@@ -470,7 +470,7 @@ class TestGl103SelectPreservesHashes(_BaseGl103):
         self.assertIsNotNone(events[0].row_hash)
 
     def test_list_events_by_grant_preserves_hashes(self):
-        event = self.models_mod.AuditEvent(
+        event = self.models_mod.AuditEvent(workspace_id="default",
             id="evt-sel-3",
             timestamp="2026-01-01T00:00:00Z",
             subject_id="sub",

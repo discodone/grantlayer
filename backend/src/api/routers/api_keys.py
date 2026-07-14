@@ -133,6 +133,7 @@ async def create_api_key(
         resource=f"api_key/{key_id}",
         approved=True,
         reason=f"API key '{body.name}' created",
+        workspace_id=workspace_id,
     )
     try:
         await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
@@ -199,7 +200,7 @@ async def revoke_api_key(
     # it does not own is confined to its own tenant.
     result = await db.execute(
         text(
-            "SELECT ak.id, ak.user_id, ak.name, "
+            "SELECT ak.id, ak.user_id, ak.name, ak.workspace_id AS workspace_id, "
             "COALESCE(w.tenant_id, ak.workspace_id) AS tenant_id "
             "FROM api_keys ak LEFT JOIN workspaces w ON w.id = ak.workspace_id "
             "WHERE ak.id=:id AND ak.revoked_at IS NULL"
@@ -241,6 +242,7 @@ async def revoke_api_key(
         resource=f"api_key/{key_id}",
         approved=True,
         reason=f"API key '{row['name']}' revoked",
+        workspace_id=row["workspace_id"] or payload.get("workspace_id") or "default",
     )
     try:
         await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))

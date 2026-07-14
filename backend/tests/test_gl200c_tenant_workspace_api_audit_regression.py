@@ -535,11 +535,11 @@ class TestAuditPropagation(unittest.TestCase):
     def test_au001_audit_list_filters_by_tenant(self):
         """AU-001: list_events filters by tenant_id — no cross-tenant leakage."""
         from backend.src.core.models import AuditEvent
-        evt_a = AuditEvent(
+        evt_a = AuditEvent(workspace_id="default",
             subject_id="op-a", role="operator", action="test", resource="r/1",
             approved=True, reason="test", tenant_id="tenant_alpha", scope="tenant",
         )
-        evt_b = AuditEvent(
+        evt_b = AuditEvent(workspace_id="default",
             subject_id="op-b", role="operator", action="test", resource="r/2",
             approved=True, reason="test", tenant_id="tenant_beta", scope="tenant",
         )
@@ -562,7 +562,7 @@ class TestAuditPropagation(unittest.TestCase):
         """AU-002: hash-chain remains valid after tenant-scoped audit events."""
         from backend.src.core.models import AuditEvent
         for i in range(3):
-            evt = AuditEvent(
+            evt = AuditEvent(workspace_id="default",
                 subject_id=f"op-{i}", role="operator", action="approve",
                 resource=f"grant_request/req-{i}", approved=True, reason="approved",
                 tenant_id="tenant_alpha", scope="tenant",
@@ -576,7 +576,7 @@ class TestAuditPropagation(unittest.TestCase):
     def test_au003_audit_event_carries_tenant_id(self):
         """AU-003: manually appended audit event stores tenant_id correctly."""
         from backend.src.core.models import AuditEvent
-        evt = AuditEvent(
+        evt = AuditEvent(workspace_id="default",
             subject_id="op-1", role="operator", action="approve_grant_request",
             resource="grant_request/req-x", approved=True, reason="test",
             tenant_id="tenant_q", scope="tenant",
@@ -590,7 +590,7 @@ class TestAuditPropagation(unittest.TestCase):
     def test_au004_system_events_nullable_tenant(self):
         """AU-004: system-level audit events may have nullable tenant_id (legacy/system events)."""
         from backend.src.core.models import AuditEvent
-        evt = AuditEvent(
+        evt = AuditEvent(workspace_id="default",
             subject_id="system", role="system", action="internal_check",
             resource="system/health", approved=True, reason="ok",
         )

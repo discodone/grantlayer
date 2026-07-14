@@ -11,7 +11,7 @@ from ...audit.audit_log import append_event
 from ...auth.operator_service import AsyncOperatorService
 from ...core.db import get_async_db
 from ...core.logging_utils import get_logger, safe_log
-from ...core.models import AuditEvent
+from ...core.models import SYSTEM_WORKSPACE, AuditEvent
 from ..deps import AdminScope, get_async_operator_service, require_admin_scope
 from ..schemas import DynamicResponse
 
@@ -108,6 +108,7 @@ async def create_operator_endpoint(
         approved=True,
         reason="Admin created operator.",
         tenant_id=op.tenant_id,
+        workspace_id=SYSTEM_WORKSPACE,
         scope="tenant_admin",
     )
     await db.run_sync(lambda sync_sess: append_event(event, conn=sync_sess.connection()))
@@ -155,6 +156,7 @@ async def revoke_operator_endpoint(
         approved=True,
         reason="Admin revoked operator.",
         tenant_id=op_safe.get("tenantId"),
+        workspace_id=SYSTEM_WORKSPACE,
         scope="tenant_admin",
     )
     await db.run_sync(lambda sync_sess: append_event(event, conn=sync_sess.connection()))

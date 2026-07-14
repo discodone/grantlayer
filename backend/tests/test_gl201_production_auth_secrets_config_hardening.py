@@ -859,11 +859,11 @@ class TestGl201TenantWorkspaceRegression(_BaseGl201):
         importlib.reload(audit_mod)
         importlib.reload(models_mod)
 
-        ev_a = models_mod.AuditEvent(
+        ev_a = models_mod.AuditEvent(workspace_id="default",
             subject_id="s1", role="reviewer", action="read", resource="r/1",
             approved=True, reason="grant_matched", tenant_id="tenant-a",
         )
-        ev_b = models_mod.AuditEvent(
+        ev_b = models_mod.AuditEvent(workspace_id="default",
             subject_id="s2", role="reviewer", action="read", resource="r/2",
             approved=True, reason="grant_matched", tenant_id="tenant-b",
         )
@@ -889,11 +889,11 @@ class TestGl201TenantWorkspaceRegression(_BaseGl201):
         importlib.reload(audit_mod)
         importlib.reload(models_mod)
 
-        ev1 = models_mod.AuditEvent(
+        ev1 = models_mod.AuditEvent(workspace_id="default",
             subject_id="s1", role="reviewer", action="read", resource="r/chain1",
             approved=True, reason="grant_matched", tenant_id="chain-tenant",
         )
-        ev2 = models_mod.AuditEvent(
+        ev2 = models_mod.AuditEvent(workspace_id="default",
             subject_id="s2", role="reviewer", action="read", resource="r/chain2",
             approved=False, reason="no_match", tenant_id="chain-tenant",
         )

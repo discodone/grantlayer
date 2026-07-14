@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session as _Session
 
 from ..audit import audit_log
 from ..core.db import get_engine
-from ..core.models import AuditEvent, Grant, GrantRequest
+from ..core.models import SYSTEM_WORKSPACE, AuditEvent, Grant, GrantRequest
 from ..core.repositories_sqlalchemy import SqlAlchemyGrantRequestRepository
 from ..core.validation import (
     MAX_NAME_LENGTH,
@@ -203,6 +203,7 @@ def approve_grant_request(
                     approved=True,
                     reason=f"Grant request {request_id} approved",
                     tenant_id=effective_tenant,
+                    workspace_id=effective_workspace,
                     scope="tenant",
                 ),
                 conn=session.connection(),
@@ -225,6 +226,7 @@ def deny_grant_request(
     if tenant_id is None:
         raise ValueError("tenant_id is required")
     effective_tenant = tenant_id
+    effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
 
     validate_string_length(reason, "reason", MAX_REASON_LENGTH)
 
@@ -252,6 +254,7 @@ def deny_grant_request(
                     approved=False,
                     reason=f"Grant request {request_id} denied: {reason}",
                     tenant_id=effective_tenant,
+                    workspace_id=effective_workspace,
                     scope="tenant",
                 ),
                 conn=session.connection(),
@@ -276,6 +279,7 @@ def revoke_grant_request(
     if tenant_id is None:
         raise ValueError("tenant_id is required")
     effective_tenant = tenant_id
+    effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
 
     with _Session(get_engine()) as session:
         with session.begin():
@@ -309,6 +313,7 @@ def revoke_grant_request(
                     approved=False,
                     reason=f"Grant request {request_id} revoked: {reason}",
                     tenant_id=effective_tenant,
+                    workspace_id=effective_workspace,
                     scope="tenant",
                 ),
                 conn=session.connection(),
@@ -333,11 +338,11 @@ def expire_old_requests() -> int:
             return 0
 
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-        for row_id, _ in to_expire:
+        for row_id, _tenant, _workspace in to_expire:
             req_repo.mark_expired(row_id, now)
 
         audit_conn = session.connection()
-        for row_id, row_tenant in to_expire:
+        for row_id, row_tenant, row_workspace in to_expire:
             audit_log.append_event(
                 AuditEvent(
                     subject_id="system",
@@ -347,7 +352,8 @@ def expire_old_requests() -> int:
                     approved=False,
                     reason=f"Grant request {row_id} expired after 24 hours",
                     tenant_id=row_tenant,
-                    scope="tenant" if row_tenant else None,
+                    workspace_id=row_workspace if row_workspace is not None else SYSTEM_WORKSPACE,
+                    scope="tenant" if row_tenant else "system",
                 ),
                 conn=audit_conn,
             )

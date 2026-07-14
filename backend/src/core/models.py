@@ -8,6 +8,13 @@ from typing import Literal, Optional
 # Re-export SQLAlchemy Base so Alembic env.py can import it from here.
 from .orm import Base  # noqa: F401
 
+# Explicit sentinel for genuinely global (non-workspace) audit events — e.g.
+# tenant-admin operator management and GDPR subject actions that span workspaces.
+# These are tagged with this value instead of a bare NULL so attribution stays
+# complete and self-documenting. It is deliberately NOT a valid UUID, so it can
+# never collide with a real workspace id.
+SYSTEM_WORKSPACE = "__system__"
+
 
 def _now_iso() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
@@ -144,6 +151,11 @@ class AuditEvent:
     resource: str
     approved: bool
     reason: str
+    # workspace_id is REQUIRED: every audit event must be attributed to a
+    # workspace so per-workspace anchoring/reporting is complete. Genuinely
+    # global (non-workspace) events use the explicit SYSTEM_WORKSPACE sentinel
+    # rather than a bare NULL. mypy enforces this at every construction site.
+    workspace_id: str
     matched_grant_id: Optional[str] = None
     challenge_id: Optional[str] = None
     challenge_present: bool = False
@@ -153,9 +165,8 @@ class AuditEvent:
     timestamp: str = field(default_factory=_now_iso)
     row_hash: Optional[str] = None
     prev_hash: Optional[str] = None
-    # tenant/workspace context (None = pre-migration or system-scope event)
+    # tenant context (None = pre-migration or system-scope event)
     tenant_id: Optional[str] = None
-    workspace_id: Optional[str] = None
     scope: Optional[str] = None  # 'tenant', 'tenant_admin', 'system', 'public'
     # stable insertion-order tiebreak assigned by the DB (None before migration 0013)
     seq: Optional[int] = None

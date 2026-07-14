@@ -19,6 +19,10 @@ from ..policy.policy_engine import evaluate_access
 
 logger = logging.getLogger(__name__)
 
+# The demo flow always operates within the single demo workspace; its audit
+# events are attributed there rather than left NULL.
+_DEMO_WORKSPACE_ID = "default"
+
 
 def _get_env_bool(name: str) -> bool:
     value = os.environ.get(name, "").strip().lower()
@@ -67,6 +71,7 @@ def handle_demo_action(
                 challenge_result="required_missing",
                 grant_signature_result="not_checked",
                 tenant_id=effective_tenant,
+                workspace_id=_DEMO_WORKSPACE_ID,
                 scope="tenant",
             )
             append_event(event)
@@ -162,6 +167,7 @@ def handle_demo_action(
             challenge_result=cast(ChallengeResult, challenge_result),
             grant_signature_result=grant_signature_result,
             tenant_id=effective_tenant,
+            workspace_id=_DEMO_WORKSPACE_ID,
             scope="tenant",
         )
         append_event(event)

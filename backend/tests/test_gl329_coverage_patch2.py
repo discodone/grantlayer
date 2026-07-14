@@ -328,7 +328,7 @@ class TestAuditComplianceEdgeCases(_JwtEnvMixin, unittest.TestCase):
         from backend.src.audit.audit_log import append_event
         from backend.src.core.db import get_engine
         from backend.src.core.models import AuditEvent
-        evt = AuditEvent(
+        evt = AuditEvent(workspace_id="default",
             subject_id="cov-329-user",
             role="grant_admin",
             action="cov329_test_action",

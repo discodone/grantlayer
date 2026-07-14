@@ -71,7 +71,7 @@ class _BaseGl139(unittest.TestCase):
                 os.environ[key] = orig
 
     def _append_audit_event(self, event_id, action="test_action", approved=True, reason="test reason"):
-        event = self.models_mod.AuditEvent(
+        event = self.models_mod.AuditEvent(workspace_id="default",
             id=event_id,
             timestamp="2026-01-01T00:00:00Z",
             subject_id="test-subject",
@@ -203,7 +203,7 @@ class TestGl139ConcurrentWrites(_BaseGl139):
         try:
             for i in range(5):
                 event_id = f"evt-conn-{i:02d}"
-                event = self.models_mod.AuditEvent(
+                event = self.models_mod.AuditEvent(workspace_id="default",
                     id=event_id,
                     timestamp="2026-01-01T00:00:00Z",
                     subject_id="test-subject",

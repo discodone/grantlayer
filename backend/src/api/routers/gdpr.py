@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...audit.audit_log import append_event
 from ...core.db import get_async_db
-from ...core.models import AuditEvent
+from ...core.models import SYSTEM_WORKSPACE, AuditEvent
 from ..auth_jwt import validate_jwt_header
 
 router = APIRouter(prefix="/users", tags=["gdpr"])
@@ -130,6 +130,8 @@ async def export_user_data(
         resource=f"user/{user_id}",
         approved=True,
         reason=f"GDPR data export requested for user {user_id}",
+        workspace_id=SYSTEM_WORKSPACE,
+        scope="system",
     )
     try:
         await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))
@@ -189,6 +191,8 @@ async def erase_user_data(
         resource=f"user/{user_id}",
         approved=True,
         reason=f"GDPR erasure completed for user {user_id}; PII anonymized, tokens revoked",
+        workspace_id=SYSTEM_WORKSPACE,
+        scope="system",
     )
     try:
         await db.run_sync(lambda s: append_event(audit_evt, conn=s.connection()))

@@ -48,7 +48,7 @@ class TestQToNamedIntegration(unittest.TestCase):
         """_build_insert_params must return a dict, not a tuple."""
         from backend.src.audit.audit_log import _build_insert_params
         from backend.src.core.models import AuditEvent
-        event = AuditEvent(
+        event = AuditEvent(workspace_id="default",
             subject_id="s", role="r", action="a", resource="res",
             approved=True, reason="test",
         )

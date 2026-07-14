@@ -3,7 +3,7 @@
 import hashlib
 import json
 from threading import RLock
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from sqlalchemy import text
 
@@ -109,7 +109,10 @@ def _row_to_audit_event(row: dict) -> AuditEvent:
         row_hash=row.get("row_hash"),
         prev_hash=row.get("prev_hash"),
         tenant_id=row.get("tenant_id"),
-        workspace_id=row.get("workspace_id"),
+        # Legacy/pre-migration rows may still carry a NULL workspace_id; the
+        # DB column stays nullable until the NOT NULL migration (separate ticket),
+        # so preserve the stored value as-is rather than fabricating a workspace.
+        workspace_id=cast(str, row.get("workspace_id")),
         scope=row.get("scope"),
         seq=int(raw_seq) if raw_seq is not None else None,
     )

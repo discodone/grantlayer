@@ -112,6 +112,7 @@ async def bulk_update_grants(
         approved=True,
         reason=body.reason or "bulk update",
         tenant_id=tenant_id,
+        workspace_id=workspace_id,
         scope="bulk",
     )
     await db.run_sync(lambda s: append_event(event, conn=s.connection()))
@@ -173,6 +174,7 @@ async def bulk_approve_grant_requests(
         approved=True,
         reason=body.reason or "bulk approve",
         tenant_id=tenant_id,
+        workspace_id=workspace_id,
         scope="bulk",
     )
     await db.run_sync(lambda s: append_event(event, conn=s.connection()))
@@ -234,6 +236,7 @@ async def bulk_reject_grant_requests(
         approved=False,
         reason=body.reason or "bulk reject",
         tenant_id=tenant_id,
+        workspace_id=workspace_id,
         scope="bulk",
     )
     await db.run_sync(lambda s: append_event(event, conn=s.connection()))

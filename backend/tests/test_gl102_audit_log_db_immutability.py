@@ -155,7 +155,7 @@ class _BaseGl102(unittest.TestCase):
         return self.requests_mod.create_grant_request(req, tenant_id="demo")
 
     def _append_audit_event(self, event_id, action="test_action", approved=True):
-        event = self.models_mod.AuditEvent(
+        event = self.models_mod.AuditEvent(workspace_id="default",
             id=event_id,
             timestamp="2026-01-01T00:00:00Z",
             subject_id="test-subject",
@@ -213,7 +213,7 @@ class TestGl102AuditInsertPreserved(_BaseGl102):
         """append_event with explicit conn must still work."""
         conn = self.db_mod.get_conn()
         try:
-            event = self.models_mod.AuditEvent(
+            event = self.models_mod.AuditEvent(workspace_id="default",
                 id="evt-conn-001",
                 timestamp="2026-01-01T00:00:00Z",
                 subject_id="sub",
@@ -260,7 +260,7 @@ class TestGl102AuditSelectPreserved(_BaseGl102):
 
     def test_list_events_by_grant(self):
         """list_events_by_grant must still work."""
-        event = self.models_mod.AuditEvent(
+        event = self.models_mod.AuditEvent(workspace_id="default",
             id="evt-grant-1",
             timestamp="2026-01-01T00:00:00Z",
             subject_id="sub",
