@@ -687,8 +687,8 @@ class TestGl116PostgresAuditImmutabilityIntegration(unittest.TestCase):
             db_mod.init_db()
             with db_mod.get_conn() as conn:
                 conn.execute(
-                    "INSERT INTO audit_events (id, timestamp, subject_id, role, action, resource, approved, reason) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO audit_events (id, timestamp, subject_id, role, action, resource, approved, reason, workspace_id) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, '__system__')",
                     (self.test_event_id, "2026-01-01T00:00:00Z", "gl116-subject", "tester", "read", "gl116-resource", 1, "GL-116 test"),
                 )
                 conn.commit()
@@ -749,8 +749,8 @@ class TestGl116PostgresAuditImmutabilityIntegration(unittest.TestCase):
             db_mod.DB_PATH_OR_URL = self.pg_url
             with db_mod.get_conn() as conn:
                 conn.execute(
-                    "INSERT INTO audit_events (id, timestamp, subject_id, role, action, resource, approved, reason) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO audit_events (id, timestamp, subject_id, role, action, resource, approved, reason, workspace_id) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, '__system__')",
                     (new_id, "2026-01-01T00:00:00Z", "gl116-subject", "tester", "write", "gl116-resource", 1, "GL-116 insert test"),
                 )
                 conn.commit()

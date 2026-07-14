@@ -200,8 +200,8 @@ class TestGl103MigrationAddsColumns(_BaseGl103):
             conn.execute(
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource,
-                    approved, reason, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    approved, reason, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-null", "2026-01-01T00:00:00Z", "s", "r", "a", "res", 1, "r", None, None)
             )
             conn.commit()

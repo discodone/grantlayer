@@ -216,8 +216,8 @@ class TestGl104StructuredResult(_BaseGl104):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-bad", "2026-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked", "bad hash", None)
             )
@@ -264,8 +264,8 @@ class TestGl104RowHashMismatch(_BaseGl104):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-row-bad", "2026-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked",
                  "0000000000000000000000000000000000000000000000000000000000000000", None)
@@ -309,8 +309,8 @@ class TestGl104PrevHashMismatch(_BaseGl104):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-prev-second", "2026-01-01T00:00:01Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked",
                  "0000000000000000000000000000000000000000000000000000000000000000",
@@ -340,8 +340,8 @@ class TestGl104MissingRowHash(_BaseGl104):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-null-hash", "2026-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked", None, None)
             )
@@ -396,8 +396,8 @@ class TestGl104HistoricalNullHashRows(_BaseGl104):
                     """INSERT INTO audit_events
                        (id, timestamp, subject_id, role, action, resource, approved,
                         reason, matched_grant_id, challenge_id, challenge_present,
-                        challenge_result, grant_signature_result, row_hash, prev_hash)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                     (f"evt-legacy-{i}", f"2025-12-0{i+1}T00:00:00Z", "s", "r", "a", "res", 1,
                      "r", None, None, 0, "legacy_mode", "not_checked", None, None)
                 )

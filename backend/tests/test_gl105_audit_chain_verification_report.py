@@ -289,8 +289,8 @@ class TestGl105RowHashMismatchInReport(_BaseGl105):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-row-bad", "2026-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked",
                  "0000000000000000000000000000000000000000000000000000000000000000", None)
@@ -323,8 +323,8 @@ class TestGl105PrevHashMismatchInReport(_BaseGl105):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-prev-second", "2026-01-01T00:00:01Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked",
                  "0000000000000000000000000000000000000000000000000000000000000000",
@@ -355,8 +355,8 @@ class TestGl105MissingHashInReport(_BaseGl105):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-null-hash", "2026-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked", None, None)
             )
@@ -386,8 +386,8 @@ class TestGl105HistoricalNullHashRows(_BaseGl105):
                     """INSERT INTO audit_events
                        (id, timestamp, subject_id, role, action, resource, approved,
                         reason, matched_grant_id, challenge_id, challenge_present,
-                        challenge_result, grant_signature_result, row_hash, prev_hash)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                     (f"evt-legacy-{i}", f"2025-12-0{i+1}T00:00:00Z", "s", "r", "a", "res", 1,
                      "r", None, None, 0, "legacy_mode", "not_checked", None, None)
                 )
@@ -431,8 +431,8 @@ class TestGl105RecommendationsDeterministic(_BaseGl105):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-rec-bad", "2026-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked",
                  "0000000000000000000000000000000000000000000000000000000000000000", None)
@@ -547,8 +547,8 @@ class TestGl105Gl104Preserved(_BaseGl105):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-gl104-bad", "2026-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked",
                  "0000000000000000000000000000000000000000000000000000000000000000", None)

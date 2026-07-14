@@ -91,8 +91,8 @@ class _BaseGl112(unittest.TestCase):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 (event_id, "2026-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked", row_hash, prev_hash),
             )
@@ -179,8 +179,8 @@ class TestGl112FilterChainRows(_BaseGl112):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-historical", "2025-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked", None, None),
             )
@@ -404,8 +404,8 @@ class TestGl112VerifyHashChainEquivalence(_BaseGl112):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-hist-null", "2025-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked", None, None),
             )
@@ -426,8 +426,8 @@ class TestGl112VerifyHashChainEquivalence(_BaseGl112):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-no-hash", "2026-06-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked", None, None),
             )
@@ -482,8 +482,8 @@ class TestGl112BuildReportEquivalence(_BaseGl112):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-hist-only", "2025-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked", None, None),
             )
@@ -519,8 +519,8 @@ class TestGl112BuildReportEquivalence(_BaseGl112):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-hist-mixed", "2025-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked", None, None),
             )
@@ -577,8 +577,8 @@ class TestGl112AuditInsertSelectPreserved(_BaseGl112):
                 """INSERT INTO audit_events
                    (id, timestamp, subject_id, role, action, resource, approved,
                     reason, matched_grant_id, challenge_id, challenge_present,
-                    challenge_result, grant_signature_result, row_hash, prev_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    challenge_result, grant_signature_result, row_hash, prev_hash, workspace_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '__system__')""",
                 ("evt-preserve-hist", "2020-01-01T00:00:00Z", "s", "r", "a", "res", 1,
                  "r", None, None, 0, "legacy_mode", "not_checked", None, None),
             )
