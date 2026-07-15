@@ -24,9 +24,21 @@ Optional but recommended:
 git clone https://github.com/discodone/grantlayer.git
 cd grantlayer
 make install         # creates .venv, installs deps, pre-commit hooks, copies .env
+make hooks           # enable the pre-push gate (run once per clone — see below)
 source .venv/bin/activate
 make test            # ~3 400 functional tests, should pass 0 failures
 ```
+
+### Pre-push gate
+
+`make hooks` sets `core.hooksPath` to the versioned `.githooks/`, enabling a
+pre-push hook that runs `scripts/pre-push-gate.sh` (ruff + mypy + a fast
+migration/audit test subset, ~40-60s) before any push that updates `main`. It is
+a local sieve for obvious breakage; the full CI suite remains the source of
+truth. `core.hooksPath` is local config and is **not** carried by `git clone`,
+so each fresh clone must run `make hooks` once. Run the same checks manually with
+`bash scripts/pre-push-gate.sh`. Bypass a single push deliberately with
+`GL_SKIP_PREPUSH=1 git push …` or `git push --no-verify`.
 
 ---
 

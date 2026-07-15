@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+#
+# GrantLayer pre-push gate.
+#
+# CI on GitHub is push-triggered: it reports AFTER a commit already landed on
+# main, so it is advisory. This hook runs a FAST gate LOCALLY, before the push
+# leaves the machine, for BOTH remotes (origin/Forgejo and github) with no
+# server-side config. It is a sieve for obvious breakage; the full CI suite
+# remains the source of truth and catches whatever the subset misses.
+#
+# Scope: ONLY pushes that update refs/heads/main are gated. Feature-branch
+# pushes are left to CI. Branch deletions are not gated.
+#
+# Gate (scripts/pre-push-gate.sh — the single source of truth):
+#   1. ruff check backend/src/
+#   2. python3 -m mypy backend/src/
+#   3. migration/audit-critical test subset (~40-60s)
+#
+# SHA-cache: once the gate passes for a commit, that SHA is recorded, so a
+# two-remote push (origin then github) does not re-run the gate on the same
+# validated commit.
+#
+# Deliberate bypass (e.g. a docs-only push you have already reasoned about):
+#   GL_SKIP_PREPUSH=1 git push ...        # or
+#   git push --no-verify ...
+#
+set -euo pipefail
+
+ZERO="0000000000000000000000000000000000000000"
+
+# stdin lines: <local ref> <local sha> <remote ref> <remote sha>.
+# Capture the commit that would update main, if any.
+main_sha=""
+while read -r local_ref local_sha remote_ref remote_sha; do
+    if [ "$remote_ref" = "refs/heads/main" ] && [ "$local_sha" != "$ZERO" ]; then
+        main_sha="$local_sha"
+    fi
+done
+
+# Not pushing main (or deleting it): nothing to gate — CI covers branches.
+[ -z "$main_sha" ] && exit 0
+
+if [ "${GL_SKIP_PREPUSH:-0}" = "1" ]; then
+    echo "pre-push: GL_SKIP_PREPUSH=1 — skipping the main gate (bypass acknowledged)." >&2
+    exit 0
+fi
+
+cd "$(git rev-parse --show-toplevel)"
+CACHE="$(git rev-parse --git-dir)/gl-prepush-cache"
+
+if [ -f "$CACHE" ] && [ "$(cat "$CACHE" 2>/dev/null)" = "$main_sha" ]; then
+    echo "pre-push: gate already passed for ${main_sha} — skipping (SHA-cache hit)." >&2
+    exit 0
+fi
+
+echo "pre-push: pushing main ${main_sha} — running local gate (lint + migration/audit subset)…" >&2
+echo "pre-push: bypass with 'GL_SKIP_PREPUSH=1 git push' or 'git push --no-verify'." >&2
+
+if ! bash scripts/pre-push-gate.sh; then
+    echo "pre-push: BLOCKED — gate failed. Push to main aborted." >&2
+    exit 1
+fi
+
+echo "$main_sha" > "$CACHE"
+echo "pre-push: gate passed — allowing push to main." >&2
+exit 0

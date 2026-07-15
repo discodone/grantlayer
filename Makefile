@@ -1,5 +1,5 @@
-.PHONY: install test test-all test-functional test-contract perf-test helm-lint docs docs-serve \
-        lint format fix migrate docker-up docker-down audit push coverage clean help
+.PHONY: install test test-all test-functional test-precommit test-contract perf-test helm-lint docs docs-serve \
+        lint format fix migrate docker-up docker-down audit push coverage clean help hooks
 
 # Default: functional tests only (application logic, HTTP, DB, auth, grants).
 # ~120 files / ~3 400 test methods.  Fast and meaningful for CI.
@@ -17,6 +17,13 @@ test-functional:
 # ~239 files / ~9 400 test methods.
 test-all:
 	@./scripts/run-full-backend-suite.sh
+
+# Fast pre-push gate: ruff + mypy + a migration/audit-critical test subset
+# (~40-60s), the same checks the .githooks/pre-push hook runs before a push to
+# main. The subset is defined in scripts/pre-push-gate.sh (single source of
+# truth); the full CI suite remains the real gate.
+test-precommit:
+	@bash scripts/pre-push-gate.sh
 
 # Contract tests: OpenAPI schema + SDK contract + schemathesis fuzz.
 test-contract:
@@ -77,6 +84,12 @@ rows = conn.execute(text('SELECT timestamp, subject_id, action, resource, approv
 # Push to both remotes (origin = Forgejo, github = GitHub).
 push:
 	git push origin main && git push github main
+
+# Enable the versioned git hooks (pre-push gate). Run once per clone —
+# core.hooksPath is local config and is NOT carried by git clone.
+hooks:
+	git config core.hooksPath .githooks
+	@echo "core.hooksPath set to .githooks — the pre-push gate is now active."
 
 # Coverage report: functional tests with per-module missing-line output.
 coverage:
