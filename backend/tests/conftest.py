@@ -240,5 +240,28 @@ try:
         finally:
             conn.close()
 
+    @pytest.fixture(autouse=True)
+    def _reset_leaked_runtime_mode():
+        # app.py's lifespan fail-closes when config.RUNTIME_MODE is not
+        # "test"/"local". RUNTIME_MODE is module state derived from
+        # GRANTLAYER_RUNTIME_MODE at import; the gate DEFAULTS to "production"
+        # when that env var is unset, so a prior test that popped/overrode it and
+        # reloaded config can leave the module flag at "production". That was
+        # inert until tests began entering the TestClient context (which runs the
+        # lifespan and its startup gate). If the environment says test/local but
+        # the config module drifted, reset the flag BEFORE this test runs so an
+        # unrelated leak cannot abort a lifespan startup. Tests that genuinely
+        # need production mode set it in their own setUp, which runs after this.
+        env_mode = _os.environ.get("GRANTLAYER_RUNTIME_MODE", "test")
+        if env_mode in ("test", "local"):
+            try:
+                import backend.src.core.config as _cfg
+
+                if getattr(_cfg, "RUNTIME_MODE", "test") not in ("test", "local"):
+                    _cfg.RUNTIME_MODE = env_mode
+            except Exception:
+                pass
+        yield
+
 except ImportError:
     pass  # pytest not installed; conftest is a no-op in that environment
