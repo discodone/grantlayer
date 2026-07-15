@@ -2,6 +2,18 @@
 
 **Status:** open · **Opened:** 2026-06-23 · **Tracking:** no external tracker (repo-internal)
 
+## Known gaps (tracked, not urgent)
+
+- **`doc_guard` test set is not run by any CI job** — every CI test step uses
+  `-m "not doc_guard"`, so doc-guard tests (repo/artifact validation, e.g.
+  `test_gl310_dev_tooling`) run only in local `make test-all`. They are
+  CI-ungated. Should be wired into a fast dedicated CI job or the pre-push hook.
+- **`ruff`/`mypy` are undeclared dev dependencies** — pulled in only via an
+  ad-hoc `pip install ruff mypy` in the SQLite Unit Tests job, declared in no
+  requirements file (same class as the `PyYAML` gap fixed 2026-07-15). Should be
+  moved into `backend/requirements-dev.txt` so every job/clone gets them
+  deterministically.
+
 ## Landed 2026-07-15 — Tier-1 hardening
 
 - **CI made honest** — the `postgres-ci` integration job was repointed from
