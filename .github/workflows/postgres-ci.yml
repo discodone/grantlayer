@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r backend/requirements-dev.txt pyyaml ruff mypy
+          pip install -r requirements.txt -r backend/requirements-dev.txt ruff mypy
 
       - name: Lint (ruff)
         run: ruff check backend/src/
@@ -149,9 +149,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # pyyaml matches the SQLite Unit Tests job — a few PG-selected tests
-          # (dev-tooling / config validation) import yaml.
-          pip install -r requirements.txt -r backend/requirements-dev.txt pytest-timeout pyyaml
+          pip install -r requirements.txt -r backend/requirements-dev.txt pytest-timeout
 
       - name: Wait for PostgreSQL
         run: |
