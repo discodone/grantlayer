@@ -2,6 +2,26 @@
 
 **Status:** open · **Opened:** 2026-06-23 · **Tracking:** no external tracker (repo-internal)
 
+## Landed 2026-07-15 — Tier-1 hardening
+
+- **CI made honest** — the `postgres-ci` integration job was repointed from
+  `init_db()` to `alembic upgrade head` (`dd125f3`). `init_db()` refuses
+  PostgreSQL after the runner's fail-closed guard, so it died in setup and kept
+  the whole workflow permanently red; provisioning via Alembic first restores it.
+  `main` is green again.
+- **Stale VM instance decommissioned** — the old SQLite-backed instance (frozen
+  at migration 0011, unused) was torn down with `docker compose down -v`. Only
+  the 240 KB `grantlayer-data` volume was destroyed; key material lives host-side
+  in the repo dir and was untouched. The instance is rebuildable from `main` via
+  the Alembic path.
+- **Fast pre-push gate for main added and armed** (`7ab6113`) — `.githooks/pre-push`
+  + `scripts/pre-push-gate.sh` run ruff + mypy + an ~43s migration/audit test
+  subset (including the `test_gl238` cleanup sentinel) before any push that
+  updates `main`. Proven to block a failing push (exit 1) and allow a clean one
+  (exit 0). Feature branches are left to CI. Bypass is explicit and logged
+  (`GL_SKIP_PREPUSH=1` or `--no-verify`); activated per-clone via
+  `core.hooksPath` (`make hooks`). The full CI suite remains the source of truth.
+
 ## Landed 2026-07-14 — migration-system drift closed
 
 Three fixes reconciled the two migration systems and made the deployment
