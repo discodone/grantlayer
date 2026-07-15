@@ -82,10 +82,28 @@ jobs:
             sleep 1
           done
 
+      - name: Initialise schema
+        env:
+          # Ephemeral CI-only test database credential; not a production secret.
+          DATABASE_URL: postgresql://grantlayer:grantlayer_test_password@localhost:5432/grantlayer
+          GRANTLAYER_DATABASE_URL: postgresql://grantlayer:grantlayer_test_password@localhost:5432/grantlayer
+          GRANTLAYER_RUNTIME_MODE: test
+          GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
+        run: |
+          # Provision via Alembic — the authoritative production path. The
+          # file-based runner is frozen dev/test-only and refuses to run against
+          # PostgreSQL, so init_db() no longer provisions Postgres; the test's
+          # setUp calls init_db(), which now detects the Alembic-owned schema and
+          # defers to it. Provisioning here is what makes that deferral work.
+          python3 -m alembic -c backend/alembic.ini upgrade head
+          echo "Schema initialised via Alembic."
+
       - name: Run PostgreSQL integration tests
         env:
           # Ephemeral CI-only test database credential; not a production secret.
           GRANTLAYER_DATABASE_URL: postgres://grantlayer:grantlayer_test_password@localhost:5432/grantlayer
+          GRANTLAYER_RUNTIME_MODE: test
+          GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
         run: |
           python3 -m unittest backend.tests.test_gl108_postgres_audit_immutability.TestGl116PostgresAuditImmutabilityIntegration -v
 
