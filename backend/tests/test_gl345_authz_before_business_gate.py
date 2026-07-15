@@ -26,6 +26,8 @@ import re
 import unittest
 from unittest import mock
 
+import pytest
+
 _TEST_SECRET = "gl345-test-hs256-secret-32chars!!"
 _MUTATION_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
@@ -167,12 +169,20 @@ class TestPositiveWiredList(unittest.TestCase):
         )
 
 
+# Seeds a shared API key in setUpClass; opt out of the per-test PostgreSQL
+# TRUNCATE fixture so the key survives across the class's tests (the fixture is
+# a no-op on SQLite, so this only matters under the PostgreSQL Full Suite).
+@pytest.mark.no_db_truncate
 class TestAuthzInvariantToOperatorModel(unittest.TestCase):
     """Authz must run before the operator-model business gate (RED before fix)."""
 
     @classmethod
     def setUpClass(cls):
-        cls.client = _make_client()
+        # Enter the TestClient context so all requests in this class share one
+        # event loop (asyncpg engine is loop-bound; TestClient spins a fresh
+        # loop per request otherwise). Test-harness only — production uses a
+        # single uvicorn loop.
+        cls.client = cls.enterClassContext(_make_client())
         cls.readonly_key = _create_api_key(cls.client, "read_only")
 
     def _assert_403_insufficient_scope(self, method, path, operator_enabled):

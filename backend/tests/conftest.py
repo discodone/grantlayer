@@ -26,6 +26,7 @@ try:
     import pytest
 
     from ._doc_guard_modules import DOC_GUARD_MODULES
+    from ._sqlite_only_modules import SQLITE_ONLY_MODULES
 
     def _is_scope_guard_item(item) -> bool:
         item_name = item.name.lower()
@@ -60,10 +61,13 @@ try:
     def pytest_collection_modifyitems(items: list) -> None:
         doc_guard_mark = pytest.mark.doc_guard
         scope_guard_mark = pytest.mark.scope_guard
+        sqlite_only_mark = pytest.mark.sqlite_only
         for item in items:
             module_name = item.module.__name__.split(".")[-1]
             if module_name in DOC_GUARD_MODULES:
                 item.add_marker(doc_guard_mark)
+            if module_name in SQLITE_ONLY_MODULES:
+                item.add_marker(sqlite_only_mark)
             if _is_scope_guard_item(item):
                 item.add_marker(scope_guard_mark)
 
@@ -97,6 +101,64 @@ try:
     # exact same baseline SQLite gets from a fresh migrated database.
     _PG_SEED_ROWS: dict = {}
 
+    def _is_real_postgres(_db) -> bool:
+        # The suite is running against real PostgreSQL ONLY when the backend is
+        # "postgres" AND the resolved path/DSN is an actual postgres URL. A test
+        # that self-provisions SQLite (importlib.reload(db) + GRANTLAYER_DB) can
+        # leave DB_BACKEND == "postgres" (set once by the CI env) while
+        # DB_PATH_OR_URL now points at a temp .db file. Guarding on the backend
+        # string alone then hands that SQLite path to psycopg2 → "invalid dsn".
+        # Requiring the URL scheme too makes that impossible.
+        url = str(getattr(_db, "DB_PATH_OR_URL", "") or "")
+        return (
+            getattr(_db, "DB_BACKEND", None) == "postgres"
+            and url.startswith(("postgres://", "postgresql://"))
+        )
+
+    # ── Belt-and-suspenders: canonical PG module-global snapshot/restore ──
+    # The guard above stops psycopg2 from ever receiving a bad DSN. This
+    # captures the canonical real-PG routing globals once at session start and
+    # restores them after every test, so a test that reloads or repoints the db
+    # module cannot leak a stale pointer (SQLite temp path, torn engine cache)
+    # into the next test even cosmetically. No-op unless the suite is actually
+    # running against real PostgreSQL — SQLite local/unit behaviour is unchanged.
+    _DB_GLOBALS_TO_RESTORE = (
+        "DB_BACKEND",
+        "DB_PATH_OR_URL",
+        "DB_PATH",
+        "_sa_engine",
+        "_engine_url",
+        "_pg_pool",
+        "_session_maker",
+        "_session_maker_engine",
+        "_async_engine",
+        "_async_engine_url",
+        "_async_session_maker",
+        "_async_session_maker_engine",
+    )
+    _AUDIT_LOG_BACKEND_KEY = "__audit_log_DB_BACKEND"
+    _PG_DB_GLOBALS: dict = {}
+
+    def _restore_pg_db_globals():
+        # No-op when the snapshot was never taken (SQLite mode).
+        if not _PG_DB_GLOBALS:
+            return
+        import backend.src.core.db as _db
+
+        for attr, value in _PG_DB_GLOBALS.items():
+            if attr == _AUDIT_LOG_BACKEND_KEY:
+                # audit_log.py takes an import-time copy of DB_BACKEND
+                # (from ..core.db import DB_BACKEND) that does not track later
+                # reloads of db, so restore it explicitly.
+                try:
+                    import backend.src.audit.audit_log as _al
+
+                    _al.DB_BACKEND = value
+                except Exception:
+                    pass
+                continue
+            setattr(_db, attr, value)
+
     def _pg_app_tables(conn):
         rows = conn.execute(
             "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
@@ -109,7 +171,18 @@ try:
         # initialises the schema before pytest). No-op / best-effort otherwise.
         import backend.src.core.db as _db
 
-        if getattr(_db, "DB_BACKEND", None) == "postgres":
+        if _is_real_postgres(_db):
+            # Snapshot the canonical real-PG routing globals once, for the
+            # per-test restore (belt-and-suspenders against leaked pointers).
+            for attr in _DB_GLOBALS_TO_RESTORE:
+                if hasattr(_db, attr):
+                    _PG_DB_GLOBALS[attr] = getattr(_db, attr)
+            try:
+                import backend.src.audit.audit_log as _al
+
+                _PG_DB_GLOBALS[_AUDIT_LOG_BACKEND_KEY] = _al.DB_BACKEND
+            except Exception:
+                pass
             try:
                 conn = _db.get_conn()
                 try:
@@ -130,10 +203,18 @@ try:
         # exactly like SQLite handing it a fresh temp file.
         yield
 
+        # (1) Restore the canonical PG module globals FIRST — before the guard
+        #     and the truncate below — so a test that reloaded or repointed db
+        #     can't leak a stale pointer forward AND so the truncate runs
+        #     against the real PG connection (not a leaked SQLite path). No-op
+        #     in SQLite mode (snapshot never taken).
+        _restore_pg_db_globals()
+
         import backend.src.core.db as _db
 
         # SQLite path is untouched → byte-for-byte zero change for local/CI-unit.
-        if getattr(_db, "DB_BACKEND", None) != "postgres":
+        # Guard on the URL scheme too: never hand a non-postgres DSN to psycopg2.
+        if not _is_real_postgres(_db):
             return
         # Opt-out for classes that seed shared data in setUpClass.
         if request.node.get_closest_marker("no_db_truncate"):

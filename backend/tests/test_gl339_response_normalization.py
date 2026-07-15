@@ -39,7 +39,11 @@ class TestApiKeyResponseCamelCase(unittest.TestCase):
         os.environ["GRANTLAYER_JWT_SECRET"] = "gl339-test-secret-exactly-32bytes!"
         os.environ.pop("GRANTLAYER_JWT_PRIVATE_KEY", None)
         os.environ.pop("GRANTLAYER_JWT_PUBLIC_KEY", None)
-        self.client = _make_client()
+        # Enter the TestClient context so all requests in this test share one
+        # event loop (asyncpg engine is loop-bound; TestClient spins a fresh
+        # loop per request otherwise). Test-harness only — production uses a
+        # single uvicorn loop.
+        self.client = self.enterContext(_make_client())
         self.auth = {"Authorization": f"Bearer {_make_token()}"}
 
     def _create_key(self, scope: str = "read_only") -> dict:

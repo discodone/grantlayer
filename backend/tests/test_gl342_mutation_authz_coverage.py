@@ -27,6 +27,8 @@ import re
 import unittest
 from unittest.mock import AsyncMock, patch
 
+import pytest
+
 _TEST_SECRET = "gl342-test-hs256-secret-32chars!!"
 
 # GL-349: the old silent `_SCOPE_EXEMPT_PATHS` denylist is DISSOLVED. A mutation route
@@ -244,7 +246,11 @@ class TestAllMutationRoutesBlockReadOnlyKeys(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.client = _make_client()
+        # Enter the TestClient context so all requests in this class share one
+        # event loop (asyncpg engine is loop-bound; TestClient spins a fresh
+        # loop per request otherwise). Test-harness only — production uses a
+        # single uvicorn loop.
+        cls.client = cls.enterClassContext(_make_client())
         cls.readonly_key = _create_api_key(cls.client, "read_only")
         cls.mutation_routes = _collect_testable_mutation_routes()
 
@@ -304,6 +310,10 @@ class TestAllMutationRoutesBlockReadOnlyKeys(unittest.TestCase):
             )
 
 
+# Seeds a shared API key in setUpClass; opt out of the per-test PostgreSQL
+# TRUNCATE fixture so the key survives across the class's tests (the fixture is
+# a no-op on SQLite, so this only matters under the PostgreSQL Full Suite).
+@pytest.mark.no_db_truncate
 class TestAllMutationRoutesWiredToOpa(unittest.TestCase):
     """OPA deny must be wired to every mutation route via require_mutation_authz.
 
@@ -318,7 +328,11 @@ class TestAllMutationRoutesWiredToOpa(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.client = _make_client()
+        # Enter the TestClient context so all requests in this class share one
+        # event loop (asyncpg engine is loop-bound; TestClient spins a fresh
+        # loop per request otherwise). Test-harness only — production uses a
+        # single uvicorn loop.
+        cls.client = cls.enterClassContext(_make_client())
         cls.rw_key = _create_api_key(cls.client, "read_write")
         cls.rw_headers = {"Authorization": f"Bearer {cls.rw_key}"}
         cls.mutation_routes = _collect_testable_mutation_routes()

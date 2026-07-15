@@ -75,7 +75,11 @@ class TestGrantTemplatesRouter(unittest.TestCase):
 
 class TestGrantTemplateCrud(unittest.TestCase):
     def setUp(self):
-        self.client = _make_client()
+        # Enter the TestClient context so all requests in this test share one
+        # event loop (asyncpg engine is loop-bound; TestClient spins a fresh
+        # loop per request otherwise). Test-harness only — production uses a
+        # single uvicorn loop.
+        self.client = self.enterContext(_make_client())
         self.auth = {"Authorization": f"Bearer {_jwt()}"}
 
     def test_list_requires_auth(self):

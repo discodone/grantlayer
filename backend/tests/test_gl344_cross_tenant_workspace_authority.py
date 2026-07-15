@@ -53,7 +53,11 @@ def _jwt(workspace_id: str, tenant_id: str, sub: str = "user-a", role: str = "gr
 
 class TestApiKeyWorkspaceAuthority(unittest.TestCase):
     def setUp(self):
-        self.client = _make_client()
+        # Enter the TestClient context so all requests in this test share one
+        # event loop (asyncpg engine is loop-bound; TestClient spins a fresh
+        # loop per request otherwise). Test-harness only — production uses a
+        # single uvicorn loop.
+        self.client = self.enterContext(_make_client())
         self.auth_a = {"Authorization": f"Bearer {_jwt('ws-A', 't-A', sub='admin-a')}"}
 
     def test_cross_tenant_body_workspace_rejected_403(self):
@@ -86,7 +90,11 @@ class TestApiKeyWorkspaceAuthority(unittest.TestCase):
 
 class TestTemplateWorkspaceAuthority(unittest.TestCase):
     def setUp(self):
-        self.client = _make_client()
+        # Enter the TestClient context so all requests in this test share one
+        # event loop (asyncpg engine is loop-bound; TestClient spins a fresh
+        # loop per request otherwise). Test-harness only — production uses a
+        # single uvicorn loop.
+        self.client = self.enterContext(_make_client())
         self.auth_a = {"Authorization": f"Bearer {_jwt('ws-A', 't-A', sub='admin-a')}"}
 
     def test_create_cross_tenant_body_workspace_rejected_403(self):
@@ -124,7 +132,11 @@ class TestTemplateWorkspaceAuthority(unittest.TestCase):
 
 class TestCrossTenantTemplateIdor(unittest.TestCase):
     def setUp(self):
-        self.client = _make_client()
+        # Enter the TestClient context so all requests in this test share one
+        # event loop (asyncpg engine is loop-bound; TestClient spins a fresh
+        # loop per request otherwise). Test-harness only — production uses a
+        # single uvicorn loop.
+        self.client = self.enterContext(_make_client())
         self.auth_a = {"Authorization": f"Bearer {_jwt('ws-A', 't-A', sub='admin-a')}"}
         self.auth_b = {"Authorization": f"Bearer {_jwt('ws-B', 't-B', sub='admin-b')}"}
         # Tenant A creates a template in workspace A.

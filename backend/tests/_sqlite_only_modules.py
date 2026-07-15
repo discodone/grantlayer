@@ -1,0 +1,172 @@
+"""
+Canonical list of SQLite-only test modules (PostgreSQL Full Suite partition).
+
+These tests self-provision a private SQLite database in setUp/module scope
+(NamedTemporaryFile/mkstemp .db + GRANTLAYER_DB, importlib.reload of the db
+module, or direct assignment of db.DB_PATH_OR_URL / db.DB_PATH). By construction
+they OVERRIDE the configured backend to SQLite, so they can never exercise
+PostgreSQL — running them under the PostgreSQL Full Suite CI job only hands a
+SQLite path to psycopg2 (invalid dsn) and produces noise, not parity signal.
+
+They remain first-class members of the SQLite Unit Tests job (the merge gate);
+they are excluded ONLY from the PostgreSQL Full Suite via the `sqlite_only`
+marker:
+
+    pytest -m "not sqlite_only and not doc_guard and not scope_guard and not performance"
+
+This list is CLOSED EMPIRICALLY, not by grep: it was seeded from a broadened
+self-provisioning scan and then extended by iterating the PostgreSQL selector
+until the run emitted zero `invalid dsn` / `Could not parse SQLAlchemy URL`.
+A grep hit is a candidate; a DSN-clean PostgreSQL run is the proof.
+
+Used by:
+  - backend/tests/conftest.py   (pytest marker injection via pytest_collection_modifyitems)
+
+When a new test self-provisions SQLite (reloads db / repoints DB_PATH_OR_URL /
+sets GRANTLAYER_DB), add its module name here so the PostgreSQL Full Suite stays
+DSN-clean.
+"""
+
+SQLITE_ONLY_MODULES: frozenset[str] = frozenset(
+    [
+        "test_anchor_export_determinism",
+        "test_anchor_job_gate",
+        "test_api_error_contract",
+        "test_audit_workspace_attribution",
+        "test_audit_workspace_not_null",
+        "test_audit_write_atomicity",
+        "test_e2e_mvp_workflow",
+        "test_evidence_audit_contract",
+        "test_evidence_bundle",
+        "test_gl032_production_readiness",
+        "test_gl033_persistence",
+        "test_gl034_postgres",
+        "test_gl035_postgres",
+        "test_gl036_evidence_persistence",
+        "test_gl036_r2_evidence_verification",
+        "test_gl037a_provenance_events",
+        "test_gl037b2_provenance_summary_api",
+        "test_gl037b_provenance_summary",
+        "test_gl037c1_auditor_report",
+        "test_gl037c2_auditor_report_api",
+        "test_gl038a1_evidence_completeness",
+        "test_gl038a2_evidence_completeness_api",
+        "test_gl038b1_compliance_gap_report",
+        "test_gl038b2_compliance_gap_report_api",
+        "test_gl039a2_agent_permission_api",
+        "test_gl039b2_agent_permission_profiles_api",
+        "test_gl039c2_agent_permission_assignments_api",
+        "test_gl040a2_approval_rule_api",
+        "test_gl040c_approval_lifecycle_api",
+        "test_gl041b_decision_provenance_api",
+        "test_gl042b_auditor_export_api",
+        "test_gl043b_policy_requirements_api",
+        "test_gl044b_compliance_readiness_api",
+        "test_gl045a_api_contract_consistency",
+        "test_gl046_grant_request_auth",
+        "test_gl050_create_grant_atomic_signature",
+        "test_gl051_approve_grant_request_transaction",
+        "test_gl052_product_core_e2e_flow",
+        "test_gl077_health_readiness_endpoint",
+        "test_gl080_revoke_grant_request_atomicity",
+        "test_gl082_query_parameter_parsing",
+        "test_gl083_auth_enforcement_read_endpoints",
+        "test_gl084_demo_action_auth_hardening",
+        "test_gl086_operator_auth_performance_hardening",
+        "test_gl087_auth_error_response_consistency",
+        "test_gl088_challenge_auth_enforcement",
+        "test_gl089_auth_default_fail_closed",
+        "test_gl090_request_body_json_hardening",
+        "test_gl091_signature_auth_cache_hardening",
+        "test_gl092_deny_revoke_audit_semantics",
+        "test_gl093_grant_input_validation",
+        "test_gl095_cors_origin_hardening",
+        "test_gl096_private_key_file_permissions",
+        "test_gl097_self_approval_denial_reason",
+        "test_gl098_request_expiry_trigger_audit",
+        "test_gl099_transactional_audit_consistency",
+        "test_gl100_grant_lifecycle_audit_tamper_guard",
+        "test_gl102_audit_log_db_immutability",
+        "test_gl103_audit_hash_chain",
+        "test_gl104_audit_chain_verification_helper",
+        "test_gl105_audit_chain_verification_report",
+        "test_gl106_rate_limiting",
+        "test_gl107_operator_auth_token_lookup",
+        "test_gl108_postgres_audit_immutability",
+        "test_gl109_operators_me_authentication",
+        "test_gl110_private_key_encryption_externalization",
+        "test_gl111_demo_action_exception_logging",
+        "test_gl112_audit_log_duplication_cleanup",
+        "test_gl113_structured_logging",
+        "test_gl114_string_length_validation",
+        "test_gl117_structured_logging_integration",
+        "test_gl118_correlation_id_propagation",
+        "test_gl119_operator_token_expiry_rotation",
+        "test_gl120_auth_failure_structured_event_logging",
+        "test_gl123_postgres_connection_pooling",
+        "test_gl124_request_payload_shape_validation",
+        "test_gl125_operational_smoke_bundle",
+        "test_gl139_audit_hash_chain_write_lock",
+        "test_gl141_operator_model_default",
+        "test_gl142_read_json_bytesio_cleanup",
+        "test_gl162a_pre_publication_security_review_fixes",
+        "test_gl181_public_snapshot_exclusion_cleanup",
+        "test_gl190_demo_endpoint_safety_guard",
+        "test_gl200b_tenant_workspace_isolation_baseline",
+        "test_gl200c_tenant_workspace_api_audit_regression",
+        "test_gl201_production_auth_secrets_config_hardening",
+        "test_gl206_admin_operator_tenant_control_plane",
+        "test_gl208_runtime_abuse_incident_hardening",
+        "test_gl214_production_iam_operator_control_completion",
+        "test_gl215_tenant_workspace_production_guarantee",
+        "test_gl219_production_identity_access_hardening_pack",
+        "test_gl227_workspace_context_integration",
+        "test_gl228_fastapi_migration_phase1",
+        "test_gl229_fastapi_migration_phase2",
+        "test_gl233_critical_quickstart_fixes",
+        "test_gl236_single_server",
+        "test_gl237_api_consistency_fixes",
+        "test_gl242_api_versioning",
+        "test_gl251_auth_rate_limiting",
+        "test_gl252_audit_chain_concurrency",
+        "test_gl254_health_endpoint",
+        "test_gl260_workspace_isolation",
+        "test_gl261_rs256_auth",
+        "test_gl262_demo_isolation",
+        "test_gl290_redis_rate_limiter",
+        "test_gl293_quality_hardening",
+        "test_gl295_jwt_iss_aud_claims",
+        "test_gl298_p0_audit_chain_jwt_fixes",
+        "test_gl301_service_layer",
+        "test_gl302_coverage",
+        "test_gl303_redis_rate_limiting",
+        "test_gl304_bigserial_pagination",
+        "test_gl305_async_fastapi",
+        "test_gl306_oidc_saml",
+        "test_gl307_docker_secrets_vault",
+        "test_gl308b_webhooks_module",
+        "test_gl308c_webhooks_async",
+        "test_gl308c_webhooks_coverage",
+        "test_gl308d_webhooks_router_async",
+        "test_gl308_webhooks",
+        "test_gl315_bulk_operations",
+        "test_gl316_exports",
+        "test_gl319_gdpr",
+        "test_gl328_coverage_patch",
+        "test_gl329_coverage_patch2",
+        "test_gl347_control_plane_cross_tenant",
+        "test_gl348_error_path_coverage",
+        "test_gl348_migration_chain_fresh_db",
+        "test_gl349_admin_plane_cross_tenant_enumeration",
+        "test_grant_executions",
+        "test_grant_requests",
+        "test_grant_usage_limits",
+        "test_migration_parity",
+        "test_migration_runner_alembic_guard",
+        "test_migration_runner_postgres_guard",
+        "test_operators",
+        "test_policy_engine",
+        "test_product_core",
+        "test_security_boundary_regression",
+    ]
+)

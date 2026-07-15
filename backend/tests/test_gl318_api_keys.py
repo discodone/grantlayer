@@ -73,7 +73,12 @@ class TestApiKeyKeyFormat(unittest.TestCase):
 
 class TestApiKeyCrud(unittest.TestCase):
     def setUp(self):
-        self.client = _make_client()
+        # Enter the TestClient context so all requests in this test share one
+        # event loop. Without this, TestClient spins a fresh loop per request
+        # and the cached asyncpg engine (PostgreSQL) raises "attached to a
+        # different loop". Production runs a single uvicorn loop, so this is a
+        # test-harness concern only; aiosqlite tolerates it, asyncpg does not.
+        self.client = self.enterContext(_make_client())
         self.auth = f"Bearer {_jwt_token()}"
 
     def test_create_api_key_returns_raw_key(self):
