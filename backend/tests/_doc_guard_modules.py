@@ -137,5 +137,10 @@ DOC_GUARD_MODULES: frozenset[str] = frozenset(
         "test_gl221_workspace_enforcement_final_go_no_go_v6",
         "test_gl223_workspace_identity_membership_ownership_implementation_plan",
         "test_gl234_public_repo_cleanup",
+        # Validates repo/dev-tooling artifacts (.pre-commit-config.yaml,
+        # Makefile, pyproject.toml, CONTRIBUTING.md, dev-setup.sh) — no
+        # application or database logic, so it does not belong in the functional
+        # PostgreSQL/SQLite suites.
+        "test_gl310_dev_tooling",
     ]
 )
