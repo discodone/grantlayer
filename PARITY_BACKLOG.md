@@ -60,11 +60,27 @@ that.
   named (`line 3: _chain_hash mismatch`), a truncated tail fails the count
   check. All three gates behaved live exactly as against the offline stubs.
 
-**REMAINING — manual, operator-only (unchanged; not Claude Code):**
+**Ceremony tooling ready (2026-07-16, commit `114587d`):**
+`scripts/gen_mainnet_wallet.py` is committed and inert — running it is the
+operator's deliberate act. It writes ONLY the separate file
+`secrets/cardano_signing_key_mainnet` with `O_CREAT|O_EXCL` (hard-refuses to
+overwrite a funded key; structurally cannot touch the preprod key), prints only
+the `addr1…` address, and offers `--verify-backup` to prove the paper backup
+in memory (writes nothing, prints no key material).
 
-1. **Mainnet key ceremony** — a separate key, separate wallet, separate secret
-   file (**NEVER run `gen_preprod_wallet.py` against mainnet**). Fund to the 25 ADA
-   cap and set `EXPECTED_ADDRESS` to the derived mainnet address.
+**Backup fact the operator must know:** the anchor key has **NO mnemonic** —
+`PaymentSigningKey.generate()` is raw CSPRNG output; no word phrase exists or
+can recover it. **Back up the 64-hex seed (or the JSON key file), NOT a word
+phrase.** Recovery = rebuild the constant `.skey` envelope around the 64 hex
+chars. Prove the paper copy with `--verify-backup` against the pinned address
+**before funding**.
+
+**REMAINING — manual, operator-only (not Claude Code):**
+
+1. **Mainnet key ceremony** — run `gen_mainnet_wallet.py` once (**NEVER
+   `gen_preprod_wallet.py` against mainnet**); pin the printed `addr1…` address
+   as `GRANTLAYER_CARDANO_EXPECTED_ADDRESS`; paper-backup the 64-hex seed and
+   prove it with `--verify-backup`; only then fund to the 25 ADA cap.
 2. **First mainnet anchor** — run manually (not on the daily cron), behind the
    human checkpoint, verify on-chain, and only then enable the cron.
 
