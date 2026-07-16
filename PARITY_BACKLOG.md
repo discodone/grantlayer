@@ -14,6 +14,47 @@
   moved into `backend/requirements-dev.txt` so every job/clone gets them
   deterministically.
 
+## Mainnet anchoring — status 2026-07-16 (guards landed, path still disabled)
+
+**Landed** (commit `7eae777`, branch `gl-351-anchor-mainnet-cap-guards`, **NOT on
+`main`**): fail-closed spend guards for mainnet Cardano anchoring — three gates
+plus signing-key redaction, **22/22 proven offline / network-free**, and the
+**mainnet path stays disabled**.
+
+- Gate A — wallet-balance ceiling (pre-build, fail-closed: no balance
+  confirmation ⇒ no submit).
+- Gate B — expected-address pin (worker/app refuse to boot on mismatch; re-checked
+  pre-submit).
+- Gate C — per-tx fee ceiling (post-build, before the single irreversible
+  `submit_tx`).
+- Redaction — sanitized re-raise (`AnchorSubmitError(type(exc).__name__)`) + a
+  `CardanoConfig.__repr__` that masks `signing_key` / `blockfrost_project_id`.
+
+**Cap parameters chosen:**
+
+- Wallet float: **25 ADA**.
+- Wallet ceiling: **50 ADA** — `GRANTLAYER_CARDANO_MAX_WALLET_LOVELACE=50000000`.
+- Per-tx fee ceiling: **1.0 ADA** — `GRANTLAYER_CARDANO_MAX_FEE_LOVELACE=1000000`.
+- Expected-address pin (`GRANTLAYER_CARDANO_EXPECTED_ADDRESS`) is **required on
+  mainnet**; app + worker refuse to boot on `network=mainnet` without all three
+  caps and a key that derives to the pinned address.
+
+**OUTSTANDING — manual, operator-only (not Claude Code; needs real credentials):**
+
+1. **Live on-chain PREPROD submit + `verify-anchor.py --network preprod`** in a
+   credentialed environment (funded preprod wallet + Blockfrost project id). This
+   is the end-to-end proof the guards work against a real chain; exact commands
+   are in the guard design. **Must pass before any mainnet step.**
+2. **Mainnet key ceremony** — a separate key, separate wallet, separate secret
+   file (**NEVER run `gen_preprod_wallet.py` against mainnet**). Fund to the 25 ADA
+   cap and set `EXPECTED_ADDRESS` to the derived mainnet address.
+3. **First mainnet anchor** — run manually (not on the daily cron), behind the
+   human checkpoint, verify on-chain, and only then enable the cron.
+
+**Note:** the branch is **not merged to `main`**. At live-preprod-proof time,
+decide whether to merge the disabled guards to `main` first (they are safe —
+mainnet is disabled) or keep them on the branch until the full path is proven.
+
 ## Landed 2026-07-15 — Tier-1 hardening
 
 - **CI made honest** — the `postgres-ci` integration job was repointed from
