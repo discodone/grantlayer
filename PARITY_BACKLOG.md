@@ -14,12 +14,15 @@
   moved into `backend/requirements-dev.txt` so every job/clone gets them
   deterministically.
 
-## Mainnet anchoring — status 2026-07-16 (guards landed, path still disabled)
+## Mainnet anchoring — status 2026-07-16 (guards MERGED, live-preprod-proven, path still disabled)
 
-**Landed** (commit `7eae777`, branch `gl-351-anchor-mainnet-cap-guards`, **NOT on
-`main`**): fail-closed spend guards for mainnet Cardano anchoring — three gates
-plus signing-key redaction, **22/22 proven offline / network-free**, and the
-**mainnet path stays disabled**.
+**Merged to `main`** (merge commit `70bc070`, `--no-ff`; original `7eae777`
+preserved as a parent so the audit trail binding the live preprod tx to the
+exact code stays intact): fail-closed spend guards for mainnet Cardano
+anchoring — three gates plus signing-key redaction, 22/22 proven
+offline/network-free AND **proven live against the real preprod chain** (see
+below). The **mainnet path stays disabled** — merging changed nothing about
+that.
 
 - Gate A — wallet-balance ceiling (pre-build, fail-closed: no balance
   confirmation ⇒ no submit).
@@ -39,21 +42,36 @@ plus signing-key redaction, **22/22 proven offline / network-free**, and the
   mainnet**; app + worker refuse to boot on `network=mainnet` without all three
   caps and a key that derives to the pinned address.
 
-**OUTSTANDING — manual, operator-only (not Claude Code; needs real credentials):**
+**DONE 2026-07-16 — live on-chain preprod proof (the gate for this merge):**
 
-1. **Live on-chain PREPROD submit + `verify-anchor.py --network preprod`** in a
-   credentialed environment (funded preprod wallet + Blockfrost project id). This
-   is the end-to-end proof the guards work against a real chain; exact commands
-   are in the guard design. **Must pass before any mainnet step.**
-2. **Mainnet key ceremony** — a separate key, separate wallet, separate secret
+- **Gate A refusal live:** wallet 9,999.83 tADA vs a 50 ADA cap →
+  `aborted_overfunded_or_wrong_wallet`; zero spend, UTxO set identical, no DB
+  row, `submit_tx` never reached — against real Blockfrost.
+- **Happy-path anchor live:** tx
+  `380692ef46093f9be361c6a83e94fb18c0e2efa01e23834c4bb9b17c0af1ea9f` (preprod
+  block 4,942,650), fee **170,737 lovelace = 0.170737 tADA** — genuinely
+  evaluated by Gate C under the 1.0 ADA ceiling (on-chain fee == wallet balance
+  delta). Payload `{h: fbd71925…cbd295, s: 5, t: 2026-07-16T10:54:00.893628Z}`
+  over a real 5-event audit chain; `submitted` row witnessed mid-run →
+  `confirmed` + tx id; exactly one tx on the wallet.
+- **Independent keyless verification:** `verify-anchor.py --network preprod` →
+  **VERIFIED, exit 0** via Koios (no credentials, no GrantLayer code/DB); both
+  negative controls discriminate — a tampered line fails with the precise line
+  named (`line 3: _chain_hash mismatch`), a truncated tail fails the count
+  check. All three gates behaved live exactly as against the offline stubs.
+
+**REMAINING — manual, operator-only (unchanged; not Claude Code):**
+
+1. **Mainnet key ceremony** — a separate key, separate wallet, separate secret
    file (**NEVER run `gen_preprod_wallet.py` against mainnet**). Fund to the 25 ADA
    cap and set `EXPECTED_ADDRESS` to the derived mainnet address.
-3. **First mainnet anchor** — run manually (not on the daily cron), behind the
+2. **First mainnet anchor** — run manually (not on the daily cron), behind the
    human checkpoint, verify on-chain, and only then enable the cron.
 
-**Note:** the branch is **not merged to `main`**. At live-preprod-proof time,
-decide whether to merge the disabled guards to `main` first (they are safe —
-mainnet is disabled) or keep them on the branch until the full path is proven.
+**Mainnet remains DISABLED on `main`.** Merging the guards changes nothing about
+mainnet being off: `network` defaults to `preprod`, and app + worker refuse to
+boot on `network=mainnet` without all three caps and a key deriving to the
+pinned address.
 
 ## Landed 2026-07-15 — Tier-1 hardening
 
