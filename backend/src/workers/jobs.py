@@ -179,6 +179,26 @@ def _anchor_audit_chain_sync(workspace_id: Optional[str]) -> dict:
         logger.warning("anchor_audit_chain: chain unreachable — aborting: %s", exc)
         return {"status": "aborted_unreachable", "error": str(exc)}
 
+    # Gate 4c — wallet-balance ceiling (fail-closed, pre-build). Active only when a
+    # cap is configured (REQUIRED on mainnet, optional on preprod). No balance
+    # confirmation ⇒ NO submit: a failed/timed-out balance query aborts here.
+    if config.max_wallet_lovelace is not None:
+        try:
+            balance = writer.read_wallet_lovelace(chain, config)
+        except Exception as exc:
+            logger.warning(
+                "anchor_audit_chain: wallet balance unavailable — aborting: %s", exc
+            )
+            return {"status": "aborted_balance_unavailable", "error": str(exc)}
+        if balance > config.max_wallet_lovelace:
+            logger.error(
+                "anchor_audit_chain: wallet balance %d lovelace exceeds cap %d "
+                "— aborting (over-funded or wrong wallet)",
+                balance,
+                config.max_wallet_lovelace,
+            )
+            return {"status": "aborted_overfunded_or_wrong_wallet"}
+
     now = datetime.now(timezone.utc)
     day = now.date().isoformat()
     maker = get_session_maker()
@@ -223,13 +243,20 @@ def _anchor_audit_chain_sync(workspace_id: Optional[str]) -> dict:
     try:
         tx_id = writer.submit_anchor(chain, config, payload)
     except Exception as exc:
-        logger.error("anchor_audit_chain: submit failed — marking failed: %s", exc)
+        # Log the exception TYPE first; the build/sign span already sanitizes its
+        # failures into a key-free AnchorSubmitError, so nothing raw from that path
+        # is stringified here.
+        logger.error(
+            "anchor_audit_chain: submit failed [%s] — marking failed: %s",
+            type(exc).__name__,
+            exc,
+        )
         with maker() as session:
             row = session.get(AnchorRecord, record_id)
             if row is not None:
                 row.status = "failed"
                 session.commit()
-        return {"status": "submit_failed", "error": str(exc)}
+        return {"status": "submit_failed", "error": type(exc).__name__}
 
     # Confirm only after the chain acknowledges the submission.
     with maker() as session:
