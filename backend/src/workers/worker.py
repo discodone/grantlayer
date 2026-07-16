@@ -24,6 +24,24 @@ def _build_redis_settings() -> Any:
         raise RuntimeError(f"ARQ worker: invalid REDIS_URL {REDIS_URL!r}") from exc
 
 
+def _validate_anchor_startup() -> None:
+    """Fail-closed worker boot gate for Cardano anchoring.
+
+    The ARQ worker is the process that actually spends ADA, yet it bypasses the
+    FastAPI app boot gate. Re-run CardanoConfig.startup_errors() here so the worker
+    REFUSES TO BOOT when anchoring is enabled but misconfigured — missing spend
+    caps on mainnet, or a signing key that does not derive to the pinned
+    GRANTLAYER_CARDANO_EXPECTED_ADDRESS (wrong key / preprod-under-mainnet
+    collision). When anchoring is disabled (default) this is a no-op.
+    """
+    errs = CardanoConfig.from_env().startup_errors()
+    if errs:
+        raise RuntimeError(
+            "ARQ worker refuses to boot — Cardano anchoring is misconfigured:\n"
+            + "\n".join(errs)
+        )
+
+
 def _build_cron_jobs() -> list[Any]:
     """Register the daily Cardano anchor as a cron job at the configured time.
 
@@ -33,6 +51,7 @@ def _build_cron_jobs() -> list[Any]:
     """
     from arq import cron  # propagates ImportError if arq not installed
 
+    _validate_anchor_startup()  # refuse to boot on a misconfigured anchor setup
     cfg = CardanoConfig.from_env()
     return [cron(anchor_audit_chain, hour=cfg.cron_hour, minute=cfg.cron_minute)]
 

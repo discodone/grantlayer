@@ -52,6 +52,11 @@ class TestSubmitAnchorAddress(unittest.TestCase):
         cfg = mock.MagicMock(name="CardanoConfig")
         cfg.signing_key = _SKEY_JSON
         cfg.network = "preprod"
+        # New cap-guard fields inactive here so this address regression stays
+        # focused (Gates B/C are exercised in test_anchor_cap_guards.py).
+        cfg.expected_address = None
+        cfg.max_fee_lovelace = None
+        cfg.max_wallet_lovelace = None
         return cfg
 
     def test_submit_anchor_uses_expected_enterprise_testnet_address(self):

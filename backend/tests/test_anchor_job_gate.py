@@ -60,6 +60,11 @@ def _fake_config(*, configured: bool):
     cfg.anchor_label = 923350
     cfg.blockfrost_project_id = "preprodPID" if configured else None
     cfg.signing_key = '{"type":"x","cborHex":"00"}' if configured else None
+    # Cap guards inactive in these ordering tests (exercised in
+    # test_anchor_cap_guards.py) so Gate A/B/C do not intercept the flow.
+    cfg.max_wallet_lovelace = None
+    cfg.max_fee_lovelace = None
+    cfg.expected_address = None
     return cfg
 
 
