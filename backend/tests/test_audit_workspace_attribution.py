@@ -263,13 +263,28 @@ class TestGrantRequestWritePaths(_WritePathBase):
 
 class TestApiKeyWritePath(_WritePathBase):
     def test_api_key_created_audit_event_carries_workspace(self):
+        # Creation now binds via workspace RESOLUTION (not the retired JWT
+        # claim), so the workspace must exist as a row and be selected.
         ws = f"ws-{uuid.uuid4()}"
+        conn = self.db_mod.get_conn()
+        try:
+            conn.execute(
+                """INSERT INTO workspaces
+                       (id, tenant_id, name, slug, owner_id, status,
+                        created_at, updated_at)
+                   VALUES (?, 't1', 'attr-ws', ?, 'system', 'active',
+                           '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')""",
+                (ws, ws),
+            )
+            conn.commit()
+        finally:
+            conn.close()
         client = self._client()
-        token = self._jwt("api-key-user", "grant_admin", tenant_id="t1", workspace_id=ws)
+        token = self._jwt("api-key-user", "owner", tenant_id="t1")
         resp = client.post(
             "/v1/api-keys",
             json={"name": "K", "scopes": ["read_write"]},
-            headers={"Authorization": f"Bearer {token}"},
+            headers={"Authorization": f"Bearer {token}", "X-Workspace-Id": ws},
         )
         self.assertEqual(resp.status_code, 201, resp.text)
         evt = self._one_event("api_key_created")

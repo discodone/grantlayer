@@ -26,8 +26,8 @@ def _jwt_token(role: str = "grant_admin") -> str:
     os.environ["GRANTLAYER_JWT_SECRET"] = _TEST_SECRET
     from backend.src.api.auth_jwt import encode_token
     return encode_token(
-        {"sub": "scope-test-user", "role": role, "tenant_id": "t-scope",
-         "workspace_id": "ws-scope", "iss": "grantlayer", "aud": "grantlayer-api"},
+        {"sub": "scope-test-user", "role": role, "tenant_id": "demo",
+         "iss": "grantlayer", "aud": "grantlayer-api"},
         _TEST_SECRET,
     )
 
@@ -36,7 +36,7 @@ def _create_api_key(client, scope: str):
     """Create an API key via the API and return its raw token."""
     resp = client.post(
         "/v1/api-keys",
-        json={"name": f"test-{scope}", "scopes": [scope], "workspace_id": "ws-scope"},
+        json={"name": f"test-{scope}", "scopes": [scope]},
         headers={"Authorization": f"Bearer {_jwt_token()}"},
     )
     assert resp.status_code == 201, f"Failed to create {scope} key: {resp.text}"

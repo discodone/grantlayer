@@ -18,7 +18,7 @@ from ...audit.audit_log import append_event
 from ...core.db import get_async_db
 from ...core.models import AuditEvent
 from ..auth_jwt import validate_jwt_header
-from ..deps import assert_admin_tenant_scope
+from ..deps import assert_admin_tenant_scope, async_resolve_auth_and_workspace
 
 router = APIRouter(prefix="/api-keys", tags=["api-keys"])
 
@@ -58,9 +58,34 @@ class ApiKeyCreateRequest(BaseModel):
 async def create_api_key(
     body: ApiKeyCreateRequest,
     authorization: Annotated[Optional[str], Header()] = None,
+    x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
-    payload = _resolve_user(authorization)
+    # Creation binds the key to the creator's RESOLVED workspace — the same
+    # membership-validated resolution every other router uses
+    # (async_resolve_auth_and_workspace). No claim-derived workspace, no
+    # default fallback: a caller without a resolvable workspace context gets
+    # the resolver's 403 and no key is created.
+    payload, ws_ctx = await async_resolve_auth_and_workspace(
+        authorization, [], db, workspace_id=x_workspace_id
+    )
+
+    # The workspace binding is server-derived only. A body workspace_id is
+    # rejected outright (fail loud) — accepting even a matching value would
+    # keep a client-influenced binding channel alive.
+    if body.workspace_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "workspace_id not allowed",
+                "errorCode": "body_workspace_id_not_allowed",
+                "reason": (
+                    "The key's workspace binding is derived from your resolved "
+                    "workspace; remove workspace_id from the request body "
+                    "(select a workspace with the X-Workspace-Id header)."
+                ),
+            },
+        )
 
     invalid_scopes = set(body.scopes) - _VALID_SCOPES
     if invalid_scopes:
@@ -86,21 +111,7 @@ async def create_api_key(
         )
 
     user_id = payload.get("sub", "unknown")
-    # SECURITY: the workspace binding comes exclusively from the
-    # signature-verified auth context. A body workspace_id, if present, must equal
-    # the authenticated workspace — it can never override it (cross-tenant priv-esc).
-    verified_workspace_id = payload.get("workspace_id") or "default"
-    requested_workspace_id = body.workspace_id.strip() if body.workspace_id else ""
-    if requested_workspace_id and requested_workspace_id != verified_workspace_id:
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "error": "Forbidden",
-                "errorCode": "workspace_mismatch",
-                "reason": "workspace_id must match your authenticated workspace.",
-            },
-        )
-    workspace_id = verified_workspace_id
+    workspace_id = ws_ctx["workspace_id"]
     raw_key = _generate_raw_key()
     key_hash = _hash_key(raw_key)
     key_id = str(uuid.uuid4())

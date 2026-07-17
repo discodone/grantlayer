@@ -19,7 +19,7 @@ def _make_token(role: str = "owner") -> str:
     secret = "gl339-test-secret-exactly-32bytes!"
     from backend.src.core.config import JWT_ISSUER, JWT_AUDIENCE
     return encode_token(
-        {"sub": "u1", "role": role, "tenant_id": "t1", "workspace_id": "ws1",
+        {"sub": "u1", "role": role, "tenant_id": "demo",
          "iss": JWT_ISSUER or "grantlayer", "aud": JWT_AUDIENCE or "grantlayer-api"},
         secret,
     )
@@ -49,7 +49,7 @@ class TestApiKeyResponseCamelCase(unittest.TestCase):
     def _create_key(self, scope: str = "read_only") -> dict:
         resp = self.client.post(
             "/v1/api-keys",
-            json={"name": "test-key", "scopes": [scope], "workspaceId": "ws1"},
+            json={"name": "test-key", "scopes": [scope]},
             headers=self.auth,
         )
         self.assertEqual(resp.status_code, 201, resp.text)

@@ -207,5 +207,178 @@ class TestApiKeyResolverAsync(_ApiKeyResolverBase):
             )
 
 
+class TestApiKeyCreationBinding(_ApiKeyResolverBase):
+    """RED — API-key CREATION binds the key to the creator's RESOLVED workspace.
+
+    Today POST /v1/api-keys derives the binding from a raw JWT claim
+    (payload.get("workspace_id") or "default") with no workspace resolution:
+    internal JWTs carry no workspace claim, so every key binds to "default"
+    regardless of the creator's actual workspace, and callers without any
+    resolvable workspace still mint keys.
+
+    Desired (asserted here): creation resolves the workspace through the
+    standard resolver machinery; the created key's binding IS the resolved
+    workspace; a request-body workspace_id is rejected fail-loud with no key
+    row; no resolvable workspace → 403 and no key row; demo-context creation
+    works via REAL membership resolution; and end-to-end, a key created under
+    workspace A resolves back into A when used.
+    """
+
+    _JWT_SECRET = "apikey-binding-test-secret-0123456789abcdef"
+
+    def setUp(self):
+        super().setUp()
+        self._orig_jwt = {
+            k: os.environ.get(k)
+            for k in ("GRANTLAYER_JWT_SECRET", "GRANTLAYER_JWT_PUBLIC_KEY")
+        }
+        os.environ["GRANTLAYER_JWT_SECRET"] = self._JWT_SECRET
+        os.environ.pop("GRANTLAYER_JWT_PUBLIC_KEY", None)
+
+    def tearDown(self):
+        for key, orig in self._orig_jwt.items():
+            if orig is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = orig
+        super().tearDown()
+
+    def _jwt(self, *, sub, role, tenant_id):
+        from backend.src.api.auth_jwt import encode_token
+
+        return encode_token(
+            {
+                "sub": sub,
+                "role": role,
+                "tenant_id": tenant_id,
+                "iss": "grantlayer",
+                "aud": "grantlayer-api",
+            },
+            self._JWT_SECRET,
+        )
+
+    def _insert_membership(self, workspace_id, operator_id):
+        conn = self.db_mod.get_conn()
+        try:
+            conn.execute(
+                """INSERT INTO workspace_members
+                       (id, workspace_id, operator_id, role, joined_at, status)
+                   VALUES (?, ?, ?, 'workspace_member',
+                           '2026-07-17T00:00:00Z', 'active')""",
+                (str(uuid.uuid4()), workspace_id, operator_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def _client(self):
+        from fastapi.testclient import TestClient
+
+        from backend.src.api.app import create_app
+
+        return TestClient(create_app(), raise_server_exceptions=False)
+
+    def _post_key(self, token, *, header_workspace=None, body_extra=None):
+        headers = {"Authorization": f"Bearer {token}"}
+        if header_workspace is not None:
+            headers["X-Workspace-Id"] = header_workspace
+        body = {"name": "binding-test", "scopes": ["read_only"]}
+        if body_extra:
+            body.update(body_extra)
+        return self._client().post("/v1/api-keys", json=body, headers=headers)
+
+    def _key_row_workspace(self, key_id):
+        conn = self.db_mod.get_conn()
+        try:
+            row = conn.execute(
+                "SELECT workspace_id FROM api_keys WHERE id = ?", (key_id,)
+            ).fetchone()
+            return row["workspace_id"] if row is not None else None
+        finally:
+            conn.close()
+
+    def _key_row_count(self):
+        conn = self.db_mod.get_conn()
+        try:
+            return conn.execute("SELECT COUNT(*) AS n FROM api_keys").fetchone()["n"]
+        finally:
+            conn.close()
+
+    def test_key_binds_to_creators_resolved_workspace(self):
+        """(i) RED: creator resolved into workspace A → key row bound to A."""
+        token = self._jwt(sub="creator-1", role="owner", tenant_id="demo")
+        resp = self._post_key(token, header_workspace=self.ws_a)
+        self.assertEqual(resp.status_code, 201, f"harness broke: {resp.text}")
+        key_id = resp.json()["id"]
+        self.assertEqual(
+            self._key_row_workspace(key_id),
+            self.ws_a,
+            "created key is not bound to the creator's resolved workspace "
+            f"{self.ws_a}",
+        )
+
+    def test_body_workspace_id_is_rejected(self):
+        """(ii) RED: a request-body workspace_id must be rejected fail-loud
+        and create NO key row — today a matching value is accepted."""
+        token = self._jwt(sub="creator-2", role="owner", tenant_id="demo")
+        before = self._key_row_count()
+        resp = self._post_key(
+            token,
+            header_workspace="default",
+            body_extra={"workspace_id": "default"},
+        )
+        self.assertIn(
+            resp.status_code,
+            (400, 422),
+            "body workspace_id was accepted instead of rejected: "
+            f"{resp.status_code} {resp.text}",
+        )
+        self.assertEqual(self._key_row_count(), before, "a key row was created")
+
+    def test_no_resolvable_workspace_is_refused(self):
+        """(iii) RED: a caller with NO resolvable workspace (non-demo tenant,
+        no membership, no header) must get 403 and create no key row."""
+        token = self._jwt(sub="creator-3", role="grant_admin", tenant_id="hofer")
+        before = self._key_row_count()
+        resp = self._post_key(token)
+        self.assertEqual(
+            resp.status_code,
+            403,
+            "creation without a resolvable workspace was allowed: "
+            f"{resp.status_code} {resp.text}",
+        )
+        self.assertEqual(self._key_row_count(), before, "a key row was created")
+
+    def test_demo_context_creation_works_via_membership_resolution(self):
+        """(iv) Positive control: a REGULAR-role demo-tenant creator with a
+        real membership row resolves via single_membership (not any fallback)
+        and creation works, bound to the membership workspace."""
+        self._insert_membership(self.ws_a, "creator-4")
+        token = self._jwt(sub="creator-4", role="grant_admin", tenant_id="demo")
+        resp = self._post_key(token)
+        self.assertEqual(resp.status_code, 201, f"membership creation broke: {resp.text}")
+        key_id = resp.json()["id"]
+        self.assertEqual(
+            self._key_row_workspace(key_id),
+            self.ws_a,
+            "key not bound to the membership-resolved workspace",
+        )
+
+    def test_end_to_end_created_key_resolves_into_its_workspace(self):
+        """(v) RED: a key created under workspace A must RESOLVE into A when
+        used (creation binding + resolver binding, tied together)."""
+        token = self._jwt(sub="creator-5", role="owner", tenant_id="demo")
+        resp = self._post_key(token, header_workspace=self.ws_a)
+        self.assertEqual(resp.status_code, 201, f"harness broke: {resp.text}")
+        raw_key = resp.json()["key"]
+
+        _, ws_ctx = self._resolve_sync(raw_key, None)
+        self.assertEqual(
+            ws_ctx["workspace_id"],
+            self.ws_a,
+            "a key created under workspace A does not resolve into A",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
