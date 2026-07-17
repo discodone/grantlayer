@@ -131,6 +131,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
 
@@ -150,6 +151,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         h = bundle["evidenceHash"]
@@ -165,6 +167,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         self.assertEqual(bundle["canonicalVersion"], "gl-evidence-v1")
@@ -178,6 +181,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         self.assertIsInstance(bundle["auditTrail"], list)
@@ -192,10 +196,12 @@ class TestEvidenceAuditContract(unittest.TestCase):
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         audit_trail = bundle["auditTrail"]
@@ -210,6 +216,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         export1 = self.eb_mod.export_bundle_json(bundle)
@@ -226,6 +233,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         evidence_hash = bundle.get("evidenceHash", "")
@@ -253,6 +261,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         hash_from_bundle = bundle["evidenceHash"]
@@ -274,6 +283,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         self.assertIn("grantSignatureResult", bundle["grant"])
@@ -315,6 +325,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
         result1 = self.demo_mod.handle_demo_action(
             subject, "technician", "restart-service", resource,
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertTrue(result1["approved"])
         bundle1 = self.eb_mod.build_evidence_bundle(result1["executionId"])
@@ -324,6 +335,7 @@ class TestEvidenceAuditContract(unittest.TestCase):
         result2 = self.demo_mod.handle_demo_action(
             subject, "technician", "restart-service", resource,
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertFalse(result2["approved"])
         bundle2 = self.eb_mod.build_evidence_bundle(result2["executionId"])

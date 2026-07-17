@@ -155,6 +155,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             self.subject_id, "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertTrue(result["approved"], f"Demo action denied: {result}")
         self.assertIsNotNone(result["executionId"])
@@ -220,6 +221,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             self.subject_id, "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertFalse(result["approved"])
 
@@ -257,6 +259,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         result1 = self.demo_mod.handle_demo_action(
             self.subject_id, "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertTrue(result1["approved"], f"First execution denied: {result1}")
 
@@ -268,6 +271,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         result2 = self.demo_mod.handle_demo_action(
             self.subject_id, "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertFalse(result2["approved"])
         self.assertIn("revoked", result2["reason"].lower())
@@ -298,6 +302,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
             self.subject_id, "technician", "restart-service", "customer-env-a",
             challenge_id=challenge.id,
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertTrue(result["approved"], f"Execution denied: {result}")
         self.assertEqual(result["challengeId"], challenge.id)
@@ -329,6 +334,7 @@ class TestE2EMvpWorkflow(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             self.subject_id, "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "challenge_required")

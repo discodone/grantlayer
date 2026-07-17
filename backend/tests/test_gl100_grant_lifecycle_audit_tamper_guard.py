@@ -403,6 +403,7 @@ class TestGrantConsumeAudit(_BaseGl100):
         demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         events = self.audit_mod.list_events()
         self.assertEqual(len(events), 1)

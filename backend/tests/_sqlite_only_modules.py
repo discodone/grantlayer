@@ -35,6 +35,7 @@ SQLITE_ONLY_MODULES: frozenset[str] = frozenset(
         "test_audit_workspace_attribution",
         "test_audit_workspace_not_null",
         "test_audit_write_atomicity",
+        "test_demo_action_workspace_scoping",
         "test_e2e_mvp_workflow",
         "test_evidence_audit_contract",
         "test_evidence_bundle",

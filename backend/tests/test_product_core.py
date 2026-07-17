@@ -127,6 +127,7 @@ class TestProductCoreHardening(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "challenge_required")
@@ -145,6 +146,7 @@ class TestProductCoreHardening(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertTrue(result["approved"])
         self.assertEqual(result.get("challengeId"), c.id)
@@ -219,6 +221,7 @@ class TestProductCoreHardening(unittest.TestCase):
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         events = self.audit_mod.list_events()
         self.assertEqual(len(events), 1)

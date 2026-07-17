@@ -344,6 +344,7 @@ class TestDemoActionTenantPropagation(unittest.TestCase):
             action="read",
             resource="res/1",
             tenant_id="tenant_x",
+            workspace_id="default",
         )
         audit_event_id = result.get("auditEventId")
         self.assertIsNotNone(audit_event_id, "handle_demo_action must return auditEventId")
@@ -362,6 +363,7 @@ class TestDemoActionTenantPropagation(unittest.TestCase):
             action="read",
             resource="res/1",
             tenant_id="tenant_x",
+            workspace_id="default",
         )
         execution_id = result.get("executionId")
         self.assertIsNotNone(execution_id)
@@ -382,6 +384,7 @@ class TestDemoActionTenantPropagation(unittest.TestCase):
             action="read",
             resource="res/1",
             tenant_id="tenant_beta",
+            workspace_id="default",
         )
         self.assertFalse(result["approved"],
                          "Cross-tenant grant must not authorize demo_action")
@@ -395,6 +398,7 @@ class TestDemoActionTenantPropagation(unittest.TestCase):
             action="read",
             resource="private/res",
             tenant_id="tenant_x",
+            workspace_id="default",
         )
         self.assertFalse(result["approved"])
         event_id = result.get("auditEventId")
@@ -411,6 +415,7 @@ class TestDemoActionTenantPropagation(unittest.TestCase):
             action="read",
             resource="res/1",
             tenant_id="demo",
+            workspace_id="default",
         )
         exec_id = result.get("executionId")
         if exec_id:

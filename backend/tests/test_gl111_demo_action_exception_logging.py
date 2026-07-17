@@ -106,6 +106,7 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 result = self.demo_mod.handle_demo_action(
                     "tech-01", "technician", "restart-service", "customer-env-a",
                     tenant_id="demo",
+                    workspace_id="default",
                 )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "internal_handler_error")
@@ -122,6 +123,7 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod.handle_demo_action(
                     "tech-01", "technician", "restart-service", "customer-env-a",
                     tenant_id="demo",
+                    workspace_id="default",
                 )
         log_str = "\n".join(cm.output)
         self.assertIn("component=demo_action", log_str)
@@ -136,6 +138,7 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod.handle_demo_action(
                     "tech-01", "technician", "restart-service", "customer-env-a",
                     tenant_id="demo",
+                    workspace_id="default",
                 )
         log_str = "\n".join(cm.output)
         self.assertIn("exception_type=ValueError", log_str)
@@ -149,6 +152,7 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod.handle_demo_action(
                     "tech-01", "technician", "restart-service", "customer-env-a",
                     tenant_id="demo",
+                    workspace_id="default",
                 )
         log_str = "\n".join(cm.output)
         self.assertNotIn("admin-token-secret-value", log_str)
@@ -163,6 +167,7 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod.handle_demo_action(
                     "tech-01", "technician", "restart-service", "customer-env-a",
                     tenant_id="demo",
+                    workspace_id="default",
                 )
         log_str = "\n".join(cm.output)
         self.assertNotIn("PRIVATE KEY MATERIAL", log_str)
@@ -176,6 +181,7 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod.handle_demo_action(
                     "tech-01", "technician", "restart-service", "customer-env-a",
                     tenant_id="demo",
+                    workspace_id="default",
                 )
         log_str = "\n".join(cm.output)
         self.assertNotIn("passphrase-secret", log_str)
@@ -189,6 +195,7 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod.handle_demo_action(
                     "tech-01", "technician", "restart-service", "customer-env-a",
                     tenant_id="demo",
+                    workspace_id="default",
                 )
         log_str = "\n".join(cm.output)
         self.assertNotIn("raw-request-body-secret", log_str)
@@ -202,6 +209,7 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 self.demo_mod.handle_demo_action(
                     "tech-01", "technician", "restart-service", "customer-env-a",
                     tenant_id="demo",
+                    workspace_id="default",
                 )
         log_str = "\n".join(cm.output)
         self.assertNotIn("signature-secret", log_str)
@@ -215,6 +223,7 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 result = self.demo_mod.handle_demo_action(
                     "tech-01", "technician", "restart-service", "customer-env-a",
                     tenant_id="demo",
+                    workspace_id="default",
                 )
         result_str = json.dumps(result)
         self.assertNotIn("admin-token-secret-value", result_str)
@@ -237,6 +246,7 @@ class TestGl111ExceptionLogging(_BaseGl111):
                 result = self.demo_mod.handle_demo_action(
                     "tech-01", "technician", "restart-service", "customer-env-a",
                     tenant_id="demo",
+                    workspace_id="default",
                 )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "internal_handler_error")
