@@ -39,6 +39,40 @@ from ..policy.opa_client import evaluate_policy
 from .auth_jwt import validate_jwt_header
 
 
+def _api_key_workspace(
+    api_payload: dict[str, Any], client_workspace_id: Optional[str]
+) -> str:
+    """Return the workspace an API-key request resolves into: the key's binding.
+
+    Fail-closed contract (shared by the sync and async resolvers):
+      * a key with a missing/empty workspace binding is refused — never a
+        fallback to a default;
+      * a client-supplied workspace header can never override the binding —
+        present and mismatching is a 403, present and matching is allowed.
+    """
+    bound = api_payload.get("workspace_id")
+    if not bound:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "api_key_workspace_unbound",
+                "errorCode": "api_key_workspace_unbound",
+                "reason": "This API key has no workspace binding and cannot be used.",
+            },
+        )
+    client = client_workspace_id.strip() if client_workspace_id else None
+    if client and client != bound:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "workspace_mismatch",
+                "errorCode": "workspace_mismatch",
+                "reason": "X-Workspace-Id does not match this API key's bound workspace.",
+            },
+        )
+    return bound
+
+
 async def async_resolve_auth_and_workspace(
     authorization: Optional[str],
     required_roles: list[str],
@@ -65,7 +99,7 @@ async def async_resolve_auth_and_workspace(
                         "reason": "API key is invalid, revoked, or expired.",
                     },
                 )
-            effective_workspace = workspace_id or api_payload["workspace_id"]
+            effective_workspace = _api_key_workspace(api_payload, workspace_id)
             ws_ctx: dict[str, Any] = {
                 "workspace_id": effective_workspace,
                 "tenant_id": api_payload.get("tenant_id", effective_workspace),
@@ -113,7 +147,7 @@ def resolve_auth_and_workspace(
                 )
             # API keys carry an explicit workspace_id — construct ws_ctx directly
             # without going through membership resolution.
-            effective_workspace = workspace_id or api_payload["workspace_id"]
+            effective_workspace = _api_key_workspace(api_payload, workspace_id)
             ws_ctx: dict[str, Any] = {
                 "workspace_id": effective_workspace,
                 "tenant_id": api_payload["tenant_id"],
