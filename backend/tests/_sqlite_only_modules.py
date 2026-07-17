@@ -169,5 +169,6 @@ SQLITE_ONLY_MODULES: frozenset[str] = frozenset(
         "test_policy_engine",
         "test_product_core",
         "test_security_boundary_regression",
+        "test_workspace_bootstrap",
     ]
 )
