@@ -13,8 +13,10 @@
   requirements file (same class as the `PyYAML` gap fixed 2026-07-15). Should be
   moved into `backend/requirements-dev.txt` so every job/clone gets them
   deterministically.
+- **Anchor writer accepts an empty chain (candidate guard)** — see the
+  "Candidate guard" paragraph in the mainnet-anchoring section below.
 
-## Mainnet anchoring — status 2026-07-16 (guards MERGED, live-preprod-proven, path still disabled)
+## Mainnet anchoring — status 2026-07-17 (infrastructure COMPLETE + FUNDED; first anchor ON HOLD — nothing to attest yet)
 
 **Merged to `main`** (merge commit `70bc070`, `--no-ff`; original `7eae777`
 preserved as a parent so the audit trail binding the live preprod tx to the
@@ -75,19 +77,87 @@ phrase.** Recovery = rebuild the constant `.skey` envelope around the 64 hex
 chars. Prove the paper copy with `--verify-backup` against the pinned address
 **before funding**.
 
-**REMAINING — manual, operator-only (not Claude Code):**
+**DONE 2026-07-17 — mainnet infrastructure complete and proven (all read-only /
+offline checks, no tx ever submitted on mainnet):**
 
-1. **Mainnet key ceremony** — run `gen_mainnet_wallet.py` once (**NEVER
-   `gen_preprod_wallet.py` against mainnet**); pin the printed `addr1…` address
-   as `GRANTLAYER_CARDANO_EXPECTED_ADDRESS`; paper-backup the 64-hex seed and
-   prove it with `--verify-backup`; only then fund to the 25 ADA cap.
-2. **First mainnet anchor** — run manually (not on the daily cron), behind the
-   human checkpoint, verify on-chain, and only then enable the cron.
+- **Key ceremony done** — `gen_mainnet_wallet.py` run once by the operator;
+  pinned address
+  `addr1vyxacx5uru54yf9dz7lmffzgaxj4yq3dz2pk9gdr9tga7vge4hckq`; paper backup of
+  the 64-hex seed proven with `--verify-backup` (MATCH against the pinned
+  address).
+- **Wallet funded exactly 25 ADA** — confirmed on-chain 2026-07-17 via a
+  read-only Blockfrost UTxO query: single UTxO from funding tx
+  `485de1e3b11aab3c836db92863af5e590dc0a7691797a188b084fe3a71d5c4ae` (index 0,
+  25,000,000 lovelace). Under the 50 ADA wallet ceiling → Gate A would PASS.
+- **Mainnet Blockfrost credentials authenticate** — HTTP 200 against
+  `cardano-mainnet.blockfrost.io` (no 403 / network-token mismatch).
+- **Key ↔ address binding verified offline** — derivation from
+  `secrets/cardano_signing_key_mainnet` equals the pinned/funded address
+  (no network, no key material displayed).
+- All three gates already proven live on preprod (section above).
 
-**Mainnet remains DISABLED on `main`.** Merging the guards changes nothing about
-mainnet being off: `network` defaults to `preprod`, and app + worker refuse to
+**BLOCKER — first mainnet anchor ON HOLD (caught 2026-07-17 by the human
+checkpoint):** there is currently NO workspace with real audit events on any
+database on this VM. The old SQLite instance was decommissioned (see "Landed
+2026-07-15"); the `gl_pgfix` PostgreSQL has the full current schema but zero
+`audit_events` / zero `workspaces` rows; `data/grantlayer.db` is a May-2026
+pre-workspace relic. `anchor_head()` over any of these computes the genesis
+head (`h = 0…0` ×64, `s = 0`) — and the writer does NOT refuse an empty chain
+(the payload validation accepts `s=0`; genesis is valid 64-hex). Anchoring
+today would permanently attest, on mainnet, for a fee, that the workspace's
+audit log contained zero events. **The first real anchor waits until a real
+workspace with real events worth attesting exists.** The 25 ADA sits safely in
+the funded wallet, under the cap, until then.
+
+**Candidate guard (flagged 2026-07-17, deliberately NOT implemented — one
+concern per commit):** the anchor path accepts `s=0` / an empty chain. Consider
+a fail-closed refusal in the writer or job ("nothing meaningful to attest" —
+e.g. abort when `entry_count == 0`, or below a configurable floor) so an empty
+or near-empty anchor can never be paid for and permanently attested by
+accident. Today the only thing preventing it is the manual human checkpoint —
+which is exactly what caught this.
+
+**Execution-day recipe — the one-shot manual first anchor (for when real data
+exists; keep behind the human checkpoint):**
+
+There is NO dry-run / build-without-submit mode: `submit_anchor()` builds,
+signs, evaluates Gate C, and submits in one function. What CAN be previewed
+without submitting: the payload `{h, s}` (pure DB read via `anchor_head`),
+Gate A (read-only balance query vs cap), Gate B (offline derivation vs pin).
+The exact fee only exists after build+sign; reference: the identical
+metadata-only preprod tx cost 170,737 lovelace ≈ 0.17 ADA (same fee model).
+
+```bash
+# From the repo root. ALL of this is process-local env — network=mainnet is
+# never set in any file; nothing persists after the process exits.
+export CBOR_C_EXTENSION=1                                # pycardano 0.19.2 import prereq
+export GRANTLAYER_ENABLE_CARDANO_ANCHORING=1
+export GRANTLAYER_CARDANO_NETWORK=mainnet
+export GRANTLAYER_CARDANO_MAX_WALLET_LOVELACE=50000000
+export GRANTLAYER_CARDANO_MAX_FEE_LOVELACE=1000000
+export GRANTLAYER_CARDANO_EXPECTED_ADDRESS=addr1vyxacx5uru54yf9dz7lmffzgaxj4yq3dz2pk9gdr9tga7vge4hckq
+export GRANTLAYER_BLOCKFROST_PROJECT_ID="$(cat secrets/blockfrost_project_id_mainnet)"
+export GRANTLAYER_CARDANO_SIGNING_KEY="$(cat secrets/cardano_signing_key_mainnet)"  # full .skey JSON
+export GRANTLAYER_CARDANO_ANCHOR_WORKSPACE_ID=<workspace-to-attest>  # REQUIRED — no default
+export GRANTLAYER_DATABASE_URL=<db-holding-the-chain>  # decides WHAT gets attested
+
+python3 -c "from backend.src.workers.jobs import _anchor_audit_chain_sync as run; print(run(None))"
+```
+
+Properties of this run: anchors ONCE for the configured workspace; registers
+no cron (the daily cron only exists inside the arq worker's `WorkerSettings`);
+idempotent per (workspace, UTC day) via `anchor_records`; writes one
+`AnchorRecord` row (`submitted` → `confirmed`) into the configured DB and
+spends only the tx fee. After it confirms: verify keylessly with
+`scripts/verify-anchor.py --network mainnet` and only then consider enabling
+the cron.
+
+**Mainnet remains DISABLED on `main`.** `network` defaults to `preprod`;
+`docker-compose.yml` passes `GRANTLAYER_CARDANO_NETWORK` through with a
+`preprod` default; `.env` contains no Cardano vars; and app + worker refuse to
 boot on `network=mainnet` without all three caps and a key deriving to the
-pinned address.
+pinned address. The one-shot env block above is the ONLY place mainnet is ever
+set.
 
 ## Landed 2026-07-15 — Tier-1 hardening
 
