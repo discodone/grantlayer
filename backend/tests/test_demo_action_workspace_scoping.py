@@ -182,6 +182,27 @@ class _WorkspaceScopingBase(unittest.TestCase):
         finally:
             conn.close()
 
+    def _audit_event_workspace(self, event_id):
+        conn = self.db_mod.get_conn()
+        try:
+            row = conn.execute(
+                "SELECT workspace_id FROM audit_events WHERE id = ?", (event_id,)
+            ).fetchone()
+            return row["workspace_id"] if row is not None else None
+        finally:
+            conn.close()
+
+    def _execution_workspace(self, execution_id):
+        conn = self.db_mod.get_conn()
+        try:
+            row = conn.execute(
+                "SELECT workspace_id FROM grant_executions WHERE id = ?",
+                (execution_id,),
+            ).fetchone()
+            return row["workspace_id"] if row is not None else None
+        finally:
+            conn.close()
+
 
 class TestDemoActionWorkspaceScoping(_WorkspaceScopingBase):
     def test_cross_workspace_grant_is_not_matched(self):
@@ -225,6 +246,95 @@ class TestDemoActionWorkspaceScoping(_WorkspaceScopingBase):
         self.assertEqual(body.get("matchedGrantId"), grant.id)
         self.assertEqual(self._grant_use_count(grant.id), 1)
         self.assertEqual(self._executions_referencing(grant.id), 1)
+
+
+class TestDemoActionWorkspaceAttribution(_WorkspaceScopingBase):
+    """RED — every AuditEvent and GrantExecution row this endpoint produces
+    must carry the caller's RESOLVED workspace_id (the same value used for
+    grant matching since the scoping fix), not the hardcoded "default".
+
+    Callers here resolve into non-"default" uuid workspaces, so the hardcode
+    cannot pass by coincidence. Style follows the resolver-workspace assertion
+    pattern of the workspace-context tests (assert against the resolved value).
+    """
+
+    def _attribution(self, body):
+        """{audit, execution} → actual workspace_id of the two written rows."""
+        return {
+            "audit_event": self._audit_event_workspace(body.get("auditEventId")),
+            "execution": self._execution_workspace(body.get("executionId")),
+        }
+
+    def test_approved_decision_attributed_to_caller_workspace(self):
+        """Site a — approved decision: main AuditEvent + GrantExecution row."""
+        self._create_signed_grant_in(self.ws_a)
+
+        body = self._post_demo_action(self.ws_a).json()
+        self.assertTrue(body.get("approved"), f"harness broke: {body}")
+
+        self.assertEqual(
+            self._attribution(body),
+            {"audit_event": self.ws_a, "execution": self.ws_a},
+            "approved decision must be attributed to the caller's resolved "
+            f"workspace {self.ws_a}",
+        )
+
+    def test_no_match_denial_attributed_to_caller_workspace(self):
+        """Site b — no-match denial: decision AuditEvent + GrantExecution row."""
+        body = self._post_demo_action(self.ws_b).json()
+        self.assertFalse(body.get("approved"), f"harness broke: {body}")
+        self.assertIn("No grant found", body.get("reason", ""))
+
+        self.assertEqual(
+            self._attribution(body),
+            {"audit_event": self.ws_b, "execution": self.ws_b},
+            "no-match denial must be attributed to the caller's resolved "
+            f"workspace {self.ws_b}",
+        )
+
+    def test_challenge_missing_denial_attributed_to_caller_workspace(self):
+        """Site c — challenge-required-but-missing denial (the early return):
+        its AuditEvent + GrantExecution row."""
+        os.environ["GRANTLAYER_REQUIRE_CHALLENGE"] = "true"
+        # tearDown restores the saved original; belt-and-braces here too.
+        self.addCleanup(os.environ.pop, "GRANTLAYER_REQUIRE_CHALLENGE", None)
+
+        body = self._post_demo_action(self.ws_a).json()
+        self.assertEqual(
+            body.get("reason"), "challenge_required", f"harness broke: {body}"
+        )
+
+        self.assertEqual(
+            self._attribution(body),
+            {"audit_event": self.ws_a, "execution": self.ws_a},
+            "challenge-missing denial must be attributed to the caller's "
+            f"resolved workspace {self.ws_a}",
+        )
+
+    def test_error_path_execution_attributed_to_caller_workspace(self):
+        """Site d — the handler's except-branch: force an internal failure
+        inside the try (policy evaluation raises) and assert the error-path
+        GrantExecution row carries the caller's workspace."""
+        from unittest import mock
+
+        import backend.src.demo.demo_action as demo_action_mod
+
+        with mock.patch.object(
+            demo_action_mod,
+            "evaluate_access",
+            side_effect=RuntimeError("forced internal failure"),
+        ):
+            body = self._post_demo_action(self.ws_a).json()
+
+        self.assertEqual(
+            body.get("reason"), "internal_handler_error", f"harness broke: {body}"
+        )
+        self.assertEqual(
+            self._execution_workspace(body.get("executionId")),
+            self.ws_a,
+            "error-path GrantExecution row must carry the caller's resolved "
+            f"workspace {self.ws_a}",
+        )
 
 
 if __name__ == "__main__":

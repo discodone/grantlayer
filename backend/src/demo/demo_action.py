@@ -19,10 +19,6 @@ from ..policy.policy_engine import evaluate_access
 
 logger = logging.getLogger(__name__)
 
-# The demo flow always operates within the single demo workspace; its audit
-# events are attributed there rather than left NULL.
-_DEMO_WORKSPACE_ID = "default"
-
 
 def _get_env_bool(name: str) -> bool:
     value = os.environ.get(name, "").strip().lower()
@@ -62,7 +58,9 @@ def handle_demo_action(
             execution.policy_result = "denied"
             execution.result = "denied"
             execution.error_code = "challenge_required"
-            execution = create_grant_execution(execution, tenant_id=effective_tenant)
+            execution = create_grant_execution(
+                execution, tenant_id=effective_tenant, workspace_id=workspace_id
+            )
 
             event = AuditEvent(
                 subject_id=subject_id,
@@ -75,7 +73,7 @@ def handle_demo_action(
                 challenge_result="required_missing",
                 grant_signature_result="not_checked",
                 tenant_id=effective_tenant,
-                workspace_id=_DEMO_WORKSPACE_ID,
+                workspace_id=workspace_id,
                 scope="tenant",
             )
             append_event(event)
@@ -159,7 +157,9 @@ def handle_demo_action(
         execution.policy_result = result.reason
         execution.result = "succeeded" if result.approved else "denied"
         execution.error_code = None if result.approved else result.reason
-        execution = create_grant_execution(execution, tenant_id=effective_tenant)
+        execution = create_grant_execution(
+            execution, tenant_id=effective_tenant, workspace_id=workspace_id
+        )
 
         event = AuditEvent(
             subject_id=subject_id,
@@ -174,7 +174,7 @@ def handle_demo_action(
             challenge_result=cast(ChallengeResult, challenge_result),
             grant_signature_result=grant_signature_result,
             tenant_id=effective_tenant,
-            workspace_id=_DEMO_WORKSPACE_ID,
+            workspace_id=workspace_id,
             scope="tenant",
         )
         append_event(event)
@@ -210,7 +210,9 @@ def handle_demo_action(
         execution.policy_result = "error"
         execution.result = "failed"
         execution.error_code = "internal_handler_error"
-        execution = create_grant_execution(execution, tenant_id=effective_tenant)
+        execution = create_grant_execution(
+            execution, tenant_id=effective_tenant, workspace_id=workspace_id
+        )
         return {
             "approved": False,
             "reason": "internal_handler_error",
