@@ -338,7 +338,7 @@ class TestApiKeyCreateScopeRoleGate(unittest.TestCase):
         resp = self.client.post(
             "/v1/api-keys",
             json={"name": "evil", "scopes": ["admin"]},
-            headers={"Authorization": f"Bearer {_admin_jwt(_TENANT_A, sub='regular', role='executor', workspace_id='ws-A')}"},
+            headers={"Authorization": f"Bearer {_admin_jwt('demo', sub='regular', role='executor')}"},
         )
         self.assertEqual(resp.status_code, 403, resp.text)
         self.assertEqual(resp.json().get("errorCode"), "insufficient_role_for_scope")
@@ -347,7 +347,7 @@ class TestApiKeyCreateScopeRoleGate(unittest.TestCase):
         resp = self.client.post(
             "/v1/api-keys",
             json={"name": "ok", "scopes": ["read_write"]},
-            headers={"Authorization": f"Bearer {_admin_jwt(_TENANT_A, sub='regular', role='executor', workspace_id='ws-A')}"},
+            headers={"Authorization": f"Bearer {_admin_jwt('demo', sub='regular', role='executor')}"},
         )
         self.assertEqual(resp.status_code, 201, resp.text)
 
@@ -355,7 +355,7 @@ class TestApiKeyCreateScopeRoleGate(unittest.TestCase):
         resp = self.client.post(
             "/v1/api-keys",
             json={"name": "ok", "scopes": ["admin"]},
-            headers={"Authorization": f"Bearer {_admin_jwt(_TENANT_A, sub='boss', role='grant_admin', workspace_id='ws-A')}"},
+            headers={"Authorization": f"Bearer {_admin_jwt('demo', sub='boss', role='grant_admin')}"},
         )
         self.assertEqual(resp.status_code, 201, resp.text)
 

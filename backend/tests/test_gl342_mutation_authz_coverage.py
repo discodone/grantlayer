@@ -105,7 +105,7 @@ def _jwt_token(role: str = "grant_admin") -> str:
         {
             "sub": "gl342-test-user",
             "role": role,
-            "tenant_id": "t-gl342",
+            "tenant_id": "demo",
             "workspace_id": "ws-gl342",
             "iss": "grantlayer",
             "aud": "grantlayer-api",
@@ -117,7 +117,7 @@ def _jwt_token(role: str = "grant_admin") -> str:
 def _create_api_key(client, scope: str) -> str:
     resp = client.post(
         "/v1/api-keys",
-        json={"name": f"gl342-{scope}", "scopes": [scope], "workspace_id": "ws-gl342"},
+        json={"name": f"gl342-{scope}", "scopes": [scope]},
         headers={"Authorization": f"Bearer {_jwt_token()}"},
     )
     assert resp.status_code == 201, f"API key creation failed ({scope}): {resp.text}"

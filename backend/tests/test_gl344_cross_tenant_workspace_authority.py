@@ -2,11 +2,12 @@
 
 P0 SECURITY. Proves the EXACT behavior claimed by the fix:
 
-- A grant_admin authenticated to workspace A creating an API key / template with a
-  body workspace_id bound to workspace B receives 403 (never silently bound to B).
-- An API key / template created with no body workspace_id is bound to the caller's
-  authenticated workspace.
-- A body workspace_id that equals the authenticated workspace is accepted.
+- Templates: a grant_admin authenticated to workspace A creating a template with a
+  body workspace_id bound to workspace B receives 403 (never silently bound to B);
+  no body workspace_id binds to the authenticated workspace; a matching body value
+  is accepted.
+- API keys (contract superseded — see TestApiKeyWorkspaceAuthority): the binding is
+  the creator's RESOLVED workspace; any body workspace_id is rejected outright.
 - Cross-tenant template lookups (get / deactivate / new-version) return 404 — the
   IDOR is closed and the other tenant's template is never observable.
 - A repo-wide static guard asserts no mutation handler reads workspace_id from the
@@ -20,6 +21,7 @@ from __future__ import annotations
 
 import os
 import unittest
+import uuid
 
 _TEST_SECRET = "gl344-test-hs256-secret-32chars!!!"
 
@@ -51,41 +53,82 @@ def _jwt(workspace_id: str, tenant_id: str, sub: str = "user-a", role: str = "gr
     )
 
 
+def _db_mod():
+    import backend.src.core.db as db_mod
+
+    return db_mod
+
+
 class TestApiKeyWorkspaceAuthority(unittest.TestCase):
+    """API-key creation binds to the creator's RESOLVED workspace.
+
+    CONTRACT RETIRED: the original tests here pinned claim-derived binding
+    with a body workspace_id accepted when it matched the JWT claim. That
+    contract enabled client-chosen workspace binding (internal JWTs carry no
+    workspace claim, so keys silently bound to "default"). Superseded by
+    server-side workspace resolution: the binding is the creator's resolved
+    workspace, any body workspace_id is rejected outright, and a caller
+    without a resolvable workspace context cannot mint a key at all.
+    """
+
     def setUp(self):
         # Enter the TestClient context so all requests in this test share one
         # event loop (asyncpg engine is loop-bound; TestClient spins a fresh
         # loop per request otherwise). Test-harness only — production uses a
         # single uvicorn loop.
         self.client = self.enterContext(_make_client())
-        self.auth_a = {"Authorization": f"Bearer {_jwt('ws-A', 't-A', sub='admin-a')}"}
+        # A real workspace row in the ambient DB (unique per run): resolution
+        # validates row existence + tenant, unlike the retired claim contract.
+        self.tenant = f"t-{uuid.uuid4()}"
+        self.ws = str(uuid.uuid4())
+        conn = _db_mod().get_conn()
+        try:
+            conn.execute(
+                """INSERT INTO workspaces
+                       (id, tenant_id, name, slug, owner_id, status,
+                        created_at, updated_at)
+                   VALUES (?, ?, 'authority-ws', ?, 'system', 'active',
+                           '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')""",
+                (self.ws, self.tenant, str(uuid.uuid4())),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        self.auth = {
+            "Authorization": f"Bearer {_jwt(self.ws, self.tenant, sub='admin-a', role='owner')}",
+            "X-Workspace-Id": self.ws,
+        }
 
-    def test_cross_tenant_body_workspace_rejected_403(self):
-        """tenant-A admin must NOT mint a key bound to workspace B."""
-        resp = self.client.post(
-            "/v1/api-keys",
-            json={"name": "evil", "scopes": ["admin"], "workspace_id": "ws-B"},
-            headers=self.auth_a,
-        )
-        self.assertEqual(resp.status_code, 403, resp.text)
+    def test_any_body_workspace_rejected(self):
+        """A body workspace_id — matching or not — is rejected fail-loud."""
+        for value in (self.ws, "somewhere-else"):
+            resp = self.client.post(
+                "/v1/api-keys",
+                json={"name": "k", "scopes": ["read_write"], "workspace_id": value},
+                headers=self.auth,
+            )
+            self.assertEqual(resp.status_code, 400, resp.text)
 
-    def test_no_body_workspace_binds_to_authenticated_workspace(self):
+    def test_key_binds_to_resolved_workspace(self):
         resp = self.client.post(
             "/v1/api-keys",
             json={"name": "ok", "scopes": ["read_write"]},
-            headers=self.auth_a,
+            headers=self.auth,
         )
         self.assertEqual(resp.status_code, 201, resp.text)
-        self.assertEqual(resp.json()["workspaceId"], "ws-A")
+        self.assertEqual(resp.json()["workspaceId"], self.ws)
 
-    def test_matching_body_workspace_allowed(self):
+    def test_no_resolvable_workspace_refused(self):
+        """A caller with no resolvable workspace context cannot mint a key."""
+        headers = {
+            "Authorization": f"Bearer {_jwt('ignored', f't-{uuid.uuid4()}', sub='nobody')}"
+        }
         resp = self.client.post(
             "/v1/api-keys",
-            json={"name": "ok", "scopes": ["read_write"], "workspace_id": "ws-A"},
-            headers=self.auth_a,
+            json={"name": "k", "scopes": ["read_write"]},
+            headers=headers,
         )
-        self.assertEqual(resp.status_code, 201, resp.text)
-        self.assertEqual(resp.json()["workspaceId"], "ws-A")
+        self.assertEqual(resp.status_code, 403, resp.text)
 
 
 class TestTemplateWorkspaceAuthority(unittest.TestCase):
@@ -224,7 +267,7 @@ class TestVerifiedAuthorityPositiveAllowlist(unittest.TestCase):
         ("GET", "/v1/jobs/{job_id}"): "require_admin_scope",
         # API-key management (JWT): create binds verified workspace + role-gates scope;
         # revoke confines a non-owner admin to the key's tenant.
-        ("POST", "/v1/api-keys"): "verified_workspace_id",
+        ("POST", "/v1/api-keys"): "async_resolve_auth_and_workspace",
         ("DELETE", "/v1/api-keys/{key_id}"): "assert_admin_tenant_scope",
         # Grant templates (JWT): workspace authority via _verified_workspace_id helper.
         ("POST", "/v1/grant-templates"): "_verified_workspace_id",
