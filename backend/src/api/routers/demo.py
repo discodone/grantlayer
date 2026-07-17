@@ -104,6 +104,7 @@ async def demo_action_endpoint(
         challenge_id=body.challenge_id,
         operator_id=caller_operator_id,
         tenant_id=tenant_id,
+        workspace_id=ws_ctx["workspace_id"],
     )
     status_code = 200 if result["approved"] else 403
     from fastapi.responses import JSONResponse

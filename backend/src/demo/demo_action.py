@@ -37,10 +37,14 @@ def handle_demo_action(
     challenge_id: Optional[str] = None,
     operator_id: Optional[str] = None,
     tenant_id: Optional[str] = None,
+    *,
+    workspace_id: str,
 ) -> dict:
     require_challenge = _get_env_bool("GRANTLAYER_REQUIRE_CHALLENGE")
     if tenant_id is None:
         raise ValueError("tenant_id is required")
+    if not workspace_id:
+        raise ValueError("workspace_id is required")
     effective_tenant = tenant_id
 
     # Pre-allocate execution record for every attempt
@@ -92,7 +96,10 @@ def handle_demo_action(
             resource=resource,
         )
 
-        grants = list_grants(tenant_id=effective_tenant)
+        # Workspace-scoped matching: a grant is only eligible if it lives in the
+        # caller's RESOLVED workspace — a sibling workspace's grant in the same
+        # tenant must never authorize this request.
+        grants = list_grants(tenant_id=effective_tenant, workspace_id=workspace_id)
         now = datetime.datetime.now(datetime.timezone.utc)
         result: PolicyResult = evaluate_access(request, grants, now)
 

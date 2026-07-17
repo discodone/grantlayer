@@ -230,6 +230,7 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         bundle_str = json.dumps(bundle)
@@ -251,6 +252,7 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertFalse(result["approved"])
         self.assertEqual(result["reason"], "challenge_required")
@@ -266,6 +268,7 @@ class TestSecurityBoundaryRegression(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         # Tampered grant is blocked (either via signature mismatch or role mismatch)
         self.assertFalse(result["approved"])

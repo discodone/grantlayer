@@ -237,6 +237,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         bundle = self.eb_mod.build_evidence_bundle(ex_id)
@@ -280,6 +281,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-02", "senior-engineer", "restart-service", "customer-env-b",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         bundle = self.eb_mod.build_evidence_bundle(ex_id)
@@ -353,11 +355,13 @@ class TestEvidenceBundle(unittest.TestCase):
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         # Second use should be denied due to exhaustion
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertEqual(result["reason"], "grant_usage_exhausted")
         ex_id = result["executionId"]
@@ -374,6 +378,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         raw = json.dumps(bundle)
@@ -405,6 +410,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth="Bearer legacy-token")
@@ -424,6 +430,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         # Missing token
@@ -442,6 +449,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
@@ -457,6 +465,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
@@ -472,6 +481,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=f"Bearer {tok}")
@@ -489,6 +499,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, body = self._run_handler(f"/v1/evidence/executions/{ex_id}", auth=None)
@@ -505,6 +516,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         self.assertIn("evidenceId", bundle)
@@ -543,6 +555,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         audit_trail = bundle["auditTrail"]
@@ -561,6 +574,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         self.assertIn("evidenceHash", bundle)
@@ -580,6 +594,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle1 = self.eb_mod.build_evidence_bundle(result["executionId"])
         bundle2 = self.eb_mod.build_evidence_bundle(result["executionId"])
@@ -593,6 +608,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         original_hash = bundle["evidenceHash"]
@@ -609,6 +625,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
         canonical = self.eb_mod.canonical_evidence_bundle(bundle)
@@ -628,10 +645,12 @@ class TestEvidenceBundle(unittest.TestCase):
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         result2 = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result2["executionId"])
         audit_trail = bundle["auditTrail"]
@@ -647,6 +666,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = self.eb_mod.build_evidence_bundle(result["executionId"])
 
@@ -746,11 +766,13 @@ class TestEvidenceBundle(unittest.TestCase):
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         # Second use denied due to exhaustion
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertEqual(result["reason"], "grant_usage_exhausted")
         ex_id = result["executionId"]
@@ -795,6 +817,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -813,6 +836,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -833,6 +857,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -857,6 +882,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -877,6 +903,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
 
@@ -902,6 +929,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -922,6 +950,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer admin")
@@ -945,6 +974,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
 
@@ -969,6 +999,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
@@ -983,6 +1014,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
@@ -997,6 +1029,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
@@ -1011,6 +1044,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth=f"Bearer {tok}")
@@ -1029,6 +1063,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         status, headers, body = self._run_export(f"/v1/evidence/executions/{ex_id}/export", auth="Bearer legacy-token")
@@ -1047,6 +1082,7 @@ class TestEvidenceBundle(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         ex_id = result["executionId"]
         # Missing auth
@@ -1565,6 +1601,7 @@ class TestEvidenceBundleVerification(unittest.TestCase):
         result = demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         bundle = eb_mod.build_evidence_bundle(result["executionId"])
         verify_result = eb_mod.verify_evidence_export_artifact(bundle)

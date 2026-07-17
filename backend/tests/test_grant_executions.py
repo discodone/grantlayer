@@ -89,6 +89,7 @@ class TestGrantExecutionModel(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertTrue(result["approved"])
         self.assertIn("executionId", result)
@@ -110,6 +111,7 @@ class TestGrantExecutionModel(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertFalse(result["approved"])
         self.assertIn("executionId", result)
@@ -132,6 +134,7 @@ class TestGrantExecutionModel(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertFalse(result["approved"])
         self.assertIn("executionId", result)
@@ -155,6 +158,7 @@ class TestGrantExecutionModel(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a",
             challenge_id=c.id,
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertTrue(result["approved"])
         execs = self.exec_mod.list_grant_executions()
@@ -182,6 +186,7 @@ class TestGrantExecutionModel(unittest.TestCase):
             result = self.demo_mod.handle_demo_action(
                 "tech-01", "technician", "restart-service", "customer-env-a",
                 tenant_id="demo",
+                workspace_id="default",
             )
             self.assertFalse(result["approved"])
             self.assertIn("executionId", result)
@@ -220,6 +225,7 @@ class TestGrantExecutionModel(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertTrue(result["approved"])
 
@@ -238,6 +244,7 @@ class TestGrantExecutionModel(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a",
             operator_id="op-123",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertTrue(result["approved"])
         execs = self.exec_mod.list_grant_executions()
@@ -251,6 +258,7 @@ class TestGrantExecutionModel(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.assertTrue(result["approved"])
         self.assertIn("auditEventId", result)
@@ -369,6 +377,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
 
         status, data = self._http_get("/v1/grant-executions", auth_token="auditor-token")
@@ -386,6 +395,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         result = self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
         execution_id = result["executionId"]
 
@@ -404,6 +414,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
 
         status, data = self._http_get(
@@ -422,6 +433,7 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             tenant_id="demo",
+            workspace_id="default",
         )
 
         status, data = self._http_get(
@@ -441,11 +453,13 @@ class TestGrantExecutionEndpoints(unittest.TestCase):
             "tech-01", "technician", "restart-service", "customer-env-a",
             operator_id="op-123",
             tenant_id="demo",
+            workspace_id="default",
         )
         self.demo_mod.handle_demo_action(
             "tech-01", "technician", "restart-service", "customer-env-a",
             operator_id="op-456",
             tenant_id="demo",
+            workspace_id="default",
         )
 
         status, data = self._http_get(
