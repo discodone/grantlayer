@@ -3,11 +3,13 @@
 import datetime
 import logging
 import os
+import uuid
 from typing import Optional, cast
 
 from ..audit.audit_log import append_event
 from ..auth.challenges import validate_challenge
 from ..core.crypto_signing import verify_grant_signature
+from ..core.db import get_session_maker
 from ..core.models import AccessRequest, AuditEvent, ChallengeResult, GrantExecution, PolicyResult
 from ..grants.grant_executions import (
     create_grant_execution,
@@ -58,10 +60,6 @@ def handle_demo_action(
             execution.policy_result = "denied"
             execution.result = "denied"
             execution.error_code = "challenge_required"
-            execution = create_grant_execution(
-                execution, tenant_id=effective_tenant, workspace_id=workspace_id
-            )
-
             event = AuditEvent(
                 subject_id=subject_id,
                 role=role,
@@ -76,8 +74,24 @@ def handle_demo_action(
                 workspace_id=workspace_id,
                 scope="tenant",
             )
-            append_event(event)
-            update_grant_execution_audit_event_id(execution.id, event.id)
+            # Denial + its audit event commit together: an audit-write failure
+            # rolls back the execution row (no record without its event).
+            with get_session_maker()() as session:
+                try:
+                    execution = create_grant_execution(
+                        execution,
+                        tenant_id=effective_tenant,
+                        workspace_id=workspace_id,
+                        session=session,
+                    )
+                    append_event(event, conn=session.connection())
+                    update_grant_execution_audit_event_id(
+                        execution.id, event.id, session=session
+                    )
+                    session.commit()
+                except Exception:
+                    session.rollback()
+                    raise
             return {
                 "approved": False,
                 "reason": "challenge_required",
@@ -138,47 +152,64 @@ def handle_demo_action(
                     matched_grant_id=result.matched_grant_id,
                 )
 
-        # Atomic grant usage consumption
-        if result.approved and result.matched_grant_id:
-            from ..grants.grants import try_consume_grant_use
-            consumed = try_consume_grant_use(result.matched_grant_id)
-            if not consumed:
-                result = PolicyResult(
-                    approved=False,
-                    reason="grant_usage_exhausted",
-                    matched_grant_id=result.matched_grant_id,
+        # Decision writes are ATOMIC: grant-use consumption, the execution
+        # row, the audit event, and the event link commit together on one
+        # session. An audit-write failure rolls back the consumed use and the
+        # execution row — a durable execution without its audit event would be
+        # a permanent gap in the anchored chain.
+        with get_session_maker()() as session:
+            try:
+                if result.approved and result.matched_grant_id:
+                    from ..grants.grants import try_consume_grant_use
+                    consumed = try_consume_grant_use(
+                        result.matched_grant_id, session=session
+                    )
+                    if not consumed:
+                        result = PolicyResult(
+                            approved=False,
+                            reason="grant_usage_exhausted",
+                            matched_grant_id=result.matched_grant_id,
+                        )
+
+                # Populate execution record
+                execution.grant_id = result.matched_grant_id
+                execution.grant_request_id = get_grant_request_id_by_grant_id(result.matched_grant_id) if result.matched_grant_id else None
+                execution.challenge_id = resolved_challenge_id
+                execution.challenge_result = challenge_result
+                execution.policy_result = result.reason
+                execution.result = "succeeded" if result.approved else "denied"
+                execution.error_code = None if result.approved else result.reason
+                execution = create_grant_execution(
+                    execution,
+                    tenant_id=effective_tenant,
+                    workspace_id=workspace_id,
+                    session=session,
                 )
 
-        # Populate execution record
-        execution.grant_id = result.matched_grant_id
-        execution.grant_request_id = get_grant_request_id_by_grant_id(result.matched_grant_id) if result.matched_grant_id else None
-        execution.challenge_id = resolved_challenge_id
-        execution.challenge_result = challenge_result
-        execution.policy_result = result.reason
-        execution.result = "succeeded" if result.approved else "denied"
-        execution.error_code = None if result.approved else result.reason
-        execution = create_grant_execution(
-            execution, tenant_id=effective_tenant, workspace_id=workspace_id
-        )
-
-        event = AuditEvent(
-            subject_id=subject_id,
-            role=role,
-            action=action,
-            resource=resource,
-            approved=result.approved,
-            reason=result.reason,
-            matched_grant_id=result.matched_grant_id,
-            challenge_id=resolved_challenge_id,
-            challenge_present=challenge_present,
-            challenge_result=cast(ChallengeResult, challenge_result),
-            grant_signature_result=grant_signature_result,
-            tenant_id=effective_tenant,
-            workspace_id=workspace_id,
-            scope="tenant",
-        )
-        append_event(event)
-        update_grant_execution_audit_event_id(execution.id, event.id)
+                event = AuditEvent(
+                    subject_id=subject_id,
+                    role=role,
+                    action=action,
+                    resource=resource,
+                    approved=result.approved,
+                    reason=result.reason,
+                    matched_grant_id=result.matched_grant_id,
+                    challenge_id=resolved_challenge_id,
+                    challenge_present=challenge_present,
+                    challenge_result=cast(ChallengeResult, challenge_result),
+                    grant_signature_result=grant_signature_result,
+                    tenant_id=effective_tenant,
+                    workspace_id=workspace_id,
+                    scope="tenant",
+                )
+                append_event(event, conn=session.connection())
+                update_grant_execution_audit_event_id(
+                    execution.id, event.id, session=session
+                )
+                session.commit()
+            except Exception:
+                session.rollback()
+                raise
 
         if result.approved:
             return {
@@ -210,6 +241,11 @@ def handle_demo_action(
         execution.policy_result = "error"
         execution.result = "failed"
         execution.error_code = "internal_handler_error"
+        # Fresh identity for the failure record: everything the try block wrote
+        # was rolled back with its session, and a distinct id makes it
+        # structurally impossible for this row to collide with — or contradict —
+        # any durable decision row.
+        execution.id = str(uuid.uuid4())
         execution = create_grant_execution(
             execution, tenant_id=effective_tenant, workspace_id=workspace_id
         )

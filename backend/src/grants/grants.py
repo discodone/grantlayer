@@ -233,7 +233,9 @@ def revoke_grant(
         )
 
 
-def try_consume_grant_use(grant_id: str) -> bool:
+def try_consume_grant_use(grant_id: str, session: "Optional[Session]" = None) -> bool:
     """Atomically increment use_count if the grant is not exhausted."""
+    if session is not None:
+        return SqlAlchemyGrantRepository(session).try_consume_use(grant_id)
     with _auto_session() as sess:
         return SqlAlchemyGrantRepository(sess).try_consume_use(grant_id)

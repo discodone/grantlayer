@@ -337,5 +337,125 @@ class TestDemoActionWorkspaceAttribution(_WorkspaceScopingBase):
         )
 
 
+class TestDemoActionAuditAtomicity(_WorkspaceScopingBase):
+    """RED — the decision's writes must be ATOMIC with the audit event.
+
+    Today each write commits independently (grant-use decrement, execution
+    row, audit event); an append_event failure after the decision leaves a
+    durable 'succeeded' execution + consumed grant use with NO audit event,
+    then the except-branch inserts a SECOND, contradictory 'failed' row.
+    For an anchored audit chain that is a permanent attested lie: the chain
+    verifies complete while the recorded execution's event is missing.
+
+    Desired (asserted here, so these fail today): an audit-write failure
+    rolls back the execution row and the grant-use decrement together — no
+    durable execution without its audit event, no contradictory row pair —
+    and the HTTP response describes only durable state.
+    """
+
+    def _execution_rows(self):
+        conn = self.db_mod.get_conn()
+        try:
+            return [
+                dict(r)
+                for r in conn.execute(
+                    "SELECT id, grant_id, result, audit_event_id "
+                    "FROM grant_executions"
+                ).fetchall()
+            ]
+        finally:
+            conn.close()
+
+    def _audit_event_count(self):
+        conn = self.db_mod.get_conn()
+        try:
+            return conn.execute(
+                "SELECT COUNT(*) AS n FROM audit_events"
+            ).fetchone()["n"]
+        finally:
+            conn.close()
+
+    def _post_with_failing_audit(self):
+        from unittest import mock
+
+        import backend.src.demo.demo_action as demo_action_mod
+
+        with mock.patch.object(
+            demo_action_mod,
+            "append_event",
+            side_effect=RuntimeError("simulated audit write failure"),
+        ):
+            return self._post_demo_action(self.ws_a).json()
+
+    def test_audit_failure_rolls_back_execution_and_grant_use(self):
+        """(i) append_event raises after an approved decision → the execution
+        row and the grant-use decrement are rolled back together."""
+        grant = self._create_signed_grant_in(self.ws_a)
+
+        body = self._post_with_failing_audit()
+
+        self.assertEqual(
+            self._grant_use_count(grant.id),
+            0,
+            "grant use was consumed durably although its audit event was "
+            "never written",
+        )
+        succeeded = [r for r in self._execution_rows() if r["result"] == "succeeded"]
+        self.assertEqual(
+            succeeded,
+            [],
+            "a durable 'succeeded' GrantExecution row exists without its "
+            f"audit event (audit write failed). Response was: {body}",
+        )
+        self.assertEqual(
+            self._audit_event_count(),
+            0,
+            "no audit event should exist for the rolled-back decision",
+        )
+
+    def test_audit_failure_leaves_no_contradictory_execution_pair(self):
+        """(ii) the except-branch must not add a second execution row that
+        contradicts an already-durable one. After an audit failure there is
+        at most ONE row for the request, and it is not 'succeeded'."""
+        self._create_signed_grant_in(self.ws_a)
+
+        body = self._post_with_failing_audit()
+
+        rows = self._execution_rows()
+        results = sorted(r["result"] for r in rows)
+        self.assertLessEqual(
+            len(rows),
+            1,
+            f"contradictory execution rows for one request: {results} "
+            f"(response: {body})",
+        )
+        self.assertNotIn("succeeded", results)
+
+    def test_response_reflects_persisted_state_after_audit_failure(self):
+        """(iii) the HTTP response must describe durable state only: the
+        returned executionId, if any, references a durable row whose result
+        matches the failure response."""
+        self._create_signed_grant_in(self.ws_a)
+
+        body = self._post_with_failing_audit()
+
+        self.assertFalse(body.get("approved"))
+        returned_id = body.get("executionId")
+        rows = {r["id"]: r for r in self._execution_rows()}
+        if returned_id is not None:
+            self.assertIn(
+                returned_id,
+                rows,
+                f"response references a non-durable execution id: {body}",
+            )
+            self.assertNotEqual(rows[returned_id]["result"], "succeeded")
+        # And nothing durable may contradict the failure response:
+        self.assertEqual(
+            [r for r in rows.values() if r["result"] == "succeeded"],
+            [],
+            f"response said not-approved but a durable succeeded row exists: {rows}",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
