@@ -43,6 +43,7 @@ ALLOWED_GRANT_ROLES: frozenset[str] = frozenset({
     "auditor",
     "operator",
     "admin",
+    "agent",
 })
 
 _DEMO_WORKSPACE_ID = "default"
