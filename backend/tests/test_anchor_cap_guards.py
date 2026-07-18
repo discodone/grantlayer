@@ -427,6 +427,7 @@ class TestMainnetStartupRequirements(unittest.TestCase):
             expected_address=mainnet_addr,
             max_wallet_lovelace=50_000_000,
             max_fee_lovelace=1_000_000,
+            min_anchor_events=3,
         )
         self.assertEqual(cfg.startup_errors(), [])
 

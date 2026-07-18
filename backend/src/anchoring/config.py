@@ -40,6 +40,12 @@ class CardanoConfig:
     max_wallet_lovelace: Optional[int] = None
     max_fee_lovelace: Optional[int] = None
     expected_address: Optional[str] = None
+    # Minimum audit-chain event count required to anchor at all. None means
+    # unset: allowed off-mainnet (effective minimum 1 — an empty chain is still
+    # refused), a HARD startup error on mainnet, where it must be >= 3 (the
+    # three genesis events exist by construction; anything below is
+    # definitionally an empty/wrong chain and must never be witnessed on-chain).
+    min_anchor_events: Optional[int] = None
 
     @classmethod
     def from_env(cls) -> "CardanoConfig":
@@ -79,6 +85,7 @@ class CardanoConfig:
             max_wallet_lovelace=_env_int_opt("GRANTLAYER_CARDANO_MAX_WALLET_LOVELACE"),
             max_fee_lovelace=_env_int_opt("GRANTLAYER_CARDANO_MAX_FEE_LOVELACE"),
             expected_address=_env_str("GRANTLAYER_CARDANO_EXPECTED_ADDRESS") or None,
+            min_anchor_events=_env_int_opt("GRANTLAYER_CARDANO_MIN_ANCHOR_EVENTS"),
         )
 
     def __repr__(self) -> str:
@@ -103,8 +110,16 @@ class CardanoConfig:
             f"cron_minute={self.cron_minute!r}, "
             f"max_wallet_lovelace={self.max_wallet_lovelace!r}, "
             f"max_fee_lovelace={self.max_fee_lovelace!r}, "
-            f"expected_address={self.expected_address!r})"
+            f"expected_address={self.expected_address!r}, "
+            f"min_anchor_events={self.min_anchor_events!r})"
         )
+
+    @property
+    def effective_min_anchor_events(self) -> int:
+        """The enforced chain-length minimum. Unset defaults to 1 (dev
+        ergonomics off-mainnet — an empty chain is still refused); on mainnet
+        startup_errors() guarantees an explicit value >= 3 before any run."""
+        return self.min_anchor_events if self.min_anchor_events is not None else 1
 
     def is_fully_configured(self) -> bool:
         """True when anchoring is enabled and all required fields are present."""
@@ -152,6 +167,13 @@ class CardanoConfig:
                 errors.append(
                     "ERROR: GRANTLAYER_CARDANO_EXPECTED_ADDRESS is required when "
                     "GRANTLAYER_CARDANO_NETWORK=mainnet (wrong-wallet / collision guard)."
+                )
+            if self.min_anchor_events is None or self.min_anchor_events < 3:
+                errors.append(
+                    "ERROR: GRANTLAYER_CARDANO_MIN_ANCHOR_EVENTS is required and must "
+                    "be >= 3 when GRANTLAYER_CARDANO_NETWORK=mainnet (three genesis "
+                    "events exist by construction — anything below is an empty/wrong "
+                    "chain and must never be anchored)."
                 )
         # Gate B (startup): bind the loaded key to the pinned address. Whenever we
         # have both a key and an expected address, the derived address MUST match —
