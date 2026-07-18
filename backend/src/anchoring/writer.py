@@ -37,6 +37,33 @@ class AnchorFeeExceeded(Exception):
     """Gate C: the built transaction's fee exceeds the configured ceiling."""
 
 
+class AnchorChainTooShort(Exception):
+    """The audit chain has fewer events than the configured minimum.
+
+    Raised by ``assert_chain_anchorable`` BEFORE any chain context is built —
+    an empty or genesis-only chain (h=0…0, s=0) must never be witnessed
+    on-chain. The message carries only self-composed counts (no external
+    exception content), matching the AnchorSubmitError redaction conventions.
+    """
+
+
+def assert_chain_anchorable(head: dict[str, Any], config: CardanoConfig) -> None:
+    """Refuse, fail-closed, to anchor a chain below the configured minimum.
+
+    The single choke point for the empty-chain class: called on the
+    ``anchor_head`` result before the chain context, the reachability probe,
+    the balance guard, and the transaction build ever run. Not a silent skip —
+    the raised error tells the operator exactly why nothing was anchored.
+    """
+    count = int(head["entry_count"])
+    minimum = config.effective_min_anchor_events
+    if count < minimum:
+        raise AnchorChainTooShort(
+            f"audit chain has {count} event(s), below the configured minimum of "
+            f"{minimum} — refusing to anchor an empty or truncated chain"
+        )
+
+
 def head_to_payload(head: dict[str, Any], now: datetime) -> AnchorPayload:
     """Map an ``anchor_head`` result + a timestamp into a validated AnchorPayload.
 
