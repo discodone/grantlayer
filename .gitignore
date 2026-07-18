@@ -77,3 +77,4 @@ scripts/output.log
 logs/
 scripts/run-issues.sh
 scripts/run-remaining.sh
+docker-compose.override.yml
