@@ -65,6 +65,9 @@ def _fake_config(*, configured: bool):
     cfg.max_wallet_lovelace = None
     cfg.max_fee_lovelace = None
     cfg.expected_address = None
+    # Min-chain guard inactive here (its own proofs live in
+    # test_anchor_min_chain_guard.py); _HEAD carries 5 events, minimum 1.
+    cfg.effective_min_anchor_events = 1
     return cfg
 
 

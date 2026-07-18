@@ -170,6 +170,45 @@ def _anchor_audit_chain_sync(workspace_id: Optional[str]) -> dict:
     # is_fully_configured() guarantees a workspace_id is present.
     assert workspace_id is not None
 
+    now = datetime.now(timezone.utc)
+    day = now.date().isoformat()
+    maker = get_session_maker()
+
+    # DB-side gates run FIRST — a refused/duplicate run never touches the chain
+    # backend at all (no context, no probe, no balance read, no tx build).
+
+    # Idempotency guard — one anchor per (workspace, UTC day). Abort before submit.
+    with maker() as session:
+        existing = (
+            session.query(AnchorRecord)
+            .filter(
+                AnchorRecord.workspace_id == workspace_id,
+                AnchorRecord.status.in_(("submitted", "confirmed")),
+                AnchorRecord.anchored_at.like(f"{day}%"),
+            )
+            .first()
+        )
+        if existing is not None:
+            logger.info("anchor_audit_chain: already anchored today for %s — skipping", workspace_id)
+            return {"status": "skipped_already_anchored_today"}
+
+        # Fail-closed head read: no head ⇒ no anchor (same posture as the
+        # balance guard — never proceed blind).
+        try:
+            head = anchor_head(session, workspace_id)
+        except Exception as exc:
+            logger.error(
+                "anchor_audit_chain: audit head unavailable — aborting: %s", exc
+            )
+            return {"status": "aborted_head_unavailable", "error": str(exc)}
+
+    # Empty/short-chain choke point — refuse BEFORE any transaction machinery.
+    try:
+        writer.assert_chain_anchorable(head, config)
+    except writer.AnchorChainTooShort as exc:
+        logger.error("anchor_audit_chain: %s — refusing", exc)
+        return {"status": "refused_chain_below_minimum", "error": str(exc)}
+
     chain = writer.build_chain_context(config)
 
     # Gate 4b — fail-closed reachability: abort BEFORE writing any 'submitted' row.
@@ -198,27 +237,6 @@ def _anchor_audit_chain_sync(workspace_id: Optional[str]) -> dict:
                 config.max_wallet_lovelace,
             )
             return {"status": "aborted_overfunded_or_wrong_wallet"}
-
-    now = datetime.now(timezone.utc)
-    day = now.date().isoformat()
-    maker = get_session_maker()
-
-    # Idempotency guard — one anchor per (workspace, UTC day). Abort before submit.
-    with maker() as session:
-        existing = (
-            session.query(AnchorRecord)
-            .filter(
-                AnchorRecord.workspace_id == workspace_id,
-                AnchorRecord.status.in_(("submitted", "confirmed")),
-                AnchorRecord.anchored_at.like(f"{day}%"),
-            )
-            .first()
-        )
-        if existing is not None:
-            logger.info("anchor_audit_chain: already anchored today for %s — skipping", workspace_id)
-            return {"status": "skipped_already_anchored_today"}
-
-        head = anchor_head(session, workspace_id)
 
     payload = writer.head_to_payload(head, now)
     record_id = uuid.uuid4().hex

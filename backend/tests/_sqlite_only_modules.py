@@ -31,6 +31,7 @@ SQLITE_ONLY_MODULES: frozenset[str] = frozenset(
     [
         "test_anchor_export_determinism",
         "test_anchor_job_gate",
+        "test_anchor_min_chain_guard",
         "test_api_error_contract",
         "test_apikey_resolver_workspace",
         "test_audit_workspace_attribution",
