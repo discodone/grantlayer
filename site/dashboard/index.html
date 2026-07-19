@@ -337,7 +337,7 @@ async function doTamperAction() {
     action:    _tamperState.action,
     resource:  _tamperState.resource,
   };
-  const { ok, status, data } = await api('POST', '/demo-action', body);
+  const { ok, status, data } = await api('POST', '/exercise', body);
   showResult(el, data.approved, data);
   const sigResult = data.grantSignatureResult || '—';
   addFlowEntry(
@@ -470,7 +470,7 @@ document.getElementById('actionForm').addEventListener('submit', async e => {
     resource:  document.getElementById('a_resource').value,
   };
   if (challengeId) body.challengeId = challengeId;
-  const { ok, status, data } = await api('POST', '/demo-action', body);
+  const { ok, status, data } = await api('POST', '/exercise', body);
   showResult(document.getElementById('actionResult'), data.approved, data);
   loadAudit();
   loadChallenges();

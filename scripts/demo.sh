@@ -103,8 +103,8 @@ echo
 echo " The technician sends the challengeId along with the action."
 echo " Result: approved with replay-protected challenge."
 echo
-echo "--- POST /demo-action (with challenge) -----------------------------"
-curl -s -X POST "$API/demo-action" \
+echo "--- POST /exercise (with challenge) -----------------------------"
+curl -s -X POST "$API/exercise" \
   -H "Content-Type: application/json" \
   -d '{
       "subjectId": "tech-01",
@@ -121,8 +121,8 @@ echo "========================================"
 echo
 echo " Reusing the challengeId again should fail with 'already_used'."
 echo
-echo "--- POST /demo-action (replay) --------------------------------------"
-curl -s -X POST "$API/demo-action" \
+echo "--- POST /exercise (replay) --------------------------------------"
+curl -s -X POST "$API/exercise" \
   -H "Content-Type: application/json" \
   -d '{
       "subjectId": "tech-01",
@@ -156,8 +156,8 @@ echo "========================================"
 echo
 echo " Same action, same challenge, no replay — but grant is revoked."
 echo
-echo "--- POST /demo-action (after revoke) --------------------------------"
-curl -s -X POST "$API/demo-action" \
+echo "--- POST /exercise (after revoke) --------------------------------"
+curl -s -X POST "$API/exercise" \
   -H "Content-Type: application/json" \
   -d '{
       "subjectId": "tech-01",
@@ -183,8 +183,8 @@ echo "========================================"
 echo
 echo " A user with the wrong role tries to perform a protected action."
 echo
-echo "--- POST /demo-action (wrong role) ----------------------------------"
-curl -s -X POST "$API/demo-action" \
+echo "--- POST /exercise (wrong role) ----------------------------------"
+curl -s -X POST "$API/exercise" \
   -H "Content-Type: application/json" \
   -d '{
       "subjectId": "tech-01",
@@ -217,7 +217,7 @@ TAMPER_GRANT_ID=$(echo "$TAMPER_GRANT_RESPONSE" | jq -r '.id')
 
 echo
 echo " First, action succeeds with the original (signed) grant."
-curl -s -X POST "$API/demo-action" \
+curl -s -X POST "$API/exercise" \
   -H "Content-Type: application/json" \
   -d '{
       "subjectId": "tech-01",
@@ -238,8 +238,8 @@ echo "--- Tampered grant check ---------------------------------------------"
 curl -s "$API/grants/$TAMPER_GRANT_ID" | jq '{id: .id[0:8], role, signaturePresent, payloadHash: .payloadHash[0:16], signatureValid}'
 
 echo
-echo "--- POST /demo-action (after tamper) --------------------------------"
-curl -s -X POST "$API/demo-action" \
+echo "--- POST /exercise (after tamper) --------------------------------"
+curl -s -X POST "$API/exercise" \
   -H "Content-Type: application/json" \
   -d '{
       "subjectId": "tech-01",

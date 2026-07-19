@@ -126,7 +126,7 @@ def prepare_grant_decision_context(state: Dict[str, Any]) -> Dict[str, Any]:
     decide whether to approve/reject, and then call GrantLayer via the SDK
     to persist the decision and emit an audit event.
 
-    LangChain Tool call shape (POST /v1/demo-action):
+    LangChain Tool call shape (POST /v1/exercise):
         {
             "subjectId": state["subjectId"],
             "role":      state["role"],
@@ -134,7 +134,7 @@ def prepare_grant_decision_context(state: Dict[str, Any]) -> Dict[str, Any]:
             "resource":  state["resource"],
         }
     """
-    demo_action_body = {
+    exercise_body = {
         "subjectId": state.get("subjectId", "unknown"),
         "role": state.get("role", "unknown"),
         "action": state.get("action", "unknown"),
@@ -154,17 +154,17 @@ def prepare_grant_decision_context(state: Dict[str, Any]) -> Dict[str, Any]:
 
     return {
         "agent_state_summary": state,
-        "demo_action_body": demo_action_body,
+        "exercise_body": exercise_body,
         "grant_create_body": grant_create_body,
         "grantlayer_endpoints": {
             "health": "GET /health",
             "readiness": "GET /readiness",
-            "demo_action": "POST /v1/demo-action",
+            "exercise": "POST /v1/exercise",
             "create_grant": "POST /v1/grants",
             "audit_log": "GET /v1/audit-events",
         },
         "adaptation_notes": (
-            "Pass demo_action_body to POST /v1/demo-action to check current approval status. "
+            "Pass exercise_body to POST /v1/exercise to check current approval status. "
             "Pass grant_create_body to POST /v1/grants to create a new grant. "
             "Read /v1/audit-events after any mutation to verify the audit trail."
         ),
