@@ -506,7 +506,7 @@ class TestGl117DemoActionPreserved(_BaseGl117):
         with self.assertLogs(self.demo_mod.logger, level="ERROR") as cm:
             with patch.object(self.demo_mod, "list_grants", side_effect=RuntimeError("secret-boom")):
                 handler = self._make_raw_handler(
-                    "/v1/demo-action",
+                    "/v1/exercise",
                     method="POST",
                     auth_header="Bearer owner-token",
                     body=json.dumps({

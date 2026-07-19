@@ -1,4 +1,4 @@
-"""RED tests — workspace-scoped grant matching on the /v1/demo-action path.
+"""RED tests — workspace-scoped grant matching on the /v1/exercise path.
 
 Current bug (audited): demo_action matches grants TENANT-wide —
 ``list_grants(tenant_id=effective_tenant)`` with no workspace filter — so an
@@ -148,7 +148,7 @@ class _WorkspaceScopingBase(unittest.TestCase):
     def _post_demo_action(self, workspace_id):
         client = self._make_client()
         return client.post(
-            "/v1/demo-action",
+            "/v1/exercise",
             json={
                 "subjectId": "agent-1",
                 "role": "technician",

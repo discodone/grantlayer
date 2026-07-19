@@ -267,7 +267,7 @@ class TestGl088OperatorMode(_BaseGl088):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
+        handler = self._make_handler("/v1/exercise", method="POST", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -365,7 +365,7 @@ class TestGl088LegacyMode(_BaseGl088):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
+        handler = self._make_handler("/v1/exercise", method="POST", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)

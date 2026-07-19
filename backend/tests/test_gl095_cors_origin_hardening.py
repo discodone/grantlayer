@@ -360,7 +360,7 @@ class TestGl095CorsDoesNotBypassAuth(_BaseGl095):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/v1/demo-action", method="POST", origin="http://trusted.com", body=demo_body)
+        handler = self._make_handler("/v1/exercise", method="POST", origin="http://trusted.com", body=demo_body)
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -418,7 +418,7 @@ class TestGl095PublicAndProtectedEndpoints(_BaseGl095):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/v1/demo-action", method="POST", origin="http://trusted.com", body=demo_body)
+        handler = self._make_handler("/v1/exercise", method="POST", origin="http://trusted.com", body=demo_body)
         status, headers, body = self._run_handler(handler)
         self.assertEqual(status, 401)
 

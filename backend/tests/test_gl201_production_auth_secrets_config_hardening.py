@@ -629,7 +629,7 @@ class TestGl201DemoFlagSafety(_BaseGl201):
         os.environ["GRANTLAYER_ENABLE_OPERATOR_MODEL"] = "true"
         mods = _reload_all(self.db_path)
         # No auth header → must reject; send a valid body so FastAPI body validation passes first
-        status, body = self._run_handler("/v1/demo-action", method="POST",
+        status, body = self._run_handler("/v1/exercise", method="POST",
             body=json.dumps({"subjectId": "s1", "role": "viewer", "action": "read", "resource": "test"}).encode()
         )
         self.assertIn(status, (401, 403), f"Expected auth rejection, got {status}")

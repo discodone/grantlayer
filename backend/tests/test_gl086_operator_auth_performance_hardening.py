@@ -232,7 +232,7 @@ class TestGl086OperatorMode(_BaseGl086):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer demo-token", body=demo_body)
+        handler = self._make_handler("/v1/exercise", method="POST", auth_header="Bearer demo-token", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self._assert_gl030_full(body)
@@ -314,7 +314,7 @@ class TestGl086OperatorMode(_BaseGl086):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
+        handler = self._make_handler("/v1/exercise", method="POST", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -403,7 +403,7 @@ class TestGl086LegacyMode(_BaseGl086):
             "action": "read",
             "resource": "repo-a",
         }).encode()
-        handler = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
+        handler = self._make_handler("/v1/exercise", method="POST", body=demo_body)
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)

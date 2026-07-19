@@ -58,8 +58,8 @@ async def tamper_grant_endpoint(
     return result
 
 
-@router.post("/demo-action", response_model=dict[str, Any])
-async def demo_action_endpoint(
+@router.post("/exercise", response_model=dict[str, Any])
+async def exercise_endpoint(
     body: DemoActionRequest,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,

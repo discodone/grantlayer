@@ -121,13 +121,13 @@ class TestDemoActionAlwaysAvailable(unittest.TestCase):
     """demo-action is always registered, regardless of ENABLE_DEMO_ENDPOINTS."""
 
     def test_demo_action_reachable_without_flag(self):
-        """POST /v1/demo-action → not 404 even when ENABLE_DEMO_ENDPOINTS=false."""
+        """POST /v1/exercise → not 404 even when ENABLE_DEMO_ENDPOINTS=false."""
         from fastapi.testclient import TestClient
         app, saved = _make_app(enable_demo=False)
         try:
             client = TestClient(app, raise_server_exceptions=False)
             resp = client.post(
-                "/v1/demo-action",
+                "/v1/exercise",
                 json={"subjectId": "a", "role": "r", "action": "a", "resource": "r"},
             )
             self.assertNotEqual(resp.status_code, 404, resp.text)
@@ -135,13 +135,13 @@ class TestDemoActionAlwaysAvailable(unittest.TestCase):
             _restore_env(saved)
 
     def test_demo_action_reachable_with_flag(self):
-        """POST /v1/demo-action → not 404 when ENABLE_DEMO_ENDPOINTS=true."""
+        """POST /v1/exercise → not 404 when ENABLE_DEMO_ENDPOINTS=true."""
         from fastapi.testclient import TestClient
         app, saved = _make_app(enable_demo=True)
         try:
             client = TestClient(app, raise_server_exceptions=False)
             resp = client.post(
-                "/v1/demo-action",
+                "/v1/exercise",
                 json={"subjectId": "a", "role": "r", "action": "a", "resource": "r"},
             )
             self.assertNotEqual(resp.status_code, 404, resp.text)

@@ -469,7 +469,7 @@ class TestGl092PriorGLRegressions(_BaseGl092):
         demo_body = json.dumps({
             "subjectId": "sub-1", "role": "engineer", "action": "read", "resource": "repo-a"
         }).encode()
-        req = self._make_handler("/v1/demo-action", method="POST", body=demo_body)
+        req = self._make_handler("/v1/exercise", method="POST", body=demo_body)
         status, body = self._run_handler(req)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)

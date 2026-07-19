@@ -589,7 +589,7 @@ class TestDemoActionEndpoint(_GL229TestBase):
     }
 
     def test_demo_action_200_or_403_on_valid_request(self):
-        resp = self.client.post("/v1/demo-action", json=self.BODY)
+        resp = self.client.post("/v1/exercise", json=self.BODY)
         # Either 200 (approved) or 403 (denied) — both are valid business outcomes
         self.assertIn(resp.status_code, (200, 403))
         data = resp.json()
@@ -598,13 +598,13 @@ class TestDemoActionEndpoint(_GL229TestBase):
     def test_demo_action_missing_subject_id_422(self):
         body = dict(self.BODY)
         del body["subjectId"]
-        resp = self.client.post("/v1/demo-action", json=body)
+        resp = self.client.post("/v1/exercise", json=body)
         self.assertEqual(resp.status_code, 422)
 
     def test_demo_action_missing_role_422(self):
         body = dict(self.BODY)
         del body["role"]
-        resp = self.client.post("/v1/demo-action", json=body)
+        resp = self.client.post("/v1/exercise", json=body)
         self.assertEqual(resp.status_code, 422)
 
 
@@ -677,7 +677,7 @@ class TestRouteCount(_GL229TestBase):
             "/v1/policy-requirements/evaluate",
             # /v1/demo/tamper-grant/{grant_id} excluded: GL-262 made it conditional
             # on ENABLE_DEMO_ENDPOINTS=true, so it is absent in default app instances.
-            "/v1/demo-action",
+            "/v1/exercise",
         }
         for path in expected:
             self.assertIn(path, paths, f"Missing route: {path}")
