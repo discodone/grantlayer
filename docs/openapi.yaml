@@ -1808,14 +1808,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /v1/demo-action:
+  /v1/exercise:
     post:
-      summary: Execute a protected demo action
+      summary: Exercise a grant (record an authorization decision)
       description: |
-        Executes a protected demo action through the policy engine.
-        Creates a GrantExecution and AuditEvent record.
+        Evaluates the request against the caller's workspace grants and
+        records the decision: a GrantExecution row and a chain-linked
+        AuditEvent. The endpoint performs no action itself — the agent acts
+        on its own side once (and only if) the decision is "allowed".
+        The former path /v1/demo-action keeps answering as a 307 alias.
         Authorization: owner, grant_admin (operator mode) or admin token (legacy mode).
-      operationId: demoAction
+      operationId: exercise
       security:
         - LegacyAdminToken: []
         - OperatorToken: []
@@ -1838,11 +1841,11 @@ paths:
                 challengeId: { type: string, nullable: true }
       responses:
         "200":
-          description: Demo action approved
+          description: Exercise allowed (decision recorded)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DemoActionResult"
+                $ref: "#/components/schemas/ExerciseResult"
         "400":
           description: Invalid JSON or missing fields
           content:
@@ -2504,10 +2507,12 @@ components:
           items:
             $ref: "#/components/schemas/AuditEvent"
 
-    DemoActionResult:
+    ExerciseResult:
       type: object
       properties:
         approved: { type: boolean }
+        result: { type: string, enum: [allowed, denied, failed] }
+        reasonCode: { type: string, nullable: true }
         message: { type: string, nullable: true }
         reason: { type: string, nullable: true }
         matchedGrantId: { type: string, nullable: true }

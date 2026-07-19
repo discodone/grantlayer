@@ -383,14 +383,14 @@ class TestGl084OpenAPIContract(_BaseGl084):
 
     def test_openapi_demo_action_has_security(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/v1/demo-action:", "/v1/demo/tamper-grant/")
+        section = self._section_between(text, "/v1/exercise:", "/v1/demo/tamper-grant/")
         self.assertIn("security:", section)
         self.assertIn("LegacyAdminToken", section)
         self.assertIn("OperatorToken", section)
 
     def test_openapi_demo_action_has_401_403(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/v1/demo-action:", "/v1/demo/tamper-grant/")
+        section = self._section_between(text, "/v1/exercise:", "/v1/demo/tamper-grant/")
         self.assertIn('"401"', section)
         self.assertIn('"403"', section)
 

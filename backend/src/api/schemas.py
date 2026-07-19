@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -269,6 +269,31 @@ class ChallengeListResponse(BaseModel):
 
 class OkResponse(BaseModel):
     ok: bool
+
+
+class ExerciseResponse(BaseModel):
+    """Decision record for one grant exercise.
+
+    The endpoint records an authorization decision — it performs nothing;
+    the agent acts on its own side. `result` states the decision as a word
+    ("failed" only on the internal-error path); `approved` stays for
+    backward compatibility. `reasonCode` is the stable machine code, the
+    human-readable `reason` stays free-form.
+    """
+
+    approved: bool
+    result: Literal["allowed", "denied", "failed"]
+    reason: Optional[str] = None
+    reason_code: Optional[str] = Field(default=None, alias="reasonCode")
+    message: Optional[str] = None
+    matched_grant_id: Optional[str] = Field(default=None, alias="matchedGrantId")
+    challenge_id: Optional[str] = Field(default=None, alias="challengeId")
+    challenge_result: Optional[str] = Field(default=None, alias="challengeResult")
+    audit_event_id: Optional[str] = Field(default=None, alias="auditEventId")
+    grant_signature_result: Optional[str] = Field(default=None, alias="grantSignatureResult")
+    execution_id: str = Field(alias="executionId")
+
+    model_config = {"populate_by_name": True}
 
 
 class DynamicResponse(BaseModel):

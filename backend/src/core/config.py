@@ -98,7 +98,7 @@ REQUIRE_ADMIN_TOKEN: bool = _env_bool(
     default=RUNTIME_MODE not in ("local", "test"),
 )
 
-# If True, POST /demo-action MUST include a valid challengeId.
+# If True, POST /exercise MUST include a valid challengeId.
 # If False, legacy mode without challenge remains allowed.
 REQUIRE_CHALLENGE: bool = _env_bool("GRANTLAYER_REQUIRE_CHALLENGE", default=False)
 
@@ -290,7 +290,7 @@ def startup_warnings() -> list[str]:
     if not REQUIRE_CHALLENGE:
         msgs.append(
             "WARNING: GRANTLAYER_REQUIRE_CHALLENGE is not true — "
-            "POST /demo-action accepts requests without challengeId."
+            "POST /exercise accepts requests without challengeId."
         )
 
     # Do NOT log or return the token value — only its presence.

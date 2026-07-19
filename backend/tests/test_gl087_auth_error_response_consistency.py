@@ -503,7 +503,7 @@ class TestGl087OpenAPIContract(_BaseGl087):
 
     def test_openapi_demo_action_has_401_403_with_error_response_schema(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/v1/demo-action:", "/v1/demo/tamper-grant/")
+        section = self._section_between(text, "/v1/exercise:", "/v1/demo/tamper-grant/")
         self.assertIn('"401"', section)
         self.assertIn('"403"', section)
         self.assertIn('ErrorResponse', section)
