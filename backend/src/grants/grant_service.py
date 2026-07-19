@@ -117,6 +117,7 @@ class GrantService:
                 grant_signature_result="valid",
                 tenant_id=tenant_id,
                 workspace_id=workspace_id,
+                scope="tenant",
             ),
             conn=self._session.connection(),
         )
@@ -237,6 +238,7 @@ class AsyncGrantService:
             grant_signature_result="valid",
             tenant_id=tenant_id,
             workspace_id=workspace_id,
+            scope="tenant",
         )
         await self._session.run_sync(
             lambda sync_sess: _audit_log.append_event(event, conn=sync_sess.connection())
