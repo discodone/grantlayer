@@ -17,7 +17,7 @@ from ...core.validation import (
 )
 from ...demo.demo_action import handle_demo_action
 from ...grants.grants import tamper_grant
-from ..deps import resolve_auth_and_workspace
+from ..deps import require_mutation_authz, resolve_auth_and_workspace
 from ..schemas import DynamicResponse, ExerciseResponse
 
 router = APIRouter(tags=["demo"])
@@ -69,6 +69,10 @@ async def exercise_endpoint(
         required_roles=["owner", "grant_admin"],
         workspace_id=x_workspace_id,
     )
+    # Shared mutation gate (API-key write scope + OPA), same as every sibling
+    # mutating route — a decision write is a mutation. Accepted auth methods
+    # are unchanged; this closes the old allowlist exception.
+    await require_mutation_authz(auth_ctx, ws_ctx)
     caller_operator_id: Optional[str] = None
     if config.ENABLE_OPERATOR_MODEL:
         caller_operator_id = auth_ctx.get("operator", {}).get("operatorId")

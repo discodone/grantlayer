@@ -44,7 +44,6 @@ _SCOPE_GATE_JUSTIFICATION: dict[str, str] = {
     "/v1/admin/operators/{operator_id}/revoke": "admin bearer; tenant-scoped + enumerated in test_gl349.",
     "/v1/api-keys": "API-key mgmt via JWT; create role-gated + workspace-bound (test_gl344/test_gl349).",
     "/v1/api-keys/{key_id}": "API-key mgmt via JWT; revoke tenant-scoped (test_gl349).",
-    "/v1/exercise": "grant-exercise decision recorder (renamed from demo-action); auth + workspace via resolve_auth_and_workspace; API-key write-scope gate deliberately not yet wired — tracked follow-up (test_gl190/test_gl262).",
     "/v1/demo-action": "307 alias to /v1/exercise (rename back-compat); pure redirect, no handler logic.",
     "/v1/challenges": "challenge protocol; auth + workspace resolved (test_gl345 wired-list).",
     "/v1/auditor/exports/build": "auditor-role gate via resolve_auth_and_workspace.",
@@ -74,6 +73,10 @@ _ROUTE_BODY: dict[str, dict] = {
     },
     "/v1/grants/bulk-update": {"grantIds": ["g-gl342-001"]},
     "/v1/grants/{grant_id}/renew": {"validUntil": "2027-01-01T00:00:00Z"},
+    "/v1/exercise": {
+        "subjectId": "agent-001", "role": "executor",
+        "action": "deploy", "resource": "service/api",
+    },
     "/v1/grant-requests": {
         "subjectId": "agent-001",
         "role": "executor",
