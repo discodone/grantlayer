@@ -33,6 +33,7 @@ SQLITE_ONLY_MODULES: frozenset[str] = frozenset(
         "test_grant_renewal_endpoint",
         "test_grant_revocation_audit_event",
         "test_anchor_export_determinism",
+        "test_anchor_grant_exercise",
         "test_anchor_job_gate",
         "test_anchor_min_chain_guard",
         "test_api_error_contract",
