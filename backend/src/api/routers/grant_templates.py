@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.db import get_async_db
 from ..auth_jwt import validate_jwt_header
+from ..deps import resolve_witness_identity
 
 router = APIRouter(prefix="/grant-templates", tags=["grant-templates"])
 
@@ -110,7 +111,7 @@ async def create_template(
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     payload = _resolve_user(authorization)
-    user_id = payload.get("sub", "unknown")
+    user_id = resolve_witness_identity(payload)
     ws_id = _verified_workspace_id(payload, body.workspace_id)
     tmpl_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
@@ -217,7 +218,7 @@ async def create_new_version(
 ) -> Any:
     """Create a new version of a locked template (parent_id references original)."""
     payload = _resolve_user(authorization)
-    user_id = payload.get("sub", "unknown")
+    user_id = resolve_witness_identity(payload)
     ws_id = _verified_workspace_id(payload, body.workspace_id)
 
     # SECURITY: a new version can only be derived from a parent in the
