@@ -279,7 +279,7 @@ class TestVerifiedAuthorityPositiveAllowlist(unittest.TestCase):
         ("POST", "/v1/users/{user_id}/export-data"): "_authorize_user_action",
         # Challenge + auditor: workspace resolved from verified auth context.
         ("POST", "/v1/challenges"): "resolve_auth_and_workspace",
-        ("POST", "/v1/exercise"): "resolve_auth_and_workspace",
+        ("POST", "/v1/exercise"): "require_mutation_authz",
         ("POST", "/v1/auditor/exports/build"): "resolve_auth_and_workspace",
     }
 

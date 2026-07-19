@@ -66,7 +66,7 @@ _ROUTE_POLICY: dict[tuple[str, str], str] = {
     ("PATCH", "/v1/workspaces/{workspace_id}/plan"): "admin_plane",
     ("POST", "/v1/api-keys"): "api_key_mgmt",
     ("DELETE", "/v1/api-keys/{key_id}"): "api_key_mgmt",
-    ("POST", "/v1/exercise"): "exercise_decision_recorder",
+    ("POST", "/v1/exercise"): _CATEGORY_MUTATION_AUTHZ,
     ("POST", "/v1/demo-action"): "alias_redirect",
     ("POST", "/v1/challenges"): "challenge",
     ("POST", "/v1/auditor/exports/build"): "auditor_role",
@@ -87,6 +87,10 @@ _ROUTE_BODY: dict[str, dict] = {
     },
     "/v1/grants/bulk-update": {"grantIds": ["g-gl345-001"]},
     "/v1/grants/{grant_id}/renew": {"validUntil": "2027-01-01T00:00:00Z"},
+    "/v1/exercise": {
+        "subjectId": "agent-001", "role": "executor",
+        "action": "deploy", "resource": "service/api",
+    },
     "/v1/grant-requests": {
         "subjectId": "agent-001", "role": "executor", "action": "deploy",
         "resource": "service/api", "validFrom": "2025-01-01T00:00:00Z",
