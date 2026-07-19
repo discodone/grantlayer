@@ -1,59 +1,29 @@
-"""RED contract — the anchor job exercises the anchor-writer grant first.
+"""The anchor job exercises the anchor-writer grant before anchoring.
 
-STATUS: RED BY DESIGN. These tests express a decided-but-unbuilt contract
-(design intent: the anchor run is itself a granted authority and must be
-exercised — and witnessed — like one). Do not make them pass without the
-corresponding decision record; open implementation questions are listed at
-the bottom of this docstring.
+The anchor run is itself a granted authority. Before the head is read,
+_anchor_audit_chain_sync exercises the anchor-writer grant through the
+standard decision path — challenge mint + consume (single-use, same as the
+backup hook; no legacy mode), policy evaluation, signature gate, execution
+row, chain-linked audit event, use-count consumption — so the exercise
+event sits INSIDE the anchored range: the anchor attests to its own
+authorization, the same accepted pattern as every post-anchor event.
 
-Pinned contract (extends the gate order pinned in test_anchor_job_gate.py):
+Fail-closed both ways:
+  * denied exercise → status refused_grant_exercise_denied, and the run
+    stops before any chain machinery (no context, no probe, no submitted
+    row, no network call) — while the denial itself is chain-witnessed;
+  * erroring/unavailable decision path (including an internal decision
+    failure, which produces no witnessed decision) → status
+    refused_grant_exercise_unavailable, same refusal shape.
 
-  1. config gate and same-(workspace, UTC-day) idempotency guard run first,
-     unchanged;
-  2. THEN the job exercises the anchor-writer grant (subject 'anchor-writer',
-     action 'submit_anchor') through the standard decision path — the same
-     policy evaluation + signature gate + execution row + chain-linked audit
-     event that any /v1/exercise call produces, use-count consumption
-     included;
-  3. the exercise decision commits BEFORE the head is read, so the exercise
-     event sits INSIDE the anchored range — the anchor attests to its own
-     authorization (the pattern already accepted for post-anchor events:
-     each anchor covers everything before it, the next anchor covers the
-     rest);
-  4. FAIL-CLOSED: a denied exercise refuses the run — no head read, no
-     chain context, no probe, no submitted row, no network call
-     (status: refused_grant_exercise_denied);
-  5. FAIL-CLOSED: an erroring/unavailable decision path refuses the same
-     way (status: refused_grant_exercise_unavailable).
-
-Where this hooks in (audit, 2026-07-19):
-  - backend/src/workers/jobs.py::_anchor_audit_chain_sync — the only
-    correct insertion point is between the idempotency guard and the
-    fail-closed head read (currently both inside the first
-    `with maker() as session` block): the exercise must commit before
-    `anchor_head(session, workspace_id)` runs.
-  - ~/grantlayer-ops/run_anchor.sh calls _anchor_audit_chain_sync directly
-    (no HTTP server involved), so a shell-level pre-step would only cover
-    manual runs and would NOT be enforced for the arq cron path — the hook
-    belongs in the job, not the script.
-
-Open questions (Anton rules; the RED below provisionally pins answers that
-are cheap to change):
-  a. Caller identity/transport: an anchor-writer API key over HTTP (server
-     must be up during anchor runs) vs invoking the decision handler
-     in-process (no server dependency, same decision semantics). RED pins
-     the in-process seam (backend.src.demo.demo_action.handle_demo_action).
-  b. Challenge: should the job mint + consume a single-use challenge like
-     the backup hook does (parity), or exercise in legacy mode until
-     GRANTLAYER_REQUIRE_CHALLENGE is enforced? RED exercises without a
-     challenge.
-  c. Allowed-but-anchor-fails: if the exercise is allowed and the submit
-     then fails, the chain witnesses an exercised authority for an anchor
-     that never confirmed (and a use was consumed). Acceptable, or should
-     the exercise reason/metadata mark it submit-pending?
-  d. Sequencing with gl-364: the exercise tuple/resource ('cardano/mainnet')
-     is read from the live grant; if the endpoint rename merges first,
-     nothing here changes — the in-process seam is rename-agnostic.
+Decided semantics (rulings, 2026-07-19): the exercise runs in-process via
+the decision handler — identity is the anchor-writer grant tuple (subject
+'anchor-writer', role 'agent', action 'submit_anchor', resource
+'cardano/{network}'), no HTTP dependency. ALLOWED-BUT-SUBMIT-FAILED IS
+ACCEPTABLE TRUE HISTORY: if the exercise is allowed and the submit then
+fails, the chain honestly witnesses an exercised authority (and a consumed
+use) for an anchor that never confirmed — the authority WAS exercised; the
+anchor outcome lives in anchor_records, not the audit chain.
 
 Self-provisions SQLite (listed in _sqlite_only_modules.py).
 """
@@ -99,14 +69,15 @@ class _Base(unittest.TestCase):
         _db.DB_PATH_OR_URL = self._db_path
         _db.DB_PATH = self._db_path
         _db.init_db()
-        # init_db provisions the app tables; anchor_records comes from the ORM
-        # metadata (alembic-managed in production) and must exist for the job.
+        # init_db provisions the app tables; anchor_records + workspaces come
+        # from the ORM metadata (alembic-managed in production).
         from sqlalchemy import create_engine
 
         from backend.src.core.orm import Base
         engine = create_engine(f"sqlite:///{self._db_path}")
         Base.metadata.create_all(engine)
         engine.dispose()
+        self._create_workspace_row()
 
     def tearDown(self):
         _cfg.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = self._orig_plaintext
@@ -117,8 +88,30 @@ class _Base(unittest.TestCase):
         except OSError:
             pass
 
+    def _create_workspace_row(self):
+        """The job resolves the exercise tenant from the workspace row."""
+        from backend.src.core.db import get_session_maker
+        from backend.src.core.orm import Workspace
+
+        with get_session_maker()() as session:
+            session.add(Workspace(
+                id=_WS,
+                tenant_id=_TENANT,
+                name="anchor-exercise-test",
+                slug="anchor-exercise-test",
+                owner_id="test-op",
+                status="active",
+                created_at="2026-01-01T00:00:00Z",
+                updated_at="2026-01-01T00:00:00Z",
+            ))
+            session.commit()
+
     def _create_anchor_writer_grant(self) -> str:
-        """Signed, live anchor-writer grant via the service layer (role=agent)."""
+        """Signed, live anchor-writer grant via the service layer (role=agent).
+
+        Resource matches the config-derived exercise tuple: cardano/preprod
+        for the fake preprod config (cardano/mainnet in production).
+        """
         from backend.src.core.db import get_session_maker
         from backend.src.core.models import Grant
         from backend.src.core.repositories_sqlalchemy import SqlAlchemyGrantRepository
@@ -128,7 +121,7 @@ class _Base(unittest.TestCase):
             subject_id="anchor-writer",
             role="agent",
             action="submit_anchor",
-            resource="cardano/mainnet",
+            resource="cardano/preprod",
             valid_from="2026-01-01T00:00:00Z",
             valid_until="2027-01-01T00:00:00Z",
             created_by="test-op",
@@ -161,7 +154,8 @@ class _Base(unittest.TestCase):
         engine = sa.create_engine(f"sqlite:///{self._db_path}")
         with engine.connect() as conn:
             rows = conn.execute(sa.text(
-                "SELECT action, subject_id, approved, workspace_id FROM audit_events"
+                "SELECT action, subject_id, approved, workspace_id, "
+                "challenge_present, challenge_result FROM audit_events"
             )).fetchall()
         engine.dispose()
         return rows
@@ -172,6 +166,16 @@ class _Base(unittest.TestCase):
         with engine.connect() as conn:
             rows = conn.execute(sa.text(
                 "SELECT status, entry_count FROM anchor_records"
+            )).fetchall()
+        engine.dispose()
+        return rows
+
+    def _challenges(self):
+        import sqlalchemy as sa
+        engine = sa.create_engine(f"sqlite:///{self._db_path}")
+        with engine.connect() as conn:
+            rows = conn.execute(sa.text(
+                "SELECT status, subject_id, action FROM challenges"
             )).fetchall()
         engine.dispose()
         return rows
@@ -193,6 +197,7 @@ class TestDeniedExerciseRefusesAnchor(_Base):
         with ExitStack() as stack:
             result = self._run_job(stack)
         self.assertEqual(result["status"], "refused_grant_exercise_denied")
+        self.assertEqual(result["reason_code"], "no_matching_grant")
         self.assertEqual(self.probe.call_count, 0, "no reachability probe on refusal")
         self.assertEqual(self.submit.call_count, 0, "no submit on refusal")
         self.assertEqual(self._anchor_records(), [], "no submitted row on refusal")
@@ -204,7 +209,7 @@ class TestDeniedExerciseRefusesAnchor(_Base):
 
 class TestAllowedExerciseIsInsideAnchoredRange(_Base):
     def test_exercise_event_commits_before_head_read(self):
-        gid = self._create_anchor_writer_grant()
+        self._create_anchor_writer_grant()
         with ExitStack() as stack:
             result = self._run_job(stack)
         self.assertEqual(result["status"], "confirmed", result)
@@ -222,6 +227,23 @@ class TestAllowedExerciseIsInsideAnchoredRange(_Base):
         ws_events = [e for e in self._events() if e.workspace_id == _WS]
         self.assertEqual(records[0].entry_count, len(ws_events),
                          "anchored range must include the exercise event")
+
+    def test_exercise_uses_a_real_single_use_challenge(self):
+        # Ruling: full challenge mint + consume, like the backup hook — the
+        # exercise decision must carry a validated challenge, and the minted
+        # challenge must be burned.
+        self._create_anchor_writer_grant()
+        with ExitStack() as stack:
+            self._run_job(stack)
+        decision_events = [e for e in self._events()
+                           if e.action == "submit_anchor" and e.approved == 1
+                           and e.challenge_present == 1]
+        self.assertEqual(len(decision_events), 1,
+                         "the exercise decision must carry a challenge")
+        self.assertEqual(decision_events[0].challenge_result, "valid")
+        used = [c for c in self._challenges()
+                if c.subject_id == "anchor-writer" and c.status == "used"]
+        self.assertEqual(len(used), 1, "the minted challenge must be single-use burned")
 
     def test_exercise_consumes_a_use_like_any_other(self):
         gid = self._create_anchor_writer_grant()

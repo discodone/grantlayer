@@ -33,6 +33,28 @@ import unittest
 from contextlib import ExitStack
 from unittest import mock
 
+
+# The job now exercises the anchor-writer grant BEFORE the head gates
+# (proofs live in test_anchor_grant_exercise.py). This module pins the
+# post-exercise gate order, so the exercise seam is stubbed to 'allowed'
+# for every test here.
+_EXERCISE_PATCH = None
+
+
+def setUpModule():
+    global _EXERCISE_PATCH
+    from unittest import mock as _mock
+    _EXERCISE_PATCH = _mock.patch(
+        "backend.src.workers.jobs._exercise_anchor_grant",
+        return_value={"approved": True, "result": "allowed", "reasonCode": "access_granted"},
+    )
+    _EXERCISE_PATCH.start()
+
+
+def tearDownModule():
+    if _EXERCISE_PATCH is not None:
+        _EXERCISE_PATCH.stop()
+
 _WS = "11111111-1111-1111-1111-111111111111"
 _VALID_H = "a" * 64
 _HEAD = {"final_hash": _VALID_H, "entry_count": 5}

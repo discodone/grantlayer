@@ -149,6 +149,44 @@ async def anchor_audit_chain(ctx: dict, workspace_id: Optional[str] = None) -> d
     return await asyncio.to_thread(_anchor_audit_chain_sync, workspace_id)
 
 
+def _exercise_anchor_grant(config, workspace_id: str, maker) -> dict:
+    """Exercise the anchor-writer grant through the standard decision path.
+
+    Challenge mint + consume (single-use, no legacy mode), policy
+    evaluation, signature gate, execution row, chain-linked audit event,
+    use-count consumption — identical semantics to any /v1/exercise call,
+    run in-process. Returns the decision dict; raises when the decision
+    path is unavailable (unresolvable workspace/tenant included).
+    """
+    from ..auth.challenges import create_challenge
+    from ..core.orm import Workspace
+    from ..demo.demo_action import handle_demo_action
+
+    with maker() as session:
+        ws_row = session.get(Workspace, workspace_id)
+        tenant_id = ws_row.tenant_id if ws_row is not None else None
+    if tenant_id is None:
+        raise RuntimeError(
+            f"workspace {workspace_id} has no row — cannot resolve tenant"
+        )
+
+    subject = "anchor-writer"
+    action = "submit_anchor"
+    resource = f"cardano/{config.network}"
+    challenge = create_challenge(
+        subject, action, resource, tenant_id=tenant_id, workspace_id=workspace_id
+    )
+    return handle_demo_action(
+        subject_id=subject,
+        role="agent",
+        action=action,
+        resource=resource,
+        challenge_id=challenge.id,
+        tenant_id=tenant_id,
+        workspace_id=workspace_id,
+    )
+
+
 def _anchor_audit_chain_sync(workspace_id: Optional[str]) -> dict:
     import uuid
     from datetime import datetime, timezone
@@ -192,8 +230,41 @@ def _anchor_audit_chain_sync(workspace_id: Optional[str]) -> dict:
             logger.info("anchor_audit_chain: already anchored today for %s — skipping", workspace_id)
             return {"status": "skipped_already_anchored_today"}
 
-        # Fail-closed head read: no head ⇒ no anchor (same posture as the
-        # balance guard — never proceed blind).
+    # The anchor run is itself a granted authority: exercise the
+    # anchor-writer grant through the standard decision path BEFORE the head
+    # is read, so the exercise event sits inside the anchored range.
+    # Fail-closed both ways: a denied exercise or an unavailable decision
+    # path refuses the run before any chain machinery — no context, no
+    # probe, no submitted row, no network call.
+    try:
+        decision = _exercise_anchor_grant(config, workspace_id, maker)
+    except Exception as exc:
+        logger.error(
+            "anchor_audit_chain: grant exercise unavailable [%s] — refusing: %s",
+            type(exc).__name__,
+            exc,
+        )
+        return {"status": "refused_grant_exercise_unavailable", "error": type(exc).__name__}
+
+    if decision.get("result") == "failed":
+        # Internal decision-path failure (no witnessed decision) — treat as
+        # unavailable, not as a denial.
+        logger.error("anchor_audit_chain: grant exercise failed internally — refusing")
+        return {"status": "refused_grant_exercise_unavailable", "error": "internal_handler_error"}
+    if not decision.get("approved"):
+        logger.error(
+            "anchor_audit_chain: grant exercise denied (%s) — refusing",
+            decision.get("reasonCode"),
+        )
+        return {
+            "status": "refused_grant_exercise_denied",
+            "reason_code": decision.get("reasonCode"),
+        }
+
+    # Fail-closed head read: no head ⇒ no anchor (same posture as the
+    # balance guard — never proceed blind). Read AFTER the exercise commits
+    # so the anchored range covers the exercise event.
+    with maker() as session:
         try:
             head = anchor_head(session, workspace_id)
         except Exception as exc:

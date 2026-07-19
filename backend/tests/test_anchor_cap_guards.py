@@ -32,6 +32,28 @@ import unittest
 from contextlib import ExitStack
 from unittest import mock
 
+
+# The job now exercises the anchor-writer grant BEFORE the head gates
+# (proofs live in test_anchor_grant_exercise.py). This module pins the
+# post-exercise gate order, so the exercise seam is stubbed to 'allowed'
+# for every test here.
+_EXERCISE_PATCH = None
+
+
+def setUpModule():
+    global _EXERCISE_PATCH
+    from unittest import mock as _mock
+    _EXERCISE_PATCH = _mock.patch(
+        "backend.src.workers.jobs._exercise_anchor_grant",
+        return_value={"approved": True, "result": "allowed", "reasonCode": "access_granted"},
+    )
+    _EXERCISE_PATCH.start()
+
+
+def tearDownModule():
+    if _EXERCISE_PATCH is not None:
+        _EXERCISE_PATCH.stop()
+
 # Deterministic THROWAWAY test key (fixed 32-byte seed 00,01,...,1f). NOT funded,
 # NOT real. Same key/address the address regression test pins, reused here so the
 # expected-address proofs are anchored to a known-good value.
