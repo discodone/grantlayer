@@ -18,7 +18,7 @@ from ...core.validation import (
 from ...demo.demo_action import handle_demo_action
 from ...grants.grants import tamper_grant
 from ..deps import resolve_auth_and_workspace
-from ..schemas import DynamicResponse
+from ..schemas import DynamicResponse, ExerciseResponse
 
 router = APIRouter(tags=["demo"])
 
@@ -58,8 +58,8 @@ async def tamper_grant_endpoint(
     return result
 
 
-@router.post("/demo-action", response_model=dict[str, Any])
-async def demo_action_endpoint(
+@router.post("/exercise", response_model=ExerciseResponse, response_model_by_alias=True)
+async def exercise_endpoint(
     body: DemoActionRequest,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
@@ -106,6 +106,12 @@ async def demo_action_endpoint(
         tenant_id=tenant_id,
         workspace_id=ws_ctx["workspace_id"],
     )
-    status_code = 200 if result["approved"] else 403
+    # Validate against the typed contract; exclude_unset preserves the exact
+    # per-path field set (e.g. no `message` on denials).
+    resp = ExerciseResponse.model_validate(result)
+    status_code = 200 if resp.approved else 403
     from fastapi.responses import JSONResponse
-    return JSONResponse(content=result, status_code=status_code)
+    return JSONResponse(
+        content=resp.model_dump(by_alias=True, exclude_unset=True),
+        status_code=status_code,
+    )

@@ -279,6 +279,7 @@ class TestVerifiedAuthorityPositiveAllowlist(unittest.TestCase):
         ("POST", "/v1/users/{user_id}/export-data"): "_authorize_user_action",
         # Challenge + auditor: workspace resolved from verified auth context.
         ("POST", "/v1/challenges"): "resolve_auth_and_workspace",
+        ("POST", "/v1/exercise"): "resolve_auth_and_workspace",
         ("POST", "/v1/auditor/exports/build"): "resolve_auth_and_workspace",
     }
 
@@ -286,7 +287,7 @@ class TestVerifiedAuthorityPositiveAllowlist(unittest.TestCase):
     # Still enumerated (fail-closed) with a documented reason.
     _NO_TENANT_AUTHORITY: dict[tuple[str, str], str] = {
         ("POST", "/v1/auth/token"): "credential exchange; issues a token, no tenant resource.",
-        ("POST", "/v1/demo-action"): "demo bypass guarded by demo-mode flag.",
+        ("POST", "/v1/demo-action"): "307 alias to /v1/exercise; pure redirect, no resource access.",
         ("POST", "/v1/notifications/unsubscribe"): "signed query-param token; no tenant resource.",
     }
 

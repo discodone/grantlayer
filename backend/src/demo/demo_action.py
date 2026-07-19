@@ -94,7 +94,9 @@ def handle_demo_action(
                     raise
             return {
                 "approved": False,
+                "result": "denied",
                 "reason": "challenge_required",
+                "reasonCode": "challenge_required",
                 "challengeResult": "required_missing",
                 "auditEventId": event.id,
                 "grantSignatureResult": "not_checked",
@@ -130,10 +132,12 @@ def handle_demo_action(
                         "invalid":       "grant_signature_invalid",
                         "hash_mismatch": "grant_payload_hash_mismatch",
                     }
+                    sig_code = deny_map.get(sig_check, f"grant_signature_{sig_check}")
                     result = PolicyResult(
                         approved=False,
-                        reason=deny_map.get(sig_check, f"grant_signature_{sig_check}"),
+                        reason=sig_code,
                         matched_grant_id=result.matched_grant_id,
+                        reason_code=sig_code,
                     )
 
         challenge_present = challenge_id is not None
@@ -150,6 +154,7 @@ def handle_demo_action(
                     approved=False,
                     reason=f"Challenge invalid: {c_result}",
                     matched_grant_id=result.matched_grant_id,
+                    reason_code="challenge_invalid",
                 )
 
         # Decision writes are ATOMIC: grant-use consumption, the execution
@@ -169,6 +174,7 @@ def handle_demo_action(
                             approved=False,
                             reason="grant_usage_exhausted",
                             matched_grant_id=result.matched_grant_id,
+                            reason_code="grant_usage_exhausted",
                         )
 
                 # Populate execution record
@@ -178,7 +184,9 @@ def handle_demo_action(
                 execution.challenge_result = challenge_result
                 execution.policy_result = result.reason
                 execution.result = "succeeded" if result.approved else "denied"
-                execution.error_code = None if result.approved else result.reason
+                # error_code carries the stable machine code; policy_result
+                # keeps the human reason — no more mirrored strings.
+                execution.error_code = None if result.approved else result.reason_code
                 execution = create_grant_execution(
                     execution,
                     tenant_id=effective_tenant,
@@ -214,7 +222,10 @@ def handle_demo_action(
         if result.approved:
             return {
                 "approved": True,
-                "message": f"[DEMO] Action '{action}' on '{resource}' approved for '{subject_id}'.",
+                "result": "allowed",
+                "message": f"Action '{action}' on '{resource}' approved for '{subject_id}'.",
+                "reason": result.reason,
+                "reasonCode": result.reason_code or "access_granted",
                 "matchedGrantId": result.matched_grant_id,
                 "challengeId": resolved_challenge_id,
                 "auditEventId": event.id,
@@ -224,7 +235,9 @@ def handle_demo_action(
         else:
             return {
                 "approved": False,
+                "result": "denied",
                 "reason": result.reason,
+                "reasonCode": result.reason_code or "denied",
                 "challengeResult": challenge_result,
                 "auditEventId": event.id,
                 "grantSignatureResult": grant_signature_result,
@@ -251,7 +264,9 @@ def handle_demo_action(
         )
         return {
             "approved": False,
+            "result": "failed",
             "reason": "internal_handler_error",
+            "reasonCode": "internal_handler_error",
             "grantSignatureResult": "not_checked",
             "executionId": execution.id,
         }

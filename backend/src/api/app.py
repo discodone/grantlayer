@@ -367,6 +367,18 @@ def create_app() -> FastAPI:
     if config.ENABLE_DEMO_ENDPOINTS:
         app.include_router(demo.tamper_router, prefix="/v1")
 
+    # The grant-exercise route moved to /v1/exercise; /v1/demo-action keeps
+    # answering as a 307 alias (method + body preserved) for existing callers.
+    async def _demo_action_alias(request: Request) -> RedirectResponse:
+        url = "/v1/exercise"
+        if request.url.query:
+            url += f"?{request.url.query}"
+        return RedirectResponse(url=url, status_code=307)
+
+    app.add_api_route(
+        "/v1/demo-action", _demo_action_alias, methods=["POST"], include_in_schema=False
+    )
+
     # Prometheus metrics — exposes /metrics for scraping.
     # Imported lazily to avoid starlette version conflicts in test environments.
     try:
@@ -383,7 +395,7 @@ def create_app() -> FastAPI:
         "/evidence", "/provenance", "/auditor", "/compliance", "/operators",
         "/admin", "/challenges", "/agent-permissions", "/approvals",
         "/decision-provenance", "/policy-requirements", "/demo", "/demo-action",
-        "/oidc", "/webhooks",
+        "/exercise", "/oidc", "/webhooks",
     ]
 
     def _make_redirect_handler():

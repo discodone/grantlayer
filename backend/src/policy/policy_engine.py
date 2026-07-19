@@ -41,6 +41,7 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
         return PolicyResult(
             approved=False,
             reason=f"No grant found for subject '{request.subject_id}'",
+            reason_code="no_matching_grant",
         )
 
     best_denial: PolicyResult | None = None
@@ -67,6 +68,7 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
                     approved=False,
                     reason=f"Grant '{grant.id}' is not yet valid (starts {grant.valid_from})",
                     matched_grant_id=grant.id,
+                    reason_code="grant_not_yet_valid",
                 )
             continue
 
@@ -76,6 +78,7 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
                     approved=False,
                     reason=f"Grant '{grant.id}' has expired (expired {grant.valid_until})",
                     matched_grant_id=grant.id,
+                    reason_code="grant_expired",
                 )
             continue
 
@@ -85,6 +88,7 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
                     approved=False,
                     reason=f"Grant '{grant.id}' has been revoked",
                     matched_grant_id=grant.id,
+                    reason_code="grant_revoked",
                 )
             continue
 
@@ -94,6 +98,7 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
                     approved=False,
                     reason="grant_usage_exhausted",
                     matched_grant_id=grant.id,
+                    reason_code="grant_usage_exhausted",
                 )
             continue
 
@@ -101,6 +106,7 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
             approved=True,
             reason="Access granted",
             matched_grant_id=grant.id,
+            reason_code="access_granted",
         )
 
     if best_denial is not None:
@@ -112,4 +118,5 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
             f"No matching grant for role='{request.role}', "
             f"action='{request.action}', resource='{request.resource}'"
         ),
+        reason_code="no_matching_grant",
     )

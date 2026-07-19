@@ -682,7 +682,7 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         importlib.reload(self.config_mod)
         payload = {"subjectId": "x" * 129, "role": "engineer", "action": "read", "resource": "repo-a"}
         body = json.dumps(payload).encode()
-        handler = self._make_raw_handler("/v1/demo-action", method="POST", auth_header="Bearer owner-token", body=body)
+        handler = self._make_raw_handler("/v1/exercise", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
@@ -694,7 +694,7 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         importlib.reload(self.config_mod)
         payload = {"subjectId": "sub-1", "role": "engineer", "action": "read", "resource": "repo-a", "challengeId": "x" * 129}
         body = json.dumps(payload).encode()
-        handler = self._make_raw_handler("/v1/demo-action", method="POST", auth_header="Bearer owner-token", body=body)
+        handler = self._make_raw_handler("/v1/exercise", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_raw_handler(handler)
         self.assertEqual(status, 400)
         self.assertEqual(data["errorCode"], "invalid_field")
@@ -706,7 +706,7 @@ class TestGl114ServerApiBoundaryValidation(_BaseGl114):
         importlib.reload(self.config_mod)
         payload = {"subjectId": "x" * 128, "role": "x" * 64, "action": "x" * 256, "resource": "x" * 256}
         body = json.dumps(payload).encode()
-        handler = self._make_raw_handler("/v1/demo-action", method="POST", auth_header="Bearer owner-token", body=body)
+        handler = self._make_raw_handler("/v1/exercise", method="POST", auth_header="Bearer owner-token", body=body)
         status, data = self._run_raw_handler(handler)
         self.assertIn(status, (200, 403))  # no matching grant expected, but validated
 

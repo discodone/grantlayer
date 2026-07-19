@@ -341,7 +341,7 @@ class TestGl090MutationEndpointsProtected(_BaseGl090):
         # demo-action is protected by auth first, so use valid auth
         oversized = b"x" * (self.max_json_body_bytes + 1)
         handler = self._make_handler(
-            "/v1/demo-action", method="POST", auth_header="Bearer owner-token",
+            "/v1/exercise", method="POST", auth_header="Bearer owner-token",
             body=oversized, content_length=str(len(oversized)),
         )
         status, body = self._run_handler(handler)
@@ -349,7 +349,7 @@ class TestGl090MutationEndpointsProtected(_BaseGl090):
 
     def test_post_demo_action_malformed_json_returns_400(self):
         handler = self._make_handler(
-            "/v1/demo-action", method="POST", auth_header="Bearer owner-token",
+            "/v1/exercise", method="POST", auth_header="Bearer owner-token",
             body=b"{bad", content_length="4",
         )
         status, body = self._run_handler(handler)
@@ -401,7 +401,7 @@ class TestGl090AuthProtectionsPreserved(_BaseGl090):
             "resource": "repo-a",
         }).encode()
         handler = self._make_handler(
-            "/v1/demo-action", method="POST", body=demo_body,
+            "/v1/exercise", method="POST", body=demo_body,
         )
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)

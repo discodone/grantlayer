@@ -205,7 +205,7 @@ class TestGl087OperatorMode(_BaseGl087):
         self._assert_no_secrets_in_body(body)
 
     def test_missing_auth_demo_action_returns_401_safe_json(self):
-        handler = self._make_handler("/v1/demo-action", method="POST", body=self._demo_body())
+        handler = self._make_handler("/v1/exercise", method="POST", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -236,7 +236,7 @@ class TestGl087OperatorMode(_BaseGl087):
         self._assert_no_secrets_in_body(body)
 
     def test_insufficient_role_demo_action_returns_403_safe_json(self):
-        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer demo-token", body=self._demo_body())
+        handler = self._make_handler("/v1/exercise", method="POST", auth_header="Bearer demo-token", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self._assert_gl030_full(body)
@@ -262,7 +262,7 @@ class TestGl087OperatorMode(_BaseGl087):
                              f"Endpoint {ep} returned unexpected errorCode: {body.get('errorCode')}")
             self.assertEqual(body.get("reason"), "Operator authentication is required.")
 
-        handler = self._make_handler("/v1/demo-action", method="POST", body=self._demo_body())
+        handler = self._make_handler("/v1/exercise", method="POST", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self.assertEqual(body.get("errorCode"), "operator_auth_required")
@@ -280,7 +280,7 @@ class TestGl087OperatorMode(_BaseGl087):
                              f"Endpoint {ep} returned unexpected errorCode: {body.get('errorCode')}")
             self.assertEqual(body.get("reason"), "Operator role is not authorized for this action.")
 
-        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer demo-token", body=self._demo_body())
+        handler = self._make_handler("/v1/exercise", method="POST", auth_header="Bearer demo-token", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 403)
         self.assertEqual(body.get("errorCode"), "operator_role_forbidden")
@@ -329,14 +329,14 @@ class TestGl087OperatorMode(_BaseGl087):
         self.assertIsInstance(body.get("items"), list)
 
     def test_authorized_owner_demo_action_succeeds(self):
-        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer owner-token", body=self._demo_body())
+        handler = self._make_handler("/v1/exercise", method="POST", auth_header="Bearer owner-token", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertIn("approved", body)
         self.assertTrue(body["approved"])
 
     def test_authorized_grant_admin_demo_action_succeeds(self):
-        handler = self._make_handler("/v1/demo-action", method="POST", auth_header="Bearer admin-token", body=self._demo_body())
+        handler = self._make_handler("/v1/exercise", method="POST", auth_header="Bearer admin-token", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 200)
         self.assertTrue(body["approved"])
@@ -377,7 +377,7 @@ class TestGl087OperatorMode(_BaseGl087):
         self._assert_gl030_full(body)
 
     def test_gl084_demo_action_still_requires_auth(self):
-        handler = self._make_handler("/v1/demo-action", method="POST", body=self._demo_body())
+        handler = self._make_handler("/v1/exercise", method="POST", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -423,7 +423,7 @@ class TestGl087LegacyMode(_BaseGl087):
         self.assertEqual(body.get("errorCode"), "admin_token_required")
 
     def test_legacy_missing_auth_demo_action_returns_401_safe_json(self):
-        handler = self._make_handler("/v1/demo-action", method="POST", body=self._demo_body())
+        handler = self._make_handler("/v1/exercise", method="POST", body=self._demo_body())
         status, body = self._run_handler(handler)
         self.assertEqual(status, 401)
         self._assert_gl030_full(body)
@@ -440,10 +440,10 @@ class TestGl087LegacyMode(_BaseGl087):
         self.assertNotIn("legacy-admin-token", body_str)
 
     def test_legacy_401_consistent_across_endpoints(self):
-        endpoints = ["/v1/grants", "/v1/audit-events", "/v1/demo-action"]
+        endpoints = ["/v1/grants", "/v1/audit-events", "/v1/exercise"]
         for ep in endpoints:
-            method = "POST" if ep == "/v1/demo-action" else "GET"
-            body_data = self._demo_body() if ep == "/v1/demo-action" else b""
+            method = "POST" if ep == "/v1/exercise" else "GET"
+            body_data = self._demo_body() if ep == "/v1/exercise" else b""
             handler = self._make_handler(ep, method=method, body=body_data)
             status, body = self._run_handler(handler)
             self.assertEqual(status, 401, f"Endpoint {ep} did not return 401")
@@ -503,7 +503,7 @@ class TestGl087OpenAPIContract(_BaseGl087):
 
     def test_openapi_demo_action_has_401_403_with_error_response_schema(self):
         text = self._openapi_text()
-        section = self._section_between(text, "/v1/demo-action:", "/v1/demo/tamper-grant/")
+        section = self._section_between(text, "/v1/exercise:", "/v1/demo/tamper-grant/")
         self.assertIn('"401"', section)
         self.assertIn('"403"', section)
         self.assertIn('ErrorResponse', section)

@@ -188,6 +188,9 @@ class PolicyResult:
     approved: bool
     reason: str
     matched_grant_id: Optional[str] = None
+    # Stable machine code for the decision (access_granted, no_matching_grant,
+    # grant_expired, ...). The human-readable `reason` stays free-form.
+    reason_code: Optional[str] = None
 
 
 # ──────────────────────────────────────────────
