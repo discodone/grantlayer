@@ -233,6 +233,118 @@ async def create_grant_endpoint(
     return _grant_to_response(grant)
 
 
+def _resolve_witness_identity(auth_ctx: dict) -> str:
+    """Fail-closed subject for chain-witnessed lifecycle events.
+
+    Identity is always resolvable after auth on these paths; if it is not,
+    that is a server-side invariant violation — refuse rather than write a
+    grant_revoked/grant_renewed event attributed to 'unknown'.
+    """
+    operator_id = auth_ctx.get("sub") or auth_ctx.get("operator", {}).get("operatorId")
+    if not operator_id:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Operator identity unresolved",
+                "errorCode": "operator_identity_unresolved",
+                "reason": "Cannot witness a lifecycle mutation without a resolvable operator identity.",
+            },
+        )
+    return operator_id
+
+
+def _parse_iso_utc(value: str) -> datetime.datetime:
+    """Parse an already-validated ISO-8601 timestamp; naive values are UTC."""
+    v = value.replace("Z", "+00:00") if value.endswith("Z") else value
+    dt = datetime.datetime.fromisoformat(v)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+    return dt
+
+
+@router.post("/{grant_id}/renew", response_model=GrantResponse, response_model_by_alias=True)
+async def renew_grant_endpoint(
+    grant_id: str,
+    valid_until: Annotated[str, Body(embed=True, alias="validUntil")],
+    authorization: Annotated[Optional[str], Header()] = None,
+    x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
+    svc: AsyncGrantService = Depends(get_async_grant_service),
+):
+    """Extend a grant's validUntil in place: same id, untouched use_count, re-signed."""
+    auth_ctx, ws_ctx = resolve_auth_and_workspace(
+        authorization,
+        required_roles=["owner", "grant_admin"],
+        workspace_id=x_workspace_id,
+    )
+    await require_mutation_authz(auth_ctx, ws_ctx)
+
+    _validate_iso_timestamp(valid_until, "validUntil")
+    now = datetime.datetime.now(datetime.timezone.utc)
+    new_until = _parse_iso_utc(valid_until)
+    if new_until <= now:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "Invalid date range",
+                "errorCode": "invalid_date_range",
+                "reason": "validUntil must be strictly in the future.",
+            },
+        )
+
+    grant = await svc.get_grant(
+        grant_id,
+        tenant_id=ws_ctx["tenant_id"],
+        workspace_id=ws_ctx["workspace_id"],
+    )
+    if grant is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "Grant not found",
+                "errorCode": "grant_not_found",
+                "reason": "The requested grant does not exist.",
+            },
+        )
+    if grant.revoked:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "Grant revoked",
+                "errorCode": "grant_revoked",
+                "reason": "A revoked grant cannot be renewed; issue a new grant instead.",
+            },
+        )
+    if new_until < _parse_iso_utc(grant.valid_from):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "Invalid date range",
+                "errorCode": "invalid_date_range",
+                "reason": "validUntil must not be before the grant's validFrom.",
+            },
+        )
+
+    operator_id = _resolve_witness_identity(auth_ctx)
+    renewed = await svc.renew_grant(
+        grant_id,
+        new_valid_until=valid_until,
+        renewed_by=operator_id,
+        tenant_id=ws_ctx["tenant_id"],
+        workspace_id=ws_ctx["workspace_id"],
+    )
+    if renewed is None:
+        # The guarded UPDATE found no live row — revoked between check and write.
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "Grant revoked",
+                "errorCode": "grant_revoked",
+                "reason": "A revoked grant cannot be renewed; issue a new grant instead.",
+            },
+        )
+    return _grant_to_response(renewed)
+
+
 @router.post("/{grant_id}/revoke", response_model=GrantResponse, response_model_by_alias=True)
 async def revoke_grant_endpoint(
     grant_id: str,
@@ -248,7 +360,7 @@ async def revoke_grant_endpoint(
         workspace_id=x_workspace_id,
     )
     await require_mutation_authz(auth_ctx, ws_ctx)
-    operator_id = auth_ctx.get("sub") or auth_ctx.get("operator", {}).get("operatorId", "unknown")
+    operator_id = _resolve_witness_identity(auth_ctx)
     revoked = await svc.revoke_grant(
         grant_id,
         tenant_id=ws_ctx["tenant_id"],

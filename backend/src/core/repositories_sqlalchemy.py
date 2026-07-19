@@ -217,6 +217,36 @@ class SqlAlchemyGrantRepository:
         result: CursorResult = self._s.execute(stmt)  # type: ignore[assignment]
         return (result.rowcount or 0) > 0
 
+    def renew(
+        self,
+        grant_id: str,
+        new_valid_until: str,
+        signature: str,
+        payload_hash: str,
+        signing_key_id: str,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> bool:
+        # validUntil is inside the signed canonical payload, so a renewal must
+        # land the new date and the fresh signature material in one guarded
+        # UPDATE — a date-only edit would leave a row that fails verification.
+        stmt = (
+            sa_update(OrmGrant)
+            .where(OrmGrant.id == grant_id, OrmGrant.revoked == 0)
+            .values(
+                valid_until=new_valid_until,
+                signature=signature,
+                payload_hash=payload_hash,
+                signing_key_id=signing_key_id,
+            )
+        )
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
+        result: CursorResult = self._s.execute(stmt)  # type: ignore[assignment]
+        return (result.rowcount or 0) > 0
+
     def count(
         self,
         tenant_id: Optional[str] = None,
@@ -780,6 +810,36 @@ class SqlAlchemyAsyncGrantRepository:
             sa_update(OrmGrant)
             .where(OrmGrant.id == grant_id, OrmGrant.revoked == 0)
             .values(revoked=1, revoked_by=revoked_by, revoked_reason=reason, revoked_at=revoked_at)
+        )
+        if tenant_id is not None:
+            stmt = stmt.where(OrmGrant.tenant_id == tenant_id)
+        if workspace_id is not None:
+            stmt = stmt.where(OrmGrant.workspace_id == workspace_id)
+        result = await self._s.execute(stmt)
+        return (result.rowcount or 0) > 0  # type: ignore[attr-defined]
+
+    async def renew(
+        self,
+        grant_id: str,
+        new_valid_until: str,
+        signature: str,
+        payload_hash: str,
+        signing_key_id: str,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> bool:
+        # validUntil is inside the signed canonical payload, so a renewal must
+        # land the new date and the fresh signature material in one guarded
+        # UPDATE — a date-only edit would leave a row that fails verification.
+        stmt = (
+            sa_update(OrmGrant)
+            .where(OrmGrant.id == grant_id, OrmGrant.revoked == 0)
+            .values(
+                valid_until=new_valid_until,
+                signature=signature,
+                payload_hash=payload_hash,
+                signing_key_id=signing_key_id,
+            )
         )
         if tenant_id is not None:
             stmt = stmt.where(OrmGrant.tenant_id == tenant_id)

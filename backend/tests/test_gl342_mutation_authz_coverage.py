@@ -72,6 +72,7 @@ _ROUTE_BODY: dict[str, dict] = {
         "reason": "GL-342 scope enforcement test",
     },
     "/v1/grants/bulk-update": {"grantIds": ["g-gl342-001"]},
+    "/v1/grants/{grant_id}/renew": {"validUntil": "2027-01-01T00:00:00Z"},
     "/v1/grant-requests": {
         "subjectId": "agent-001",
         "role": "executor",

@@ -238,6 +238,7 @@ class TestVerifiedAuthorityPositiveAllowlist(unittest.TestCase):
         # Standard mutation routes: shared authz gate over the resolved workspace ctx.
         ("POST", "/v1/grants"): "require_mutation_authz",
         ("POST", "/v1/grants/bulk-update"): "require_mutation_authz",
+        ("POST", "/v1/grants/{grant_id}/renew"): "require_mutation_authz",
         ("POST", "/v1/grants/{grant_id}/revoke"): "require_mutation_authz",
         ("POST", "/v1/grant-requests"): "require_mutation_authz",
         ("POST", "/v1/grant-requests/bulk-approve"): "require_mutation_authz",

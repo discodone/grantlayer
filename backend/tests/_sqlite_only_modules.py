@@ -30,6 +30,7 @@ DSN-clean.
 SQLITE_ONLY_MODULES: frozenset[str] = frozenset(
     [
         "test_agent_grant_role",
+        "test_grant_renewal_endpoint",
         "test_grant_revocation_audit_event",
         "test_anchor_export_determinism",
         "test_anchor_job_gate",

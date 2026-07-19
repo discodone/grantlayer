@@ -46,6 +46,17 @@ class IGrantRepository(Protocol):
         workspace_id: Optional[str] = None,
     ) -> bool: ...
 
+    def renew(
+        self,
+        grant_id: str,
+        new_valid_until: str,
+        signature: str,
+        payload_hash: str,
+        signing_key_id: str,
+        tenant_id: Optional[str] = None,
+        workspace_id: Optional[str] = None,
+    ) -> bool: ...
+
     def count(
         self,
         tenant_id: Optional[str] = None,
