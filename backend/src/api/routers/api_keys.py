@@ -18,7 +18,11 @@ from ...audit.audit_log import append_event
 from ...core.db import get_async_db
 from ...core.models import AuditEvent
 from ..auth_jwt import validate_jwt_header
-from ..deps import assert_admin_tenant_scope, async_resolve_auth_and_workspace
+from ..deps import (
+    assert_admin_tenant_scope,
+    async_resolve_auth_and_workspace,
+    resolve_witness_identity,
+)
 
 router = APIRouter(prefix="/api-keys", tags=["api-keys"])
 
@@ -110,7 +114,7 @@ async def create_api_key(
             },
         )
 
-    user_id = payload.get("sub", "unknown")
+    user_id = resolve_witness_identity(payload)
     workspace_id = ws_ctx["workspace_id"]
     raw_key = _generate_raw_key()
     key_hash = _hash_key(raw_key)
@@ -166,7 +170,7 @@ async def list_api_keys(
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     payload = _resolve_user(authorization)
-    user_id = payload.get("sub", "unknown")
+    user_id = resolve_witness_identity(payload)
 
     result = await db.execute(
         text(
@@ -203,7 +207,7 @@ async def revoke_api_key(
     db: AsyncSession = Depends(get_async_db),
 ) -> Any:
     payload = _resolve_user(authorization)
-    user_id = payload.get("sub", "unknown")
+    user_id = resolve_witness_identity(payload)
 
     # Resolve the key's owning tenant (via its workspace) so an admin acting on a key
     # it does not own is confined to its own tenant.

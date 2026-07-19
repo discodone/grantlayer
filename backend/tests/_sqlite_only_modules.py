@@ -47,6 +47,7 @@ SQLITE_ONLY_MODULES: frozenset[str] = frozenset(
         "test_exercise_endpoint_rename",
         "test_evidence_bundle",
         "test_gl032_production_readiness",
+        "test_witness_identity_fallbacks",
         "test_gl033_persistence",
         "test_gl034_postgres",
         "test_gl035_postgres",

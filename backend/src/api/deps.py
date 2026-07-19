@@ -194,6 +194,26 @@ def resolve_auth_and_workspace(
     return payload, ws_ctx
 
 
+def resolve_witness_identity(payload: dict) -> str:
+    """Fail-closed subject identity for audit-attributed writes.
+
+    Identity is always resolvable after authentication on these paths; if it
+    is not, that is a server-side invariant violation — refuse rather than
+    attribute a row or a chain event to the literal 'unknown'.
+    """
+    subject = payload.get("sub") or payload.get("operator", {}).get("operatorId")
+    if not subject:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Operator identity unresolved",
+                "errorCode": "operator_identity_unresolved",
+                "reason": "Cannot attribute this operation without a resolvable caller identity.",
+            },
+        )
+    return subject
+
+
 def require_admin(authorization: Optional[str]) -> dict:
     """Check admin token or JWT admin role. Returns payload dict or raises HTTPException."""
     # Prefer JWT when configured — extracts real caller identity and tenant.

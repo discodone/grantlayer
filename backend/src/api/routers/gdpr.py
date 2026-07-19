@@ -14,6 +14,7 @@ from ...audit.audit_log import append_event
 from ...core.db import get_async_db
 from ...core.models import SYSTEM_WORKSPACE, AuditEvent
 from ..auth_jwt import validate_jwt_header
+from ..deps import resolve_witness_identity
 
 router = APIRouter(prefix="/users", tags=["gdpr"])
 
@@ -110,6 +111,7 @@ async def export_user_data(
     """Enqueue async job to export all user data. Returns job_id."""
     caller = _resolve_caller(authorization)
     await _authorize_user_action(caller, user_id, db)
+    caller_id = resolve_witness_identity(caller)
 
     job_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
@@ -124,7 +126,7 @@ async def export_user_data(
     audit_evt = AuditEvent(
         id=str(uuid.uuid4()),
         timestamp=now,
-        subject_id=caller.get("sub", "unknown"),
+        subject_id=caller_id,
         role=caller.get("role", "user"),
         action="gdpr_export_requested",
         resource=f"user/{user_id}",
@@ -155,6 +157,7 @@ async def erase_user_data(
     """Erase (anonymize) all PII for a user. Audit trail preserved."""
     caller = _resolve_caller(authorization)
     await _authorize_user_action(caller, user_id, db)
+    caller_id = resolve_witness_identity(caller)
 
     job_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
@@ -182,7 +185,7 @@ async def erase_user_data(
     audit_evt = AuditEvent(
         id=str(uuid.uuid4()),
         timestamp=now,
-        subject_id=caller.get("sub", "unknown"),
+        subject_id=caller_id,
         role=caller.get("role", "user"),
         action="gdpr_erasure_completed",
         resource=f"user/{user_id}",
