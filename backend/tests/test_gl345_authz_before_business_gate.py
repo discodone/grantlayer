@@ -41,6 +41,7 @@ _ROUTE_POLICY: dict[tuple[str, str], str] = {
     # Standard API-key mutation routes — require_mutation_authz wired.
     ("POST", "/v1/grants"): _CATEGORY_MUTATION_AUTHZ,
     ("POST", "/v1/grants/bulk-update"): _CATEGORY_MUTATION_AUTHZ,
+    ("POST", "/v1/grants/{grant_id}/renew"): _CATEGORY_MUTATION_AUTHZ,
     ("POST", "/v1/grants/{grant_id}/revoke"): _CATEGORY_MUTATION_AUTHZ,
     ("POST", "/v1/grant-requests"): _CATEGORY_MUTATION_AUTHZ,
     ("POST", "/v1/grant-requests/bulk-approve"): _CATEGORY_MUTATION_AUTHZ,
@@ -84,6 +85,7 @@ _ROUTE_BODY: dict[str, dict] = {
         "reason": "GL-345 authz-order test",
     },
     "/v1/grants/bulk-update": {"grantIds": ["g-gl345-001"]},
+    "/v1/grants/{grant_id}/renew": {"validUntil": "2027-01-01T00:00:00Z"},
     "/v1/grant-requests": {
         "subjectId": "agent-001", "role": "executor", "action": "deploy",
         "resource": "service/api", "validFrom": "2025-01-01T00:00:00Z",

@@ -42,6 +42,29 @@ def _grant_revoked_event(
     )
 
 
+def _grant_renewed_event(
+    grant_id: str,
+    renewed_by: str,
+    old_valid_until: str,
+    new_valid_until: str,
+    tenant_id: str,
+    workspace_id: str,
+) -> AuditEvent:
+    """The chain record of a renewal: who extended which authority, from and to when."""
+    return AuditEvent(
+        subject_id=renewed_by,
+        role="operator",
+        action="grant_renewed",
+        resource=f"grant/{grant_id}",
+        approved=True,
+        reason=f"grant_renewed: validUntil {old_valid_until} -> {new_valid_until}",
+        matched_grant_id=grant_id,
+        tenant_id=tenant_id,
+        workspace_id=workspace_id,
+        scope="tenant",
+    )
+
+
 class GrantService:
     def __init__(self, repo: IGrantRepository, session: "Session") -> None:
         self._repo = repo
@@ -118,6 +141,46 @@ class GrantService:
                 conn=self._session.connection(),
             )
         return result
+
+    def renew_grant(
+        self,
+        grant_id: str,
+        new_valid_until: str,
+        renewed_by: str,
+        tenant_id: str,
+        workspace_id: str,
+    ) -> Optional[Grant]:
+        grant = self._repo.get(grant_id, tenant_id=tenant_id, workspace_id=workspace_id)
+        if grant is None or grant.revoked:
+            return None
+        old_valid_until = grant.valid_until
+        # validUntil is part of the signed canonical payload: re-sign over the
+        # new date, then land date + signature material in one guarded UPDATE.
+        grant.valid_until = new_valid_until
+        sig_hex, hash_hex, key_id = _sign_grant(grant)
+        grant.signature = sig_hex
+        grant.payload_hash = hash_hex
+        grant.signing_key_id = key_id
+        renewed = self._repo.renew(
+            grant_id,
+            new_valid_until,
+            sig_hex,
+            hash_hex,
+            key_id,
+            tenant_id=tenant_id,
+            workspace_id=workspace_id,
+        )
+        if not renewed:
+            return None
+        # Same-session append: an audit failure propagates and rolls the
+        # renewal back with it — authority is never extended unwitnessed.
+        _audit_log.append_event(
+            _grant_renewed_event(
+                grant_id, renewed_by, old_valid_until, new_valid_until, tenant_id, workspace_id
+            ),
+            conn=self._session.connection(),
+        )
+        return grant
 
 
 class AsyncGrantService:
@@ -221,3 +284,55 @@ class AsyncGrantService:
                 workspace_id=workspace_id,
             )
         return result
+
+    async def renew_grant(
+        self,
+        grant_id: str,
+        new_valid_until: str,
+        renewed_by: str,
+        tenant_id: str,
+        workspace_id: str,
+    ) -> Optional[Grant]:
+        grant = await self._repo.get(grant_id, tenant_id=tenant_id, workspace_id=workspace_id)
+        if grant is None or grant.revoked:
+            return None
+        old_valid_until = grant.valid_until
+        # validUntil is part of the signed canonical payload: re-sign over the
+        # new date, then land date + signature material in one guarded UPDATE.
+        grant.valid_until = new_valid_until
+        sig_hex, hash_hex, key_id = _sign_grant(grant)
+        grant.signature = sig_hex
+        grant.payload_hash = hash_hex
+        grant.signing_key_id = key_id
+        renewed = await self._repo.renew(
+            grant_id,
+            new_valid_until,
+            sig_hex,
+            hash_hex,
+            key_id,
+            tenant_id=tenant_id,
+            workspace_id=workspace_id,
+        )
+        if not renewed:
+            return None
+        # Same-session append (the request session commits at dependency
+        # exit): an audit failure propagates and rolls the renewal back with
+        # it — authority is never extended unwitnessed.
+        event = _grant_renewed_event(
+            grant_id, renewed_by, old_valid_until, new_valid_until, tenant_id, workspace_id
+        )
+        await self._session.run_sync(
+            lambda sync_sess: _audit_log.append_event(event, conn=sync_sess.connection())
+        )
+        await _webhook_dispatch(
+            "grant.renewed",
+            {
+                "id": grant_id,
+                "renewed_by": renewed_by,
+                "old_valid_until": old_valid_until,
+                "valid_until": new_valid_until,
+            },
+            tenant_id=tenant_id,
+            workspace_id=workspace_id,
+        )
+        return grant
