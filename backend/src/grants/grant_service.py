@@ -20,6 +20,28 @@ if TYPE_CHECKING:
     from ..core.repositories_sqlalchemy import SqlAlchemyAsyncGrantRepository
 
 
+def _grant_revoked_event(
+    grant_id: str,
+    revoked_by: str,
+    reason: str,
+    tenant_id: str,
+    workspace_id: str,
+) -> AuditEvent:
+    """The chain record of a revocation: who removed which authority and why."""
+    return AuditEvent(
+        subject_id=revoked_by,
+        role="operator",
+        action="grant_revoked",
+        resource=f"grant/{grant_id}",
+        approved=True,
+        reason=f"grant_revoked: {reason}",
+        matched_grant_id=grant_id,
+        tenant_id=tenant_id,
+        workspace_id=workspace_id,
+        scope="tenant",
+    )
+
+
 class GrantService:
     def __init__(self, repo: IGrantRepository, session: "Session") -> None:
         self._repo = repo
@@ -85,9 +107,17 @@ class GrantService:
         revoked_by: str,
         reason: str,
     ) -> bool:
-        return self._repo.revoke(
+        result = self._repo.revoke(
             grant_id, revoked_by, reason, tenant_id=tenant_id, workspace_id=workspace_id
         )
+        if result:
+            # Same-session append: an audit failure propagates and rolls the
+            # revocation back with it — authority is never removed unwitnessed.
+            _audit_log.append_event(
+                _grant_revoked_event(grant_id, revoked_by, reason, tenant_id, workspace_id),
+                conn=self._session.connection(),
+            )
+        return result
 
 
 class AsyncGrantService:
@@ -177,6 +207,13 @@ class AsyncGrantService:
             grant_id, revoked_by, reason, tenant_id=tenant_id, workspace_id=workspace_id
         )
         if result:
+            # Same-session append (the request session commits at dependency
+            # exit): an audit failure propagates and rolls the revocation back
+            # with it — authority is never removed unwitnessed.
+            event = _grant_revoked_event(grant_id, revoked_by, reason, tenant_id, workspace_id)
+            await self._session.run_sync(
+                lambda sync_sess: _audit_log.append_event(event, conn=sync_sess.connection())
+            )
             await _webhook_dispatch(
                 "grant.revoked",
                 {"id": grant_id, "revoked_by": revoked_by, "reason": reason},

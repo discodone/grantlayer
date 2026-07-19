@@ -103,8 +103,14 @@ class TestGrantServiceUnit:
 
     def test_revoke_grant_delegates_to_repo(self):
         self.repo.revoke.return_value = True
-        result = self.svc.revoke_grant("gid", "t1", "w1", "op1", "reason")
+        # _audit_log patched like the create-path tests above: revocation now
+        # appends a grant_revoked event on the same session (proven in
+        # test_grant_revocation_audit_event.py); this unit test pins only the
+        # repo delegation.
+        with patch("backend.src.grants.grant_service._audit_log") as mock_audit:
+            result = self.svc.revoke_grant("gid", "t1", "w1", "op1", "reason")
         self.repo.revoke.assert_called_once_with("gid", "op1", "reason", tenant_id="t1", workspace_id="w1")
+        mock_audit.append_event.assert_called_once()
         assert result is True
 
 
