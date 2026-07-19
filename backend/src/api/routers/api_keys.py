@@ -146,7 +146,9 @@ async def create_api_key(
         resource=f"api_key/{key_id}",
         approved=True,
         reason=f"API key '{body.name}' created",
+        tenant_id=ws_ctx["tenant_id"],
         workspace_id=workspace_id,
+        scope="tenant",
     )
     # Write the audit event on the SAME request session as the INSERT above, before
     # the single get_async_db teardown commit. If the audit write fails the whole
@@ -253,7 +255,9 @@ async def revoke_api_key(
         resource=f"api_key/{key_id}",
         approved=True,
         reason=f"API key '{row['name']}' revoked",
+        tenant_id=row["tenant_id"],
         workspace_id=row["workspace_id"] or payload.get("workspace_id") or "default",
+        scope="tenant",
     )
     # Audit on the same request session as the UPDATE; teardown commits both atomically.
     # A failed audit write rolls back the revocation rather than leaving it unrecorded.

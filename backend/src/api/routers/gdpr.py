@@ -132,6 +132,7 @@ async def export_user_data(
         resource=f"user/{user_id}",
         approved=True,
         reason=f"GDPR data export requested for user {user_id}",
+        tenant_id=caller.get("tenant_id"),
         workspace_id=SYSTEM_WORKSPACE,
         scope="system",
     )
@@ -191,6 +192,7 @@ async def erase_user_data(
         resource=f"user/{user_id}",
         approved=True,
         reason=f"GDPR erasure completed for user {user_id}; PII anonymized, tokens revoked",
+        tenant_id=caller.get("tenant_id"),
         workspace_id=SYSTEM_WORKSPACE,
         scope="system",
     )
