@@ -131,13 +131,6 @@ header.site.scrolled{border-bottom:1px solid var(--line);box-shadow:var(--shadow
 .code .f{color:#93c5fd}            /* fn / attr */
 .code .p{color:#7d8597}           /* punctuation/dim */
 
-/* ---------- stat bar ---------- */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
-  border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-@media (max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}}
-.stat{background:#fff;padding:26px 24px}
-.stat .n{font-size:30px;font-weight:800;color:var(--ink);letter-spacing:-.03em;font-feature-settings:"tnum"}
-.stat .l{font-size:13.5px;color:var(--muted);margin-top:4px}
 
 /* ---------- section heads ---------- */
 .shead{max-width:64ch;margin-bottom:48px}
@@ -278,6 +271,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 64px;color:var(--muted)}
       <a class="navlink" href="#capabilities">Capabilities</a>
       <a class="navlink" href="#audit">Audit chain</a>
       <a class="navlink" href="#self-host">Self-host</a>
+      <a class="navlink" href="/verify/">Verify</a>
       <a class="navlink" href="/docs/">Docs</a>
       <a class="btn btn-ghost btn-sm" href="https://github.com/discodone/grantlayer">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05A9.34 9.34 0 0112 6.84c.85 0 1.71.12 2.51.34 1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.6.69.49A10.02 10.02 0 0022 12.25C22 6.58 17.52 2 12 2z"></path></svg>
@@ -293,7 +287,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 64px;color:var(--muted)}
 <section class="wrap hero">
   <div class="hero-grid">
     <div>
-      <span class="eyebrow"><span class="dot"></span>Open source · Self-hostable · v2.1.0</span>
+      <span class="eyebrow"><span class="dot"></span>Open source · Self-hostable</span>
       <h1>Access grants, built like infrastructure.</h1>
       <p class="lede">
         GrantLayer is an open-source, multi-tenant system for issuing time-boxed
@@ -332,16 +326,6 @@ grant <span class="p">=</span> gl.<span class="f">create_grant</span>(
 
 <span class="k">print</span>(grant[<span class="s">"signaturePresent"</span>])   <span class="c"># True</span></pre>
     </div>
-  </div>
-</section>
-
-<!-- ===================== STATS ===================== -->
-<section class="wrap" style="padding-bottom:40px">
-  <div class="stats">
-    <div class="stat"><div class="n">4,697</div><div class="l">tests passing</div></div>
-    <div class="stat"><div class="n">92%</div><div class="l">coverage repo-wide</div></div>
-    <div class="stat"><div class="n">96.6%</div><div class="l">application code</div></div>
-    <div class="stat"><div class="n">MIT</div><div class="l">open-source license</div></div>
   </div>
 </section>
 
@@ -543,10 +527,7 @@ curl http://localhost:8765/health
         implemented by autonomous AI agents working issue-by-issue, with every
         change held to the same gate — a full passing test suite, type checks,
         and lint — and reviewed across multiple independent models before merging.
-      </p>
-      <p>
-        The honest figures on this page reflect that discipline: real coverage,
-        re-measured, never rounded up.
+        For current test, coverage, and version numbers, see the repository.
       </p>
     </div>
   </div>
@@ -609,7 +590,7 @@ curl http://localhost:8765/health
     </div>
     <div class="foot-bottom">
       <span>© <span id="year">2026</span> GrantLayer · Built by a solo developer.</span>
-      <span class="lic">MIT License · v2.1.0</span>
+      <span class="lic">MIT License</span>
     </div>
   </div>
 </footer>

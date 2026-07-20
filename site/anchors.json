@@ -1,0 +1,34 @@
+{
+  "snapshot_taken_at": "2026-07-20T11:00:51Z",
+  "metadata_label": 923350,
+  "network": "mainnet",
+  "anchors": [
+    {
+      "epoch": 1,
+      "tx": "820b74da9a96072c055ac9f234cca88d1c6b0a29ec4a63270f78bff807e07c1a",
+      "block": 13694777,
+      "block_time": "2026-07-18T16:08:41Z",
+      "network": "mainnet",
+      "final_hash": "9c00b97663d46445b02058bb56bf8fd18997c30a457628be00061f3096d00969",
+      "entry_count": 7
+    },
+    {
+      "epoch": 2,
+      "tx": "f68e52376edbb7a07890e3579cd3e447d0a39a3a300d4ed2dc63f7aad29ba800",
+      "block": 13697189,
+      "block_time": "2026-07-19T06:22:10Z",
+      "network": "mainnet",
+      "final_hash": "33b609283f49aa0afee751bfce58529706a8b5f1d7108fa87de0569f096d53cc",
+      "entry_count": 17
+    },
+    {
+      "epoch": 3,
+      "tx": "45d344ebded8a439bcb2ad02cda30ce239754f73b407ec6b18cac3564e1a8ef4",
+      "block": 13701348,
+      "block_time": "2026-07-20T06:38:54Z",
+      "network": "mainnet",
+      "final_hash": "c8f6848db89a9e03785626cd4da24f92c68cd374f99aa621d924309622b4de7e",
+      "entry_count": 25
+    }
+  ]
+}
