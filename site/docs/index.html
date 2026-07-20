@@ -43,8 +43,6 @@ header.site{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.72);ba
 .hero h1{font-size:46px;font-weight:800;letter-spacing:-.035em;margin-bottom:16px}
 @media (max-width:600px){.hero h1{font-size:34px}}
 .hero p{font-size:19px;color:var(--ink-2);max-width:60ch}
-.statline{display:flex;gap:26px;flex-wrap:wrap;margin-top:26px;font-size:14px;color:var(--muted)}
-.statline b{color:var(--ink);font-weight:700;font-feature-settings:"tnum"}
 
 section.docs{padding:34px 0 56px}
 .group{margin-bottom:44px}
@@ -87,12 +85,6 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--muted);font-s
   <div class="kicker">Documentation</div>
   <h1>Build, run, and operate GrantLayer.</h1>
   <p>Everything you need to self-host the service, integrate over the API, and understand how isolation and the audit chain work. Source of truth is the repository — these pages link straight to it.</p>
-  <div class="statline">
-    <span><b>v2.1.0</b> current release</span>
-    <span><b>4,697</b> tests passing</span>
-    <span><b>92%</b> coverage · <b>96.6%</b> app code</span>
-    <span><b>MIT</b> licensed</span>
-  </div>
 </section>
 
 <section class="wrap docs">
@@ -169,7 +161,7 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--muted);font-s
 <footer>
   <div class="wrap foot">
     <span>© <span id="year">2026</span> GrantLayer · <a href="../">grantlayer.de</a></span>
-    <span class="lic">MIT License · v2.1.0</span>
+    <span class="lic">MIT License</span>
   </div>
 </footer>
 <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
