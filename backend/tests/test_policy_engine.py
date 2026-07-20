@@ -389,7 +389,7 @@ class TestGrantSignatures(unittest.TestCase):
         self.assertIsNotNone(g.signature)
         self.assertIsNotNone(g.signing_key_id)
         self.assertIsNotNone(g.payload_hash)
-        self.assertEqual(g.signing_key_id, "demo-ed25519-v1")
+        self.assertTrue(g.signing_key_id.startswith("ed25519-"))
 
     # 2. Valid signed grant allows action
     def test_valid_signed_grant_allows_action(self):

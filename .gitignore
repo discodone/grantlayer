@@ -22,6 +22,9 @@ backend/data/*.db-wal
 backend/data/*.db-shm
 
 # Key / secret / certificate hygiene (GL-136)
+# Signing keyring (generated public-key material, env-specific)
+data/keyring/
+backend/data/keyring/
 *.pem
 *.key
 *.p8

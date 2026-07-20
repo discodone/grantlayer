@@ -176,7 +176,7 @@ class TestProductCoreE2EFlow(unittest.TestCase):
         self.assertIsNotNone(grant.signing_key_id)
         self.assertEqual(len(grant.signature), 128)
         self.assertEqual(len(grant.payload_hash), 64)
-        self.assertEqual(grant.signing_key_id, "demo-ed25519-v1")
+        self.assertTrue(grant.signing_key_id.startswith("ed25519-"))
 
         # 3b. Verify persisted grant has fields
         fetched_grant = self.grants_mod.get_grant(grant.id)

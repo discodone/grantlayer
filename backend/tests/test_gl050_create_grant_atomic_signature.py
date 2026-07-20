@@ -88,8 +88,8 @@ class TestCreateGrantAtomicSignature(unittest.TestCase):
         self.assertGreater(len(created.signing_key_id), 0)
         self.assertGreater(len(created.payload_hash), 0)
 
-        # The signing_key_id must match the demo key ID
-        self.assertEqual(created.signing_key_id, "demo-ed25519-v1")
+        # sign_grant stamps the key's fingerprint id (ed25519-<16 hex>)
+        self.assertTrue(created.signing_key_id.startswith("ed25519-"))
 
         # The payload_hash must be 64‑character lowercase hex (SHA‑256)
         self.assertEqual(len(created.payload_hash), 64)

@@ -183,6 +183,12 @@ GRANTLAYER_SIGNING_PRIVATE_KEY_FILE: str = _env_str("GRANTLAYER_SIGNING_PRIVATE_
 # Passphrase for encrypted private key files.
 GRANTLAYER_SIGNING_PRIVATE_KEY_PASSPHRASE: str = _env_str("GRANTLAYER_SIGNING_PRIVATE_KEY_PASSPHRASE", "")
 
+# Directory of public-key PEMs keyed by key_id (<key_id>.pem). Verification
+# resolves a grant's signing_key_id here; signing refuses an unregistered key.
+# Empty → crypto_signing's default (backend/data/keyring). Point this at a
+# dedicated location in production so it is not shared with test runs.
+GRANTLAYER_SIGNING_KEYRING_DIR: str = _env_str("GRANTLAYER_SIGNING_KEYRING_DIR", "")
+
 # Allow plaintext private key file loading. Default is True in local/test for
 # backward compatibility; False in production-like modes.
 GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: bool = _env_bool(
@@ -337,6 +343,17 @@ def startup_warnings() -> list[str]:
             "WARNING: GRANTLAYER_JWT_STRICT_CLAIMS is not enabled. "
             "Tokens without iss/aud claims are accepted even though JWT_ISSUER is configured. "
             "Set GRANTLAYER_JWT_STRICT_CLAIMS=true to require iss/aud on all tokens."
+        )
+
+    # Warn when no explicit signing keyring is configured in production-like
+    # modes. Signing fails closed for an unregistered key, so an unpopulated
+    # keyring would refuse every new grant — surface it at startup.
+    if RUNTIME_MODE in PRODUCTION_LIKE_MODES and not GRANTLAYER_SIGNING_KEYRING_DIR:
+        msgs.append(
+            "WARNING: GRANTLAYER_SIGNING_KEYRING_DIR is not set — the signing "
+            "keyring defaults to backend/data/keyring, which is shared with test "
+            "runs. Point it at a dedicated location and register the active "
+            "signing key's public half before issuing grants."
         )
 
     return msgs

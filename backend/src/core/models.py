@@ -50,7 +50,9 @@ class Grant:
         return asdict(self)
 
 
-GrantSignatureResult = Literal["valid", "missing", "invalid", "hash_mismatch", "not_checked"]
+GrantSignatureResult = Literal[
+    "valid", "missing", "invalid", "hash_mismatch", "unknown_key", "not_checked"
+]
 
 ChallengeStatus = Literal["active", "used", "expired"]
 ChallengeResult = Literal[

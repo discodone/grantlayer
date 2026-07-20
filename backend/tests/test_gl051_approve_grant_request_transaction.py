@@ -203,8 +203,8 @@ class TestApproveGrantRequestTransaction(unittest.TestCase):
         self.assertEqual(len(grant.payload_hash), 64)
         self.assertTrue(all(c in "0123456789abcdef" for c in grant.payload_hash))
 
-        # signing_key_id should match demo key
-        self.assertEqual(grant.signing_key_id, "demo-ed25519-v1")
+        # signing_key_id is the signing key's fingerprint id
+        self.assertTrue(grant.signing_key_id.startswith("ed25519-"))
 
         # Persisted grant must also have fields
         fetched_grant = self.grants_mod.get_grant(grant.id)
