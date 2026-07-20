@@ -29,8 +29,20 @@ from .models import Grant, GrantSignatureResult
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "../../data")
 _PRIVATE_KEY_PATH = os.path.join(_DATA_DIR, "demo_ed25519_private_key.pem")
 _PUBLIC_KEY_PATH = os.path.join(_DATA_DIR, "demo_ed25519_public_key.pem")
+_DEFAULT_KEYRING_DIR = os.path.join(_DATA_DIR, "keyring")
 
+# Legacy alias: rows signed before fingerprint ids were stamped carry this id.
+# It resolves via a keyring entry (demo pubkey locally; the production pubkey
+# on the live host after the transition step). New signatures never stamp it.
 DEMO_KEY_ID = "demo-ed25519-v1"
+_LEGACY_ALIAS = DEMO_KEY_ID
+
+
+class SigningKeyNotRegisteredError(RuntimeError):
+    """Raised when signing is attempted with a key absent from the keyring.
+
+    Fail-closed: never mint a grant whose key cannot later verify.
+    """
 
 
 def _check_private_key_permissions(path: str) -> None:
@@ -157,6 +169,64 @@ def load_public_key() -> Ed25519PublicKey:
         return cast(Ed25519PublicKey, load_pem_public_key(f.read()))
 
 
+# ── Keyring: key_id -> public key resolution ──────────────────────────────────
+
+def _keyring_dir() -> str:
+    """Configured keyring directory, or the default under the data dir."""
+    return config.GRANTLAYER_SIGNING_KEYRING_DIR or _DEFAULT_KEYRING_DIR
+
+
+def _keyring_path(key_id: str) -> str:
+    return os.path.join(_keyring_dir(), f"{key_id}.pem")
+
+
+def derive_key_id(public_key: Ed25519PublicKey) -> str:
+    """Deterministic id for a public key: ed25519-<first 16 hex of SHA-256(raw)>.
+
+    Self-describing and collision-safe across ceremonies; no config to drift.
+    """
+    raw = public_key.public_bytes(Encoding.Raw, PublicFormat.Raw)
+    return f"ed25519-{hashlib.sha256(raw).hexdigest()[:16]}"
+
+
+def register_public_key(
+    key_id: str, public_key: Ed25519PublicKey, *, overwrite: bool = False
+) -> None:
+    """Write a public key into the keyring under *key_id*.
+
+    Refuse-to-clobber by default so a transition-provisioned alias (e.g. the
+    production public key under the legacy id) is never silently replaced.
+    """
+    os.makedirs(_keyring_dir(), exist_ok=True)
+    path = _keyring_path(key_id)
+    if os.path.exists(path) and not overwrite:
+        return
+    with open(path, "wb") as f:
+        f.write(public_key.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
+
+
+def load_public_key_by_id(key_id: str) -> Ed25519PublicKey | None:
+    """Resolve a key_id to its public key, or None if unknown/unreadable."""
+    path = _keyring_path(key_id)
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, "rb") as f:
+            return cast(Ed25519PublicKey, load_pem_public_key(f.read()))
+    except (ValueError, OSError):
+        return None
+
+
+def _ensure_keyring_baseline() -> None:
+    """Guarantee the demo key is resolvable — under its fingerprint and the
+    legacy alias — without clobbering a transition-provisioned alias.
+    """
+    ensure_demo_keypair()
+    demo_pub = load_public_key()
+    register_public_key(derive_key_id(demo_pub), demo_pub)
+    register_public_key(_LEGACY_ALIAS, demo_pub)  # refuse-to-clobber
+
+
 def canonical_grant_payload(grant: Grant) -> bytes:
     """Deterministic UTF-8 bytes over the 9 immutable grant fields (alphabetically sorted).
 
@@ -183,23 +253,33 @@ def payload_hash(grant: Grant) -> str:
 
 
 def sign_grant(grant: Grant) -> Tuple[str, str, str]:
-    """Sign the grant with the demo private key.
+    """Sign the grant and stamp the fingerprint id of the signing key.
 
     Returns (signature_hex, payload_hash_hex, signing_key_id).
-    Calls ensure_demo_keypair() to guarantee key existence.
+    Fail-closed: refuses to sign a key whose id is not registered in the
+    keyring, so a grant is never minted that cannot later verify.
     """
-    ensure_demo_keypair()
+    _ensure_keyring_baseline()
     private_key = load_private_key()
+    key_id = derive_key_id(private_key.public_key())
+    if load_public_key_by_id(key_id) is None:
+        raise SigningKeyNotRegisteredError(
+            f"signing key {key_id} is not registered in the keyring; "
+            "register its public key before signing"
+        )
     raw_payload = canonical_grant_payload(grant)
     signature_bytes = private_key.sign(raw_payload)
     hash_hex = hashlib.sha256(raw_payload).hexdigest()
-    return signature_bytes.hex(), hash_hex, DEMO_KEY_ID
+    return signature_bytes.hex(), hash_hex, key_id
 
 
 def verify_grant_signature(grant: Grant) -> GrantSignatureResult:
     """Verify the Ed25519 signature on a grant. Fail-closed.
 
-    Returns: 'valid', 'missing', 'invalid', or 'hash_mismatch'.
+    Returns: 'valid', 'missing', 'hash_mismatch', 'unknown_key', or 'invalid'.
+    The key is resolved from the keyring by the grant's signing_key_id, so a
+    grant signed with a rotated-but-retained key still verifies; an id with no
+    keyring entry is 'unknown_key' (never silently accepted).
     """
     if not grant.signature or not grant.signing_key_id or not grant.payload_hash:
         return "missing"
@@ -209,9 +289,13 @@ def verify_grant_signature(grant: Grant) -> GrantSignatureResult:
     if grant.payload_hash != expected_hash:
         return "hash_mismatch"
 
+    _ensure_keyring_baseline()
+    public_key = load_public_key_by_id(grant.signing_key_id)
+    if public_key is None:
+        return "unknown_key"
+
     # Verify Ed25519 signature
     try:
-        public_key = load_public_key()
         raw_payload = canonical_grant_payload(grant)
         sig_bytes = bytes.fromhex(grant.signature)
         public_key.verify(sig_bytes, raw_payload)

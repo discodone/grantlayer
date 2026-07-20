@@ -131,6 +131,7 @@ def handle_demo_action(
                         "missing":       "grant_signature_missing",
                         "invalid":       "grant_signature_invalid",
                         "hash_mismatch": "grant_payload_hash_mismatch",
+                        "unknown_key":   "grant_signature_unknown_key",
                     }
                     sig_code = deny_map.get(sig_check, f"grant_signature_{sig_check}")
                     result = PolicyResult(
