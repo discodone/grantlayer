@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GrantLayer — On-chain Anchor Verification</title>
-<meta name="description" content="The GrantLayer audit chain is periodically committed to the Cardano mainnet. This page lists those on-chain anchors and explains exactly what they do and do not prove.">
+<meta name="description" content="The GrantLayer audit chain is committed to the Cardano mainnet. This page lists those on-chain anchors and explains exactly what they do and do not prove.">
 <meta name="color-scheme" content="light">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0d12'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M16 6l8 4-8 4-8-4 8-4z'/%3E%3Cpath d='M8 16l8 4 8-4' stroke='%23a5b4fc'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -90,10 +90,10 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0;font-size
   <div class="kicker">On-chain anchors</div>
   <h1>Anchor verification</h1>
   <p>
-    GrantLayer maintains a tamper-evident audit chain. Periodically, the head of that
-    chain is committed to the Cardano&nbsp;mainnet as a small, immutable record. This
-    page lists those commitments and is careful to state exactly what they do — and do
-    not — establish.
+    GrantLayer maintains a tamper-evident audit chain. The head of that chain is
+    committed to the Cardano&nbsp;mainnet as a small, immutable record — each anchor a
+    deliberate, individually authorized act, on no fixed schedule. This page lists those
+    commitments and is careful to state exactly what they do — and do not — establish.
   </p>
 </section>
 
@@ -184,7 +184,7 @@ POST https://api.koios.rest/api/v1/tx_metadata
       var notice = document.getElementById("snapshot-notice");
       notice.innerHTML =
         "This anchor list is a <b>committed snapshot</b> as of <b>" + data.snapshot_taken_at +
-        "</b>, refreshed each time a new anchor is written. The authoritative data lives " +
+        "</b>, updated when a new anchor is written. The authoritative data lives " +
         "on-chain (Cardano " + (data.network || "mainnet") + ", metadata label " +
         (data.metadata_label || 923350) + ") — follow the transaction links to confirm it yourself.";
       document.getElementById("snapshot-foot").textContent = "snapshot " + data.snapshot_taken_at;
