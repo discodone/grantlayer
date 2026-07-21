@@ -91,7 +91,7 @@ class TestAuditorReportAPI(unittest.TestCase):
             error_code=error_code,
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex, tenant_id="demo")
+        self.create_execution(ex, tenant_id="demo", workspace_id="default")
         return ex
 
     def _archive_evidence(self, execution_id: str, stored_by: str | None = None):

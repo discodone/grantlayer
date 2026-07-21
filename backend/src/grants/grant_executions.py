@@ -12,8 +12,6 @@ from ..core.repositories_sqlalchemy import SqlAlchemyGrantExecutionRepository
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
-_DEMO_WORKSPACE_ID = "default"
-
 
 @contextmanager
 def _auto_session() -> Generator["Session", None, None]:
@@ -39,11 +37,12 @@ def create_grant_execution(
 ) -> GrantExecution:
     if tenant_id is None:
         raise ValueError("tenant_id is required")
-    effective_workspace = workspace_id if workspace_id is not None else _DEMO_WORKSPACE_ID
+    if not workspace_id:
+        raise ValueError("workspace_id is required")
     if session is not None:
-        return SqlAlchemyGrantExecutionRepository(session).create(execution, tenant_id, effective_workspace)
+        return SqlAlchemyGrantExecutionRepository(session).create(execution, tenant_id, workspace_id)
     with _auto_session() as sess:
-        return SqlAlchemyGrantExecutionRepository(sess).create(execution, tenant_id, effective_workspace)
+        return SqlAlchemyGrantExecutionRepository(sess).create(execution, tenant_id, workspace_id)
 
 
 def get_grant_execution(

@@ -198,7 +198,7 @@ class TestProductCoreE2EFlow(unittest.TestCase):
             executed_at=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
             metadata_json=json.dumps({"workflowId": self.WORKFLOW_ID}),
         )
-        created_exec = self.execs_mod.create_grant_execution(execution, tenant_id="demo")
+        created_exec = self.execs_mod.create_grant_execution(execution, tenant_id="demo", workspace_id="default")
         self.assertEqual(created_exec.id, execution.id)
         self.assertEqual(created_exec.grant_id, grant.id)
         self.assertEqual(created_exec.result, "succeeded")

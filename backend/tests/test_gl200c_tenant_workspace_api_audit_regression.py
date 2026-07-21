@@ -144,7 +144,7 @@ class TestGrantExecutionTenantContext(unittest.TestCase):
     def test_ex001_create_stores_tenant_id(self):
         """EX-001: create_grant_execution stores tenant_id in DB row."""
         ex = self._make_execution()
-        self.exec_mod.create_grant_execution(ex, tenant_id="tenant_alpha")
+        self.exec_mod.create_grant_execution(ex, tenant_id="tenant_alpha", workspace_id="default")
         conn = self.db_mod.get_conn()
         try:
             row = conn.execute(
@@ -158,7 +158,7 @@ class TestGrantExecutionTenantContext(unittest.TestCase):
     def test_ex002_create_with_explicit_demo_tenant(self):
         """EX-002: create_grant_execution with tenant_id='demo' stores under 'demo' tenant."""
         ex = self._make_execution()
-        self.exec_mod.create_grant_execution(ex, tenant_id="demo")
+        self.exec_mod.create_grant_execution(ex, tenant_id="demo", workspace_id="default")
         conn = self.db_mod.get_conn()
         try:
             row = conn.execute(
@@ -171,7 +171,7 @@ class TestGrantExecutionTenantContext(unittest.TestCase):
     def test_ex003_get_cross_tenant_denied(self):
         """EX-003: get_grant_execution with wrong tenant returns None (cross-tenant denial)."""
         ex = self._make_execution()
-        self.exec_mod.create_grant_execution(ex, tenant_id="tenant_alpha")
+        self.exec_mod.create_grant_execution(ex, tenant_id="tenant_alpha", workspace_id="default")
 
         result = self.exec_mod.get_grant_execution(ex.id, tenant_id="tenant_beta")
         self.assertIsNone(result, "Cross-tenant execution lookup must return None")
@@ -179,7 +179,7 @@ class TestGrantExecutionTenantContext(unittest.TestCase):
     def test_ex004_get_correct_tenant_succeeds(self):
         """EX-004: get_grant_execution with correct tenant returns the execution."""
         ex = self._make_execution()
-        self.exec_mod.create_grant_execution(ex, tenant_id="tenant_alpha")
+        self.exec_mod.create_grant_execution(ex, tenant_id="tenant_alpha", workspace_id="default")
 
         result = self.exec_mod.get_grant_execution(ex.id, tenant_id="tenant_alpha")
         self.assertIsNotNone(result)
@@ -189,8 +189,8 @@ class TestGrantExecutionTenantContext(unittest.TestCase):
         """EX-005: list_grant_executions filters by tenant_id."""
         ex_a = self._make_execution()
         ex_b = self._make_execution()
-        self.exec_mod.create_grant_execution(ex_a, tenant_id="tenant_alpha")
-        self.exec_mod.create_grant_execution(ex_b, tenant_id="tenant_beta")
+        self.exec_mod.create_grant_execution(ex_a, tenant_id="tenant_alpha", workspace_id="default")
+        self.exec_mod.create_grant_execution(ex_b, tenant_id="tenant_beta", workspace_id="default")
 
         results_a = self.exec_mod.list_grant_executions(tenant_id="tenant_alpha")
         results_b = self.exec_mod.list_grant_executions(tenant_id="tenant_beta")
@@ -208,8 +208,8 @@ class TestGrantExecutionTenantContext(unittest.TestCase):
         """EX-006: list_grant_executions without tenant_id returns all (internal/admin use)."""
         ex_a = self._make_execution()
         ex_b = self._make_execution()
-        self.exec_mod.create_grant_execution(ex_a, tenant_id="tenant_alpha")
-        self.exec_mod.create_grant_execution(ex_b, tenant_id="tenant_beta")
+        self.exec_mod.create_grant_execution(ex_a, tenant_id="tenant_alpha", workspace_id="default")
+        self.exec_mod.create_grant_execution(ex_b, tenant_id="tenant_beta", workspace_id="default")
 
         all_results = self.exec_mod.list_grant_executions()
         all_ids = {r.id for r in all_results}
@@ -258,7 +258,7 @@ class TestGrantScopedExecutionTenantContext(unittest.TestCase):
     def _make_execution_for_grant(self, grant_id, tenant_id):
         from backend.src.core.models import GrantExecution
         ex = GrantExecution(action="read", resource="res1", grant_id=grant_id)
-        self.exec_mod.create_grant_execution(ex, tenant_id=tenant_id)
+        self.exec_mod.create_grant_execution(ex, tenant_id=tenant_id, workspace_id="default")
         return ex
 
     def test_ex007_list_for_grant_filters_by_tenant(self):
