@@ -84,6 +84,8 @@ class AuditEvent(Base):
     scope = Column(Text)
     # from migration 0013: stable insertion-order tiebreak (BIGSERIAL on PG)
     seq = Column(BigInteger)
+    # from migration 0020: stable machine decision code on decision events
+    reason_code = Column(Text)
 
     __table_args__ = (
         Index("idx_audit_events_tenant_id", "tenant_id"),

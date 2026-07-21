@@ -170,6 +170,11 @@ class AuditEvent:
     # tenant context (None = pre-migration or system-scope event)
     tenant_id: Optional[str] = None
     scope: Optional[str] = None  # 'tenant', 'tenant_admin', 'system', 'public'
+    # Stable machine decision code (mirrors PolicyResult.reason_code) on decision
+    # events; None on non-decision events and every event written before this
+    # column existed. Additive-and-forward-only: the export/anchor canonical
+    # OMITS it when None, so historical anchor heads recompute unchanged.
+    reason_code: Optional[str] = None
     # stable insertion-order tiebreak assigned by the DB (None before migration 0013)
     seq: Optional[int] = None
 

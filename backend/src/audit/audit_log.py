@@ -115,6 +115,7 @@ def _row_to_audit_event(row: dict) -> AuditEvent:
         workspace_id=cast(str, row.get("workspace_id")),
         scope=row.get("scope"),
         seq=int(raw_seq) if raw_seq is not None else None,
+        reason_code=row.get("reason_code"),
     )
 
 
@@ -306,12 +307,12 @@ _INSERT_SQL_PG = """INSERT INTO audit_events
                 approved, reason, matched_grant_id,
                 challenge_id, challenge_present, challenge_result,
                 grant_signature_result, row_hash, prev_hash,
-                tenant_id, workspace_id, scope)
+                tenant_id, workspace_id, scope, reason_code)
                VALUES (:id, :timestamp, :subject_id, :role, :action, :resource,
                        :approved, :reason, :matched_grant_id,
                        :challenge_id, :challenge_present, :challenge_result,
                        :grant_signature_result, :row_hash, :prev_hash,
-                       :tenant_id, :workspace_id, :scope)"""
+                       :tenant_id, :workspace_id, :scope, :reason_code)"""
 
 # SQLite: include seq explicitly (computed in Python under the write lock).
 _INSERT_SQL_SQLITE = """INSERT INTO audit_events
@@ -319,12 +320,12 @@ _INSERT_SQL_SQLITE = """INSERT INTO audit_events
                 approved, reason, matched_grant_id,
                 challenge_id, challenge_present, challenge_result,
                 grant_signature_result, row_hash, prev_hash,
-                tenant_id, workspace_id, scope, seq)
+                tenant_id, workspace_id, scope, seq, reason_code)
                VALUES (:id, :timestamp, :subject_id, :role, :action, :resource,
                        :approved, :reason, :matched_grant_id,
                        :challenge_id, :challenge_present, :challenge_result,
                        :grant_signature_result, :row_hash, :prev_hash,
-                       :tenant_id, :workspace_id, :scope, :seq)"""
+                       :tenant_id, :workspace_id, :scope, :seq, :reason_code)"""
 
 # Legacy alias kept for any external callers that import it directly.
 _INSERT_SQL = _INSERT_SQL_PG
@@ -350,6 +351,7 @@ def _build_insert_params(event: AuditEvent, row_hash: str, prev_hash: Optional[s
         "tenant_id": event.tenant_id,
         "workspace_id": event.workspace_id,
         "scope": event.scope,
+        "reason_code": event.reason_code,
     }
 
 
