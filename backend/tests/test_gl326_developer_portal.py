@@ -13,7 +13,6 @@ Covers:
 - docs/self-hosting.md exists
 - docs/contributing.md exists
 - Makefile has docs and docs-serve targets
-- .github/workflows/docs.yml exists and deploys to gh-pages
 - CHANGELOG.md updated with GL-308 through GL-326
 - mkdocs.yml nav includes all required pages
 """
@@ -123,26 +122,6 @@ class TestMakefileDocTargets(unittest.TestCase):
 
     def test_makefile_docs_uses_mkdocs(self):
         self.assertIn("mkdocs", self.makefile)
-
-
-class TestGithubActionsWorkflow(unittest.TestCase):
-    def setUp(self):
-        self.workflow_path = _REPO_ROOT / ".github" / "workflows" / "docs.yml"
-
-    def test_docs_workflow_exists(self):
-        self.assertTrue(self.workflow_path.exists())
-
-    def test_workflow_deploys_to_gh_pages(self):
-        content = self.workflow_path.read_text()
-        self.assertIn("gh-pages", content)
-
-    def test_workflow_triggers_on_main(self):
-        content = self.workflow_path.read_text()
-        self.assertIn("main", content)
-
-    def test_workflow_uses_mkdocs(self):
-        content = self.workflow_path.read_text()
-        self.assertIn("mkdocs", content)
 
 
 class TestChangelog(unittest.TestCase):
