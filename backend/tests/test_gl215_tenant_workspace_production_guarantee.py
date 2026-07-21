@@ -397,7 +397,7 @@ class _BaseGL215Runtime(unittest.TestCase):
             resource="resource-1",
             operator_id="operator",
         )
-        self.executions.create_grant_execution(execution, tenant_id=tenant_id)
+        self.executions.create_grant_execution(execution, tenant_id=tenant_id, workspace_id="default")
         return execution
 
 

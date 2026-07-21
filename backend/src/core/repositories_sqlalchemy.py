@@ -36,8 +36,6 @@ if TYPE_CHECKING:
 
     from ..auth.operators import Operator
 
-_DEMO_WORKSPACE_ID = "default"
-
 
 # ── Converter helpers ────────────────────────────────────────────────────────
 
@@ -171,7 +169,8 @@ class SqlAlchemyGrantRepository:
         workspace_id: str,
     ) -> Grant:
         # Caller is responsible for signing before calling create().
-        effective_workspace = workspace_id if workspace_id else _DEMO_WORKSPACE_ID
+        if not workspace_id:
+            raise ValueError("workspace_id is required")
         self._s.execute(
             sa_insert(OrmGrant).values(
                 id=grant.id,
@@ -191,7 +190,7 @@ class SqlAlchemyGrantRepository:
                 signing_key_id=grant.signing_key_id,
                 payload_hash=grant.payload_hash,
                 tenant_id=tenant_id,
-                workspace_id=effective_workspace,
+                workspace_id=workspace_id,
             )
         )
         return grant
@@ -318,7 +317,8 @@ class SqlAlchemyGrantRequestRepository:
         tenant_id: str,
         workspace_id: str,
     ) -> GrantRequest:
-        effective_workspace = workspace_id if workspace_id else _DEMO_WORKSPACE_ID
+        if not workspace_id:
+            raise ValueError("workspace_id is required")
         self._s.execute(
             sa_insert(OrmGrantRequest).values(
                 id=request.id,
@@ -334,7 +334,7 @@ class SqlAlchemyGrantRequestRepository:
                 created_at=request.created_at,
                 updated_at=request.updated_at,
                 tenant_id=tenant_id,
-                workspace_id=effective_workspace,
+                workspace_id=workspace_id,
             )
         )
         return request
@@ -503,7 +503,8 @@ class SqlAlchemyGrantExecutionRepository:
         tenant_id: str,
         workspace_id: str,
     ) -> GrantExecution:
-        effective_workspace = workspace_id if workspace_id else _DEMO_WORKSPACE_ID
+        if not workspace_id:
+            raise ValueError("workspace_id is required")
         self._s.execute(
             sa_insert(OrmGrantExecution).values(
                 id=execution.id,
@@ -521,7 +522,7 @@ class SqlAlchemyGrantExecutionRepository:
                 audit_event_id=execution.audit_event_id,
                 metadata_json=execution.metadata_json,
                 tenant_id=tenant_id,
-                workspace_id=effective_workspace,
+                workspace_id=workspace_id,
             )
         )
         return execution
@@ -772,7 +773,8 @@ class SqlAlchemyAsyncGrantRepository:
         tenant_id: str,
         workspace_id: str,
     ) -> Grant:
-        effective_workspace = workspace_id if workspace_id else _DEMO_WORKSPACE_ID
+        if not workspace_id:
+            raise ValueError("workspace_id is required")
         await self._s.execute(
             sa_insert(OrmGrant).values(
                 id=grant.id,
@@ -792,7 +794,7 @@ class SqlAlchemyAsyncGrantRepository:
                 signing_key_id=grant.signing_key_id,
                 payload_hash=grant.payload_hash,
                 tenant_id=tenant_id,
-                workspace_id=effective_workspace,
+                workspace_id=workspace_id,
             )
         )
         return grant
@@ -917,7 +919,8 @@ class SqlAlchemyAsyncGrantRequestRepository:
         tenant_id: str,
         workspace_id: str,
     ) -> GrantRequest:
-        effective_workspace = workspace_id if workspace_id else _DEMO_WORKSPACE_ID
+        if not workspace_id:
+            raise ValueError("workspace_id is required")
         await self._s.execute(
             sa_insert(OrmGrantRequest).values(
                 id=request.id,
@@ -933,7 +936,7 @@ class SqlAlchemyAsyncGrantRequestRepository:
                 created_at=request.created_at,
                 updated_at=request.updated_at,
                 tenant_id=tenant_id,
-                workspace_id=effective_workspace,
+                workspace_id=workspace_id,
             )
         )
         return request
@@ -1077,7 +1080,8 @@ class SqlAlchemyAsyncGrantExecutionRepository:
         tenant_id: str,
         workspace_id: str,
     ) -> GrantExecution:
-        effective_workspace = workspace_id if workspace_id else _DEMO_WORKSPACE_ID
+        if not workspace_id:
+            raise ValueError("workspace_id is required")
         await self._s.execute(
             sa_insert(OrmGrantExecution).values(
                 id=execution.id,
@@ -1095,7 +1099,7 @@ class SqlAlchemyAsyncGrantExecutionRepository:
                 audit_event_id=execution.audit_event_id,
                 metadata_json=execution.metadata_json,
                 tenant_id=tenant_id,
-                workspace_id=effective_workspace,
+                workspace_id=workspace_id,
             )
         )
         return execution

@@ -70,7 +70,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             executed_at="2026-05-11T10:00:00Z",
             **overrides,
         )
-        self.create_execution(ex, tenant_id="demo")
+        self.create_execution(ex, tenant_id="demo", workspace_id="default")
         return ex
 
     def _archive_evidence(self, execution_id: str, stored_by: str | None = None):
@@ -351,7 +351,7 @@ class TestComplianceGapReportBuilder(unittest.TestCase):
             error_code="no_grant",
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex, tenant_id="demo")
+        self.create_execution(ex, tenant_id="demo", workspace_id="default")
         result = self.build("ex-denied-gap")
         self.assertIsNotNone(result)
         self.assertEqual(result["overallStatus"], "blocked")

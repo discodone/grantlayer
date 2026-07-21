@@ -211,7 +211,7 @@ class TestEvidenceBundle(unittest.TestCase):
             policy_result="no_grant",
             error_code="no_grant",
         )
-        self.execs_mod.create_grant_execution(ex, tenant_id="demo")
+        self.execs_mod.create_grant_execution(ex, tenant_id="demo", workspace_id="default")
         bundle = self.eb_mod.build_evidence_bundle(ex.id)
         self.assertIsNotNone(bundle)
         self.assertEqual(bundle["evidenceId"], ex.id)
@@ -331,7 +331,7 @@ class TestEvidenceBundle(unittest.TestCase):
             policy_result="grant_request_denied",
             error_code="grant_request_denied",
         )
-        self.execs_mod.create_grant_execution(ex, tenant_id="demo")
+        self.execs_mod.create_grant_execution(ex, tenant_id="demo", workspace_id="default")
 
         bundle = self.eb_mod.build_evidence_bundle(ex.id)
         self.assertIsNotNone(bundle)
@@ -711,7 +711,7 @@ class TestEvidenceBundle(unittest.TestCase):
             policy_result="no_grant",
             error_code="no_grant",
         )
-        self.execs_mod.create_grant_execution(ex, tenant_id="demo")
+        self.execs_mod.create_grant_execution(ex, tenant_id="demo", workspace_id="default")
         bundle1 = self.eb_mod.build_evidence_bundle(ex.id)
         bundle2 = self.eb_mod.build_evidence_bundle(ex.id)
         self.assertEqual(bundle1["evidenceHash"], bundle2["evidenceHash"])
@@ -749,7 +749,7 @@ class TestEvidenceBundle(unittest.TestCase):
             policy_result="grant_request_denied",
             error_code="grant_request_denied",
         )
-        self.execs_mod.create_grant_execution(ex, tenant_id="demo")
+        self.execs_mod.create_grant_execution(ex, tenant_id="demo", workspace_id="default")
 
         bundle1 = self.eb_mod.build_evidence_bundle(ex.id)
         bundle2 = self.eb_mod.build_evidence_bundle(ex.id)

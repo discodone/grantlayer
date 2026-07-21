@@ -75,7 +75,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             result="succeeded",
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex, tenant_id="demo")
+        self.create_execution(ex, tenant_id="demo", workspace_id="default")
         return ex
 
     def _archive_evidence(self, execution_id: str, stored_by: str | None = None):
@@ -276,7 +276,7 @@ class TestAuditorReportBuilder(unittest.TestCase):
             error_code="no_grant",
             executed_at="2026-05-11T10:00:00Z",
         )
-        self.create_execution(ex, tenant_id="demo")
+        self.create_execution(ex, tenant_id="demo", workspace_id="default")
         result = self.build("ex-denied")
         self.assertIsNotNone(result)
         self.assertIn("execution_denied", " ".join(result["findings"]))
