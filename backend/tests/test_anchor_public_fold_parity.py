@@ -32,6 +32,12 @@ from backend.src.api.routers.audit_compliance import (
 _TENANT = "t-parity"
 _WS = "ws-parity"
 
+# audit_events columns that the anchor fold intentionally does NOT carry. Each
+# entry MUST have a justification. Empty today: _load_workspace_entries folds
+# every audit_events column, so a NEW column is a bug until it is either folded
+# there or added here with a reason.
+_FOLD_EXCLUDED_COLUMNS: dict[str, str] = {}
+
 
 class TestAnchorPublicFoldParity(unittest.TestCase):
     def setUp(self):
@@ -73,6 +79,21 @@ class TestAnchorPublicFoldParity(unittest.TestCase):
         self.audit.append_event(ev)
         return ev
 
+    def _append_full(self, **overrides):
+        """Append an event with EVERY optional/nullable column set to a distinct
+        non-None value, so a column dropped by the fold surfaces as None."""
+        kw = dict(
+            subject_id="s-full", role="agent", action="exercise", resource="res/full",
+            approved=True, reason="full reason", matched_grant_id="g-full",
+            challenge_id="ch-full", challenge_present=True, challenge_result="passed",
+            grant_signature_result="valid", workspace_id=_WS, tenant_id=_TENANT,
+            scope="tenant", reason_code="access_granted",
+        )
+        kw.update(overrides)
+        ev = self.AuditEvent(**kw)
+        self.audit.append_event(ev)  # sets row_hash / prev_hash / seq
+        return ev
+
     # --- shared helpers: the two entry-building paths, both in seq ASC order ---
 
     def _anchor_entries(self):
@@ -105,22 +126,39 @@ class TestAnchorPublicFoldParity(unittest.TestCase):
             "is folded by the public export but dropped by the anchor path",
         )
 
-    # ── (b) generalised: FULL per-entry column parity ──────────────────────────
-    def test_b_full_column_parity_per_event(self):
-        """Every field of every event's entry dict must be identical between the
-        two paths. This does NOT special-case reason_code: it compares the whole
-        dict, so any column the public SELECT * carries but the hand-built anchor
-        dict omits (reason_code today, any future column tomorrow) fails here."""
-        self._append(
-            action="rich", reason="richest reason", reason_code="grant_expired",
-            matched_grant_id="g-xyz", challenge_id="ch-1", challenge_present=True,
-            challenge_result="passed", grant_signature_result="valid",
-        )
-        anchor_by_id = {e["id"]: e for e in self._anchor_entries()}
-        public_by_id = {e["id"]: e for e in self._public_entries()}
+    # ── (b) schema-anchored coverage + full per-entry parity ───────────────────
+    def test_b_schema_anchored_and_full_parity(self):
+        """Two assertions:
 
-        self.assertEqual(set(anchor_by_id), set(public_by_id))
-        for eid, ae in anchor_by_id.items():
+        (1) SCHEMA ANCHOR — every audit_events column (minus a justified
+            exclusion list) must be carried into the fold with its value, not
+            silently dropped to None. Anchored on AuditEvent.__table__.columns,
+            so it does NOT depend on list_events staying `SELECT *`: a future
+            column dropped by _load_workspace_entries fails HERE (data-level)
+            instead of at a paid on-chain anchor.
+        (2) The existing anchor-vs-public-export full-field parity — I want both.
+        """
+        from backend.src.core.orm import AuditEvent as OrmAuditEvent
+
+        self._append_full(action="first")
+        ev2 = self._append_full(action="second")  # 2nd event => prev_hash non-None too
+
+        anchor_entries = self._anchor_entries()
+        entry2 = next(e for e in anchor_entries if e["id"] == ev2.id)
+
+        # (1) schema-anchored coverage
+        for col in (c.name for c in OrmAuditEvent.__table__.columns):
+            if col in _FOLD_EXCLUDED_COLUMNS:
+                continue
+            self.assertIsNotNone(
+                entry2.get(col),
+                f"anchor fold drops audit_events column {col!r}: it is defined on "
+                f"the ORM table but arrives as None in the folded entry",
+            )
+
+        # (2) anchor path vs public export path — full field-by-field parity
+        public_by_id = {e["id"]: e for e in self._public_entries()}
+        for eid, ae in {e["id"]: e for e in anchor_entries}.items():
             pe = public_by_id[eid]
             self.assertEqual(
                 set(ae.keys()), set(pe.keys()),
