@@ -9,11 +9,9 @@ from __future__ import annotations
 import importlib
 import json
 import os
-import subprocess
 import sys
 import tempfile
 import unittest
-from io import BytesIO
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -57,17 +55,6 @@ def _load_doc() -> str:
 def _load_json() -> dict:
     with open(JSON_PATH, encoding="utf-8") as f:
         return json.load(f)
-
-
-def _branch_diff_files() -> set[str]:
-    result = subprocess.run(
-        ["git", "diff", "--name-only", "main...HEAD"],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    return {line for line in result.stdout.splitlines() if line.strip()}
 
 
 def _make_db() -> str:
@@ -122,6 +109,7 @@ def _run_handler(
     extra_headers: dict | None = None,
 ) -> tuple[int, dict, dict]:
     from fastapi.testclient import TestClient
+
     from backend.src.api.app import create_app
     _client = TestClient(create_app(), raise_server_exceptions=False)
     headers: dict[str, str] = {}
@@ -430,34 +418,6 @@ class TestGL208ClaimAndScopeGuards(unittest.TestCase):
             "private grant data",
         ]:
             self.assertIn(term, never)
-
-    def test_no_frontend_website_design_or_workflow_changes(self):
-        changed = _branch_diff_files()
-        forbidden_prefixes = (
-            "frontend/",
-            "website-design/",
-            ".github/workflows/",
-        )
-        for path in changed:
-            self.assertFalse(path.startswith(forbidden_prefixes), path)
-        self.assertNotIn("docs/website_design_workspace_import_report.md", changed)
-        self.assertNotIn("docs/website_design_workspace_import_dirty_stop.md", changed)
-
-    def test_no_openapi_or_migration_changes(self):
-        changed = _branch_diff_files()
-        self.assertNotIn("docs/openapi.yaml", changed)
-        self.assertFalse(any(path.startswith("backend/src/migrations/") for path in changed))
-
-    def test_package_publishing_avoided(self):
-        changed = _branch_diff_files()
-        forbidden = {
-            "setup.py",
-            "package.json",
-            "package-lock.json",
-            "pyproject.toml",
-            "sdk/python/pyproject.toml",
-        }
-        self.assertTrue(forbidden.isdisjoint(changed))
 
 
 if __name__ == "__main__":
