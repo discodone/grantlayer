@@ -24,8 +24,6 @@ if TYPE_CHECKING:
         SqlAlchemyAsyncGrantRequestRepository,
     )
 
-_DEMO_WORKSPACE_ID = "default"
-
 
 def _now_utc_iso() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
