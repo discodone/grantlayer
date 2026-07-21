@@ -12,7 +12,6 @@ import os
 import sys
 import tempfile
 import unittest
-from io import BytesIO
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -110,6 +109,7 @@ def _run_handler(
     extra_headers: dict | None = None,
 ) -> tuple[int, dict, dict]:
     from fastapi.testclient import TestClient
+
     from backend.src.api.app import create_app
     _client = TestClient(create_app(), raise_server_exceptions=False)
     headers: dict[str, str] = {}

@@ -18,7 +18,6 @@ Covers:
 
 from __future__ import annotations
 
-import importlib
 import json
 import os
 import pathlib
@@ -26,7 +25,6 @@ import re
 import sqlite3
 import subprocess
 import sys
-import tempfile
 import unittest
 import uuid
 
