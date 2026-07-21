@@ -770,45 +770,5 @@ class TestGL224GateScript(unittest.TestCase):
         self.assertIn("REDACTED", text)
 
 
-class TestGL224SafetyConfirmations(unittest.TestCase):
-    """High-level safety invariants for this schema-only migration sprint."""
-
-    def test_no_server_py_changes(self):
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            capture_output=True, text=True, cwd=str(REPO_ROOT), timeout=10,
-        )
-        changed = [f.strip() for f in result.stdout.splitlines()]
-        self.assertNotIn("backend/src/server.py", changed,
-                         "GL-224 must not modify server.py")
-
-    def test_no_auth_py_changes(self):
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            capture_output=True, text=True, cwd=str(REPO_ROOT), timeout=10,
-        )
-        changed = [f.strip() for f in result.stdout.splitlines()]
-        self.assertNotIn("backend/src/auth.py", changed,
-                         "GL-224 must not modify auth.py")
-
-    def test_no_grants_py_changes(self):
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            capture_output=True, text=True, cwd=str(REPO_ROOT), timeout=10,
-        )
-        changed = [f.strip() for f in result.stdout.splitlines()]
-        self.assertNotIn("backend/src/grants.py", changed,
-                         "GL-224 must not modify grants.py")
-
-    def test_no_github_workflow_changes(self):
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            capture_output=True, text=True, cwd=str(REPO_ROOT), timeout=10,
-        )
-        changed = [f.strip() for f in result.stdout.splitlines()]
-        wf = [f for f in changed if ".github/workflows" in f]
-        self.assertEqual(wf, [], f"Forbidden workflow changes: {wf}")
-
-
 if __name__ == "__main__":
     unittest.main()

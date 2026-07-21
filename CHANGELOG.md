@@ -4,13 +4,28 @@ All notable changes to GrantLayer are documented here.
 
 ---
 
+## [Unreleased]
+
+### Site hosting moved to GitHub Pages
+- The static marketing/verify site under `site/` now publishes to GitHub Pages
+  via the `pages.yml` Actions workflow (`upload-pages-artifact` + `deploy-pages`),
+  custom domain `grantlayer.de`. There is no build step; `site/` is served as-is.
+- The earlier MkDocs "Developer Portal" Pages deploy and its `gh-pages` branch
+  were removed; the `gh-pages` branch has been deleted and nothing is served
+  from it.
+
+---
+
 ## [0.19.0] — 2026-06-18
 
 ### Developer Portal + API Documentation Site
 - MkDocs Material site with dark theme (slate palette).
 - Docs: index, getting-started, authentication, webhooks, sdk-python, sdk-js, self-hosting, contributing.
 - `make docs` (build) and `make docs-serve` (local preview) targets.
-- GitHub Actions workflow deploys to gh-pages on push to main.
+- At the time, a GitHub Actions workflow deployed the MkDocs docs to a
+  `gh-pages` branch on push to main. *(Superseded — see [Unreleased]: the
+  MkDocs Pages deploy was removed and the `gh-pages` branch deleted; the static
+  `site/` now publishes to GitHub Pages via `pages.yml`.)*
 
 ### Multi-Workspace Grant Templates
 - `GrantTemplate` model: id, workspace_id, name, description, schema_json, default_values, version, parent_id, is_active, locked.
