@@ -73,6 +73,7 @@ def handle_demo_action(
                 tenant_id=effective_tenant,
                 workspace_id=workspace_id,
                 scope="tenant",
+                reason_code="challenge_required",
             )
             # Denial + its audit event commit together: an audit-write failure
             # rolls back the execution row (no record without its event).
@@ -210,6 +211,7 @@ def handle_demo_action(
                     tenant_id=effective_tenant,
                     workspace_id=workspace_id,
                     scope="tenant",
+                    reason_code=result.reason_code,
                 )
                 append_event(event, conn=session.connection())
                 update_grant_execution_audit_event_id(

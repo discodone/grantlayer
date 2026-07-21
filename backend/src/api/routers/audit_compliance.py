@@ -27,8 +27,19 @@ def _get_hmac_key() -> bytes:
 
 
 def _entry_canonical(entry: dict[str, Any]) -> str:
+    # Additive-and-forward-only fields are OMITTED from the canonical when their
+    # value is None, so introducing such a column never alters the canonical of
+    # any event written before it existed — every past on-chain anchor stays
+    # recomputable. A field only enters the fold once an event actually carries
+    # a value for it. `reason_code` (the machine decision code) is the first
+    # such field; the same rule as the row_hash payload's dual-mode tenant_id.
+    _forward_only_when_null = ("reason_code",)
+    keys = [
+        k for k in sorted(entry.keys())
+        if not (k in _forward_only_when_null and entry.get(k) is None)
+    ]
     return json.dumps(
-        {k: entry.get(k) for k in sorted(entry.keys())},
+        {k: entry.get(k) for k in keys},
         sort_keys=True,
         ensure_ascii=True,
     )
