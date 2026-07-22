@@ -65,12 +65,28 @@ KOIOS_BASES = {
 }
 
 
+# Forward-only fields: OMITTED from the canonical when their value is None, so a
+# column introduced later never alters the canonical of any event written before
+# it existed. This is scoped to a named allow-list, NOT "drop every None key":
+# ordinary optional fields (matched_grant_id, challenge_id, scope, tenant_id, …)
+# stay as null, exactly as the backend keeps them, so the many legacy events that
+# carry those None fields keep verifying. MUST stay in lockstep with the backend
+# export fold (_entry_canonical in audit_compliance.py); reason_code is the first
+# such field. The golden test vectors (tests/fixtures) hold the two in sync.
+_FORWARD_ONLY_WHEN_NULL = ("reason_code",)
+
+
 def entry_canonical(entry: dict[str, Any]) -> str:
     """Canonical bytes for one entry: drop chain-metadata (``_``-prefixed) keys,
-    sort keys, compact separators, ASCII-escaped. Identical to the export side."""
+    omit forward-only fields whose value is None, sort keys, compact separators,
+    ASCII-escaped. Identical to the export side (audit_compliance._entry_canonical)."""
     clean = {k: v for k, v in entry.items() if not k.startswith("_")}
+    keys = [
+        k for k in sorted(clean.keys())
+        if not (k in _FORWARD_ONLY_WHEN_NULL and clean.get(k) is None)
+    ]
     return json.dumps(
-        {k: clean.get(k) for k in sorted(clean.keys())},
+        {k: clean.get(k) for k in keys},
         sort_keys=True,
         ensure_ascii=True,
     )

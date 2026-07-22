@@ -289,6 +289,7 @@ def _load_workspace_entries(session: Any, workspace_id: str) -> list[dict]:
             "workspace_id": orm.workspace_id,
             "scope": orm.scope,
             "seq": orm.seq,
+            "reason_code": orm.reason_code,
         }
         entries.append(_row_to_audit_event(row).to_dict())
     return entries

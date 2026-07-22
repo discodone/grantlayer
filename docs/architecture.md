@@ -181,6 +181,54 @@ that `text()` is banned.
 
 ---
 
+## Audit-chain fold and anchoring
+
+Each workspace's audit events are folded into one head hash that is anchored to
+Cardano (metadata label `923350`). Two independent implementations compute that
+fold and MUST agree byte-for-byte: the backend export
+(`api/routers/audit_compliance.py`) and the standalone offline verifier
+(`scripts/verify-anchor.py`).
+
+**Canonical fold rule.** Per event: drop chain-metadata keys (prefixed `_`), then
+emit the remaining keys as sorted, compact, ASCII-escaped JSON. `reason_code` is
+the **sole** key omitted when its value is None; every other None-valued field is
+folded **as `null`**; an empty string `""` is a value, not a None, and is never
+omitted. Each event hash is `SHA-256(prev_hash + canonical)`, left-folded from a
+64-zero genesis seed.
+
+**The normative definition is data, not prose.**
+`backend/tests/fixtures/fold_golden_vectors.json` pins the byte-exact canonical
+form and chain hash (all-None optionals, a populated `reason_code`, an empty-string
+`reason_code`, a mixed chain). Both implementations are held against that one
+fixture in CI (`test_fold_golden_vectors.py`); a drift in either fails.
+
+**Verifier independence.** `verify-anchor.py` is a deliberate
+standard-library-only reimplementation importing **no** GrantLayer code —
+depending on nothing it verifies is the point. The golden-vector fixture (data,
+not shared code) is the only thing coupling the two.
+
+**No fold-version field.** Anchor metadata carries no fold-version field; **absent
+means this fold family**. The omit-when-None rule is additive and
+backward-compatible — the current fold reproduces every head anchored before
+`reason_code` existed (those events fold `reason_code=None` → omitted → identical
+to the pre-`reason_code` canonical) — so a version number would denote nothing and
+labelling existing anchors as a distinct "guardless" version would make their
+re-verification fail. A version field is introduced **only** on a genuinely
+non-backward-compatible change: a field rename, a change to sort or serialisation
+format, or non-additive semantics. An additive nullable column (folded as `null`,
+or a new omit-when-None entry) does **not** qualify.
+
+**Standing rule for new nullable columns.** Every new nullable column on an
+anchored table requires an explicit, recorded decision — folded as `null` (the
+default: do nothing) or omitted-when-None (add it to the forward-only allow-list
+`_FORWARD_ONLY_WHEN_NULL` in **both** fold implementations and to the golden
+vectors). Columns deliberately kept out of the fold go in `_FOLD_EXCLUDED_COLUMNS`
+(`test_anchor_public_fold_parity.py`). Neither list may grow silently: the
+schema-anchored parity test fails on any `audit_events` column that is neither
+folded nor listed.
+
+---
+
 ## Directory map
 
 ```
