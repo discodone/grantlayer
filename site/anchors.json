@@ -1,5 +1,5 @@
 {
-  "snapshot_taken_at": "2026-07-20T11:00:51Z",
+  "snapshot_taken_at": "2026-07-22T08:25:50Z",
   "metadata_label": 923350,
   "network": "mainnet",
   "anchors": [
@@ -29,6 +29,15 @@
       "network": "mainnet",
       "final_hash": "c8f6848db89a9e03785626cd4da24f92c68cd374f99aa621d924309622b4de7e",
       "entry_count": 25
+    },
+    {
+      "epoch": 4,
+      "tx": "e451acb94c4c51cf4fc9d6ae2613fb810856cc594dba333f9d14f51ba3e0d16d",
+      "block": 13709992,
+      "block_time": "2026-07-22T08:23:15Z",
+      "network": "mainnet",
+      "final_hash": "5d9bf57e7bde0ac3003ae0d956ae8314c2a4363b75f8493ad445eaca537d1a64",
+      "entry_count": 29
     }
   ]
 }
