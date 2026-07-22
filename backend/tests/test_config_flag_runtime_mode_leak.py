@@ -60,12 +60,14 @@ _PLAINTEXT_PEM = (
 
 
 class TestPlaintextFlagTracksRuntimeMode(unittest.TestCase):
-    """The RUNTIME_MODE-derived plaintext flag must not leak a stale production
-    value once RUNTIME_MODE is reconciled back to test."""
+    """The RUNTIME_MODE-derived cached flags (GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE
+    and REQUIRE_ADMIN_TOKEN) must not leak stale production values once RUNTIME_MODE
+    is reconciled back to test -- the reconciliation must re-derive the whole class."""
 
     _ENV_KEYS = (
         "GRANTLAYER_RUNTIME_MODE",
         "GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE",
+        "GRANTLAYER_REQUIRE_ADMIN_TOKEN",
     )
 
     def setUp(self):
@@ -81,37 +83,58 @@ class TestPlaintextFlagTracksRuntimeMode(unittest.TestCase):
                 os.environ[key] = value
         importlib.reload(config)
 
-    def test_plaintext_flag_restored_when_runtime_mode_returns_to_test(self):
-        # (1) test_gl200c's teardown: drop the explicit override so the flag
-        #     follows the RUNTIME_MODE-derived default on the next reload.
+    def test_mode_derived_flags_restored_when_runtime_mode_returns_to_test(self):
+        # (1) test_gl200c's teardown: drop the explicit overrides so BOTH flags
+        #     follow their RUNTIME_MODE-derived defaults on the next reload.
         os.environ.pop("GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE", None)
+        os.environ.pop("GRANTLAYER_REQUIRE_ADMIN_TOKEN", None)
 
-        # (2) test_gl201: enter production and reload config. The derived flag is
-        #     now False and RUNTIME_MODE is "production".
+        # (2) test_gl201: enter production and reload config. The two mode-derived
+        #     flags now hold their production values (they are inverses):
+        #       GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE -> False
+        #       REQUIRE_ADMIN_TOKEN                         -> True
         os.environ["GRANTLAYER_RUNTIME_MODE"] = "production"
         importlib.reload(config)
+        self.assertEqual(config.RUNTIME_MODE, "production")
         self.assertFalse(
             config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE,
-            "precondition: production mode should derive the flag False",
+            "precondition: production mode should derive the plaintext flag False",
         )
-        self.assertEqual(config.RUNTIME_MODE, "production")
+        self.assertTrue(
+            config.REQUIRE_ADMIN_TOKEN,
+            "precondition: production mode should derive REQUIRE_ADMIN_TOKEN True",
+        )
 
-        # (3) The leaky teardown restores the env to test, and the existing
-        #     _reset_leaked_runtime_mode fixture reconciles the RUNTIME_MODE ATTR
-        #     back to "test" -- but nothing reloads config, so the derived flag is
-        #     left untouched. Reproduce exactly that reconciliation, in-process.
+        # (3) The leaky teardown restores the env to test, and the
+        #     _reset_leaked_runtime_mode fixture reconciles the mode. Reproduce
+        #     exactly that (fixed) reconciliation in-process: reset the RUNTIME_MODE
+        #     attr AND recompute the mode-derived flags. Before the recompute helper
+        #     existed the flags were left stale (both assertions below were RED);
+        #     the helper is what re-derives them from the reconciled mode.
         os.environ["GRANTLAYER_RUNTIME_MODE"] = "test"
         config.RUNTIME_MODE = "test"
+        config.recompute_mode_derived_flags()
 
         # INVARIANT (RED today): with RUNTIME_MODE reconciled back to "test" and no
-        # explicit override set, the derived security flag must track the current
-        # mode (True for test). It currently stays a stale False.
-        self.assertTrue(
-            config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE,
-            "GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE leaked a stale False after "
-            "RUNTIME_MODE was reconciled back to 'test'; the derived flag is not "
-            "re-derived, so grant signing is wrongly refused in test mode",
-        )
+        # explicit overrides set, BOTH derived flags must track the current mode:
+        #   plaintext flag -> True   (currently stale False)
+        #   REQUIRE_ADMIN_TOKEN -> False  (currently stale True)
+        # subTest so BOTH invariants are evaluated and reported independently
+        # instead of short-circuiting on the first failure.
+        with self.subTest(flag="GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE"):
+            self.assertTrue(
+                config.GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE,
+                "GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE leaked a stale False "
+                "after RUNTIME_MODE was reconciled back to 'test'; the derived flag "
+                "is not re-derived, so grant signing is wrongly refused in test mode",
+            )
+        with self.subTest(flag="REQUIRE_ADMIN_TOKEN"):
+            self.assertFalse(
+                config.REQUIRE_ADMIN_TOKEN,
+                "REQUIRE_ADMIN_TOKEN leaked a stale True after RUNTIME_MODE was "
+                "reconciled back to 'test'; the derived flag is not re-derived, so a "
+                "later test is wrongly forced to present an admin token",
+            )
 
         # The concrete victim path must therefore stay open: loading a plaintext
         # key must not be refused in test mode.
