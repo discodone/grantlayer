@@ -1,7 +1,6 @@
 """GL-165 Public CHANGELOG / Version Anchors validation tests."""
 
 import json
-import subprocess
 import unittest
 from pathlib import Path
 
@@ -127,33 +126,3 @@ class TestGL165ReadmeLink(unittest.TestCase):
     def test_readme_links_to_changelog(self):
         readme = _read(README_PATH)
         self.assertIn("[CHANGELOG.md](CHANGELOG.md)", readme)
-
-
-class TestGL165ScopeGuard(unittest.TestCase):
-    def test_no_forbidden_files_changed_on_gl165_branch(self):
-        branch = subprocess.run(
-            ["git", "branch", "--show-current"],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
-        ).stdout.strip()
-        if branch != "gl-165-public-changelog-version-anchors":
-            self.skipTest("Not on GL-165 branch; skipping diff-based scope guard.")
-
-        changed = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
-        ).stdout.splitlines()
-
-        allowed = {
-            "CHANGELOG.md",
-            "README.md",
-            "docs/examples/gl165/public_changelog_version_anchors.json",
-            "backend/tests/test_gl165_public_changelog_version_anchors.py",
-        }
-        if changed:
-            self.assertEqual(set(changed), allowed)

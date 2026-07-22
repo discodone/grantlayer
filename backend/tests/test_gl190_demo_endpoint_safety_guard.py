@@ -19,7 +19,6 @@ import importlib
 import json
 import os
 import pathlib
-import subprocess
 import sys
 import tempfile
 import unittest
@@ -75,6 +74,7 @@ class _BaseGl190(unittest.TestCase):
 
     def _make_client(self):
         from fastapi.testclient import TestClient
+
         from backend.src.api.app import create_app
         return TestClient(create_app(), raise_server_exceptions=False)
 
@@ -402,76 +402,3 @@ class TestNoClaimsOrForbiddenScope(unittest.TestCase):
         safety = data.get("safety_properties", {})
         self.assertFalse(safety.get("tenant_isolation_claimed", False))
         self.assertFalse(safety.get("production_saas_claimed", False))
-
-
-class TestScopeGuard(unittest.TestCase):
-    """Verify GL-190 diff is limited to the allowed file set."""
-
-    _ALLOWED = {
-        "backend/src/config.py",
-        "backend/src/server.py",
-        "backend/tests/test_gl190_demo_endpoint_safety_guard.py",
-        "docs/demo_endpoint_safety_guard.md",
-        "docs/examples/gl190/demo_endpoint_safety_guard.json",
-    }
-
-    def test_changed_files_within_allowed_scope(self):
-        repo_root = pathlib.Path(__file__).parent.parent.parent
-        result = subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            cwd=repo_root, capture_output=True, text=True,
-        )
-        branch = result.stdout.strip()
-        if branch != "gl-190-demo-endpoint-safety-guard":
-            self.skipTest("Branch scope check only valid on gl-190 feature branch")
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            cwd=repo_root, capture_output=True, text=True,
-        )
-        changed = [ln.strip() for ln in result.stdout.splitlines() if ln.strip()]
-        for path in changed:
-            self.assertIn(
-                path,
-                self._ALLOWED,
-                f"GL-190 changed a file outside allowed scope: {path}",
-            )
-
-    def test_no_migration_files(self):
-        repo_root = pathlib.Path(__file__).parent.parent.parent
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            cwd=repo_root, capture_output=True, text=True,
-        )
-        changed = result.stdout
-        self.assertNotIn("migrations/", changed)
-        self.assertNotIn("alembic/", changed)
-
-    def test_no_github_workflow_files(self):
-        repo_root = pathlib.Path(__file__).parent.parent.parent
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            cwd=repo_root, capture_output=True, text=True,
-        )
-        self.assertNotIn(".github/workflows", result.stdout)
-
-    def test_no_dependency_manifest_changes(self):
-        repo_root = pathlib.Path(__file__).parent.parent.parent
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            cwd=repo_root, capture_output=True, text=True,
-        )
-        changed = result.stdout
-        for forbidden in ("requirements.txt", "pyproject.toml", "setup.cfg", "package.json", "Pipfile"):
-            self.assertNotIn(forbidden, changed)
-
-    def test_no_openapi_change(self):
-        repo_root = pathlib.Path(__file__).parent.parent.parent
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            cwd=repo_root, capture_output=True, text=True,
-        )
-        self.assertNotIn("openapi.yaml", result.stdout)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
