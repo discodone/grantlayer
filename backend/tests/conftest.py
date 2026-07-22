@@ -2,7 +2,67 @@
 # so the startup gate is skipped and production-mode defaults don't break tests.
 # Individual tests that need a specific mode override this in setUp/tearDown.
 import os as _os
+
 _os.environ.setdefault("GRANTLAYER_RUNTIME_MODE", "test")
+
+# ── Per-xdist-worker SQLite isolation ────────────────────────────────────────
+# Under `pytest -n auto` every worker is a separate PROCESS, but with no
+# GRANTLAYER_DATABASE_URL and no GRANTLAYER_DB they ALL resolve the same default
+# SQLite file (backend/data/grantlayer.db). Concurrent provisioning/reads of that
+# one file race -> "Baseline validation failed: missing table 'audit_events'" /
+# "duplicate column" / "UNIQUE constraint failed: schema_migrations.version" /
+# "database is locked", and the victim roams by scheduler nondeterminism. Give
+# each worker its OWN temp file so the shared-file contention is structurally
+# impossible and the suite is safe under `-n auto`.
+#
+# No-op when a real Postgres DSN is configured (that path must use the real DSN)
+# or when the user set GRANTLAYER_DB themselves (respect the caller's choice).
+#
+# Timing subtlety: the xdist CONTROLLER runs this block first (no worker id ->
+# "main") and sets GRANTLAYER_DB; each WORKER then INHERITS that env var. So a
+# plain "skip if GRANTLAYER_DB is set" guard would make every worker reuse the
+# controller's "main" file. We instead tag the value we set with a sentinel and
+# RE-DERIVE the per-worker path in each worker from PYTEST_XDIST_WORKER, while
+# still leaving a genuinely user-supplied GRANTLAYER_DB untouched. Not under
+# xdist, PYTEST_XDIST_WORKER is unset -> the single "main" file (identical to the
+# historical single-process behaviour, just relocated to tmp).
+_GL_MANAGED_DB = "_GL_MANAGED_WORKER_DB"
+if not _os.environ.get("GRANTLAYER_DATABASE_URL") and (
+    not _os.environ.get("GRANTLAYER_DB") or _os.environ.get(_GL_MANAGED_DB)
+):
+    import tempfile as _tempfile
+
+    _xdist_worker = _os.environ.get("PYTEST_XDIST_WORKER", "main")
+    # A per-worker DIRECTORY holding a file literally named grantlayer.db: keeps
+    # the basename == the historical default so path-assertion tests
+    # (endswith("grantlayer.db")) still hold, while the parent dir makes it unique
+    # per worker.
+    _worker_dir = _os.path.join(
+        _tempfile.gettempdir(), f"grantlayer-test-{_xdist_worker}"
+    )
+    _os.makedirs(_worker_dir, exist_ok=True)
+    _worker_db = _os.path.join(_worker_dir, "grantlayer.db")
+    _os.environ["GRANTLAYER_DB"] = _worker_db
+    _os.environ[_GL_MANAGED_DB] = "1"  # inherited by workers -> re-derive there
+    # Start each session from a clean per-worker file so a stale schema from a
+    # previous run can't fail baseline validation. Unique name per worker => no
+    # cross-worker contention here. (It is re-provisioned by
+    # _sqlite_provision_worker_db before the first test runs.)
+    for _sfx in ("", "-wal", "-shm"):
+        try:
+            _os.remove(_worker_db + _sfx)
+        except OSError:
+            pass
+    # If the db module was already imported (e.g. in a worker that inherited a
+    # stale controller path), its module-level DB_PATH_OR_URL is stale; reload it
+    # so it picks up the per-worker path. Common case (first import happens later)
+    # reads the env directly, no reload.
+    import sys as _sys
+
+    if "backend.src.core.db" in _sys.modules:
+        import importlib as _importlib
+
+        _importlib.reload(_sys.modules["backend.src.core.db"])
 
 """
 Pytest configuration for GrantLayer backend tests.
@@ -139,6 +199,25 @@ try:
     _AUDIT_LOG_BACKEND_KEY = "__audit_log_DB_BACKEND"
     _PG_DB_GLOBALS: dict = {}
 
+    # SQLite-mode counterpart of the PG snapshot/restore above. Captured once
+    # (from the per-worker default set at import) and used by
+    # _sqlite_reset_engine_cache to null the engine caches and restore the
+    # canonical routing after every SQLite test, so a test that repoints
+    # DB_PATH_OR_URL / swaps _sa_engine and forgets to restore cannot leak a
+    # stale (temp-file) engine into a sibling test in the same worker.
+    _SQLITE_BASELINE: dict = {}
+    _SQLITE_ENGINE_CACHE_GLOBALS = (
+        "_sa_engine",
+        "_engine_url",
+        "_session_maker",
+        "_session_maker_engine",
+        "_async_engine",
+        "_async_engine_url",
+        "_async_session_maker",
+        "_async_session_maker_engine",
+    )
+    _SQLITE_ROUTING_GLOBALS = ("DB_BACKEND", "DB_PATH_OR_URL", "DB_PATH")
+
     def _restore_pg_db_globals():
         # No-op when the snapshot was never taken (SQLite mode).
         if not _PG_DB_GLOBALS:
@@ -164,6 +243,25 @@ try:
             "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
         ).fetchall()
         return [r["tablename"] for r in rows if r["tablename"] not in _APP_TABLES_SKIP]
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _sqlite_provision_worker_db():
+        # Provision the per-worker SQLite file ONCE, before any test runs, so
+        # non-self-provisioning tests find a migrated schema regardless of xdist
+        # scheduling. Historically these tests relied on the committed
+        # backend/data/grantlayer.db always being present and provisioned; the
+        # per-worker file (set at import) starts EMPTY, so without this a test
+        # whose worker hadn't yet run an init_db()-triggering sibling would hit
+        # "no such table: audit_events" — the roaming flake this fix targets.
+        # No-op in real-Postgres mode (schema is provisioned by the CI job).
+        import backend.src.core.db as _db
+
+        if not _is_real_postgres(_db):
+            try:
+                _db.init_db()
+            except Exception:
+                pass
+        yield
 
     @pytest.fixture(scope="session", autouse=True)
     def _pg_capture_seed_rows():
@@ -239,6 +337,40 @@ try:
             conn.commit()
         finally:
             conn.close()
+
+    @pytest.fixture(autouse=True)
+    def _sqlite_reset_engine_cache():
+        # SQLite-mode per-test engine-cache reset (mirror of _pg_clean_between_tests).
+        # PG mode is fully handled by _pg_clean_between_tests and left byte-for-byte
+        # unchanged here (both guards below return early when real Postgres is
+        # configured). Capture the canonical per-worker routing once, before any
+        # test's setUp has run.
+        import backend.src.core.db as _db
+
+        if not _SQLITE_BASELINE and not _is_real_postgres(_db):
+            for attr in _SQLITE_ROUTING_GLOBALS:
+                if hasattr(_db, attr):
+                    _SQLITE_BASELINE[attr] = getattr(_db, attr)
+        yield
+        # Nothing to restore in real-PG mode or before the baseline was captured.
+        if _is_real_postgres(_db) or not _SQLITE_BASELINE:
+            return
+        # Dispose the cached sync engine (release the SQLite file handle) then null
+        # every engine-cache global so the next test rebuilds cleanly, and restore
+        # the canonical per-worker routing so a leaked temp-file pointer can't roll
+        # forward. Async engines are nulled (not disposed — dispose is a coroutine;
+        # GC closes them) to avoid touching the event loop from a sync fixture.
+        _eng = getattr(_db, "_sa_engine", None)
+        if _eng is not None:
+            try:
+                _eng.dispose()
+            except Exception:
+                pass
+        for attr in _SQLITE_ENGINE_CACHE_GLOBALS:
+            if hasattr(_db, attr):
+                setattr(_db, attr, None)
+        for attr, value in _SQLITE_BASELINE.items():
+            setattr(_db, attr, value)
 
     @pytest.fixture(autouse=True)
     def _reset_leaked_runtime_mode():
