@@ -208,6 +208,31 @@ def _anchor_audit_chain_sync(workspace_id: Optional[str]) -> dict:
     # is_fully_configured() guarantees a workspace_id is present.
     assert workspace_id is not None
 
+    # Gate 4a-bis — production-database guard, MAINNET only. Refuse fail-closed
+    # BEFORE any chain read. A mainnet anchor run invoked without
+    # GRANTLAYER_DATABASE_URL (e.g. run_anchor.sh called directly instead of
+    # through run_with_env.py) silently falls back to the dev SQLite
+    # (data/grantlayer.db), which then fails downstream with a misleading
+    # "workspace has no row". Name the real cause here — before the idempotency
+    # read, the exercise, or any network call. Scoped to mainnet: preprod/dev
+    # runs legitimately use SQLite (the whole anchor-job unit suite does), so the
+    # guard only protects the one path that spends real money.
+    import os
+
+    from ..core.db import get_engine
+    database_url = os.environ.get("GRANTLAYER_DATABASE_URL") or os.environ.get("DATABASE_URL")
+    engine_name = get_engine().dialect.name
+    if config.network == "mainnet" and (not database_url or engine_name == "sqlite"):
+        logger.error(
+            "anchor_audit_chain: refusing to anchor: no production DATABASE_URL / "
+            "engine is SQLite on a mainnet run (database_url_set=%s, engine=%s, network=%s)",
+            bool(database_url), engine_name, config.network,
+        )
+        return {
+            "status": "refused_no_production_database",
+            "error": "no production DATABASE_URL / SQLite engine on a mainnet run",
+        }
+
     now = datetime.now(timezone.utc)
     day = now.date().isoformat()
     maker = get_session_maker()
