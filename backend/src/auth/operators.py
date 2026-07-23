@@ -21,6 +21,8 @@ import secrets
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Generator, Optional
 
+from ..core import config
+
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
@@ -28,7 +30,6 @@ if TYPE_CHECKING:
 # PBKDF2 token hashing (stdlib only)
 # ──────────────────────────────────────────────────────────────
 
-TOKEN_HASH_ITERATIONS = 600_000
 TOKEN_HASH_ALGORITHM = "sha256"
 TOKEN_HASH_FORMAT = "pbkdf2_sha256"
 DEFAULT_TOKEN_TTL_DAYS = 90
@@ -38,15 +39,22 @@ def hash_token(token: str) -> str:
     """Return PBKDF2-HMAC-SHA256 hash of token.
 
     Format: pbkdf2_sha256$<iterations>$<salt>$<hash>
+
+    The iteration count is read live from config.TOKEN_HASH_ITERATIONS
+    (mode-derived: unfalsifiable 600k floor in production-like modes, reduced
+    default in local/test) so a RUNTIME_MODE reconciliation takes effect
+    without reloading this module. verify_token() reads the count back from
+    the stored hash, so verification cost always follows hash-time cost.
     """
+    iterations = config.TOKEN_HASH_ITERATIONS
     salt = secrets.token_hex(16)
     hashed = hashlib.pbkdf2_hmac(
         TOKEN_HASH_ALGORITHM,
         token.encode("utf-8"),
         salt.encode("utf-8"),
-        TOKEN_HASH_ITERATIONS,
+        iterations,
     ).hex()
-    return f"{TOKEN_HASH_FORMAT}${TOKEN_HASH_ITERATIONS}${salt}${hashed}"
+    return f"{TOKEN_HASH_FORMAT}${iterations}${salt}${hashed}"
 
 
 def verify_token(token: str, stored_hash: str) -> bool:
