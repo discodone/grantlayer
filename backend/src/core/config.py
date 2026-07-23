@@ -196,6 +196,31 @@ GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: bool = _env_bool(
     default=RUNTIME_MODE in ("local", "test"),
 )
 
+
+def recompute_mode_derived_flags() -> None:
+    """Re-derive every cached config flag whose default is keyed on RUNTIME_MODE.
+
+    REQUIRE_ADMIN_TOKEN and GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE are both
+    evaluated once at import from RUNTIME_MODE. When RUNTIME_MODE is reconciled at
+    runtime without a full config reload (e.g. the test-suite fixture that resets a
+    leaked production mode back to test), those dependent flags would otherwise keep
+    their stale value. This is the single authoritative place that recomputes the
+    whole class from the CURRENT RUNTIME_MODE, using the exact same _env_bool
+    defaults as the definitions above — an explicit environment override still wins,
+    identical to import-time behaviour. Pure: reads RUNTIME_MODE + os.environ, sets
+    the module globals, returns nothing.
+    """
+    global REQUIRE_ADMIN_TOKEN, GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE
+    REQUIRE_ADMIN_TOKEN = _env_bool(
+        "GRANTLAYER_REQUIRE_ADMIN_TOKEN",
+        default=RUNTIME_MODE not in ("local", "test"),
+    )
+    GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE = _env_bool(
+        "GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE",
+        default=RUNTIME_MODE in ("local", "test"),
+    )
+
+
 # ──────────────────────────────────────────────────────────────
 # JWT Claims
 # ──────────────────────────────────────────────────────────────

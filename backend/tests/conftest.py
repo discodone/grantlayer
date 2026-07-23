@@ -391,6 +391,13 @@ try:
 
                 if getattr(_cfg, "RUNTIME_MODE", "test") not in ("test", "local"):
                     _cfg.RUNTIME_MODE = env_mode
+                # Reconciling RUNTIME_MODE alone leaves the flags whose defaults are
+                # keyed on it (GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE,
+                # REQUIRE_ADMIN_TOKEN) at their stale production values, which then
+                # roam forward (grant signing refused / admin token wrongly forced).
+                # Re-derive that whole class from the reconciled mode.
+                if hasattr(_cfg, "recompute_mode_derived_flags"):
+                    _cfg.recompute_mode_derived_flags()
             except Exception:
                 pass
         yield
