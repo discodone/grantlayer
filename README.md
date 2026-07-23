@@ -5,7 +5,7 @@
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
-GrantLayer is a verification, audit, and compliance layer for agentic grant and funding workflows. When AI agents prepare funding applications, evaluate eligibility, or trigger approval decisions, GrantLayer makes every step traceable, tamper-evident, and independently auditable. It is in **Developer Preview** — local evaluation and controlled pilot only. It is not production SaaS; production SaaS readiness is not claimed. No GitHub push and no repository visibility change are part of this local quickstart.
+GrantLayer is access-grant and authorization infrastructure: an open-source, multi-tenant system for issuing time-boxed access grants to AI agents and automated systems, enforcing them through a policy engine, and recording every decision in a cryptographically verifiable audit trail. A grant is a permission — who may perform which action on which resource, for how long — and every issue, approval, denial, revocation, and exercise is traceable, tamper-evident, and independently auditable. It is in **Developer Preview** — local evaluation and controlled pilot only. It is not production SaaS; production SaaS readiness is not claimed. No GitHub push and no repository visibility change are part of this local quickstart.
 
 ---
 
@@ -79,6 +79,7 @@ This path is local/demo only, requires no real secrets, requires no customer dat
 | `POST` | `/v1/grant-requests` | Submit a grant request (requires `GRANTLAYER_ENABLE_OPERATOR_MODEL=true`) |
 | `POST` | `/v1/grant-requests/:id/approve` | Approve a grant request |
 | `POST` | `/v1/grant-requests/:id/deny` | Deny a grant request |
+| `POST` | `/v1/exercise` | Exercise a grant — records the policy-checked decision as an audit event (`/v1/demo-action` is a legacy alias that 307-redirects here) |
 | `GET` | `/v1/audit-events` | List audit events |
 | `GET` | `/v1/grant-executions` | List grant executions (owner/v1/admin/v1/auditor) |
 
@@ -88,7 +89,7 @@ Full OpenAPI spec: `docs/openapi.yaml`. Interactive Swagger UI available at `/ap
 
 ## Architecture
 
-GrantLayer is a Python/FastAPI backend with SQLite (default) or PostgreSQL storage, served behind an Nginx TLS reverse proxy. All grants are signed with Ed25519 and form a tamper-evident audit chain — each event records what was decided, by whom, and when. The operator model provides a request/approval workflow: subjects submit grant requests, and operators approve or deny them. JWT authentication (HS256) guards all API endpoints; tokens encode the caller's subject, tenant, role, and expiry. Docker Compose brings up the API, Nginx, and optionally PostgreSQL as a single `docker compose up` command.
+GrantLayer is a Python/FastAPI backend served behind an Nginx TLS reverse proxy. Storage is PostgreSQL 16 in the Docker Compose stack (the compose default) or SQLite when running bare locally with `GRANTLAYER_DATABASE_URL` unset. All grants are signed with Ed25519 and form a tamper-evident audit chain — each event records what was decided, by whom, and when. The operator model provides a request/approval workflow: subjects submit grant requests, and operators approve or deny them. JWT authentication guards all API endpoints — RS256 by default (base64-PEM keypair via `GRANTLAYER_JWT_PRIVATE_KEY`/`GRANTLAYER_JWT_PUBLIC_KEY`), with legacy HS256 when only `GRANTLAYER_JWT_SECRET` is set; tokens encode the caller's subject, tenant, role, and expiry. Docker Compose brings up the API, Nginx, and PostgreSQL as a single `docker compose up` command.
 
 ---
 
@@ -96,7 +97,7 @@ GrantLayer is a Python/FastAPI backend with SQLite (default) or PostgreSQL stora
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `GRANTLAYER_JWT_SECRET` | *(required)* | HS256 signing secret for JWT tokens |
+| `GRANTLAYER_JWT_SECRET` | *(unset)* | Shared secret enabling legacy HS256 JWTs; without it the default is RS256 via `GRANTLAYER_JWT_PRIVATE_KEY`/`GRANTLAYER_JWT_PUBLIC_KEY` (base64-encoded PEM) |
 | `GRANTLAYER_ENABLE_OPERATOR_MODEL` | `true` | Enable the grant request / approval workflow |
 | `GRANTLAYER_ENABLE_DEMO_ENDPOINTS` | `false` | Enable demo tamper endpoints (never in production) |
 | `GRANTLAYER_DATABASE_URL` | *(empty = SQLite)* | PostgreSQL URL when using the `postgres` profile |
@@ -129,7 +130,7 @@ uvicorn backend.src.api.app:app --port 8765
 ## Tests
 
 ```bash
-python3 -m unittest discover -s backend/tests -v
+python3 -m pytest backend/tests/ -q -m "not doc_guard"
 ```
 
 Or via script: `./scripts/test.sh`

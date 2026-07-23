@@ -2,6 +2,11 @@
 
 All notable changes to GrantLayer are documented here.
 
+**Versioning note:** The 0.x line is the authoritative version scheme for
+GrantLayer, matching the Helm chart and the TypeScript SDK at 0.19.0. The
+v1.x/v2.x git tags and the v1.1.0 GitHub release are historical artifacts
+retained for provenance; they are not current versions.
+
 ---
 
 ## [Unreleased]
@@ -85,19 +90,12 @@ All notable changes to GrantLayer are documented here.
 - `X-Plan-Tier` response header on all `/v1/` responses.
 - Migration 0016.
 
----
-
-## [Unreleased] — v2.0.0 candidate
-
 ### Redis Hard Requirement + API Rate Limiting
 - Redis URL (`GRANTLAYER_REDIS_URL`) is now a hard requirement in staging/production modes.
 - Rate limiting middleware applied to all `/v1/` endpoints (120 req/min per IP default).
 - 429 responses include `errorCode: rate_limit_exceeded` and `Retry-After` header.
 - CORS preflight (`OPTIONS`) requests bypass rate limiting.
 - 20/20 new tests.
-
-### Test Coverage 95%+
-- Expanded test coverage across service layer, repository pattern, and edge cases.
 
 ### Service Layer
 - Introduced `GrantService`, `GrantRequestService`, `OperatorService`.
