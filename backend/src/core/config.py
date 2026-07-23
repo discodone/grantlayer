@@ -196,12 +196,45 @@ GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: bool = _env_bool(
     default=RUNTIME_MODE in ("local", "test"),
 )
 
+# PBKDF2 iteration count for operator token hashing (consumed by
+# backend.src.auth.operators.hash_token; verify_token derives its cost from the
+# count embedded in each stored hash, so verification follows hash-time cost).
+#
+# SECURITY INVARIANT — production floor is unfalsifiable: in every mode outside
+# local/test the effective count is at least TOKEN_HASH_ITERATIONS_PRODUCTION;
+# GRANTLAYER_TOKEN_HASH_ITERATIONS can only raise it there, never lower it.
+# Only local/test derive the reduced default (test-suite speedup — the full
+# count costs ~0.24 s per hash and dominated suite runtime).
+TOKEN_HASH_ITERATIONS_PRODUCTION: int = 600_000
+TOKEN_HASH_ITERATIONS_TEST_DEFAULT: int = 1_000
+
+
+def _derive_token_hash_iterations() -> int:
+    if RUNTIME_MODE in ("local", "test"):
+        return max(
+            1,
+            _env_int(
+                "GRANTLAYER_TOKEN_HASH_ITERATIONS",
+                TOKEN_HASH_ITERATIONS_TEST_DEFAULT,
+            ),
+        )
+    return max(
+        TOKEN_HASH_ITERATIONS_PRODUCTION,
+        _env_int(
+            "GRANTLAYER_TOKEN_HASH_ITERATIONS",
+            TOKEN_HASH_ITERATIONS_PRODUCTION,
+        ),
+    )
+
+
+TOKEN_HASH_ITERATIONS: int = _derive_token_hash_iterations()
+
 
 def recompute_mode_derived_flags() -> None:
     """Re-derive every cached config flag whose default is keyed on RUNTIME_MODE.
 
-    REQUIRE_ADMIN_TOKEN and GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE are both
-    evaluated once at import from RUNTIME_MODE. When RUNTIME_MODE is reconciled at
+    REQUIRE_ADMIN_TOKEN, GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE and
+    TOKEN_HASH_ITERATIONS are all evaluated once at import from RUNTIME_MODE. When RUNTIME_MODE is reconciled at
     runtime without a full config reload (e.g. the test-suite fixture that resets a
     leaked production mode back to test), those dependent flags would otherwise keep
     their stale value. This is the single authoritative place that recomputes the
@@ -211,6 +244,7 @@ def recompute_mode_derived_flags() -> None:
     the module globals, returns nothing.
     """
     global REQUIRE_ADMIN_TOKEN, GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE
+    global TOKEN_HASH_ITERATIONS
     REQUIRE_ADMIN_TOKEN = _env_bool(
         "GRANTLAYER_REQUIRE_ADMIN_TOKEN",
         default=RUNTIME_MODE not in ("local", "test"),
@@ -219,6 +253,7 @@ def recompute_mode_derived_flags() -> None:
         "GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE",
         default=RUNTIME_MODE in ("local", "test"),
     )
+    TOKEN_HASH_ITERATIONS = _derive_token_hash_iterations()
 
 
 # ──────────────────────────────────────────────────────────────

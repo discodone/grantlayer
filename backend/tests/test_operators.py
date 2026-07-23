@@ -108,7 +108,14 @@ class TestOperatorModel(unittest.TestCase):
     def test_token_hash_contains_salt_separator(self):
         h = self.ops_mod.hash_token("op-token-123")
         self.assertIn("$", h)
-        self.assertTrue(h.startswith("pbkdf2_sha256$600000$"))
+        # The embedded iteration count is mode-derived (reduced in test mode,
+        # unfalsifiable 600k floor in production — guarded by
+        # test_gl386_token_hash_iterations_floor); the format must embed
+        # whatever count is currently configured.
+        import backend.src.core.config as config_mod
+        self.assertTrue(
+            h.startswith(f"pbkdf2_sha256${config_mod.TOKEN_HASH_ITERATIONS}$")
+        )
 
     def test_verify_valid_token(self):
         token = "test-token-xyz"

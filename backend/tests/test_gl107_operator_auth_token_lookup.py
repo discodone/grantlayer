@@ -46,6 +46,12 @@ class _BaseGl107(unittest.TestCase):
         import backend.src.core.config as config_mod
         importlib.reload(config_mod)
         self.config_mod = config_mod
+        # These tests measure bounded-PBKDF2 behaviour against many operators;
+        # pin the realistic production iteration count so they do not inherit
+        # the reduced test-mode value. Restored in tearDown via recompute.
+        config_mod.TOKEN_HASH_ITERATIONS = (
+            config_mod.TOKEN_HASH_ITERATIONS_PRODUCTION
+        )
 
         import backend.src.auth.operators as ops_mod
         importlib.reload(ops_mod)
@@ -58,6 +64,9 @@ class _BaseGl107(unittest.TestCase):
         self.db_mod = db_mod
 
     def tearDown(self):
+        # Re-derive the pinned iteration count from the current mode so the
+        # production value cannot leak into later tests in this worker.
+        self.config_mod.recompute_mode_derived_flags()
         os.unlink(self.tmp_db.name)
         for key, orig in [
             ("GRANTLAYER_DB", self._orig_db),
