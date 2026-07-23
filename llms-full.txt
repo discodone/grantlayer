@@ -6,11 +6,13 @@
 
 ### 1. Project Overview
 
-GrantLayer is a verification, audit, and compliance layer for agentic grant and
-funding workflows. When AI agents prepare funding applications, evaluate
-eligibility, collect evidence, or trigger approval decisions, institutions need
-a neutral verification layer — one that makes every step traceable,
-tamper-evident, and independently auditable.
+GrantLayer is access-grant and authorization infrastructure: a multi-tenant
+system for issuing time-boxed access grants to AI agents and automated systems,
+enforcing them through a policy engine, and recording every decision in a
+verifiable audit trail. A grant is a permission — who may perform which action
+on which resource, for how long — and every issue, approval, denial,
+revocation, and exercise is traceable, tamper-evident, and independently
+auditable.
 
 **Primary language:** Python 3.13 (FastAPI + `cryptography` v43.0.0)
 **Database:** SQLite (default) or PostgreSQL (optional)

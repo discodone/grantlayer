@@ -1,6 +1,6 @@
 # GrantLayer Integration Demo Scenario
 
-> GrantLayer turns agentic grant workflows into verifiable institutional records.
+> GrantLayer issues time-boxed access grants, enforces them through policy, and records every decision in a verifiable audit trail.
 
 ## 1. Purpose
 

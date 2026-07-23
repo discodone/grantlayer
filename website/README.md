@@ -13,9 +13,11 @@ This directory contains the GL-210 static website baseline.
 
 ## Claim Boundary
 
-The page may describe GrantLayer as an API-first Developer Preview and a
-verification, audit, and compliance-support layer for agentic grant workflows.
-Controlled Preview remains limited to strict boundaries and synthetic/demo data.
+The page may describe GrantLayer as an API-first Developer Preview and as
+access-grant / authorization infrastructure for AI agents and automated
+systems: time-boxed access grants, policy enforcement, and a verifiable audit
+trail. Controlled Preview remains limited to strict boundaries and
+synthetic/demo data.
 
 The page must not claim production SaaS readiness, enterprise readiness,
 official SDK/package availability, live PostgreSQL production readiness,

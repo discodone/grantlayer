@@ -5,7 +5,7 @@
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
-GrantLayer is a verification, audit, and compliance layer for agentic grant and funding workflows. When AI agents prepare funding applications, evaluate eligibility, or trigger approval decisions, GrantLayer makes every step traceable, tamper-evident, and independently auditable. It is in **Developer Preview** — local evaluation and controlled pilot only. It is not production SaaS; production SaaS readiness is not claimed. No GitHub push and no repository visibility change are part of this local quickstart.
+GrantLayer is access-grant and authorization infrastructure: an open-source, multi-tenant system for issuing time-boxed access grants to AI agents and automated systems, enforcing them through a policy engine, and recording every decision in a cryptographically verifiable audit trail. A grant is a permission — who may perform which action on which resource, for how long — and every issue, approval, denial, revocation, and exercise is traceable, tamper-evident, and independently auditable. It is in **Developer Preview** — local evaluation and controlled pilot only. It is not production SaaS; production SaaS readiness is not claimed. No GitHub push and no repository visibility change are part of this local quickstart.
 
 ---
 

@@ -2,13 +2,16 @@
 
 ## GrantLayer — Developer Preview
 
-GrantLayer is a verification, audit, and compliance layer for agentic grant and
-funding workflows, written in Python (FastAPI + SQLAlchemy + `cryptography`).
-It runs locally with SQLite or PostgreSQL 16.
+GrantLayer is access-grant and authorization infrastructure: a multi-tenant
+system for issuing time-boxed access grants to AI agents and automated systems,
+enforcing them through a policy engine, and recording every decision in a
+verifiable audit trail. Written in Python (FastAPI + SQLAlchemy +
+`cryptography`). It runs locally with SQLite or PostgreSQL 16.
 
-**Purpose:** When AI agents prepare funding applications, evaluate eligibility,
-or trigger approval decisions, GrantLayer makes every step traceable,
-tamper-evident, and independently auditable.
+**Purpose:** A grant is a permission — who may perform which action on which
+resource, for how long. GrantLayer makes every issue, approval, denial,
+revocation, and exercise traceable, tamper-evident, and independently
+auditable.
 
 **Status:** Developer Preview — local evaluation and controlled pilot only.
 

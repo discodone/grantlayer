@@ -1,6 +1,6 @@
 """GrantLayer MVP — Policy Requirement / Grant Rule Pack Evaluator.
 
-Pure / read-only evaluator that checks a machine-readable grant/funding policy
+Pure / read-only evaluator that checks a machine-readable grant policy
 pack against structured GrantLayer signals.
 
 No DB access.  No network calls.  No secrets exposed.
@@ -536,7 +536,7 @@ def evaluate_policy_requirements(
     created_at: Any = None,
     include_details: bool = True,
 ) -> dict[str, Any]:
-    """Evaluate a machine-readable grant/funding policy pack.
+    """Evaluate a machine-readable grant policy pack.
 
     Fail-closed: missing or malformed policy pack results in a blocked status.
     Pure / read-only — uses only the arguments passed in.  No DB access.

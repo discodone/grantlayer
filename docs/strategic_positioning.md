@@ -2,21 +2,21 @@
 
 ## Core statement
 
-> **GrantLayer turns agentic grant workflows into verifiable institutional records.**
+> **GrantLayer issues time-boxed access grants, enforces them through policy, and records every decision in a verifiable audit trail.**
 
-> **GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.**
+> **GrantLayer vergibt zeitlich begrenzte Zugriffsrechte, setzt sie über Policies durch und protokolliert jede Entscheidung in einem prüfbaren Audit-Trail.**
 
 ## The problem
 
-When AI agents prepare grant applications, evaluate eligibility, collect evidence, or trigger approval decisions, institutions face a structural trust problem: there is no neutral layer that makes the agent's actions traceable, tamper-evident, and independently auditable.
+When AI agents and automated systems act with real privileges — deploying services, reading data, calling internal APIs, triggering approvals — operators face a structural trust problem: there is no neutral layer that makes those permissions explicit, time-boxed, and independently auditable.
 
-Existing audit logs are internal to specific systems. Evidence is scattered across emails, documents, and APIs. Decisions are made by opaque agent pipelines. Compliance reviewers have no structured way to answer: *Who decided what, when, and on which grounds?*
+Existing audit logs are internal to specific systems. Permissions are scattered across ad-hoc tokens, config files, and IAM consoles. Decisions are made by opaque agent pipelines. Reviewers have no structured way to answer: *Who was allowed to do what, when, and on which grounds?*
 
 ## What GrantLayer is
 
-GrantLayer is a **verification, audit, and compliance layer** for agentic grant and funding workflows. It sits between the agent pipeline and the institutional record — capturing evidence, verifying integrity, and producing machine-readable audit trails.
+GrantLayer is **access-grant and authorization infrastructure**: a multi-tenant system for issuing time-boxed access grants, enforcing them through a policy engine, and recording every decision in a cryptographically verifiable audit trail. A grant is a permission — who may perform which action on which resource, for how long — never a funding award.
 
-It is **not** a payment app, a blockchain app, a crypto wallet, a demo app, or a generic funding platform. It is infrastructure for the agentic economy's compliance problem.
+It is **not** a payment app, a blockchain app, a crypto wallet, or a demo app. It is infrastructure for the agent economy's permission problem.
 
 ## Core architecture concepts
 
@@ -41,9 +41,9 @@ It is **not** a payment app, a blockchain app, a crypto wallet, a demo app, or a
 
 ## Strategic thesis
 
-Agentic workflows are replacing manual human steps in grant processes — eligibility checks, evidence collection, document preparation, routing, and approval triggers. As this shift accelerates, the question shifts from "can the agent do this?" to "can we prove it was done correctly?"
+Agent workflows are replacing manual human steps in operational processes — deployments, data access, API calls, routing, and approval triggers. As this shift accelerates, the question shifts from "can the agent do this?" to "was the agent allowed to do this — and can we prove it?"
 
-GrantLayer answers the second question. It is the compliance layer that makes agentic grant workflows institutionally acceptable.
+GrantLayer answers the second question. It is the authorization and audit layer that makes agent access institutionally acceptable.
 
 ## Roadmap
 
@@ -91,7 +91,6 @@ GrantLayer answers the second question. It is the compliance layer that makes ag
 - Wallet/operator-based signatures: operator identity backed by on-chain key
 - Cardano or Ethereum anchoring: institutional-grade immutability for audit records
 - **Sensitive data stays off-chain.** Only hashes are anchored. Evidence content never appears on-chain.
-- Stablecoin/treasury integration: optional, only if grant payment flows are added in Phase 2
 
 **Why Phase 3 is optional:**  
 For most institutional use cases, SHA-256-hashed, server-side-verified evidence with a complete audit trail is sufficient for compliance. Blockchain anchoring adds independent verifiability at the cost of infrastructure complexity. It is a configurable add-on, not a requirement.

@@ -1,18 +1,18 @@
 # GrantLayer Minimum Viable Integration Guide
 
-> GrantLayer turns agentic grant workflows into verifiable institutional records.
+> GrantLayer issues time-boxed access grants, enforces them through policy, and records every decision in a verifiable audit trail.
 
 ## 1. What GrantLayer is
 
-GrantLayer is an **API-first verification, audit, and compliance layer** for agentic grant and funding workflows.
+GrantLayer is **API-first access-grant and authorization infrastructure**: a multi-tenant system for issuing time-boxed access grants to AI agents and automated systems, enforcing them through a policy engine, and recording every decision in a verifiable audit trail.
 
-When AI agents prepare funding applications, evaluate eligibility, collect evidence, or trigger approval decisions, institutions need a neutral verification layer — one that makes every step traceable, tamper-evident, and independently auditable. GrantLayer is that layer.
+A grant is a permission — who may perform which action on which resource, for how long. Every issue, approval, denial, revocation, and exercise is traceable, tamper-evident, and independently auditable.
 
-GrantLayer macht agentische Förderprozesse zu prüfbaren institutionellen Nachweisen.
+GrantLayer vergibt zeitlich begrenzte Zugriffsrechte, setzt sie über Policies durch und protokolliert jede Entscheidung in einem prüfbaren Audit-Trail.
 
 ## 2. What problem GrantLayer solves
 
-Agentic grant workflows naturally produce large volumes of unstructured activity. Institutions face several operational risks without a verification layer:
+Agent workflows naturally produce large volumes of privileged actions. Operators face several risks without an authorization and audit layer:
 
 - **Auditability gaps** — it is hard to prove what an agent decided, when, and why.
 - **Evidence fragmentation** — supporting documents, timestamps, and decisions live in separate systems.
