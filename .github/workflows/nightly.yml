@@ -1,0 +1,95 @@
+name: Nightly parallel stability
+
+# Nightly evidence-gathering for the `-n auto` constraint lift: the bar is
+# five consecutive green parallel runs (and a defensible wall-clock win)
+# before parallelism is allowed into the blocking "PostgreSQL CI" workflow.
+# This workflow only collects that evidence — it gates nothing and runs on
+# no push or pull_request event.
+#
+# Both jobs run the exact SQLite selection and flags that "PostgreSQL CI"
+# uses (same markers, same 5 ignored files, same coverage gate), minus `-x`
+# so a failure shows its full extent instead of masking siblings.
+#
+# doc_guard tests are deliberately NOT included yet: 56 of them currently
+# fail on main as stale artifacts (they pin deleted files/layouts). Once
+# they are cleaned up, a doc_guard job belongs HERE, not in the blocking CI.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # daily 03:00 UTC
+  workflow_dispatch:
+
+env:
+  GRANTLAYER_RUNTIME_MODE: test
+  GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
+  PYTEST_ARGS: >-
+    backend/tests/
+    -m "not doc_guard and not performance"
+    --ignore=backend/tests/test_gl112_audit_log_duplication_cleanup.py
+    --ignore=backend/tests/test_gl139_audit_hash_chain_write_lock.py
+    --ignore=backend/tests/test_gl141_operator_model_default.py
+    --ignore=backend/tests/test_gl214_production_iam_operator_control_completion.py
+    --ignore=backend/tests/test_gl203b_openapi_api_contract_cleanup.py
+    --cov=backend/src --cov-report=term --cov-fail-under=60
+    --tb=short
+
+jobs:
+  parallel-stability:
+    runs-on: ubuntu-latest
+    name: Parallel stability (3x -n auto)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r backend/requirements-dev.txt
+
+      - name: Run the suite 3x with -n auto
+        run: |
+          status=0
+          for i in 1 2 3; do
+            echo "::group::parallel run ${i}/3"
+            start=$(date +%s)
+            if python3 -m pytest ${PYTEST_ARGS} -n auto; then
+              result=GREEN
+            else
+              result=RED
+              status=1
+            fi
+            end=$(date +%s)
+            echo "::endgroup::"
+            # Per-run verdict + wall time on its own line so night-to-night
+            # variance is greppable; the pass/skip/fail counts are the pytest
+            # summary line inside each group above.
+            echo "=== parallel run ${i}/3: ${result} in $((end - start))s ==="
+          done
+          exit ${status}
+
+  single-process-control:
+    runs-on: ubuntu-latest
+    name: Single-process control (1x)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r backend/requirements-dev.txt
+
+      - name: Run the suite once single-process
+        run: |
+          start=$(date +%s)
+          python3 -m pytest ${PYTEST_ARGS}
+          end=$(date +%s)
+          echo "=== single-process control: GREEN in $((end - start))s ==="
