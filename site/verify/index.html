@@ -131,6 +131,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0;font-size
         <li>Nothing about the <span class="emph">contents</span> of those entries — the anchor commits to a hash, not to any readable record.</li>
         <li>Not that the entries correspond to <span class="emph">real events</span>, nor <span class="emph">who did what</span>.</li>
         <li>Explicitly: <span class="emph">this page is not evidence that any particular action was authorized.</span> Anchoring freezes a record; it does not vouch for the record's truthfulness.</li>
+        <li>Nothing about events appended <span class="emph">after the newest anchor</span>. An anchor commits to the chain only as it stood at publication; everything appended since sits in an <span class="emph">un-anchored window</span> that no on-chain commitment covers until the next anchor is published. Within that window the row-hash chain alone cannot expose a database-level rewrite — truncation to an earlier prefix, a full re-link after an edit, or a mutated field re-hashed in place all produce a chain that still verifies. Anchors here are deliberately cadence-free (each is an explicit operator act), so the window has no fixed length. This is the structural trade-off of periodic anchoring, not a defect of this chain.</li>
       </ul>
     </div>
   </div>
