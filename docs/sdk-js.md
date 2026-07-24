@@ -4,9 +4,17 @@ The `grantlayer-sdk` package provides a type-safe client for the GrantLayer API.
 
 ## Installation
 
+The package is **not yet published to npm** — build it from source:
+
 ```bash
-npm install grantlayer-sdk
+git clone https://github.com/discodone/grantlayer.git
+cd grantlayer/sdk-js
+npm install
+npm run build           # emits dist/ (ESM + CJS + type declarations)
+npm pack                # produces grantlayer-sdk-<version>.tgz
 ```
+
+Then install the tarball in your project: `npm install /path/to/grantlayer-sdk-<version>.tgz`.
 
 ## Quickstart
 

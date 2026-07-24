@@ -1,8 +1,11 @@
 # Python SDK
 
-GrantLayer provides an async Python SDK built on `httpx`.
+GrantLayer provides a Python SDK built on `httpx`, with sync
+(`GrantLayerClient`) and async (`AsyncGrantLayerClient`) variants.
 
 ## Installation
+
+Published on PyPI as `grantlayer`:
 
 ```bash
 pip install grantlayer
@@ -10,34 +13,40 @@ pip install grantlayer
 
 ## Quickstart
 
+Verified against the local Docker quickstart stack (see `QUICKSTART.md`):
+
 ```python
-import asyncio
+import os
+
 from grantlayer import GrantLayerClient
 
-async def main():
-    client = GrantLayerClient(
-        base_url="https://api.example.com",
-        api_key="gl_live_your_key_here",
-    )
-    
-    # List grants
-    grants = await client.grants.list()
-    
-    # Create a grant
-    grant = await client.grants.create(
-        subject_id="agent-123",
-        role="viewer",
-        action="read",
-        resource="documents/report.pdf",
-        valid_from="2026-01-01T00:00:00Z",
-        valid_until="2026-12-31T23:59:59Z",
-        reason="Quarterly report review",
-    )
-    print(f"Created grant: {grant['id']}")
+gl = GrantLayerClient("http://localhost:8765")
 
-asyncio.run(main())
+# local quickstart: any operator id + the admin token from .env
+gl.authenticate("dev", os.environ["GRANTLAYER_ADMIN_TOKEN"])
+
+# issue a time-boxed, signed grant
+grant = gl.create_grant(
+    subjectId="agent-7",
+    role="operator",
+    action="deploy",
+    resource="service:payments",
+    validFrom="2026-01-01T00:00:00Z",
+    validUntil="2026-12-31T00:00:00Z",
+    createdBy="dev",
+    reason="scheduled release",
+)
+
+print(grant["id"], grant["signaturePresent"])
+```
+
+The async variant exposes the same methods as coroutines:
+
+```python
+from grantlayer import AsyncGrantLayerClient
 ```
 
 ## Reference
 
-See `backend/src/sdk/` for the Python SDK source code.
+See `sdk/grantlayer/` for the SDK source code and `sdk/README.md` for the
+full method table.

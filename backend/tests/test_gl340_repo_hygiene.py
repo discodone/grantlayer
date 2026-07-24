@@ -203,8 +203,8 @@ class TestSdkDistributionNameConsistency(unittest.TestCase):
     def test_no_doc_instructs_installing_old_distribution_name(self):
         """No doc may say `pip install grantlayer-sdk` (the pre-rename name).
 
-        `npm install grantlayer-sdk` stays legitimate — that is the JS SDK's
-        npm package, a different registry — so this matches pip only.
+        This matches pip only; the JS SDK's npm package name is guarded
+        separately by TestSdkInstallabilityClaims.
         """
         old_install = re.compile(r"pip\s+install\s+grantlayer-sdk\b")
         offenders = []
@@ -228,6 +228,81 @@ class TestSdkDistributionNameConsistency(unittest.TestCase):
             "docs instruct installing the retired distribution name "
             "'grantlayer-sdk' — the PyPI distribution is 'grantlayer':\n"
             + "\n".join(offenders),
+        )
+
+
+class TestSdkInstallabilityClaims(unittest.TestCase):
+    """Public claims must match what is actually installable.
+
+    Actual state: the Python SDK is published on PyPI (`pip install
+    grantlayer` works for anyone); the TypeScript SDK is NOT published to
+    npm and is built from source. Same spirit as the licence guard: any
+    doc or site page that states how to obtain an SDK must state something
+    that is literally true today.
+
+    When the TS SDK is really published to npm, delete
+    NPM_PACKAGE_PUBLISHED = False below (flip it to True) and the
+    npm-instruction ban lifts itself.
+    """
+
+    NPM_PACKAGE_PUBLISHED = False
+
+    _DOC_SUFFIXES = (".md", ".html", ".txt")
+
+    def _doc_files(self):
+        roots = [REPO_ROOT / "sdk", REPO_ROOT / "sdk-js",
+                 REPO_ROOT / "docs", REPO_ROOT / "site"]
+        files = [REPO_ROOT / "README.md"]
+        for root in roots:
+            files.extend(p for p in sorted(root.rglob("*"))
+                         if p.is_file() and p.suffix in self._DOC_SUFFIXES)
+        return files
+
+    def _offending_lines(self, pattern: re.Pattern) -> list[str]:
+        offenders = []
+        for path in self._doc_files():
+            for lineno, line in enumerate(
+                path.read_text(errors="replace").splitlines(), 1
+            ):
+                if pattern.search(line):
+                    rel = path.relative_to(REPO_ROOT)
+                    offenders.append(f"{rel}:{lineno}: {line.strip()}")
+        return offenders
+
+    def test_no_npm_registry_install_instruction_while_unpublished(self):
+        """`npm install grantlayer-sdk` (registry form) is banned while the
+        package is not on npm. Tarball installs (`npm install
+        ./grantlayer-sdk-<version>.tgz`) do not match and stay legal."""
+        if self.NPM_PACKAGE_PUBLISHED:
+            self.skipTest("TS SDK is published to npm; instruction is legal")
+        pattern = re.compile(r"npm\s+install\s+grantlayer-sdk\s*$")
+        offenders = self._offending_lines(pattern)
+        self.assertEqual(
+            offenders, [],
+            "docs instruct `npm install grantlayer-sdk` but the package is "
+            "not published to npm — build-from-source is the only true "
+            "install path:\n" + "\n".join(offenders),
+        )
+
+    def test_no_fictional_scoped_npm_package_name(self):
+        """Nothing may reference \"@grantlayer/sdk\" — that package name
+        never existed on npm or in this repo (the real name is
+        grantlayer-sdk)."""
+        offenders = self._offending_lines(re.compile(r"@grantlayer/sdk\b"))
+        self.assertEqual(
+            offenders, [],
+            "found references to the fictional npm package "
+            "'@grantlayer/sdk':\n" + "\n".join(offenders),
+        )
+
+    def test_python_install_instruction_present_and_correct(self):
+        """The Python SDK is genuinely on PyPI; sdk/README.md must carry the
+        real install command."""
+        readme = (REPO_ROOT / "sdk" / "README.md").read_text()
+        self.assertIn(
+            "pip install grantlayer", readme,
+            "sdk/README.md must document `pip install grantlayer` — the "
+            "package is published on PyPI under that name",
         )
 
 
