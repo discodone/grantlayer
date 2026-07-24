@@ -1,0 +1,59 @@
+name: Publish Python SDK to PyPI
+
+# Publishes the Python SDK (sdk/ → distribution "grantlayer") to PyPI via
+# Trusted Publishing (OIDC) — no API token exists anywhere. The trusted
+# publisher on PyPI is registered for exactly this repo, this workflow
+# filename, and the "pypi" environment (required-reviewer protected).
+#
+# Trigger is sdk-v* tags only: the repo is a monorepo with three separately
+# versioned components and already carries historical v1.x/v2.x tags, so a
+# bare v* trigger would fire on the wrong releases.
+
+on:
+  push:
+    tags: ['sdk-v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install --upgrade build
+          python -m build sdk/ --outdir dist/
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-sdk-dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # OIDC token for PyPI Trusted Publishing — the only credential used.
+      id-token: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-sdk-dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/

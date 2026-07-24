@@ -11,7 +11,6 @@ Tests:
 from __future__ import annotations
 
 import json
-import os
 import re
 import tomllib
 import unittest
@@ -164,6 +163,71 @@ class TestApacheLicenseConsistency(unittest.TestCase):
         self.assertEqual(
             wrong, [],
             "site/ licence footers must say Apache 2.0:\n" + "\n".join(wrong),
+        )
+
+
+class TestSdkDistributionNameConsistency(unittest.TestCase):
+    """The PyPI distribution name matches the import name and the docs.
+
+    The module has always been `grantlayer` (sdk/grantlayer/), and the
+    PyPI trusted publisher is registered for the project `grantlayer`.
+    A distribution named anything else would make `pip install X` and
+    `import Y` disagree, and the publish workflow would be rejected by
+    PyPI. Same spirit as the licence guard above: any place that states
+    the install name must state the same name the metadata declares.
+    """
+
+    EXPECTED_DIST_NAME = "grantlayer"
+
+    def _sdk_pyproject(self) -> dict:
+        with (REPO_ROOT / "sdk" / "pyproject.toml").open("rb") as fh:
+            return tomllib.load(fh)
+
+    def test_sdk_distribution_name_matches_import_name(self):
+        """sdk/pyproject.toml [project] name must be `grantlayer`."""
+        name = self._sdk_pyproject()["project"]["name"]
+        self.assertEqual(
+            name, self.EXPECTED_DIST_NAME,
+            f"sdk/pyproject.toml declares distribution {name!r} but the "
+            f"import package is sdk/{self.EXPECTED_DIST_NAME}/ and the PyPI "
+            f"trusted publisher is registered for {self.EXPECTED_DIST_NAME!r}",
+        )
+
+    def test_import_package_dir_matches_distribution_name(self):
+        """The package directory named by the distribution must exist."""
+        self.assertTrue(
+            (REPO_ROOT / "sdk" / self.EXPECTED_DIST_NAME / "__init__.py").exists(),
+            f"sdk/{self.EXPECTED_DIST_NAME}/ must be the import package",
+        )
+
+    def test_no_doc_instructs_installing_old_distribution_name(self):
+        """No doc may say `pip install grantlayer-sdk` (the pre-rename name).
+
+        `npm install grantlayer-sdk` stays legitimate — that is the JS SDK's
+        npm package, a different registry — so this matches pip only.
+        """
+        old_install = re.compile(r"pip\s+install\s+grantlayer-sdk\b")
+        offenders = []
+        roots = [REPO_ROOT / "sdk", REPO_ROOT / "docs", REPO_ROOT / "site"]
+        candidates = [REPO_ROOT / "README.md"]
+        for root in roots:
+            candidates.extend(sorted(root.rglob("*")))
+        for path in candidates:
+            if not path.is_file():
+                continue
+            if path.suffix not in (".md", ".html", ".txt", ".py", ".toml", ".json"):
+                continue
+            for lineno, line in enumerate(
+                path.read_text(errors="replace").splitlines(), 1
+            ):
+                if old_install.search(line):
+                    rel = path.relative_to(REPO_ROOT)
+                    offenders.append(f"{rel}:{lineno}: {line.strip()}")
+        self.assertEqual(
+            offenders, [],
+            "docs instruct installing the retired distribution name "
+            "'grantlayer-sdk' — the PyPI distribution is 'grantlayer':\n"
+            + "\n".join(offenders),
         )
 
 
