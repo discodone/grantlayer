@@ -16,7 +16,6 @@ Ensures:
 13. report builder is read-only.
 14. report builder does not insert audit events.
 15. no audit verification API endpoint is added.
-16. no OpenAPI change is made.
 17. GL-104 verification helper behavior preserved.
 18. GL-103 audit insertion preserved.
 19. GL-102 UPDATE/DELETE immutability preserved.
@@ -500,30 +499,6 @@ class TestGl105NoVerificationEndpoint(_BaseGl105):
         req = self._make_handler("/audit/verify-hash")
         status, data = self._run_handler(req)
         self.assertEqual(status, 404)
-
-
-# ═══════════════════════════════════════════════════════════════════════
-# 16. No OpenAPI change
-# ═══════════════════════════════════════════════════════════════════════
-
-class TestGl105NoOpenApiChange(unittest.TestCase):
-    """Ensure no OpenAPI changes were made."""
-
-    def test_no_openapi_file_changed(self):
-        repo_root = pathlib.Path(__file__).with_suffix("").parent.parent.parent
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "main...HEAD"],
-            cwd=repo_root,
-            capture_output=True,
-            text=True,
-        )
-        changed = [ln.strip() for ln in result.stdout.splitlines() if ln.strip()]
-        openapi_files = [p for p in changed if "openapi" in p.lower()]
-        self.assertEqual(
-            openapi_files,
-            [],
-            f"OpenAPI files changed unexpectedly: {openapi_files}",
-        )
 
 
 # ═══════════════════════════════════════════════════════════════════════

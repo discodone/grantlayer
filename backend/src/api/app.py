@@ -113,7 +113,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="GrantLayer",
         description="Secure AI Agent Grant Management — FastAPI layer (Phase 1)",
-        version="0.1.0",
+        version="0.19.0",
         lifespan=_lifespan,
         docs_url="/api/docs",
         redoc_url="/api/redoc",
