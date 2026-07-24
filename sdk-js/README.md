@@ -4,8 +4,20 @@ Official TypeScript SDK for the GrantLayer API. Works in Node.js 18+ and modern 
 
 ## Installation
 
+The package is **not yet published to npm** — build it from source:
+
 ```bash
-npm install grantlayer-sdk
+git clone https://github.com/discodone/grantlayer.git
+cd grantlayer/sdk-js
+npm install
+npm run build           # emits dist/ (ESM + CJS + type declarations)
+npm pack                # produces grantlayer-sdk-<version>.tgz
+```
+
+Then install the tarball in your project:
+
+```bash
+npm install /path/to/grantlayer-sdk-<version>.tgz
 ```
 
 ## Quickstart
@@ -20,8 +32,8 @@ const client = new GrantLayerClient({
 });
 
 // Or authenticate with JWT
-const client = new GrantLayerClient({ baseUrl: 'https://api.grantlayer.example.com' });
-await client.getToken({ clientId: 'my-operator', clientSecret: 'my-secret' });
+const jwtClient = new GrantLayerClient({ baseUrl: 'https://api.grantlayer.example.com' });
+await jwtClient.getToken({ clientId: 'my-operator', clientSecret: 'my-secret' });
 
 // List grants
 const grants = await client.listGrants({ limit: 50 });

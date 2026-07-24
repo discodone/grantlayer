@@ -309,10 +309,14 @@ footer{border-top:1px solid var(--line);padding:56px 0 64px;color:var(--muted)}
         <span class="d"></span><span class="d"></span><span class="d"></span>
         <span class="ttl">issue_grant.py</span>
       </div>
-<pre class="code"><span class="k">from</span> grantlayer <span class="k">import</span> GrantLayerClient
+<pre class="code"><span class="k">import</span> os
+
+<span class="k">from</span> grantlayer <span class="k">import</span> GrantLayerClient
 
 gl <span class="p">=</span> <span class="f">GrantLayerClient</span>(<span class="s">"http://localhost:8765"</span>)
-gl.<span class="f">authenticate</span>(<span class="s">"operator"</span>, <span class="s">"••••••••"</span>)
+
+<span class="c"># local quickstart: any operator id + the admin token from .env</span>
+gl.<span class="f">authenticate</span>(<span class="s">"dev"</span>, os.environ[<span class="s">"GRANTLAYER_ADMIN_TOKEN"</span>])
 
 <span class="c"># issue a time-boxed, signed grant</span>
 grant <span class="p">=</span> gl.<span class="f">create_grant</span>(
@@ -320,11 +324,13 @@ grant <span class="p">=</span> gl.<span class="f">create_grant</span>(
     <span class="f">role</span><span class="p">=</span><span class="s">"operator"</span>,
     <span class="f">action</span><span class="p">=</span><span class="s">"deploy"</span>,
     <span class="f">resource</span><span class="p">=</span><span class="s">"service:payments"</span>,
+    <span class="f">validFrom</span><span class="p">=</span><span class="s">"2026-01-01T00:00:00Z"</span>,
     <span class="f">validUntil</span><span class="p">=</span><span class="s">"2026-12-31T00:00:00Z"</span>,
+    <span class="f">createdBy</span><span class="p">=</span><span class="s">"dev"</span>,
     <span class="f">reason</span><span class="p">=</span><span class="s">"scheduled release"</span>,
 )
 
-<span class="k">print</span>(grant[<span class="s">"signaturePresent"</span>])   <span class="c"># True</span></pre>
+<span class="k">print</span>(grant[<span class="s">"id"</span>], grant[<span class="s">"signaturePresent"</span>])   <span class="c"># 04bd407d-… True</span></pre>
     </div>
   </div>
 </section>
@@ -488,7 +494,7 @@ curl http://localhost:8765/health
     <div class="txt">
       <div class="kicker">SDKs &amp; API</div>
       <h2>An API-first surface, in your language.</h2>
-      <p>Every capability is reachable over a versioned REST API documented with OpenAPI. First-party SDKs for Python and TypeScript cover that surface in each language.</p>
+      <p>Every capability is reachable over a versioned REST API documented with OpenAPI. The Python SDK is published on PyPI — <code>pip install grantlayer</code>. The TypeScript SDK ships in the repository and builds from source; it is not yet published to npm.</p>
       <div class="linklist">
         <a href="https://github.com/discodone/grantlayer/tree/main/sdk"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Python SDK</a>
         <a href="https://github.com/discodone/grantlayer/tree/main/sdk-js"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>TypeScript SDK</a>
@@ -499,19 +505,18 @@ curl http://localhost:8765/health
       <button class="copybtn" data-copy="sdk">copy</button>
       <div class="window-bar">
         <span class="d"></span><span class="d"></span><span class="d"></span>
-        <span class="ttl">verify_grant.ts</span>
+        <span class="ttl">list_grants.ts</span>
       </div>
-<pre class="code" id="sdk-code"><span class="k">import</span> { GrantLayerClient } <span class="k">from</span> <span class="s">"@grantlayer/sdk"</span>;
+<pre class="code" id="sdk-code"><span class="c">// built from source: sdk-js/ in the repo (not yet on npm)</span>
+<span class="k">import</span> { GrantLayerClient } <span class="k">from</span> <span class="s">"grantlayer-sdk"</span>;
 
 <span class="k">const</span> gl <span class="p">=</span> <span class="k">new</span> <span class="f">GrantLayerClient</span>({
   baseUrl: <span class="s">"http://localhost:8765"</span>,
-  apiKey: process.env.<span class="f">GRANTLAYER_API_KEY</span>,
+  apiKey: process.env.<span class="f">GRANTLAYER_API_KEY</span>!,
 });
 
-<span class="c">// list active grants for one workspace</span>
-<span class="k">const</span> grants <span class="p">=</span> <span class="k">await</span> gl
-  .<span class="f">withWorkspace</span>(<span class="s">"payments"</span>)
-  .<span class="f">listGrants</span>({ revoked: <span class="k">false</span> });</pre>
+<span class="c">// list grants — server-side scoped to the key's workspace</span>
+<span class="k">const</span> grants <span class="p">=</span> <span class="k">await</span> gl.<span class="f">listGrants</span>({ limit: <span class="k">20</span> });</pre>
     </div>
   </div>
 </section>

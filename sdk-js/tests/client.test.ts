@@ -119,12 +119,12 @@ describe('Grants', () => {
     expect(result.id).toBe('g1');
   });
 
-  it('calls DELETE /v1/grants/{id} on revokeGrant', async () => {
+  it('calls POST /v1/grants/{id}/revoke on revokeGrant', async () => {
     mockFetch.mockResolvedValueOnce(mockResponse(200, { id: 'g1', revoked: true }));
     await client.revokeGrant('g1', 'test revoke');
     const [url, opts] = mockFetch.mock.calls[0];
-    expect(url).toBe('http://localhost:8000/v1/grants/g1');
-    expect((opts as RequestInit).method).toBe('DELETE');
+    expect(url).toBe('http://localhost:8000/v1/grants/g1/revoke');
+    expect((opts as RequestInit).method).toBe('POST');
   });
 });
 

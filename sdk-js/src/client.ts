@@ -73,11 +73,11 @@ export class GrantLayerClient {
     let lastError: GrantLayerError | undefined;
 
     while (attempt <= this.maxRetries) {
-      const response = await fetch(url, {
-        method,
-        headers: reqHeaders,
-        body: body !== undefined ? JSON.stringify(body) : undefined,
-      });
+      const init: RequestInit = { method, headers: reqHeaders };
+      if (body !== undefined) {
+        init.body = JSON.stringify(body);
+      }
+      const response = await fetch(url, init);
 
       if (response.ok) {
         if (response.status === 204) return undefined as unknown as T;
