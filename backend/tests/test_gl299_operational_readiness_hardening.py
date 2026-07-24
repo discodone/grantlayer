@@ -102,7 +102,8 @@ class TestStartupGate(unittest.TestCase):
 # ──────────────────────────────────────────────────────────────
 
 class TestDockerComposeSecureDefaults(unittest.TestCase):
-    """docker-compose.yml must default to production-safe settings."""
+    """docker-compose.yml quickstart contract: local-evaluation defaults,
+    with production reachable purely through .env (env_file forwarding)."""
 
     def _read_compose(self):
         compose_path = os.path.join(
@@ -111,10 +112,26 @@ class TestDockerComposeSecureDefaults(unittest.TestCase):
         with open(compose_path) as f:
             return f.read()
 
-    def test_runtime_mode_defaults_to_production(self):
+    def test_runtime_mode_defaults_to_local_eval(self):
+        # The shipped quickstart must not land in production mode: production
+        # refuses the auto-generated plaintext dev signing key, so every
+        # grant creation would 500 out of the box.
         content = self._read_compose()
-        self.assertIn("GRANTLAYER_RUNTIME_MODE", content)
-        self.assertIn("production", content)
+        self.assertIn("GRANTLAYER_RUNTIME_MODE:-local", content)
+        self.assertNotIn("GRANTLAYER_RUNTIME_MODE:-production", content)
+
+    def test_env_file_forwards_all_env_vars(self):
+        # Config vars must not depend on a hand-maintained environment
+        # whitelist: production overrides set in .env (RUNTIME_MODE,
+        # UNSUBSCRIBE_SECRET, REQUIRE_CHALLENGE, ...) must reach the container.
+        content = self._read_compose()
+        self.assertIn("env_file", content)
+
+    def test_worker_secrets_are_profile_gated(self):
+        # The worker's Docker secrets files are deliberately untracked; a plain
+        # `docker compose up -d` must not require them to exist.
+        content = self._read_compose()
+        self.assertIn('profiles: ["anchoring"]', content)
 
     def test_require_admin_token_defaults_to_true(self):
         content = self._read_compose()

@@ -1,10 +1,22 @@
 # GrantLayer full-stack compose (FastAPI + PostgreSQL + Redis + Nginx/TLS)
+# Requires Docker Compose v2.24+ (uses the long env_file syntax).
 #
 # Quick start (PostgreSQL + Redis default):
-#   1. cp .env.example .env && edit .env   # set GRANTLAYER_JWT_SECRET and passwords
+#   1. cp .env.example .env       # local-eval defaults work as-is
 #   2. ./nginx/generate-certs.sh
-#   3. docker compose up -d
-#   4. curl -k https://localhost/health
+#   3. docker compose up -d db
+#      docker compose run --rm api python3 -m alembic -c backend/alembic.ini upgrade head
+#   4. docker compose up -d
+#   5. curl -k https://localhost/health
+#
+# Defaults target LOCAL EVALUATION (GRANTLAYER_RUNTIME_MODE=local). For a
+# production-like deployment set GRANTLAYER_RUNTIME_MODE=production in .env
+# and complete the hardening checklist in DEPLOYMENT.md — every variable set
+# in .env is forwarded into the containers via env_file.
+#
+# The Cardano anchoring worker is optional and profile-gated; the default
+# stack starts without it and without any secrets files:
+#   docker compose --profile anchoring up -d    # see secrets/README.md first
 #
 # Local SQLite-only development (no PostgreSQL, no Redis):
 #   docker compose -f docker-compose.dev.yml up -d
@@ -18,9 +30,18 @@ services:
     container_name: grantlayer-api
     ports:
       - "8765:8765"
+    # Every variable set in .env reaches the container — no whitelist to fall
+    # out of sync with backend/src/core/config.py. The explicit environment
+    # entries below take precedence and wire in-network service defaults.
+    env_file:
+      - path: ./.env
+        required: false
     environment:
       # Override with .env file for local development
-      - GRANTLAYER_RUNTIME_MODE=${GRANTLAYER_RUNTIME_MODE:-production}
+      # local = evaluation quickstart (auto-generated plaintext dev signing
+      # key allowed). Set production in .env for the production gates
+      # (strong admin token, Redis, unsubscribe secret — see DEPLOYMENT.md).
+      - GRANTLAYER_RUNTIME_MODE=${GRANTLAYER_RUNTIME_MODE:-local}
       - GRANTLAYER_HOST=0.0.0.0
       - GRANTLAYER_PORT=8765
       - GRANTLAYER_ADMIN_TOKEN=${GRANTLAYER_ADMIN_TOKEN:-}
@@ -55,17 +76,25 @@ services:
 
   # ── ARQ worker (background jobs + daily Cardano anchor cron) ──
   # Same image/env as `api`, but runs the ARQ worker instead of the HTTP server.
-  # The anchor cron self-gates at entry (fail-closed), so it stays dormant unless
-  # GRANTLAYER_ENABLE_CARDANO_ANCHORING=true AND the two secrets below are set.
+  # PROFILE-GATED: not started by a plain `docker compose up`. Enable with
+  #   docker compose --profile anchoring up -d
+  # after creating the two secrets files described in secrets/README.md
+  # (Docker refuses to start the service while they are missing). The anchor
+  # cron additionally self-gates at entry (fail-closed), so it stays dormant
+  # unless GRANTLAYER_ENABLE_CARDANO_ANCHORING=true AND both secrets are set.
   worker:
+    profiles: ["anchoring"]
     build:
       context: .
       dockerfile: backend/Dockerfile
     container_name: grantlayer-worker
     command: ["arq", "backend.src.workers.worker.WorkerSettings"]
+    env_file:
+      - path: ./.env
+        required: false
     environment:
       # Cloned from the api service so DB/Redis/JWT resolution is identical.
-      - GRANTLAYER_RUNTIME_MODE=${GRANTLAYER_RUNTIME_MODE:-production}
+      - GRANTLAYER_RUNTIME_MODE=${GRANTLAYER_RUNTIME_MODE:-local}
       - GRANTLAYER_HOST=0.0.0.0
       - GRANTLAYER_PORT=8765
       - GRANTLAYER_ADMIN_TOKEN=${GRANTLAYER_ADMIN_TOKEN:-}
@@ -192,7 +221,9 @@ volumes:
 
 # Docker secrets mounted at /run/secrets/<NAME>; resolved by the SecretResolver
 # file source (Vault > /run/secrets file > env). Empty files = fail-closed skip.
-# See secrets/README.md. Replace the placeholder files with real values to anchor.
+# Only referenced by the profile-gated `worker` service — the default stack
+# starts without these files existing. Create them (see secrets/README.md)
+# before running `docker compose --profile anchoring up -d`.
 secrets:
   GRANTLAYER_BLOCKFROST_PROJECT_ID:
     file: ./secrets/blockfrost_project_id
