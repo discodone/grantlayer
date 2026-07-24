@@ -133,10 +133,17 @@ class TestDockerComposePostgresDefault(unittest.TestCase):
         self.assertIn("postgresql://", content)
 
     def test_db_service_has_no_profiles(self):
-        """PostgreSQL db service should start without a profile."""
+        """PostgreSQL db service should start without a profile.
+
+        The optional Cardano anchoring worker is the only service that may be
+        profile-gated (its Docker secrets files are deliberately untracked, so
+        a plain `docker compose up -d` must not require them).
+        """
         content = self._read_compose()
-        # The profiles: [postgres] line should be gone
-        self.assertNotIn("profiles:", content)
+        profile_lines = [
+            line.strip() for line in content.splitlines() if "profiles:" in line
+        ]
+        self.assertEqual(profile_lines, ['profiles: ["anchoring"]'])
 
     def test_api_depends_on_db(self):
         """API service should declare a dependency on the db service."""

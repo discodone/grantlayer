@@ -49,7 +49,7 @@ All settings are read from environment variables at startup. There are no config
 
 | Variable | Default | Description |
 |---|---|---|
-| `GRANTLAYER_RUNTIME_MODE` | `local` | Runtime mode. Must be `production` or `staging` for prod. Accepted: `local`, `test`, `demo`, `staging`, `production`. |
+| `GRANTLAYER_RUNTIME_MODE` | `production` when unset; `docker-compose.yml` defaults to `local` | Runtime mode. Must be `production` or `staging` for prod. Accepted: `local`, `test`, `demo`, `staging`, `production` (`development` is not valid). |
 | `GRANTLAYER_HOST` | `127.0.0.1` | Bind address for the Uvicorn server. Set to `0.0.0.0` inside Docker. |
 | `GRANTLAYER_PORT` | `8765` | TCP port the API listens on. |
 | `GRANTLAYER_LOG_LEVEL` | `INFO` | Log verbosity. Accepted: `DEBUG`, `INFO`, `WARNING`, `ERROR`. |
@@ -132,6 +132,7 @@ All settings are read from environment variables at startup. There are no config
 | `GRANTLAYER_ENABLE_DEMO_ENDPOINTS` | `false` | Expose demo-only tamper endpoints. Must be `false` in production. |
 | `GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS` | `false` | Required acknowledgement when demo endpoints are enabled on a non-loopback host. |
 | `GRANTLAYER_REQUIRE_CHALLENGE` | `false` | Require a `challengeId` on `POST /demo-action`. Must be `true` in production-like modes. |
+| `GRANTLAYER_UNSUBSCRIBE_SECRET` | `change-me-unsub` | HMAC secret protecting signed unsubscribe tokens. Must be a strong unique value in production-like modes. Generate: `python3 -c "import secrets; print(secrets.token_hex(32))"` |
 
 ---
 
@@ -144,6 +145,10 @@ Copy and fill in all required secrets:
 ```bash
 cp .env.example .env   # if available, otherwise create manually
 ```
+
+Every variable set in `.env` is forwarded into the `api` and `worker`
+containers via `env_file` — no compose edit is needed for additional
+configuration variables.
 
 Minimum `.env` for production:
 
@@ -161,6 +166,13 @@ GRANTLAYER_DATABASE_URL=postgresql://grantlayer:<strong-random-password>@db:5432
 GRANTLAYER_ADMIN_TOKEN=<strong-random-token>
 GRANTLAYER_REQUIRE_ADMIN_TOKEN=true
 GRANTLAYER_REQUIRE_CHALLENGE=true
+
+# Unsubscribe token secret — generate: python3 -c "import secrets; print(secrets.token_hex(32))"
+GRANTLAYER_UNSUBSCRIBE_SECRET=<strong-random-secret>
+
+# Redis (mandatory in production-like modes; the compose stack wires
+# redis://redis:6379 automatically — set explicitly for bare-metal)
+# GRANTLAYER_REDIS_URL=redis://redis:6379
 
 # Operator model
 GRANTLAYER_ENABLE_OPERATOR_MODEL=true

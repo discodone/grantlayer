@@ -6,7 +6,7 @@ Get GrantLayer running locally in under 5 minutes.
 
 ## Prerequisites
 
-- Docker + Docker Compose v2
+- Docker + Docker Compose v2.24+
 - `curl` and `openssl` (for cert generation and API calls)
 - Python 3.10+ (optional, for token generation outside Docker)
 
@@ -78,6 +78,11 @@ Services started:
 |---------|-----|
 | API (via Nginx HTTPS) | https://localhost |
 | API (direct, no TLS) | http://localhost:8765 |
+
+> The stack runs in `GRANTLAYER_RUNTIME_MODE=local` (evaluation defaults) unless
+> you set `production` in `.env`. The Cardano anchoring worker is optional and
+> profile-gated: `docker compose --profile anchoring up -d` — create the secrets
+> files described in `secrets/README.md` first. The default stack needs neither.
 
 Check the stack is healthy:
 
@@ -198,12 +203,23 @@ curl -k -s -X POST https://localhost/v1/grant-requests \
   }' | python3 -m json.tool
 ```
 
-Response includes an `id` you can use to approve or deny:
+Response includes an `id` you can use to approve or deny.
+
+**Approvals need a second operator.** An operator cannot approve their own
+request — approving with the same `$TOKEN` that created it returns
+`403 self_approval_forbidden` by design. Mint a token for a *different*
+operator id and approve with that:
 
 ```bash
+# Second operator token (note operator_id "approver", not "dev"):
+export APPROVER_TOKEN=$(curl -s -X POST http://localhost:8765/v1/auth/token \
+  -H "Content-Type: application/json" \
+  -d "{\"operator_id\": \"approver\", \"secret\": \"$(grep GRANTLAYER_ADMIN_TOKEN .env | cut -d= -f2-)\"}" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+
 # Approve the request (replace <id> with the id from the response above):
 curl -k -s -X POST https://localhost/v1/grant-requests/<id>/approve \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer $APPROVER_TOKEN" | python3 -m json.tool
 ```
 
 ---
@@ -283,6 +299,11 @@ docker compose logs api
 Common causes:
 - RS256 key pair not set: `GRANTLAYER_JWT_PRIVATE_KEY` / `GRANTLAYER_JWT_PUBLIC_KEY` missing from `.env`
 - Legacy HS256 mode: `GRANTLAYER_JWT_SECRET` is empty (if using `GRANTLAYER_JWT_ALGORITHM=HS256`)
+- `GRANTLAYER_RUNTIME_MODE=production` set without the production configuration it
+  enforces (strong admin token, Redis, `GRANTLAYER_UNSUBSCRIBE_SECRET`, challenge
+  enforcement) — the startup gate lists each missing item in `docker compose logs api`.
+  See the hardening checklist in DEPLOYMENT.md, or stay on the `local` default for evaluation.
+  Valid mode values: `local`, `demo`, `test`, `staging`, `production`.
 
 ### Port 80/443 already in use
 Change the port mapping in `docker-compose.yml`:

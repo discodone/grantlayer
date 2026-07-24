@@ -37,7 +37,7 @@ Get the stack running in under 5 minutes:
 ```bash
 git clone https://github.com/Discodone/grantlayer.git
 cd grantlayer
-cp .env.example .env          # set GRANTLAYER_JWT_SECRET
+cp .env.example .env          # local-eval defaults boot as-is (JWT keys for API calls: QUICKSTART.md step 1)
 ./nginx/generate-certs.sh     # self-signed TLS for local dev
 
 # Provision the schema with Alembic. PostgreSQL is the default backend and the
@@ -50,6 +50,8 @@ curl -k https://localhost/health
 ```
 
 See [QUICKSTART.md](QUICKSTART.md) for the full walkthrough: token generation, creating grants, grant requests, and audit log export.
+
+The stack defaults to `GRANTLAYER_RUNTIME_MODE=local` for evaluation; set `production` in `.env` to enable the hardened production gates (see [DEPLOYMENT.md](DEPLOYMENT.md)). The Cardano anchoring worker is optional and starts only with `docker compose --profile anchoring up -d` after creating the secrets files described in `secrets/README.md` — the default stack requires neither.
 
 See [CHANGELOG.md](CHANGELOG.md) for public snapshot version anchors and caveats.
 
@@ -97,6 +99,7 @@ GrantLayer is a Python/FastAPI backend served behind an Nginx TLS reverse proxy.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `GRANTLAYER_RUNTIME_MODE` | `local` (Docker Compose) / `production` (when unset) | Runtime mode. Valid values: `local`, `demo`, `test`, `staging`, `production` |
 | `GRANTLAYER_JWT_SECRET` | *(unset)* | Shared secret enabling legacy HS256 JWTs; without it the default is RS256 via `GRANTLAYER_JWT_PRIVATE_KEY`/`GRANTLAYER_JWT_PUBLIC_KEY` (base64-encoded PEM) |
 | `GRANTLAYER_ENABLE_OPERATOR_MODEL` | `true` | Enable the grant request / approval workflow |
 | `GRANTLAYER_ENABLE_DEMO_ENDPOINTS` | `false` | Enable demo tamper endpoints (never in production) |
@@ -104,7 +107,7 @@ GrantLayer is a Python/FastAPI backend served behind an Nginx TLS reverse proxy.
 | `GRANTLAYER_HOST` | `0.0.0.0` | Bind address |
 | `GRANTLAYER_PORT` | `8765` | HTTP port (inside container) |
 
-Copy `.env.example` to `.env` and set at minimum `GRANTLAYER_JWT_SECRET`.
+Copy `.env.example` to `.env` — the local-evaluation defaults boot as-is. Calling the API requires JWT material: follow QUICKSTART.md step 1 (RS256 keys) or set legacy `GRANTLAYER_JWT_ALGORITHM=HS256` plus `GRANTLAYER_JWT_SECRET`. Every variable set in `.env` is forwarded into the containers.
 
 ---
 
@@ -113,11 +116,14 @@ Copy `.env.example` to `.env` and set at minimum `GRANTLAYER_JWT_SECRET`.
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+export GRANTLAYER_RUNTIME_MODE=local
 export GRANTLAYER_JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(32))")
 python3 -m backend
 ```
 
 This starts the same FastAPI/uvicorn server as `docker compose up`. Backend starts at `http://127.0.0.1:8765`.
+
+`GRANTLAYER_RUNTIME_MODE=local` selects local-evaluation mode (SQLite auto-provisioning, relaxed gates). Valid values are `local`, `demo`, `test`, `staging`, `production`; when the variable is unset the server defaults to `production`, which deliberately refuses to start without Redis, a strong admin token, and the other hardening settings listed in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 Equivalent direct invocation:
 
