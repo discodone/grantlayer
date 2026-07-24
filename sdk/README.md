@@ -5,7 +5,7 @@ Python client library for the [GrantLayer](https://github.com/discodone/grantlay
 ## Installation
 
 ```bash
-pip install grantlayer-sdk
+pip install grantlayer
 ```
 
 Or from source:
