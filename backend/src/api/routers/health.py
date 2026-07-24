@@ -15,7 +15,7 @@ from ..schemas import DynamicResponse, ReadinessResponse
 
 router = APIRouter(tags=["health"])
 
-_VERSION = "0.4.0"
+_VERSION = "0.19.0"
 
 _ALEMBIC_INI = os.path.normpath(
     os.path.join(os.path.dirname(__file__), "..", "..", "..", "alembic.ini")
