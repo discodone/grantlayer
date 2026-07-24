@@ -595,11 +595,17 @@ class TestDemoActionEndpoint(_GL229TestBase):
         data = resp.json()
         self.assertIn("approved", data)
 
-    def test_demo_action_missing_subject_id_422(self):
+    def test_demo_action_missing_subject_id_400(self):
+        # Since the subject-binding hardening, subjectId is schema-optional
+        # (an API-key caller may omit it and exercise as the key's bound
+        # subject); for every other caller its absence is refused by the
+        # endpoint itself: 400 invalid_field, not a 422 schema error.
         body = dict(self.BODY)
         del body["subjectId"]
         resp = self.client.post("/v1/exercise", json=body)
-        self.assertEqual(resp.status_code, 422)
+        self.assertEqual(resp.status_code, 400, resp.text)
+        detail = resp.json().get("detail") or {}
+        self.assertEqual(detail.get("errorCode"), "invalid_field", resp.text)
 
     def test_demo_action_missing_role_422(self):
         body = dict(self.BODY)

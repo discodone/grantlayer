@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -56,6 +56,13 @@ class ApiKeyCreateRequest(BaseModel):
     scopes: list[str] = ["read_write"]
     expires_at: Optional[str] = None
     workspace_id: Optional[str] = None
+    # Optional subject identity binding: the ONLY subject this key may
+    # exercise as on /v1/exercise. Unbound keys are refused on that path.
+    subject_id: Optional[str] = Field(
+        default=None, alias="subjectId", min_length=1, max_length=128
+    )
+
+    model_config = {"populate_by_name": True}
 
 
 @router.post("", status_code=201, response_model=dict[str, Any])
@@ -124,7 +131,8 @@ async def create_api_key(
     await db.execute(
         text(
             "INSERT INTO api_keys (id, workspace_id, user_id, key_hash, name, scopes, "
-            "expires_at, created_at) VALUES (:id, :ws, :uid, :kh, :name, :scopes, :exp, :now)"
+            "expires_at, created_at, subject_id) "
+            "VALUES (:id, :ws, :uid, :kh, :name, :scopes, :exp, :now, :subj)"
         ),
         {
             "id": key_id,
@@ -135,6 +143,7 @@ async def create_api_key(
             "scopes": json.dumps(body.scopes),
             "exp": body.expires_at,
             "now": now,
+            "subj": body.subject_id,
         },
     )
     audit_evt = AuditEvent(
@@ -161,6 +170,7 @@ async def create_api_key(
         "name": body.name,
         "scopes": body.scopes,
         "workspaceId": workspace_id,
+        "subjectId": body.subject_id,
         "expiresAt": body.expires_at,
         "createdAt": now,
     }
@@ -287,7 +297,7 @@ def resolve_api_key_sync(raw_key: str) -> Optional[dict[str, Any]]:
             result = conn.execute(
                 _text(
                     "SELECT ak.id, ak.workspace_id, ak.user_id, ak.scopes, "
-                    "ak.expires_at, ak.revoked_at, "
+                    "ak.expires_at, ak.revoked_at, ak.subject_id, "
                     "COALESCE(w.tenant_id, ak.workspace_id) AS tenant_id "
                     "FROM api_keys ak "
                     "LEFT JOIN workspaces w ON w.id = ak.workspace_id "
@@ -322,6 +332,8 @@ def resolve_api_key_sync(raw_key: str) -> Optional[dict[str, Any]]:
             "scopes": scopes,
             "auth_method": "api_key",
             "role": "api_key",
+            # Subject binding (None = unbound; exercise path refuses unbound).
+            "subject_id": row["subject_id"],
         }
     except Exception:
         return None
@@ -338,8 +350,8 @@ async def resolve_api_key_auth(
     key_hash = _hash_key(raw_key)
     result = await db.execute(
         text(
-            "SELECT id, workspace_id, user_id, scopes, expires_at, revoked_at "
-            "FROM api_keys WHERE key_hash=:kh"
+            "SELECT id, workspace_id, user_id, scopes, expires_at, revoked_at, "
+            "subject_id FROM api_keys WHERE key_hash=:kh"
         ),
         {"kh": key_hash},
     )
@@ -368,4 +380,6 @@ async def resolve_api_key_auth(
         "api_key_id": row["id"],
         "scopes": scopes,
         "auth_method": "api_key",
+        # Subject binding (None = unbound; exercise path refuses unbound).
+        "subject_id": row["subject_id"],
     }
