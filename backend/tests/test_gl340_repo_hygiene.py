@@ -321,3 +321,49 @@ class TestGitignoreCoverage(unittest.TestCase):
         """.gitignore must exclude the =0.19.0 pip-redirect artifact."""
         gi = (REPO_ROOT / ".gitignore").read_text()
         self.assertIn("=0.19.0", gi)
+
+
+class TestVersionDeclarationConsistency(unittest.TestCase):
+    """GL-394 — user-visible backend version declarations must agree.
+
+    ``/health``'s ``_VERSION`` is the anchor (it matches the CHANGELOG's
+    authoritative 0.x line). The FastAPI/OpenAPI metadata in ``app.py`` and the
+    hand-maintained ``docs/openapi.yaml`` contract are user-visible surfaces of
+    the same backend and must declare the same version, so the three cannot
+    drift apart again (gl-391 bumped ``/health`` to 0.19.0 but left ``app.py``
+    at 0.1.0 and ``docs/openapi.yaml`` at 0.203b.0-developer-preview).
+    """
+
+    def _health_version(self) -> str:
+        src = (REPO_ROOT / "backend" / "src" / "api" / "routers" / "health.py").read_text()
+        m = re.search(r'^_VERSION\s*=\s*"([^"]+)"', src, re.M)
+        assert m is not None, "health.py must declare _VERSION"
+        return m.group(1)
+
+    def test_app_metadata_version_matches_health(self):
+        """FastAPI(version=...) in app.py must equal health._VERSION."""
+        src = (REPO_ROOT / "backend" / "src" / "api" / "app.py").read_text()
+        found = re.findall(r'version="([^"]+)"', src)
+        self.assertEqual(
+            len(found), 1,
+            "expected exactly one version=\"...\" declaration in app.py",
+        )
+        self.assertEqual(
+            found[0], self._health_version(),
+            "app.py FastAPI metadata version must match health._VERSION — "
+            "these are two user-visible declarations of the same backend",
+        )
+
+    def test_openapi_contract_version_matches_health(self):
+        """docs/openapi.yaml info.version must equal health._VERSION."""
+        # Regex on the info block instead of a yaml parse: pyyaml is not
+        # installed in every CI job (see test_gl230 ignore note).
+        text = (REPO_ROOT / "docs" / "openapi.yaml").read_text()
+        info_block = text.split("\npaths:")[0]
+        m = re.search(r'^  version:\s*"([^"]+)"', info_block, re.M)
+        self.assertIsNotNone(m, "docs/openapi.yaml must declare info.version")
+        self.assertEqual(
+            m.group(1), self._health_version(),
+            "docs/openapi.yaml info.version must match health._VERSION — the "
+            "contract file is hand-maintained and drifts silently otherwise",
+        )
