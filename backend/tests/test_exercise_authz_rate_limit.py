@@ -113,8 +113,13 @@ class TestReadOnlyKeyBlockedBeforeDecision(_Base):
                          "a scope-refused call must not record a decision")
 
     def test_read_write_key_still_reaches_the_decision_path(self):
+        # Since the subject-binding hardening, an API key reaches the decision
+        # path only as ITS bound subject — so the key is minted bound to the
+        # tuple's subject (an unbound key is a 403 api_key_subject_unbound
+        # BEFORE the decision path; see test_gl393_exercise_subject_binding).
         r = self.client.post("/v1/api-keys",
-                             json={"name": "rw", "scopes": ["read_write"]},
+                             json={"name": "rw", "scopes": ["read_write"],
+                                   "subjectId": _TUPLE["subjectId"]},
                              headers=self._jwt())
         self.assertEqual(r.status_code, 201, r.text)
         raw_key = r.json()["key"]
@@ -124,7 +129,7 @@ class TestReadOnlyKeyBlockedBeforeDecision(_Base):
         self.assertEqual(resp.status_code, 403, resp.text)
         self.assertFalse(resp.json().get("approved", True))
         self.assertEqual(self._count_executions(), 1,
-                         "a write-scoped key exercises the decision path unchanged")
+                         "a write-scoped bound key exercises the decision path")
 
 
 @_SKIP

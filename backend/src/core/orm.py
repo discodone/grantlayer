@@ -346,6 +346,10 @@ class ApiKey(Base):
     last_used_at = Column(Text)
     created_at = Column(Text, nullable=False)
     revoked_at = Column(Text)
+    # Subject identity binding (additive, nullable): the ONLY subject this key
+    # may exercise as on /v1/exercise. NULL = unbound; unbound keys are refused
+    # on the exercise path (fail-closed) — they cannot assert subjects at all.
+    subject_id = Column(Text)
 
     __table_args__ = (
         Index("idx_api_keys_workspace_id", "workspace_id"),
