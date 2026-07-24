@@ -367,3 +367,19 @@ class TestVersionDeclarationConsistency(unittest.TestCase):
             "docs/openapi.yaml info.version must match health._VERSION — the "
             "contract file is hand-maintained and drifts silently otherwise",
         )
+
+    def test_root_pyproject_version_matches_health(self):
+        """Root pyproject.toml [project].version must equal health._VERSION.
+
+        The CHANGELOG pins the 0.x line as authoritative and calls the v1.x
+        artifacts historical; the root package (never published — the PyPI
+        'grantlayer' dist builds from sdk/, which versions independently)
+        must not keep a contradicting 1.x declaration alive.
+        """
+        with (REPO_ROOT / "pyproject.toml").open("rb") as fh:
+            data = tomllib.load(fh)
+        self.assertEqual(
+            data["project"]["version"], self._health_version(),
+            "root pyproject.toml version must match health._VERSION — the "
+            "CHANGELOG's 0.x scheme is authoritative repo-wide",
+        )
