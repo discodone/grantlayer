@@ -4,7 +4,7 @@ build-backend = "setuptools.backends.legacy:build"
 
 [project]
 name = "grantlayer"
-version = "1.0.0"
+version = "0.19.0"
 description = "Secure AI Agent Grant Management — API-first, multi-tenant"
 readme = "README.md"
 requires-python = ">=3.11"
