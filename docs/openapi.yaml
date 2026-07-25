@@ -260,7 +260,10 @@ paths:
   /v1/grants/{id}/revoke:
     post:
       summary: Revoke grant
-      description: Revoke an active grant.
+      description: |
+        Revoke an active grant. The revoking identity (`revokedBy`) is derived
+        server-side from the authenticated caller and cannot be supplied by
+        the client. The optional `reason` defaults to "revoked via API".
       operationId: revokeGrant
       parameters:
         - name: id
@@ -271,14 +274,12 @@ paths:
         - LegacyAdminToken: []
         - OperatorToken: []
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
               type: object
-              required: [revokedBy, reason]
               properties:
-                revokedBy: { type: string }
                 reason: { type: string }
       responses:
         "200":
