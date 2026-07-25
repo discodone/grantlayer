@@ -28,6 +28,8 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: grantlayer-api
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
     ports:
       - "8765:8765"
     # Every variable set in .env reaches the container — no whitelist to fall
@@ -88,6 +90,8 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: grantlayer-worker
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
     command: ["arq", "backend.src.workers.worker.WorkerSettings"]
     env_file:
       - path: ./.env
@@ -136,6 +140,8 @@ services:
   nginx:
     image: nginx:1.27-alpine
     container_name: grantlayer-nginx
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
     ports:
       - "80:80"
       - "443:443"
@@ -158,8 +164,17 @@ services:
   # Always starts with docker compose up.
   # To use SQLite instead, set GRANTLAYER_DATABASE_URL="" in your .env.
   db:
-    image: postgres:16-alpine
+    # Pinned by digest to the exact image the live container already runs
+    # (postgres:16-alpine as resolved on 2026-07-25). A floating tag let the
+    # live container drift onto an orphaned image once the tag moved upstream;
+    # the digest removes that surprise-bump surface. Bump deliberately in a
+    # maintenance window (fresh dump first), never via an ambient tag move.
+    image: postgres@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb
     container_name: grantlayer-postgres
+    labels:
+      # Belt-and-braces: watchtower is MONITOR_ONLY today (notify, cannot
+      # recreate), but this makes it skip this container entirely regardless.
+      - "com.centurylinklabs.watchtower.enable=false"
     environment:
       - POSTGRES_USER=${GRANTLAYER_POSTGRES_USER:-grantlayer}
       - POSTGRES_PASSWORD=${GRANTLAYER_POSTGRES_PASSWORD:-changeme_in_env}
@@ -182,6 +197,8 @@ services:
   redis:
     image: redis:7-alpine
     container_name: grantlayer-redis
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -197,6 +214,8 @@ services:
   opa:
     image: openpolicyagent/opa:latest
     container_name: grantlayer-opa
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
     command:
       - run
       - --server
