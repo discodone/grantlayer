@@ -18,6 +18,11 @@ on:
   schedule:
     - cron: '0 3 * * *'   # daily 03:00 UTC
   workflow_dispatch:
+  # TEMPORARY (gl-403 proof run only — REVERT before merge): the CI PAT lacks
+  # actions:write, so workflow_dispatch cannot be triggered from this box; a
+  # branch-scoped push trigger is the only way to run this workflow's jobs.
+  push:
+    branches: [gl-403-nightly-quoting]
 
 env:
   GRANTLAYER_RUNTIME_MODE: test
