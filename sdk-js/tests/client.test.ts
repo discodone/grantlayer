@@ -126,6 +126,24 @@ describe('Grants', () => {
     expect(url).toBe('http://localhost:8000/v1/grants/g1/revoke');
     expect((opts as RequestInit).method).toBe('POST');
   });
+
+  it('revokeGrant sends only {reason} — revokedBy is server-derived', async () => {
+    // Contract pin (gl-402): the backend derives revokedBy from the
+    // authenticated identity; a client-sent revokedBy is never read.
+    mockFetch.mockResolvedValueOnce(mockResponse(200, { id: 'g1', revoked: true }));
+    await client.revokeGrant('g1', 'no longer needed');
+    const [, opts] = mockFetch.mock.calls[0];
+    const body = JSON.parse((opts as RequestInit).body as string);
+    expect(body).toEqual({ reason: 'no longer needed' });
+    expect(Object.keys(body)).not.toContain('revokedBy');
+  });
+
+  it('revokeGrant without reason sends an empty JSON object', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(200, { id: 'g1', revoked: true }));
+    await client.revokeGrant('g1');
+    const [, opts] = mockFetch.mock.calls[0];
+    expect(JSON.parse((opts as RequestInit).body as string)).toEqual({});
+  });
 });
 
 describe('API Keys', () => {
