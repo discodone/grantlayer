@@ -22,9 +22,17 @@ on:
 env:
   GRANTLAYER_RUNTIME_MODE: test
   GRANTLAYER_ALLOW_PLAINTEXT_PRIVATE_KEY_FILE: "true"
+  # The marker expression lives in its OWN variable and is referenced QUOTED
+  # ("$PYTEST_MARK") in the run steps. It must never be folded into
+  # PYTEST_ARGS: an env var expanded unquoted is word-split by the shell
+  # WITHOUT re-parsing embedded quote characters, so `-m "not doc_guard ..."`
+  # inside PYTEST_ARGS handed pytest the literal tokens `"not`, `doc_guard`,
+  # `and`, ... — "file or directory not found: doc_guard", exit 4, on every
+  # scheduled run. Every token remaining in PYTEST_ARGS is space-free, so its
+  # unquoted word-splitting is exactly the intended argument split.
+  PYTEST_MARK: not doc_guard and not performance
   PYTEST_ARGS: >-
     backend/tests/
-    -m "not doc_guard and not performance"
     --ignore=backend/tests/test_gl112_audit_log_duplication_cleanup.py
     --ignore=backend/tests/test_gl139_audit_hash_chain_write_lock.py
     --ignore=backend/tests/test_gl141_operator_model_default.py
@@ -56,7 +64,7 @@ jobs:
           for i in 1 2 3; do
             echo "::group::parallel run ${i}/3"
             start=$(date +%s)
-            if python3 -m pytest ${PYTEST_ARGS} -n auto; then
+            if python3 -m pytest ${PYTEST_ARGS} -m "$PYTEST_MARK" -n auto; then
               result=GREEN
             else
               result=RED
@@ -90,6 +98,6 @@ jobs:
       - name: Run the suite once single-process
         run: |
           start=$(date +%s)
-          python3 -m pytest ${PYTEST_ARGS}
+          python3 -m pytest ${PYTEST_ARGS} -m "$PYTEST_MARK"
           end=$(date +%s)
           echo "=== single-process control: GREEN in $((end - start))s ==="
