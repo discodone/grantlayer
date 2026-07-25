@@ -427,3 +427,10 @@ from the code, then decided explicitly rather than resolved silently.
    mistakes the manifest signature for a public-trust mechanism.
    **Decision: requiring the env var (fail-closed) in production-like modes
    is a named follow-up item.**
+   **Follow-up landed 2026-07-25 (gl-401):** production-like modes now refuse
+   at BOTH gates when `GRANTLAYER_AUDIT_HMAC_KEY` is unset — the startup gate
+   (`config.startup_errors()`) and the signer itself (`_get_hmac_key()`
+   raises rather than fall back to the public default constant). local/test
+   keep the fallback. Deployment prerequisite: set the env var before
+   restarting a production instance. The manifest HMAC remains an
+   insider-only check — anchor verification still neither needs nor uses it.

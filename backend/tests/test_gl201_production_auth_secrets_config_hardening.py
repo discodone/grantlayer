@@ -122,6 +122,7 @@ class _BaseGl201(unittest.TestCase):
         "GRANTLAYER_CORS_ALLOWED_ORIGINS",
         "GRANTLAYER_REDIS_URL",
         "GRANTLAYER_UNSUBSCRIBE_SECRET",
+        "GRANTLAYER_AUDIT_HMAC_KEY",
     ]
 
     def setUp(self):
@@ -148,6 +149,7 @@ class _BaseGl201(unittest.TestCase):
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
         os.environ["GRANTLAYER_REDIS_URL"] = "redis://localhost:6379"
         os.environ["GRANTLAYER_UNSUBSCRIBE_SECRET"] = "strong-unsubscribe-secret-for-tests-xyz"
+        os.environ["GRANTLAYER_AUDIT_HMAC_KEY"] = "strong-audit-hmac-key-for-tests-xyz"
 
     def _run_handler(
         self,

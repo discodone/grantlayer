@@ -133,6 +133,7 @@ All settings are read from environment variables at startup. There are no config
 | `GRANTLAYER_ALLOW_PUBLIC_DEMO_ENDPOINTS` | `false` | Required acknowledgement when demo endpoints are enabled on a non-loopback host. |
 | `GRANTLAYER_REQUIRE_CHALLENGE` | `false` | Require a `challengeId` on `POST /demo-action`. Must be `true` in production-like modes. |
 | `GRANTLAYER_UNSUBSCRIBE_SECRET` | `change-me-unsub` | HMAC secret protecting signed unsubscribe tokens. Must be a strong unique value in production-like modes. Generate: `python3 -c "import secrets; print(secrets.token_hex(32))"` |
+| `GRANTLAYER_AUDIT_HMAC_KEY` | _(built-in default, local/test only)_ | HMAC key signing the audit-export manifest footer (insider integrity check). Mandatory in production-like modes — startup refuses without it and the signer fails closed. Generate: `python3 -c "import secrets; print(secrets.token_hex(32))"` |
 
 ---
 
@@ -169,6 +170,10 @@ GRANTLAYER_REQUIRE_CHALLENGE=true
 
 # Unsubscribe token secret — generate: python3 -c "import secrets; print(secrets.token_hex(32))"
 GRANTLAYER_UNSUBSCRIBE_SECRET=<strong-random-secret>
+
+# Audit-export manifest HMAC key (mandatory in production-like modes) —
+# generate: python3 -c "import secrets; print(secrets.token_hex(32))"
+GRANTLAYER_AUDIT_HMAC_KEY=<strong-random-secret>
 
 # Redis (mandatory in production-like modes; the compose stack wires
 # redis://redis:6379 automatically — set explicitly for bare-metal)

@@ -300,7 +300,8 @@ Common causes:
 - RS256 key pair not set: `GRANTLAYER_JWT_PRIVATE_KEY` / `GRANTLAYER_JWT_PUBLIC_KEY` missing from `.env`
 - Legacy HS256 mode: `GRANTLAYER_JWT_SECRET` is empty (if using `GRANTLAYER_JWT_ALGORITHM=HS256`)
 - `GRANTLAYER_RUNTIME_MODE=production` set without the production configuration it
-  enforces (strong admin token, Redis, `GRANTLAYER_UNSUBSCRIBE_SECRET`, challenge
+  enforces (strong admin token, Redis, `GRANTLAYER_UNSUBSCRIBE_SECRET`,
+  `GRANTLAYER_AUDIT_HMAC_KEY`, challenge
   enforcement) — the startup gate lists each missing item in `docker compose logs api`.
   See the hardening checklist in DEPLOYMENT.md, or stay on the `local` default for evaluation.
   Valid mode values: `local`, `demo`, `test`, `staging`, `production`.

@@ -178,6 +178,7 @@ SQLITE_ONLY_MODULES: frozenset[str] = frozenset(
         "test_gl349_admin_plane_cross_tenant_enumeration",
         "test_gl386_token_hash_iterations_floor",
         "test_gl393_exercise_subject_binding",
+        "test_gl401_audit_hmac_fail_closed",
         "test_grant_executions",
         "test_grant_requests",
         "test_grant_usage_limits",
