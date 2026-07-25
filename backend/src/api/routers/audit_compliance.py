@@ -8,9 +8,9 @@ import json
 import os
 from typing import Annotated, Any, Optional
 
-from fastapi import APIRouter, Header, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from sqlalchemy import select
+from sqlalchemy import nullslast, select
 
 from ...audit.audit_log import _row_to_audit_event, list_events
 from ...core.orm import AuditEvent as _AuditEventORM
@@ -97,7 +97,16 @@ def _sign_manifest(all_hashes: list[str]) -> str:
 async def export_audit_log(
     start_date: Optional[str] = Query(default=None, description="ISO date filter start"),
     end_date: Optional[str] = Query(default=None, description="ISO date filter end"),
-    limit: int = Query(default=10000, ge=1, le=100000),
+    limit: Optional[int] = Query(default=None, ge=1, le=100000),
+    order: str = Query(
+        default="default",
+        pattern="^(default|anchor)$",
+        description=(
+            "'default': timestamp DESC, limit-capped (unchanged legacy order). "
+            "'anchor': FULL chain, seq ASC — the anchored order; its fold head "
+            "is comparable against on-chain anchors."
+        ),
+    ),
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ) -> StreamingResponse:
@@ -110,8 +119,40 @@ async def export_audit_log(
     tenant_id = ws_ctx["tenant_id"]
     workspace_id = ws_ctx["workspace_id"]
 
+    if order == "anchor":
+        # Anchor mode IS the full-chain determinism contract: a windowed
+        # "anchor" export would fold a head that matches no anchor. Reject
+        # rather than silently mislead.
+        if start_date is not None or end_date is not None or limit is not None:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Window parameters not allowed in anchor mode",
+                    "errorCode": "anchor_order_no_window",
+                    "reason": (
+                        "order=anchor always exports the FULL workspace chain "
+                        "in seq ASC order; limit/start_date/end_date would "
+                        "produce a head that verifies against no anchor."
+                    ),
+                },
+            )
+        from ...core.db import get_session
+
+        session = get_session()
+        try:
+            payload = _build_anchor_export(session, workspace_id)
+        finally:
+            session.close()
+        return StreamingResponse(
+            iter([payload]),
+            media_type="application/x-ndjson",
+            headers={
+                "Content-Disposition": 'attachment; filename="audit-export-anchor.ndjson"'
+            },
+        )
+
     raw_events = list_events(
-        limit=limit,
+        limit=limit if limit is not None else 10000,
         offset=0,
         tenant_id=tenant_id,
         workspace_id=workspace_id,
@@ -262,7 +303,10 @@ def _load_workspace_entries(session: Any, workspace_id: str) -> list[dict]:
         session.execute(
             select(_AuditEventORM)
             .where(_AuditEventORM.workspace_id == workspace_id)
-            .order_by(_AuditEventORM.seq.asc(), _AuditEventORM.id.asc())
+            # Explicit NULLS LAST: SQLite sorts NULL first in ASC, PostgreSQL
+            # last — without it the two backends fold DIFFERENT chains for the
+            # same data when pre-seq-migration rows exist (spec §11.3).
+            .order_by(nullslast(_AuditEventORM.seq.asc()), _AuditEventORM.id.asc())
         )
         .scalars()
         .all()

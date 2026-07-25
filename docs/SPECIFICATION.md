@@ -81,8 +81,12 @@ underscore-prefixed chain metadata the exporter adds.
   (`audit_log.py:394-421`, key constant at `audit_log.py:27`); SQLite uses a
   process-local `RLock` (`audit_log.py:20-23`).
 - **The anchored total order is `seq` ascending** with `id` ascending as a
-  formal tiebreak: `_load_workspace_entries` orders
-  `ORDER BY seq ASC, id ASC` (`backend/src/api/routers/audit_compliance.py:265`).
+  formal tiebreak, NULL `seq` explicitly LAST: `_load_workspace_entries` orders
+  `ORDER BY seq ASC NULLS LAST, id ASC`
+  (`backend/src/api/routers/audit_compliance.py:309`). The `NULLS LAST` is
+  normative, not cosmetic: SQLite sorts NULL first in ASC while PostgreSQL
+  sorts it last, so without it the two backends would fold *different chains*
+  for the same data whenever pre-seq-migration rows exist (§11.3).
   Because a workspace's chain is a *filtered view* of the global table, the
   `seq` values inside one workspace's export are increasing but **not
   contiguous** (the real epoch-1 export starts at `seq: 3`).
@@ -186,7 +190,7 @@ head (h) = entry_hash_N  ;  entry count (s) = N
 The previous hash is concatenated as its **64-char lowercase hex string**,
 not as raw bytes. Each exported data line additionally carries
 `_chain_hash` (its own entry hash) and `_prev_hash` (the running value before
-it) — `audit_compliance.py:133` — which let a verifier name the exact broken
+it) — `audit_compliance.py:174` — which let a verifier name the exact broken
 line rather than only detecting "head differs" (`verify-anchor.py:144-162`).
 
 ### 5.3 Export file format (NDJSON)
@@ -196,7 +200,7 @@ One JSON object per line (`ensure_ascii=True`):
 - N **data lines**: the entry dict plus `_chain_hash`/`_prev_hash`.
 - 1 **manifest footer**: `{"_type": "manifest", "_entry_count": N,
   "_final_hash": <head>, "_hmac_signature": <hex>}` —
-  `audit_compliance.py:319-325`. Data after the footer is a verification
+  `audit_compliance.py:363-369`. Data after the footer is a verification
   error (`verify-anchor.py:130-132`).
 - `_hmac_signature` = HMAC-SHA-256 over the newline-joined list of all entry
   hashes (`audit_compliance.py:90-93`), keyed by GrantLayer's private audit
@@ -208,7 +212,7 @@ One JSON object per line (`ensure_ascii=True`):
 ## 6. Fold, head derivation, and fold parity
 
 The anchored head for a workspace is `anchor_head(session, workspace_id)`
-(`audit_compliance.py:329-331`) = `recompute_head_from_records(...)`
+(`audit_compliance.py:373-375`) = `recompute_head_from_records(...)`
 (`audit_compliance.py:74-87`) over `_load_workspace_entries` (§3 ordering):
 **full chain, no date filter, no limit, seq ASC**.
 
@@ -222,7 +226,8 @@ byte-identical by the golden vectors (§9): a drift in either direction fails
 its test.
 
 ⚠️ Parity is about the *per-entry canonical and fold algorithm* — **not** the
-input ordering of the public `/export` endpoint. See open question §11.2.
+input ordering of the public `/export` endpoint's DEFAULT mode; the
+`?order=anchor` mode serves the anchored ordering directly. See §11.2.
 
 ---
 
@@ -387,7 +392,7 @@ from the code, then decided explicitly rather than resolved silently.
    so a future `v` can be added without breaking conforming verifiers.
 2. **Public `/export` order vs anchored order.** The public export endpoint
    feeds the fold a `timestamp DESC, seq DESC`, limit-capped list
-   (`audit_log.py:479`, `audit_compliance.py:113-118`), while the anchored
+   (`audit_log.py:479`, `audit_compliance.py:154-159`), while the anchored
    head uses the full chain in `seq ASC` order (§3). A default `/export`
    download is internally consistent (its own `_chain_hash` lines verify) but
    its head will **not** equal any anchor. Verifying against an anchor
@@ -395,11 +400,23 @@ from the code, then decided explicitly rather than resolved silently.
    **Decision: the default order stays unchanged and this spec documents it
    honestly; an explicit `?order=anchor` export mode (seq ASC, full chain) is
    a named follow-up item.**
+   **Follow-up landed 2026-07-25 (gl-400):** `GET /v1/audit/export?order=anchor`
+   returns the FULL workspace chain in the anchored order, byte-identical to
+   `_build_anchor_export` (the endpoint delegates to it — one authoritative
+   ordering, no reimplementation), so its manifest `_final_hash` is directly
+   comparable against on-chain anchors. Window parameters
+   (`limit`/`start_date`/`end_date`) are rejected with 400
+   (`anchor_order_no_window`) — a windowed "anchor" export would fold a head
+   that verifies against no anchor. The default order remains byte-identical
+   to before (pinned by `test_gl400_order_anchor_export.py`).
 3. **NULL-`seq` rows in the anchored order.** `ORDER BY seq ASC, id ASC`
    relies on the database's NULL-ordering for pre-migration rows (PostgreSQL
    sorts NULL last in ASC). No live workspace chain contains NULL-seq rows
    today. **Decision: make the NULL ordering explicit (`NULLS LAST`) the next
    time that query is touched; no standalone change.**
+   **Done 2026-07-25 (gl-400):** the query now says `NULLS LAST` explicitly
+   (§3); pinned by `test_gl400_order_anchor_export.py` (SQLite would
+   otherwise sort NULL first and fold a different chain than PostgreSQL).
 4. **Timestamp shape is unnormalized.** Both `…Z` and `…+00:00` ISO suffixes
    occur in stored events; the canonicals hash the string as-is.
    **Decision: permanent** — timestamps are opaque strings; no tooling may
