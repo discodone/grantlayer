@@ -13,6 +13,44 @@
 - python3 -m mypy backend/src/ → 0 errors
 - ruff check backend/src/ → 0 errors
 
+## Merge gate fast path (tree-hash rule, added 2026-07-25)
+Rationale: the gate exists to ensure every tree reaching main was validated by
+the full suite — not to run it twice on the same tree.
+
+When merging a branch whose branch CI is fully green, compare tree hashes:
+`git rev-parse <merge-commit>^{tree}` vs `git rev-parse <branch-head>^{tree}`.
+- **IDENTICAL** (main did not move since branching — the common case): the
+  local pre-push gate is `ruff check backend/src/` + `python3 -m mypy
+  backend/src/` + the audit/migration subset below (~40s, measured 141
+  passed / 0 failures on 2026-07-25). The full suite is NOT re-run locally:
+  branch CI already validated this exact tree, and main CI validates it again
+  remotely after push.
+- **DIFFERENT** (main moved; the merge created a tree no CI has seen): run
+  the full local suite before push, as before.
+
+Audit/migration subset (explicit files — do NOT substitute a `-k` expression;
+broad `-k` slices were measured both slower (3m21) and isolation-fragile
+(4 fixture-order false failures)):
+```
+python3 -m pytest -q -m "not doc_guard" \
+  backend/tests/test_fold_golden_vectors.py \
+  backend/tests/test_anchor_public_fold_parity.py \
+  backend/tests/test_verifier_fold_parity.py \
+  backend/tests/test_gl103_audit_hash_chain.py \
+  backend/tests/test_gl104_audit_chain_verification_helper.py \
+  backend/tests/test_gl105_audit_chain_verification_report.py \
+  backend/tests/test_migration_parity.py \
+  backend/tests/test_migration_runner_alembic_guard.py \
+  backend/tests/test_migration_runner_postgres_guard.py \
+  backend/tests/test_gl348_migration_chain_fresh_db.py \
+  backend/tests/test_gl340_repo_hygiene.py
+```
+
+Everything else is unchanged: the pre-push hook is never bypassed, the
+three-SHA match (local/origin/github) is still required, main CI must FINISH
+green after every merge push, and site/ changes still get live verification
+against grantlayer.de.
+
 ## Coverage (actual, re-measured 2026-06-19)
 - **91% repo-wide** (9,348 statements / 795 missed), measured via `pytest backend/tests/ --cov=backend.src`.
 - The full doc_guard-inclusive suite reports the same 91% — doc_guard tests add no material coverage.
