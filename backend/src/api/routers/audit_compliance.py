@@ -23,7 +23,26 @@ _DEFAULT_HMAC_KEY = "grantlayer-audit-hmac-default-key"
 
 
 def _get_hmac_key() -> bytes:
-    return os.environ.get(_HMAC_KEY_ENV, _DEFAULT_HMAC_KEY).encode()
+    """Manifest HMAC key. Fail-closed in production-like modes (Decision 5,
+    spec §11.5): the default key is a PUBLIC constant (it ships in the repo),
+    so a manifest it signs authenticates nothing — refuse rather than sign.
+    local/test keep the fallback. The startup gate (config.startup_errors)
+    refuses to boot in the same situation; this signer-side check holds even
+    if a caller bypasses startup. Mode is read at call time so a RUNTIME_MODE
+    reconciliation without a config reload cannot leave a stale verdict.
+    """
+    key = os.environ.get(_HMAC_KEY_ENV)
+    if key:
+        return key.encode()
+    from ...core import config
+
+    if config.RUNTIME_MODE in config.PRODUCTION_LIKE_MODES:
+        raise RuntimeError(
+            f"{_HMAC_KEY_ENV} is not set; refusing to sign the audit export "
+            "manifest with the built-in default key in a production-like "
+            "runtime mode."
+        )
+    return _DEFAULT_HMAC_KEY.encode()
 
 
 def _entry_canonical(entry: dict[str, Any]) -> str:

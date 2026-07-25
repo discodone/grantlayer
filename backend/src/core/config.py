@@ -485,6 +485,21 @@ def startup_errors() -> list[str]:
             "Set GRANTLAYER_REDIS_URL to a valid Redis connection URL."
         )
 
+    # The audit-export manifest HMAC key must be explicit in production-like
+    # modes: the signer's built-in fallback key is a public constant, so a
+    # manifest it signs authenticates nothing. The signer itself also fails
+    # closed (audit_compliance._get_hmac_key raises); this startup error
+    # surfaces the misconfiguration before the first export request does.
+    if RUNTIME_MODE in PRODUCTION_LIKE_MODES and not os.environ.get(
+        "GRANTLAYER_AUDIT_HMAC_KEY"
+    ):
+        errs.append(
+            "ERROR: GRANTLAYER_AUDIT_HMAC_KEY is not set. "
+            "The audit export manifest HMAC key must be explicitly configured "
+            "in production-like modes; the built-in default key is a public "
+            "constant and must never sign a production manifest."
+        )
+
     # Unsubscribe secret must not be the default placeholder in production-like modes.
     if RUNTIME_MODE in PRODUCTION_LIKE_MODES:
         if (

@@ -35,6 +35,7 @@ class _BaseGl089(unittest.TestCase):
         self._orig_runtime_mode = os.environ.get("GRANTLAYER_RUNTIME_MODE")
         self._orig_redis_url = os.environ.get("GRANTLAYER_REDIS_URL")
         self._orig_unsubscribe_secret = os.environ.get("GRANTLAYER_UNSUBSCRIBE_SECRET")
+        self._orig_audit_hmac_key = os.environ.get("GRANTLAYER_AUDIT_HMAC_KEY")
 
         import backend.src.core.db as db_mod
         importlib.reload(db_mod)
@@ -62,6 +63,7 @@ class _BaseGl089(unittest.TestCase):
             ("GRANTLAYER_RUNTIME_MODE", self._orig_runtime_mode),
             ("GRANTLAYER_REDIS_URL", self._orig_redis_url),
             ("GRANTLAYER_UNSUBSCRIBE_SECRET", self._orig_unsubscribe_secret),
+            ("GRANTLAYER_AUDIT_HMAC_KEY", self._orig_audit_hmac_key),
         ]:
             if orig is None:
                 os.environ.pop(key, None)
@@ -151,6 +153,7 @@ class TestGl089StartupOkAndErrors(_BaseGl089):
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
         os.environ["GRANTLAYER_REDIS_URL"] = "redis://localhost:6379"
         os.environ["GRANTLAYER_UNSUBSCRIBE_SECRET"] = "strong-unsub-secret-for-test-xyz"
+        os.environ["GRANTLAYER_AUDIT_HMAC_KEY"] = "strong-audit-hmac-key-for-test-xyz"
         self._reload_config()
         self.assertTrue(self.config_mod.startup_ok())
         self.assertEqual(self.config_mod.startup_errors(), [])
@@ -276,6 +279,7 @@ class TestGl089StartupGate(_BaseGl089):
         os.environ["GRANTLAYER_ENABLE_DEMO_ENDPOINTS"] = "false"
         os.environ["GRANTLAYER_REDIS_URL"] = "redis://localhost:6379"
         os.environ["GRANTLAYER_UNSUBSCRIBE_SECRET"] = "strong-unsub-secret-for-test-xyz"
+        os.environ["GRANTLAYER_AUDIT_HMAC_KEY"] = "strong-audit-hmac-key-for-test-xyz"
         self._reload_config()
         self.assertTrue(self.config_mod.startup_ok())
         self.assertEqual(self.config_mod.startup_errors(), [])
