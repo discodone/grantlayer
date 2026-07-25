@@ -244,6 +244,11 @@ input ordering of the public `/export` endpoint. See open question §11.2.
 - **Cardano metadata label: `923350`** (`anchoring/models.py:19`; integer key
   on-chain, string key `"923350"` in Koios JSON responses —
   `verify-anchor.py:61`).
+- **Extra-key tolerance (decided 2026-07-25):** verifiers MUST read only
+  `h`, `s`, `t` and tolerate unknown additional keys in the payload map — the
+  reference implementation already behaves this way (`verify-anchor.py:230-232`
+  reads the three keys and ignores the rest). A future format revision may add
+  keys (e.g. a version marker `v`) without breaking conforming verifiers.
 - Embedding: a metadata-only mainnet transaction; the payload map is placed
   under the label via PyCardano
   `AlonzoMetadata(metadata=Metadata({923350: payload.to_dict()}))`
@@ -368,32 +373,40 @@ anchoring, not a defect.
 
 ---
 
-## 11. Open spec questions (flagged, deliberately not resolved here)
+## 11. Spec questions and their resolutions (decided 2026-07-25)
+
+Each item below was flagged as an implicit rule while this spec was derived
+from the code, then decided explicitly rather than resolved silently.
 
 1. **No fold/format version identifier.** The on-chain payload is exactly
    `{h, s, t}` and the export has no version marker. Any future change to the
    canonical form or fold would be breaking with no in-band signal; today the
    only compatibility mechanism is the forward-only-when-null allow-list
-   (§4.1). Whether to add a version field (on-chain `v`, or an export header)
-   is deferred — Anton's call.
+   (§4.1). **Decision: deferred** — no `v` field until the first actual
+   format change; instead, extra-key tolerance is declared normatively in §7,
+   so a future `v` can be added without breaking conforming verifiers.
 2. **Public `/export` order vs anchored order.** The public export endpoint
    feeds the fold a `timestamp DESC, seq DESC`, limit-capped list
    (`audit_log.py:479`, `audit_compliance.py:113-118`), while the anchored
    head uses the full chain in `seq ASC` order (§3). A default `/export`
    download is internally consistent (its own `_chain_hash` lines verify) but
    its head will **not** equal any anchor. Verifying against an anchor
-   requires an anchor-ordered full export (`_build_anchor_export`). Should
-   `/export` be aligned to `seq ASC` (or grow an `?order=anchor` mode)?
+   requires an anchor-ordered full export (`_build_anchor_export`).
+   **Decision: the default order stays unchanged and this spec documents it
+   honestly; an explicit `?order=anchor` export mode (seq ASC, full chain) is
+   a named follow-up item.**
 3. **NULL-`seq` rows in the anchored order.** `ORDER BY seq ASC, id ASC`
    relies on the database's NULL-ordering for pre-migration rows (PostgreSQL
    sorts NULL last in ASC). No live workspace chain contains NULL-seq rows
-   today, so the rule is untested in production data — worth making explicit
-   if an old deployment is ever migrated.
+   today. **Decision: make the NULL ordering explicit (`NULLS LAST`) the next
+   time that query is touched; no standalone change.**
 4. **Timestamp shape is unnormalized.** Both `…Z` and `…+00:00` ISO suffixes
-   occur in stored events; the canonicals hash the string as-is. Fine for
-   verification (strings are opaque), but any future "re-serialize then
-   verify" tooling must not normalize timestamps.
+   occur in stored events; the canonicals hash the string as-is.
+   **Decision: permanent** — timestamps are opaque strings; no tooling may
+   ever normalize them (normalization would break every existing anchor).
 5. **HMAC manifest default key.** The manifest signer falls back to a default
    key when the env var is unset (`audit_compliance.py:25-26`). Irrelevant to
-   anchor verification (the HMAC is insider-only), but the spec notes it so
-   nobody mistakes the manifest signature for a public-trust mechanism.
+   anchor verification (the HMAC is insider-only), but noted so nobody
+   mistakes the manifest signature for a public-trust mechanism.
+   **Decision: requiring the env var (fail-closed) in production-like modes
+   is a named follow-up item.**
