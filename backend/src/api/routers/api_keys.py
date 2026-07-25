@@ -21,6 +21,7 @@ from ..auth_jwt import validate_jwt_header
 from ..deps import (
     assert_admin_tenant_scope,
     async_resolve_auth_and_workspace,
+    require_mutation_authz,
     resolve_witness_identity,
 )
 
@@ -109,6 +110,64 @@ async def create_api_key(
             },
         )
 
+    # SECURITY (C-1): an API-KEY caller minting a key is constrained exactly like
+    # the exercise path (subject binding held at exercise; this closes the same
+    # class at creation). It may not act unbound, escalate scope, or bind a
+    # foreign subject. JWT/OIDC admin callers are unchanged — the operator
+    # provisioning path (e.g. the backup-agent key) keeps naming any subjectId
+    # and is gated for admin scope by the role check below.
+    effective_subject: Optional[str] = body.subject_id
+    if ws_ctx.get("resolution_mode") == "api_key":
+        # Same shared mutation gate every sibling mutating route uses
+        # (write-scope + OPA), identical to /v1/exercise: a read_only caller
+        # gets 403 insufficient_scope, an OPA deny gets 403 policy_denied.
+        await require_mutation_authz(payload, ws_ctx)
+        # Subject binding mirrors /v1/exercise: an API key acts as ITS bound
+        # subject, never a caller-asserted one.
+        caller_subject = payload.get("subject_id")
+        if not caller_subject:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "api_key_subject_unbound",
+                    "errorCode": "api_key_subject_unbound",
+                    "reason": (
+                        "This API key has no subject binding and cannot create "
+                        "keys. Re-issue it with a subjectId binding first."
+                    ),
+                },
+            )
+        # A created key's subject is derived from the caller's binding; a
+        # different body subjectId is refused (mirrors the exercise-side 400).
+        if body.subject_id is not None and body.subject_id != caller_subject:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "subject_id mismatch",
+                    "errorCode": "subject_id_mismatch",
+                    "reason": (
+                        "The created key's subject is derived from your API "
+                        "key's binding; a different body subjectId is refused. "
+                        "Omit subjectId or send the bound value."
+                    ),
+                },
+            )
+        # No scope escalation: the created key's scopes must be a subset of the
+        # caller's own scopes.
+        if not set(body.scopes) <= set(payload.get("scopes") or []):
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "Forbidden",
+                    "errorCode": "insufficient_scope",
+                    "reason": (
+                        "An API key may not create a key with scopes beyond its "
+                        "own; requested scopes must be a subset of the caller's."
+                    ),
+                },
+            )
+        effective_subject = caller_subject
+
     # SECURITY: scope is gated by the caller's role. A non-admin must not be able to
     # mint an admin-scoped key (privilege escalation to a key more powerful than itself).
     if "admin" in body.scopes and payload.get("role") not in _ADMIN_ROLES:
@@ -143,7 +202,7 @@ async def create_api_key(
             "scopes": json.dumps(body.scopes),
             "exp": body.expires_at,
             "now": now,
-            "subj": body.subject_id,
+            "subj": effective_subject,
         },
     )
     audit_evt = AuditEvent(
@@ -170,7 +229,7 @@ async def create_api_key(
         "name": body.name,
         "scopes": body.scopes,
         "workspaceId": workspace_id,
-        "subjectId": body.subject_id,
+        "subjectId": effective_subject,
         "expiresAt": body.expires_at,
         "createdAt": now,
     }

@@ -42,7 +42,6 @@ _SCOPE_GATE_JUSTIFICATION: dict[str, str] = {
     "/v1/auth/token": "credential exchange; no API key; per-IP rate-limited (test_gl251).",
     "/v1/admin/operators": "admin bearer; tenant-scoped + enumerated in test_gl349.",
     "/v1/admin/operators/{operator_id}/revoke": "admin bearer; tenant-scoped + enumerated in test_gl349.",
-    "/v1/api-keys": "API-key mgmt via JWT; create role-gated + workspace-bound (test_gl344/test_gl349).",
     "/v1/api-keys/{key_id}": "API-key mgmt via JWT; revoke tenant-scoped (test_gl349).",
     "/v1/demo-action": "307 alias to /v1/exercise (rename back-compat); pure redirect, no handler logic.",
     "/v1/challenges": "challenge protocol; auth + workspace resolved (test_gl345 wired-list).",
@@ -90,6 +89,10 @@ _ROUTE_BODY: dict[str, dict] = {
     "/v1/grant-requests/bulk-reject": {"requestIds": ["r-gl342-001"]},
     "/v1/grant-requests/{request_id}/deny": {"reason": "GL-342 test denial"},
     "/v1/webhooks": {"url": "https://gl342.example.com/hook", "events": ["grant.created"]},
+    # POST /v1/api-keys is now scope-gated for API-key callers (no longer exempt).
+    # Body scopes are a subset of the probe key's, so a read_write key reaches the
+    # handler (201) while a read_only key is refused at the scope gate.
+    "/v1/api-keys": {"name": "gl342-probe", "scopes": ["read_only"]},
 }
 
 
