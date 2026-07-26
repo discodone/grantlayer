@@ -29,6 +29,12 @@ router = APIRouter(prefix="/api-keys", tags=["api-keys"])
 
 _KEY_PREFIX = "gl_live_"
 _VALID_SCOPES = {"read_only", "read_write", "admin"}
+# Privilege ladder for scope comparison. A caller may mint a key at or below its
+# own rank (a read_write key may issue a lower-privilege read_only key), but never
+# above it. Unknown scopes are ranked to fail closed: an unknown REQUESTED scope
+# outranks every caller (refused), an unknown CALLER scope confers no privilege.
+_SCOPE_RANK = {"read_only": 0, "read_write": 1, "admin": 2}
+_UNKNOWN_REQUEST_RANK = max(_SCOPE_RANK.values()) + 1
 # Roles permitted to mint an ``admin``-scoped API key. A non-admin caller must not be
 # able to escalate by issuing itself an admin key.
 _ADMIN_ROLES = {"admin", "grant_admin", "owner"}
@@ -152,17 +158,26 @@ async def create_api_key(
                     ),
                 },
             )
-        # No scope escalation: the created key's scopes must be a subset of the
-        # caller's own scopes.
-        if not set(body.scopes) <= set(payload.get("scopes") or []):
+        # No scope escalation: the created key's highest privilege must not exceed
+        # the caller's. Compared by rank, not set membership, so a read_write
+        # caller may still issue a lower-privilege read_only key.
+        caller_rank = max(
+            (_SCOPE_RANK.get(s, -1) for s in (payload.get("scopes") or [])),
+            default=-1,
+        )
+        requested_rank = max(
+            (_SCOPE_RANK.get(s, _UNKNOWN_REQUEST_RANK) for s in body.scopes),
+            default=-1,
+        )
+        if requested_rank > caller_rank:
             raise HTTPException(
                 status_code=403,
                 detail={
                     "error": "Forbidden",
                     "errorCode": "insufficient_scope",
                     "reason": (
-                        "An API key may not create a key with scopes beyond its "
-                        "own; requested scopes must be a subset of the caller's."
+                        "An API key may not create a key more privileged than "
+                        "itself; requested scopes must not exceed the caller's."
                     ),
                 },
             )

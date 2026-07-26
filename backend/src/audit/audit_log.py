@@ -124,8 +124,20 @@ def _row_to_audit_event(row: dict) -> AuditEvent:
 # ──────────────────────────────────────────────────────────────
 
 def _fetch_all_audit_events_ordered() -> list[dict]:
-    """Fetch all audit events in deterministic insertion order."""
-    return query_all("SELECT * FROM audit_events ORDER BY timestamp ASC, seq ASC")
+    """Fetch all audit events in deterministic insertion (seq) order.
+
+    Ordered by seq ASC — the SAME total order the anchor export folds
+    (_load_workspace_entries uses nullslast(seq.asc()), id.asc()). timestamp is
+    assigned before the write lock and seq under it, so parallel writes can
+    invert timestamp vs seq; ordering the verify read by timestamp would then
+    walk the chain out of the order it was actually linked and flag an honest
+    chain as tampered. ``seq IS NULL`` sorts last portably (SQLite sorts NULL
+    first in ASC, PostgreSQL last), matching the export's explicit NULLS LAST;
+    id ASC is the final stable tiebreak.
+    """
+    return query_all(
+        "SELECT * FROM audit_events ORDER BY (seq IS NULL), seq ASC, id ASC"
+    )
 
 
 def _filter_chain_rows(rows: list[dict]) -> list[dict]:
