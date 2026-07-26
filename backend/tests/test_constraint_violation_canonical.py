@@ -61,9 +61,13 @@ class TestConstraintsCanonical(unittest.TestCase):
     def test_known_constraints_is_the_closed_set(self):
         from backend.src.policy.constraints import KNOWN_CONSTRAINTS
 
-        self.assertEqual(set(KNOWN_CONSTRAINTS), {"max_fee_lovelace"},
-                         "this slice defines exactly one constraint type; "
-                         "extend deliberately, never implicitly")
+        self.assertEqual(
+            set(KNOWN_CONSTRAINTS),
+            {"max_fee_lovelace", "max_wallet_balance_lovelace"},
+            "the closed constraint vocabulary; extend deliberately (update "
+            "this pin in the same change that registers a type), never "
+            "implicitly",
+        )
 
 
 if __name__ == "__main__":

@@ -44,6 +44,11 @@ class DemoActionRequest(BaseModel):
     attempted_fee_lovelace: Optional[int] = Field(
         default=None, alias="attemptedFeeLovelace", ge=0
     )
+    # Declared wallet balance for balance-constrained grants — same
+    # declared-attempt contract as attemptedFeeLovelace.
+    wallet_balance_lovelace: Optional[int] = Field(
+        default=None, alias="walletBalanceLovelace", ge=0
+    )
 
     model_config = {"populate_by_name": True}
 
@@ -171,6 +176,7 @@ async def exercise_endpoint(
         tenant_id=tenant_id,
         workspace_id=ws_ctx["workspace_id"],
         attempted_fee_lovelace=body.attempted_fee_lovelace,
+        wallet_balance_lovelace=body.wallet_balance_lovelace,
     )
     # Validate against the typed contract; exclude_unset preserves the exact
     # per-path field set (e.g. no `message` on denials).

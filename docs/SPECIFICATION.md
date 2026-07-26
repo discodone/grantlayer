@@ -348,8 +348,10 @@ chains → expected heads, seeded from `"0"*64`. It covers the tricky cases:
 all-null optionals, populated `reason_code`, **empty-string** `reason_code`
 (kept, not omitted), a mixed null/non-null chain, a present-but-null
 `constraint_violation` (byte-identical to the all-null vector — the
-forward-only rule), a populated `constraint_violation` (the violation JSON
-string enters the canonical escaped), and a mixed constraint-violation chain.
+forward-only rule), populated `constraint_violation` values for both known
+constraint types (max_fee_lovelace and max_wallet_balance_lovelace — the
+violation JSON string enters the canonical escaped), and a mixed
+constraint-violation chain.
 
 Both existing implementations are tested against it from independent entry
 points (`backend/tests/test_fold_golden_vectors.py`: one class imports the

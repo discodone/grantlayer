@@ -1,7 +1,8 @@
 """Typed grant constraints — the narrow, signed limit vocabulary.
 
 Deliberately NOT a policy language: constraints are a closed set of fixed
-numeric fields (this slice: max_fee_lovelace only). No expressions, no DSL —
+numeric fields (max_fee_lovelace, max_wallet_balance_lovelace). No
+expressions, no DSL —
 the dependency-free chain verifier never needs to understand them, and typed
 numbers cannot carry PII into the signed payload or the witnessed chain.
 
@@ -24,12 +25,53 @@ UNDECLARED attempt denies — compliance is proven, never assumed.
 from __future__ import annotations
 
 import json
-from typing import Optional
+from typing import Callable, NamedTuple, Optional
+
+
+class _ConstraintSpec(NamedTuple):
+    """Everything the fail-closed check needs to enforce one constraint type.
+
+    The wording is part of the spec: reason strings flow into witnessed audit
+    events, so each type pins its exact messages here rather than deriving
+    them — adding a type never rewords an existing one."""
+
+    declared_field: str            # the camelCase request field carrying the attempt
+    violated_code: str             # stable machine code for a limit violation
+    undeclared_reason: str
+    violated_reason: Callable[[int, int], str]  # (limit, attempted) -> reason
+
 
 # Closed set of constraint types this build understands. An unknown key in a
 # grant's constraints — possible only through version skew or tampering, since
 # creation rejects unknown keys with 422 — must deny, never be skipped.
-KNOWN_CONSTRAINTS = frozenset({"max_fee_lovelace"})
+_CONSTRAINT_SPECS: dict[str, _ConstraintSpec] = {
+    "max_fee_lovelace": _ConstraintSpec(
+        declared_field="attemptedFeeLovelace",
+        violated_code="constraint_violated_max_fee",
+        undeclared_reason=(
+            "grant is fee-constrained; the request must declare "
+            "attemptedFeeLovelace"
+        ),
+        violated_reason=lambda limit, attempted: (
+            f"attempted fee {attempted} lovelace exceeds the "
+            f"signed limit {limit} lovelace"
+        ),
+    ),
+    "max_wallet_balance_lovelace": _ConstraintSpec(
+        declared_field="walletBalanceLovelace",
+        violated_code="constraint_violated_max_wallet_balance",
+        undeclared_reason=(
+            "grant is balance-constrained; the request must declare "
+            "walletBalanceLovelace"
+        ),
+        violated_reason=lambda limit, attempted: (
+            f"declared wallet balance {attempted} lovelace exceeds the "
+            f"signed limit {limit} lovelace"
+        ),
+    ),
+}
+
+KNOWN_CONSTRAINTS = frozenset(_CONSTRAINT_SPECS)
 
 
 def canonical_constraints(constraints: dict) -> str:
@@ -75,6 +117,7 @@ class ConstraintDenial:
 def check_constraints(
     constraints_text: Optional[str],
     attempted_fee_lovelace: Optional[int],
+    wallet_balance_lovelace: Optional[int] = None,
 ) -> Optional[ConstraintDenial]:
     """Evaluate a grant's stored constraints against the declared attempt.
 
@@ -104,28 +147,33 @@ def check_constraints(
             + ", ".join(sorted(unknown)),
         )
 
-    limit = constraints["max_fee_lovelace"]
-    if not _valid_limit(limit):
-        return ConstraintDenial(
-            "constraint_invalid",
-            "max_fee_lovelace must be a non-negative integer",
-        )
+    # Per-constraint ladder, alphabetical key order for a deterministic first
+    # denial when several constraints fail. Each key runs the same fail-closed
+    # sequence: malformed limit -> undeclared attempt -> limit comparison.
+    declared = {
+        "max_fee_lovelace": attempted_fee_lovelace,
+        "max_wallet_balance_lovelace": wallet_balance_lovelace,
+    }
+    for key in sorted(constraints):
+        spec = _CONSTRAINT_SPECS[key]
+        limit = constraints[key]
+        if not _valid_limit(limit):
+            return ConstraintDenial(
+                "constraint_invalid",
+                f"{key} must be a non-negative integer",
+            )
 
-    if attempted_fee_lovelace is None:
-        return ConstraintDenial(
-            "constraint_attempt_undeclared",
-            "grant is fee-constrained; the request must declare "
-            "attemptedFeeLovelace",
-        )
+        attempted = declared.get(key)
+        if attempted is None:
+            return ConstraintDenial(
+                "constraint_attempt_undeclared", spec.undeclared_reason
+            )
 
-    if attempted_fee_lovelace > limit:
-        return ConstraintDenial(
-            "constraint_violated_max_fee",
-            f"attempted fee {attempted_fee_lovelace} lovelace exceeds the "
-            f"signed limit {limit} lovelace",
-            violation=canonical_violation(
-                "max_fee_lovelace", limit, attempted_fee_lovelace
-            ),
-        )
+        if attempted > limit:
+            return ConstraintDenial(
+                spec.violated_code,
+                spec.violated_reason(limit, attempted),
+                violation=canonical_violation(key, limit, attempted),
+            )
 
     return None

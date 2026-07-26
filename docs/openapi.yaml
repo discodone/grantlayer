@@ -197,11 +197,13 @@ paths:
                   nullable: true
                   description: |
                     Typed numeric constraint object, signed into the grant.
-                    Known keys: max_fee_lovelace (non-negative integer).
-                    Unknown keys or malformed values are refused with
+                    Known keys: max_fee_lovelace, max_wallet_balance_lovelace
+                    (non-negative integers); a grant may carry both. Unknown
+                    keys or malformed values are refused with
                     422 invalid_constraints. Omit for an unconstrained grant.
                   properties:
                     max_fee_lovelace: { type: integer, minimum: 0 }
+                    max_wallet_balance_lovelace: { type: integer, minimum: 0 }
       responses:
         "201":
           description: Grant created
@@ -1862,6 +1864,18 @@ paths:
                     constraint_violated_max_fee when the declaration exceeds
                     the signed limit (the violation is witnessed on the audit
                     chain as {"type","limit","attempted"}).
+                walletBalanceLovelace:
+                  type: integer
+                  nullable: true
+                  minimum: 0
+                  description: |
+                    Declared wallet balance in lovelace for
+                    balance-constrained grants — same declared-attempt
+                    contract as attemptedFeeLovelace: omitted against a
+                    balance-constrained grant denies fail-closed
+                    (constraint_attempt_undeclared); a declaration above the
+                    signed limit denies constraint_violated_max_wallet_balance
+                    with the witnessed {"type","limit","attempted"} canonical.
       responses:
         "200":
           description: Exercise allowed (decision recorded)
