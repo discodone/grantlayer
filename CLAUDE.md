@@ -65,6 +65,23 @@ against grantlayer.de.
 - test_gl203b_openapi_api_contract_cleanup.py
 - test_gl230_docker_jwt_quickstart.py (missing pyyaml in PostgreSQL CI job)
 
+## Known Limitations (documented, deliberately not fixed yet)
+- **Append-side chain fork under multi-writer (latent, cannot trigger today).**
+  `_get_latest_row_hash` (backend/src/audit/audit_log.py) selects the previous
+  chain tip with `ORDER BY timestamp DESC, seq DESC LIMIT 1`. Timestamps are
+  assigned before the write lock and seq under it, so under MULTI-WRITER
+  parallelism a compounding 3+ event timestamp/seq inversion could make two
+  appends pick different tips and fork the stored row_hash chain. This is
+  SINGLE-WRITER-SAFE: the live deployment is one API process and appends run
+  under the audit write lock (pg_advisory_xact_lock / RLock), so the condition
+  cannot occur today. Address IF/WHEN multi-writer becomes real — fix
+  direction: select the append tip by the same seq-ASC total order the verify
+  side already uses (`_fetch_all_audit_events_ordered`:
+  `ORDER BY (seq IS NULL), seq ASC, id ASC`), i.e. tip = max seq, not max
+  timestamp. Do not change the ordering silently: the stored prev-tip choice
+  feeds row_hash bytes, so any change must be proven append-equivalent under
+  the single-writer regime before it lands.
+
 ## Architecture
 - Repository Pattern: backend/src/core/repositories.py + repositories_sqlalchemy.py
 - Service Layer: grant_service.py, grant_request_service.py, operator_service.py
