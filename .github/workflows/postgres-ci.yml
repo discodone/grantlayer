@@ -29,6 +29,9 @@ jobs:
       - name: Type check (mypy)
         run: python3 -m mypy backend/src/
 
+      - name: Spec citation doc-guard (docs/SPECIFICATION.md ↔ code)
+        run: python3 -m pytest backend/tests/test_spec_citation_guard.py -q --tb=short
+
       - name: Run functional tests with coverage (SQLite, excludes doc-guard/scope-guard)
         env:
           GRANTLAYER_RUNTIME_MODE: test
