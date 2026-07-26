@@ -28,6 +28,22 @@ router = APIRouter(tags=["demo"])
 tamper_router = APIRouter(tags=["demo"])
 
 
+def _workspace_rate_limit_override(workspace_id: str) -> Optional[int]:
+    """Per-workspace operational limit for the exercise bucket (the
+    tiered-rate-limiting rate_limit_override column, settable via
+    PATCH /v1/workspaces/{id}/plan). None when unset or when no workspace
+    row exists (legacy/demo contexts) — the env floor applies then."""
+    from ...core.db import get_session_maker
+    from ...core.orm import Workspace
+
+    with get_session_maker()() as session:
+        ws = session.get(Workspace, workspace_id)
+        if ws is None:
+            return None
+        override: Optional[int] = ws.rate_limit_override
+        return override
+
+
 class DemoActionRequest(BaseModel):
     # Optional so an API-key caller may omit it and exercise as the key's
     # bound subject; non-API-key callers must still supply it (enforced in
@@ -176,11 +192,18 @@ async def exercise_endpoint(
     # to the in-process window (fail-open) exactly like every other bucket.
     limiter = getattr(request.app.state, "auth_rate_limiter", None)
     if limiter is not None:
+        # Limit resolution mirrors limit_for_tier precedence: the workspace's
+        # rate_limit_override wins when set, else the env floor.
+        override = _workspace_rate_limit_override(ws_ctx["workspace_id"])
+        exercise_limit = (
+            override if override is not None
+            else config.GRANTLAYER_RATE_LIMIT_EXERCISE
+        )
         allowed, retry_after = limiter.check(
             f"{ws_ctx['workspace_id']}:{effective_subject}",
             "exercise",
             plan_tier=getattr(request.state, "plan_tier", "free"),
-            rate_limit_override=config.GRANTLAYER_RATE_LIMIT_EXERCISE,
+            rate_limit_override=exercise_limit,
         )
         if not allowed:
             return JSONResponse(

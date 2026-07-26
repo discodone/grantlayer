@@ -193,6 +193,59 @@ class TestFailOpenOnRedisError(unittest.TestCase):
 
 
 @_SKIP
+class TestWorkspaceOverridePrecedence(_Base):
+    """R4 — the existing per-workspace rate_limit_override (tiered-rate-limit
+    column, PATCH /v1/workspaces/{id}/plan) wins over the env floor at the
+    exercise seam."""
+
+    exercise_limit = 100  # generous floor: only the override can cause a 429
+
+    def setUp(self):
+        super().setUp()
+        from datetime import datetime, timezone
+
+        from backend.src.core.db import get_session_maker
+        from backend.src.core.orm import Workspace
+
+        self.workspace_id = f"ws-{uuid.uuid4()}"
+        now = datetime.now(timezone.utc).isoformat()
+        with get_session_maker()() as session:
+            session.add(
+                Workspace(
+                    id=self.workspace_id,
+                    tenant_id="demo",
+                    name="override-test",
+                    slug=f"override-{uuid.uuid4().hex[:8]}",
+                    owner_id="dev-operator",
+                    status="active",
+                    created_at=now,
+                    updated_at=now,
+                )
+            )
+            session.commit()
+
+    def test_override_of_one_gates_second_request(self):
+        r = self.client.patch(
+            f"/v1/workspaces/{self.workspace_id}/plan",
+            json={"plan_tier": "free", "rate_limit_override": 1},
+            headers=self._jwt(),
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(r.json()["rate_limit_override"], 1)
+
+        subject = f"agent-{uuid.uuid4()}"
+        headers = dict(self._jwt(), **{"X-Workspace-Id": self.workspace_id})
+        first = self._exercise(subject, headers=headers)
+        self.assertNotEqual(first.status_code, 429, first.text)
+        second = self._exercise(subject, headers=headers)
+        self.assertEqual(
+            second.status_code, 429,
+            "the workspace override (1) must win over the env floor (100)",
+        )
+        self.assertIn("Retry-After", second.headers)
+
+
+@_SKIP
 class TestNoLeakIntoSignedPath(_Base):
     """R5 — the signed-constraint path is untouched, and a 429 writes
     nothing: no execution row, no audit event, and therefore never the
