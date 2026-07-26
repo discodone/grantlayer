@@ -199,6 +199,11 @@ class AccessRequest:
     role: str
     action: str
     resource: str
+    # Declared fee attempt (lovelace) for fee-constrained grants. None =
+    # undeclared: allowed against unconstrained grants, denied fail-closed
+    # (constraint_attempt_undeclared) against a fee-constrained grant —
+    # compliance is proven, never assumed.
+    attempted_fee_lovelace: Optional[int] = None
 
 
 @dataclass
@@ -209,6 +214,9 @@ class PolicyResult:
     # Stable machine code for the decision (access_granted, no_matching_grant,
     # grant_expired, ...). The human-readable `reason` stays free-form.
     reason_code: Optional[str] = None
+    # Pinned canonical {"type","limit","attempted"} JSON when the decision is
+    # a constraint violation; carried into AuditEvent.constraint_violation.
+    constraint_violation: Optional[str] = None
 
 
 # ──────────────────────────────────────────────
