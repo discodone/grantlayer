@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Optional
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from ...core import config
@@ -25,6 +26,22 @@ router = APIRouter(tags=["demo"])
 # Registered only when GRANTLAYER_ENABLE_DEMO_ENDPOINTS=true (see app.py).
 # Kept separate so demo-action (always available) is not gated.
 tamper_router = APIRouter(tags=["demo"])
+
+
+def _workspace_rate_limit_override(workspace_id: str) -> Optional[int]:
+    """Per-workspace operational limit for the exercise bucket (the
+    tiered-rate-limiting rate_limit_override column, settable via
+    PATCH /v1/workspaces/{id}/plan). None when unset or when no workspace
+    row exists (legacy/demo contexts) — the env floor applies then."""
+    from ...core.db import get_session_maker
+    from ...core.orm import Workspace
+
+    with get_session_maker()() as session:
+        ws = session.get(Workspace, workspace_id)
+        if ws is None:
+            return None
+        override: Optional[int] = ws.rate_limit_override
+        return override
 
 
 class DemoActionRequest(BaseModel):
@@ -76,6 +93,7 @@ async def tamper_grant_endpoint(
 
 @router.post("/exercise", response_model=ExerciseResponse, response_model_by_alias=True)
 async def exercise_endpoint(
+    request: Request,
     body: DemoActionRequest,
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
@@ -166,6 +184,41 @@ async def exercise_endpoint(
             detail={"error": "Invalid field", "errorCode": "invalid_field", "reason": str(exc)},
         ) from exc
 
+    # Operational per-subject throttle — an availability control, NOT an
+    # authorization constraint. It runs entirely at this pre-policy seam: a
+    # throttled request records no execution row and no audit event, and the
+    # signed-constraint ladder inside handle_demo_action is never entered.
+    # Same limiter object as the /v1/ middleware, so Redis loss soft-degrades
+    # to the in-process window (fail-open) exactly like every other bucket.
+    limiter = getattr(request.app.state, "auth_rate_limiter", None)
+    if limiter is not None:
+        # Limit resolution mirrors limit_for_tier precedence: the workspace's
+        # rate_limit_override wins when set, else the env floor.
+        override = _workspace_rate_limit_override(ws_ctx["workspace_id"])
+        exercise_limit = (
+            override if override is not None
+            else config.GRANTLAYER_RATE_LIMIT_EXERCISE
+        )
+        allowed, retry_after = limiter.check(
+            f"{ws_ctx['workspace_id']}:{effective_subject}",
+            "exercise",
+            plan_tier=getattr(request.state, "plan_tier", "free"),
+            rate_limit_override=exercise_limit,
+        )
+        if not allowed:
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "error": "rate_limit_exceeded",
+                    "errorCode": "rate_limit_exceeded",
+                    "reason": (
+                        "Too many exercise requests for this subject. "
+                        f"Retry after {retry_after} seconds."
+                    ),
+                },
+                headers={"Retry-After": str(retry_after)},
+            )
+
     result = handle_demo_action(
         subject_id=effective_subject,
         role=body.role,
@@ -182,7 +235,6 @@ async def exercise_endpoint(
     # per-path field set (e.g. no `message` on denials).
     resp = ExerciseResponse.model_validate(result)
     status_code = 200 if resp.approved else 403
-    from fastapi.responses import JSONResponse
     return JSONResponse(
         content=resp.model_dump(by_alias=True, exclude_unset=True),
         status_code=status_code,

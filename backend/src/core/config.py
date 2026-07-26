@@ -296,6 +296,12 @@ GRANTLAYER_OIDC_JWKS_CACHE_TTL_SECONDS: int = _env_int("GRANTLAYER_OIDC_JWKS_CAC
 
 GRANTLAYER_RATE_LIMIT_AUTH: int = max(1, _env_int("GRANTLAYER_RATE_LIMIT_AUTH", 10))
 GRANTLAYER_RATE_LIMIT_API: int = max(1, _env_int("GRANTLAYER_RATE_LIMIT_API", 120))
+# Per-subject /v1/exercise bucket (requests per minute per workspace+subject).
+# An OPERATIONAL throttle, not a signed grant constraint: this is the floor
+# used when the workspace carries no rate_limit_override.
+GRANTLAYER_RATE_LIMIT_EXERCISE: int = max(
+    1, _env_int("GRANTLAYER_RATE_LIMIT_EXERCISE", 60)
+)
 
 # Redis URL for the shared rate-limiter backend (optional).
 # When unset the in-process sliding-window fallback is used.
