@@ -73,26 +73,29 @@ underscore-prefixed chain metadata the exporter adds.
 - `seq` is a **deployment-global** monotone insertion counter, not
   per-workspace: on PostgreSQL it is populated by the column's BIGSERIAL-style
   sequence default (the insert deliberately omits `seq` so `nextval` fires —
-  `backend/src/audit/audit_log.py:304`); on SQLite it is computed in Python
-  under the process write lock (`audit_log.py:359`).
+  `backend/src/audit/audit_log.py:316`); on SQLite it is computed in Python
+  under the process write lock (`audit_log.py:370`).
 - Writes are serialized so `prev_hash` linkage and `seq` cannot interleave:
   PostgreSQL takes a transaction-scoped exclusive advisory lock
   `pg_advisory_xact_lock(6252)` before reading the latest `row_hash`
-  (`audit_log.py:394-421`, key constant at `audit_log.py:27`); SQLite uses a
+  (`audit_log.py:412`, key constant at `audit_log.py:27`); SQLite uses a
   process-local `RLock` (`audit_log.py:20-23`).
 - **The anchored total order is `seq` ascending** with `id` ascending as a
   formal tiebreak, NULL `seq` explicitly LAST: `_load_workspace_entries` orders
   `ORDER BY seq ASC NULLS LAST, id ASC`
-  (`backend/src/api/routers/audit_compliance.py:309`). The `NULLS LAST` is
+  (`backend/src/api/routers/audit_compliance.py:315`). The `NULLS LAST` is
   normative, not cosmetic: SQLite sorts NULL first in ASC while PostgreSQL
   sorts it last, so without it the two backends would fold *different chains*
   for the same data whenever pre-seq-migration rows exist (§11.3).
   Because a workspace's chain is a *filtered view* of the global table, the
   `seq` values inside one workspace's export are increasing but **not
   contiguous** (the real epoch-1 export starts at `seq: 3`).
-- The row-hash chain's own verification order is `timestamp ASC, seq ASC`
-  deployment-wide (`audit_log.py:128`), skipping rows with `row_hash IS NULL`
-  (`audit_log.py:131-133`).
+- The row-hash chain's own verification order is **`seq` ascending, NULL `seq`
+  last** — `ORDER BY (seq IS NULL), seq ASC, id ASC`
+  (`audit_log.py:126`, query text at `audit_log.py:139`), matching the anchored
+  order so a timestamp/`seq` inversion under concurrent writes can no longer flag
+  an honest chain (gl-407 changed this from the earlier `timestamp ASC, seq ASC`);
+  rows with `row_hash IS NULL` are skipped (`audit_log.py:143`).
 
 ---
 
@@ -104,7 +107,7 @@ canonicals are JSON texts produced with the semantics of Python's
 
 ### 4.1 Export-fold entry canonical (the anchored one)
 
-Definition: `audit_compliance.py:29-45` (`_entry_canonical`), independently
+Definition: `audit_compliance.py:52-70` (`_entry_canonical`), independently
 re-implemented at `scripts/verify-anchor.py:79-92` (`entry_canonical`).
 
 Given one export entry (a JSON object):
@@ -112,9 +115,9 @@ Given one export entry (a JSON object):
 1. **Drop every key that starts with `_`** (the exporter's chain metadata:
    `_chain_hash`, `_prev_hash`; the manifest's `_type` etc. — verifier side
    `verify-anchor.py:83`; export side operates pre-insertion at
-   `audit_compliance.py:68`).
+   `audit_compliance.py:91`).
 2. **Omit forward-only fields whose value is null.** The allow-list is
-   exactly `("reason_code",)` — `audit_compliance.py:36`,
+   exactly `("reason_code",)` — `audit_compliance.py:59`,
    `verify-anchor.py:76`. This is **not** "drop every null": every other
    field with a null value (`matched_grant_id`, `challenge_id`, `tenant_id`,
    `scope`, `prev_hash`, …) **stays in the canonical as `null`**. A key that
@@ -169,14 +172,14 @@ when non-null** (dual-mode rule so pre-tenant rows keep their stored hashes,
 Each insert reads the latest existing `row_hash` (deployment-wide, `NULL`
 skipped — `audit_log.py:37-52`) as `prev_hash`, computes
 `row_hash = SHA-256(_hash_payload(event, prev_hash))`, and stores both, all
-under the advisory lock (§3). Verification (`audit_log.py:259+`) walks
-`timestamp ASC, seq ASC`, recomputes each hash, and checks each row's
-`prev_hash` equals its predecessor's `row_hash`.
+under the advisory lock (§3). Verification (`audit_log.py:271`) walks in `seq`
+order (`ORDER BY (seq IS NULL), seq ASC, id ASC`), recomputes each hash, and
+checks each row's `prev_hash` equals its predecessor's `row_hash`.
 
 ### 5.2 Export fold chain (anchored)
 
 Primitive (single shared definition on the backend:
-`audit_compliance.py:56-71` `_iter_chain`; verifier:
+`audit_compliance.py:79-95` `_iter_chain`; verifier:
 `verify-anchor.py:95-97,137-163`):
 
 ```
@@ -190,7 +193,7 @@ head (h) = entry_hash_N  ;  entry count (s) = N
 The previous hash is concatenated as its **64-char lowercase hex string**,
 not as raw bytes. Each exported data line additionally carries
 `_chain_hash` (its own entry hash) and `_prev_hash` (the running value before
-it) — `audit_compliance.py:174` — which let a verifier name the exact broken
+it) — `audit_compliance.py:197` — which let a verifier name the exact broken
 line rather than only detecting "head differs" (`verify-anchor.py:144-162`).
 
 ### 5.3 Export file format (NDJSON)
@@ -200,10 +203,10 @@ One JSON object per line (`ensure_ascii=True`):
 - N **data lines**: the entry dict plus `_chain_hash`/`_prev_hash`.
 - 1 **manifest footer**: `{"_type": "manifest", "_entry_count": N,
   "_final_hash": <head>, "_hmac_signature": <hex>}` —
-  `audit_compliance.py:363-369`. Data after the footer is a verification
+  `audit_compliance.py:204-208`. Data after the footer is a verification
   error (`verify-anchor.py:130-132`).
 - `_hmac_signature` = HMAC-SHA-256 over the newline-joined list of all entry
-  hashes (`audit_compliance.py:90-93`), keyed by GrantLayer's private audit
+  hashes (`audit_compliance.py:113-116`), keyed by GrantLayer's private audit
   HMAC key. It is an **optional insider check only** — anchor verification
   neither needs nor uses it (`verify-anchor.py:256-270`).
 
@@ -212,13 +215,13 @@ One JSON object per line (`ensure_ascii=True`):
 ## 6. Fold, head derivation, and fold parity
 
 The anchored head for a workspace is `anchor_head(session, workspace_id)`
-(`audit_compliance.py:373-375`) = `recompute_head_from_records(...)`
-(`audit_compliance.py:74-87`) over `_load_workspace_entries` (§3 ordering):
+(`audit_compliance.py:379-381`) = `recompute_head_from_records(...)`
+(`audit_compliance.py:97-110`) over `_load_workspace_entries` (§3 ordering):
 **full chain, no date filter, no limit, seq ASC**.
 
 **Fold parity (gl-378):** the anchor-side fold and the public-export-side fold
 are the *same functions* on the backend (`_iter_chain` /
-`recompute_head_from_records` are shared — `audit_compliance.py:62-64`
+`recompute_head_from_records` are shared — `audit_compliance.py:79`
 docstring), and the standalone verifier is a **deliberate, independent
 re-implementation** of the identical algorithm
 (`verify-anchor.py:53-58,68-76`). The two implementations are held
