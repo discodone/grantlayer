@@ -232,6 +232,11 @@ def canonical_grant_payload(grant: Grant) -> bytes:
 
     Excludes: revocation fields, signature, signing_key_id, payload_hash.
     This allows revocation without invalidating the original signature.
+
+    constraints (already canonical JSON, policy/constraints.py) is appended
+    omit-when-None: a grant without constraints serialises byte-identically to
+    the pre-constraints canonical, so every existing signature keeps
+    verifying — the reason_code forward-only precedent applied to signing.
     """
     lines = [
         f"action={grant.action}",
@@ -244,6 +249,8 @@ def canonical_grant_payload(grant: Grant) -> bytes:
         f"validFrom={grant.valid_from}",
         f"validUntil={grant.valid_until}",
     ]
+    if grant.constraints is not None:
+        lines.append(f"constraints={grant.constraints}")
     return "\n".join(lines).encode("utf-8")
 
 

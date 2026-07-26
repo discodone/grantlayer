@@ -60,6 +60,7 @@ def _orm_to_grant(row: OrmGrant) -> Grant:
         payload_hash=str(row.payload_hash) if row.payload_hash is not None else None,
         max_uses=int(row.max_uses) if row.max_uses is not None else None,
         use_count=int(row.use_count) if row.use_count is not None else 0,
+        constraints=str(row.constraints) if row.constraints is not None else None,
     )
 
 
@@ -191,6 +192,7 @@ class SqlAlchemyGrantRepository:
                 payload_hash=grant.payload_hash,
                 tenant_id=tenant_id,
                 workspace_id=workspace_id,
+                constraints=grant.constraints,
             )
         )
         return grant
@@ -795,6 +797,7 @@ class SqlAlchemyAsyncGrantRepository:
                 payload_hash=grant.payload_hash,
                 tenant_id=tenant_id,
                 workspace_id=workspace_id,
+                constraints=grant.constraints,
             )
         )
         return grant

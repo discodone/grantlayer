@@ -45,6 +45,11 @@ class Grant:
     payload_hash: Optional[str] = None
     max_uses: Optional[int] = None
     use_count: int = 0
+    # Canonical JSON of the typed constraints object (policy/constraints.py),
+    # e.g. '{"max_fee_lovelace":200000}'. None = unconstrained. Unlike
+    # max_uses this field IS part of the signed canonical (omit-when-None in
+    # canonical_grant_payload), so the limits carry the operator's signature.
+    constraints: Optional[str] = None
 
     def to_dict(self) -> dict:
         return asdict(self)

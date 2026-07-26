@@ -52,6 +52,8 @@ class Grant(Base):
     # from migration 0010
     tenant_id = Column(Text, nullable=False, default="demo")
     workspace_id = Column(Text)
+    # from migration 0023: canonical JSON of the signed typed constraints
+    constraints = Column(Text)
 
     __table_args__ = (
         Index("idx_grants_tenant_id", "tenant_id"),
