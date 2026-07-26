@@ -54,11 +54,16 @@ from .routers import (
 _logger = get_logger("grantlayer.fastapi")
 
 
-def _resolve_plan_tier(request: Request) -> tuple[str, int | None]:
-    """Extract plan_tier from request state (set by workspace router) or return defaults."""
-    plan_tier = getattr(request.state, "plan_tier", "free")
-    rate_limit_override = getattr(request.state, "rate_limit_override", None)
-    return plan_tier, rate_limit_override
+def _resolve_plan_tier(request: Request) -> str:
+    """Plan tier for the api-group limiter, from the signature-verified JWT.
+
+    Deliberately NOT workspace-row-driven: this middleware runs before any
+    workspace context exists, so its per-workspace dimension is the JWT
+    plan_tier claim only. The per-workspace rate_limit_override column gates
+    the per-subject /v1/exercise seam (routers/demo.py), which resolves the
+    workspace row per-request — it does not apply here.
+    """
+    return getattr(request.state, "plan_tier", "free")
 
 
 def _is_trusted_proxy(peer_ip: str) -> bool:
@@ -161,11 +166,10 @@ def create_app() -> FastAPI:
                     request.state.plan_tier = _safe_extract_plan_tier(
                         request.headers.get("Authorization")
                     )
-                plan_tier, rate_limit_override = _resolve_plan_tier(request)
+                plan_tier = _resolve_plan_tier(request)
                 allowed, retry_after = limiter.check(
                     client_ip, "api",
                     plan_tier=plan_tier,
-                    rate_limit_override=rate_limit_override,
                 )
                 if not allowed:
                     from fastapi.responses import JSONResponse as _JSONResponse
@@ -184,7 +188,7 @@ def create_app() -> FastAPI:
         response = await call_next(request)
         # Inject plan tier header on all /v1/ responses
         if request.url.path.startswith("/v1/"):
-            plan_tier, _ = _resolve_plan_tier(request)
+            plan_tier = _resolve_plan_tier(request)
             response.headers["X-Plan-Tier"] = plan_tier
         return response
 
