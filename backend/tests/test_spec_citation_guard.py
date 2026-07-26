@@ -51,10 +51,10 @@ LINE_CITATIONS: list[tuple[str, str, str]] = [
     ("§3", _AC, ".order_by(nullslast(_AuditEventORM.seq.asc()), _AuditEventORM.id.asc())"),
     # --- §4.1 export-fold entry canonical ---
     ("§4.1", _AC, "def _entry_canonical("),
-    ("§4.1", _AC, '_forward_only_when_null = ("reason_code",)'),
+    ("§4.1", _AC, '_forward_only_when_null = ("constraint_violation", "reason_code")'),
     ("§4.1", _AC, 'clean = {k: v for k, v in record.items() if not k.startswith("_")}'),
     ("§4.1", _VA, "def entry_canonical("),
-    ("§4.1", _VA, '_FORWARD_ONLY_WHEN_NULL = ("reason_code",)'),
+    ("§4.1", _VA, '_FORWARD_ONLY_WHEN_NULL = ("constraint_violation", "reason_code")'),
     # --- §4.2 row-hash canonical ---
     ("§4.2", _AL, "def _hash_payload("),
     ("§4.2", _AL, "def _compute_row_hash("),

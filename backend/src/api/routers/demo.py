@@ -38,6 +38,12 @@ class DemoActionRequest(BaseModel):
     action: str = Field(max_length=MAX_NAME_LENGTH)
     resource: str = Field(max_length=MAX_NAME_LENGTH)
     challenge_id: Optional[str] = Field(default=None, alias="challengeId", max_length=MAX_SHORT_ID_LENGTH)
+    # Declared fee attempt for fee-constrained grants. Optional: omitting it
+    # is fine against unconstrained grants; against a fee-constrained grant
+    # the policy ladder denies fail-closed (constraint_attempt_undeclared).
+    attempted_fee_lovelace: Optional[int] = Field(
+        default=None, alias="attemptedFeeLovelace", ge=0
+    )
 
     model_config = {"populate_by_name": True}
 
@@ -164,6 +170,7 @@ async def exercise_endpoint(
         operator_id=caller_operator_id,
         tenant_id=tenant_id,
         workspace_id=ws_ctx["workspace_id"],
+        attempted_fee_lovelace=body.attempted_fee_lovelace,
     )
     # Validate against the typed contract; exclude_unset preserves the exact
     # per-path field set (e.g. no `message` on denials).

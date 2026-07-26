@@ -88,6 +88,9 @@ class TestAnchorPublicFoldParity(unittest.TestCase):
             challenge_id="ch-full", challenge_present=True, challenge_result="passed",
             grant_signature_result="valid", workspace_id=_WS, tenant_id=_TENANT,
             scope="tenant", reason_code="access_granted",
+            constraint_violation=(
+                '{"type":"max_fee_lovelace","limit":200000,"attempted":200001}'
+            ),
         )
         kw.update(overrides)
         ev = self.AuditEvent(**kw)

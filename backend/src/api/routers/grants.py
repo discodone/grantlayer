@@ -19,6 +19,7 @@ from ...core.validation import (
 )
 from ...grants.grant_requests import ALLOWED_GRANT_ROLES
 from ...grants.grant_service import AsyncGrantService
+from ...policy.constraints import KNOWN_CONSTRAINTS, canonical_constraints
 from ..deps import get_async_grant_service, require_mutation_authz, resolve_auth_and_workspace
 from ..schemas import GrantCreateRequest, GrantListResponse, GrantResponse
 
@@ -51,6 +52,45 @@ def _validate_iso_timestamp(value: str, field_name: str) -> None:
                 "reason": f"{field_name} must be a valid ISO-8601 timestamp.",
             },
         )
+
+
+def _validate_constraints(constraints: Optional[dict]) -> Optional[str]:
+    """Validate the typed constraints object and return its canonical JSON.
+
+    Hard creation gate, mirroring the api-keys invalid_scopes 422: an unknown
+    or malformed constraint never reaches the DB — the exercise-side
+    unknown-deny then only ever fires on version skew or tampering. Values
+    must be non-negative integers (bool is an int subclass and is rejected).
+    """
+    if constraints is None:
+        return None
+
+    def _refuse(reason: str) -> HTTPException:
+        return HTTPException(
+            status_code=422,
+            detail={
+                "error": "Invalid field: constraints",
+                "errorCode": "invalid_constraints",
+                "reason": reason,
+            },
+        )
+
+    if not constraints:
+        raise _refuse(
+            "constraints must name at least one known constraint; omit the "
+            "field entirely for an unconstrained grant."
+        )
+    unknown = set(constraints) - KNOWN_CONSTRAINTS
+    if unknown:
+        raise _refuse(
+            "unknown constraint type(s): "
+            + ", ".join(sorted(unknown))
+            + f"; known: {sorted(KNOWN_CONSTRAINTS)}"
+        )
+    for key, value in constraints.items():
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            raise _refuse(f"{key} must be a non-negative integer")
+    return canonical_constraints(constraints)
 
 
 def _validate_grant_dates(valid_from: str, valid_until: str) -> None:
@@ -223,6 +263,7 @@ async def create_grant_endpoint(
         created_by=operator_id if operator_id else body.created_by,
         reason=body.reason,
         max_uses=body.max_uses,
+        constraints=_validate_constraints(body.constraints),
     )
     grant = await svc.create_grant(
         grant,

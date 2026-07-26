@@ -48,6 +48,11 @@ class GrantCreateRequest(BaseModel):
     created_by: str = Field(alias="createdBy", max_length=MAX_SHORT_ID_LENGTH)
     reason: str = Field(max_length=MAX_REASON_LENGTH)
     max_uses: Optional[int] = Field(default=None, alias="maxUses", ge=1)
+    # Typed constraint object, e.g. {"max_fee_lovelace": 200000}. Keys are
+    # validated against the closed KNOWN_CONSTRAINTS set in the endpoint
+    # (unknown/malformed -> 422 invalid_constraints), then stored and SIGNED
+    # as canonical JSON.
+    constraints: Optional[dict[str, Any]] = None
 
     model_config = {"populate_by_name": True}
 
@@ -74,13 +79,20 @@ class GrantResponse(BaseModel):
     signature_valid: bool = Field(alias="signatureValid")
     max_uses: Optional[int] = Field(default=None, alias="maxUses")
     use_count: int = Field(alias="useCount")
+    constraints: Optional[dict[str, Any]] = None
 
     model_config = {"populate_by_name": True, "from_attributes": True}
 
     @classmethod
     def from_grant(cls, grant, signature_valid: bool) -> "GrantResponse":
+        import json as _json
+
         d = grant.to_dict()
+        raw_constraints = d.get("constraints")
         return cls(
+            constraints=(
+                _json.loads(raw_constraints) if raw_constraints is not None else None
+            ),
             id=d["id"],
             subjectId=d["subject_id"],
             role=d["role"],

@@ -37,6 +37,7 @@ def handle_demo_action(
     tenant_id: Optional[str] = None,
     *,
     workspace_id: str,
+    attempted_fee_lovelace: Optional[int] = None,
 ) -> dict:
     require_challenge = _get_env_bool("GRANTLAYER_REQUIRE_CHALLENGE")
     if tenant_id is None:
@@ -109,6 +110,7 @@ def handle_demo_action(
             role=role,
             action=action,
             resource=resource,
+            attempted_fee_lovelace=attempted_fee_lovelace,
         )
 
         # Workspace-scoped matching: a grant is only eligible if it lives in the
@@ -212,6 +214,7 @@ def handle_demo_action(
                     workspace_id=workspace_id,
                     scope="tenant",
                     reason_code=result.reason_code,
+                    constraint_violation=result.constraint_violation,
                 )
                 append_event(event, conn=session.connection())
                 update_grant_execution_audit_event_id(

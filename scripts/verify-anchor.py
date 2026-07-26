@@ -71,9 +71,10 @@ KOIOS_BASES = {
 # ordinary optional fields (matched_grant_id, challenge_id, scope, tenant_id, …)
 # stay as null, exactly as the backend keeps them, so the many legacy events that
 # carry those None fields keep verifying. MUST stay in lockstep with the backend
-# export fold (_entry_canonical in audit_compliance.py); reason_code is the first
-# such field. The golden test vectors (tests/fixtures) hold the two in sync.
-_FORWARD_ONLY_WHEN_NULL = ("reason_code",)
+# export fold (_entry_canonical in audit_compliance.py); reason_code was the
+# first such field, constraint_violation (the grant-policy witness) the second.
+# The golden test vectors (tests/fixtures) hold the two in sync.
+_FORWARD_ONLY_WHEN_NULL = ("constraint_violation", "reason_code")
 
 
 def entry_canonical(entry: dict[str, Any]) -> str:

@@ -45,6 +45,11 @@ class Grant:
     payload_hash: Optional[str] = None
     max_uses: Optional[int] = None
     use_count: int = 0
+    # Canonical JSON of the typed constraints object (policy/constraints.py),
+    # e.g. '{"max_fee_lovelace":200000}'. None = unconstrained. Unlike
+    # max_uses this field IS part of the signed canonical (omit-when-None in
+    # canonical_grant_payload), so the limits carry the operator's signature.
+    constraints: Optional[str] = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -175,6 +180,12 @@ class AuditEvent:
     # column existed. Additive-and-forward-only: the export/anchor canonical
     # OMITS it when None, so historical anchor heads recompute unchanged.
     reason_code: Optional[str] = None
+    # Pinned canonical {"type":...,"limit":...,"attempted":...} JSON of a denied
+    # constraint check; None on every other event and every event written before
+    # the column existed. Additive-and-forward-only like reason_code: the
+    # export/anchor canonical OMITS it when None, so historical anchor heads
+    # recompute unchanged.
+    constraint_violation: Optional[str] = None
     # stable insertion-order tiebreak assigned by the DB (None before migration 0013)
     seq: Optional[int] = None
 
@@ -188,6 +199,11 @@ class AccessRequest:
     role: str
     action: str
     resource: str
+    # Declared fee attempt (lovelace) for fee-constrained grants. None =
+    # undeclared: allowed against unconstrained grants, denied fail-closed
+    # (constraint_attempt_undeclared) against a fee-constrained grant —
+    # compliance is proven, never assumed.
+    attempted_fee_lovelace: Optional[int] = None
 
 
 @dataclass
@@ -198,6 +214,9 @@ class PolicyResult:
     # Stable machine code for the decision (access_granted, no_matching_grant,
     # grant_expired, ...). The human-readable `reason` stays free-form.
     reason_code: Optional[str] = None
+    # Pinned canonical {"type","limit","attempted"} JSON when the decision is
+    # a constraint violation; carried into AuditEvent.constraint_violation.
+    constraint_violation: Optional[str] = None
 
 
 # ──────────────────────────────────────────────

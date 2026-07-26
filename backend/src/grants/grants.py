@@ -57,6 +57,7 @@ def _row_to_grant(row: dict) -> Grant:
         payload_hash=row["payload_hash"],
         max_uses=row["max_uses"],
         use_count=row["use_count"] or 0,
+        constraints=row.get("constraints"),
     )
 
 
@@ -160,6 +161,7 @@ def create_grant(
                 payload_hash=hash_hex,
                 tenant_id=tenant_id,
                 workspace_id=effective_workspace,
+                constraints=grant.constraints,
             )
         )
         return grant

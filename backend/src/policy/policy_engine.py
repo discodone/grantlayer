@@ -7,6 +7,7 @@ import datetime
 from typing import List
 
 from ..core.models import AccessRequest, Grant, PolicyResult
+from .constraints import check_constraints
 
 
 def _parse_iso(ts: str) -> datetime.datetime:
@@ -99,6 +100,25 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
                     reason="grant_usage_exhausted",
                     matched_grant_id=grant.id,
                     reason_code="grant_usage_exhausted",
+                )
+            continue
+
+        # Signed typed constraints — the last rung before approval, same
+        # best_denial/continue semantics as revoked/exhausted: this grant can
+        # never approve, a later unconstrained (or wider) grant still can.
+        # Fail-closed inside check_constraints: unknown type, malformed value,
+        # and undeclared attempt all deny.
+        constraint_denial = check_constraints(
+            grant.constraints, request.attempted_fee_lovelace
+        )
+        if constraint_denial is not None:
+            if best_denial is None:
+                best_denial = PolicyResult(
+                    approved=False,
+                    reason=constraint_denial.reason,
+                    matched_grant_id=grant.id,
+                    reason_code=constraint_denial.reason_code,
+                    constraint_violation=constraint_denial.violation,
                 )
             continue
 

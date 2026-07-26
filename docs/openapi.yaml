@@ -192,6 +192,16 @@ paths:
                 createdBy: { type: string }
                 reason: { type: string }
                 maxUses: { type: integer, nullable: true }
+                constraints:
+                  type: object
+                  nullable: true
+                  description: |
+                    Typed numeric constraint object, signed into the grant.
+                    Known keys: max_fee_lovelace (non-negative integer).
+                    Unknown keys or malformed values are refused with
+                    422 invalid_constraints. Omit for an unconstrained grant.
+                  properties:
+                    max_fee_lovelace: { type: integer, minimum: 0 }
       responses:
         "201":
           description: Grant created
@@ -1840,6 +1850,18 @@ paths:
                 action: { type: string }
                 resource: { type: string }
                 challengeId: { type: string, nullable: true }
+                attemptedFeeLovelace:
+                  type: integer
+                  nullable: true
+                  minimum: 0
+                  description: |
+                    Declared fee attempt in lovelace for fee-constrained
+                    grants. Optional against unconstrained grants; a
+                    fee-constrained grant denies fail-closed
+                    (constraint_attempt_undeclared) when omitted, and denies
+                    constraint_violated_max_fee when the declaration exceeds
+                    the signed limit (the violation is witnessed on the audit
+                    chain as {"type","limit","attempted"}).
       responses:
         "200":
           description: Exercise allowed (decision recorded)
@@ -2322,6 +2344,12 @@ components:
         use_count: { type: integer }
         signaturePresent: { type: boolean }
         signatureValid: { type: boolean }
+        constraints:
+          type: object
+          nullable: true
+          description: |
+            Signed typed constraint object (e.g. {"max_fee_lovelace": 200000});
+            null for unconstrained grants.
 
     GrantRequest:
       type: object
