@@ -113,6 +113,29 @@ class TestAuditVerifyEndpoint(unittest.TestCase):
         data = resp.json()
         self.assertIsInstance(data["valid"], bool)
 
+    def test_intact_chain_reports_valid_true(self):
+        """Strengthened coverage: an intact chain must verify as valid.
+
+        Previously only the response TYPE was checked, so the endpoint could
+        report valid:false on a perfectly intact chain and still pass. Append a
+        real (row_hash-linked) chain and require the endpoint to confirm it.
+        Tamper-detection coverage lives in the isolated
+        test_audit_verify_endpoint_and_seq_order module.
+        """
+        from backend.src.audit.audit_log import append_event
+        from backend.src.core.models import AuditEvent
+        for i in range(2):
+            append_event(AuditEvent(
+                subject_id="gl322-verify", role="agent", action=f"act-{i}",
+                resource="db/x", approved=True, reason="intact-chain",
+                workspace_id="gl322-verify-ws", tenant_id="demo", scope="tenant",
+            ))
+        resp = self.client.get("/v1/audit/verify", headers=self.auth)
+        self.assertEqual(resp.status_code, 200, resp.text)
+        data = resp.json()
+        self.assertTrue(data["valid"], f"intact chain reported invalid: {resp.text}")
+        self.assertIsNone(data["broken_at"], resp.text)
+
     def test_verify_returns_int_checked(self):
         resp = self.client.get("/v1/audit/verify", headers=self.auth)
         if resp.status_code != 200:

@@ -12,7 +12,11 @@ from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy import nullslast, select
 
-from ...audit.audit_log import _row_to_audit_event, list_events
+from ...audit.audit_log import (
+    _row_to_audit_event,
+    list_events,
+    verify_audit_hash_chain,
+)
 from ...core.orm import AuditEvent as _AuditEventORM
 from ..deps import resolve_auth_and_workspace
 
@@ -219,46 +223,29 @@ async def verify_audit_chain(
     authorization: Annotated[Optional[str], Header()] = None,
     x_workspace_id: Annotated[Optional[str], Header(alias="X-Workspace-Id")] = None,
 ) -> Any:
-    """Verify audit chain integrity. Returns {valid, checked, broken_at}."""
-    _, ws_ctx = resolve_auth_and_workspace(
+    """Verify audit chain integrity. Returns {valid, checked, broken_at}.
+
+    Verification runs through verify_audit_hash_chain() — the SAME row_hash-chain
+    verifier the anchor/report path uses — so it recomputes each row_hash the way
+    it was actually written (rather than the export-fold canonicalization, which
+    can never match the stored row_hash). The row_hash chain is global and linked
+    in insertion order, so the whole chain is verified as one unit; the
+    start_date/end_date/limit query params are retained for backward compatibility
+    but no longer slice the chain (a partial slice cannot verify against a global
+    chain). resolve_auth_and_workspace remains the auth gate.
+    """
+    resolve_auth_and_workspace(
         authorization,
         required_roles=["owner", "grant_admin", "auditor"],
         workspace_id=x_workspace_id,
     )
-    tenant_id = ws_ctx["tenant_id"]
-    workspace_id = ws_ctx["workspace_id"]
 
-    raw_events_verify = list_events(
-        limit=limit,
-        offset=0,
-        tenant_id=tenant_id,
-        workspace_id=workspace_id,
-    )
-    events_verify = [e.to_dict() for e in raw_events_verify]
-
-    if start_date:
-        events_verify = [e for e in events_verify if (e.get("timestamp") or "") >= start_date]
-    if end_date:
-        events_verify = [e for e in events_verify if (e.get("timestamp") or "") <= end_date]
-
-    prev_hash = "0" * 64
-    broken_at = None
-
-    for event in events_verify:
-        canonical = _entry_canonical(event)
-        expected_hash = _chain_hash(prev_hash, canonical)
-        stored_hash = event.get("row_hash")
-
-        if stored_hash and stored_hash != expected_hash:
-            broken_at = event.get("id")
-            break
-
-        prev_hash = stored_hash or expected_hash
-
+    result = verify_audit_hash_chain()
+    failures = result.get("failures") or []
     return {
-        "valid": broken_at is None,
-        "checked": len(events_verify),
-        "broken_at": broken_at,
+        "valid": result["valid"],
+        "checked": result["checked"],
+        "broken_at": failures[0]["event_id"] if failures else None,
     }
 
 
