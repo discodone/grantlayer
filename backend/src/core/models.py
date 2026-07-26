@@ -175,6 +175,12 @@ class AuditEvent:
     # column existed. Additive-and-forward-only: the export/anchor canonical
     # OMITS it when None, so historical anchor heads recompute unchanged.
     reason_code: Optional[str] = None
+    # Pinned canonical {"type":...,"limit":...,"attempted":...} JSON of a denied
+    # constraint check; None on every other event and every event written before
+    # the column existed. Additive-and-forward-only like reason_code: the
+    # export/anchor canonical OMITS it when None, so historical anchor heads
+    # recompute unchanged.
+    constraint_violation: Optional[str] = None
     # stable insertion-order tiebreak assigned by the DB (None before migration 0013)
     seq: Optional[int] = None
 

@@ -54,9 +54,10 @@ def _entry_canonical(entry: dict[str, Any]) -> str:
     # value is None, so introducing such a column never alters the canonical of
     # any event written before it existed — every past on-chain anchor stays
     # recomputable. A field only enters the fold once an event actually carries
-    # a value for it. `reason_code` (the machine decision code) is the first
-    # such field; the same rule as the row_hash payload's dual-mode tenant_id.
-    _forward_only_when_null = ("reason_code",)
+    # a value for it. `reason_code` (the machine decision code) was the first
+    # such field, `constraint_violation` (the grant-policy witness) the second;
+    # the same rule as the row_hash payload's dual-mode tenant_id.
+    _forward_only_when_null = ("constraint_violation", "reason_code")
     keys = [
         k for k in sorted(entry.keys())
         if not (k in _forward_only_when_null and entry.get(k) is None)
@@ -340,6 +341,7 @@ def _load_workspace_entries(session: Any, workspace_id: str) -> list[dict]:
             "scope": orm.scope,
             "seq": orm.seq,
             "reason_code": orm.reason_code,
+            "constraint_violation": orm.constraint_violation,
         }
         entries.append(_row_to_audit_event(row).to_dict())
     return entries

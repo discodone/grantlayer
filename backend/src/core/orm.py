@@ -86,6 +86,9 @@ class AuditEvent(Base):
     seq = Column(BigInteger)
     # from migration 0020: stable machine decision code on decision events
     reason_code = Column(Text)
+    # from migration 0022: pinned canonical {"type","limit","attempted"} JSON of
+    # a denied constraint check; NULL everywhere else (forward-only in the fold)
+    constraint_violation = Column(Text)
 
     __table_args__ = (
         Index("idx_audit_events_tenant_id", "tenant_id"),
