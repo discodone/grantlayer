@@ -9,8 +9,9 @@ authz machinery, not a semantic auth change.
 
 Rate limiting: the app-level /v1/ middleware ("api" group, per-IP,
 tier-capped) already covered this route — the 429 test below PINS that
-existing coverage rather than adding a new limiter; there is no per-route
-limiter convention except the stricter "auth" group on /v1/auth/token.
+existing coverage. Per-route buckets: the stricter "auth" group on
+/v1/auth/token, and the per-subject "exercise" group on this route
+(see test_exercise_subject_rate_limit).
 
 Self-provisions SQLite (listed in _sqlite_only_modules.py).
 """

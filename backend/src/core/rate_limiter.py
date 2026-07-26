@@ -10,6 +10,10 @@ Plan tiers apply per-workspace limits:
   free       → 100 req/min
   pro        → 1000 req/min
   enterprise → unlimited (always allowed)
+
+Groups: "auth" (fixed auth_limit), "api" (min of api_limit and tier/override),
+"exercise" (per-subject bucket — the caller passes the resolved limit as
+rate_limit_override; it is authoritative, never min()'d with api_limit).
 """
 
 from __future__ import annotations
@@ -111,6 +115,16 @@ class RateLimiter:
 
         if group == "auth":
             limit: int = self.auth_limit
+        elif group == "exercise":
+            # Per-subject exercise bucket: the caller resolves the limit
+            # (workspace override else configured floor) and passes it as
+            # rate_limit_override — limit_for_tier keeps the override-wins
+            # precedence. Deliberately NOT min()'d with api_limit: the
+            # resolved limit is authoritative for this bucket.
+            exercise_limit = self.limit_for_tier(plan_tier, rate_limit_override)
+            if exercise_limit is None:
+                return True, 0  # no override, enterprise tier: unlimited
+            limit = exercise_limit
         else:
             tier_limit = self.limit_for_tier(plan_tier, rate_limit_override)
             if tier_limit is None:
@@ -317,6 +331,13 @@ class RedisRateLimiter:
 
         if group == "auth":
             limit: Optional[int] = self._fallback.auth_limit
+        elif group == "exercise":
+            # Mirrors RateLimiter.check: resolved limit is authoritative,
+            # no min() with api_limit.
+            exercise_limit = self.limit_for_tier(plan_tier, rate_limit_override)
+            if exercise_limit is None:
+                return True, 0  # no override, enterprise tier: unlimited
+            limit = exercise_limit
         else:
             tier_limit = self.limit_for_tier(plan_tier, rate_limit_override)
             if tier_limit is None:
