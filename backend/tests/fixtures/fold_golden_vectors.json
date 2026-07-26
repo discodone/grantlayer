@@ -133,6 +133,33 @@
         "constraint_violation": "{\"type\":\"max_fee_lovelace\",\"limit\":200000,\"attempted\":200001}"
       },
       "expected_canonical": "{\"action\": \"read\", \"approved\": false, \"challenge_id\": null, \"challenge_present\": false, \"challenge_result\": \"legacy_mode\", \"constraint_violation\": \"{\\\"type\\\":\\\"max_fee_lovelace\\\",\\\"limit\\\":200000,\\\"attempted\\\":200001}\", \"grant_signature_result\": \"valid\", \"id\": \"g1\", \"matched_grant_id\": \"mg\", \"prev_hash\": null, \"reason\": \"constraint_violated_max_fee\", \"reason_code\": \"constraint_violated_max_fee\", \"resource\": \"res/1\", \"role\": \"agent\", \"row_hash\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"scope\": \"tenant\", \"seq\": 1, \"subject_id\": \"s1\", \"tenant_id\": \"t1\", \"timestamp\": \"2026-01-01T00:00:00Z\", \"workspace_id\": \"w1\"}"
+    },
+    {
+      "name": "constraint_violation_wallet_balance_set",
+      "entry": {
+        "id": "g1",
+        "timestamp": "2026-01-01T00:00:00Z",
+        "subject_id": "s1",
+        "role": "agent",
+        "action": "read",
+        "resource": "res/1",
+        "approved": false,
+        "reason": "constraint_violated_max_wallet_balance",
+        "matched_grant_id": "mg",
+        "challenge_id": null,
+        "challenge_present": false,
+        "challenge_result": "legacy_mode",
+        "grant_signature_result": "valid",
+        "tenant_id": "t1",
+        "workspace_id": "w1",
+        "scope": "tenant",
+        "seq": 1,
+        "row_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "prev_hash": null,
+        "reason_code": "constraint_violated_max_wallet_balance",
+        "constraint_violation": "{\"type\":\"max_wallet_balance_lovelace\",\"limit\":5000000,\"attempted\":5000001}"
+      },
+      "expected_canonical": "{\"action\": \"read\", \"approved\": false, \"challenge_id\": null, \"challenge_present\": false, \"challenge_result\": \"legacy_mode\", \"constraint_violation\": \"{\\\"type\\\":\\\"max_wallet_balance_lovelace\\\",\\\"limit\\\":5000000,\\\"attempted\\\":5000001}\", \"grant_signature_result\": \"valid\", \"id\": \"g1\", \"matched_grant_id\": \"mg\", \"prev_hash\": null, \"reason\": \"constraint_violated_max_wallet_balance\", \"reason_code\": \"constraint_violated_max_wallet_balance\", \"resource\": \"res/1\", \"role\": \"agent\", \"row_hash\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"scope\": \"tenant\", \"seq\": 1, \"subject_id\": \"s1\", \"tenant_id\": \"t1\", \"timestamp\": \"2026-01-01T00:00:00Z\", \"workspace_id\": \"w1\"}"
     }
   ],
   "chain_vectors": [
