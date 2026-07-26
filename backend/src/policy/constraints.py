@@ -1,7 +1,8 @@
 """Typed grant constraints — the narrow, signed limit vocabulary.
 
 Deliberately NOT a policy language: constraints are a closed set of fixed
-numeric fields (this slice: max_fee_lovelace only). No expressions, no DSL —
+numeric fields (max_fee_lovelace, max_wallet_balance_lovelace). No
+expressions, no DSL —
 the dependency-free chain verifier never needs to understand them, and typed
 numbers cannot carry PII into the signed payload or the witnessed chain.
 
@@ -56,6 +57,18 @@ _CONSTRAINT_SPECS: dict[str, _ConstraintSpec] = {
             f"signed limit {limit} lovelace"
         ),
     ),
+    "max_wallet_balance_lovelace": _ConstraintSpec(
+        declared_field="walletBalanceLovelace",
+        violated_code="constraint_violated_max_wallet_balance",
+        undeclared_reason=(
+            "grant is balance-constrained; the request must declare "
+            "walletBalanceLovelace"
+        ),
+        violated_reason=lambda limit, attempted: (
+            f"declared wallet balance {attempted} lovelace exceeds the "
+            f"signed limit {limit} lovelace"
+        ),
+    ),
 }
 
 KNOWN_CONSTRAINTS = frozenset(_CONSTRAINT_SPECS)
@@ -104,6 +117,7 @@ class ConstraintDenial:
 def check_constraints(
     constraints_text: Optional[str],
     attempted_fee_lovelace: Optional[int],
+    wallet_balance_lovelace: Optional[int] = None,
 ) -> Optional[ConstraintDenial]:
     """Evaluate a grant's stored constraints against the declared attempt.
 
@@ -136,7 +150,10 @@ def check_constraints(
     # Per-constraint ladder, alphabetical key order for a deterministic first
     # denial when several constraints fail. Each key runs the same fail-closed
     # sequence: malformed limit -> undeclared attempt -> limit comparison.
-    declared = {"max_fee_lovelace": attempted_fee_lovelace}
+    declared = {
+        "max_fee_lovelace": attempted_fee_lovelace,
+        "max_wallet_balance_lovelace": wallet_balance_lovelace,
+    }
     for key in sorted(constraints):
         spec = _CONSTRAINT_SPECS[key]
         limit = constraints[key]

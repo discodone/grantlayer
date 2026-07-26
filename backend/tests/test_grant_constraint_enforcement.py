@@ -138,7 +138,10 @@ class TestMaxFeeEnforcement(_Base):
         )
 
     def test_unknown_constraint_type_is_denied_fail_closed(self):
-        self._make_grant(constraints='{"max_wallet_balance_lovelace":1000000}')
+        # rate_limit is a future, still-unregistered type — the fail-closed
+        # unknown-deny contract. (max_wallet_balance_lovelace graduated from
+        # this role when slice 2 registered it.)
+        self._make_grant(constraints='{"rate_limit":5}')
         result = self._exercise(attempted_fee_lovelace=1)
         self.assertFalse(result["approved"], result)
         self.assertEqual(result["reasonCode"], "constraint_unknown")
@@ -350,7 +353,7 @@ class TestEndpointPlumbing(unittest.TestCase):
                 "validUntil": "2099-12-31T23:59:59Z",
                 "createdBy": "ops",
                 "reason": "nightly backup",
-                "constraints": {"max_wallet_balance_lovelace": 1},
+                "constraints": {"rate_limit": 5},
             },
             headers=self._jwt(),
         )

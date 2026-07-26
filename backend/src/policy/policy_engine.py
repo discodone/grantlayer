@@ -109,7 +109,9 @@ def evaluate_access(request: AccessRequest, grants: List[Grant], now: datetime.d
         # Fail-closed inside check_constraints: unknown type, malformed value,
         # and undeclared attempt all deny.
         constraint_denial = check_constraints(
-            grant.constraints, request.attempted_fee_lovelace
+            grant.constraints,
+            request.attempted_fee_lovelace,
+            request.wallet_balance_lovelace,
         )
         if constraint_denial is not None:
             if best_denial is None:

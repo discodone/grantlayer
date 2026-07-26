@@ -204,6 +204,11 @@ class AccessRequest:
     # (constraint_attempt_undeclared) against a fee-constrained grant —
     # compliance is proven, never assumed.
     attempted_fee_lovelace: Optional[int] = None
+    # Declared wallet balance (lovelace) for balance-constrained grants. Same
+    # declared-attempt contract as the fee: no external chain read ever enters
+    # the exercise path; the anchor writer's balance gate checks ACTUAL
+    # balance at the spend boundary.
+    wallet_balance_lovelace: Optional[int] = None
 
 
 @dataclass
