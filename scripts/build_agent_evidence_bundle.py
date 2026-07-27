@@ -39,6 +39,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 
 _SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 _VERIFIERS = ("verify-anchor.py", "verify-grant.py", "extract_agent_trace.py")
@@ -209,9 +210,9 @@ def _live_inputs(args) -> tuple:
         raise SystemExit(
             f"export has only {len(prefix)} data lines, anchor attests "
             f"{anchor['s']} — refusing to build an incomplete bundle")
-    export_path = os.path.join(args.out, "..", "_export_tmp.ndjson")
-    os.makedirs(os.path.dirname(os.path.abspath(export_path)), exist_ok=True)
-    with open(export_path, "w") as fh:
+    fd, export_path = tempfile.mkstemp(suffix=".ndjson",
+                                       prefix="bundle-export-")
+    with os.fdopen(fd, "w") as fh:
         fh.write("\n".join(prefix) + "\n")
 
     keyring_dir = os.path.expanduser(args.keyring)
